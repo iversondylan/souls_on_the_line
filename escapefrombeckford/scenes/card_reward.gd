@@ -20,14 +20,14 @@ func _ready() -> void:
 	take_button.pressed.connect(
 		func(): 
 			card_reward_selected.emit(selected_card)
-			print("drafted %s" % selected_card.name)
+			#print("drafted %s" % selected_card.name)
 			queue_free()
 	)
 	
 	skip_card.pressed.connect(
 		func():
 			card_reward_selected.emit(null)
-			print("skipped card reward")
+			#print("skipped card reward")
 			queue_free()
 	)
 
@@ -55,7 +55,7 @@ func set_card_choices(new_card_choices: Array[CardData]) -> void:
 	
 	_clear_rewards()
 	for card_data: CardData in card_choices:
-		print("card_reward.gd set_card_choices(): card choice is " + str(card_data))
+		#print("card_reward.gd set_card_choices(): card choice is " + str(card_data))
 		var new_card : MenuCard = MENU_CARD.instantiate() as MenuCard
 		card_choice_container.add_child(new_card)
 		new_card.card_data = card_data
