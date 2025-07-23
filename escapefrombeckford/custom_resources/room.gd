@@ -10,4 +10,4 @@ enum RoomType {NOT_ASSIGNED, BATTLE, TREASURE, REST, SHOP, BOSS}
 @export var selected := false
 
 func _to_string() -> String:
-	return "%s (%s)" % [column, RoomType.keys()[type][0]]
+	return "%s (%s)" % [row, RoomType.keys()[type][0]]
