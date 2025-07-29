@@ -6,9 +6,9 @@ const PLACEMENT_RANDOMNESS := 5
 const ENCOUNTERS := 15
 const MAP_HEIGHT := 7
 const PATHS := 6
-const MONSTER_ROOM_WEIGHT := 10.0
+const BATTLE_ROOM_WEIGHT := 10.0
 const SHOP_ROOM_WEIGHT := 2.5
-const CAMPFIRE_ROOM_WEIGHT := 4.0
+const REST_ROOM_WEIGHT := 4.0
 
 var random_room_type_weights = {
 	Room.RoomType.BATTLE: 0.0,
@@ -32,6 +32,10 @@ func make_map() -> Array[Array]:
 			#print("current_j is %s" % current_j)
 			current_j = _make_connection(i, current_j)
 	
+	_make_boss_room()
+	_make_random_room_weights()
+	_make_room_types()
+	
 	var i:= 0
 	for encounter in map_data:
 		print("floor %s" % i)
@@ -46,7 +50,7 @@ func make_map() -> Array[Array]:
 		#print("encounter %s:\t%s" % [i, encounter])
 		#i += 1
 	
-	return []
+	return map_data
 
 func _make_empty_grid() -> Array[Array]:
 	var grid: Array[Array] = []
@@ -124,3 +128,58 @@ func _would_cross_existing_path(i: int, j: int, room: Room) -> bool:
 				return true
 	
 	return false
+
+func _make_boss_room() -> void:
+	var middle_index := floori(MAP_HEIGHT * 0.5)
+	var boss_room := map_data[ENCOUNTERS - 1][middle_index] as Room
+	
+	for j in MAP_HEIGHT:
+		var current_room = map_data[ENCOUNTERS - 2][j] as Room
+		if current_room.next_rooms:
+			current_room.next_rooms = [] as Array[Room]
+			current_room.next_rooms.push_back(boss_room)
+	
+	boss_room.type = Room.RoomType.BOSS
+	
+func _make_random_room_weights() -> void:
+	random_room_type_weights[Room.RoomType.BATTLE] = BATTLE_ROOM_WEIGHT
+	random_room_type_weights[Room.RoomType.REST] = BATTLE_ROOM_WEIGHT + REST_ROOM_WEIGHT
+	random_room_type_weights[Room.RoomType.SHOP] = BATTLE_ROOM_WEIGHT + REST_ROOM_WEIGHT + SHOP_ROOM_WEIGHT
+	
+	random_room_type_total_weight = random_room_type_weights[Room.RoomType.SHOP]
+
+func _make_room_types() -> void:
+	#first room is always a battle
+	for room: Room in map_data[0]:
+		if room.next_rooms.size() > 0:
+			room.type = Room.RoomType.BATTLE
+	#9th floor is always a treasure
+	for room: Room in map_data[8]:
+		if room.next_rooms.size() > 0:
+			room.type = Room.RoomType.TREASURE
+	#room before boss is always a rest area
+	for room: Room in map_data[ENCOUNTERS - 2]:
+		if room.next_rooms.size() > 0:
+			room.type = Room.RoomType.REST
+	
+	#rest of rooms
+	for encounter_stage in map_data:
+		for room: Room in encounter_stage:
+			for next_room: Room in room.next_rooms:
+				if next_room.type == Room.RoomType.NOT_ASSIGNED:
+					_set_weighted_room_type(next_room)
+
+func _set_weighted_room_type(room_to_set: Room) -> void:
+	var rest_below_4 := true
+	var consecutive_rest := true
+	var consecutive_shop := true
+	var campfire_on_13 := true
+	
+	var type_candidate: Room.RoomType
+	
+	while rest_below_4 or consecutive_rest or consecutive_shop or campfire_on_13:
+		type_candidate = _get_random_room_type_by_weight()
+		
+		var is_rest := type_candidate == Room.RoomType.REST
+		var has_rest_parent := _room_has_parent_of_type(room_to_set, Room.RoomType.REST)
+		var is_shop := type_candidate == Room.RoomType.SHOP
