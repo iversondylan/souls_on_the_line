@@ -19,8 +19,8 @@ var random_room_type_weights = {
 var random_room_type_total_weight := 0.0
 var map_data: Array[Array]
 
-func _ready() -> void:
-	make_map()
+#func _ready() -> void:
+	#make_map()
 
 func make_map() -> Array[Array]:
 	map_data = _make_empty_grid()
@@ -36,14 +36,14 @@ func make_map() -> Array[Array]:
 	_make_random_room_weights()
 	_make_room_types()
 	
-	var i:= 0
-	for encounter in map_data:
-		print("floor %s" % i)
-		var used_rooms = encounter.filter(
-			func(room: Room): return room.next_rooms.size() > 0
-		)
-		print(used_rooms)
-		i += 1
+	#var i:= 0
+	#for encounter in map_data:
+		#print("floor %s" % i)
+		#var used_rooms = encounter.filter(
+			#func(room: Room): return room.next_rooms.size() > 0
+		#)
+		#print(used_rooms)
+		#i += 1
 	#print(starting_points)
 	#var i := 0
 	#for encounter in map_data:
@@ -173,13 +173,54 @@ func _set_weighted_room_type(room_to_set: Room) -> void:
 	var rest_below_4 := true
 	var consecutive_rest := true
 	var consecutive_shop := true
-	var campfire_on_13 := true
+	var rest_on_13 := true
 	
 	var type_candidate: Room.RoomType
 	
-	while rest_below_4 or consecutive_rest or consecutive_shop or campfire_on_13:
+	while rest_below_4 or consecutive_rest or consecutive_shop or rest_on_13:
 		type_candidate = _get_random_room_type_by_weight()
 		
 		var is_rest := type_candidate == Room.RoomType.REST
 		var has_rest_parent := _room_has_parent_of_type(room_to_set, Room.RoomType.REST)
 		var is_shop := type_candidate == Room.RoomType.SHOP
+		var has_shop_parent := _room_has_parent_of_type(room_to_set, Room.RoomType.SHOP)
+		
+		rest_below_4 = is_rest and room_to_set.column < 3
+		consecutive_rest = is_rest and has_rest_parent
+		consecutive_shop = is_shop and has_shop_parent
+		rest_on_13 = is_rest and room_to_set.column == 12
+	
+	room_to_set.type = type_candidate
+
+func _room_has_parent_of_type(room: Room, type: Room.RoomType) -> bool:
+	var parents: Array[Room] = []
+	#above parent
+	if room.row > 0 and room.column > 0:
+		var parent_candidate := map_data[room.column - 1][room.row -1] as Room
+		if parent_candidate.next_rooms.has(room):
+			parents.push_back(parent_candidate)
+	#middle parent
+	if room.column > 0:
+		var parent_candidate := map_data[room.column - 1][room.row] as Room
+		if parent_candidate.next_rooms.has(room):
+			parents.push_back(parent_candidate)
+	#below parent
+	if room.row < MAP_HEIGHT-1 and room.column > 0:
+		var parent_candidate := map_data[room.column - 1][room.row + 1] as Room
+		if parent_candidate.next_rooms.has(room):
+			parents.push_back(parent_candidate)
+	
+	for parent: Room in parents:
+		if parent.type == type:
+			return true
+	
+	return false
+
+func _get_random_room_type_by_weight() -> Room.RoomType:
+	var roll := randf_range(0.0, random_room_type_total_weight)
+	
+	for type: Room.RoomType in random_room_type_weights:
+		if random_room_type_weights[type] > roll:
+			return type
+	
+	return Room.RoomType.BATTLE

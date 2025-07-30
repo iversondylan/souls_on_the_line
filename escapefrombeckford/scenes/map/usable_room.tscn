@@ -1,0 +1,30 @@
+[gd_scene load_steps=2 format=3 uid="uid://chlyh1tfceais"]
+
+[ext_resource type="Texture2D" uid="uid://dx0l0tdglbe5b" path="res://assets/sprites/crossed-swords.png" id="1_hp8kp"]
+
+[node name="UsableRoom" type="Area2D"]
+collision_layer = 16
+collision_mask = 0
+
+[node name="Visuals" type="Node2D" parent="."]
+
+[node name="Line2D" type="Line2D" parent="Visuals"]
+
+[node name="Sprite2D" type="TextureRect" parent="Visuals"]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -256.0
+offset_top = -256.0
+offset_right = 256.0
+offset_bottom = 256.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("1_hp8kp")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]

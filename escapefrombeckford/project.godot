@@ -74,6 +74,7 @@ right_mouse={
 2d_physics/layer_2="card_drop_area"
 2d_physics/layer_3="combatants"
 2d_physics/layer_4="between_combatants"
+2d_physics/layer_5="map_rooms"
 
 [rendering]
 
