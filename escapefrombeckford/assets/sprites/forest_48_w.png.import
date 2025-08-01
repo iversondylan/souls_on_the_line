@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dx0l0tdglbe5b"
-path="res://.godot/imported/crossed-swords.png-70feb29f55eb21d0c630bd48499cccb1.ctex"
+uid="uid://6dajiq4c6b1w"
+path="res://.godot/imported/forest_48_w.png-599ce2da14459a31fdcb9406b3541557.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/crossed-swords.png"
-dest_files=["res://.godot/imported/crossed-swords.png-70feb29f55eb21d0c630bd48499cccb1.ctex"]
+source_file="res://assets/sprites/forest_48_w.png"
+dest_files=["res://.godot/imported/forest_48_w.png-599ce2da14459a31fdcb9406b3541557.ctex"]
 
 [params]
 

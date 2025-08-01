@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b80m1qdkwfuyn"
-path="res://.godot/imported/campfire.png-3737de467f695fea235352c0938929be.ctex"
+uid="uid://bmltytv6xalgo"
+path="res://.godot/imported/crossed-swords_48_w.png-cd6670e8313ce96fb162c2663483e657.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/campfire.png"
-dest_files=["res://.godot/imported/campfire.png-3737de467f695fea235352c0938929be.ctex"]
+source_file="res://assets/sprites/crossed-swords_48_w.png"
+dest_files=["res://.godot/imported/crossed-swords_48_w.png-cd6670e8313ce96fb162c2663483e657.ctex"]
 
 [params]
 

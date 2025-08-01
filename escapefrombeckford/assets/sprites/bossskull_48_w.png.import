@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://jid3teufusvm"
-path="res://.godot/imported/chest.png-d0fe717f5372f18c2e87d4b680fda631.ctex"
+uid="uid://dugkletdjcpt4"
+path="res://.godot/imported/bossskull_48_w.png-44a4b56447f882f3db5ae3c5c21ca61a.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/chest.png"
-dest_files=["res://.godot/imported/chest.png-d0fe717f5372f18c2e87d4b680fda631.ctex"]
+source_file="res://assets/sprites/bossskull_48_w.png"
+dest_files=["res://.godot/imported/bossskull_48_w.png-44a4b56447f882f3db5ae3c5c21ca61a.ctex"]
 
 [params]
 

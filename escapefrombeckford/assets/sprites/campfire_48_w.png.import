@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dm703nl2vsmeb"
-path="res://.godot/imported/daemon-skull.png-fe41dc581934b1018ed336604c511129.ctex"
+uid="uid://7jdcjj2du3bl"
+path="res://.godot/imported/campfire_48_w.png-b097d8d2956e9b711b78596b5113e53f.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/daemon-skull.png"
-dest_files=["res://.godot/imported/daemon-skull.png-fe41dc581934b1018ed336604c511129.ctex"]
+source_file="res://assets/sprites/campfire_48_w.png"
+dest_files=["res://.godot/imported/campfire_48_w.png-b097d8d2956e9b711b78596b5113e53f.ctex"]
 
 [params]
 
