@@ -149,7 +149,7 @@ func _update_graphics():
 		card_visuals.description.set_text(card_data.description)
 
 func _on_player_combatant_data_changed() -> void:
-	self.playable = GameState.player.can_play_card(card_data)
+	playable = GameState.player.can_play_card(card_data)
 
 func _on_click_area_mouse_entered() -> void:
 	card_state_machine.on_mouse_entered()
@@ -175,4 +175,4 @@ func _on_card_drag_or_aiming_started(used_card: UsableCard) -> void:
 
 func _on_card_drag_or_aiming_ended(_usable_card: UsableCard) -> void:
 	disabled = false
-	self.playable = GameState.player.can_play_card(card_data)
+	playable = GameState.player.can_play_card(card_data)

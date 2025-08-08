@@ -1,7 +1,7 @@
 class_name MapGenerator extends Node
 
-const X_DIST := 25
-const Y_DIST := 30
+const X_DIST := 100
+const Y_DIST := 120
 const PLACEMENT_RANDOMNESS := 5
 const ENCOUNTERS := 15
 const MAP_HEIGHT := 7
@@ -67,7 +67,7 @@ func _make_empty_grid() -> Array[Array]:
 			
 			# Boss room has a non-random X
 			if i == ENCOUNTERS - 1:
-				current_room.position.x = (i + 1) * Y_DIST
+				current_room.position.x = (i + 1) * X_DIST
 			
 			adjacent_rooms.push_back(current_room)
 		

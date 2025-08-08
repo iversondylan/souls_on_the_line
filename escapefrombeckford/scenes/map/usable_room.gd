@@ -18,14 +18,14 @@ const ICONS := {
 var room_available := false : set = set_room_available
 var room: Room : set = set_room
 
-func _ready() -> void:
-	var test_room := Room.new()
-	test_room.type = Room.RoomType.REST
-	test_room.position = Vector2(100, 100)
-	room = test_room
-	
-	await get_tree().create_timer(1).timeout
-	room_available = true
+#func _ready() -> void:
+	#var test_room := Room.new()
+	#test_room.type = Room.RoomType.REST
+	#test_room.position = Vector2(100, 100)
+	#room = test_room
+	#
+	#await get_tree().create_timer(1).timeout
+	#room_available = true
 
 func set_room_available(new_value: bool) -> void:
 	room_available = new_value

@@ -83,20 +83,15 @@ func check_lethal(damage: int) -> bool:
 			return false
 
 func take_health_damage(damage : int) -> void:
-	#if damage <= 0:
-		#return
-	#var initial_damage = damage
-	#damage = clampi(damage - armor, 0, damage)
-	#self.armor = clampi(armor - initial_damage, 0, armor)
-	self.health -= damage
+	health -= damage
 	stats_changed()
 
 func heal(amount : int) -> void:
-	self.health = clampi(health + amount, 0, max_health)
+	health = clampi(health + amount, 0, max_health)
 	stats_changed()
 
 func create_instance() -> CombatantData:
-	var instance: CombatantData = self.duplicate()
+	var instance: CombatantData = duplicate()
 	instance.health = max_health
 	instance.armor = 0
 	instance.reset_mana()
@@ -128,9 +123,9 @@ func set_mana_blue(value: int) -> void:
 	stats_changed()
 
 func reset_mana() -> void:
-	self.mana_red = max_mana_red
-	self.mana_green = max_mana_green
-	self.mana_blue = max_mana_blue
+	mana_red = max_mana_red
+	mana_green = max_mana_green
+	mana_blue = max_mana_blue
 	stats_changed()
 
 func can_play_card(card_data: CardData) -> bool:

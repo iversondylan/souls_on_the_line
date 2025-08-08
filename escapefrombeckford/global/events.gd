@@ -47,7 +47,7 @@ signal battle_won()
 signal battle_rewards_exited()
 
 # navigation events
-signal map_exited()
+signal map_exited(room: Room)
 signal shop_exited()
 signal campfire_exited
 signal treasure_room_exited()
