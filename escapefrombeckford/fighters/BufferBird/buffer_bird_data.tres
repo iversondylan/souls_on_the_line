@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="CombatantData" load_steps=3 format=3 uid="uid://dquci30xue6eo"]
+
+[ext_resource type="Texture2D" uid="uid://bb2atap1ej445" path="res://assets/character_visuals/buffer_bird/DemonRaven (1).png" id="1_7ocbv"]
+[ext_resource type="Script" uid="uid://cfatj0ryn8uv3" path="res://fighters/combatant_data.gd" id="1_rmw54"]
+
+[resource]
+script = ExtResource("1_rmw54")
+name = "error"
+description = ""
+character_art = ExtResource("1_7ocbv")
+portrait = ExtResource("1_7ocbv")
+character_scale = 1.0
+facing_right = true
+height = 365
+max_health = 10
+max_mana_red = 3
+max_mana_green = 3
+max_mana_blue = 3
+starting_armor = 0
+team = 1
+metadata/_custom_type_script = "uid://cfatj0ryn8uv3"
