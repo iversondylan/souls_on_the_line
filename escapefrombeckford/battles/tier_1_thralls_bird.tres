@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="BattleData" load_steps=3 format=3 uid="uid://ltkmv5n6kd6t"]
+
+[ext_resource type="Script" uid="uid://cfatj0ryn8uv3" path="res://fighters/combatant_data.gd" id="1_roc04"]
+[ext_resource type="Script" uid="uid://be1v8qevmc2xw" path="res://custom_resources/battle_data.gd" id="1_rv0r7"]
+
+[resource]
+script = ExtResource("1_rv0r7")
+battle_tier = 1
+weight = 1.0
+gold_reward_min = 65
+gold_reward_max = 78
+enemies = Array[ExtResource("1_roc04")]([])
+metadata/_custom_type_script = "uid://be1v8qevmc2xw"

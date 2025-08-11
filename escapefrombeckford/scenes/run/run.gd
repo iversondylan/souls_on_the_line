@@ -1,7 +1,7 @@
 class_name Run
 extends Node
 
-const BATTLE_SCENE := preload("res://scenes/main.tscn")
+const BATTLE_SCENE := preload("res://scenes/battle.tscn")
 const BATTLE_REWARDS_SCENE := preload("res://scenes/battle_rewards/battle_rewards.tscn")
 const CAMPFIRE_SCENE := preload("res://scenes/campfire/campfire.tscn")
 #const MAP_SCENE := preload("res://scenes/map/map.tscn")
@@ -95,6 +95,12 @@ func _init_top_bar() -> void:
 	collection_pile_view.card_pile = GameRecord.deck
 	collection_button.pressed.connect(collection_pile_view.show_current_collection_view.bind("Collection"))
 
+func _on_battle_entered(room: Room) -> void:
+	var battle_scene: Battle = _change_view(BATTLE_SCENE) as Battle
+	battle_scene.battle_data = preload("res://battles/tier_0_thralls.tres")
+	battle_scene.start_battle()
+	
+
 func _on_battle_won() -> void:
 	var rewards_scene := _change_view(BATTLE_REWARDS_SCENE) as BattleRewardsScreen
 	rewards_scene.run_account = account
@@ -107,7 +113,7 @@ func _on_battle_won() -> void:
 func _on_map_exited(room: Room) -> void:
 	match room.type:
 		Room.RoomType.BATTLE:
-			_change_view(BATTLE_SCENE)
+			_on_battle_entered(room)
 		Room.RoomType.TREASURE:
 			_change_view(TREASURE_SCENE)
 		Room.RoomType.REST:
@@ -115,5 +121,5 @@ func _on_map_exited(room: Room) -> void:
 		Room.RoomType.SHOP:
 			_change_view(SHOP_SCENE)
 		Room.RoomType.BOSS:
-			_change_view(BATTLE_SCENE)
+			_on_battle_entered(room)
 	

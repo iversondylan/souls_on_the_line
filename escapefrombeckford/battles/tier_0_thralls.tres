@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="BattleData" load_steps=4 format=3 uid="uid://dgcyu7avn4dkc"]
+
+[ext_resource type="Script" uid="uid://be1v8qevmc2xw" path="res://custom_resources/battle_data.gd" id="1_8aitl"]
+[ext_resource type="Script" uid="uid://cfatj0ryn8uv3" path="res://fighters/combatant_data.gd" id="1_ma4i5"]
+[ext_resource type="Resource" uid="uid://b21fke2hh3mrg" path="res://fighters/MegaBlocker/basic_thrall_data.tres" id="2_lro86"]
+
+[resource]
+script = ExtResource("1_8aitl")
+battle_tier = 0
+weight = 1.0
+gold_reward_min = 52
+gold_reward_max = 74
+enemies = Array[ExtResource("1_ma4i5")]([ExtResource("2_lro86"), ExtResource("2_lro86")])
+metadata/_custom_type_script = "uid://be1v8qevmc2xw"

@@ -1,4 +1,4 @@
-extends Node2D
+class_name Battle extends Node2D
 
 @export var debug_mode: bool = true:
 	set(value):
@@ -7,7 +7,9 @@ extends Node2D
 		debug_mode = value
 		$Debug_UI.visible = debug_mode
 @export var music: AudioStream
-#@onready var combatant_scn: PackedScene = preload("res://scenes/combatant.tscn")
+@export var battle_data: BattleData
+
+
 @onready var player_scn: PackedScene = preload("res://scenes/turn_takers/player.tscn")
 @onready var enemy_scn: PackedScene = preload("res://scenes/turn_takers/enemy.tscn")
 #@onready var summoned_ally_scn = preload("res://scenes/turn_takers/summoned_ally.tscn")
@@ -80,8 +82,8 @@ func _ready() -> void:
 	draw_pile_button.pressed.connect(draw_pile_view.show_current_draw_view.bind("Draw Pile", true))
 	discard_pile_button.pressed.connect(discard_pile_view.show_current_discard_view.bind("Discard Pile"))
 	
-	initialize_card_pile_ui()
-	restart_game()
+	
+	#start_battle()
 
 func initialize_card_pile_ui() -> void:
 	draw_pile_button.card_pile = Deck.draw_pile
@@ -90,39 +92,42 @@ func initialize_card_pile_ui() -> void:
 	discard_pile_view.card_pile = Deck.discard_pile
 
 func make_player_combatant() -> void:
-	var new_player: Player
-	new_player = player_scn.instantiate()
+	var new_player: Player = player_scn.instantiate()
 	new_player.combatant_data = GameRecord.player_data
 	GameRecord.player_data.is_alive = true
 	battle_scene.add_combatant(new_player, 0, 0)
 	battle_scene.set_player(new_player)
 	GameState.player = new_player
-	GameRecord.set_player_data(new_player.combatant_data)
+	#GameRecord.set_player_data(new_player.combatant_data)
 	new_player.reset()
 
-func make_basic_thrall() -> void:
-	var new_enemy: NPCFighter
-	new_enemy = enemy_scn.instantiate()
-	new_enemy.combatant_data = load("res://fighters/MegaBlocker/basic_thrall_data.tres").duplicate()
-	battle_scene.add_combatant(new_enemy, 1, 0)
-	new_enemy.reset()
+#func make_basic_thrall() -> void:
+	#var new_enemy: NPCFighter
+	#new_enemy = enemy_scn.instantiate()
+	#new_enemy.combatant_data = load("res://fighters/MegaBlocker/basic_thrall_data.tres").duplicate()
+	#battle_scene.add_combatant(new_enemy, 1, 0)
+	#new_enemy.reset()
 	
 
-func restart_game():
+func start_battle():
 	if wait_for_anims:
 		return
 	BattleController.current_state = BattleController.BattleState.PRE_GAME
+	
 	wait_for_anims = true
+	initialize_card_pile_ui()
 	battle_scene.clear_combatants()
 	update_game_state()
 	
 	BattleController.is_running = true
 	BattleController.turn_number = 0
 	
-
 	make_player_combatant()
-	make_basic_thrall()
-	make_basic_thrall()
+	make_enemies()
+	
+	
+	#make_basic_thrall()
+	#make_basic_thrall()
 	
 	_on_player_data_changed()
 	update_game_state()
@@ -134,6 +139,17 @@ func restart_game():
 	#deck_ui.visible = true
 	
 	MusicPlayer.play(music, true)
+
+func make_enemies() -> void:
+	if !battle_data:
+		print("battle.gd make_enemies() Error: no battle_data")
+		return
+	for enemy_data: CombatantData in battle_data.enemies:
+		var new_enemy: Enemy = enemy_scn.instantiate()
+		new_enemy.combatant_data = enemy_data.duplicate()
+		battle_scene.add_combatant(new_enemy, 1, 0)
+		new_enemy.reset()
+	
 
 func update_game_state():
 	GameState.combatants = battle_scene.get_combatants()
@@ -151,7 +167,7 @@ func _process(_delta: float) -> void:
 
 func _input(event):
 	if event.is_action("restart"):
-		restart_game()
+		start_battle()
 	elif event.is_action_pressed("mouse_click"):
 		hand.on_click()
 		mouse_pressed = true
@@ -194,7 +210,7 @@ func _on_end_turn_pressed() -> void:
 		#collection_view_overlay.show_window(Deck.make_all_cards_from_collection())
 
 func _on_start_battle_button_pressed() -> void:
-	restart_game()
+	start_battle()
 
 func _on_usable_deck_ui_pressed() -> void:
 	draw_card()
