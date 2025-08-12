@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://06p7ph8rmkmn"]
+
+[ext_resource type="Script" uid="uid://cxu0uj66yny6s" path="res://fighters/npc_action_picker.gd" id="1_njk7s"]
+
+[node name="CalabashAI" type="Node"]
+script = ExtResource("1_njk7s")

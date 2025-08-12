@@ -25,7 +25,7 @@ var map_data: Array[Array]
 func make_map() -> Array[Array]:
 	map_data = _make_empty_grid()
 	var starting_points := _get_random_starting_points()
-	print(str(starting_points))
+	#print(str(starting_points))
 	for j in starting_points:
 		var current_j := j
 		for i in ENCOUNTERS - 1:
