@@ -1,43 +1,31 @@
-[gd_scene load_steps=13 format=3 uid="uid://dtq24ikp777ug"]
+[gd_scene load_steps=9 format=3 uid="uid://dghmlrg1poqs7"]
 
-[ext_resource type="Script" path="res://scripts/combatant.gd" id="1_ecchv"]
 [ext_resource type="Texture2D" uid="uid://dob30qtbj3xk5" path="res://assets/sprites/block.PNG" id="2_8cehy"]
-[ext_resource type="Texture2D" uid="uid://dvfqfkvbhnqbj" path="res://assets/sprites/active_halo.PNG" id="2_bfeaa"]
 [ext_resource type="Texture2D" uid="uid://dtvvequ1w1dlu" path="res://assets/sprites/enemy_thrall_mage.png" id="3_8636n"]
 [ext_resource type="PackedScene" uid="uid://dmw6560cffget" path="res://scenes/ui/icon_view_panel.tscn" id="3_ecchv"]
+[ext_resource type="Theme" uid="uid://1dr1eewpv0jd" path="res://themes/ui_theme.tres" id="4_8636n"]
 [ext_resource type="Texture2D" uid="uid://deopg8hjud5es" path="res://assets/sprites/arrow_down.png" id="6_8636n"]
-[ext_resource type="Script" uid="uid://c0eafxkkyruv0" path="res://scenes/combatant_area_left.gd" id="6_ng0uf"]
 [ext_resource type="Script" uid="uid://b5nvhcs5afo2m" path="res://scenes/combatant_target_area.gd" id="6_srv24"]
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_8cehy"]
-size = Vector2(55, 75)
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_2bsiw"]
+size = Vector2(54, 74)
 
-[sub_resource type="LabelSettings" id="LabelSettings_8cehy"]
+[sub_resource type="LabelSettings" id="LabelSettings_wjd66"]
 font_size = 25
 font_color = Color(0.47967, 0.346496, 0.233082, 1)
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_ecchv"]
-size = Vector2(1200, 200)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_bfeaa"]
-size = Vector2(54, 74)
-
 [node name="Combatant" type="Node2D"]
-script = ExtResource("1_ecchv")
-
-[node name="ActiveHalo" type="Sprite2D" parent="."]
-visible = false
-texture = ExtResource("2_bfeaa")
 
 [node name="CharacterArt" type="Sprite2D" parent="."]
 texture = ExtResource("3_8636n")
 
-[node name="ClickArea" type="Area2D" parent="."]
-position = Vector2(0, -38)
-collision_layer = 16
+[node name="TargetArea" type="Area2D" parent="."]
+position = Vector2(0, -37.75)
+collision_layer = 4
+script = ExtResource("6_srv24")
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="ClickArea"]
-shape = SubResource("RectangleShape2D_8cehy")
+[node name="CollisionShape2D" type="CollisionShape2D" parent="TargetArea"]
+shape = SubResource("RectangleShape2D_2bsiw")
 
 [node name="HealthBar" type="ProgressBar" parent="."]
 offset_left = -24.0
@@ -60,36 +48,11 @@ offset_left = -19.4444
 offset_top = -19.4444
 offset_right = 18.4556
 offset_bottom = 15.5556
+theme = ExtResource("4_8636n")
 text = "1"
-label_settings = SubResource("LabelSettings_8cehy")
+label_settings = SubResource("LabelSettings_wjd66")
 horizontal_alignment = 1
 metadata/_edit_use_anchors_ = true
-
-[node name="Label" type="Label" parent="."]
-offset_left = -19.0
-offset_top = -112.0
-offset_right = 21.0
-offset_bottom = -89.0
-
-[node name="IconViewPanel" parent="." instance=ExtResource("3_ecchv")]
-position = Vector2(0, -100)
-
-[node name="AreaLeft" type="Area2D" parent="."]
-position = Vector2(0, -50)
-collision_layer = 8
-script = ExtResource("6_ng0uf")
-
-[node name="CollisionShapeLeft" type="CollisionShape2D" parent="AreaLeft"]
-position = Vector2(-600, -50)
-shape = SubResource("RectangleShape2D_ecchv")
-
-[node name="TargetArea" type="Area2D" parent="."]
-position = Vector2(0, -37.75)
-collision_layer = 4
-script = ExtResource("6_srv24")
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="TargetArea"]
-shape = SubResource("RectangleShape2D_bfeaa")
 
 [node name="TargetedArrow" type="Sprite2D" parent="."]
 visible = false
@@ -97,9 +60,12 @@ position = Vector2(0, -18)
 scale = Vector2(0.153333, 0.153333)
 texture = ExtResource("6_8636n")
 
-[connection signal="mouse_entered" from="ClickArea" to="." method="_on_click_area_mouse_entered"]
-[connection signal="mouse_exited" from="ClickArea" to="." method="_on_click_area_mouse_exited"]
-[connection signal="mouse_entered" from="AreaLeft" to="." method="_on_area_left_mouse_entered"]
-[connection signal="mouse_exited" from="AreaLeft" to="." method="_on_area_left_mouse_exited"]
+[node name="IconViewPanel" parent="." instance=ExtResource("3_ecchv")]
+position = Vector2(0, -100)
+
+[node name="StatusBar" parent="." instance=ExtResource("3_ecchv")]
+unique_name_in_owner = true
+position = Vector2(0, 72)
+
 [connection signal="area_entered" from="TargetArea" to="." method="_on_target_area_area_entered"]
 [connection signal="area_exited" from="TargetArea" to="." method="_on_target_area_area_exited"]

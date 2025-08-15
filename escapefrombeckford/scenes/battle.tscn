@@ -43,10 +43,10 @@ grow_vertical = 0
 texture = ExtResource("4_yhk5m")
 
 [node name="BattleGroupFriendly" parent="Battle_Scene" instance=ExtResource("5_n2clt")]
-position = Vector2(637, 748)
+position = Vector2(480, 748)
 
 [node name="BattleGroupEnemy" parent="Battle_Scene" instance=ExtResource("6_xn15y")]
-position = Vector2(1369, 748)
+position = Vector2(1440, 748)
 faces_right = false
 
 [node name="BattleSceneAreaLeft" type="Area2D" parent="Battle_Scene"]

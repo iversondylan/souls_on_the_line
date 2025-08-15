@@ -66,5 +66,7 @@ texture = ExtResource("5_kx05y")
 unique_name_in_owner = true
 position = Vector2(0, 100)
 
+[node name="IconViewPanel" parent="." instance=ExtResource("7_xba7w")]
+
 [connection signal="area_entered" from="TargetArea" to="." method="_on_target_area_area_entered"]
 [connection signal="area_exited" from="TargetArea" to="." method="_on_target_area_area_exited"]

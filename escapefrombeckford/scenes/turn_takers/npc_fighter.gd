@@ -1,7 +1,5 @@
 class_name NPCFighter extends Fighter
 
-@onready var intent_container: IconViewPanel = $IconViewPanel
-
 var npc_action_picker: NPCActionPicker
 var current_action: NPCAction: set = set_current_action
 

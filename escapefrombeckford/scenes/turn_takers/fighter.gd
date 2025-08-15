@@ -10,6 +10,7 @@ class_name Fighter extends TurnTaker
 @onready var status_bar: IconViewPanel = %StatusBar
 @onready var damage_number_scn: PackedScene = preload("res://scenes/ui/damage_number.tscn")
 @onready var blocked_message_scn: PackedScene = preload("res://scenes/ui/blocked_message.tscn")
+@onready var intent_container: IconViewPanel = $IconViewPanel
 #STATUSES IS A PLACEHOLDER SYSTEM CURRENTLY
 #STATUSES SHOULD BE TRACKED DIFFERENTLY
 @onready var statuses: Array[String] = []
@@ -39,9 +40,11 @@ func load_combatant_data():
 	if !is_node_ready():
 		await ready
 	character_sprite.texture = combatant_data.character_art #.set_texture(combatant_data.character_art)
-	character_sprite.scale = Vector2(combatant_data.character_scale, combatant_data.character_scale)
+	var scalar: float = float(combatant_data.height) / character_sprite.texture.get_height()
+	character_sprite.scale = Vector2(scalar, scalar)
 	character_sprite.position = Vector2(0, - combatant_data.height / 2.0)
-	targeted_arrow.position = Vector2(0, - combatant_data.height - 10)
+	intent_container.position = Vector2(0, - combatant_data.height - 10)
+	targeted_arrow.position = Vector2(0, - combatant_data.height - 60)
 
 func attack(targets: Array[Fighter], n_damage: int, n_attacks: int = 1, retarget: AttackEffect.RetargetPriority = AttackEffect.RetargetPriority.FRONT, explode: bool = false):
 	var retargeting: bool = false

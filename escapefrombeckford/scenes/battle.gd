@@ -147,7 +147,8 @@ func make_enemies() -> void:
 	for enemy_data: CombatantData in battle_data.enemies:
 		var new_enemy: Enemy = enemy_scn.instantiate()
 		new_enemy.combatant_data = enemy_data.duplicate()
-		battle_scene.add_combatant(new_enemy, 1, 0)
+		var new_enemy_index: int = battle_scene.get_n_combatants_in_group(1)
+		battle_scene.add_combatant(new_enemy, 1, new_enemy_index)
 		new_enemy.reset()
 	
 

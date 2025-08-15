@@ -52,7 +52,7 @@ func connect_combatants():
 
 func connect_combatant(fighter: Fighter):
 	fighter.turn_taker_turn_complete.connect(_on_turn_taker_turn_complete)
-	fighter.load_combatant_data()
+	#fighter.load_combatant_data()
 
 func add_combatant(fighter: Fighter, rank: int):
 	var children: Array[Node] = get_children()
@@ -107,8 +107,9 @@ func update_combatant_rank_variable():
 			index += 1
 
 func update_combatant_position():
-	var left_bound: float = -250
-	var right_bound: float = 250
+	var window_dist: int = get_viewport_rect().size.x * 3 / 16
+	var left_bound: float = -window_dist
+	var right_bound: float = window_dist
 	var fighters: Array[Fighter] = get_combatants()
 	var n_fighters: int = fighters.size()
 	var increment: float = (right_bound - left_bound) / (n_fighters + 1)
