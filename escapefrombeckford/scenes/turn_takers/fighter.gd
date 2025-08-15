@@ -3,23 +3,29 @@ class_name Fighter extends TurnTaker
 #enum RetargetPriority {NONE, FRONT}
 
 @export var combatant_data: CombatantData : set = _set_combatant_data
-@onready var character_sprite: Sprite2D = $CharacterArt
-@onready var target_area: CombatantTargetArea = $TargetArea
-@onready var targeted_arrow: Sprite2D = $TargetedArrow
-@onready var health_bar: ProgressBar = $HealthBar
-@onready var status_bar: IconViewPanel = %StatusBar
+@onready var combatant: Combatant = $Combatant
+@onready var character_sprite: Sprite2D = combatant.character_sprite
+@onready var target_area: CombatantTargetArea = combatant.target_area
+@onready var targeted_arrow: Sprite2D = combatant.targeted_arrow
+@onready var health_bar: ProgressBar = combatant.health_bar
+@onready var armor_sprite: Sprite2D = combatant.armor_sprite
+@onready var armor_label: Label = combatant.armor_label
+@onready var status_bar: IconViewPanel = combatant.status_bar
+@onready var intent_container: IconViewPanel = combatant.intent_container
+@onready var area_left: CombatantAreaLeft = combatant.area_left
 @onready var damage_number_scn: PackedScene = preload("res://scenes/ui/damage_number.tscn")
 @onready var blocked_message_scn: PackedScene = preload("res://scenes/ui/blocked_message.tscn")
-@onready var intent_container: IconViewPanel = $IconViewPanel
+
 #STATUSES IS A PLACEHOLDER SYSTEM CURRENTLY
 #STATUSES SHOULD BE TRACKED DIFFERENTLY
-@onready var statuses: Array[String] = []
+var statuses: Array[String] = []
 
-#var tween: Tween
 var fighter_tween: Tween
 var anchor_position: Vector2 = Vector2(0, 0)
 
 func _ready() -> void:
+	combatant.target_area_area_entered.connect(_on_target_area_area_entered)
+	combatant.target_area_area_exited.connect(_on_target_area_area_exited)
 	target_area.combatant = self
 
 func enter() -> void:
@@ -43,8 +49,8 @@ func load_combatant_data():
 	var scalar: float = float(combatant_data.height) / character_sprite.texture.get_height()
 	character_sprite.scale = Vector2(scalar, scalar)
 	character_sprite.position = Vector2(0, - combatant_data.height / 2.0)
-	intent_container.position = Vector2(0, - combatant_data.height - 10)
-	targeted_arrow.position = Vector2(0, - combatant_data.height - 60)
+	intent_container.position = Vector2(0, - combatant_data.height + 20)
+	targeted_arrow.position = Vector2(0, - combatant_data.height)
 
 func attack(targets: Array[Fighter], n_damage: int, n_attacks: int = 1, retarget: AttackEffect.RetargetPriority = AttackEffect.RetargetPriority.FRONT, explode: bool = false):
 	var retargeting: bool = false
@@ -117,19 +123,19 @@ func update_data_visuals() -> void:
 	update_armor_icon()
 
 func update_health_bar():
-	if ($HealthBar as ProgressBar).max_value != combatant_data.max_health:
-		($HealthBar as ProgressBar).max_value = combatant_data.max_health
-	if ($HealthBar as ProgressBar).value != combatant_data.health:
-		($HealthBar as ProgressBar).value = combatant_data.health
+	if health_bar.max_value != combatant_data.max_health:
+		health_bar.max_value = combatant_data.max_health
+	if health_bar.value != combatant_data.health:
+		health_bar.value = combatant_data.health
 
 func update_armor_icon():
 	if combatant_data.armor > 0:
-		$Armor.visible = true
-		$Armor/Label.set_text(str(combatant_data.armor))
-		$Armor/Label.visible = true
+		armor_sprite.visible = true
+		armor_label.set_text(str(combatant_data.armor))
+		armor_label.visible = true
 	else:
-		$Armor.visible = false
-		$Armor/Label.visible = false
+		armor_sprite.visible = false
+		armor_label.visible = false
 
 func set_anchor_position(_position: Vector2, animate: bool) -> void:
 	anchor_position = _position

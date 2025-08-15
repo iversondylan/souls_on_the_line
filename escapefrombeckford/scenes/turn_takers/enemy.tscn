@@ -1,73 +1,9 @@
-[gd_scene load_steps=10 format=3 uid="uid://4btlny3vkuo7"]
+[gd_scene load_steps=3 format=3 uid="uid://4btlny3vkuo7"]
 
 [ext_resource type="Script" uid="uid://d3ce1fryycd5t" path="res://scenes/turn_takers/enemy.gd" id="1_w30da"]
-[ext_resource type="Texture2D" uid="uid://dtvvequ1w1dlu" path="res://assets/sprites/enemy_thrall_mage.png" id="3_638sp"]
-[ext_resource type="Script" uid="uid://b5nvhcs5afo2m" path="res://scenes/combatant_target_area.gd" id="4_45ohe"]
-[ext_resource type="Theme" uid="uid://1dr1eewpv0jd" path="res://themes/ui_theme.tres" id="5_fnjck"]
-[ext_resource type="Texture2D" uid="uid://dob30qtbj3xk5" path="res://assets/sprites/block.PNG" id="5_mbrei"]
-[ext_resource type="Texture2D" uid="uid://deopg8hjud5es" path="res://assets/sprites/arrow_down.png" id="6_jne32"]
-[ext_resource type="PackedScene" uid="uid://dmw6560cffget" path="res://scenes/ui/icon_view_panel.tscn" id="7_joo0h"]
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_2bsiw"]
-size = Vector2(54, 74)
-
-[sub_resource type="LabelSettings" id="LabelSettings_wjd66"]
-font_size = 25
-font_color = Color(0.47967, 0.346496, 0.233082, 1)
+[ext_resource type="PackedScene" uid="uid://dghmlrg1poqs7" path="res://scenes/combatant.tscn" id="2_irlvq"]
 
 [node name="Enemy" type="Node2D"]
 script = ExtResource("1_w30da")
 
-[node name="CharacterArt" type="Sprite2D" parent="."]
-texture = ExtResource("3_638sp")
-
-[node name="TargetArea" type="Area2D" parent="."]
-position = Vector2(0, -37.75)
-collision_layer = 4
-script = ExtResource("4_45ohe")
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="TargetArea"]
-shape = SubResource("RectangleShape2D_2bsiw")
-
-[node name="HealthBar" type="ProgressBar" parent="."]
-offset_left = -24.0
-offset_right = 26.0
-offset_bottom = 6.0
-max_value = 10.0
-step = 1.0
-value = 10.0
-show_percentage = false
-
-[node name="Armor" type="Sprite2D" parent="."]
-visible = false
-position = Vector2(-41, 3)
-texture = ExtResource("5_mbrei")
-
-[node name="Label" type="Label" parent="Armor"]
-visible = false
-z_index = 1
-offset_left = -19.4444
-offset_top = -19.4444
-offset_right = 18.4556
-offset_bottom = 15.5556
-theme = ExtResource("5_fnjck")
-text = "1"
-label_settings = SubResource("LabelSettings_wjd66")
-horizontal_alignment = 1
-metadata/_edit_use_anchors_ = true
-
-[node name="TargetedArrow" type="Sprite2D" parent="."]
-visible = false
-position = Vector2(0, -18)
-scale = Vector2(0.153333, 0.153333)
-texture = ExtResource("6_jne32")
-
-[node name="IconViewPanel" parent="." instance=ExtResource("7_joo0h")]
-position = Vector2(0, -100)
-
-[node name="StatusBar" parent="." instance=ExtResource("7_joo0h")]
-unique_name_in_owner = true
-position = Vector2(0, 100)
-
-[connection signal="area_entered" from="TargetArea" to="." method="_on_target_area_area_entered"]
-[connection signal="area_exited" from="TargetArea" to="." method="_on_target_area_area_exited"]
+[node name="Combatant" parent="." instance=ExtResource("2_irlvq")]
