@@ -6,7 +6,8 @@ signal target_area_area_exited(area: Area2D)
 @onready var character_sprite: Sprite2D = $CharacterArt
 @onready var target_area: CombatantTargetArea = $TargetArea
 @onready var targeted_arrow: Sprite2D = $TargetedArrow
-@onready var health_bar: ProgressBar = $HealthBar
+@onready var health_bar: HealthBar = $HealthBar
+
 @onready var armor_sprite: Sprite2D = $Armor
 @onready var armor_label: Label = $Armor/Label
 @onready var status_bar: IconViewPanel = %StatusBar

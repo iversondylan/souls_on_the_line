@@ -7,7 +7,7 @@ class_name Fighter extends TurnTaker
 @onready var character_sprite: Sprite2D = combatant.character_sprite
 @onready var target_area: CombatantTargetArea = combatant.target_area
 @onready var targeted_arrow: Sprite2D = combatant.targeted_arrow
-@onready var health_bar: ProgressBar = combatant.health_bar
+@onready var health_bar: HealthBar = combatant.health_bar
 @onready var armor_sprite: Sprite2D = combatant.armor_sprite
 @onready var armor_label: Label = combatant.armor_label
 @onready var status_bar: IconViewPanel = combatant.status_bar
@@ -51,8 +51,12 @@ func load_combatant_data():
 	character_sprite.position = Vector2(0, - combatant_data.height / 2.0)
 	intent_container.position = Vector2(0, - combatant_data.height + 20)
 	targeted_arrow.position = Vector2(0, - combatant_data.height)
+	health_bar.init_health(combatant_data.max_health)
+	health_bar.n_health = combatant_data.health
 
 func attack(targets: Array[Fighter], n_damage: int, n_attacks: int = 1, retarget: AttackEffect.RetargetPriority = AttackEffect.RetargetPriority.FRONT, explode: bool = false):
+	combatant.health_bar.hide()
+	print("attacking")
 	var retargeting: bool = false
 	if targets.size() == 1 and retarget == AttackEffect.RetargetPriority.FRONT:
 		if !targets[0] or !targets[0].combatant_data.is_alive:
@@ -79,7 +83,10 @@ func attack(targets: Array[Fighter], n_damage: int, n_attacks: int = 1, retarget
 			tween.finished.connect( func(): die() )
 		else:
 			tween.tween_property(self, "position", anchor_position, 0.4)
-			tween.finished.connect( func(): turn_complete() )
+			tween.finished.connect( 
+				func(): 
+					turn_complete()
+					combatant.health_bar.show() )
 	else:
 		tween.finished.connect( func(): 
 			attack(targets, n_damage, n_attacks, retarget, explode)
@@ -96,15 +103,6 @@ func get_tween() -> Tween:
 		return fighter_tween
 	fighter_tween = create_tween()
 	return fighter_tween
-#func update_action() -> void:
-	#if !npc_action_picker:
-		#return
-	#if !current_action:
-		#current_action = npc_action_picker.get_action()
-		#return
-	#var new_conditional_action := npc_action_picker.get_first_conditional_action()
-	#if new_conditional_action and current_action != new_conditional_action:
-		#current_action = new_conditional_action
 
 func add_status(status: String) -> void:
 	statuses.push_back(status)
@@ -114,7 +112,6 @@ func add_status(status: String) -> void:
 	var status_icons: Array[IconData]
 	status_icons.push_back(status_icon)
 	status_bar.display_icons_from_data(status_icons)
-	
 
 func update_data_visuals() -> void:
 	if !is_node_ready():
@@ -123,10 +120,13 @@ func update_data_visuals() -> void:
 	update_armor_icon()
 
 func update_health_bar():
+	#health_bar.init_health(combatant_data.max_health)
 	if health_bar.max_value != combatant_data.max_health:
 		health_bar.max_value = combatant_data.max_health
+	if health_bar.damage_bar.max_value != combatant_data.max_health:
+		health_bar.damage_bar.max_value = combatant_data.max_health
 	if health_bar.value != combatant_data.health:
-		health_bar.value = combatant_data.health
+		health_bar.n_health = combatant_data.health
 
 func update_armor_icon():
 	if combatant_data.armor > 0:
