@@ -93,9 +93,10 @@ func initialize_card_pile_ui() -> void:
 
 func make_player_combatant() -> void:
 	var new_player: Player = player_scn.instantiate()
+	battle_scene.add_combatant(new_player, 0, 0)
 	new_player.combatant_data = GameRecord.player_data
 	GameRecord.player_data.is_alive = true
-	battle_scene.add_combatant(new_player, 0, 0)
+	
 	battle_scene.set_player(new_player)
 	GameState.player = new_player
 	#GameRecord.set_player_data(new_player.combatant_data)
@@ -137,7 +138,6 @@ func start_battle():
 	#combatants_mouse_left.clear()
 	BattleController.transition(BattleController.BattleState.FRIENDLY_TURN)
 	#deck_ui.visible = true
-	
 	MusicPlayer.play(music, true)
 
 func make_enemies() -> void:
@@ -146,10 +146,13 @@ func make_enemies() -> void:
 		return
 	for enemy_data: CombatantData in battle_data.enemies:
 		var new_enemy: Enemy = enemy_scn.instantiate()
-		new_enemy.combatant_data = enemy_data.duplicate()
 		var new_enemy_index: int = battle_scene.get_n_combatants_in_group(1)
 		battle_scene.add_combatant(new_enemy, 1, new_enemy_index)
+
+		new_enemy.combatant_data = enemy_data.duplicate()
+		
 		new_enemy.reset()
+		new_enemy.update_action()
 	
 
 func update_game_state():

@@ -41,7 +41,7 @@ func reboot_turn_taker(next_turn_taker: TurnTaker) -> void:
 func get_combatants() -> Array[Fighter]:
 	var combatants: Array[Fighter] = []
 	for child: TurnTaker in get_children():
-		if child is Fighter and child.combatant_data.is_alive:
+		if child is Fighter:# and child.combatant_data.is_alive:
 			#if child.combatant_data.is_alive:
 			combatants.push_back(child)
 	return combatants
@@ -62,7 +62,7 @@ func add_combatant(fighter: Fighter, rank: int):
 	fighter.battle_group = self
 	#update_combatant_rank_variable()
 	move_child(fighter, rank)
-	update_combatant_rank_variable()
+	#update_combatant_rank_variable()
 	update_combatant_position()
 	make_turn_table()
 	#debug_function_for_checking_terminal_rank()
@@ -99,12 +99,13 @@ func combatant_is_there(fighter: Fighter) -> bool:
 		return false
 
 func update_combatant_rank_variable():
-	var index: int = 0
-	for child: TurnTaker in get_children():
-		if child is Fighter:
+	pass
+	#var index: int = 0
+	#for child: TurnTaker in get_children():
+		#if child is Fighter:
 			#if child.combatant_data.is_alive:
-			child.combatant_data.rank = index
-			index += 1
+			#child.combatant_data.rank = index
+			#index += 1
 
 func update_combatant_position():
 	var window_dist: int = get_viewport_rect().size.x * 3 / 16

@@ -1,11 +1,9 @@
-[gd_scene load_steps=4 format=3 uid="uid://hmlq44lm1hhy"]
+[gd_scene load_steps=3 format=3 uid="uid://hmlq44lm1hhy"]
 
 [ext_resource type="Script" uid="uid://cvnmw8uy8jnjp" path="res://scenes/turn_takers/fighter.gd" id="1_uuo64"]
-[ext_resource type="Resource" uid="uid://b21fke2hh3mrg" path="res://fighters/MegaBlocker/basic_thrall_data.tres" id="2_wjbtb"]
 [ext_resource type="PackedScene" uid="uid://dghmlrg1poqs7" path="res://scenes/combatant.tscn" id="3_1ndhb"]
 
 [node name="Fighter" type="Node2D"]
 script = ExtResource("1_uuo64")
-combatant_data = ExtResource("2_wjbtb")
 
 [node name="Combatant" parent="." instance=ExtResource("3_1ndhb")]

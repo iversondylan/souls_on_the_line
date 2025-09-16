@@ -26,6 +26,7 @@ func bind_card(_card_data: CardData) -> void:
 
 func spawned():
 	reset()
+	update_action()
 
 func traverse_player() -> void:
 	battle_group.ally_traverse_player(self)

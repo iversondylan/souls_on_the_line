@@ -1,7 +1,8 @@
-[gd_scene load_steps=13 format=3 uid="uid://dghmlrg1poqs7"]
+[gd_scene load_steps=14 format=3 uid="uid://dghmlrg1poqs7"]
 
 [ext_resource type="Script" uid="uid://c7eaxdgts512j" path="res://scenes/combatant.gd" id="1_srv24"]
 [ext_resource type="Texture2D" uid="uid://dob30qtbj3xk5" path="res://assets/sprites/block.PNG" id="2_8cehy"]
+[ext_resource type="Resource" uid="uid://b21fke2hh3mrg" path="res://fighters/MegaBlocker/basic_thrall_data.tres" id="2_s302h"]
 [ext_resource type="Texture2D" uid="uid://dtvvequ1w1dlu" path="res://assets/sprites/enemy_thrall_mage.png" id="3_8636n"]
 [ext_resource type="PackedScene" uid="uid://dmw6560cffget" path="res://scenes/ui/icon_view_panel.tscn" id="3_ecchv"]
 [ext_resource type="Theme" uid="uid://1dr1eewpv0jd" path="res://themes/ui_theme.tres" id="4_8636n"]
@@ -22,6 +23,7 @@ size = Vector2(1200, 270)
 
 [node name="Combatant" type="Node2D"]
 script = ExtResource("1_srv24")
+combatant_data = ExtResource("2_s302h")
 
 [node name="CharacterArt" type="Sprite2D" parent="."]
 position = Vector2(0, -135)

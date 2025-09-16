@@ -1,11 +1,9 @@
-[gd_scene load_steps=4 format=3 uid="uid://bfgbrcrt4dfjf"]
+[gd_scene load_steps=3 format=3 uid="uid://bfgbrcrt4dfjf"]
 
 [ext_resource type="Script" uid="uid://buubnon543t7p" path="res://scenes/turn_takers/summoned_ally.gd" id="1_on5pq"]
-[ext_resource type="Resource" uid="uid://dwy6ym7cfiix7" path="res://fighters/BasicClone/basic_clone_data.tres" id="2_5ikkc"]
 [ext_resource type="PackedScene" uid="uid://dghmlrg1poqs7" path="res://scenes/combatant.tscn" id="3_e71qy"]
 
 [node name="SummonedAlly" type="Node2D"]
 script = ExtResource("1_on5pq")
-combatant_data = ExtResource("2_5ikkc")
 
 [node name="Combatant" parent="." instance=ExtResource("3_e71qy")]

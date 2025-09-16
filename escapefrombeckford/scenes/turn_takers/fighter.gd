@@ -2,7 +2,7 @@ class_name Fighter extends TurnTaker
 
 #enum RetargetPriority {NONE, FRONT}
 
-@export var combatant_data: CombatantData : set = _set_combatant_data
+#@export var combatant_data: CombatantData : set = _set_combatant_data
 @onready var combatant: Combatant = $Combatant
 @onready var character_sprite: Sprite2D = combatant.character_sprite
 @onready var target_area: CombatantTargetArea = combatant.target_area
@@ -15,7 +15,7 @@ class_name Fighter extends TurnTaker
 @onready var area_left: CombatantAreaLeft = combatant.area_left
 @onready var damage_number_scn: PackedScene = preload("res://scenes/ui/damage_number.tscn")
 @onready var blocked_message_scn: PackedScene = preload("res://scenes/ui/blocked_message.tscn")
-
+var combatant_data: CombatantData : set = _set_combatant_data
 #STATUSES IS A PLACEHOLDER SYSTEM CURRENTLY
 #STATUSES SHOULD BE TRACKED DIFFERENTLY
 var statuses: Array[String] = []
@@ -27,20 +27,26 @@ func _ready() -> void:
 	combatant.target_area_area_entered.connect(_on_target_area_area_entered)
 	combatant.target_area_area_exited.connect(_on_target_area_area_exited)
 	target_area.combatant = self
+	# Let the manager know this character is ready
+	LoadingManager.notify_character_ready()
+	# You can also register characters if they are part of the scene from the start
+	# loading_manager.register_character()
+	print("fighter.gd ready")
 
 func enter() -> void:
 	do_turn()
 
-func _set_combatant_data(_combatant_data: CombatantData) -> void:
-	combatant_data = _combatant_data
+func _set_combatant_data(new_data: CombatantData) -> void:
+	combatant_data = new_data
 	name = combatant_data.name
+	combatant.combatant_data = combatant_data
 	#load_ai()
-	if not combatant_data.combatant_data_changed.is_connected(update_data_visuals):
-		combatant_data.combatant_data_changed.connect(update_data_visuals)
+	#if not combatant_data.combatant_data_changed.is_connected(update_data_visuals):
+		#combatant_data.combatant_data_changed.connect(update_data_visuals)
 	#if not combatant_data.combatant_data_changed.is_connected(update_action):
 		#combatant_data.combatant_data_changed.connect(update_action)
-	load_combatant_data()
-	update_data_visuals()
+	#load_combatant_data()
+	#update_data_visuals()
 
 func load_combatant_data():
 	if !is_node_ready():
@@ -56,7 +62,6 @@ func load_combatant_data():
 
 func attack(targets: Array[Fighter], n_damage: int, n_attacks: int = 1, retarget: AttackEffect.RetargetPriority = AttackEffect.RetargetPriority.FRONT, explode: bool = false):
 	combatant.health_bar.hide()
-	print("attacking")
 	var retargeting: bool = false
 	if targets.size() == 1 and retarget == AttackEffect.RetargetPriority.FRONT:
 		if !targets[0] or !targets[0].combatant_data.is_alive:
@@ -112,30 +117,6 @@ func add_status(status: String) -> void:
 	var status_icons: Array[IconData]
 	status_icons.push_back(status_icon)
 	status_bar.display_icons_from_data(status_icons)
-
-func update_data_visuals() -> void:
-	if !is_node_ready():
-		await ready
-	update_health_bar()
-	update_armor_icon()
-
-func update_health_bar():
-	#health_bar.init_health(combatant_data.max_health)
-	if health_bar.max_value != combatant_data.max_health:
-		health_bar.max_value = combatant_data.max_health
-	if health_bar.damage_bar.max_value != combatant_data.max_health:
-		health_bar.damage_bar.max_value = combatant_data.max_health
-	if health_bar.value != combatant_data.health:
-		health_bar.n_health = combatant_data.health
-
-func update_armor_icon():
-	if combatant_data.armor > 0:
-		armor_sprite.visible = true
-		armor_label.set_text(str(combatant_data.armor))
-		armor_label.visible = true
-	else:
-		armor_sprite.visible = false
-		armor_label.visible = false
 
 func set_anchor_position(_position: Vector2, animate: bool) -> void:
 	anchor_position = _position
