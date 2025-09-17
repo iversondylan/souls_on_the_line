@@ -1,18 +1,15 @@
-[gd_scene load_steps=6 format=3 uid="uid://b5kimimy0ccq0"]
+[gd_scene load_steps=7 format=3 uid="uid://b5kimimy0ccq0"]
 
 [ext_resource type="Script" uid="uid://dt1x8ukdg7b33" path="res://scenes/ui/health_bar.gd" id="1_1vcc2"]
+[ext_resource type="Theme" uid="uid://1dr1eewpv0jd" path="res://themes/ui_theme.tres" id="2_qi2ti"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_qi2ti"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_4rf34"]
-bg_color = Color(0.1596, 0.57, 0.4674, 1)
+bg_color = Color(0.1596, 0.57, 0.4674, 0.490196)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_8ymem"]
-bg_color = Color(0.16, 0.15168, 0.1408, 1)
-expand_margin_left = 2.0
-expand_margin_top = 2.0
-expand_margin_right = 2.0
-expand_margin_bottom = 2.0
+bg_color = Color(0.027, 0.0330833, 0.1, 1)
 shadow_color = Color(0.27, 0.2376, 0.2376, 0.52549)
 shadow_offset = Vector2(0, 1)
 
@@ -22,13 +19,22 @@ bg_color = Color(0.535875, 0.266003, 0.368867, 1)
 [node name="HealthBar" type="ProgressBar"]
 z_index = 1
 offset_right = 64.0
-offset_bottom = 10.0
+offset_bottom = 12.0
 size_flags_horizontal = 0
 theme_override_styles/background = SubResource("StyleBoxEmpty_qi2ti")
 theme_override_styles/fill = SubResource("StyleBoxFlat_4rf34")
 value = 50.0
 show_percentage = false
 script = ExtResource("1_1vcc2")
+
+[node name="ColorRect2" type="ColorRect" parent="."]
+z_index = -1
+layout_mode = 0
+offset_left = -2.0
+offset_top = -2.0
+offset_right = 136.0
+offset_bottom = 14.0
+color = Color(0.28, 0.0952, 0.0952, 1)
 
 [node name="DamageBar" type="ProgressBar" parent="."]
 z_index = -1
@@ -40,11 +46,24 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_override_styles/background = SubResource("StyleBoxFlat_8ymem")
 theme_override_styles/fill = SubResource("StyleBoxFlat_x4hh8")
-value = 75.0
 show_percentage = false
 
-[node name="Timer" type="Timer" parent="."]
-wait_time = 0.4
-one_shot = true
+[node name="ColorRect" type="ColorRect" parent="."]
+visible = false
+z_index = -2
+layout_mode = 0
+offset_left = -2.0
+offset_top = -2.0
+offset_right = 66.0
+offset_bottom = 14.0
 
-[connection signal="timeout" from="Timer" to="." method="_on_timer_timeout"]
+[node name="HealthNumber" type="Label" parent="."]
+offset_left = 67.0
+offset_top = -6.0
+offset_right = 136.0
+offset_bottom = 19.0
+theme = ExtResource("2_qi2ti")
+theme_override_font_sizes/font_size = 16
+text = "999/999"
+horizontal_alignment = 1
+vertical_alignment = 1

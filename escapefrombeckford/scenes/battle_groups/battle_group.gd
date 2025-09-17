@@ -52,7 +52,6 @@ func connect_combatants():
 
 func connect_combatant(fighter: Fighter):
 	fighter.turn_taker_turn_complete.connect(_on_turn_taker_turn_complete)
-	#fighter.load_combatant_data()
 
 func add_combatant(fighter: Fighter, rank: int):
 	var children: Array[Node] = get_children()

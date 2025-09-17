@@ -28,7 +28,6 @@ Shaker="*res://global/shaker.gd"
 MusicPlayer="*res://global/music_player.tscn"
 Deck="*res://global/deck.gd"
 SFXPlayer="*res://global/sfx_player.tscn"
-LoadingManager="*res://global/loading_manager.gd"
 
 [debug]
 

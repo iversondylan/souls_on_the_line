@@ -24,11 +24,11 @@ signal combatant_data_changed()
 @export var attack_sound: AudioStream = load("res://assets/sfx/thrall_hit.wav")
 
 var is_alive: bool = true
-var health: int# : set = set_health
-var armor: int# : set = set_armor
-var mana_red: int# : set = set_mana_red
-var mana_green: int# : set = set_mana_green
-var mana_blue: int# : set = set_mana_blue
+var health: int : set = set_health
+var armor: int : set = set_armor
+var mana_red: int : set = set_mana_red
+var mana_green: int : set = set_mana_green
+var mana_blue: int : set = set_mana_blue
 var rank: int
 
 #@export var on_spawn_actions: Array[GDScript] = []

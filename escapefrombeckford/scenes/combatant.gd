@@ -2,7 +2,6 @@ class_name Combatant extends Node2D
 
 signal target_area_area_entered(area: Area2D)
 signal target_area_area_exited(area: Area2D)
-@export var combatant_data: CombatantData : set = _set_combatant_data
 
 @onready var character_sprite: Sprite2D = $CharacterArt
 @onready var target_area: CombatantTargetArea = $TargetArea
@@ -15,6 +14,8 @@ signal target_area_area_exited(area: Area2D)
 @onready var intent_container: IconViewPanel = $IconViewPanel
 @onready var area_left: CombatantAreaLeft = $AreaLeft
 
+var combatant_data: CombatantData : set = _set_combatant_data
+
 func _set_combatant_data(new_data: CombatantData) -> void:
 	combatant_data = new_data
 	name = combatant_data.name
@@ -24,9 +25,10 @@ func _set_combatant_data(new_data: CombatantData) -> void:
 	#if not combatant_data.combatant_data_changed.is_connected(update_action):
 		#combatant_data.combatant_data_changed.connect(update_action)
 	load_combatant_data()
-	update_data_visuals()
+	#update_data_visuals()
 
 func load_combatant_data():
+	print("combatant.gd load_combatant_data()")
 	if !is_node_ready():
 		await ready
 	character_sprite.texture = combatant_data.character_art #.set_texture(combatant_data.character_art)

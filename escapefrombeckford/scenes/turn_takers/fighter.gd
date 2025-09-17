@@ -27,11 +27,6 @@ func _ready() -> void:
 	combatant.target_area_area_entered.connect(_on_target_area_area_entered)
 	combatant.target_area_area_exited.connect(_on_target_area_area_exited)
 	target_area.combatant = self
-	# Let the manager know this character is ready
-	LoadingManager.notify_character_ready()
-	# You can also register characters if they are part of the scene from the start
-	# loading_manager.register_character()
-	print("fighter.gd ready")
 
 func enter() -> void:
 	do_turn()
@@ -40,25 +35,6 @@ func _set_combatant_data(new_data: CombatantData) -> void:
 	combatant_data = new_data
 	name = combatant_data.name
 	combatant.combatant_data = combatant_data
-	#load_ai()
-	#if not combatant_data.combatant_data_changed.is_connected(update_data_visuals):
-		#combatant_data.combatant_data_changed.connect(update_data_visuals)
-	#if not combatant_data.combatant_data_changed.is_connected(update_action):
-		#combatant_data.combatant_data_changed.connect(update_action)
-	#load_combatant_data()
-	#update_data_visuals()
-
-func load_combatant_data():
-	if !is_node_ready():
-		await ready
-	character_sprite.texture = combatant_data.character_art #.set_texture(combatant_data.character_art)
-	var scalar: float = float(combatant_data.height) / character_sprite.texture.get_height()
-	character_sprite.scale = Vector2(scalar, scalar)
-	character_sprite.position = Vector2(0, - combatant_data.height / 2.0)
-	intent_container.position = Vector2(0, - combatant_data.height + 20)
-	targeted_arrow.position = Vector2(0, - combatant_data.height)
-	health_bar.init_health(combatant_data.max_health)
-	health_bar.n_health = combatant_data.health
 
 func attack(targets: Array[Fighter], n_damage: int, n_attacks: int = 1, retarget: AttackEffect.RetargetPriority = AttackEffect.RetargetPriority.FRONT, explode: bool = false):
 	combatant.health_bar.hide()
@@ -97,17 +73,17 @@ func attack(targets: Array[Fighter], n_damage: int, n_attacks: int = 1, retarget
 			attack(targets, n_damage, n_attacks, retarget, explode)
 			)
 
-func make_tween() -> Tween:
-	if fighter_tween and fighter_tween.is_valid():
-		fighter_tween.kill()
-	fighter_tween = create_tween()
-	return fighter_tween
+#func make_tween() -> Tween:
+	#if fighter_tween and fighter_tween.is_valid():
+		#fighter_tween.kill()
+	#fighter_tween = create_tween()
+	#return fighter_tween
 
-func get_tween() -> Tween:
-	if fighter_tween and fighter_tween.is_valid():
-		return fighter_tween
-	fighter_tween = create_tween()
-	return fighter_tween
+#func get_tween() -> Tween:
+	#if fighter_tween and fighter_tween.is_valid():
+		#return fighter_tween
+	#fighter_tween = create_tween()
+	#return fighter_tween
 
 func add_status(status: String) -> void:
 	statuses.push_back(status)

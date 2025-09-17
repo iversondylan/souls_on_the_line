@@ -17,10 +17,8 @@ func _set_combatant_data(new_data: CombatantData) -> void:
 	load_ai()
 	#if not combatant_data.combatant_data_changed.is_connected(update_data_visuals):
 		#combatant_data.combatant_data_changed.connect(update_data_visuals)
-	#if not combatant_data.combatant_data_changed.is_connected(update_action):
-		#combatant_data.combatant_data_changed.connect(update_action)
-	#load_combatant_data()
-	#update_data_visuals()
+	if !combatant_data.combatant_data_changed.is_connected(update_action):
+		combatant_data.combatant_data_changed.connect(update_action)
 
 func do_turn() -> void:
 	combatant_data.set_armor(0)
@@ -56,7 +54,7 @@ func load_ai() -> void:
 		npc_action_picker.combatant = self
 
 func update_action() -> void:
-	print("npc_figher.gd updating action")
+	#print("npc_figher.gd updating action")
 	if !npc_action_picker:
 		return
 	if !current_action:
