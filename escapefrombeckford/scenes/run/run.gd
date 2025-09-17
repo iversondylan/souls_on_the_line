@@ -18,7 +18,6 @@ const TREASURE_SCENE := preload("res://scenes/treasure/treasure_room.tscn")
 @onready var collection_button: CardPileOpener = %CollectionButton
 @onready var collection_pile_view: CardPileView = %CollectionPileView
 
-
 @onready var map_button: Button = %MapButton
 @onready var battle_button: Button = %BattleButton
 @onready var shop_button: Button = %ShopButton

@@ -6,7 +6,7 @@
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_qi2ti"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_4rf34"]
-bg_color = Color(0.1596, 0.57, 0.4674, 0.490196)
+bg_color = Color(0.18012, 0.1596, 0.57, 0.509804)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_8ymem"]
 bg_color = Color(0.027, 0.0330833, 0.1, 1)
@@ -14,7 +14,7 @@ shadow_color = Color(0.27, 0.2376, 0.2376, 0.52549)
 shadow_offset = Vector2(0, 1)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_x4hh8"]
-bg_color = Color(0.535875, 0.266003, 0.368867, 1)
+bg_color = Color(0.95, 0.4009, 0.304, 1)
 
 [node name="HealthBar" type="ProgressBar"]
 z_index = 1
@@ -23,6 +23,7 @@ offset_bottom = 12.0
 size_flags_horizontal = 0
 theme_override_styles/background = SubResource("StyleBoxEmpty_qi2ti")
 theme_override_styles/fill = SubResource("StyleBoxFlat_4rf34")
+step = 1.0
 value = 50.0
 show_percentage = false
 script = ExtResource("1_1vcc2")
@@ -46,18 +47,12 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_override_styles/background = SubResource("StyleBoxFlat_8ymem")
 theme_override_styles/fill = SubResource("StyleBoxFlat_x4hh8")
+step = 1.0
+value = 75.0
 show_percentage = false
 
-[node name="ColorRect" type="ColorRect" parent="."]
-visible = false
-z_index = -2
-layout_mode = 0
-offset_left = -2.0
-offset_top = -2.0
-offset_right = 66.0
-offset_bottom = 14.0
-
 [node name="HealthNumber" type="Label" parent="."]
+layout_mode = 0
 offset_left = 67.0
 offset_top = -6.0
 offset_right = 136.0

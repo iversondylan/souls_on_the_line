@@ -28,7 +28,6 @@ func _set_combatant_data(new_data: CombatantData) -> void:
 	#update_data_visuals()
 
 func load_combatant_data():
-	print("combatant.gd load_combatant_data()")
 	if !is_node_ready():
 		await ready
 	character_sprite.texture = combatant_data.character_art #.set_texture(combatant_data.character_art)
