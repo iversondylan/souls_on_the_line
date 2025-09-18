@@ -1,15 +1,15 @@
 [gd_scene load_steps=13 format=3 uid="uid://cd6j7t8hq3we3"]
 
-[ext_resource type="Script" uid="uid://dw6oso8sytggf" path="res://cards/usable_card.gd" id="1_jy5kn"]
-[ext_resource type="PackedScene" uid="uid://dlpbxdm81neil" path="res://cards/card_visuals.tscn" id="2_momco"]
-[ext_resource type="Script" uid="uid://cgsyc7ofma8tv" path="res://cards/card_state_machine.gd" id="6_d0kny"]
-[ext_resource type="Script" uid="uid://dpi1bdtdbgufi" path="res://cards/card_states/card_base_state.gd" id="7_gsrtp"]
-[ext_resource type="Script" uid="uid://c8md6rjubuj2a" path="res://cards/card_states/card_clicked_state.gd" id="8_eoynd"]
-[ext_resource type="Script" uid="uid://c105frfq73ho0" path="res://cards/card_states/card_dragging_state.gd" id="9_famf7"]
-[ext_resource type="Script" uid="uid://bikh7yv8s3kjv" path="res://cards/card_states/card_released_state.gd" id="10_bxobu"]
-[ext_resource type="Script" uid="uid://cq15qwif2sf5u" path="res://cards/card_states/card_aiming_state.gd" id="11_xlj31"]
-[ext_resource type="Theme" uid="uid://clb4br0iiyw86" path="res://themes/pixel_theme.tres" id="12_ilab7"]
-[ext_resource type="Texture2D" uid="uid://c2cpjnsgjdd1x" path="res://assets/sprites/card_back_1.PNG" id="13_rkfl0"]
+[ext_resource type="Script" uid="uid://dw6oso8sytggf" path="res://cards/usable_card.gd" id="1_f88n7"]
+[ext_resource type="PackedScene" uid="uid://dlpbxdm81neil" path="res://cards/card_visuals.tscn" id="2_f727x"]
+[ext_resource type="Script" uid="uid://cgsyc7ofma8tv" path="res://cards/card_state_machine.gd" id="3_32cfh"]
+[ext_resource type="Script" uid="uid://dpi1bdtdbgufi" path="res://cards/card_states/card_base_state.gd" id="4_juwkc"]
+[ext_resource type="Script" uid="uid://c8md6rjubuj2a" path="res://cards/card_states/card_clicked_state.gd" id="5_pefwv"]
+[ext_resource type="Script" uid="uid://c105frfq73ho0" path="res://cards/card_states/card_dragging_state.gd" id="6_xk81s"]
+[ext_resource type="Script" uid="uid://bikh7yv8s3kjv" path="res://cards/card_states/card_released_state.gd" id="7_a1aea"]
+[ext_resource type="Script" uid="uid://cq15qwif2sf5u" path="res://cards/card_states/card_aiming_state.gd" id="8_oqtgk"]
+[ext_resource type="Theme" uid="uid://clb4br0iiyw86" path="res://themes/pixel_theme.tres" id="9_bk70k"]
+[ext_resource type="Texture2D" uid="uid://c2cpjnsgjdd1x" path="res://assets/sprites/card_back_1.PNG" id="10_5usk7"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_g488w"]
 size = Vector2(225, 315)
@@ -17,10 +17,10 @@ size = Vector2(225, 315)
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_horhy"]
 size = Vector2(225, 315)
 
-[node name="UsableCard" type="Node2D"]
-script = ExtResource("1_jy5kn")
+[node name="usable_card" type="Node2D"]
+script = ExtResource("1_f88n7")
 
-[node name="CardVisuals" parent="." instance=ExtResource("2_momco")]
+[node name="CardVisuals" parent="." instance=ExtResource("2_f727x")]
 offset_left = -112.5
 offset_top = -157.5
 offset_right = 112.5
@@ -43,26 +43,26 @@ position = Vector2(60.5, 84.5)
 shape = SubResource("RectangleShape2D_horhy")
 
 [node name="CardStateMachine" type="Node" parent="." node_paths=PackedStringArray("initial_state")]
-script = ExtResource("6_d0kny")
+script = ExtResource("3_32cfh")
 initial_state = NodePath("CardBaseState")
 
 [node name="CardBaseState" type="Node" parent="CardStateMachine"]
-script = ExtResource("7_gsrtp")
+script = ExtResource("4_juwkc")
 
 [node name="CardClickedState" type="Node" parent="CardStateMachine"]
-script = ExtResource("8_eoynd")
+script = ExtResource("5_pefwv")
 state = 1
 
 [node name="CardDraggingState" type="Node" parent="CardStateMachine"]
-script = ExtResource("9_famf7")
+script = ExtResource("6_xk81s")
 state = 2
 
 [node name="CardReleasedState" type="Node" parent="CardStateMachine"]
-script = ExtResource("10_bxobu")
+script = ExtResource("7_a1aea")
 state = 4
 
 [node name="CardAimingState" type="Node" parent="CardStateMachine"]
-script = ExtResource("11_xlj31")
+script = ExtResource("8_oqtgk")
 state = 3
 
 [node name="State" type="Label" parent="."]
@@ -72,14 +72,14 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme = ExtResource("12_ilab7")
+theme = ExtResource("9_bk70k")
 text = "State"
 horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="CardBack" type="Sprite2D" parent="."]
 visible = false
-texture = ExtResource("13_rkfl0")
+texture = ExtResource("10_5usk7")
 
 [connection signal="mouse_entered" from="ClickArea" to="." method="_on_click_area_mouse_entered"]
 [connection signal="mouse_exited" from="ClickArea" to="." method="_on_click_area_mouse_exited"]

@@ -34,7 +34,8 @@ class_name Battle extends Node2D
 @onready var draw_pile_view: CardPileView = %DrawPileView
 @onready var discard_pile_view: CardPileView = %DiscardPileView
 
-
+var player_data: CombatantData
+var player: Player
 
 
 
@@ -50,6 +51,7 @@ func _ready() -> void:
 	IconLibrary.compile_icon_library()
 	BattleController.current_state = BattleController.BattleState.PRE_GAME
 	GameState.battle_scene = battle_scene
+	hand.player_data = player_data
 	GameState.hand = hand
 	update_game_state()
 	#GameRecord.player_data = load("res://fighters/Player/basic_player_data.tres").duplicate()

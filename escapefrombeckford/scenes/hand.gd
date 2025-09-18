@@ -9,10 +9,12 @@ signal card_activated(card : UsableCard)
 @onready var hand_cards_node: Node2D = $HandCardsNode
 @onready var collision_shape: CollisionShape2D = $DebugShape
 @onready var hand_radius_flt: float = collision_shape.shape.radius
-@onready var usable_card_scn: PackedScene = preload("res://cards/UsableCard.tscn")
+@onready var usable_card_scn: PackedScene = preload("res://cards/usable_card.tscn")
 
 const CARD_DRAW_INTERVAL: float = 0.1
 const CARD_DISCARD_INTERVAL: float = 0.1
+
+var player: Player
 
 var hand_cards_arr: Array[UsableCard] = []
 var highlighted_card_index_int: int = -1
@@ -40,13 +42,14 @@ func empty_hand():
 func add_card(card: CardData) -> void:
 	var usable_card = usable_card_scn.instantiate()
 	usable_card.card_data = card
+	usable_card.player = player
 	var hand_size = hand_cards_arr.size()
 	usable_card.original_index = hand_size
 	hand_cards_arr.push_back(usable_card)
 	hand_cards_node.add_child(usable_card)
 	usable_card.position = Vector2(30, 540)
 	#usable_card.load_card_data(card_with_id)
-	usable_card.reparent_requested.connect(_on_usable_card_reparent_requested)
+	#usable_card.reparent_requested.connect(_on_usable_card_reparent_requested)
 	usable_card.mouse_entered.connect(_handle_card_touched)
 	usable_card.mouse_exited.connect(_handle_card_untouched)
 	#usable_card.card_back_sprite2d.show()

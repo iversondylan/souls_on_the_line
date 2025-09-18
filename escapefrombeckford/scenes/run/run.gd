@@ -27,7 +27,7 @@ const TREASURE_SCENE := preload("res://scenes/treasure/treasure_room.tscn")
 
 var account: RunAccount
 var player_character: CombatantData
-var deck: CardPile
+var starting_deck: CardPile
 var draftable_cards: CardPile
 
 func _ready() -> void:
@@ -37,7 +37,7 @@ func _ready() -> void:
 	match run_startup.startup_type:
 		RunStartup.StartupType.NEW_RUN:
 			player_character = run_startup.player_character.create_instance()
-			deck = run_startup.deck.duplicate()
+			starting_deck = run_startup.deck.duplicate()
 			draftable_cards = run_startup.draftable_cards.duplicate()
 			print("run.gd STARTING RUN WITH NEW CHARACTER")
 			_start_run()
@@ -48,8 +48,9 @@ func _start_run() -> void:
 	account = RunAccount.new()
 	GameRecord.account = account
 	GameRecord.player_data = player_character
-	GameRecord.deck = deck
+	GameRecord.deck = starting_deck
 	GameRecord.draftable_cards = draftable_cards
+	
 	_connect_signals()
 	_init_top_bar()
 	map.generate_new_map()
@@ -96,6 +97,7 @@ func _init_top_bar() -> void:
 
 func _on_battle_entered(room: Room) -> void:
 	var battle_scene: Battle = _change_view(BATTLE_SCENE) as Battle
+	battle_scene.player_data = player_character
 	battle_scene.battle_data = preload("res://battles/tier_0_thralls.tres")
 	battle_scene.start_battle()
 	

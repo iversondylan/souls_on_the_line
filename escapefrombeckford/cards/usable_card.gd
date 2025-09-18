@@ -4,6 +4,7 @@ signal reparent_requested(which_usable_card: UsableCard)
 signal mouse_entered(usablecard: UsableCard)
 signal mouse_exited(usablecard: UsableCard)
 
+var player: Player
 var actions: Array[RefCounted]
 var card_name_str: String = "Card Name"
 var card_description_str: String = "Card Description"
@@ -32,7 +33,8 @@ var original_index := 0
 @onready var card_state_machine: CardStateMachine = $CardStateMachine as CardStateMachine
 @onready var targets: Array[Node] = []
 
-var parent: Node2D
+
+#var parent: Node2D
 var tween: Tween
 var playable := true : set = _set_playable
 var disabled := false
