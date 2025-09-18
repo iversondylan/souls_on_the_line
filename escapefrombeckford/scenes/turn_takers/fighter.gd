@@ -16,6 +16,7 @@ class_name Fighter extends TurnTaker
 @onready var damage_number_scn: PackedScene = preload("res://scenes/ui/damage_number.tscn")
 @onready var blocked_message_scn: PackedScene = preload("res://scenes/ui/blocked_message.tscn")
 var combatant_data: CombatantData : set = _set_combatant_data
+var battle_scene: BattleScene
 #STATUSES IS A PLACEHOLDER SYSTEM CURRENTLY
 #STATUSES SHOULD BE TRACKED DIFFERENTLY
 var statuses: Array[String] = []

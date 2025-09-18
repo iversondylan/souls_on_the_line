@@ -2,7 +2,7 @@ extends RefCounted
 
 var card_data: CardData
 
-func activate(targets: Array[Node]) -> bool:
+func activate(targets: Array[Node], player: Player) -> bool:
 	var sacrifice_target: SummonedAlly = null
 	var attack_damage: int = 0
 	var attack_count: int = 0
@@ -20,11 +20,11 @@ func activate(targets: Array[Node]) -> bool:
 				sacrifice_target = target.combatant
 	
 	
-	if !GameState.player.can_play_card(card_data) or !sacrifice_target:
+	if !player.can_play_card(card_data) or !sacrifice_target:
 		return action_processed
 	
-	GameState.player.spend_mana(card_data)
-	attack_targets = GameState.battle_scene.get_combatants_in_group(1)
+	player.spend_mana(card_data)
+	attack_targets = player.battle_scene.get_combatants_in_group(1)
 	attack_damage = sacrifice_target.combatant_data.max_mana_red + 2
 	attack_count = 1
 	#attack_group = 1

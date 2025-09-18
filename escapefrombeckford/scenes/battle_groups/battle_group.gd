@@ -2,6 +2,7 @@ class_name BattleGroup extends Node2D
 
 @export var faces_right: bool = true
 
+var battle_scene: BattleScene
 var turn_table: Dictionary = {}
 var turn_taker: TurnTaker
 var focus: Fighter = null

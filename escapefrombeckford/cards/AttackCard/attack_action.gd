@@ -2,7 +2,7 @@ extends RefCounted
 
 var card_data: CardData
 
-func activate(targets: Array[Node]) -> bool:
+func activate(targets: Array[Node], player: Player) -> bool:
 	var attack_damage: int = 0
 	var attack_count: int = 0
 	var attack_targets: Array[Fighter] = []
@@ -17,8 +17,8 @@ func activate(targets: Array[Node]) -> bool:
 			if target.combatant is Enemy:
 				attack_targets.push_back(target.combatant)
 	
-	if GameState.player.can_play_card(card_data) && attack_targets:
-		GameState.player.spend_mana(card_data)
+	if player.can_play_card(card_data) && attack_targets:
+		player.spend_mana(card_data)
 		attack_damage = 6
 		attack_count = 1
 		#attack_group = 1

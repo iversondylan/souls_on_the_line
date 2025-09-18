@@ -51,14 +51,9 @@ func _ready() -> void:
 	IconLibrary.compile_icon_library()
 	BattleController.current_state = BattleController.BattleState.PRE_GAME
 	GameState.battle_scene = battle_scene
-	hand.player_data = player_data
+	#hand.player_data = player_data
 	GameState.hand = hand
 	update_game_state()
-	#GameRecord.player_data = load("res://fighters/Player/basic_player_data.tres").duplicate()
-	
-	#make_player_combatant()
-	#make_basic_thrall()
-	#make_basic_thrall()
 
 	Events.dead_combatant_data.connect(_on_dead_combatant_data)
 	Events.need_updated_game_state.connect(_need_updated_game_state)
@@ -68,24 +63,10 @@ func _ready() -> void:
 	Events.summon_reserve_card_released.connect(_on_summon_reserve_card_released)
 	Events.game_over_started.connect(_on_game_over_started)
 	Events.victory_started.connect(_on_victory_started)
-	
-	#draw_pile_button.pressed.connect(draw_pile_view.show_current_view.bind("Draw Pile", true))
-	#discard_pile_button.pressed.connect(discard_pile_view.show_current_view.bind("Discard Pile"))
-	#initialize_card_pile_ui()
-	
-	#for i in range(3):
-		#Deck.add_card(CardLibrary.card_library[0].duplicate())
-	#for i in range(2):
-		#Deck.add_card(CardLibrary.card_library[1].duplicate())
-	#for i in range(4):
-		#Deck.add_card(CardLibrary.card_library[2].duplicate())
-	#for i in range(4):
-		#Deck.add_card(CardLibrary.card_library[3].duplicate())
+
 	draw_pile_button.pressed.connect(draw_pile_view.show_current_draw_view.bind("Draw Pile", true))
 	discard_pile_button.pressed.connect(discard_pile_view.show_current_discard_view.bind("Discard Pile"))
-	
-	
-	#start_battle()
+
 
 func initialize_card_pile_ui() -> void:
 	draw_pile_button.card_pile = Deck.draw_pile
@@ -96,12 +77,12 @@ func initialize_card_pile_ui() -> void:
 func make_player_combatant() -> void:
 	var new_player: Player = player_scn.instantiate()
 	battle_scene.add_combatant(new_player, 0, 0)
-	new_player.combatant_data = GameRecord.player_data
-	GameRecord.player_data.is_alive = true
+	new_player.combatant_data = player_data
+	player_data.is_alive = true
 	
 	battle_scene.set_player(new_player)
-	GameState.player = new_player
-	#GameRecord.set_player_data(new_player.combatant_data)
+	player = new_player
+	hand.player = new_player
 	new_player.reset()
 
 #func make_basic_thrall() -> void:

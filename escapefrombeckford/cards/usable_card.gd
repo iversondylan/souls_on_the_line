@@ -126,7 +126,7 @@ func get_cost() -> Array[int]:
 func activate() -> bool:
 	var action_processed: bool = false
 	for action in actions:
-		action_processed = action.activate(targets)
+		action_processed = action.activate(targets, player)
 	if action_processed:
 		Events.card_played.emit(self)
 		if card_data.card_type != CardData.CardType.SUMMON:
