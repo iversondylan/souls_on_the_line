@@ -16,7 +16,7 @@ const CARD_DISCARD_INTERVAL: float = 0.1
 
 var battle_scene: BattleScene
 var player: Player
-
+var deck: Deck
 var hand_cards_arr: Array[UsableCard] = []
 var highlighted_card_index_int: int = -1
 var currently_touched_cards_arr: Array[UsableCard] = []
@@ -59,7 +59,7 @@ func add_card(card: CardData) -> void:
 	reposition_hand_cards()
 
 func draw_card() -> void:
-	add_card(Deck.draw_card())
+	add_card(deck.draw_card())
 
 func draw_cards(n_cards: int) -> void:
 	var tween := create_tween()
@@ -86,7 +86,7 @@ func reserve_summon_card(usable_card: UsableCard) -> void:
 	usable_card.queue_free()
 
 func discard_card(usable_card: UsableCard):
-	Deck.add_card_to_discard(usable_card.card_data)
+	deck.add_card_to_discard(usable_card.card_data)
 	hand_cards_arr.erase(usable_card)
 	usable_card.queue_free()
 
@@ -94,7 +94,7 @@ func discard_cards(usable_cards: Array[UsableCard]):
 	if usable_cards:
 		var tween: Tween = create_tween()
 		for usable_card in usable_cards:
-			tween.tween_callback(Deck.add_card_to_discard.bind(usable_card.card_data))
+			tween.tween_callback(deck.add_card_to_discard.bind(usable_card.card_data))
 			tween.tween_callback(usable_card.queue_free.bind())
 			tween.tween_interval(CARD_DISCARD_INTERVAL)
 		tween.finished.connect(

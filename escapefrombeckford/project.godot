@@ -25,7 +25,6 @@ IconLibrary="*res://global/icon_library.gd"
 BattleController="*res://global/battle_controller.gd"
 Shaker="*res://global/shaker.gd"
 MusicPlayer="*res://global/music_player.tscn"
-Deck="*res://global/deck.gd"
 SFXPlayer="*res://global/sfx_player.tscn"
 
 [debug]

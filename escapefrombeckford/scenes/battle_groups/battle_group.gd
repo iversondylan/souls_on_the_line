@@ -3,6 +3,7 @@ class_name BattleGroup extends Node2D
 @export var faces_right: bool = true
 
 var battle_scene: BattleScene
+var deck: Deck
 var turn_table: Dictionary = {}
 var turn_taker: TurnTaker
 var focus: Fighter = null
@@ -125,7 +126,7 @@ func update_combatant_position():
 func combatant_died(fighter: Fighter):
 	#var combatant_doing_turn: bool = fighter.doing_turn
 	if fighter is SummonedAlly:
-		Deck.discard_summon_reserve_card(fighter.card_data)
+		deck.discard_summon_reserve_card(fighter.card_data)
 	Events.dead_combatant_data.emit(fighter.combatant_data)
 	remove_combatant(fighter)
 	if get_child_count() == 1:

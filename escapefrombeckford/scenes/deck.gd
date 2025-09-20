@@ -1,22 +1,35 @@
-extends Node
+class_name Deck extends Node
 
 signal draw_pile_size_changed(cards_amount)
 
-var card_collection: Dictionary = {}
+var card_collection: CardPile : set = _set_card_collection
 #@onready var card_pile := load("res://custom_resources/card_pile.gd")
 #var collection_pile : CardPile = CardPile.new()
 var draw_pile : CardPile = CardPile.new()
 var discard_pile : CardPile = CardPile.new()
 #var summon_reserve: CardPile
-var id_counter : int = 0
+var id_counter : int# = 0
 var first_shuffle: bool = true
 
 
 func add_card(card_data: CardData): #change to CardData as input
-	var card_id = _generate_card_id(card_data)
+	#var card_id = _generate_card_id(card_data)
 	card_data.card_status = CardData.CardStatus.PRE_GAME
-	card_collection[card_id] = card_data
+	card_data.id = id_counter
+	card_collection.add_back(card_data)
+	card_data.id = id_counter
 	id_counter += 1
+
+func _set_card_collection(_card_pile: CardPile) -> void:
+	card_collection = _card_pile
+	id_counter = 0
+	for card_data: CardData in card_collection.cards:
+		card_data.id = id_counter
+		id_counter += 1
+	
+#func add_card_pile(card_pile: CardPile) -> void:
+	#for card: CardData in card_pile.cards:
+		#add_card(card)
 
 func add_card_to_discard(card_data: CardData):
 	#if !ready:
@@ -49,15 +62,16 @@ func clear_discard():
 func remove_card(card_id: int):
 	card_collection.erase(card_id)
 
-func update_card(card_id: int, card_data: CardData):
-	card_collection[card_id].card_data = card_data
+#func update_card(card_id: int, card_data: CardData):
+	#card_collection[card_id].card_data = card_data
 
-func make_all_cards_from_collection() -> void:
-	draw_pile.clear()
-	if !GameRecord.deck.is_empty():
-		for card : CardData in GameRecord.deck.cards:
-			var duplicate_card: CardData = card.duplicate()
-			draw_pile.add_back(duplicate_card)
+#func make_all_cards_from_collection() -> void:
+	#draw_pile.clear()
+	#if !GameRecord.deck.is_empty():
+	#draw_pile = card_collection.duplicate()
+	#for card : CardData in card_collection.values():
+		#var duplicate_card: CardData = card.duplicate()
+		#draw_pile.add_back(duplicate_card)
 	
 	#var cards := CardPile.new()
 	#if !card_collection.is_empty():
@@ -97,7 +111,7 @@ func take_discards() -> void:
 
 func make_draw_pile():
 	if first_shuffle:
-		make_all_cards_from_collection()
+		draw_pile = card_collection.duplicate()
 		first_shuffle = false
 	else:
 		take_discards()

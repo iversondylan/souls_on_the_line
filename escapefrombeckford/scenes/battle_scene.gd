@@ -1,10 +1,16 @@
 class_name BattleScene extends CanvasLayer
 
 @onready var groups: Array[BattleGroup] = [$BattleGroupFriendly, $BattleGroupEnemy]
+var deck: Deck : set = _set_deck
 
 func _ready() -> void:
 	for group : BattleGroup in groups:
 		group.battle_scene = self
+
+func _set_deck(_deck: Deck) -> void:
+	deck = _deck
+	for group: BattleGroup in groups:
+		group.deck = deck
 
 func add_combatant(fighter: Fighter, group: int, rank: int):
 	fighter.battle_scene = self

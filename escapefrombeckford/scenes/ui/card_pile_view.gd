@@ -9,6 +9,8 @@ const MENU_CARD_SCENE := preload("res://cards/menu_card/menu_card.tscn")
 @onready var card_tooltip_popup: CardTooltipPopup = %CardTooltipPopup
 @onready var back_button: Button = %BackButton
 
+var deck: Deck
+
 func _ready() -> void:
 	back_button.pressed.connect(hide)
 	
@@ -33,11 +35,11 @@ func show_current_collection_view(new_title: String, randomized: bool = false) -
 	show_current_view(new_title, randomized)
 
 func show_current_draw_view(new_title: String, randomized: bool = false) -> void:
-	card_pile = Deck.draw_pile
+	card_pile = deck.draw_pile
 	show_current_view(new_title, randomized)
 
 func show_current_discard_view(new_title: String, randomized: bool = false) -> void:
-	card_pile = Deck.discard_pile
+	card_pile = deck.discard_pile
 	show_current_view(new_title, randomized)
 
 func show_current_view(new_title: String, randomized: bool = false) -> void:

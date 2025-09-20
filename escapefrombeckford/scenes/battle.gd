@@ -17,7 +17,7 @@ class_name Battle extends Node2D
 @onready var draw_view_overlay: CardsViewWindow = $Visual_Overlays/DrawViewWindow
 @onready var discard_view_overlay: CardsViewWindow = $Visual_Overlays/DiscardViewWindow
 @onready var collection_view_overlay: CardsViewWindow = $Visual_Overlays/CollectionViewWindow
-@onready var deck_ui: UsableDeckUI = $Battle_UI/UsableDeckUi
+#@onready var deck_ui: UsableDeckUI = $Battle_UI/UsableDeckUi
 @onready var battle_scene: BattleScene = $Battle_Scene
 @onready var mana_panel: ManaPanel = $Battle_UI/ManaPanel
 
@@ -35,7 +35,7 @@ class_name Battle extends Node2D
 
 var player_data: CombatantData
 var player: Player
-
+var deck: Deck : set = _set_deck
 
 
 var mouse_pressed: bool = false
@@ -48,7 +48,7 @@ func _ready() -> void:
 	#CombatantLibrary.compile_combatant_library()
 	IconLibrary.compile_icon_library()
 	BattleController.current_state = BattleController.BattleState.PRE_GAME
-	#GameState.hand = hand
+
 	update_game_state()
 
 	Events.dead_combatant_data.connect(_on_dead_combatant_data)
@@ -65,12 +65,16 @@ func _ready() -> void:
 	
 	hand.battle_scene = battle_scene
 
+func _set_deck(_deck: Deck) -> void:
+	deck = _deck
+	hand.deck = deck
+	battle_scene.deck = deck
 
 func initialize_card_pile_ui() -> void:
-	draw_pile_button.card_pile = Deck.draw_pile
-	draw_pile_view.card_pile = Deck.draw_pile
-	discard_pile_button.card_pile = Deck.discard_pile
-	discard_pile_view.card_pile = Deck.discard_pile
+	draw_pile_button.card_pile = deck.draw_pile
+	draw_pile_view.card_pile = deck.draw_pile
+	discard_pile_button.card_pile = deck.discard_pile
+	discard_pile_view.card_pile = deck.discard_pile
 
 func make_player_combatant() -> void:
 	var new_player: Player = player_scn.instantiate()
@@ -114,8 +118,8 @@ func start_battle():
 	_on_player_data_changed()
 	update_game_state()
 	hand.empty_hand()
-	Deck.reset()
-	Deck.make_draw_pile()
+	deck.reset()
+	deck.make_draw_pile()
 	#combatants_mouse_left.clear()
 	BattleController.transition(BattleController.BattleState.FRIENDLY_TURN)
 	#deck_ui.visible = true
@@ -201,25 +205,30 @@ func _on_start_battle_button_pressed() -> void:
 	start_battle()
 
 func _on_usable_deck_ui_pressed() -> void:
-	draw_card()
+	pass
+	#draw_card()
 
 func draw_card():
-	var card_with_id = deck_ui.draw_card()
-	if card_with_id:
-		hand.add_card(card_with_id)
+	pass
+	#var card_with_id = deck_ui.draw_card()
+	#if card_with_id:
+		#hand.add_card(card_with_id)
 
 func _on_add_attack_button_pressed() -> void:
-	Deck.add_card(CardLibrary.card_library[0].duplicate())
+	pass
+	#Deck.add_card(CardLibrary.card_library[0].duplicate())
 
 func _on_add_defend_button_pressed() -> void:
-	Deck.add_card(CardLibrary.card_library[1].duplicate())
+	pass
+	#Deck.add_card(CardLibrary.card_library[1].duplicate())
 
 func _on_add_basic_deck_button_pressed() -> void:
-	for i in range(5):
-		Deck.add_card(CardLibrary.card_library[0].duplicate())
-		Deck.add_card(CardLibrary.card_library[1].duplicate())
-		Deck.add_card(CardLibrary.card_library[2].duplicate())
-		Deck.add_card(CardLibrary.card_library[3].duplicate())
+	pass
+	#for i in range(5):
+		#Deck.add_card(CardLibrary.card_library[0].duplicate())
+		#Deck.add_card(CardLibrary.card_library[1].duplicate())
+		#Deck.add_card(CardLibrary.card_library[2].duplicate())
+		#Deck.add_card(CardLibrary.card_library[3].duplicate())
 
 func _on_remove_card_button_pressed() -> void:
 	pass

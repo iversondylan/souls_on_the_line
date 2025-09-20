@@ -1,7 +1,9 @@
 class_name UsableDeckUI extends TextureButton
 
+var deck: Deck
+
 func draw_card() -> CardData:
-	return Deck.draw_card()
+	return deck.draw_card()
 
 func shuffle():
-	Deck.shuffle()
+	deck.shuffle()
