@@ -14,6 +14,9 @@ const BASE_RARE_WEIGHT := 0.3
 @export_range(0.0, 10.0) var uncommon_weight: float = BASE_UNCOMMON_WEIGHT
 @export_range(0.0, 10.0) var rare_weight: float = BASE_RARE_WEIGHT
 
+var draftable_cards: CardPile
+var deck: Deck
+
 
 func set_gold(n_gold: int) -> void:
 	gold = n_gold

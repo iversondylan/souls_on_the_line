@@ -18,9 +18,6 @@ config/icon="res://icon.svg"
 [autoload]
 
 Events="*res://global/events.gd"
-GameRecord="*res://global/game_record.gd"
-CardLibrary="*res://global/card_library.gd"
-CombatantLibrary="*res://global/combatant_library.gd"
 IconLibrary="*res://global/icon_library.gd"
 BattleController="*res://global/battle_controller.gd"
 Shaker="*res://global/shaker.gd"

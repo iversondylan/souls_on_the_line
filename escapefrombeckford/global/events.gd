@@ -32,7 +32,7 @@ signal end_turn_button_pressed()
 
 signal summon_reserve_card_released(summoned_ally: SummonedAlly)
 
-signal need_updated_game_state()
+#signal need_updated_game_state()
 
 signal dead_combatant_data(combatant_data: CombatantData)
 signal battle_group_empty(battle_group: BattleGroup)

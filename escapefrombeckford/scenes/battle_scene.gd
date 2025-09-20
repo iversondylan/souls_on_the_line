@@ -68,7 +68,7 @@ func get_player() -> Player:
 	for child_group in get_children():
 		if child_group is BattleGroup:
 			for child_combatant in child_group.get_combatants():
-				if child_combatant.combatant_data.team == 0:
+				if child_combatant is Player:
 					if !player:
 						player = child_combatant
 					else:

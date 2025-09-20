@@ -49,10 +49,10 @@ func _ready() -> void:
 	IconLibrary.compile_icon_library()
 	BattleController.current_state = BattleController.BattleState.PRE_GAME
 
-	update_game_state()
+	#update_game_state()
 
 	Events.dead_combatant_data.connect(_on_dead_combatant_data)
-	Events.need_updated_game_state.connect(_need_updated_game_state)
+	#Events.need_updated_game_state.connect(_need_updated_game_state)
 	Events.battle_group_empty.connect(_on_battle_group_empty)
 	Events.player_combatant_data_changed.connect(_on_player_data_changed)
 	Events.hand_drawn.connect(_on_hand_drawn)
@@ -71,8 +71,10 @@ func _set_deck(_deck: Deck) -> void:
 	battle_scene.deck = deck
 
 func initialize_card_pile_ui() -> void:
+	draw_pile_button.deck = deck
 	draw_pile_button.card_pile = deck.draw_pile
 	draw_pile_view.card_pile = deck.draw_pile
+	discard_pile_button.deck = deck
 	discard_pile_button.card_pile = deck.discard_pile
 	discard_pile_view.card_pile = deck.discard_pile
 
@@ -103,7 +105,7 @@ func start_battle():
 	wait_for_anims = true
 	initialize_card_pile_ui()
 	battle_scene.clear_combatants()
-	update_game_state()
+	#update_game_state()
 	
 	BattleController.is_running = true
 	BattleController.turn_number = 0
@@ -116,7 +118,7 @@ func start_battle():
 	#make_basic_thrall()
 	
 	_on_player_data_changed()
-	update_game_state()
+	#update_game_state()
 	hand.empty_hand()
 	deck.reset()
 	deck.make_draw_pile()
@@ -140,8 +142,8 @@ func make_enemies() -> void:
 		new_enemy.update_action()
 	
 
-func update_game_state():
-	pass
+#func update_game_state():
+	#pass
 	#GameState.combatants = battle_scene.get_combatants()
 	#if GameState.player != battle_scene.get_player():
 		#GameState.player = battle_scene.get_player()
@@ -238,7 +240,6 @@ func _on_remove_card_button_pressed() -> void:
 	#Deck.remove_card(random_card.id)
 
 func _on_player_data_changed() -> void:
-	#pass
 	if player:
 		mana_panel.red_mana = player.combatant_data.mana_red
 		mana_panel.green_mana = player.combatant_data.mana_green
@@ -250,11 +251,6 @@ func _on_hand_drawn() -> void:
 func _on_dead_combatant_data(combatant_data: CombatantData):
 	if combatant_data == player.combatant_data:
 		BattleController.transition(BattleController.BattleState.GAME_OVER)
-
-	GameRecord.combatant_died(combatant_data)
-
-func _need_updated_game_state():
-	update_game_state()
 
 func _on_battle_group_empty(_battle_group: BattleGroup) -> void:
 	if _battle_group is BattleGroupEnemy:

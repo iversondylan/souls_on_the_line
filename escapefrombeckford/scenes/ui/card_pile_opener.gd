@@ -2,6 +2,7 @@ class_name CardPileOpener extends TextureButton
 
 @export var counter: Label
 @export var card_pile: CardPile : set = set_card_pile
+var deck: Deck
 
 func set_card_pile(_card_pile: CardPile) -> void:
 	card_pile = _card_pile

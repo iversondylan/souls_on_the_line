@@ -20,5 +20,5 @@ func is_performable() -> bool:
 	return true
 #
 func update_action_intent() -> void:
-	n_damage = GameRecord.player_data.max_mana_red
+	n_damage = battle_scene.get_player().combatant_data.max_mana_red
 	intent_icon.text = str(n_damage)

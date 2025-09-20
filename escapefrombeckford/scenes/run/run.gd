@@ -47,12 +47,10 @@ func _ready() -> void:
 
 func _start_run() -> void:
 	account = RunAccount.new()
+	account.draftable_cards = draftable_cards
 	deck = Deck.new()
 	deck.card_collection = starting_deck
-	GameRecord.account = account
-	GameRecord.player_data = player_character
-	GameRecord.deck = starting_deck
-	GameRecord.draftable_cards = draftable_cards
+	account.deck = deck
 	
 	_connect_signals()
 	_init_top_bar()

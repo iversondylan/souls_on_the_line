@@ -31,7 +31,7 @@ func _input(event: InputEvent) -> void:
 			hide()
 
 func show_current_collection_view(new_title: String, randomized: bool = false) -> void:
-	card_pile = GameRecord.deck
+	card_pile = deck.cards
 	show_current_view(new_title, randomized)
 
 func show_current_draw_view(new_title: String, randomized: bool = false) -> void:

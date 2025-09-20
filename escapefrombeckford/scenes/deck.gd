@@ -62,52 +62,16 @@ func clear_discard():
 func remove_card(card_id: int):
 	card_collection.erase(card_id)
 
-#func update_card(card_id: int, card_data: CardData):
-	#card_collection[card_id].card_data = card_data
-
-#func make_all_cards_from_collection() -> void:
-	#draw_pile.clear()
-	#if !GameRecord.deck.is_empty():
-	#draw_pile = card_collection.duplicate()
-	#for card : CardData in card_collection.values():
-		#var duplicate_card: CardData = card.duplicate()
-		#draw_pile.add_back(duplicate_card)
-	
-	#var cards := CardPile.new()
-	#if !card_collection.is_empty():
-		#for card : CardData in card_collection.values():
-			#var duplicate_card: CardData = card.duplicate()
-			#cards.add_back(duplicate_card)
-			#duplicate_card.card_status = CardData.CardStatus.DRAW_PILE
-	#return cards
-
 func get_discards() -> CardPile:
-	#var cards: Array[CardWithID] = []
-	#if !discard_pile.is_empty():
-		#for card in discard_pile:
-			#cards.push_back(card)
 	return discard_pile.duplicate()
 
 func get_draw_cards() -> CardPile:
-	#var cards: Array[CardWithID] = []
-	#if !draw_pile.is_empty():
-		#for card in draw_pile:
-			#cards.push_back(card)
 	return draw_pile.duplicate()
 
 func take_discards() -> void:
 	for card: CardData in discard_pile.cards:
 		draw_pile.add_back(card)
-	#var cards : CardPile = discard_pile.duplicate()
-	#for card in discard_pile.cards:
-		#card_collection[card_with_id.id].card_status = CardWithID.CardStatus.DRAW_PILE
-		#cards_wtih_id.push_back(card_with_id)
 	discard_pile.clear()
-	#return cards
-
-#func make_collection_pile() -> void:
-	#collection_pile = GameRecord.deck.duplicate()
-	
 
 func make_draw_pile():
 	if first_shuffle:

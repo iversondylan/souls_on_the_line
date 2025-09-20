@@ -61,7 +61,7 @@ func _get_targets(targets: Array[Node]) -> Array[Node]:
 		return []
 
 	var tree := targets[0].get_tree()
-	Events.need_updated_game_state.emit()
+	#Events.need_updated_game_state.emit()
 	match target_type:
 		TargetType.SELF:
 			return tree.get_nodes_in_group("player")

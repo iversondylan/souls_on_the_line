@@ -25,21 +25,6 @@ var card_rarity_weights := {
 func _ready() -> void:
 	for node: Node in rewards.get_children():
 		node.queue_free()
-	
-	#BELOW 3 LINES ARE FOR TESTING ONLY
-	#run_account = RunAccount.new()
-	#run_account.gold_changed.connect(func(): print("gold: %s" % run_account.gold))
-	#player_data = preload("res://fighters/Player/basic_player_data.tres").create_instance()
-	#GameRecord.deck = preload("res://fighters/Player/cole_basic_deck.tres").duplicate()
-	#GameRecord.draftable_cards = preload("res://fighters/Player/cole_draftable_cards.tres").duplicate()
-	
-	#add_gold_reward(77)
-	#add_card_reward()
-	#add_card_reward()
-	#add_card_reward()
-	#add_card_reward()
-	#add_card_reward()
-	
 
 func add_gold_reward(n_gold: int) -> void:
 	var gold_reward := REWARD_BUTTON.instantiate() as RewardButton
@@ -64,7 +49,7 @@ func _show_card_reward() -> void:
 	card_reward.card_reward_selected.connect(_on_card_reward_taken)
 	
 	var card_choices: Array[CardData] = []
-	var possible_cards: Array[CardData] = GameRecord.draftable_cards.cards.duplicate(true)
+	var possible_cards: Array[CardData] = run_account.draftable_cards.cards
 	
 	for i in run_account.card_reward_choices:
 		_calculate_card_chances()
@@ -106,11 +91,9 @@ func _on_gold_reward_taken(n_gold: int) -> void:
 	run_account.gold += n_gold
 
 func _on_card_reward_taken(card: CardData) -> void:
-	if !player_data or !card or !GameRecord.deck:
+	if !player_data or !card or !run_account.deck:
 		return
-	#print("Deck Before:\n%s\n" % GameRecord.deck)
-	GameRecord.deck.add_back(card)
-	#print("Deck After:\n%s\n" % GameRecord.deck)
+	run_account.deck.add_back(card)
 
 func _on_back_button_pressed() -> void:
 	Events.battle_rewards_exited.emit()
