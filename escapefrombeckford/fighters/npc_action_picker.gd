@@ -5,10 +5,17 @@ class_name NPCActionPicker extends Node
 
 @onready var total_weight: float = 0.0
 
+#var player: Player
+var battle_scene: BattleScene : set = _set_battle_scene
+
 func _ready() -> void:
-	target = GameState.battle_scene.get_front_combatant(0)
+	#target = battle_scene.get_front_combatant(0)
 	_connect_children()
 	make_chances()
+
+func _set_battle_scene(_battle_scene: BattleScene) -> void:
+	battle_scene = _battle_scene
+	target = battle_scene.get_front_combatant(0)
 
 func get_action() -> NPCAction:
 	var action := get_first_conditional_action()

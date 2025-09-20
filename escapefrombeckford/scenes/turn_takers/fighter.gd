@@ -16,7 +16,7 @@ class_name Fighter extends TurnTaker
 @onready var damage_number_scn: PackedScene = preload("res://scenes/ui/damage_number.tscn")
 @onready var blocked_message_scn: PackedScene = preload("res://scenes/ui/blocked_message.tscn")
 var combatant_data: CombatantData : set = _set_combatant_data
-var battle_scene: BattleScene
+var battle_scene: BattleScene# : set = _set_battle_scene
 #STATUSES IS A PLACEHOLDER SYSTEM CURRENTLY
 #STATUSES SHOULD BE TRACKED DIFFERENTLY
 var statuses: Array[String] = []
@@ -28,6 +28,9 @@ func _ready() -> void:
 	combatant.target_area_area_entered.connect(_on_target_area_area_entered)
 	combatant.target_area_area_exited.connect(_on_target_area_area_exited)
 	target_area.combatant = self
+
+#func _set_battle_scene(_battle_scene: BattleScene) -> void:
+	#battle_scene = _battle_scene
 
 func enter() -> void:
 	do_turn()
@@ -49,7 +52,7 @@ func attack(targets: Array[Fighter], n_damage: int, n_attacks: int = 1, retarget
 			else:
 				target_battle_group_index = 1
 			retargeting = true
-			targets = [GameState.battle_scene.get_front_combatant(target_battle_group_index)]
+			targets = [battle_scene.get_front_combatant(target_battle_group_index)]
 	var start := global_position
 	var tween: Tween = create_tween().set_trans(Tween.TRANS_QUINT)
 	var end: Vector2

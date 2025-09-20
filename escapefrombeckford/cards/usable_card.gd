@@ -6,6 +6,7 @@ signal mouse_exited(usablecard: UsableCard)
 
 var player: Player
 var battle_scene: BattleScene
+var hand: Hand
 var actions: Array[CardAction]
 var card_name_str: String = "Card Name"
 var card_description_str: String = "Card Description"
@@ -127,9 +128,9 @@ func activate() -> bool:
 	if action_processed:
 		Events.card_played.emit(self)
 		if card_data.card_type != CardData.CardType.SUMMON:
-			GameState.hand.discard_card(GameState.hand.remove_card_by_entity(self))
+			hand.discard_card(hand.remove_card_by_entity(self))
 		else:
-			GameState.hand.reserve_summon_card(GameState.hand.remove_card_by_entity(self))
+			hand.reserve_summon_card(hand.remove_card_by_entity(self))
 	return action_processed
 
 func _update_graphics():
@@ -145,7 +146,7 @@ func _update_graphics():
 		card_visuals.description.set_text(card_data.description)
 
 func _on_player_combatant_data_changed() -> void:
-	playable = GameState.player.can_play_card(card_data)
+	playable = player.can_play_card(card_data)
 
 func _on_click_area_mouse_entered() -> void:
 	card_state_machine.on_mouse_entered()
@@ -171,4 +172,4 @@ func _on_card_drag_or_aiming_started(used_card: UsableCard) -> void:
 
 func _on_card_drag_or_aiming_ended(_usable_card: UsableCard) -> void:
 	disabled = false
-	playable = GameState.player.can_play_card(card_data)
+	playable = player.can_play_card(card_data)

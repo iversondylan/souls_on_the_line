@@ -45,13 +45,10 @@ var wait_for_anims: bool = false
 
 func _ready() -> void:
 	get_tree().paused = false
-	#CardLibrary.compile_card_library()
-	CombatantLibrary.compile_combatant_library()
+	#CombatantLibrary.compile_combatant_library()
 	IconLibrary.compile_icon_library()
 	BattleController.current_state = BattleController.BattleState.PRE_GAME
-	GameState.battle_scene = battle_scene
-	#hand.player_data = player_data
-	GameState.hand = hand
+	#GameState.hand = hand
 	update_game_state()
 
 	Events.dead_combatant_data.connect(_on_dead_combatant_data)
@@ -140,10 +137,11 @@ func make_enemies() -> void:
 	
 
 func update_game_state():
-	GameState.combatants = battle_scene.get_combatants()
-	if GameState.player != battle_scene.get_player():
-		GameState.player = battle_scene.get_player()
-	GameState.turn_number = BattleController.turn_number
+	pass
+	#GameState.combatants = battle_scene.get_combatants()
+	#if GameState.player != battle_scene.get_player():
+		#GameState.player = battle_scene.get_player()
+	#GameState.turn_number = BattleController.turn_number
 
 func _process(_delta: float) -> void:
 	if !BattleController.is_running:
@@ -161,12 +159,14 @@ func _input(event):
 		mouse_pressed = true
 
 func _on_take_1_button_pressed() -> void:
-	GameState.player.combatant_data.max_mana_red += 1
-	GameState.player.combatant_data.max_mana_green += 1
-	GameState.player.combatant_data.max_mana_blue += 1
+	pass
+	#GameState.player.combatant_data.max_mana_red += 1
+	#GameState.player.combatant_data.max_mana_green += 1
+	#GameState.player.combatant_data.max_mana_blue += 1
 
 func _on_take_6_button_pressed() -> void:
-	GameState.player.take_damage(6)
+	pass
+	#player.take_damage(6)
 
 func _on_end_turn_pressed() -> void:
 	if wait_for_anims:
@@ -229,16 +229,17 @@ func _on_remove_card_button_pressed() -> void:
 	#Deck.remove_card(random_card.id)
 
 func _on_player_data_changed() -> void:
-	if GameState.player:
-		mana_panel.red_mana = GameState.player.combatant_data.mana_red
-		mana_panel.green_mana = GameState.player.combatant_data.mana_green
-		mana_panel.blue_mana = GameState.player.combatant_data.mana_blue
+	#pass
+	if player:
+		mana_panel.red_mana = player.combatant_data.mana_red
+		mana_panel.green_mana = player.combatant_data.mana_green
+		mana_panel.blue_mana = player.combatant_data.mana_blue
 
 func _on_hand_drawn() -> void:
 	wait_for_anims = false
 
 func _on_dead_combatant_data(combatant_data: CombatantData):
-	if combatant_data == GameState.player.combatant_data:
+	if combatant_data == player.combatant_data:
 		BattleController.transition(BattleController.BattleState.GAME_OVER)
 
 	GameRecord.combatant_died(combatant_data)

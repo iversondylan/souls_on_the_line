@@ -16,11 +16,11 @@ func enter() -> void:
 	#transition_requested.emit(self, CardState.State.BASE)
 
 func dwell() -> void:
-	print("card_released_state.gd dwell()")
+	#print("card_released_state.gd dwell()")
 	transition_requested.emit(self, CardState.State.BASE)
 
 func on_input(_event: InputEvent) -> void:
-	print("card_released_state.gd on_input()")
+	#print("card_released_state.gd on_input()")
 	if played:
 		return
 	

@@ -10,9 +10,9 @@ func perform_action() -> void:
 		return
 	###updating target to front combatant###
 	if combatant.battle_group is BattleGroupEnemy:
-		target = GameState.battle_scene.get_front_or_focus(0)
+		target = battle_scene.get_front_or_focus(0)
 	else:
-		target = GameState.battle_scene.get_front_or_focus(1)
+		target = battle_scene.get_front_or_focus(1)
 	if target:
 		var attack_effect := AttackEffect.new()
 		attack_effect.targets = [target]

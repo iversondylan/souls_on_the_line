@@ -9,6 +9,6 @@ func activate(_targets: Array[Node], player: Player) -> bool:
 	var block_effect = BlockEffect.new()
 	block_effect.n_armor = 5
 	block_effect.sound = card_data.sound
-	block_effect.execute([GameState.player])
+	block_effect.execute([player])
 	
 	return true

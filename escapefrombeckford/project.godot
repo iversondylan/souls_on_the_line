@@ -18,7 +18,6 @@ config/icon="res://icon.svg"
 [autoload]
 
 Events="*res://global/events.gd"
-GameState="*res://global/game_state.gd"
 GameRecord="*res://global/game_record.gd"
 CardLibrary="*res://global/card_library.gd"
 CombatantLibrary="*res://global/combatant_library.gd"
@@ -45,6 +44,7 @@ ui_layer=""
 player=""
 enemies=""
 allies=""
+battle_scene=""
 
 [gui]
 

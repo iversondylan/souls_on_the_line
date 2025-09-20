@@ -14,6 +14,8 @@ enum ActionCode {TIGER, TURTLE, TURKEY, TOUCAN, TARSIER, TAPIR}
 
 var combatant: NPCFighter
 var target: Fighter
+var player: Player
+var battle_scene: BattleScene
 
 func is_performable() -> bool:
 	return false

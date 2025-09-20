@@ -3,6 +3,10 @@ class_name NPCFighter extends Fighter
 var npc_action_picker: NPCActionPicker
 var current_action: NPCAction: set = set_current_action
 
+#func _set_battle_scene(_battle_scene: BattleScene) -> void:
+	#battle_scene = _battle_scene
+	#npc_action_picker.battle_scene = battle_scene
+
 func enter() -> void:
 	do_turn()
 
@@ -52,6 +56,7 @@ func load_ai() -> void:
 		add_child(new_action_picker)
 		npc_action_picker = new_action_picker
 		npc_action_picker.combatant = self
+		npc_action_picker.battle_scene = battle_scene
 
 func update_action() -> void:
 	#print("npc_figher.gd updating action")
@@ -59,7 +64,9 @@ func update_action() -> void:
 		return
 	if !current_action:
 		current_action = npc_action_picker.get_action()
+		current_action.battle_scene = battle_scene
 		return
 	var new_conditional_action := npc_action_picker.get_first_conditional_action()
 	if new_conditional_action and current_action != new_conditional_action:
 		current_action = new_conditional_action
+		current_action.battle_scene = battle_scene

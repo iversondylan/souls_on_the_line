@@ -66,7 +66,7 @@ func _get_targets(targets: Array[Node]) -> Array[Node]:
 		TargetType.SELF:
 			return tree.get_nodes_in_group("player")
 		TargetType.BATTLEFIELD:
-			return [GameState.battle_scene]
+			return tree.get_nodes_in_group("battle_scene")
 		TargetType.ALLY_OR_SELF:
 			return tree.get_nodes_in_group("allies") + tree.get_nodes_in_group("player")
 		#TargetType.ALLY:

@@ -30,7 +30,7 @@ size = Vector2(1200, 200)
 script = ExtResource("1_dd63g")
 music = ExtResource("2_3b6xh")
 
-[node name="Battle_Scene" type="CanvasLayer" parent="."]
+[node name="Battle_Scene" type="CanvasLayer" parent="." groups=["battle_scene"]]
 script = ExtResource("3_lcn8m")
 
 [node name="Background" type="TextureRect" parent="Battle_Scene"]

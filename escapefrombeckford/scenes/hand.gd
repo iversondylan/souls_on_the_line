@@ -42,6 +42,7 @@ func empty_hand():
 func add_card(card: CardData) -> void:
 	var usable_card : UsableCard = usable_card_scn.instantiate()
 	usable_card.card_data = card
+	usable_card.hand = self
 	usable_card.player = player
 	usable_card.battle_scene = battle_scene
 	var hand_size = hand_cards_arr.size()
