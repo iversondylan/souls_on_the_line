@@ -14,6 +14,7 @@ signal card_activated(card : UsableCard)
 const CARD_DRAW_INTERVAL: float = 0.1
 const CARD_DISCARD_INTERVAL: float = 0.1
 
+var battle_scene: BattleScene
 var player: Player
 
 var hand_cards_arr: Array[UsableCard] = []
@@ -26,7 +27,6 @@ var held_card: UsableCard = null
 func _ready() -> void:
 	Events.card_played.connect(_on_card_played)
 	Events.player_turn_started.connect(_on_player_turn_started)
-	#Events.player_turn_ended.connect(_on_player_turn_ended)
 	Events.card_drag_started.connect(_on_card_drag_started)
 	Events.card_drag_ended.connect(_card_drag_or_aim_ended)
 	Events.card_aim_ended.connect(_card_drag_or_aim_ended)
@@ -40,16 +40,17 @@ func empty_hand():
 	currently_touched_cards_arr = []
 
 func add_card(card: CardData) -> void:
-	var usable_card = usable_card_scn.instantiate()
+	var usable_card : UsableCard = usable_card_scn.instantiate()
 	usable_card.card_data = card
 	usable_card.player = player
+	usable_card.battle_scene = battle_scene
 	var hand_size = hand_cards_arr.size()
 	usable_card.original_index = hand_size
 	hand_cards_arr.push_back(usable_card)
 	hand_cards_node.add_child(usable_card)
 	usable_card.position = Vector2(30, 540)
 	#usable_card.load_card_data(card_with_id)
-	#usable_card.reparent_requested.connect(_on_usable_card_reparent_requested)
+	usable_card.reparent_requested.connect(_on_usable_card_reparent_requested)
 	usable_card.mouse_entered.connect(_handle_card_touched)
 	usable_card.mouse_exited.connect(_handle_card_untouched)
 	#usable_card.card_back_sprite2d.show()

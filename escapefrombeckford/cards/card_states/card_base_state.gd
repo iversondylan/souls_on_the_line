@@ -4,8 +4,8 @@ func enter() -> void:
 	if not usable_card.is_node_ready():
 		await  usable_card.ready
 	
-	if usable_card.tween and usable_card.tween.is_running():
-		usable_card.tween.kill()
+	#if usable_card.tween and usable_card.tween.is_running():
+		#usable_card.tween.kill()
 	
 	usable_card.card_visuals.glow.hide()
 	usable_card.reparent_requested.emit(usable_card)

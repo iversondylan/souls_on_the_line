@@ -2,12 +2,7 @@ class_name BattleGroupEnemy extends BattleGroup
 
 func _ready() -> void:
 	turn_taker = $EnemyTurnTerminal
-	#Events.combatant_died.connect(_combatant_died)
-	#Events.combatant_actions_completed.connect(_on_combatant_actions_completed)
-	#Events.friendly_turn_started.connect(_on_friendly_turn_started)
 	Events.enemy_turn_started.connect(_on_enemy_turn_started)
-	#Events.turn_taker_turn_completed.connect(_on_turn_taker_turn_complete) #MUST RESTORE THIS!!!!!!
-	#Events.npc_action_completed.connect(_on_npc_action_completed)
 	update_combatant_rank_variable()
 
 func reboot_turn_taker(next_turn_taker: TurnTaker) -> void:

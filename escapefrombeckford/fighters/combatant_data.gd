@@ -32,18 +32,6 @@ var mana_green: int : set = set_mana_green
 var mana_blue: int : set = set_mana_blue
 var rank: int
 
-#@export var on_spawn_actions: Array[GDScript] = []
-#@export var on_pre_game_ended_actions: Array[GDScript] = []
-#@export var on_player_turn_started_actions: Array[GDScript] = []
-#@export var on_player_turn_ended_actions: Array[GDScript] = []
-#@export var on_summons_turn_started_actions: Array[GDScript] = []
-#@export var on_summons_turn_ended_actions: Array[GDScript] = []
-#@export var on_enemy_turn_started_actions: Array[GDScript] = []
-#@export var on_enemy_turn_ended_actions: Array[GDScript] = []
-
-#func connect_data_changed() -> void:
-	#combatant_data_changed
-
 func stats_changed() -> void:
 	if fighter is Player:
 		Events.player_combatant_data_changed.emit()

@@ -1,6 +1,4 @@
-extends RefCounted
-
-var card_data: CardData
+extends CardAction
 
 func activate(targets: Array[Node], player: Player) -> bool:
 	var attack_damage: int = 0

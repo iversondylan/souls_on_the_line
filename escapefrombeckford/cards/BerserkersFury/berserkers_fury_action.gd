@@ -1,6 +1,5 @@
-extends RefCounted
+extends CardAction
 
-var card_data: CardData
 
 func activate(targets: Array[Node], player: Player) -> bool:
 	var sacrifice_target: SummonedAlly = null

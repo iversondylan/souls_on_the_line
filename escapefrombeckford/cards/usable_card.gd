@@ -5,7 +5,8 @@ signal mouse_entered(usablecard: UsableCard)
 signal mouse_exited(usablecard: UsableCard)
 
 var player: Player
-var actions: Array[RefCounted]
+var battle_scene: BattleScene
+var actions: Array[CardAction]
 var card_name_str: String = "Card Name"
 var card_description_str: String = "Card Description"
 var cost_red: int = 1
@@ -51,13 +52,6 @@ func _ready() -> void:
 func _input(event: InputEvent) -> void:
 	card_state_machine.on_input(event)
 
-#func move_and_flip(new_position: Vector2, duration: float) -> void:
-	#if !tween:
-		#tween = create_tween().set_trans(Tween.TRANS_CIRC).set_ease(Tween.EASE_OUT)
-	#tween.tween_property(self, "global_position", new_position,  duration)
-	#await tween.finished
-	#card_back_sprite2d.hide()
-
 func animate_to_position(new_position: Vector2, new_rotation: float, duration: float) -> void:
 	tween = create_tween().set_trans(Tween.TRANS_CIRC).set_ease(Tween.EASE_OUT)
 	tween.set_parallel()
@@ -74,11 +68,14 @@ func _set_card_data(_card_data: CardData) -> void:
 	card_data = _card_data
 	card_visuals.card_data = card_data
 	#card_art_rect.set_texture(card_data.texture)
-	for script in card_data.actions:
-		var action_script = RefCounted.new()
-		action_script.set_script(script)
-		action_script.card_data = card_data
-		actions.push_back(action_script)
+	for action_script : GDScript in card_data.actions:
+		var new_action = CardAction.new()
+		new_action.set_script(action_script)
+		#print(card_action.resource_name)
+		#var new_action : CardAction = card_action.duplicate()
+		new_action.card_data = card_data
+		new_action.battle_scene = battle_scene
+		actions.push_back(new_action)
 	_update_graphics()
 
 func _set_playable(value: bool) -> void:
@@ -125,7 +122,7 @@ func get_cost() -> Array[int]:
 
 func activate() -> bool:
 	var action_processed: bool = false
-	for action in actions:
+	for action : CardAction in actions:
 		action_processed = action.activate(targets, player)
 	if action_processed:
 		Events.card_played.emit(self)
@@ -134,9 +131,6 @@ func activate() -> bool:
 		else:
 			GameState.hand.reserve_summon_card(GameState.hand.remove_card_by_entity(self))
 	return action_processed
-
-func _process(_delta: float) -> void:
-	pass
 
 func _update_graphics():
 	#if card_visuals.cost_blue.get_text() != str(card_data.cost_blue):

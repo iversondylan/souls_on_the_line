@@ -12,9 +12,8 @@ class_name Battle extends Node2D
 
 @onready var player_scn: PackedScene = preload("res://scenes/turn_takers/player.tscn")
 @onready var enemy_scn: PackedScene = preload("res://scenes/turn_takers/enemy.tscn")
-#@onready var summoned_ally_scn = preload("res://scenes/turn_takers/summoned_ally.tscn")
-
 @onready var perspective_card_scn: PackedScene = preload("res://scenes/perspective_card.tscn")
+
 @onready var draw_view_overlay: CardsViewWindow = $Visual_Overlays/DrawViewWindow
 @onready var discard_view_overlay: CardsViewWindow = $Visual_Overlays/DiscardViewWindow
 @onready var collection_view_overlay: CardsViewWindow = $Visual_Overlays/CollectionViewWindow
@@ -66,6 +65,8 @@ func _ready() -> void:
 
 	draw_pile_button.pressed.connect(draw_pile_view.show_current_draw_view.bind("Draw Pile", true))
 	discard_pile_button.pressed.connect(discard_pile_view.show_current_discard_view.bind("Discard Pile"))
+	
+	hand.battle_scene = battle_scene
 
 
 func initialize_card_pile_ui() -> void:

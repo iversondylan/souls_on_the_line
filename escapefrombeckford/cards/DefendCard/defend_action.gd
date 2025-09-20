@@ -1,6 +1,4 @@
-extends RefCounted
-
-var card_data: CardData
+extends CardAction
 
 func activate(_targets: Array[Node], player: Player) -> bool:
 	

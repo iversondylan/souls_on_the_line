@@ -1,6 +1,5 @@
-extends RefCounted
+extends CardAction
 
-var card_data: CardData
 
 func activate(targets: Array[Node], player: Player) -> bool:
 	var focus_target: Array[Fighter] = []
