@@ -29,9 +29,11 @@ func _input(event: InputEvent) -> void:
 			card_tooltip_popup.hide_tooltip()
 		else:
 			hide()
-
+#I DON'T SEE WHY THE FOLLOWING 3 FUNCTIONS CAN'T BE ELIMINATED. THESE CARD
+#PILE VIEWS ALREADY GET ASSIGNED THEIR RESPECTIVE CARD PILES ELSEWHERE.
+#I COULD JUST CALL show_current_view() INSTEAD.
 func show_current_collection_view(new_title: String, randomized: bool = false) -> void:
-	card_pile = deck.cards
+	card_pile = deck.card_collection
 	show_current_view(new_title, randomized)
 
 func show_current_draw_view(new_title: String, randomized: bool = false) -> void:

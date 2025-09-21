@@ -69,14 +69,20 @@ func _set_deck(_deck: Deck) -> void:
 	deck = _deck
 	hand.deck = deck
 	battle_scene.deck = deck
+	
 
 func initialize_card_pile_ui() -> void:
-	draw_pile_button.deck = deck
+	#draw_pile_button.deck = deck
 	draw_pile_button.card_pile = deck.draw_pile
+	
 	draw_pile_view.card_pile = deck.draw_pile
-	discard_pile_button.deck = deck
+	draw_pile_view.deck = deck
+	
+	#discard_pile_button.deck = deck
 	discard_pile_button.card_pile = deck.discard_pile
+	
 	discard_pile_view.card_pile = deck.discard_pile
+	discard_pile_view.deck = deck
 
 func make_player_combatant() -> void:
 	var new_player: Player = player_scn.instantiate()
@@ -103,7 +109,7 @@ func start_battle():
 	BattleController.current_state = BattleController.BattleState.PRE_GAME
 	
 	wait_for_anims = true
-	initialize_card_pile_ui()
+	
 	battle_scene.clear_combatants()
 	#update_game_state()
 	
@@ -122,6 +128,7 @@ func start_battle():
 	hand.empty_hand()
 	deck.reset()
 	deck.make_draw_pile()
+	initialize_card_pile_ui()
 	#combatants_mouse_left.clear()
 	BattleController.transition(BattleController.BattleState.FRIENDLY_TURN)
 	#deck_ui.visible = true

@@ -76,6 +76,7 @@ func take_discards() -> void:
 func make_draw_pile():
 	if first_shuffle:
 		draw_pile = card_collection.duplicate()
+		#draw_pile_size_changed.emit(draw_pile.cards.size())
 		first_shuffle = false
 	else:
 		take_discards()

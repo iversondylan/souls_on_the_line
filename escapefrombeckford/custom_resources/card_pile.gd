@@ -2,7 +2,11 @@ class_name CardPile extends Resource
 
 signal card_pile_size_changed(cards_amount)
 
-@export var cards: Array[CardData] = []
+@export var cards: Array[CardData] : set = _set_cards
+
+func _set_cards(_cards: Array[CardData]) -> void:
+	cards = _cards
+	card_pile_size_changed.emit(cards.size())
 
 
 func is_empty() -> bool:
