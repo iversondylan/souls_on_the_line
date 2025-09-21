@@ -46,7 +46,7 @@ var wait_for_anims: bool = false
 func _ready() -> void:
 	get_tree().paused = false
 	#CombatantLibrary.compile_combatant_library()
-	IconLibrary.compile_icon_library()
+	#IconLibrary.compile_icon_library()
 	BattleController.current_state = BattleController.BattleState.PRE_GAME
 
 	#update_game_state()

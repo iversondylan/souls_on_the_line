@@ -18,7 +18,6 @@ config/icon="res://icon.svg"
 [autoload]
 
 Events="*res://global/events.gd"
-IconLibrary="*res://global/icon_library.gd"
 BattleController="*res://global/battle_controller.gd"
 Shaker="*res://global/shaker.gd"
 MusicPlayer="*res://global/music_player.tscn"
