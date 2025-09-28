@@ -8,6 +8,8 @@ enum RoomType {NOT_ASSIGNED, BATTLE, TREASURE, REST, SHOP, BOSS}
 @export var position: Vector2
 @export var next_rooms: Array[Room]
 @export var selected := false
+#battle_data for Battle and Boss room types only.
+@export var battle_data: BattleData
 
 func _to_string() -> String:
 	return "%s (%s)" % [row, RoomType.keys()[type][0]]

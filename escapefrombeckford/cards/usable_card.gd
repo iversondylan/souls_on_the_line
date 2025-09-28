@@ -20,23 +20,12 @@ var original_index := 0
 @onready var card_visuals: CardVisuals = $CardVisuals
 
 @onready var click_area_area2d: Area2D = $ClickArea
-#@onready var cost_blue_label: Label = $CostDisplay/CostBlue
-#@onready var cost_red_label: Label = $CostDisplay/CostRed
-#@onready var cost_green_label: Label = $CostDisplay/CostGreen
-#@onready var cost_container: Sprite2D = $CostDisplay/CostContainer
-#@onready var card_name_lbl: Label = $CardName/Name
-#@onready var card_description_lbl: Label = $CardDescription/Description
-#@onready var card_front_sprite2d: Sprite2D = $CardFront
 @onready var card_back_sprite2d: Sprite2D = $CardBack
-#@onready var card_art: Sprite2D = $CardArt
-#@onready var card_art_rect: TextureRect = $CardArtRect
-#@onready var card_glow: Sprite2D = $Glow
 @onready var drop_point_detector: Area2D = $DropPointDetector
 @onready var card_state_machine: CardStateMachine = $CardStateMachine as CardStateMachine
 @onready var targets: Array[Node] = []
 
 
-#var parent: Node2D
 var tween: Tween
 var playable := true : set = _set_playable
 var disabled := false
