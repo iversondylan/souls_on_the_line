@@ -1,6 +1,6 @@
 extends CardAction
 
-func activate(_targets: Array[Node], player: Player) -> bool:
+func activate(_targets: Array[Node]) -> bool:
 	
 	if !player.can_play_card(card_data):
 		return false

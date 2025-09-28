@@ -22,7 +22,8 @@ var highlighted_card_index_int: int = -1
 var currently_touched_cards_arr: Array[UsableCard] = []
 var currently_selected_card_index: int = -1
 var mouse_in_hand_area: bool = false
-var held_card: UsableCard = null
+var selected_card: UsableCard
+#var held_card: UsableCard = null
 
 func _ready() -> void:
 	Events.card_played.connect(_on_card_played)
@@ -132,12 +133,9 @@ func remove_cards_by_entities(usable_cards: Array[UsableCard]) -> Array[UsableCa
 	return removing_cards
 
 func disable_hand_cards() -> void:
-	#currently_selected_card_index = -1
 	for usable_card in hand_cards_arr:
 		usable_card.unhighlight()
 		usable_card.disabled = true
-	#hand_cards_arr = []
-	#currently_touched_cards_arr = []
 
 func reposition_hand_cards():
 	var card_spread_angle_flt : float = 0
@@ -161,30 +159,17 @@ func _update_card_transform(usable_card: UsableCard, angle_in_drag: float) -> vo
 func _handle_card_touched(usablecard: UsableCard):
 	if usablecard.card_state_machine.current_state.state == CardState.State.BASE:# and usablecard.disabled == false:
 		currently_touched_cards_arr.push_back(usablecard)
+	#handle_touching_cards()
 
 func _handle_card_untouched(usablecard: UsableCard):
 	usablecard.selected = false
 	var index: int = currently_touched_cards_arr.find(usablecard)
 	if index >= 0:
 		currently_touched_cards_arr.remove_at(index)
+	else:
+		print("usable_card.gd _handle_card_untouched() Error: attempted to remove card not in touched cards.")
+	#handle_touching_cards()
 
-func get_card_position(angle_deg_flt: float) -> Vector2:
-	var x: float = hand_radius_flt * cos(deg_to_rad(angle_deg_flt+270))
-	var y: float = hand_radius_flt * sin(deg_to_rad(angle_deg_flt+270))
-	return collision_shape.position + Vector2(x, y)
-# Called when the node enters the scene tree for the first time.
-
-
-
-func on_click():
-	if currently_selected_card_index >= 0:
-		var card = hand_cards_arr[currently_selected_card_index] #remove_card(currently_selected_card_index)
-		card_activated.emit(card)
-		currently_selected_card_index = -1
-		held_card = card
-		held_card.set_usable_card_z_index(1)
-
-#THIS SHOULD BE REWORKED TO USE SIGNALS INSTEAD OF PROCESS
 func _process(_delta: float) -> void:
 	for usablecard in hand_cards_arr:
 		usablecard.unhighlight()
@@ -196,20 +181,65 @@ func _process(_delta: float) -> void:
 			touched_card.selected = false
 			currently_selected_card_index = max(currently_selected_card_index, hand_cards_arr.find(touched_card))
 		
-		if held_card:
-			held_card.highlight()
-		elif currently_selected_card_index >= 0 && currently_selected_card_index < hand_cards_arr.size():
+		#if held_card:
+			#held_card.highlight()
+		if currently_selected_card_index >= 0 && currently_selected_card_index < hand_cards_arr.size():
 			hand_cards_arr[currently_selected_card_index].highlight()
 		hand_cards_arr[currently_selected_card_index].selected = true
 
-#THIS FUNCTION SHOULD BE RENAMED
+#func handle_touching_cards() -> void:
+	##print("usable_card.gd handle_touching_cards()")
+	#for usablecard in hand_cards_arr:
+		#if usablecard != selected_card:
+			#usablecard.unhighlight()
+			#usablecard.selected = false
+	#currently_selected_card_index = -1
+	#if currently_touched_cards_arr.is_empty():
+		#return
+	##if held_card:
+		##held_card.highlight()
+	#else:
+		#print("usable_card.gd handle_touching_cards() trying to select card...")
+		#selected_card = get_last_in_hand(currently_touched_cards_arr)
+		#selected_card.highlight()
+		#selected_card.selected = true
+
+func get_last_in_hand(subset: Array[UsableCard]) -> UsableCard:
+	var max_index := -1
+	var result: UsableCard = null
+	
+	for n: UsableCard in subset:
+		var idx = hand_cards_arr.find(n)
+		if idx > max_index:
+			max_index = idx
+			result = n
+	return result
+
+
+func get_card_position(angle_deg_flt: float) -> Vector2:
+	var x: float = hand_radius_flt * cos(deg_to_rad(angle_deg_flt+270))
+	var y: float = hand_radius_flt * sin(deg_to_rad(angle_deg_flt+270))
+	return collision_shape.position + Vector2(x, y)
+# Called when the node enters the scene tree for the first time.
+
+#START HERE AGAIN STUPID 9/27/2025
+#func on_input(event: InputEvent) -> void:
+	#if event.is_action_released("mouse_click"):
+		#on_click()
+#
+#func on_click():
+	#if currently_selected_card_index >= 0:
+		#var card = hand_cards_arr[currently_selected_card_index] #remove_card(currently_selected_card_index)
+		#card_activated.emit(card)
+		#currently_selected_card_index = -1
+		#held_card = card
+		#held_card.set_usable_card_z_index(1)
+
 func _on_usable_card_reparent_requested(_child: UsableCard) -> void:
 	reposition_hand_cards()
 
 func _on_card_played(usable_card: UsableCard):
 	currently_touched_cards_arr.erase(usable_card)
-	#held_card.set_usable_card_z_index(0)
-	held_card = null
 
 func _on_hand_area_mouse_entered() -> void:
 	mouse_in_hand_area = true
@@ -225,10 +255,6 @@ func _on_card_drag_started(_usable_card: UsableCard) -> void:
 
 func _card_drag_or_aim_ended(_usable_card: UsableCard) -> void:
 	_usable_card.set_usable_card_z_index(0)
-	held_card = null
-
-#func _on_player_turn_ended() -> void:
-	#pass
 
 func _on_player_turn_completed() -> void:
 	disable_hand_cards()

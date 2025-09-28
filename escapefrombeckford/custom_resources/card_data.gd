@@ -87,12 +87,3 @@ func _get_targets(targets: Array[Node]) -> Array[Node]:
 			return tree.get_nodes_in_group("enemies") + tree.get_nodes_in_group("allies") + tree.get_nodes_in_group("player")
 		_:
 			return []
-
-#func play(_targets: Array[Node]) -> void:
-	#pass
-
-
-#var usable_card_scn = preload("res://scenes/cards/UsableCard.tscn")
-
-#func generate_usable_card() -> UsableCard:
-#	return UsableCard.new(self)

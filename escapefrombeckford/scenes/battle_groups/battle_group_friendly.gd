@@ -30,5 +30,12 @@ func ally_traverse_player(ally: SummonedAlly) -> void:
 	update_combatant_position()
 		
 
+func get_n_summoned_allies() -> int:
+	var n_allies: int = 0
+	for child in get_children():
+		if child is SummonedAlly:
+			n_allies += 1
+	return n_allies
+
 func _on_friendly_turn_started() -> void:
 	start_turn()

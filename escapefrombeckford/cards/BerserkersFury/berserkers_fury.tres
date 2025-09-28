@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="CardData" load_steps=5 format=3 uid="uid://ds3np5rpek8ot"]
 
-[ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://cards/card_data.gd" id="1_241b1"]
+[ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://custom_resources/card_data.gd" id="1_241b1"]
 [ext_resource type="Script" uid="uid://b43di6hrx5dk5" path="res://cards/BerserkersFury/berserkers_fury_action.gd" id="1_ib15p"]
 [ext_resource type="Texture2D" uid="uid://cv6qmfmw23it7" path="res://assets/sprites/explosion.jpg" id="3_65r7g"]
 [ext_resource type="AudioStream" uid="uid://bq5ec6mssamqd" path="res://assets/sfx/Fire impact 1.wav" id="3_lqu2x"]

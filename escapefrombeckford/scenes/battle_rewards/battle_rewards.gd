@@ -93,7 +93,7 @@ func _on_gold_reward_taken(n_gold: int) -> void:
 func _on_card_reward_taken(card: CardData) -> void:
 	if !player_data or !card or !run_account.deck:
 		return
-	run_account.deck.add_back(card)
+	run_account.deck.add_card(card)
 
 func _on_back_button_pressed() -> void:
 	Events.battle_rewards_exited.emit()

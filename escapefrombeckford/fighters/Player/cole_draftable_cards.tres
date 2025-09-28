@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="CardPile" load_steps=6 format=3 uid="uid://bb2svevqwn2v7"]
 
-[ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://cards/card_data.gd" id="1_fen0u"]
+[ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://custom_resources/card_data.gd" id="1_fen0u"]
 [ext_resource type="Script" uid="uid://dnybrgm0o6gjj" path="res://custom_resources/card_pile.gd" id="2_a8mjb"]
 [ext_resource type="Resource" uid="uid://ds3np5rpek8ot" path="res://cards/BerserkersFury/berserkers_fury.tres" id="3_8eqlo"]
 [ext_resource type="Resource" uid="uid://dfgkvy2yw1a3e" path="res://cards/AttackCard/attack_card.tres" id="5_4xfwm"]

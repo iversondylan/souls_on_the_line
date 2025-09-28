@@ -10,6 +10,7 @@ class_name CardVisuals extends Control
 @onready var cost_container: Sprite2D = %CostContainer
 @onready var name_label: RichTextLabel = %NameLabel
 @onready var card_art_rect: TextureRect = %CardArtRect
+@onready var card_name_box: TextureRect = %CardNameBox
 @onready var description: RichTextLabel = %Description
 @onready var rarity: TextureRect = %Rarity
 

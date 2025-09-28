@@ -1,7 +1,7 @@
 extends CardAction
 
 
-func activate(targets: Array[Node], player: Player) -> bool:
+func activate(targets: Array[Node]) -> bool:
 	var warp_targets: Array[SummonedAlly] = []
 	
 	for target in targets:

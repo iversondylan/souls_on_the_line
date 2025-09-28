@@ -1,5 +1,7 @@
 class_name BattleGroup extends Node2D
 
+
+
 @export var faces_right: bool = true
 
 var battle_scene: BattleScene
@@ -59,6 +61,7 @@ func add_combatant(fighter: Fighter, rank: int):
 	var children: Array[Node] = get_children()
 	var n_children: int = children.size()
 	add_child(fighter)
+	Events.n_combatants_changed.emit()
 	connect_combatant(fighter)
 	fighter.battle_group = self
 	#update_combatant_rank_variable()
@@ -80,6 +83,7 @@ func remove_combatant(fighter: Fighter):
 	if fighter == turn_taker:
 		reboot_turn_taker(turn_table[turn_taker])
 	remove_child(fighter)
+	Events.n_combatants_changed.emit()
 	fighter.queue_free()
 	update_combatant_rank_variable()
 	update_combatant_position()

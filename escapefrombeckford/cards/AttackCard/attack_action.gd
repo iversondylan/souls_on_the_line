@@ -1,6 +1,6 @@
 extends CardAction
 
-func activate(targets: Array[Node], player: Player) -> bool:
+func activate(targets: Array[Node]) -> bool:
 	var attack_damage: int = 0
 	var attack_count: int = 0
 	var attack_targets: Array[Fighter] = []

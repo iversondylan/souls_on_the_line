@@ -1,7 +1,7 @@
 extends CardAction
 
 
-func activate(targets: Array[Node], player: Player) -> bool:
+func activate(targets: Array[Node]) -> bool:
 	var focus_target: Array[Fighter] = []
 	var action_processed: bool = false
 	

@@ -47,6 +47,7 @@ func _ready() -> void:
 	Events.card_drag_started.connect(_on_card_drag_or_aiming_started)
 	Events.card_aim_ended.connect(_on_card_drag_or_aiming_ended)
 	Events.card_drag_ended.connect(_on_card_drag_or_aiming_ended)
+	Events.n_combatants_changed.connect(_on_n_combatants_changed)
 	Events.player_combatant_data_changed.connect(_on_player_combatant_data_changed)
 	card_state_machine.init(self)
 
@@ -68,34 +69,29 @@ func _set_card_data(_card_data: CardData) -> void:
 		await ready
 	card_data = _card_data
 	card_visuals.card_data = card_data
-	#card_art_rect.set_texture(card_data.texture)
 	for action_script : GDScript in card_data.actions:
 		var new_action = CardAction.new()
 		new_action.set_script(action_script)
-		#print(card_action.resource_name)
-		#var new_action : CardAction = card_action.duplicate()
 		new_action.card_data = card_data
+		new_action.player = player
 		new_action.battle_scene = battle_scene
 		actions.push_back(new_action)
 	_update_graphics()
+	playable = is_playable()
 
 func _set_playable(value: bool) -> void:
 	playable = value
 	if not playable:
 		card_visuals.cost_container.set_modulate(Color(1, 0.5, 0.1, 1))
-		#cost.add_theme_color_override("font_color", Color.RED)
-		#icon.modulate = Color(1, 1, 1, 0.5)
 	else:
 		card_visuals.cost_container.set_modulate(Color(1, 1, 1, 1))
-		#cost.remove_theme_color_override("font_color")
-		#icon.modulate = Color(1, 1, 1, 1)
-#func load_card_data(cardwithid: CardWithID):
-	#set_card_values(cardwithid.card.cost_red, cardwithid.card.cost_green, cardwithid.card.cost_blue, cardwithid.card.name, cardwithid.card.description, cardwithid)
-	#card_art.set_texture(cardwithid.card.texture)
-	#for script in cardwithid.card.actions:
-		#var action_script = RefCounted.new()
-		#action_script.set_script(script)
-		#actions.push_back(action_script)
+
+func is_playable() -> bool:
+	var currently_playable: bool = true
+	for card_action: CardAction in actions:
+		if !card_action.is_playable():
+			currently_playable = false
+	return currently_playable
 
 func highlight():
 	if disabled == false and card_state_machine.current_state is BaseState:
@@ -115,8 +111,7 @@ func set_usable_card_z_index(index: int):
 	card_visuals.cost_red_sprites.z_index = index
 	card_visuals.cost_green_sprites.z_index = index
 	card_visuals.cost_blue_sprites.z_index = index
-	#state.z_index = index
-	#card_back_sprite2d.z_index = index
+	card_visuals.card_name_box.z_index = index
 
 func get_cost() -> Array[int]:
 	return [card_data.cost_red, card_data.cost_green, card_data.cost_blue]
@@ -124,7 +119,7 @@ func get_cost() -> Array[int]:
 func activate() -> bool:
 	var action_processed: bool = false
 	for action : CardAction in actions:
-		action_processed = action.activate(targets, player)
+		action_processed = action.activate(targets)
 	if action_processed:
 		Events.card_played.emit(self)
 		if card_data.card_type != CardData.CardType.SUMMON:
@@ -134,19 +129,16 @@ func activate() -> bool:
 	return action_processed
 
 func _update_graphics():
-	#if card_visuals.cost_blue.get_text() != str(card_data.cost_blue):
-		#card_visuals.cost_blue.set_text(str(card_data.cost_blue))
-	#if card_visuals.cost_red.get_text() != str(card_data.cost_red):
-		#card_visuals.cost_red.set_text(str(card_data.cost_red))
-	#if card_visuals.cost_green.get_text() != str(card_data.cost_green):
-		#card_visuals.cost_green.set_text(str(card_data.cost_green))
 	if card_visuals.name_label.get_text() != card_data.name:
 		card_visuals.name_label.set_text(card_data.name)
 	if card_visuals.description.get_text() != card_data.description:
 		card_visuals.description.set_text(card_data.description)
 
+func _on_n_combatants_changed() -> void:
+	playable = is_playable()
+
 func _on_player_combatant_data_changed() -> void:
-	playable = player.can_play_card(card_data)
+	playable = is_playable()
 
 func _on_click_area_mouse_entered() -> void:
 	card_state_machine.on_mouse_entered()
@@ -172,4 +164,4 @@ func _on_card_drag_or_aiming_started(used_card: UsableCard) -> void:
 
 func _on_card_drag_or_aiming_ended(_usable_card: UsableCard) -> void:
 	disabled = false
-	playable = player.can_play_card(card_data)
+	playable = is_playable()

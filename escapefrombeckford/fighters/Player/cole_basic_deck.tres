@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="CardPile" load_steps=8 format=3 uid="uid://gsb7q5fcn68v"]
 
-[ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://cards/card_data.gd" id="1_rilno"]
+[ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://custom_resources/card_data.gd" id="1_rilno"]
 [ext_resource type="Resource" uid="uid://ds3np5rpek8ot" path="res://cards/BerserkersFury/berserkers_fury.tres" id="2_e7eac"]
 [ext_resource type="Script" uid="uid://dnybrgm0o6gjj" path="res://custom_resources/card_pile.gd" id="2_nkp8v"]
 [ext_resource type="Resource" uid="uid://b7txf6d8vmjkk" path="res://cards/SpectralCloneCard/spectral_clone.tres" id="3_miprr"]

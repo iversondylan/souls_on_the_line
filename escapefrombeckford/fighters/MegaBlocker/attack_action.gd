@@ -1,7 +1,7 @@
 extends NPCAction
 
-@export var n_damage := 6
-@export var n_attacks := 2
+@export var n_damage := 7
+@export var n_attacks := 1
 
 var spree: int = 0
 

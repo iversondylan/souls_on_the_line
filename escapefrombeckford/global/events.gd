@@ -19,6 +19,7 @@ signal battlefield_aim_ended(usable_card: UsableCard)
 signal card_drag_started(usable_card: UsableCard)
 signal card_drag_ended(usable_card: UsableCard)
 signal card_played(usable_card: UsableCard)
+signal n_combatants_changed()
 
 signal icon_tooltip_show_requested(usable_icon: UsableIcon)
 signal icon_tooltip_hide_requested()

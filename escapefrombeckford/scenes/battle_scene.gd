@@ -37,6 +37,12 @@ func get_combatants_in_group(group_index: int) -> Array[Fighter]:
 func get_n_combatants_in_group(group_index: int) -> int:
 	return groups[group_index].get_combatants().size()
 
+func get_n_summoned_allies() -> int:
+	for group: BattleGroup in groups:
+		if group is BattleGroupFriendly:
+			return group.get_n_summoned_allies()
+	return 0
+
 func get_combatants() -> Array[Fighter]:
 	var fighters: Array[Fighter] = []
 	for child_group in get_children():

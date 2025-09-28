@@ -156,20 +156,20 @@ func make_enemies() -> void:
 		#GameState.player = battle_scene.get_player()
 	#GameState.turn_number = BattleController.turn_number
 
-func _process(_delta: float) -> void:
-	if !BattleController.is_running:
-		mouse_pressed = false
-		return
-	
-	if mouse_pressed && !Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
-		mouse_pressed = false
+#func _process(_delta: float) -> void:
+	#if !BattleController.is_running:
+		#mouse_pressed = false
+		#return
+	#
+	#if mouse_pressed && !Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
+		#mouse_pressed = false
 
-func _input(event):
-	if event.is_action("restart"):
-		start_battle()
-	elif event.is_action_pressed("mouse_click"):
-		hand.on_click()
-		mouse_pressed = true
+#func _input(event):
+	#if event.is_action("restart"):
+		#start_battle()
+	#elif event.is_action_pressed("mouse_click"):
+		##hand.on_click()
+		#mouse_pressed = true
 
 func _on_take_1_button_pressed() -> void:
 	pass
