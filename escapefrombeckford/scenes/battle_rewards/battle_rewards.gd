@@ -60,7 +60,9 @@ func _show_card_reward() -> void:
 				_modify_weights(rarity)
 				var rolled_card := _get_random_possible_card(possible_cards, rarity)
 				card_choices.append(rolled_card)
-				possible_cards.erase(rolled_card)
+				#THIS NEEDS TO BE REVISITED BECAUSE CARDS SHOULD POSSIBLY BE REMOVED FROM THE POOL
+				#BUT IT WAS CAUSING AN ERROR WHEN NO CARDS OF A CERTAIN RARITY WERE LEFT
+				#possible_cards.erase(rolled_card) #is this erasing the rolled card from run_account.draftable_cards.cards?
 				break
 	
 	card_reward.card_choices = card_choices
@@ -79,10 +81,12 @@ func _modify_weights(rarity_rolled: CardData.Rarity) -> void:
 		run_account.rare_weight = clampf(run_account.rare_weight + 0.3, run_account.BASE_RARE_WEIGHT, 5.0)
 
 func _get_random_possible_card(possible_cards: Array[CardData], rarity: CardData.Rarity) -> CardData:
+	print("battle_rewards.gd _get_random_possible_card possible_cards: %s" % possible_cards.size())
 	var all_possible_cards := possible_cards.filter(
 		func(card: CardData):
 			return card.rarity == rarity
 	)
+	print("battle_rewards.gd _get_random_possible_card all_possible_cards: %s" % all_possible_cards.size())
 	return all_possible_cards.pick_random()
 
 func _on_gold_reward_taken(n_gold: int) -> void:

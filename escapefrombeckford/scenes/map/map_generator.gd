@@ -10,6 +10,8 @@ const BATTLE_ROOM_WEIGHT := 10.0
 const SHOP_ROOM_WEIGHT := 2.5
 const REST_ROOM_WEIGHT := 4.0
 
+@export var battle_pool: BattlePool
+
 var random_room_type_weights = {
 	Room.RoomType.BATTLE: 0.0,
 	Room.RoomType.REST: 0.0,
@@ -31,6 +33,8 @@ func make_map() -> Array[Array]:
 		for i in ENCOUNTERS - 1:
 			#print("current_j is %s" % current_j)
 			current_j = _make_connection(i, current_j)
+	
+	battle_pool.init_weights()
 	
 	_make_boss_room()
 	_make_random_room_weights()
@@ -140,6 +144,7 @@ func _make_boss_room() -> void:
 			current_room.next_rooms.push_back(boss_room)
 	
 	boss_room.type = Room.RoomType.BOSS
+	boss_room.battle_data = battle_pool.get_random_battle_for_tier(2)
 	
 func _make_random_room_weights() -> void:
 	random_room_type_weights[Room.RoomType.BATTLE] = BATTLE_ROOM_WEIGHT
@@ -153,6 +158,7 @@ func _make_room_types() -> void:
 	for room: Room in map_data[0]:
 		if room.next_rooms.size() > 0:
 			room.type = Room.RoomType.BATTLE
+			room.battle_data = battle_pool.get_random_battle_for_tier(0)
 	#9th floor is always a treasure
 	for room: Room in map_data[8]:
 		if room.next_rooms.size() > 0:
@@ -191,6 +197,14 @@ func _set_weighted_room_type(room_to_set: Room) -> void:
 		rest_on_13 = is_rest and room_to_set.column == 12
 	
 	room_to_set.type = type_candidate
+	
+	if type_candidate == Room.RoomType.BATTLE:
+		var tier_for_battle_rooms := 0
+		
+		if room_to_set.row > 2:
+			tier_for_battle_rooms = 1
+		
+		room_to_set.battle_data = battle_pool.get_random_battle_for_tier(tier_for_battle_rooms)
 
 func _room_has_parent_of_type(room: Room, type: Room.RoomType) -> bool:
 	var parents: Array[Room] = []
