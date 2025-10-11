@@ -33,7 +33,7 @@ class_name Battle extends Node2D
 @onready var draw_pile_view: CardPileView = %DrawPileView
 @onready var discard_pile_view: CardPileView = %DiscardPileView
 
-var player_data: CombatantData
+var player_data: PlayerData
 var player: Player
 var deck: Deck : set = _set_deck
 
@@ -84,16 +84,6 @@ func initialize_card_pile_ui() -> void:
 	discard_pile_view.card_pile = deck.discard_pile
 	discard_pile_view.deck = deck
 
-
-
-#func make_basic_thrall() -> void:
-	#var new_enemy: NPCFighter
-	#new_enemy = enemy_scn.instantiate()
-	#new_enemy.combatant_data = load("res://fighters/MegaBlocker/basic_thrall_data.tres").duplicate()
-	#battle_scene.add_combatant(new_enemy, 1, 0)
-	#new_enemy.reset()
-	
-
 func start_battle():
 	if wait_for_anims:
 		return
@@ -102,7 +92,6 @@ func start_battle():
 	wait_for_anims = true
 	
 	battle_scene.clear_combatants()
-	#update_game_state()
 	
 	BattleController.is_running = true
 	BattleController.turn_number = 0
@@ -110,19 +99,12 @@ func start_battle():
 	make_player_combatant()
 	make_enemies()
 	
-	
-	#make_basic_thrall()
-	#make_basic_thrall()
-	
 	_on_player_data_changed()
-	#update_game_state()
 	hand.empty_hand()
 	deck.reset()
 	deck.make_draw_pile()
 	initialize_card_pile_ui()
-	#combatants_mouse_left.clear()
 	BattleController.transition(BattleController.BattleState.FRIENDLY_TURN)
-	#deck_ui.visible = true
 	MusicPlayer.play(music, true)
 
 func make_player_combatant() -> void:
@@ -130,11 +112,9 @@ func make_player_combatant() -> void:
 	battle_scene.add_combatant(new_player, 0, 0)
 	new_player.combatant_data = player_data
 	player_data.is_alive = true
-	
 	battle_scene.set_player(new_player)
 	player = new_player
 	hand.player = new_player
-	#new_player.reset()
 
 func make_enemies() -> void:
 	if !battle_data:

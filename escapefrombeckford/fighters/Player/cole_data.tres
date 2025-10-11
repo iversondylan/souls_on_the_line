@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="PlayerData" load_steps=4 format=3 uid="uid://cv7ssxqkw1opq"]
+
+[ext_resource type="Texture2D" uid="uid://ppn4laxwte56" path="res://assets/sprites/cole.PNG" id="1_8y483"]
+[ext_resource type="Script" uid="uid://bql7t8sctwe10" path="res://custom_resources/player_data.gd" id="1_i82qw"]
+[ext_resource type="Texture2D" uid="uid://cd1e7xebxf3sc" path="res://assets/sprites/cole_portrait.png" id="2_qttha"]
+
+[resource]
+script = ExtResource("1_i82qw")
+name = "Cole"
+description = "Cole's signature ability is to create spectral clones of himself. He was a student of Beckford Academy who became a teacher there after vanquishing the evil Lord Farlaine. Cole now flees from his former colleagues with a powerful artifact in tow."
+character_art = ExtResource("1_8y483")
+portrait = ExtResource("2_qttha")
+character_scale = 0.6
+facing_right = true
+height = 270
+max_health = 50
+max_mana_red = 3
+max_mana_green = 3
+max_mana_blue = 3
+starting_armor = 0
+team = 0
+metadata/_custom_type_script = "uid://bql7t8sctwe10"

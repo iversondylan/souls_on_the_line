@@ -30,6 +30,7 @@ Button/styles/focus = SubResource("StyleBoxEmpty_u42fm")
 Button/styles/hover = ExtResource("2_at6al")
 Button/styles/normal = ExtResource("3_6vgp1")
 Button/styles/pressed = SubResource("StyleBoxFlat_u42fm")
+Label/font_sizes/font_size = 48
 Label/fonts/font = ExtResource("4_u42fm")
 Panel/styles/panel = ExtResource("1_bp8xa")
 PanelContainer/styles/panel = ExtResource("1_bp8xa")

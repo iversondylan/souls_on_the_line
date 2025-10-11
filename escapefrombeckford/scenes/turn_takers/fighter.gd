@@ -37,7 +37,7 @@ func enter() -> void:
 
 func _set_combatant_data(new_data: CombatantData) -> void:
 	combatant_data = new_data
-	combatant_data.fighter = self
+	#combatant_data.fighter = self
 	name = combatant_data.name
 	combatant.combatant_data = combatant_data
 

@@ -4,6 +4,8 @@
 [ext_resource type="FontFile" uid="uid://c2rq2miy1lk1c" path="res://assets/fonts/Prompt/Prompt-Italic.ttf" id="2_gfhtu"]
 
 [resource]
+Button/font_sizes/font_size = 26
+Button/fonts/font = ExtResource("1_xxbg1")
 Label/font_sizes/font_size = 26
 Label/fonts/font = ExtResource("1_xxbg1")
 RichTextLabel/constants/line_separation = 0

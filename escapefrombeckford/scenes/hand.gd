@@ -95,18 +95,19 @@ func discard_card(usable_card: UsableCard):
 	usable_card.queue_free()
 
 func discard_cards(usable_cards: Array[UsableCard]):
-	if usable_cards:
-		var tween: Tween = create_tween()
-		for usable_card in usable_cards:
-			tween.tween_callback(deck.add_card_to_discard.bind(usable_card.card_data))
-			tween.tween_callback(usable_card.queue_free.bind())
-			tween.tween_interval(CARD_DISCARD_INTERVAL)
-		tween.finished.connect(
-			func():
-				Events.hand_discarded.emit()
-		)
-	else:
+	if !usable_cards:
 		Events.hand_discarded.emit()
+		return
+	
+	var tween: Tween = create_tween()
+	for usable_card in usable_cards:
+		tween.tween_callback(deck.add_card_to_discard.bind(usable_card.card_data))
+		tween.tween_callback(usable_card.queue_free.bind())
+		tween.tween_interval(CARD_DISCARD_INTERVAL)
+	tween.finished.connect(
+		func():
+			Events.hand_discarded.emit()
+	)
 
 func remove_card(index: int) -> UsableCard:
 	var removing_card_usablecard := hand_cards_arr[index]

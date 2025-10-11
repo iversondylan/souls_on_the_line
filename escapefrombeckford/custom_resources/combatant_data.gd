@@ -23,7 +23,7 @@ signal combatant_data_changed()
 @export_group("Audio")
 @export var attack_sound: AudioStream = load("res://assets/sfx/thrall_hit.wav")
 
-var fighter: Fighter
+#var fighter: Fighter
 var is_alive: bool = true
 var health: int : set = set_health
 var armor: int : set = set_armor
@@ -33,7 +33,7 @@ var mana_blue: int : set = set_mana_blue
 var rank: int
 
 func stats_changed() -> void:
-	if fighter is Player:
+	if self is PlayerData:
 		Events.player_combatant_data_changed.emit()
 	combatant_data_changed.emit()
 
