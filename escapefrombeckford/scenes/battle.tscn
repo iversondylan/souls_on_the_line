@@ -60,13 +60,12 @@ shape = SubResource("RectangleShape2D_eb6dy")
 
 [node name="Debug_UI" type="CanvasLayer" parent="."]
 
-[node name="Take1Button" type="Button" parent="Debug_UI"]
-visible = false
+[node name="KillEnemiesButton" type="Button" parent="Debug_UI"]
 offset_top = 99.0
 offset_right = 126.0
 offset_bottom = 130.0
 theme = ExtResource("8_2tyvl")
-text = "Add max mana"
+text = "kill enemies"
 
 [node name="Take6Button" type="Button" parent="Debug_UI"]
 visible = false
@@ -258,7 +257,7 @@ visible = false
 unique_name_in_owner = true
 visible = false
 
-[connection signal="pressed" from="Debug_UI/Take1Button" to="." method="_on_take_1_button_pressed"]
+[connection signal="pressed" from="Debug_UI/KillEnemiesButton" to="." method="_on_kill_enemies_button_pressed"]
 [connection signal="pressed" from="Debug_UI/Take6Button" to="." method="_on_take_6_button_pressed"]
 [connection signal="pressed" from="Debug_UI/AddAttackButton" to="." method="_on_add_attack_button_pressed"]
 [connection signal="pressed" from="Debug_UI/AddDefendButton" to="." method="_on_add_defend_button_pressed"]

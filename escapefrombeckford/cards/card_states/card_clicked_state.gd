@@ -1,7 +1,7 @@
 extends CardState
 
 func enter() -> void:
-	print("card_clicked_state.gd enter()")
+	#print("card_clicked_state.gd enter()")
 	usable_card.drop_point_detector.monitoring = true
 
 func on_input(event: InputEvent) -> void:

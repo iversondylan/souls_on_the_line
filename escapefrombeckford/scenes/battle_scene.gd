@@ -20,6 +20,12 @@ func remove_combatant(fighter: Fighter):
 	for group in groups:
 		group.remove_combatant(fighter)
 
+func kill_enemies() -> void:
+	var fighters := get_enemies()
+	for fighter: Fighter in fighters:
+		groups[1].combatant_died(fighter)
+		
+
 func clear_combatants():
 	for group in groups:
 		group.clear_combatants()
@@ -61,12 +67,10 @@ func get_summons() -> Array[Fighter]:
 	return fighters
 
 func get_enemies() -> Array[Fighter]:
-	var fighters: Array[Fighter] = []
+	var fighters: Array[Fighter]
 	for child_group in get_children():
-		if child_group is BattleGroup:
-			for fighter in child_group.get_combatants():
-				if fighter.combatant_data.team == 2:
-					fighters.push_back(fighter)
+		if child_group is BattleGroupEnemy:
+			fighters = child_group.get_combatants()
 	return fighters
 
 func get_player() -> Player:

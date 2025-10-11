@@ -38,6 +38,7 @@ func _ready() -> void:
 	match run_startup.startup_type:
 		RunStartup.StartupType.NEW_RUN:
 			player_character = run_startup.player_character.create_instance()
+			player_character.set_health(player_character.max_health)
 			starting_deck = run_startup.deck.duplicate()
 			draftable_cards = run_startup.draftable_cards.duplicate()
 			print("run.gd STARTING RUN WITH NEW CHARACTER")

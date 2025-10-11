@@ -16,8 +16,8 @@ func _input(event: InputEvent) -> void:
 	if !usable_card.playable or usable_card.disabled:
 		return
 	
-	if event.is_action_pressed("mouse_click"):
-		print("card_base_state.gd _input() selected = %s" % usable_card.selected)
+	#if event.is_action_pressed("mouse_click"):
+		#print("card_base_state.gd _input() selected = %s" % usable_card.selected)
 	if event.is_action_pressed("mouse_click") and usable_card.selected:
 		usable_card.global_position = usable_card.get_global_mouse_position()
 		#usable_card.pivot_offset = usable_card.get_global_mouse_position() - usable_card.global_position

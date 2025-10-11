@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="BattleData" load_steps=4 format=3 uid="uid://dgcyu7avn4dkc"]
 
 [ext_resource type="Script" uid="uid://be1v8qevmc2xw" path="res://custom_resources/battle_data.gd" id="1_8aitl"]
-[ext_resource type="Script" uid="uid://cfatj0ryn8uv3" path="res://fighters/combatant_data.gd" id="1_ma4i5"]
+[ext_resource type="Script" uid="uid://cfatj0ryn8uv3" path="res://custom_resources/combatant_data.gd" id="1_ma4i5"]
 [ext_resource type="Resource" uid="uid://b21fke2hh3mrg" path="res://fighters/MegaBlocker/basic_thrall_data.tres" id="2_lro86"]
 
 [resource]

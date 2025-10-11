@@ -84,16 +84,7 @@ func initialize_card_pile_ui() -> void:
 	discard_pile_view.card_pile = deck.discard_pile
 	discard_pile_view.deck = deck
 
-func make_player_combatant() -> void:
-	var new_player: Player = player_scn.instantiate()
-	battle_scene.add_combatant(new_player, 0, 0)
-	new_player.combatant_data = player_data
-	player_data.is_alive = true
-	
-	battle_scene.set_player(new_player)
-	player = new_player
-	hand.player = new_player
-	new_player.reset()
+
 
 #func make_basic_thrall() -> void:
 	#var new_enemy: NPCFighter
@@ -134,6 +125,17 @@ func start_battle():
 	#deck_ui.visible = true
 	MusicPlayer.play(music, true)
 
+func make_player_combatant() -> void:
+	var new_player: Player = player_scn.instantiate()
+	battle_scene.add_combatant(new_player, 0, 0)
+	new_player.combatant_data = player_data
+	player_data.is_alive = true
+	
+	battle_scene.set_player(new_player)
+	player = new_player
+	hand.player = new_player
+	#new_player.reset()
+
 func make_enemies() -> void:
 	if !battle_data:
 		print("battle.gd make_enemies() Error: no battle_data")
@@ -171,8 +173,8 @@ func make_enemies() -> void:
 		##hand.on_click()
 		#mouse_pressed = true
 
-func _on_take_1_button_pressed() -> void:
-	pass
+#func _on_take_1_button_pressed() -> void:
+	#pass
 	#GameState.player.combatant_data.max_mana_red += 1
 	#GameState.player.combatant_data.max_mana_green += 1
 	#GameState.player.combatant_data.max_mana_blue += 1
@@ -269,9 +271,13 @@ func _on_summon_reserve_card_released(summoned_ally: SummonedAlly) -> void:
 	perspective_card.zoom_card(summoned_ally.global_position + Vector2(0, -summoned_ally.combatant_data.height/2.0), discard_pile_button.global_position)
 
 func _on_game_over_started():
-	print("main.gd _on_game_over_started()")
+	#print("main.gd _on_game_over_started()")
 	Events.battle_over_screen_requested.emit("YOU DIED", BattleOverPanel.Outcome.LOSE)
 
 func _on_victory_started():
-	print("main.gd _on_victory_started()")
+	#print("main.gd _on_victory_started()")
 	Events.battle_over_screen_requested.emit("PATH CLEARED", BattleOverPanel.Outcome.WIN)
+
+
+func _on_kill_enemies_button_pressed() -> void:
+	battle_scene.kill_enemies()
