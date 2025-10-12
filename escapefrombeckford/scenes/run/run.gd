@@ -96,7 +96,6 @@ func _connect_signals() -> void:
 func _init_top_bar() -> void:
 	player_data.combatant_data_changed.connect(health_panel.update_health.bind(player_data))
 	health_panel.update_health(player_data)
-	health_panel.update_font_size()
 	gold_display.run_account = account
 	collection_button.card_pile = deck.card_collection
 	collection_pile_view.card_pile = deck.card_collection

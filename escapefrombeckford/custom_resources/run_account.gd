@@ -17,7 +17,6 @@ const BASE_RARE_WEIGHT := 0.3
 var draftable_cards: CardPile
 var deck: Deck
 
-
 func set_gold(n_gold: int) -> void:
 	gold = n_gold
 	gold_changed.emit()

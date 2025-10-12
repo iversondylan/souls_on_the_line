@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=3 uid="uid://dghmlrg1poqs7"]
+[gd_scene load_steps=15 format=3 uid="uid://dghmlrg1poqs7"]
 
 [ext_resource type="Script" uid="uid://c7eaxdgts512j" path="res://scenes/combatant.gd" id="1_srv24"]
 [ext_resource type="Texture2D" uid="uid://dob30qtbj3xk5" path="res://assets/sprites/block.PNG" id="2_8cehy"]
@@ -9,6 +9,8 @@
 [ext_resource type="Texture2D" uid="uid://deopg8hjud5es" path="res://assets/sprites/arrow_down.png" id="6_8636n"]
 [ext_resource type="Script" uid="uid://b5nvhcs5afo2m" path="res://scenes/combatant_target_area.gd" id="6_srv24"]
 [ext_resource type="Script" uid="uid://c0eafxkkyruv0" path="res://scenes/combatant_area_left.gd" id="8_ng0uf"]
+[ext_resource type="PackedScene" uid="uid://nfe134n0rm1g" path="res://scenes/status_handler/status_grid.tscn" id="10_ue35o"]
+[ext_resource type="PackedScene" uid="uid://cd15ukicbp7fj" path="res://scenes/status_handler/status_display.tscn" id="11_y8vuy"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_2bsiw"]
 size = Vector2(100, 270)
@@ -77,6 +79,32 @@ text = "1"
 label_settings = SubResource("LabelSettings_wjd66")
 horizontal_alignment = 1
 metadata/_edit_use_anchors_ = true
+
+[node name="StatusGrid" parent="." instance=ExtResource("10_ue35o")]
+offset_top = 39.0
+offset_right = 404.0
+offset_bottom = 171.0
+
+[node name="StatusDisplay" parent="StatusGrid" instance=ExtResource("11_y8vuy")]
+layout_mode = 2
+
+[node name="StatusDisplay2" parent="StatusGrid" instance=ExtResource("11_y8vuy")]
+layout_mode = 2
+
+[node name="StatusDisplay3" parent="StatusGrid" instance=ExtResource("11_y8vuy")]
+layout_mode = 2
+
+[node name="StatusDisplay4" parent="StatusGrid" instance=ExtResource("11_y8vuy")]
+layout_mode = 2
+
+[node name="StatusDisplay5" parent="StatusGrid" instance=ExtResource("11_y8vuy")]
+layout_mode = 2
+
+[node name="StatusDisplay6" parent="StatusGrid" instance=ExtResource("11_y8vuy")]
+layout_mode = 2
+
+[node name="StatusDisplay7" parent="StatusGrid" instance=ExtResource("11_y8vuy")]
+layout_mode = 2
 
 [connection signal="area_entered" from="TargetArea" to="." method="_on_target_area_area_entered"]
 [connection signal="area_exited" from="TargetArea" to="." method="_on_target_area_area_exited"]

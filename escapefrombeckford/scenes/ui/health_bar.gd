@@ -6,7 +6,7 @@ class_name HealthBar extends PanelContainer
 @onready var max_health_number: Label = %MaxHealthNumber
 
 @export var inside_control: bool = false
-@export var font_size: int = 16
+@export var font_size: int = 16 : set = _set_font_size
 
 var health : int = 0 : set = _set_health
 var max_health: int : set = _set_max_health
@@ -36,7 +36,10 @@ func _set_damage_health(new_health: int) -> void:
 	var tween: Tween = create_tween().set_trans(Tween.TRANS_QUINT)
 	tween.tween_property(damage_bar, "value", damage_health, 0.5)
 
-func update_font_size() -> void:
+func _set_font_size(new_size: int) -> void:
+	if !is_node_ready():
+		await ready
+	font_size = new_size
 	health_number.add_theme_font_size_override("font_size", font_size)
 	max_health_number.add_theme_font_size_override("font_size", font_size)
 	_update_visuals()
