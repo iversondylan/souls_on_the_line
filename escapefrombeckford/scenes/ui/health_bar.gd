@@ -1,36 +1,47 @@
-class_name HealthBar extends ProgressBar
+class_name HealthBar extends PanelContainer
 
-@onready var damage_bar: ProgressBar = $DamageBar
-@onready var health_number: Label = $HealthNumber
+@onready var health_bar: ProgressBar = %HealthBar
+@onready var damage_bar: ProgressBar = %DamageBar
+@onready var health_number: Label = %HealthNumber
+@onready var max_health_number: Label = %MaxHealthNumber
 
-var n_health : int = 0 : set = _set_health
-var max_health: int
+@export var inside_control: bool = false
+@export var font_size: int = 16
+
+var health : int = 0 : set = _set_health
+var max_health: int : set = _set_max_health
 var damage_health: int : set = _set_damage_health
-var damage_max_health: int : set = _set_damage_max_health
+
+func update_health(combatant_data: CombatantData) -> void:
+	max_health = combatant_data.max_health
+	health = combatant_data.health
+
+func _set_max_health(new_health: int) -> void:
+	max_health = new_health
+	health_bar.max_value = max_health
+	damage_bar.max_value = max_health
+	_update_visuals()
+
+func _set_health(new_health) -> void:
+	var old_health := health
+	health = min(health_bar.max_value, new_health)
+	health_bar.value = health
+	damage_health = health
+	health_number.text = "%s" % health
+	max_health_number.text = "/%s" % max_health
+	_update_visuals()
 
 func _set_damage_health(new_health: int) -> void:
 	damage_health = new_health
 	var tween: Tween = create_tween().set_trans(Tween.TRANS_QUINT)
 	tween.tween_property(damage_bar, "value", damage_health, 0.5)
 
-func _set_damage_max_health(new_health: int) -> void:
-	damage_max_health = new_health
-	damage_bar.max_value = damage_max_health
+func update_font_size() -> void:
+	health_number.add_theme_font_size_override("font_size", font_size)
+	max_health_number.add_theme_font_size_override("font_size", font_size)
+	_update_visuals()
 
-func _set_health(new_health) -> void:
-	var old_health := n_health
-	n_health = min(max_value, new_health)
-	value = n_health
-	damage_health = n_health
-	health_number.text = "%s/%s" % [n_health, max_health]
-
-func init_health(init_health: int) -> void:
-	#print("init_health is %s" % init_health)
-	n_health = init_health
-	max_health = n_health
-	max_value = n_health
-	value = n_health
-	damage_max_health = max_health
-	damage_health = max_health
-	#print("damage bar max %s value %s" % [damage_bar.max_value, damage_bar.value])
-	health_number.text = "%s/%s" % [n_health, max_health]
+func _update_visuals() -> void:
+	reset_size()
+	if !inside_control:
+		position.x = -0.5 * size.x

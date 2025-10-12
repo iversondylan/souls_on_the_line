@@ -24,6 +24,8 @@ const TREASURE_SCN := preload("res://scenes/treasure/treasure_room.tscn")
 @onready var treasure_button: Button = %TreasureButton
 @onready var rewards_button: Button = %RewardsButton
 @onready var campfire_button: Button = %CampfireButton
+@onready var health_panel: HealthBar = $TopBar/Items/HealthPanel
+
 
 var account: RunAccount
 var player_data: PlayerData
@@ -92,6 +94,9 @@ func _connect_signals() -> void:
 	treasure_button.pressed.connect(_change_view.bind(TREASURE_SCN))
 
 func _init_top_bar() -> void:
+	player_data.combatant_data_changed.connect(health_panel.update_health.bind(player_data))
+	health_panel.update_health(player_data)
+	health_panel.update_font_size()
 	gold_display.run_account = account
 	collection_button.card_pile = deck.card_collection
 	collection_pile_view.card_pile = deck.card_collection

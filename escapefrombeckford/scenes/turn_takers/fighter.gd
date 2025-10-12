@@ -171,8 +171,6 @@ func _on_target_area_area_entered(area: Area2D) -> void:
 	pass
 
 func _on_target_area_area_exited(area: Area2D) -> void:
-	#Events.combatant_untouched.emit(self)
-	#targeted_arrow.hide()
 	pass
 
 func get_mean_position(targets: Array[Fighter]) -> Vector2:

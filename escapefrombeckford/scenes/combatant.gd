@@ -36,8 +36,9 @@ func load_combatant_data():
 	character_sprite.position = Vector2(0, - combatant_data.height / 2.0)
 	intent_container.position = Vector2(0, - combatant_data.height + 20)
 	targeted_arrow.position = Vector2(0, - combatant_data.height)
-	health_bar.init_health(combatant_data.max_health)
-	health_bar.n_health = combatant_data.health
+	health_bar.update_health(combatant_data)
+	#health_bar.init_health(combatant_data.max_health)
+	#health_bar.n_health = combatant_data.health
 
 func update_data_visuals() -> void:
 	if !is_node_ready():
@@ -46,13 +47,14 @@ func update_data_visuals() -> void:
 	update_armor_icon()
 
 func update_health_bar():
+	health_bar.update_health(combatant_data)
 	#health_bar.init_health(combatant_data.max_health)
-	if health_bar.max_value != combatant_data.max_health:
-		health_bar.max_value = combatant_data.max_health
-	if health_bar.damage_bar.max_value != combatant_data.max_health:
-		health_bar.damage_bar.max_value = combatant_data.max_health
-	if health_bar.value != combatant_data.health:
-		health_bar.n_health = combatant_data.health
+	#if health_bar.health_bar.max_value != combatant_data.max_health:
+		#health_bar.health_bar.max_value = combatant_data.max_health
+	#if health_bar.damage_bar.max_value != combatant_data.max_health:
+		#health_bar.damage_bar.max_value = combatant_data.max_health
+	#if health_bar.health_bar.value != combatant_data.health:
+		#health_bar.n_health = combatant_data.health
 
 func update_armor_icon():
 	if combatant_data.armor > 0:
