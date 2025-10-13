@@ -27,6 +27,7 @@ func _ready() -> void:
 	combatant.target_area_area_entered.connect(_on_target_area_area_entered)
 	combatant.target_area_area_exited.connect(_on_target_area_area_exited)
 	target_area.combatant = self
+	combatant.status_grid.status_parent = self
 
 func _set_combatant_data(new_data: CombatantData) -> void:
 	combatant_data = new_data

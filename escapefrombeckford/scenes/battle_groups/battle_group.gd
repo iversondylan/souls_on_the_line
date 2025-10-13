@@ -74,19 +74,19 @@ func remove_combatant(fighter: Fighter):
 	fighter.queue_free()
 	Events.n_combatants_changed.emit()
 	update_combatant_position()
-	if get_child_count() == 1:
+	if get_child_count() == 0:
 		Events.battle_group_empty.emit(self)
 	
 	if !dead_fighter_acting:
 		return
 	
-	match self:
-		BattleGroupEnemy:
-			if BattleController.current_state == BattleController.BattleState.ENEMY_TURN:
-				_next_turn_taker()
-		BattleGroupFriendly:
-			if BattleController.current_state == BattleController.BattleState.FRIENDLY_TURN:
-				_next_turn_taker()
+	
+	if self is BattleGroupEnemy:
+		if BattleController.current_state == BattleController.BattleState.ENEMY_TURN:
+			_next_turn_taker()
+	elif self is BattleGroupFriendly:
+		if BattleController.current_state == BattleController.BattleState.FRIENDLY_TURN:
+			_next_turn_taker()
 
 func clear_combatants() -> void:
 	for fighter: Fighter in get_combatants():

@@ -5,7 +5,7 @@ signal statuses_applied(proc_type: Status.ProcType)
 const STATUS_APPLY_INTERVAL := 0.25
 const STATUS_DISPLAY_SCN = preload("res://scenes/status_handler/status_display.tscn")
 
-@export var status_parent: Node2D
+var status_parent: Fighter
 
 func _ready() -> void:
 	_update_visuals()
