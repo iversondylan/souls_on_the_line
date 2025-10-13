@@ -1,8 +1,7 @@
-class_name Fighter extends TurnTaker
+class_name Fighter extends Node2D
 
-#enum RetargetPriority {NONE, FRONT}
-
-#@export var combatant_data: CombatantData : set = _set_combatant_data
+signal turn_taker_turn_complete(turn_taker: Fighter)
+@export var battle_group: BattleGroup
 @onready var combatant: Combatant = $Combatant
 @onready var character_sprite: Sprite2D = combatant.character_sprite
 @onready var target_area: CombatantTargetArea = combatant.target_area
@@ -16,7 +15,7 @@ class_name Fighter extends TurnTaker
 @onready var damage_number_scn: PackedScene = preload("res://scenes/ui/damage_number.tscn")
 @onready var blocked_message_scn: PackedScene = preload("res://scenes/ui/blocked_message.tscn")
 var combatant_data: CombatantData : set = _set_combatant_data
-var battle_scene: BattleScene# : set = _set_battle_scene
+var battle_scene: BattleScene
 #STATUSES IS A PLACEHOLDER SYSTEM CURRENTLY
 #STATUSES SHOULD BE TRACKED DIFFERENTLY
 var statuses: Array[String] = []
@@ -29,21 +28,15 @@ func _ready() -> void:
 	combatant.target_area_area_exited.connect(_on_target_area_area_exited)
 	target_area.combatant = self
 
-#func _set_battle_scene(_battle_scene: BattleScene) -> void:
-	#battle_scene = _battle_scene
-
 func _set_combatant_data(new_data: CombatantData) -> void:
 	combatant_data = new_data
-	#combatant_data.fighter = self
 	name = combatant_data.name
 	combatant.combatant_data = combatant_data
 
 func enter() -> void:
 	combatant.status_grid.apply_statuses_by_type(Status.ProcType.START_OF_TURN)
-	#do_turn()
 
 func exit() -> void:
-	#print("fighter.gd exit(): %s" % name)
 	combatant.status_grid.apply_statuses_by_type(Status.ProcType.END_OF_TURN)
 
 func attack(targets: Array[Fighter], n_damage: int, n_attacks: int = 1, retarget: AttackEffect.RetargetPriority = AttackEffect.RetargetPriority.FRONT, explode: bool = false):
@@ -136,29 +129,15 @@ func die():
 				)
 
 func do_turn() -> void:
-	#doing_turn = true
 	combatant_data.set_armor(0)
 	combatant_data.reset_mana()
-	#Events.turn_taker_turn_completed.emit(self)
-	#if !current_action:
-		#doing_turn = false
-		#turn_complete = true
-		#Events.npc_action_completed.emit(battle_group)
-		#return
-	#current_action.perform_action()
-	#intent_container.clear_display()
 
 func reset():
 	combatant_data.health = combatant_data.max_health
-	#combatant_data.mana_red = combatant_data.max_mana_red
-	#combatant_data.mana_green = combatant_data.max_mana_green
-	#combatant_data.mana_blue = combatant_data.max_mana_blue
 	combatant_data.armor = combatant_data.starting_armor
 	combatant_data.stats_changed()
 
 func _on_target_area_area_entered(area: Area2D) -> void:
-	#Events.combatant_touched.emit(self)
-	#targeted_arrow.show()
 	pass
 
 func _on_target_area_area_exited(area: Area2D) -> void:
@@ -170,3 +149,7 @@ func get_mean_position(targets: Array[Fighter]) -> Vector2:
 	for target: Fighter in targets:
 		cum_target_position += target.global_position
 	return cum_target_position/n_targets #average global position of targets
+
+func turn_complete() -> void:
+	#print("turn_taker.gd turn_complete(): %s" % name)
+	turn_taker_turn_complete.emit(self)

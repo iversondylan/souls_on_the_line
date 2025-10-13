@@ -1,6 +1,0 @@
-[gd_scene load_steps=2 format=3 uid="uid://dt7x1j21m2s5j"]
-
-[ext_resource type="Script" uid="uid://otk8m185gbs0" path="res://scenes/turn_takers/turn_taker.gd" id="1_t72oe"]
-
-[node name="TurnTaker" type="Node2D"]
-script = ExtResource("1_t72oe")

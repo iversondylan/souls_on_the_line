@@ -1,6 +1,0 @@
-[gd_scene load_steps=2 format=3 uid="uid://ba6kh2tsod3r2"]
-
-[ext_resource type="Script" uid="uid://d4e0xgifgh77v" path="res://scenes/turn_takers/enemy_turn_terminal.gd" id="1_pobpq"]
-
-[node name="EnemyTurnTerminal" type="Node2D"]
-script = ExtResource("1_pobpq")

@@ -12,11 +12,11 @@ func _ready() -> void:
 	#Events.npc_action_completed.connect(_on_npc_action_completed)
 	#update_combatant_rank_variable()
 
-func reboot_turn_taker(next_turn_taker: TurnTaker) -> void:
-	if BattleController.current_state != BattleController.BattleState.FRIENDLY_TURN:
-		return
-	turn_taker = next_turn_taker
-	turn_taker.enter()
+#func reboot_turn_taker(next_turn_taker: TurnTaker) -> void:
+	#if BattleController.current_state != BattleController.BattleState.FRIENDLY_TURN:
+		#return
+	#turn_taker = next_turn_taker
+	#turn_taker.enter()
 
 func ally_traverse_player(ally: SummonedAlly) -> void:
 	var ally_index: int = ally.get_index()
@@ -28,7 +28,7 @@ func ally_traverse_player(ally: SummonedAlly) -> void:
 		move_child(ally, player_index)
 		acting_fighters.insert(1, ally)
 	#update_combatant_rank_variable()
-	make_turn_table()
+	#make_turn_table()
 	update_combatant_position()
 		
 

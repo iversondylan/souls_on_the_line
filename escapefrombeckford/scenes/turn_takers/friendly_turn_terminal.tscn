@@ -1,6 +1,0 @@
-[gd_scene load_steps=2 format=3 uid="uid://71ymntgeleys"]
-
-[ext_resource type="Script" uid="uid://cqtv6sjvo2l8y" path="res://scenes/turn_takers/friendly_turn_terminal.gd" id="1_06uq7"]
-
-[node name="FriendlyTurnTerminal" type="Node2D"]
-script = ExtResource("1_06uq7")
