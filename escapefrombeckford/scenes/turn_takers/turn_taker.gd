@@ -14,5 +14,5 @@ func exit() -> void:
 	pass
 
 func turn_complete() -> void:
-	print("turn_taker.gd turn_complete(): %s" % name)
+	#print("turn_taker.gd turn_complete(): %s" % name)
 	turn_taker_turn_complete.emit(self as TurnTaker)

@@ -1,11 +1,8 @@
-[gd_scene load_steps=3 format=3 uid="uid://gmxev02ltcly"]
+[gd_scene load_steps=2 format=3 uid="uid://gmxev02ltcly"]
 
 [ext_resource type="Script" uid="uid://dy5sjt7v7ir2f" path="res://scenes/battle_groups/battle_group_friendly.gd" id="1_3vrbj"]
-[ext_resource type="PackedScene" uid="uid://71ymntgeleys" path="res://scenes/turn_takers/friendly_turn_terminal.tscn" id="2_2j85a"]
 
 [node name="BattleGroupFriendly" type="Node2D"]
 script = ExtResource("1_3vrbj")
-
-[node name="FriendlyTurnTerminal" parent="." instance=ExtResource("2_2j85a")]
 
 [connection signal="child_order_changed" from="." to="." method="_on_child_order_changed"]

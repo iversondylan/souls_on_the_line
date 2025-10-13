@@ -1,9 +1,9 @@
 class_name BattleGroupEnemy extends BattleGroup
 
 func _ready() -> void:
-	turn_taker = $EnemyTurnTerminal
+	#turn_taker = $EnemyTurnTerminal
 	Events.enemy_turn_started.connect(_on_enemy_turn_started)
-	update_combatant_rank_variable()
+	#update_combatant_rank_variable()
 
 func reboot_turn_taker(next_turn_taker: TurnTaker) -> void:
 	if BattleController.current_state != BattleController.BattleState.ENEMY_TURN:

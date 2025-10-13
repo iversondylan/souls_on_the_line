@@ -43,7 +43,7 @@ func enter() -> void:
 	#do_turn()
 
 func exit() -> void:
-	print("fighter.gd exit(): %s" % name)
+	#print("fighter.gd exit(): %s" % name)
 	combatant.status_grid.apply_statuses_by_type(Status.ProcType.END_OF_TURN)
 
 func attack(targets: Array[Fighter], n_damage: int, n_attacks: int = 1, retarget: AttackEffect.RetargetPriority = AttackEffect.RetargetPriority.FRONT, explode: bool = false):
