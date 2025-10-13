@@ -8,10 +8,11 @@ var current_action: NPCAction: set = set_current_action
 	#npc_action_picker.battle_scene = battle_scene
 
 func enter() -> void:
-	do_turn()
+	combatant.status_grid.apply_statuses_by_type(Status.ProcType.START_OF_TURN)
 
 func exit() -> void:
 	update_action()
+	combatant.status_grid.apply_statuses_by_type(Status.ProcType.END_OF_TURN)
 
 func _set_combatant_data(new_data: CombatantData) -> void:
 	
@@ -28,9 +29,7 @@ func do_turn() -> void:
 	combatant_data.set_armor(0)
 	combatant_data.reset_mana()
 	if !current_action:
-		#doing_turn = false
-		#turn_complete = true
-		#Events.turn_taker_turn_completed.emit()
+		print("npc_fighter.gd do_turn() ERROR: npc_figher has no action to do")
 		return
 	current_action.perform_action()
 	current_action = null

@@ -33,11 +33,13 @@ func start_turn() -> void:
 	turn_taker.enter()
 
 func next_turn_taker(turn_taker_who_finished: TurnTaker) -> void:
+	print("battle_group.gd next_turn_taker(turn_taker_who_finished: %s)" % turn_taker_who_finished)
 	if turn_taker_who_finished != turn_taker:
+		print("battle_group.gd next_turn_taker() ERROR: turn taker who finished is not current turn taker")
 		return
-	turn_taker.exit()
+	
 	turn_taker = turn_table[turn_taker]
-	turn_taker.enter()
+	turn_taker_who_finished.exit()
 
 func reboot_turn_taker(next_turn_taker: TurnTaker) -> void:
 	print("battlegroup.gd reboot_turn_taker(): overwrite me please")
@@ -55,29 +57,20 @@ func connect_combatants():
 		connect_combatant(combatant)
 
 func connect_combatant(fighter: Fighter):
+	print("battle_group.gd connect_combatant(%s)" % fighter.name)
+	fighter.combatant.status_grid.statuses_applied.connect(_on_combatant_statuses_applied.bind(fighter))
 	fighter.turn_taker_turn_complete.connect(_on_turn_taker_turn_complete)
 
 func add_combatant(fighter: Fighter, rank: int):
 	var children: Array[Node] = get_children()
 	var n_children: int = children.size()
 	add_child(fighter)
-	Events.n_combatants_changed.emit()
 	connect_combatant(fighter)
 	fighter.battle_group = self
-	#update_combatant_rank_variable()
 	move_child(fighter, rank)
-	#update_combatant_rank_variable()
+	Events.n_combatants_changed.emit()
 	update_combatant_position()
 	make_turn_table()
-	#debug_function_for_checking_terminal_rank()
-
-#func debug_function_for_checking_terminal_rank() -> void:
-	#var index = 0
-	#for child: TurnTaker in get_children():
-		#print(child.name + " is rank " + str(index))
-		#if child is Fighter:
-			#print("combatant_data rank is " + str(child.combatant_data.rank))
-		#index += 1
 
 func remove_combatant(fighter: Fighter):
 	if fighter == turn_taker:
@@ -88,12 +81,12 @@ func remove_combatant(fighter: Fighter):
 	update_combatant_rank_variable()
 	update_combatant_position()
 	make_turn_table()
-	#debug_function_for_checking_terminal_rank()
+	if get_child_count() == 1:
+		Events.battle_group_empty.emit(self)
 
 func clear_combatants() -> void:
 	for fighter: Fighter in get_combatants():
 		remove_combatant(fighter)
-	#debug_function_for_checking_terminal_rank()
 
 func combatant_is_there(fighter: Fighter) -> bool:
 	var fighters: Array[Fighter] = get_combatants()
@@ -128,18 +121,22 @@ func update_combatant_position():
 		n += 1
 
 func combatant_died(fighter: Fighter):
-	#var combatant_doing_turn: bool = fighter.doing_turn
 	if fighter is SummonedAlly:
 		deck.discard_summon_reserve_card(fighter.card_data)
 	Events.dead_combatant_data.emit(fighter.combatant_data)
 	remove_combatant(fighter)
-	if get_child_count() == 1:
-		Events.battle_group_empty.emit(self)
-	#if combatant_doing_turn:
-		#Events.npc_action_completed.emit(self)
-
 
 func _on_turn_taker_turn_complete(turn_taker_who_finished: TurnTaker) -> void:
-	#if BattleController.current_state != BattleController.BattleState.FRIENDLY_TURN:
-		#return
+	print("battle_group.gd _on_turn_taker_turn_complete(%s)" % turn_taker_who_finished.name)
 	next_turn_taker(turn_taker_who_finished)
+
+func _on_combatant_statuses_applied(proc_type: Status.ProcType, fighter: Fighter) -> void:
+	#if fighter.turn_taker_turn_complete.is_connected(_on_turn_taker_turn_complete):
+		#print("is connected")
+	#else:
+		#print("is not connected")
+	match proc_type:
+		Status.ProcType.START_OF_TURN:
+			fighter.do_turn()
+		Status.ProcType.END_OF_TURN:
+			turn_taker.enter()

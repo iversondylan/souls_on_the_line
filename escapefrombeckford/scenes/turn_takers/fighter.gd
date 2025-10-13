@@ -32,14 +32,19 @@ func _ready() -> void:
 #func _set_battle_scene(_battle_scene: BattleScene) -> void:
 	#battle_scene = _battle_scene
 
-func enter() -> void:
-	do_turn()
-
 func _set_combatant_data(new_data: CombatantData) -> void:
 	combatant_data = new_data
 	#combatant_data.fighter = self
 	name = combatant_data.name
 	combatant.combatant_data = combatant_data
+
+func enter() -> void:
+	combatant.status_grid.apply_statuses_by_type(Status.ProcType.START_OF_TURN)
+	#do_turn()
+
+func exit() -> void:
+	print("fighter.gd exit(): %s" % name)
+	combatant.status_grid.apply_statuses_by_type(Status.ProcType.END_OF_TURN)
 
 func attack(targets: Array[Fighter], n_damage: int, n_attacks: int = 1, retarget: AttackEffect.RetargetPriority = AttackEffect.RetargetPriority.FRONT, explode: bool = false):
 	combatant.health_bar.hide()
@@ -77,18 +82,6 @@ func attack(targets: Array[Fighter], n_damage: int, n_attacks: int = 1, retarget
 		tween.finished.connect( func(): 
 			attack(targets, n_damage, n_attacks, retarget, explode)
 			)
-
-#func make_tween() -> Tween:
-	#if fighter_tween and fighter_tween.is_valid():
-		#fighter_tween.kill()
-	#fighter_tween = create_tween()
-	#return fighter_tween
-
-#func get_tween() -> Tween:
-	#if fighter_tween and fighter_tween.is_valid():
-		#return fighter_tween
-	#fighter_tween = create_tween()
-	#return fighter_tween
 
 func add_status(status: String) -> void:
 	statuses.push_back(status)
@@ -135,8 +128,6 @@ func add_armor(amount: int):
 func die():
 	combatant_data.is_alive = false
 	battle_group.update_combatant_position()
-	#if card_with_id:
-		#Events.summon_reserve_card_released.emit(self)
 	var death_tween: Tween = create_tween()
 	death_tween.tween_property(character_sprite, "modulate", Color.BLACK, 0.3)
 	death_tween.finished.connect(

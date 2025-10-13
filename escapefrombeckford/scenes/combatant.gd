@@ -13,6 +13,7 @@ signal target_area_area_exited(area: Area2D)
 @onready var status_bar: IconViewPanel = %StatusBar
 @onready var intent_container: IconViewPanel = $IconViewPanel
 @onready var area_left: CombatantAreaLeft = $AreaLeft
+@onready var status_grid: StatusGrid = $StatusGrid
 
 var combatant_data: CombatantData : set = _set_combatant_data
 

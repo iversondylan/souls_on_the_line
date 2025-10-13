@@ -1,6 +1,6 @@
 class_name TurnTaker extends Node2D
 
-signal turn_taker_turn_complete()
+signal turn_taker_turn_complete(turn_taker: TurnTaker)
 @export var battle_group: BattleGroup
 
 #THESE TWO VARS SHOULD BE REMOVED LATER
@@ -14,4 +14,5 @@ func exit() -> void:
 	pass
 
 func turn_complete() -> void:
-	turn_taker_turn_complete.emit(self)
+	print("turn_taker.gd turn_complete(): %s" % name)
+	turn_taker_turn_complete.emit(self as TurnTaker)
