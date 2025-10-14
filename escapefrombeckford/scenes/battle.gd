@@ -40,19 +40,13 @@ var deck: Deck : set = _set_deck
 
 var mouse_pressed: bool = false
 var enemy_character_state: int = 0
-#var combatants_mouse_left: Array[Combatant] = []
 var wait_for_anims: bool = false
 
 func _ready() -> void:
 	get_tree().paused = false
-	#CombatantLibrary.compile_combatant_library()
-	#IconLibrary.compile_icon_library()
 	BattleController.current_state = BattleController.BattleState.PRE_GAME
 
-	#update_game_state()
-
 	Events.dead_combatant_data.connect(_on_dead_combatant_data)
-	#Events.need_updated_game_state.connect(_need_updated_game_state)
 	Events.battle_group_empty.connect(_on_battle_group_empty)
 	Events.player_combatant_data_changed.connect(_on_player_data_changed)
 	Events.hand_drawn.connect(_on_hand_drawn)
@@ -69,16 +63,13 @@ func _set_deck(_deck: Deck) -> void:
 	deck = _deck
 	hand.deck = deck
 	battle_scene.deck = deck
-	
 
 func initialize_card_pile_ui() -> void:
-	#draw_pile_button.deck = deck
 	draw_pile_button.card_pile = deck.draw_pile
 	
 	draw_pile_view.card_pile = deck.draw_pile
 	draw_pile_view.deck = deck
 	
-	#discard_pile_button.deck = deck
 	discard_pile_button.card_pile = deck.discard_pile
 	
 	discard_pile_view.card_pile = deck.discard_pile
@@ -129,104 +120,11 @@ func make_enemies() -> void:
 		
 		new_enemy.reset()
 		new_enemy.update_action()
-	
-
-#func update_game_state():
-	#pass
-	#GameState.combatants = battle_scene.get_combatants()
-	#if GameState.player != battle_scene.get_player():
-		#GameState.player = battle_scene.get_player()
-	#GameState.turn_number = BattleController.turn_number
-
-#func _process(_delta: float) -> void:
-	#if !BattleController.is_running:
-		#mouse_pressed = false
-		#return
-	#
-	#if mouse_pressed && !Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
-		#mouse_pressed = false
-
-#func _input(event):
-	#if event.is_action("restart"):
-		#start_battle()
-	#elif event.is_action_pressed("mouse_click"):
-		##hand.on_click()
-		#mouse_pressed = true
-
-#func _on_take_1_button_pressed() -> void:
-	#pass
-	#GameState.player.combatant_data.max_mana_red += 1
-	#GameState.player.combatant_data.max_mana_green += 1
-	#GameState.player.combatant_data.max_mana_blue += 1
-
-func _on_take_6_button_pressed() -> void:
-	pass
-	#player.take_damage(6)
 
 func _on_end_turn_pressed() -> void:
 	if wait_for_anims:
 		return
 	Events.end_turn_button_pressed.emit()
-
-#func _on_draw_button_pressed() -> void:
-	#if BattleController.current_cards_view_state == BattleController.CardsViewState.DRAW_VIEW:
-		#BattleController.transition_cards_view(BattleController.CardsViewState.NO_CARDS_VIEW)
-		#draw_view_overlay.hide_window()
-	#elif BattleController.current_cards_view_state == BattleController.CardsViewState.NO_CARDS_VIEW:
-		#BattleController.transition_cards_view(BattleController.CardsViewState.DRAW_VIEW)
-		#draw_view_overlay.show_window(Deck.get_draw_cards())
-
-#func _on_discard_button_pressed() -> void:
-	#if BattleController.current_cards_view_state == BattleController.CardsViewState.DISCARD_VIEW:
-		#BattleController.transition_cards_view(BattleController.CardsViewState.NO_CARDS_VIEW)
-		#discard_view_overlay.hide_window()
-	#elif BattleController.current_cards_view_state == BattleController.CardsViewState.NO_CARDS_VIEW:
-		#BattleController.transition_cards_view(BattleController.CardsViewState.DISCARD_VIEW)
-		#discard_view_overlay.show_window(Deck.get_discards())
-
-#func _on_collection_button_pressed() -> void:
-	#if BattleController.current_cards_view_state == BattleController.CardsViewState.COLLECTION_VIEW:
-		#BattleController.transition_cards_view(BattleController.CardsViewState.NO_CARDS_VIEW)
-		#collection_view_overlay.hide_window()
-	#elif BattleController.current_cards_view_state == BattleController.CardsViewState.NO_CARDS_VIEW:
-		#BattleController.transition_cards_view(BattleController.CardsViewState.COLLECTION_VIEW)
-		#collection_view_overlay.show_window(Deck.make_all_cards_from_collection())
-
-func _on_start_battle_button_pressed() -> void:
-	start_battle()
-
-func _on_usable_deck_ui_pressed() -> void:
-	pass
-	#draw_card()
-
-func draw_card():
-	pass
-	#var card_with_id = deck_ui.draw_card()
-	#if card_with_id:
-		#hand.add_card(card_with_id)
-
-func _on_add_attack_button_pressed() -> void:
-	pass
-	#Deck.add_card(CardLibrary.card_library[0].duplicate())
-
-func _on_add_defend_button_pressed() -> void:
-	pass
-	#Deck.add_card(CardLibrary.card_library[1].duplicate())
-
-func _on_add_basic_deck_button_pressed() -> void:
-	pass
-	#for i in range(5):
-		#Deck.add_card(CardLibrary.card_library[0].duplicate())
-		#Deck.add_card(CardLibrary.card_library[1].duplicate())
-		#Deck.add_card(CardLibrary.card_library[2].duplicate())
-		#Deck.add_card(CardLibrary.card_library[3].duplicate())
-
-func _on_remove_card_button_pressed() -> void:
-	pass
-	#if Deck.make_all_cards_from_collection().is_empty():
-		#return
-	#var random_card: CardWithID = Deck.make_all_cards_from_collection().pick_random()
-	#Deck.remove_card(random_card.id)
 
 func _on_player_data_changed() -> void:
 	if player:
@@ -257,7 +155,6 @@ func _on_game_over_started():
 func _on_victory_started():
 	#print("main.gd _on_victory_started()")
 	Events.battle_over_screen_requested.emit("PATH CLEARED", BattleOverPanel.Outcome.WIN)
-
 
 func _on_kill_enemies_button_pressed() -> void:
 	battle_scene.kill_enemies()

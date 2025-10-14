@@ -67,44 +67,6 @@ offset_bottom = 130.0
 theme = ExtResource("8_2tyvl")
 text = "kill enemies"
 
-[node name="Take6Button" type="Button" parent="Debug_UI"]
-visible = false
-offset_top = 133.0
-offset_right = 126.0
-offset_bottom = 164.0
-text = "Take 6 Damage"
-
-[node name="AddAttackButton" type="Button" parent="Debug_UI"]
-visible = false
-offset_right = 133.0
-offset_bottom = 31.0
-theme = ExtResource("8_2tyvl")
-text = "Add Attack Card
-"
-
-[node name="AddDefendButton" type="Button" parent="Debug_UI"]
-visible = false
-offset_top = 32.0
-offset_right = 140.0
-offset_bottom = 63.0
-text = "Add Defend Card
-"
-
-[node name="AddBasicDeckButton" type="Button" parent="Debug_UI"]
-visible = false
-offset_top = 66.0
-offset_right = 140.0
-offset_bottom = 97.0
-text = "Add Basic Deck
-"
-
-[node name="RemoveCardButton" type="Button" parent="Debug_UI"]
-visible = false
-offset_top = 168.0
-offset_right = 111.0
-offset_bottom = 199.0
-text = "Remove Card"
-
 [node name="Battle_UI" type="CanvasLayer" parent="." groups=["ui_layer"]]
 script = ExtResource("9_jujjx")
 
@@ -258,11 +220,6 @@ unique_name_in_owner = true
 visible = false
 
 [connection signal="pressed" from="Debug_UI/KillEnemiesButton" to="." method="_on_kill_enemies_button_pressed"]
-[connection signal="pressed" from="Debug_UI/Take6Button" to="." method="_on_take_6_button_pressed"]
-[connection signal="pressed" from="Debug_UI/AddAttackButton" to="." method="_on_add_attack_button_pressed"]
-[connection signal="pressed" from="Debug_UI/AddDefendButton" to="." method="_on_add_defend_button_pressed"]
-[connection signal="pressed" from="Debug_UI/AddBasicDeckButton" to="." method="_on_add_basic_deck_button_pressed"]
-[connection signal="pressed" from="Debug_UI/RemoveCardButton" to="." method="_on_remove_card_button_pressed"]
 [connection signal="pressed" from="Battle_UI/EndTurn" to="." method="_on_end_turn_pressed"]
 [connection signal="pressed" from="Battle_UI/StartBattleButton" to="." method="_on_start_battle_button_pressed"]
 [connection signal="pressed" from="Battle_UI/UsableDeckUi" to="." method="_on_usable_deck_ui_pressed"]
