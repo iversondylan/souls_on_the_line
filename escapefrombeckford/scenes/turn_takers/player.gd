@@ -12,8 +12,8 @@ func _ready() -> void:
 	area_left.fighter = self
 	target_area.combatant = self
 
-func enter() -> void:
-	do_turn()
+#func enter() -> void:
+	#do_turn()
 
 func do_turn() -> void:
 	Events.player_turn_started.emit()

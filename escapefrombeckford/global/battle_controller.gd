@@ -1,16 +1,6 @@
 #class_name BattleController 
 extends Node
 
-#signal pre_game_ended()#battle_controller: BattleController)
-#signal player_turn_started()#battle_controller: BattleController)
-#signal player_turn_ended()#battle_controller: BattleController)
-#signal summons_turn_started()
-#signal summons_turn_ended()
-#signal enemy_turn_started()#battle_controller: BattleController)
-#signal enemy_turn_ended()#battle_controller: BattleController)
-#signal game_over_started()#battle_controller: BattleController)
-#signal victory_started()#battle_controller: BattleController)
-
 enum CardsViewState {
 	NO_CARDS_VIEW,
 	COLLECTION_VIEW,

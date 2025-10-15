@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="CardData" load_steps=4 format=3 uid="uid://eet5htwsey50"]
+
+[ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://custom_resources/card_data.gd" id="1_ot8yr"]
+[ext_resource type="AudioStream" uid="uid://b2fv2krixyex4" path="res://assets/sfx/Supercharge.wav" id="2_mgpo5"]
+[ext_resource type="Texture2D" uid="uid://dhtbmqc74eaby" path="res://assets/sprites/lightning-bolt-set-neon-signs-600nw-2303216923.webp" id="3_i4bov"]
+
+[resource]
+script = ExtResource("1_ot8yr")
+id = 0
+card_type = 4
+target_type = 3
+rarity = 1
+name = "Supercharge"
+description = "Increase an ally's damage by 25% for 2 turns and they attack immediately."
+cost_red = 0
+cost_green = 1
+cost_blue = 0
+texture = ExtResource("3_i4bov")
+actions = Array[GDScript]([])
+sound = ExtResource("2_mgpo5")
+metadata/_custom_type_script = "uid://d2f0qepe047dc"

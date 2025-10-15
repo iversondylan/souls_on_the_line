@@ -119,14 +119,3 @@ func reset_mana() -> void:
 
 func can_play_card(card_data: CardData) -> bool:
 	return mana_red >= card_data.cost_red and mana_green >= card_data.cost_green and mana_blue >= card_data.cost_blue
-#func on_player_turn_started():
-	#pass
-#
-#func on_player_turn_ended():
-	#pass
-#
-#func on_enemy_turn_started():
-	#pass
-#
-#func on_enemy_turn_ended():
-	#pass

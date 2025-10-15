@@ -178,17 +178,6 @@ func _handle_card_untouched(usablecard: UsableCard):
 	else:
 		print("usable_card.gd _handle_card_untouched() Error: attempted to remove card not in touched cards.")
 
-#func get_last_in_hand(subset: Array[UsableCard]) -> UsableCard:
-	#var max_index := -1
-	#var result: UsableCard = null
-	#
-	#for n: UsableCard in subset:
-		#var idx = hand_cards_arr.find(n)
-		#if idx > max_index:
-			#max_index = idx
-			#result = n
-	#return result
-
 func _on_usable_card_reparent_requested(_child: UsableCard) -> void:
 	reposition_hand_cards()
 

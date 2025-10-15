@@ -8,6 +8,8 @@ class_name HealthBar extends PanelContainer
 @export var inside_control: bool = false
 @export var font_size: int = 16 : set = _set_font_size
 
+var static_height: int
+
 var health : int = 0 : set = _set_health
 var max_health: int : set = _set_max_health
 var damage_health: int : set = _set_damage_health
@@ -42,9 +44,13 @@ func _set_font_size(new_size: int) -> void:
 	font_size = new_size
 	health_number.add_theme_font_size_override("font_size", font_size)
 	max_health_number.add_theme_font_size_override("font_size", font_size)
+	reset_size()
+	static_height = ceili(size.y + 2)
 	_update_visuals()
 
 func _update_visuals() -> void:
 	reset_size()
+	size.y = static_height
+	#health_bar.reset_size()
 	if !inside_control:
 		position.x = -0.5 * size.x
