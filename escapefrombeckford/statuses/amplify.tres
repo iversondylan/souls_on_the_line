@@ -1,16 +1,14 @@
-[gd_resource type="Resource" script_class="Status" load_steps=3 format=3 uid="uid://bd1ti361ucok5"]
+[gd_resource type="Resource" script_class="MyNewStatus" load_steps=2 format=3 uid="uid://bd1ti361ucok5"]
 
-[ext_resource type="Texture2D" uid="uid://dhtbmqc74eaby" path="res://assets/sprites/lightning-bolt-set-neon-signs-600nw-2303216923.webp" id="1_pto7b"]
-[ext_resource type="Script" uid="uid://cueedkb1u8vxy" path="res://custom_resources/status.gd" id="2_1j2sl"]
+[ext_resource type="Script" uid="uid://c7h3jkrqud34y" path="res://statuses/amplify.gd" id="1_7ubsa"]
 
 [resource]
-script = ExtResource("2_1j2sl")
+script = ExtResource("1_7ubsa")
 id = "amplify"
 proc_type = 0
 stack_type = 2
 can_expire = true
 duration = 1
 stacks = 0
-icon = ExtResource("1_pto7b")
 tooltip = "TO DO"
 metadata/_custom_type_script = "uid://cueedkb1u8vxy"

@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="CardData" load_steps=5 format=3 uid="uid://qoedpmaije5m"]
+
+[ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://custom_resources/card_data.gd" id="1_3njjs"]
+[ext_resource type="Script" uid="uid://vpt8dytf1ycc" path="res://cards/WrathfulIntent/wrathful_intent_action.gd" id="1_q0j4e"]
+[ext_resource type="AudioStream" uid="uid://cmmgf7rayiriu" path="res://assets/sprites/card_elements/wrathful_intent/dark_call.wav" id="3_ati8v"]
+[ext_resource type="Texture2D" uid="uid://c7co4hctuwrut" path="res://assets/sprites/card_elements/wrathful_intent/wrath_card_art.png" id="4_3elho"]
+
+[resource]
+script = ExtResource("1_3njjs")
+id = 0
+card_type = 3
+target_type = 0
+rarity = 2
+name = "Wrathful Intent"
+description = ""
+cost_red = 1
+cost_green = 1
+cost_blue = 2
+texture = ExtResource("4_3elho")
+actions = Array[GDScript]([ExtResource("1_q0j4e")])
+sound = ExtResource("3_ati8v")
+metadata/_custom_type_script = "uid://d2f0qepe047dc"
