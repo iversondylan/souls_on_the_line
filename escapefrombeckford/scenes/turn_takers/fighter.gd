@@ -70,7 +70,8 @@ func attack(targets: Array[Fighter], n_damage: int, n_attacks: int = 1, retarget
 			tween.tween_property(self, "position", anchor_position, 0.4)
 			tween.finished.connect( 
 				func(): 
-					turn_complete()
+					if battle_group.acting_fighters[0] == self:
+						turn_complete()
 					combatant.health_bar.show() )
 	else:
 		tween.finished.connect( func(): 

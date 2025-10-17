@@ -10,3 +10,11 @@ func activate(targets: Array[Node]) -> bool:
 
 func is_playable() -> bool:
 	return player.can_play_card(card_data)
+
+func get_fighters(targets: Array[Node]) -> Array[Fighter]:
+	var attack_targets: Array[Fighter]
+	for target in targets:
+		if target is CombatantTargetArea:
+			if target.combatant is Fighter:
+				attack_targets.push_back(target.combatant)
+	return attack_targets

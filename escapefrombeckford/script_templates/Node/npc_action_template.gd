@@ -1,4 +1,6 @@
-extends NPCAction
+# meta-name: NPCAction
+# meta-description: Create an action script for an NPCAction node
+class_name MyNewNPCAction extends NPCAction
 
 var spree: int = 0
 
