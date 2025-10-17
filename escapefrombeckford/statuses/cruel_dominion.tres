@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="CruelDominionStatus" load_steps=3 format=3 uid="uid://nnor45w1kk5c"]
+
+[ext_resource type="Texture2D" uid="uid://cytppmfrdmnxn" path="res://assets/sprites/card_elements/wrathful_intent/wrath_icon.png" id="1_2s5rg"]
+[ext_resource type="Script" uid="uid://megrskhfwgop" path="res://statuses/cruel_dominion.gd" id="2_pyaau"]
+
+[resource]
+script = ExtResource("2_pyaau")
+id = "cruel dominion"
+proc_type = 0
+stack_type = 1
+can_expire = false
+duration = 0
+stacks = 1
+icon = ExtResource("1_2s5rg")
+tooltip = "TO DO
+This is a 'power' status that adds stacks of echoed cruelty each turn, which makes summons deal more damage."
+metadata/_custom_type_script = "uid://cueedkb1u8vxy"

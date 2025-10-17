@@ -1,10 +1,9 @@
 class_name AmplifyStatus extends Status
 
-var member_var := 0
+const MODIFIER := 0.5
 
-func init_status(_target: Node) -> void:
-	status_changed.connect(_on_status_changed)
-	_on_status_changed()
+func apply_status(_target: Node) -> void:
+	print("%s should deal %s%% more damage." % [_target, MODIFIER*100])
 
 #func apply_status(_target: Node) -> void:
 	#print("The status targets: %s" % _target)

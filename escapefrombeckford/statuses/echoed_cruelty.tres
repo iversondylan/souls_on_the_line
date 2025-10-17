@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="MyNewStatus" load_steps=3 format=3 uid="uid://da5t2wbovt8qx"]
+
+[ext_resource type="Texture2D" uid="uid://cwl6v4fdaiv58" path="res://assets/sprites/card_elements/wrathful_intent/shadow.png" id="1_18iun"]
+[ext_resource type="Script" uid="uid://0oai3oy81n86" path="res://statuses/echoed_cruelty.gd" id="2_dcqir"]
+
+[resource]
+script = ExtResource("2_dcqir")
+id = "echoed cruelty"
+proc_type = 0
+stack_type = 1
+can_expire = false
+duration = 0
+stacks = 1
+icon = ExtResource("1_18iun")
+tooltip = "TO DO
+A player buff which makes summons deal more damage."
+metadata/_custom_type_script = "uid://cueedkb1u8vxy"

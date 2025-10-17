@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="MyNewStatus" load_steps=3 format=3 uid="uid://wi2vw1fnar8g"]
+
+[ext_resource type="Texture2D" uid="uid://dfm4wyrok3dku" path="res://assets/sprites/explosion_icon.png" id="1_l30sl"]
+[ext_resource type="Script" uid="uid://rjcsh1ddb5hs" path="res://statuses/terminal_glory.gd" id="2_nf0w8"]
+
+[resource]
+script = ExtResource("2_nf0w8")
+id = ""
+proc_type = 2
+stack_type = 1
+can_expire = false
+duration = 0
+stacks = 1
+icon = ExtResource("1_l30sl")
+tooltip = "TO DO
+This is a summons buff that makes them deal aoe damage on death."
+metadata/_custom_type_script = "uid://cueedkb1u8vxy"

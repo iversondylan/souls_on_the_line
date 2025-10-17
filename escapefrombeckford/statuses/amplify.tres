@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="MyNewStatus" load_steps=2 format=3 uid="uid://bd1ti361ucok5"]
+[gd_resource type="Resource" script_class="AmplifyStatus" load_steps=2 format=3 uid="uid://bd1ti361ucok5"]
 
 [ext_resource type="Script" uid="uid://c7h3jkrqud34y" path="res://statuses/amplify.gd" id="1_7ubsa"]
 

@@ -1,10 +1,10 @@
-[gd_resource type="Resource" script_class="Status" load_steps=3 format=3 uid="uid://v08f4neq881h"]
+[gd_resource type="Resource" script_class="MyNewStatus" load_steps=3 format=3 uid="uid://v08f4neq881h"]
 
-[ext_resource type="Script" uid="uid://cueedkb1u8vxy" path="res://custom_resources/status.gd" id="1_00hch"]
 [ext_resource type="Texture2D" uid="uid://dfm4wyrok3dku" path="res://assets/sprites/explosion_icon.png" id="1_hvh50"]
+[ext_resource type="Script" uid="uid://mmyd2krhkale" path="res://statuses/explosive_ambition.gd" id="2_hvh50"]
 
 [resource]
-script = ExtResource("1_00hch")
+script = ExtResource("2_hvh50")
 id = "explosive ambition"
 proc_type = 2
 stack_type = 1
