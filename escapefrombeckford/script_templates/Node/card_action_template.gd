@@ -7,9 +7,8 @@ extends CardAction
 
 func activate(targets: Array[Node]) -> bool:
 	
-	var attack_targets := get_fighters(targets)
-	
-	if !attack_targets:
+	var correct_targets: Array[Fighter] = correct_fighters(targets)
+	if !correct_targets:
 		return false
 	
 	player.spend_mana(card_data)
@@ -17,7 +16,7 @@ func activate(targets: Array[Node]) -> bool:
 	var damage_effect := DamageEffect.new()
 	damage_effect.n_damage = 6
 	damage_effect.sound = card_data.sound
-	damage_effect.execute(attack_targets)
+	damage_effect.execute(correct_targets)
 	
 	return true
 

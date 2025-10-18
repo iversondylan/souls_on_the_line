@@ -10,7 +10,7 @@ proc_type = 0
 stack_type = 1
 can_expire = false
 duration = 0
-stacks = 1
+intensity = 0
 icon = ExtResource("1_2s5rg")
 tooltip = "TO DO
 This is a 'power' status that adds stacks of echoed cruelty each turn, which makes summons deal more damage."

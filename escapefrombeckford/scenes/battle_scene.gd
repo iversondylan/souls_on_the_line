@@ -40,6 +40,9 @@ func combatant_is_there(fighter: Fighter) -> bool:
 func get_combatants_in_group(group_index: int) -> Array[Fighter]:
 	return groups[group_index].get_combatants()
 
+func get_all_combatants() -> Array[Fighter]:
+	return groups[0].get_combatants() + groups[1].get_combatants()
+
 func get_n_combatants_in_group(group_index: int) -> int:
 	return groups[group_index].get_combatants().size()
 

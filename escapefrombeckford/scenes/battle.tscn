@@ -1,4 +1,4 @@
-[gd_scene load_steps=24 format=3 uid="uid://k11cug4p8o3l"]
+[gd_scene load_steps=19 format=3 uid="uid://k11cug4p8o3l"]
 
 [ext_resource type="Script" uid="uid://dixfcu6jmx0kd" path="res://scenes/battle.gd" id="1_dd63g"]
 [ext_resource type="AudioStream" uid="uid://dqm0r66m6ggwt" path="res://assets/music/enchanted tiki 86.mp3" id="2_3b6xh"]
@@ -9,11 +9,6 @@
 [ext_resource type="Script" uid="uid://b4bb2s8x838ip" path="res://scenes/battle_scene_area_left.gd" id="7_rgwlw"]
 [ext_resource type="Theme" uid="uid://d2wc7fposrlqs" path="res://themes/wizard_theme.tres" id="8_2tyvl"]
 [ext_resource type="Script" uid="uid://ckq1sgjqlphh3" path="res://scenes/ui/battle_ui.gd" id="9_jujjx"]
-[ext_resource type="PackedScene" uid="uid://c01lspqb108gi" path="res://scenes/ui/UsableDeckUI.tscn" id="10_y4a22"]
-[ext_resource type="Texture2D" uid="uid://c2cpjnsgjdd1x" path="res://assets/sprites/card_back_1.PNG" id="11_cep4c"]
-[ext_resource type="Texture2D" uid="uid://b8e1wo2qc3kiu" path="res://assets/sprites/deck.png" id="12_4a6bu"]
-[ext_resource type="Texture2D" uid="uid://56m1ilaseofe" path="res://assets/sprites/deck_pressed.png" id="13_xk7tk"]
-[ext_resource type="Texture2D" uid="uid://coq642n2i6gl" path="res://assets/sprites/deck_hovered.png" id="14_5q3k1"]
 [ext_resource type="PackedScene" uid="uid://cy1kfsc2qfglo" path="res://scenes/hand.tscn" id="15_wvgjd"]
 [ext_resource type="PackedScene" uid="uid://3hsvnd70wteq" path="res://scenes/ui/tooltip.tscn" id="16_eynql"]
 [ext_resource type="PackedScene" uid="uid://bxtf6la07t0t5" path="res://scenes/ui/card_pile_opener.tscn" id="17_ariee"]
@@ -83,55 +78,6 @@ offset_bottom = -16.0
 grow_horizontal = 0
 grow_vertical = 0
 text = "End Turn"
-
-[node name="StartBattleButton" type="Button" parent="Battle_UI"]
-visible = false
-offset_left = 237.0
-offset_top = 2.0
-offset_right = 333.0
-offset_bottom = 33.0
-text = "Start Game"
-
-[node name="UsableDeckUi" parent="Battle_UI" instance=ExtResource("10_y4a22")]
-visible = false
-offset_left = 9.0
-offset_top = 499.0
-offset_right = 129.0
-offset_bottom = 667.0
-texture_normal = ExtResource("11_cep4c")
-
-[node name="DrawButton" type="TextureButton" parent="Battle_UI"]
-visible = false
-anchors_preset = 2
-anchor_top = 1.0
-anchor_bottom = 1.0
-offset_top = -64.0
-offset_right = 64.0
-grow_vertical = 0
-size_flags_horizontal = 0
-texture_normal = ExtResource("12_4a6bu")
-texture_pressed = ExtResource("13_xk7tk")
-texture_hover = ExtResource("14_5q3k1")
-
-[node name="DiscardButton" type="TextureButton" parent="Battle_UI"]
-visible = false
-offset_left = 1122.0
-offset_top = 540.0
-offset_right = 1186.0
-offset_bottom = 604.0
-texture_normal = ExtResource("12_4a6bu")
-texture_pressed = ExtResource("13_xk7tk")
-texture_hover = ExtResource("14_5q3k1")
-
-[node name="CollectionButton" type="TextureButton" parent="Battle_UI"]
-visible = false
-offset_left = 1018.0
-offset_top = -10.0
-offset_right = 1082.0
-offset_bottom = 54.0
-texture_normal = ExtResource("12_4a6bu")
-texture_pressed = ExtResource("13_xk7tk")
-texture_hover = ExtResource("14_5q3k1")
 
 [node name="Hand" parent="Battle_UI" instance=ExtResource("15_wvgjd")]
 
@@ -221,9 +167,4 @@ visible = false
 
 [connection signal="pressed" from="Debug_UI/KillEnemiesButton" to="." method="_on_kill_enemies_button_pressed"]
 [connection signal="pressed" from="Battle_UI/EndTurn" to="." method="_on_end_turn_pressed"]
-[connection signal="pressed" from="Battle_UI/StartBattleButton" to="." method="_on_start_battle_button_pressed"]
-[connection signal="pressed" from="Battle_UI/UsableDeckUi" to="." method="_on_usable_deck_ui_pressed"]
-[connection signal="pressed" from="Battle_UI/DrawButton" to="." method="_on_draw_button_pressed"]
-[connection signal="pressed" from="Battle_UI/DiscardButton" to="." method="_on_discard_button_pressed"]
-[connection signal="pressed" from="Battle_UI/CollectionButton" to="." method="_on_collection_button_pressed"]
 [connection signal="card_activated" from="Battle_UI/Hand" to="." method="_on_hand_card_activated"]

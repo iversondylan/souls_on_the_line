@@ -5,10 +5,9 @@ var amplify_duration := 2
 
 func activate(targets: Array[Node]) -> bool:
 	
-	if !targets:
+	var correct_targets: Array[Fighter] = correct_fighters(targets)
+	if !correct_targets:
 		return false
-	
-	var attacker := get_fighters(targets)[0]
 	
 	player.spend_mana(card_data)
 	
@@ -17,14 +16,14 @@ func activate(targets: Array[Node]) -> bool:
 	var amplify_status := AMPLIFY_STATUS.duplicate()
 	amplify_status.duration = amplify_duration
 	status_effect.status = amplify_status
-	status_effect.execute([attacker])
+	status_effect.execute(correct_targets)
 	
 	var attack_effect := AttackEffect.new()
 	attack_effect.targets = [battle_scene.get_front_or_focus(1)]
 	attack_effect.n_damage = player.combatant_data.max_mana_red
 	attack_effect.n_attacks = 1
 	attack_effect.sound = card_data.sound
-	attack_effect.execute([attacker])
+	attack_effect.execute(correct_targets)
 	
 	return true
 

@@ -68,20 +68,6 @@ func _set_card_data(_card_data: CardData) -> void:
 	_update_graphics()
 	playable = is_playable()
 
-func _set_playable(value: bool) -> void:
-	playable = value
-	if not playable:
-		card_visuals.cost_container.set_modulate(Color(1, 0.5, 0.1, 1))
-	else:
-		card_visuals.cost_container.set_modulate(Color(1, 1, 1, 1))
-
-func is_playable() -> bool:
-	var currently_playable: bool = true
-	for card_action: CardAction in actions:
-		if !card_action.is_playable():
-			currently_playable = false
-	return currently_playable
-
 func highlight():
 	if disabled == false and card_state_machine.current_state is BaseState:
 		card_visuals.glow.show()
@@ -123,12 +109,6 @@ func _update_graphics():
 	if card_visuals.description.get_text() != card_data.description:
 		card_visuals.description.set_text(card_data.description)
 
-func _on_n_combatants_changed() -> void:
-	playable = is_playable()
-
-func _on_player_combatant_data_changed() -> void:
-	playable = is_playable()
-
 func _on_click_area_mouse_entered() -> void:
 	card_state_machine.on_mouse_entered()
 	mouse_entered.emit(self)
@@ -136,7 +116,6 @@ func _on_click_area_mouse_entered() -> void:
 func _on_click_area_mouse_exited() -> void:
 	card_state_machine.on_mouse_exited()
 	mouse_exited.emit(self)
-
 
 func _on_drop_point_detector_area_entered(area: Area2D) -> void:
 	if !targets.has(area):
@@ -151,6 +130,26 @@ func _on_card_drag_or_aiming_started(used_card: UsableCard) -> void:
 	
 	disabled = true
 
+func _set_playable(value: bool) -> void:
+	playable = value
+	if not playable:
+		card_visuals.cost_container.set_modulate(Color(1, 0.5, 0.1, 1))
+	else:
+		card_visuals.cost_container.set_modulate(Color(1, 1, 1, 1))
+
+func is_playable() -> bool:
+	var currently_playable: bool = true
+	for card_action: CardAction in actions:
+		if !card_action.is_playable():
+			currently_playable = false
+	return currently_playable
+
 func _on_card_drag_or_aiming_ended(_usable_card: UsableCard) -> void:
 	disabled = false
+	playable = is_playable()
+
+func _on_n_combatants_changed() -> void:
+	playable = is_playable()
+
+func _on_player_combatant_data_changed() -> void:
 	playable = is_playable()

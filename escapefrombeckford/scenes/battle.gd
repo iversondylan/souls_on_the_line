@@ -22,9 +22,6 @@ class_name Battle extends Node2D
 @onready var mana_panel: ManaPanel = $Battle_UI/ManaPanel
 
 @onready var hand = $Battle_UI/Hand
-@onready var draw_button: TextureButton = $Battle_UI/DrawButton
-@onready var discard_button: TextureButton = $Battle_UI/DiscardButton
-@onready var collection_button: TextureButton = $Battle_UI/CollectionButton
 @onready var battle_ui: BattleUI = $Battle_UI
 
 @onready var draw_pile_button: CardPileOpener = %DrawPileButton

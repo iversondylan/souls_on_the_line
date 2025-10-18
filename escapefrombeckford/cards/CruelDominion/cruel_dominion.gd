@@ -1,15 +1,12 @@
 extends CardAction
 
-const CRUEL_DOMINION_STATUS = preload("res://cards/CruelDominion/cruel_dominion.tres")
+const CRUEL_DOMINION_STATUS = preload("res://statuses/cruel_dominion.tres")
 var cruel_dominion_intensity := 1
 
 func activate(targets: Array[Node]) -> bool:
 	
-	var player_fighter: Fighter
-	if targets[0].fighter is Player:
-		player_fighter = targets[0]
-	
-	if !player_fighter:
+	var correct_targets: Array[Fighter] = correct_fighters(targets)
+	if !correct_targets:
 		return false
 	
 	player.spend_mana(card_data)
@@ -18,7 +15,7 @@ func activate(targets: Array[Node]) -> bool:
 	var cruel_dominion := CRUEL_DOMINION_STATUS.duplicate()
 	cruel_dominion.intensity = cruel_dominion_intensity
 	status_effect.status = cruel_dominion
-	status_effect.execute([player_fighter])
+	status_effect.execute(correct_targets)
 	
 	return true
 

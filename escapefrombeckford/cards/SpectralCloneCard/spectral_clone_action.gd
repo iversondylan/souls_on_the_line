@@ -2,10 +2,10 @@ extends CardAction
 
 func activate(targets: Array[Node]) -> bool:
 	
-	if !player.can_play_card(card_data) or battle_scene.get_n_summoned_allies() >= player.combatant_data.max_mana_blue:
-		return false
+	#var correct_targets: Array[Fighter] = correct_fighters(targets)
 	
 	player.spend_mana(card_data)
+	
 	var combatant_scn: PackedScene = load("res://scenes/turn_takers/summoned_ally.tscn")
 	var clone: SummonedAlly = combatant_scn.instantiate()
 	battle_scene.add_combatant(clone, 0, targets.size()-1)
