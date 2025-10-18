@@ -63,7 +63,7 @@ func add_status(status: Status) -> void:
 	
 	# If it's intensity-stackable, intensify it
 	if status.stack_type == Status.StackType.INTENSITY:
-		_get_status(status.id).stacks += status.stacks
+		_get_status(status.id).intensity += status.intensity
 		_update_visuals()
 
 func _has_status(id: String) -> bool:

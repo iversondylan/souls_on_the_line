@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="CardData" load_steps=5 format=3 uid="uid://qoedpmaije5m"]
+
+[ext_resource type="Script" uid="uid://vpt8dytf1ycc" path="res://cards/CruelDominion/cruel_dominion.gd" id="1_dlq1m"]
+[ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://custom_resources/card_data.gd" id="2_yf47j"]
+[ext_resource type="AudioStream" uid="uid://cmmgf7rayiriu" path="res://assets/sprites/card_elements/wrathful_intent/dark_call.wav" id="3_16jh5"]
+[ext_resource type="Texture2D" uid="uid://c7co4hctuwrut" path="res://assets/sprites/card_elements/wrathful_intent/wrath_card_art.png" id="4_kand5"]
+
+[resource]
+script = ExtResource("2_yf47j")
+id = 0
+card_type = 3
+target_type = 0
+rarity = 2
+name = "Cruel Dominion"
+description = ""
+cost_red = 1
+cost_green = 1
+cost_blue = 0
+texture = ExtResource("4_kand5")
+actions = Array[GDScript]([ExtResource("1_dlq1m")])
+sound = ExtResource("3_16jh5")
+metadata/_custom_type_script = "uid://d2f0qepe047dc"

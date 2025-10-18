@@ -1,6 +1,6 @@
 # meta-name: CardAction
 # meta-description: Create an card action 
-class_name MyNewCardAction extends CardAction
+extends CardAction
 
 #const PINPOINT_STATUS = preload("res://statuses/pinpoint.tres")
 #var pinpoint_duration := 1

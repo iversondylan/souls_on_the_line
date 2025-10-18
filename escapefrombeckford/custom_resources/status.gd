@@ -12,7 +12,7 @@ enum StackType {NONE, INTENSITY, DURATION}
 @export var stack_type: StackType
 @export var can_expire: bool
 @export var duration: int : set = _set_duration
-@export var stacks: int : set = _set_stacks
+@export var intensity: int : set = _set_intensity
 
 @export_group("Status Visuals")
 @export var icon: Texture
@@ -31,6 +31,6 @@ func _set_duration(new_duration: int) -> void:
 	duration = new_duration
 	status_changed.emit()
 
-func _set_stacks(new_stacks: int) -> void:
-	stacks = new_stacks
+func _set_intensity(new_intensity: int) -> void:
+	intensity = new_intensity
 	status_changed.emit()

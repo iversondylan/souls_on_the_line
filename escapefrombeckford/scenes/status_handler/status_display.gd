@@ -4,7 +4,7 @@ class_name StatusDisplay extends Control
 
 @onready var icon: TextureRect = $Icon
 @onready var duration: Label = $Duration
-@onready var stacks: Label = $Stacks
+@onready var intensity: Label = $Stacks
 
 #func _ready() -> void:
 	#await get_tree().create_timer(1).timeout
@@ -18,13 +18,13 @@ func _set_status(new_status) -> void:
 	status = new_status
 	icon.texture = status.icon
 	duration.visible = status.stack_type == Status.StackType.DURATION
-	stacks.visible = status.stack_type == Status.StackType.INTENSITY
+	intensity.visible = status.stack_type == Status.StackType.INTENSITY
 	custom_minimum_size = icon.size
 	
 	if duration.visible:
 		custom_minimum_size = duration.size + duration.position
-	elif stacks.visible:
-		custom_minimum_size = stacks.size + stacks.position
+	elif intensity.visible:
+		custom_minimum_size = intensity.size + intensity.position
 	
 	if !status.status_changed.is_connected(_on_status_changed):
 		status.status_changed.connect(_on_status_changed)
@@ -38,10 +38,10 @@ func _on_status_changed() -> void:
 	if status.can_expire and status.duration <= 0:
 		queue_free()
 	
-	if status.stack_type == Status.StackType.INTENSITY and status.stacks == 0:
+	if status.stack_type == Status.StackType.INTENSITY and status.intensity == 0:
 		queue_free()
 	
 	duration.text = str(status.duration)
-	stacks.text = str(status.stacks)
+	intensity.text = str(status.intensity)
 	
 	
