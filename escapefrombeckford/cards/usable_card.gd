@@ -4,7 +4,7 @@ signal reparent_requested(which_usable_card: UsableCard)
 signal mouse_entered(usablecard: UsableCard)
 signal mouse_exited(usablecard: UsableCard)
 
-var player: Player
+var player: Player : set = _set_player
 var battle_scene: BattleScene
 var hand: Hand
 var actions: Array[CardAction]
@@ -52,6 +52,13 @@ func animate_to_position(new_position: Vector2, new_rotation: float, duration: f
 func animate_to_rotation(new_rotation: float, duration: float) -> void:
 	tween = create_tween().set_trans(Tween.TRANS_CIRC).set_ease(Tween.EASE_OUT)
 	tween.tween_property(self, "rotation_degrees", new_rotation,  duration)
+
+func _set_player(new_player: Player) -> void:
+	player = new_player
+	if !is_node_ready():
+		await ready
+	card_state_machine.player = player
+	
 
 func _set_card_data(_card_data: CardData) -> void:
 	if !is_node_ready():

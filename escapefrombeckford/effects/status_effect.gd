@@ -9,3 +9,4 @@ func execute(targets: Array[Fighter]) -> void:
 			continue
 		if target is Fighter:
 			target.combatant.status_grid.add_status(status)
+	SFXPlayer.play(sound)

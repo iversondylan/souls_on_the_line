@@ -7,15 +7,11 @@
 
 [resource]
 script = ExtResource("2_yf47j")
-id = 0
 card_type = 3
-target_type = 0
 rarity = 2
 name = "Cruel Dominion"
-description = ""
 cost_red = 1
 cost_green = 1
-cost_blue = 0
 texture = ExtResource("4_kand5")
 actions = Array[GDScript]([ExtResource("1_dlq1m")])
 sound = ExtResource("3_16jh5")

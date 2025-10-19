@@ -1,5 +1,7 @@
 class_name CardState extends Node
 
+var player: Player
+
 enum State {
 	BASE,
 	CLICKED,

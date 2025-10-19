@@ -14,6 +14,7 @@ func activate(targets: Array[Node]) -> bool:
 	var status_effect := StatusEffect.new()
 	var cruel_dominion := CRUEL_DOMINION_STATUS.duplicate()
 	cruel_dominion.intensity = cruel_dominion_intensity
+	status_effect.sound = card_data.sound
 	status_effect.status = cruel_dominion
 	status_effect.execute(correct_targets)
 	
