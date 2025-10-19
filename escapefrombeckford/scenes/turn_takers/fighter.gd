@@ -27,7 +27,7 @@ func _ready() -> void:
 	combatant.target_area_area_entered.connect(_on_target_area_area_entered)
 	combatant.target_area_area_exited.connect(_on_target_area_area_exited)
 	target_area.combatant = self
-	combatant.status_grid.status_parent = self
+	combatant.fighter = self
 
 func _set_combatant_data(new_data: CombatantData) -> void:
 	combatant_data = new_data
@@ -155,15 +155,21 @@ func _on_target_area_area_entered(area: Area2D) -> void:
 	match area.card_target_selector.current_card.card_data.target_type:
 		CardData.TargetType.ALLY_OR_SELF:
 			if self is SummonedAlly or self is Player:
-				targeted_arrow.show()
+				show_targeted_arrow()
 		CardData.TargetType.ALLY:
 			if self is SummonedAlly:
-				targeted_arrow.show()
+				show_targeted_arrow()
 		CardData.TargetType.SINGLE_ENEMY:
 			if self is Enemy:
-				targeted_arrow.show()
+				show_targeted_arrow()
 
 func _on_target_area_area_exited(area: Area2D) -> void:
+	hide_targeted_arrow()
+
+func show_targeted_arrow() -> void:
+	targeted_arrow.show()
+
+func hide_targeted_arrow() -> void:
 	targeted_arrow.hide()
 
 func get_mean_position(targets: Array[Fighter]) -> Vector2:

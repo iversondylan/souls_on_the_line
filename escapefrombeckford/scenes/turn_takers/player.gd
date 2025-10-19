@@ -11,6 +11,7 @@ func _ready() -> void:
 	area_left.monitoring = true
 	area_left.fighter = self
 	target_area.combatant = self
+	combatant.fighter = self
 
 #func enter() -> void:
 	#do_turn()

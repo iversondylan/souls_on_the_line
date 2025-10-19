@@ -14,7 +14,7 @@ func activate(targets: Array[Node]) -> bool:
 	clone.bind_card(card_data)
 	clone.spawned()
 	SFXPlayer.play(card_data.sound)
-		
+	
 	return true
 
 func is_playable() -> bool:

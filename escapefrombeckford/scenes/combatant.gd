@@ -16,6 +16,7 @@ signal target_area_area_exited(area: Area2D)
 @onready var status_grid: StatusGrid = $StatusGrid
 
 var combatant_data: CombatantData : set = _set_combatant_data
+var fighter: Fighter : set = _set_fighter
 
 func _set_combatant_data(new_data: CombatantData) -> void:
 	combatant_data = new_data
@@ -27,6 +28,11 @@ func _set_combatant_data(new_data: CombatantData) -> void:
 		#combatant_data.combatant_data_changed.connect(update_action)
 	load_combatant_data()
 	#update_data_visuals()
+func _set_fighter(new_fighter: Fighter) -> void:
+	fighter = new_fighter
+	if !is_node_ready():
+		await ready
+	status_grid.status_parent = fighter
 
 func load_combatant_data():
 	if !is_node_ready():

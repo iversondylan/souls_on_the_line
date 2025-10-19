@@ -32,9 +32,8 @@ func correct_fighters(targets: Array[Node]) -> Array[Fighter]:
 		CardData.TargetType.BATTLEFIELD:
 			var correct_targets: Array[Fighter] = []
 			for target in targets:
-				if target is CombatantAreaLeft:
-					if target.fighter:
-						correct_targets.push_back(target)
+				if target is CombatantAreaLeft or target is BattleSceneAreaLeft:
+					correct_targets.push_back(target)
 			return correct_targets
 		
 		CardData.TargetType.ALLY_OR_SELF:

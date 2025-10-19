@@ -20,6 +20,7 @@ func _ready() -> void:
 	#_get_status(test.id).apply_status(null)
 
 func apply_statuses_by_type(proc_type: Status.ProcType) -> void:
+	print("status_grid.gd apply_statuses_by_type() of %s" % status_parent)
 	if proc_type == Status.ProcType.EVENT_BASED:
 		return
 	

@@ -5,11 +5,6 @@ const DRAG_MINIMUM_THRESHOLD := 0.05
 var minimum_drag_time_elapsed := false
 
 func enter() -> void:
-	#var ui_layer := get_tree().get_first_node_in_group("ui_layer")
-	#if ui_layer:
-		#usable_card.reparent(ui_layer)
-	
-	#usable_card.state.text = "DRAGGING"
 	usable_card.card_visuals.glow.hide()
 	Events.card_drag_started.emit(usable_card)
 	
@@ -28,20 +23,18 @@ func on_input(event: InputEvent) -> void:
 	var cancel = event.is_action_pressed("right_mouse")
 	var confirm = event.is_action_released("mouse_click") or event.is_action_pressed("mouse_click")
 	
-	#The card gets a target if its drop point entered the hand's CardDropArea
 	if single_targeted and mouse_motion and usable_card.targets.size() > 0:
 		transition_requested.emit(self, CardState.State.AIMING)
 		return
 	
 	if player_target and mouse_motion and usable_card.targets.size() > 0:
-		player.targeted_arrow.show()
+		player.show_targeted_arrow()
 	
 	if player_target and mouse_motion and usable_card.targets.size() == 0:
-		player.targeted_arrow.hide()
+		player.hide_targeted_arrow()
 	
 	if mouse_motion:
 		usable_card.global_position = usable_card.get_global_mouse_position()
-		#usable_card.global_position = usable_card.get_global_mouse_position() - usable_card.pivot_offset
 	
 	if cancel:
 		player.targeted_arrow.hide()
