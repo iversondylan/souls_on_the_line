@@ -6,7 +6,10 @@
 [resource]
 script = ExtResource("2_dcqir")
 id = "echoed cruelty"
+proc_type = 0
 stack_type = 1
+can_expire = false
+duration = 0
 intensity = 2
 icon = ExtResource("1_18iun")
 tooltip = "TO DO
