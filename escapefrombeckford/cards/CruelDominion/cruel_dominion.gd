@@ -1,7 +1,7 @@
 extends CardAction
 
 const CRUEL_DOMINION_STATUS = preload("res://statuses/cruel_dominion.tres")
-var cruel_dominion_intensity := 1
+var cruel_dominion_intensity := 2
 
 func activate(targets: Array[Node]) -> bool:
 	

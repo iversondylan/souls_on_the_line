@@ -1,7 +1,5 @@
 class_name Player extends Fighter
 
-
-
 func _ready() -> void:
 	Events.hand_drawn.connect(_on_hand_drawn)
 	Events.hand_discarded.connect(_on_hand_discarded)
@@ -12,9 +10,6 @@ func _ready() -> void:
 	area_left.fighter = self
 	target_area.combatant = self
 	combatant.fighter = self
-
-#func enter() -> void:
-	#do_turn()
 
 func do_turn() -> void:
 	Events.player_turn_started.emit()
@@ -47,4 +42,3 @@ func _on_hand_discarded() -> void:
 func _on_end_turn_button_pressed() -> void:
 	Events.player_turn_completed.emit()
 	Events.end_turn_button_pressed.disconnect(_on_end_turn_button_pressed)
-	

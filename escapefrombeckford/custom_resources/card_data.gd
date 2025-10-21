@@ -43,6 +43,7 @@ const RARITY_COLORS := {
 @export var target_type: TargetType
 @export var rarity: Rarity
 @export var name: String
+@export var deplete: bool
 @export_multiline var description: String
 @export var cost_red: int
 @export var cost_green: int
