@@ -21,7 +21,7 @@ func add_card(card_data: CardData): #change to CardData as input
 	id_counter += 1
 
 func _set_card_collection(_card_pile: CardPile) -> void:
-	print("deck.gd OH NO SETTING CARD COLLECTION")
+	#print("deck.gd OH NO SETTING CARD COLLECTION")
 	card_collection = _card_pile
 	id_counter = 0
 	for card_data: CardData in card_collection.cards:
@@ -94,7 +94,7 @@ func draw_card() -> CardData:
 		take_discards()
 		shuffle()
 	var drawn_card: CardData = draw_pile.draw_back()
-	print("deck.gd draw_card() drawn_card: %s" % drawn_card)
+	#print("deck.gd draw_card() drawn_card: %s" % drawn_card)
 	#card_collection[drawn_card.id].card_status = CardWithID.CardStatus.HAND
 	draw_pile_size_changed.emit(draw_pile.cards.size())
 	return drawn_card

@@ -102,12 +102,14 @@ func activate() -> bool:
 	var action_processed: bool = false
 	for action : CardAction in actions:
 		action_processed = action.activate(targets)
-	if action_processed:
+	if action_processed: 
 		Events.card_played.emit(self)
-		if card_data.card_type != CardData.CardType.SUMMON:
-			hand.discard_card(hand.remove_card_by_entity(self))
-		else:
+		if card_data.deplete or card_data.card_type == CardData.CardType.POWER:
+			hand.deplete_card(hand.remove_card_by_entity(self))
+		elif card_data.card_type == CardData.CardType.SUMMON:
 			hand.reserve_summon_card(hand.remove_card_by_entity(self))
+		else:
+			hand.discard_card(hand.remove_card_by_entity(self))
 	return action_processed
 
 func _update_graphics():

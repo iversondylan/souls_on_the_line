@@ -95,6 +95,10 @@ func discard_card(usable_card: UsableCard):
 	hand_cards_arr.erase(usable_card)
 	usable_card.queue_free()
 
+func deplete_card(usable_card: UsableCard):
+	hand_cards_arr.erase(usable_card)
+	usable_card.queue_free()
+
 func discard_cards(usable_cards: Array[UsableCard]):
 	if !usable_cards:
 		Events.hand_discarded.emit()
