@@ -49,6 +49,7 @@ func _process(_delta: float) -> void:
 		hand_cards_arr[currently_selected_card_index].selected = true
 
 func add_card(card: CardData) -> void:
+	#print("hand.gd add_card() card_data: %s" % card)
 	var usable_card : UsableCard = usable_card_scn.instantiate()
 	usable_card.card_data = card
 	usable_card.hand = self

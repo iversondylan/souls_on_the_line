@@ -7,7 +7,7 @@ const ECHOED_CRUELTY_STATUS := preload("res://statuses/echoed_cruelty.tres")
 	#print("Initialize the status for target %s" % _target)
 
 func apply_status(_target: Node) -> void:
-	print("applied cruel dominion status on %s" % _target)
+	#print("applied cruel dominion status on %s" % _target)
 	var status_effect := StatusEffect.new()
 	var echoed_cruelty := ECHOED_CRUELTY_STATUS.duplicate()
 	echoed_cruelty.intensity = intensity#intensity_stacks_per_turn

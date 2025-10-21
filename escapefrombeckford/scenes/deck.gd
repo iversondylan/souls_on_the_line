@@ -21,6 +21,7 @@ func add_card(card_data: CardData): #change to CardData as input
 	id_counter += 1
 
 func _set_card_collection(_card_pile: CardPile) -> void:
+	print("deck.gd OH NO SETTING CARD COLLECTION")
 	card_collection = _card_pile
 	id_counter = 0
 	for card_data: CardData in card_collection.cards:
@@ -74,8 +75,9 @@ func take_discards() -> void:
 	discard_pile.clear()
 
 func make_draw_pile():
+	#print("deck.gd make_draw_pile() first shuffle: %s" % first_shuffle)
 	if first_shuffle:
-		draw_pile = card_collection.duplicate()
+		draw_pile = card_collection.duplicate(true)
 		#draw_pile_size_changed.emit(draw_pile.cards.size())
 		first_shuffle = false
 	else:
@@ -88,9 +90,11 @@ func _generate_card_id(_card_data: CardData):
 
 func draw_card() -> CardData:
 	if draw_pile_is_empty():
+		#print("deck.gd draw_card() draw_card(): draw pile is empty")
 		take_discards()
 		shuffle()
 	var drawn_card: CardData = draw_pile.draw_back()
+	print("deck.gd draw_card() drawn_card: %s" % drawn_card)
 	#card_collection[drawn_card.id].card_status = CardWithID.CardStatus.HAND
 	draw_pile_size_changed.emit(draw_pile.cards.size())
 	return drawn_card

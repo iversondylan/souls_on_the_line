@@ -1,7 +1,7 @@
 [gd_scene load_steps=4 format=3 uid="uid://dprjwkoqutxnd"]
 
 [ext_resource type="Script" uid="uid://dfe6nyaevfdqr" path="res://scenes/ui/blocked_message.gd" id="1_sh45u"]
-[ext_resource type="FontFile" uid="uid://6gqt3r8tqljf" path="res://assets/fonts/montreal/Montreal-Regular.ttf" id="2_4883p"]
+[ext_resource type="FontFile" uid="uid://cxkh070eysvcn" path="res://assets/fonts/montreal/Montreal-Regular.ttf" id="2_4883p"]
 
 [sub_resource type="LabelSettings" id="LabelSettings_rgqmq"]
 font = ExtResource("2_4883p")

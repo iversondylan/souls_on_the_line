@@ -1,21 +1,21 @@
 [gd_scene load_steps=21 format=3 uid="uid://dlpbxdm81neil"]
 
 [ext_resource type="Script" uid="uid://ds2ql77j3pbxq" path="res://cards/card_visuals.gd" id="1_2ndsp"]
-[ext_resource type="Texture2D" uid="uid://7wqf7vhvv0ae" path="res://assets/sprites/card_glow.PNG" id="1_w227c"]
+[ext_resource type="Texture2D" uid="uid://vb6e7l4ougog" path="res://assets/sprites/card_glow.PNG" id="1_w227c"]
 [ext_resource type="Resource" uid="uid://b7txf6d8vmjkk" path="res://cards/SpectralCloneCard/spectral_clone.tres" id="2_e5rkb"]
 [ext_resource type="Theme" uid="uid://1dr1eewpv0jd" path="res://themes/ui_theme.tres" id="3_2ndsp"]
-[ext_resource type="Texture2D" uid="uid://cs6m3b7ywq1g7" path="res://assets/sprites/card_elements/card_front.png" id="4_2ndsp"]
-[ext_resource type="Texture2D" uid="uid://cvvxggb32iq5y" path="res://assets/sprites/warp_weasel.png" id="4_e5rkb"]
-[ext_resource type="Texture2D" uid="uid://c2cpjnsgjdd1x" path="res://assets/sprites/card_back_1.PNG" id="6_spa0x"]
-[ext_resource type="Texture2D" uid="uid://fr5mjajyhawh" path="res://assets/sprites/card_elements/card_front_foreground.png" id="7_d6xg4"]
-[ext_resource type="Texture2D" uid="uid://cdap6hv4e5qcw" path="res://assets/sprites/tri_white.png" id="7_fq4np"]
-[ext_resource type="Texture2D" uid="uid://p172xyxxymlt" path="res://assets/sprites/card_elements/cost_circle_background.png" id="8_kvkof"]
-[ext_resource type="Texture2D" uid="uid://cjb0lvcy0m405" path="res://assets/sprites/card_elements/cost_circle_T_gray.png" id="9_da2py"]
-[ext_resource type="Texture2D" uid="uid://b7smcstu031ke" path="res://assets/sprites/card_elements/cost_circle_T_blue1.png" id="10_ytu8h"]
-[ext_resource type="Texture2D" uid="uid://bvwjmd1ch5b4o" path="res://assets/sprites/card_elements/cost_circle_L_gray.png" id="11_ss3dn"]
-[ext_resource type="Texture2D" uid="uid://cdv0klth22vog" path="res://assets/sprites/card_elements/cost_circle_L_red1.png" id="12_gqdbl"]
-[ext_resource type="Texture2D" uid="uid://csxfvex0guwsl" path="res://assets/sprites/card_elements/cost_circle_R_gray.png" id="13_s0hpw"]
-[ext_resource type="Texture2D" uid="uid://bie3ywpj1wrhn" path="res://assets/sprites/card_elements/cost_circle_R_green1.png" id="14_x7t2n"]
+[ext_resource type="Texture2D" uid="uid://cef8ev4508h4j" path="res://assets/sprites/card_elements/card_front.png" id="4_2ndsp"]
+[ext_resource type="Texture2D" uid="uid://5t0o785dmuxs" path="res://assets/sprites/warp_weasel.png" id="4_e5rkb"]
+[ext_resource type="Texture2D" uid="uid://couyq20vsq42e" path="res://assets/sprites/card_back_1.PNG" id="6_spa0x"]
+[ext_resource type="Texture2D" uid="uid://b0fdo18okdegs" path="res://assets/sprites/card_elements/card_front_foreground.png" id="7_d6xg4"]
+[ext_resource type="Texture2D" uid="uid://cnian0m5qwobp" path="res://assets/sprites/tri_white.png" id="7_fq4np"]
+[ext_resource type="Texture2D" uid="uid://d1aeexu228n8k" path="res://assets/sprites/card_elements/cost_circle_background.png" id="8_kvkof"]
+[ext_resource type="Texture2D" uid="uid://de5xoo4vf5ema" path="res://assets/sprites/card_elements/cost_circle_T_gray.png" id="9_da2py"]
+[ext_resource type="Texture2D" uid="uid://ppts834t0o3m" path="res://assets/sprites/card_elements/cost_circle_T_blue1.png" id="10_ytu8h"]
+[ext_resource type="Texture2D" uid="uid://djc8xl0hxk58j" path="res://assets/sprites/card_elements/cost_circle_L_gray.png" id="11_ss3dn"]
+[ext_resource type="Texture2D" uid="uid://sw8hrtqi6oqp" path="res://assets/sprites/card_elements/cost_circle_L_red1.png" id="12_gqdbl"]
+[ext_resource type="Texture2D" uid="uid://ohj3ykv05315" path="res://assets/sprites/card_elements/cost_circle_R_gray.png" id="13_s0hpw"]
+[ext_resource type="Texture2D" uid="uid://h7151fuw5tel" path="res://assets/sprites/card_elements/cost_circle_R_green1.png" id="14_x7t2n"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_g488w"]
 size = Vector2(225, 315)
@@ -194,8 +194,8 @@ offset_right = 211.0
 offset_bottom = 167.0
 mouse_filter = 2
 theme = ExtResource("3_2ndsp")
-theme_override_font_sizes/italics_font_size = 19
 theme_override_font_sizes/normal_font_size = 13
+theme_override_font_sizes/italics_font_size = 19
 bbcode_enabled = true
 text = "[i]Card Name[/i]"
 horizontal_alignment = 1

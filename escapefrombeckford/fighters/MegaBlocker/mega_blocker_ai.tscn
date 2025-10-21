@@ -2,13 +2,13 @@
 
 [ext_resource type="Script" uid="uid://cxu0uj66yny6s" path="res://fighters/npc_action_picker.gd" id="1_i4h87"]
 [ext_resource type="Script" uid="uid://b85o4pqilwhmp" path="res://fighters/MegaBlocker/attack_action.gd" id="2_p3krg"]
-[ext_resource type="Texture2D" uid="uid://c54dbo8n7r3g" path="res://assets/sprites/attack.PNG" id="3_1aga7"]
+[ext_resource type="Texture2D" uid="uid://ddpnboxhkfa7p" path="res://assets/sprites/attack.PNG" id="3_1aga7"]
 [ext_resource type="Script" uid="uid://dl5oew0p8hu6h" path="res://fighters/MegaBlocker/block_action.gd" id="3_4c4ji"]
 [ext_resource type="Script" uid="uid://bmxx1w45e3jeo" path="res://fighters/MegaBlocker/mega_block_action.gd" id="4_qc3v1"]
 [ext_resource type="Script" uid="uid://r7rmt1h6rma3" path="res://icon_data/icon_data.gd" id="4_v7clg"]
-[ext_resource type="AudioStream" uid="uid://5buss22qggjn" path="res://assets/sfx/thrall_hit.wav" id="5_h7yyt"]
-[ext_resource type="Texture2D" uid="uid://dob30qtbj3xk5" path="res://assets/sprites/block.PNG" id="6_h7yyt"]
-[ext_resource type="AudioStream" uid="uid://h4nxaoibaiuj" path="res://assets/sfx/block.wav" id="8_jpyf7"]
+[ext_resource type="AudioStream" uid="uid://d1c354axux63g" path="res://assets/sfx/thrall_hit.wav" id="5_h7yyt"]
+[ext_resource type="Texture2D" uid="uid://d34vbyaycixek" path="res://assets/sprites/block.PNG" id="6_h7yyt"]
+[ext_resource type="AudioStream" uid="uid://deoj1kho4i7kv" path="res://assets/sfx/block.wav" id="8_jpyf7"]
 
 [sub_resource type="Resource" id="Resource_jpyf7"]
 script = ExtResource("4_v7clg")

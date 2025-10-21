@@ -103,6 +103,7 @@ func _init_top_bar() -> void:
 	collection_button.pressed.connect(collection_pile_view.show_current_collection_view.bind("Collection"))
 
 func _on_battle_entered(room: Room) -> void:
+	#print("run.gd _on_battle_entered() deck size: %s" % deck.card_collection.cards.size())
 	var battle_scn: Battle = _change_view(BATTLE_SCN) as Battle
 	battle_scn.player_data = player_data
 	battle_scn.deck = deck

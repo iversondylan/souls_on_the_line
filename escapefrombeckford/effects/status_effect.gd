@@ -5,7 +5,7 @@ var status: Status
 
 func execute(targets: Array[Fighter]) -> void:
 	for target in targets:
-		print("status_effect.gd execute(): there's a target: %s" % target)
+		#print("status_effect.gd execute(): there's a target: %s" % target)
 		if !target:
 			continue
 		if target is Fighter:

@@ -1,7 +1,7 @@
 [gd_resource type="Theme" load_steps=3 format=3 uid="uid://1dr1eewpv0jd"]
 
-[ext_resource type="FontFile" uid="uid://ds3b4ujyapi6w" path="res://assets/fonts/Prompt/Prompt-Medium.ttf" id="1_xxbg1"]
-[ext_resource type="FontFile" uid="uid://c2rq2miy1lk1c" path="res://assets/fonts/Prompt/Prompt-Italic.ttf" id="2_gfhtu"]
+[ext_resource type="FontFile" uid="uid://cyv4isp48tgcu" path="res://assets/fonts/Prompt/Prompt-Medium.ttf" id="1_xxbg1"]
+[ext_resource type="FontFile" uid="uid://b3fw15vr00rfb" path="res://assets/fonts/Prompt/Prompt-Italic.ttf" id="2_gfhtu"]
 
 [resource]
 Button/font_sizes/font_size = 26

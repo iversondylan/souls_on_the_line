@@ -1,9 +1,9 @@
 [gd_scene load_steps=19 format=3 uid="uid://k11cug4p8o3l"]
 
 [ext_resource type="Script" uid="uid://dixfcu6jmx0kd" path="res://scenes/battle.gd" id="1_dd63g"]
-[ext_resource type="AudioStream" uid="uid://dqm0r66m6ggwt" path="res://assets/music/enchanted tiki 86.mp3" id="2_3b6xh"]
+[ext_resource type="AudioStream" uid="uid://cipfv0uhjtrw" path="res://assets/music/enchanted tiki 86.mp3" id="2_3b6xh"]
 [ext_resource type="Script" uid="uid://0a8baesyqdot" path="res://scenes/battle_scene.gd" id="3_lcn8m"]
-[ext_resource type="Texture2D" uid="uid://jml4obgrdfeg" path="res://assets/backgrounds/flat-forestred-dark.png" id="4_yhk5m"]
+[ext_resource type="Texture2D" uid="uid://csumxhn2nwi0e" path="res://assets/backgrounds/flat-forestred-dark.png" id="4_yhk5m"]
 [ext_resource type="PackedScene" uid="uid://gmxev02ltcly" path="res://scenes/battle_groups/battle_group_friendly.tscn" id="5_n2clt"]
 [ext_resource type="PackedScene" uid="uid://0jk65n5vl1s7" path="res://scenes/battle_groups/battle_group_enemy.tscn" id="6_xn15y"]
 [ext_resource type="Script" uid="uid://b4bb2s8x838ip" path="res://scenes/battle_scene_area_left.gd" id="7_rgwlw"]
