@@ -1,6 +1,6 @@
 [gd_scene load_steps=5 format=3 uid="uid://cd15ukicbp7fj"]
 
-[ext_resource type="Texture2D" uid="uid://dxnca3ielk8iw" path="res://assets/sprites/afflict.PNG" id="1_71ask"]
+[ext_resource type="Texture2D" uid="uid://delb6dvd52afu" path="res://assets/sprites/afflict.PNG" id="1_71ask"]
 [ext_resource type="Script" uid="uid://dgjgtflakvpbf" path="res://scenes/status_handler/status_display.gd" id="1_movl6"]
 [ext_resource type="Resource" uid="uid://bh05r8var8mj3" path="res://statuses/pinpoint.tres" id="2_c5udy"]
 [ext_resource type="Theme" uid="uid://1dr1eewpv0jd" path="res://themes/ui_theme.tres" id="2_movl6"]

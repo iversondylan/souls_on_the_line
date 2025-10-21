@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://bq5ec6mssamqd"
+path="res://.godot/imported/Fire impact 1.wav-2e30b4878dbc8a6961b8f6abfd38fed8.sample"
+
+[deps]
+
+source_file="res://assets/sfx/Fire impact 1.wav"
+dest_files=["res://.godot/imported/Fire impact 1.wav-2e30b4878dbc8a6961b8f6abfd38fed8.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2
