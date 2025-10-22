@@ -107,6 +107,7 @@ func discard_cards(usable_cards: Array[UsableCard]):
 	var tween: Tween = create_tween()
 	for usable_card in usable_cards:
 		tween.tween_callback(deck.add_card_to_discard.bind(usable_card.card_data))
+		tween.tween_callback(hand_cards_arr.erase.bind(usable_card))
 		tween.tween_callback(usable_card.queue_free.bind())
 		tween.tween_interval(CARD_DISCARD_INTERVAL)
 	tween.finished.connect(

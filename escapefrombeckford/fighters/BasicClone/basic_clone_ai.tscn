@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://cxu0uj66yny6s" path="res://fighters/npc_action_picker.gd" id="1_fednj"]
 [ext_resource type="Script" uid="uid://b61venda6l41i" path="res://fighters/BasicClone/attack_action.gd" id="2_g3atf"]
-[ext_resource type="Texture2D" uid="uid://c54dbo8n7r3g" path="res://assets/sprites/attack.PNG" id="3_1vjgt"]
+[ext_resource type="Texture2D" uid="uid://c54dbo8n7r3g" path="res://assets/sprites/assorted/attack.PNG" id="3_1vjgt"]
 [ext_resource type="Script" uid="uid://r7rmt1h6rma3" path="res://icon_data/icon_data.gd" id="4_70y2c"]
 [ext_resource type="AudioStream" uid="uid://5buss22qggjn" path="res://assets/sfx/thrall_hit.wav" id="5_1vjgt"]
 

@@ -5,9 +5,9 @@
 [ext_resource type="FontFile" uid="uid://bghjbryekmnis" path="res://assets/fonts/linux-libertine/LinLibertine_5.3.0_2012_07_02/LinLibertineOTF_5.3.0_2012_07_02/LinLibertine_R.otf" id="2_otyuf"]
 [ext_resource type="FontFile" uid="uid://b1ahfe6v5ucl7" path="res://assets/fonts/linux-libertine/LinLibertine_5.3.0_2012_07_02/LinLibertineOTF_5.3.0_2012_07_02/LinLibertine_RBI.otf" id="2_wamhw"]
 [ext_resource type="Theme" uid="uid://d2wc7fposrlqs" path="res://themes/wizard_theme.tres" id="3_otyuf"]
-[ext_resource type="Texture2D" uid="uid://ppn4laxwte56" path="res://assets/sprites/cole.PNG" id="3_wamhw"]
+[ext_resource type="Texture2D" uid="uid://ppn4laxwte56" path="res://assets/sprites/assorted/cole.PNG" id="3_wamhw"]
 [ext_resource type="ButtonGroup" uid="uid://c1ah1mjr0h2as" path="res://themes/character_button_group.tres" id="5_dy3sk"]
-[ext_resource type="Texture2D" uid="uid://cd1e7xebxf3sc" path="res://assets/sprites/cole_portrait.png" id="5_ktnu4"]
+[ext_resource type="Texture2D" uid="uid://cd1e7xebxf3sc" path="res://assets/sprites/assorted/cole_portrait.png" id="5_ktnu4"]
 
 [sub_resource type="Gradient" id="Gradient_ekxnf"]
 colors = PackedColorArray(0.07, 0.0021, 0.0518934, 1, 0.0493923, 0.0443764, 0.066303, 1)

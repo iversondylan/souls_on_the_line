@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://cl5kqakmjj4ox" path="res://cards/AttackCard/attack_action.gd" id="1_votdm"]
 [ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://custom_resources/card_data.gd" id="2_ajhol"]
-[ext_resource type="Texture2D" uid="uid://3stjw1e3ayn6" path="res://assets/sprites/broadsword_cardart.png" id="3_uwveu"]
+[ext_resource type="Texture2D" uid="uid://3stjw1e3ayn6" path="res://assets/sprites/assorted/broadsword_cardart.png" id="3_uwveu"]
 [ext_resource type="AudioStream" uid="uid://dk5ta070ckdkq" path="res://assets/sfx/Bluezone_BC0286_invader_weapon_scifi_shot_003_02.wav" id="3_v560d"]
 
 [resource]

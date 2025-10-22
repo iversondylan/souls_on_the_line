@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://dn6nl6xdifl5d" path="res://cards/FocusFireCard/focus_fire_action.gd" id="1_iwper"]
 [ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://custom_resources/card_data.gd" id="1_numeo"]
 [ext_resource type="AudioStream" uid="uid://idwtyj2act0h" path="res://assets/sfx/focus_buzz.wav" id="3_n8er5"]
-[ext_resource type="Texture2D" uid="uid://c0yql2msvjvmi" path="res://assets/sprites/target_reticule.png" id="4_n8er5"]
+[ext_resource type="Texture2D" uid="uid://c0yql2msvjvmi" path="res://assets/sprites/assorted/target_reticule.png" id="4_n8er5"]
 
 [resource]
 script = ExtResource("1_numeo")

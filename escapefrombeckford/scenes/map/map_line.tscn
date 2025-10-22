@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://8mr0wyv43d4t"]
 
-[ext_resource type="Texture2D" uid="uid://dxw6nnfgsuil3" path="res://assets/sprites/circle_white_48.png" id="1_hx6oq"]
+[ext_resource type="Texture2D" uid="uid://dxw6nnfgsuil3" path="res://assets/sprites/assorted/circle_white_48.png" id="1_hx6oq"]
 
 [node name="MapLine" type="Line2D"]
 modulate = Color(0.596629, 0.464662, 0.301945, 1)

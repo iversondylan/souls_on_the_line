@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://buhtw3540mbls" path="res://cards/SpectralCloneCard/spectral_clone_action.gd" id="1_p2rj4"]
 [ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://custom_resources/card_data.gd" id="2_nt5vi"]
 [ext_resource type="AudioStream" uid="uid://bhgtqvxlst0g" path="res://assets/sfx/Bluezone_BC0286_invader_weapon_scifi_shot_006_03.wav" id="3_r36tv"]
-[ext_resource type="Texture2D" uid="uid://boidn5bneb5f0" path="res://assets/sprites/player_mage.png" id="4_5lags"]
+[ext_resource type="Texture2D" uid="uid://boidn5bneb5f0" path="res://assets/sprites/assorted/player_mage.png" id="4_5lags"]
 
 [resource]
 script = ExtResource("2_nt5vi")

@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://d1k31h0qas6no" path="res://cards/DefendCard/defend_action.gd" id="1_14wc8"]
 [ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://custom_resources/card_data.gd" id="1_sxbgo"]
-[ext_resource type="Texture2D" uid="uid://b8ohknf4jw2ee" path="res://assets/sprites/shield_cardart2.png" id="3_fh72t"]
+[ext_resource type="Texture2D" uid="uid://b8ohknf4jw2ee" path="res://assets/sprites/assorted/shield_cardart2.png" id="3_fh72t"]
 [ext_resource type="AudioStream" uid="uid://h4nxaoibaiuj" path="res://assets/sfx/block.wav" id="3_ur15d"]
 
 [resource]

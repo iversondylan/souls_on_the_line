@@ -2,7 +2,7 @@
 
 [ext_resource type="Shader" uid="uid://b7sehxunt0dd7" path="res://shaders/four_pt_perspective.gdshader" id="1_di018"]
 [ext_resource type="Script" uid="uid://cdg3c1kte4rnx" path="res://scenes/perspective_card.gd" id="1_y02bd"]
-[ext_resource type="Texture2D" uid="uid://c2cpjnsgjdd1x" path="res://assets/sprites/card_back_1.PNG" id="2_y02bd"]
+[ext_resource type="Texture2D" uid="uid://c2cpjnsgjdd1x" path="res://assets/sprites/assorted/card_back_1.PNG" id="2_y02bd"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_wmyp0"]
 shader = ExtResource("1_di018")

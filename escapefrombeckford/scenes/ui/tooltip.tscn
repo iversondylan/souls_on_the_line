@@ -2,7 +2,7 @@
 
 [ext_resource type="Theme" uid="uid://d2wc7fposrlqs" path="res://themes/wizard_theme.tres" id="1_kv0sd"]
 [ext_resource type="Script" uid="uid://boxb2lksxdnk5" path="res://scenes/ui/tooltip.gd" id="2_o3msy"]
-[ext_resource type="Texture2D" uid="uid://c54dbo8n7r3g" path="res://assets/sprites/attack.PNG" id="3_acp5l"]
+[ext_resource type="Texture2D" uid="uid://c54dbo8n7r3g" path="res://assets/sprites/assorted/attack.PNG" id="3_acp5l"]
 [ext_resource type="Theme" uid="uid://1dr1eewpv0jd" path="res://themes/ui_theme.tres" id="4_o3msy"]
 
 [node name="Tooltip" type="PanelContainer"]

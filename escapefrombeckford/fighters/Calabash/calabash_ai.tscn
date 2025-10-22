@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://cxu0uj66yny6s" path="res://fighters/npc_action_picker.gd" id="1_wm307"]
 [ext_resource type="Script" uid="uid://bnh82y5im27re" path="res://fighters/Calabash/attack_action.gd" id="2_rfjj5"]
-[ext_resource type="Texture2D" uid="uid://c54dbo8n7r3g" path="res://assets/sprites/attack.PNG" id="3_q0rio"]
+[ext_resource type="Texture2D" uid="uid://c54dbo8n7r3g" path="res://assets/sprites/assorted/attack.PNG" id="3_q0rio"]
 [ext_resource type="Script" uid="uid://r7rmt1h6rma3" path="res://icon_data/icon_data.gd" id="4_l4viy"]
 [ext_resource type="AudioStream" uid="uid://5buss22qggjn" path="res://assets/sfx/thrall_hit.wav" id="5_b4t5r"]
 

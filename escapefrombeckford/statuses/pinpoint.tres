@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="PinpointStatus" load_steps=3 format=3 uid="uid://bh05r8var8mj3"]
 
-[ext_resource type="Texture2D" uid="uid://dm3sd42a0p6ao" path="res://assets/sprites/pinpoint.PNG" id="1_6hpfl"]
+[ext_resource type="Texture2D" uid="uid://dm3sd42a0p6ao" path="res://assets/sprites/assorted/pinpoint.PNG" id="1_6hpfl"]
 [ext_resource type="Script" uid="uid://cy0q0jk4gcgm1" path="res://statuses/pinpoint.gd" id="2_6hpfl"]
 
 [resource]

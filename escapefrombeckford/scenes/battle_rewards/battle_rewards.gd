@@ -4,9 +4,9 @@ class_name BattleRewardsScreen extends Control
 
 const CARD_REWARD = preload("res://scenes/card_reward.tscn")
 const REWARD_BUTTON := preload("res://scenes/ui/reward_button.tscn")
-const GOLD_TEXTURE := preload("res://assets/sprites/coin.PNG")
+const GOLD_TEXTURE := preload("res://assets/sprites/assorted/coin.PNG")
 const GOLD_TEXT := "%s gold"
-const CARD_TEXTURE := preload("res://assets/sprites/diamond_white.png")
+const CARD_TEXTURE := preload("res://assets/sprites/assorted/diamond_white.png")
 const CARD_TEXT := "Add New Card"
 
 @export var run_account: RunAccount

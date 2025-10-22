@@ -1,7 +1,7 @@
 [gd_scene load_steps=5 format=3 uid="uid://cyg85d6gbb8yp"]
 
 [ext_resource type="Script" uid="uid://bdaa57dmtqmmr" path="res://icon_data/usable_icon.gd" id="1_b2l1d"]
-[ext_resource type="Texture2D" uid="uid://c54dbo8n7r3g" path="res://assets/sprites/attack.PNG" id="2_40kqg"]
+[ext_resource type="Texture2D" uid="uid://c54dbo8n7r3g" path="res://assets/sprites/assorted/attack.PNG" id="2_40kqg"]
 [ext_resource type="Theme" uid="uid://1dr1eewpv0jd" path="res://themes/ui_theme.tres" id="3_5n5p6"]
 
 [sub_resource type="LabelSettings" id="LabelSettings_np844"]
