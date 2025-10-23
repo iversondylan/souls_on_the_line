@@ -1,9 +1,21 @@
-[gd_scene load_steps=3 format=3 uid="uid://bfgbrcrt4dfjf"]
+[gd_scene load_steps=5 format=3 uid="uid://bfgbrcrt4dfjf"]
 
 [ext_resource type="Script" uid="uid://buubnon543t7p" path="res://scenes/turn_takers/summoned_ally.gd" id="1_on5pq"]
 [ext_resource type="PackedScene" uid="uid://dghmlrg1poqs7" path="res://scenes/combatant.tscn" id="3_e71qy"]
+[ext_resource type="PackedScene" uid="uid://dyge25hnclouq" path="res://scenes/modifier_system/modifier_system.tscn" id="3_pvn7a"]
+[ext_resource type="PackedScene" uid="uid://ckffsg04h2eyw" path="res://scenes/modifier_system/modifier.tscn" id="4_ri57q"]
 
 [node name="SummonedAlly" type="Node2D"]
 script = ExtResource("1_on5pq")
 
 [node name="Combatant" parent="." instance=ExtResource("3_e71qy")]
+
+[node name="ModifierSystem" parent="." instance=ExtResource("3_pvn7a")]
+
+[node name="DmgDealtModifier" parent="ModifierSystem" instance=ExtResource("4_ri57q")]
+
+[node name="DmgTakenModifier" parent="ModifierSystem" instance=ExtResource("4_ri57q")]
+type = 1
+
+[node name="CardCostModifier" parent="ModifierSystem" instance=ExtResource("4_ri57q")]
+type = 2

@@ -14,6 +14,8 @@ signal turn_taker_turn_complete(turn_taker: Fighter)
 @onready var area_left: CombatantAreaLeft = combatant.area_left
 @onready var damage_number_scn: PackedScene = preload("res://scenes/ui/damage_number.tscn")
 @onready var blocked_message_scn: PackedScene = preload("res://scenes/ui/blocked_message.tscn")
+@onready var modifier_system: ModifierSystem = $ModifierSystem
+
 var combatant_data: CombatantData : set = _set_combatant_data
 var battle_scene: BattleScene
 #STATUSES IS A PLACEHOLDER SYSTEM CURRENTLY
