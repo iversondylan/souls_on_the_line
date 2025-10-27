@@ -5,7 +5,7 @@ signal status_changed()
 
 enum ProcType {START_OF_TURN, END_OF_TURN, EVENT_BASED}
 enum StackType {NONE, INTENSITY, DURATION}
-enum AuraType {NONE, ALLIES, ALLIES_AND_SELF, ENEMIES}
+enum AuraType {NONE, ALLIES, ENEMIES}
 
 @export_group("Status Data")
 @export var id: String
@@ -36,3 +36,6 @@ func _set_duration(new_duration: int) -> void:
 func _set_intensity(new_intensity: int) -> void:
 	intensity = new_intensity
 	status_changed.emit()
+
+func _on_status_changed(target: Node) -> void:
+	print("status.gd _on_status_changed(): virtual function called")

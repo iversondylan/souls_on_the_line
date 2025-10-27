@@ -11,7 +11,16 @@ func apply_status(target: Node) -> void:
 	#print("Gets status extent of %s" % member_var)
 	#status_applied.emit(self)
 
-func _on_status_changed(target: Node) -> void:
+## START HERE AGAIN TO DO THE AURA THING
+#func _on_status_changed(target: Node) -> void:
+	#var status_effect := StatusEffect.new()
+	#var aura_2ary_status := secondary_status.duplicate(true)
+	#aura_2ary_status.intensity = cruel_dominion_intensity
+	#status_effect.sound = card_data.sound
+	#status_effect.status = aura_2ary_status
+	#status_effect.execute()
+	
+	#This stuff is code for testing that buffs the work on the source.
 	assert(target.get("modifier_system"), "No modifier on %s" % target)
 	
 	var dmg_dealt_modifier: Modifier = (target as Fighter).modifier_system.get_modifier(Modifier.Type.DMG_DEALT)
@@ -24,3 +33,5 @@ func _on_status_changed(target: Node) -> void:
 	
 	echoed_cruelty_modifier_value.flat_value = intensity
 	dmg_dealt_modifier.add_new_value(echoed_cruelty_modifier_value)
+	
+	

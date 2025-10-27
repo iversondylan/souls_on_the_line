@@ -5,7 +5,6 @@ var attack_count: int = 1
 
 func activate(targets: Array[Node]) -> bool:
 	
-	
 	var correct_targets: Array[Fighter] = correct_fighters(targets)
 	if !correct_targets:
 		return false
