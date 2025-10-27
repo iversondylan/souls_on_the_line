@@ -10,5 +10,5 @@ func apply_status(_target: Node) -> void:
 	#print("Gets status extent of %s" % member_var)
 	#status_applied.emit(self)
 
-func _on_status_changed() -> void:
+func _on_status_changed(target: Node) -> void:
 	print("Amplify status: deals increased damage for %s turn(s)" % duration)

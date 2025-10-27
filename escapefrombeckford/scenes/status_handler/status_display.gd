@@ -6,6 +6,7 @@ class_name StatusDisplay extends Control
 @onready var duration: Label = $Duration
 @onready var intensity: Label = $Stacks
 
+var status_parent: Fighter : set = _set_status_parent
 #func _ready() -> void:
 	#await get_tree().create_timer(1).timeout
 	#status.duration -= 1
@@ -30,6 +31,10 @@ func _set_status(new_status) -> void:
 		status.status_changed.connect(_on_status_changed)
 	
 	_on_status_changed()
+
+func _set_status_parent(new_status_parent: Fighter) -> void:
+	status_parent = new_status_parent
+	status.status_parent = status_parent
 
 func _on_status_changed() -> void:
 	if !status:

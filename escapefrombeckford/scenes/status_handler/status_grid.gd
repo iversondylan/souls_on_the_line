@@ -47,6 +47,7 @@ func add_status(status: Status) -> void:
 		var new_status_display := STATUS_DISPLAY_SCN.instantiate() as StatusDisplay
 		add_child(new_status_display)
 		new_status_display.status = status
+		new_status_display.status_parent = status_parent
 		new_status_display.status.status_applied.connect(_on_status_applied)
 		new_status_display.status.init_status(status_parent)
 		_update_visuals()

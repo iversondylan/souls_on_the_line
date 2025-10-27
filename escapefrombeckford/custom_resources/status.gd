@@ -20,6 +20,8 @@ enum AuraType {NONE, ALLIES, ENEMIES}
 @export var icon: Texture
 @export_multiline var tooltip: String
 
+var status_parent: Fighter
+
 func init_status(_target: Node) -> void:
 	pass
 
