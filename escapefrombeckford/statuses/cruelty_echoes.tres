@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="CrueltyEchoes" load_steps=3 format=3 uid="uid://dj7pixubmwnwc"]
+
+[ext_resource type="Texture2D" uid="uid://cwl6v4fdaiv58" path="res://assets/sprites/card_elements/wrathful_intent/shadow.png" id="1_k8b4q"]
+[ext_resource type="Script" uid="uid://dhdpwlg5buyvb" path="res://statuses/cruelty_echoes.gd" id="2_76oq8"]
+
+[resource]
+script = ExtResource("2_76oq8")
+stack_type = 1
+intensity = 2
+icon = ExtResource("1_k8b4q")
+metadata/_custom_type_script = "uid://cueedkb1u8vxy"
