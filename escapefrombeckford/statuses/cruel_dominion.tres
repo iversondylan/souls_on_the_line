@@ -8,7 +8,6 @@
 script = ExtResource("2_pyaau")
 id = "cruel dominion"
 stack_type = 1
-aura_type = 1
 intensity = 2
 secondary_status = ExtResource("3_y4bbe")
 icon = ExtResource("1_2s5rg")

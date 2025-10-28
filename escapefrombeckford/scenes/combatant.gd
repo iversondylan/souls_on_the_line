@@ -17,6 +17,7 @@ signal target_area_area_exited(area: Area2D)
 
 var combatant_data: CombatantData : set = _set_combatant_data
 var fighter: Fighter : set = _set_fighter
+var battle_scene: BattleScene : set = _set_battle_scene
 
 func _set_combatant_data(new_data: CombatantData) -> void:
 	combatant_data = new_data
@@ -33,6 +34,13 @@ func _set_fighter(new_fighter: Fighter) -> void:
 	if !is_node_ready():
 		await ready
 	status_grid.status_parent = fighter
+
+func _set_battle_scene(new_battle_scene: BattleScene) -> void:
+	battle_scene = new_battle_scene
+	if !is_node_ready():
+		await ready
+	status_grid.battle_scene = battle_scene
+	
 
 func load_combatant_data():
 	if !is_node_ready():

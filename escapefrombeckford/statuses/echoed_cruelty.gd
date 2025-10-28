@@ -13,12 +13,7 @@ func apply_status(target: Node) -> void:
 
 ## START HERE AGAIN TO DO THE AURA THING
 func _on_status_changed(target: Node) -> void:
-	var status_effect := StatusEffect.new()
-	var aura_2ary_status := secondary_status.duplicate(true)
-	aura_2ary_status.intensity = intensity
-	#status_effect.sound = card_data.sound
-	status_effect.status = aura_2ary_status
-	status_effect.execute([status_parent])
+	Events.aura_changed.emit(status_parent, self)
 	
 	#This stuff is code for testing that buffs the work on the source.
 	assert(target.get("modifier_system"), "No modifier on %s" % target)

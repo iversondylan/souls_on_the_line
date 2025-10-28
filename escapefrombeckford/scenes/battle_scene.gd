@@ -12,6 +12,12 @@ func _set_deck(_deck: Deck) -> void:
 	for group: BattleGroup in groups:
 		group.deck = deck
 
+func get_index_of_parent_group(fighter: Fighter) -> int:
+	for i in range(groups.size()):
+		if groups[i].get_combatants().has(fighter):
+			return i
+	return -1
+
 func add_combatant(fighter: Fighter, group: int, rank: int):
 	fighter.battle_scene = self
 	groups[group].add_combatant(fighter, rank)
@@ -52,6 +58,16 @@ func get_n_summoned_allies() -> int:
 		#if group is BattleGroupFriendly:
 			#return group.get_n_summoned_allies()
 	#return 0
+
+func get_allies_of(fighter: Fighter) -> Array[Fighter]:
+	var index := get_index_of_parent_group(fighter)
+	var fighters := groups[index].get_combatants()
+	fighters.erase(fighter)
+	return fighters
+
+func get_enemies_of(fighter: Fighter) -> Array[Fighter]:
+	var index := get_index_of_parent_group(fighter)
+	return get_other_battle_group(index).get_combatants()
 
 func get_combatants() -> Array[Fighter]:
 	var fighters: Array[Fighter] = []
@@ -119,3 +135,12 @@ func get_front_or_focus(battle_group_index: int) -> Fighter:
 		if child_combatant.combatant_data.is_alive:
 			return child_combatant
 	return null
+
+func get_other_battle_group(idx: int) -> BattleGroup:
+	if groups.size() != 2:
+		push_error("Array must contain exactly 2 elements")
+		return null
+	if idx < 0 or idx > 1:
+		push_error("Index must be 0 or 1")
+		return null
+	return groups[1 - idx]

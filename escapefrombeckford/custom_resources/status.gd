@@ -21,6 +21,7 @@ enum AuraType {NONE, ALLIES, ENEMIES}
 @export_multiline var tooltip: String
 
 var status_parent: Fighter
+var battle_scene: BattleScene
 
 func init_status(_target: Node) -> void:
 	pass

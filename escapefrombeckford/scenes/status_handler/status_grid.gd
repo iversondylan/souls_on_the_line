@@ -6,6 +6,7 @@ const STATUS_APPLY_INTERVAL := 0.25
 const STATUS_DISPLAY_SCN = preload("res://scenes/status_handler/status_display.tscn")
 
 var status_parent: Fighter
+var battle_scene: BattleScene
 
 func _ready() -> void:
 	_update_visuals()
@@ -40,6 +41,7 @@ func apply_statuses_by_type(proc_type: Status.ProcType) -> void:
 	tween.finished.connect(func(): statuses_applied.emit(proc_type))
 
 func add_status(status: Status) -> void:
+	status.battle_scene = battle_scene
 	var stackable := status.stack_type != Status.StackType.NONE
 	
 	# Add it if it's new

@@ -17,7 +17,7 @@ signal turn_taker_turn_complete(turn_taker: Fighter)
 @onready var modifier_system: ModifierSystem = $ModifierSystem
 
 var combatant_data: CombatantData : set = _set_combatant_data
-var battle_scene: BattleScene
+var battle_scene: BattleScene : set = _set_battle_scene
 #STATUSES IS A PLACEHOLDER SYSTEM CURRENTLY
 #STATUSES SHOULD BE TRACKED DIFFERENTLY
 var statuses: Array[String] = []
@@ -28,6 +28,8 @@ var anchor_position: Vector2 = Vector2(0, 0)
 func _ready() -> void:
 	combatant.target_area_area_entered.connect(_on_target_area_area_entered)
 	combatant.target_area_area_exited.connect(_on_target_area_area_exited)
+	Events.aura_changed.connect(_on_aura_changed)
+	Events.aura_removed.connect(_on_aura_removed)
 	target_area.combatant = self
 	combatant.fighter = self
 
@@ -35,6 +37,12 @@ func _set_combatant_data(new_data: CombatantData) -> void:
 	combatant_data = new_data
 	name = combatant_data.name
 	combatant.combatant_data = combatant_data
+
+func _set_battle_scene(new_battle_scene: BattleScene) -> void:
+	battle_scene = new_battle_scene
+	if !is_node_ready():
+		await ready
+	combatant.battle_scene = battle_scene
 
 func enter() -> void:
 	combatant.status_grid.apply_statuses_by_type(Status.ProcType.START_OF_TURN)
@@ -80,14 +88,14 @@ func attack(targets: Array[Fighter], n_damage: int, n_attacks: int = 1, retarget
 			attack(targets, n_damage, n_attacks, retarget, explode)
 			)
 
-func add_status(status: String) -> void:
-	statuses.push_back(status)
-	var focus_status_icon_resource : IconData = load("res://icon_data/focus_status_icon.tres")
-	var status_icon: IconData = focus_status_icon_resource.duplicate()
-	
-	var status_icons: Array[IconData]
-	status_icons.push_back(status_icon)
-	status_bar.display_icons_from_data(status_icons)
+#func add_status(status: String) -> void:
+	#statuses.push_back(status)
+	#var focus_status_icon_resource : IconData = load("res://icon_data/focus_status_icon.tres")
+	#var status_icon: IconData = focus_status_icon_resource.duplicate()
+	#
+	#var status_icons: Array[IconData]
+	#status_icons.push_back(status_icon)
+	#status_bar.display_icons_from_data(status_icons)
 
 func set_anchor_position(_position: Vector2, animate: bool) -> void:
 	anchor_position = _position
@@ -167,6 +175,29 @@ func _on_target_area_area_entered(area: Area2D) -> void:
 
 func _on_target_area_area_exited(area: Area2D) -> void:
 	hide_targeted_arrow()
+
+func _on_aura_changed(source_fighter: Fighter, primary_status: Status) -> void:
+	print("fighter.gd _on_aura_changed() applying %s" % primary_status.id)
+	match primary_status.aura_type:
+		Status.AuraType.ALLIES:
+			print("allies")
+			if battle_group == source_fighter.battle_group and self != source_fighter:
+				print("same group and not self")
+				add_aura_secondary(source_fighter, primary_status.secondary_status)
+		Status.AuraType.ENEMIES:
+			print("enemies")
+			if battle_group != source_fighter.battle_group:
+				print("different group")
+				add_aura_secondary(source_fighter, primary_status.secondary_status)
+
+
+## THIS NEEDS TO BE CHANGED TO TRACK DUPLICATE AURAS AND SOURCES
+func add_aura_secondary(source_fighter: Fighter, aura_status: Status) -> void:
+	print("fighter.gd add_aura()")
+	combatant.status_grid.add_status(aura_status)
+
+func _on_aura_removed(source_fighter: Fighter, aura_status: Status) -> void:
+	pass
 
 func show_targeted_arrow() -> void:
 	targeted_arrow.show()
