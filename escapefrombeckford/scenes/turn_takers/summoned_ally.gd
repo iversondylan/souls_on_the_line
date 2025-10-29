@@ -1,27 +1,31 @@
 class_name SummonedAlly extends NPCFighter
 
-var card_data: CardData
+#var card_data: CardData
 
-func die():
-	combatant_data.is_alive = false
-	#if card_with_id:
-	Events.summon_reserve_card_released.emit(self)
-	var death_tween: Tween = create_tween()
-	death_tween.tween_property(character_sprite, "modulate", Color.BLACK, 0.3)
-	death_tween.finished.connect(
-		func():
-			battle_group.combatant_died(self)
-				)
+#func die():
+	#
+	#
+	#
+	#combatant_data.is_alive = false
+	##if card_with_id:
+	#Events.summon_reserve_card_released.emit(self)
+	#var death_tween: Tween = create_tween()
+	#death_tween.tween_property(character_sprite, "modulate", Color.BLACK, 0.3)
+	#death_tween.finished.connect(
+		#func():
+			#battle_group.combatant_died(self)
+				#)
+	
 
-func bind_card(_card_data: CardData) -> void:
-	card_data = _card_data
+#func bind_card(_card_data: CardData) -> void:
+	#card_data = _card_data
 
-func spawned():
-	reset()
-	update_action()
+#func spawned():
+	#reset()
+	#update_action()
 
-func traverse_player() -> void:
-	battle_group.ally_traverse_player(self)
+#func traverse_player() -> void:
+	#battle_group.ally_traverse_player(self)
 
 #func _on_area_left_mouse_entered() -> void:
 	#if combatant_data.team == 0 || combatant_data.team == 1:

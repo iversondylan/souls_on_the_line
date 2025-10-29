@@ -37,6 +37,10 @@ func _set_combatant_data(new_data: CombatantData) -> void:
 	combatant_data = new_data
 	name = combatant_data.name
 	combatant.combatant_data = combatant_data
+	
+	for child in get_children():
+		if child.has_method("_on_combatant_data_set"):
+			child._on_combatant_data_set(new_data)
 
 func _set_battle_scene(new_battle_scene: BattleScene) -> void:
 	battle_scene = new_battle_scene
@@ -46,9 +50,15 @@ func _set_battle_scene(new_battle_scene: BattleScene) -> void:
 
 func enter() -> void:
 	combatant.status_grid.apply_statuses_by_type(Status.ProcType.START_OF_TURN)
+	for child in get_children():
+		if child.has_method("_on_enter"):
+			child._on_enter()
 
 func exit() -> void:
 	combatant.status_grid.apply_statuses_by_type(Status.ProcType.END_OF_TURN)
+	for child in get_children():
+		if child.has_method("_on_exit"):
+			child._on_exit()
 
 func attack(targets: Array[Fighter], n_damage: int, n_attacks: int = 1, retarget: AttackEffect.RetargetPriority = AttackEffect.RetargetPriority.FRONT, explode: bool = false):
 	combatant.health_bar.hide()
@@ -97,6 +107,11 @@ func attack(targets: Array[Fighter], n_damage: int, n_attacks: int = 1, retarget
 	#status_icons.push_back(status_icon)
 	#status_bar.display_icons_from_data(status_icons)
 
+func spawned() -> void:
+	for child in get_children():
+		if child.has_method("_on_spawned"):
+			child._on_spawned()
+
 func set_anchor_position(_position: Vector2, animate: bool) -> void:
 	anchor_position = _position
 	if animate:
@@ -139,16 +154,38 @@ func die():
 		func():
 			battle_group.combatant_died(self)
 				)
+	for child in get_children():
+		if child.has_method("_on_die"):
+			child._on_die()
 
 func do_turn() -> void:
 	combatant_data.set_armor(0)
 	combatant_data.reset_mana()
+	for child in get_children():
+		if child.has_method("_on_do_turn"):
+			child._on_do_turn()
 
-func reset():
-	combatant_data.health = combatant_data.max_health
-	combatant_data.armor = combatant_data.starting_armor
-	combatant_data.stats_changed()
+func update_action() -> void:
+	for child in get_children():
+		if child.has_method("update_action"):
+			child.update_action()
+#func reset():
+	#combatant_data.health = combatant_data.max_health
+	#combatant_data.armor = combatant_data.starting_armor
+	#combatant_data.stats_changed()
 
+func bind_card(new_card_data: CardData) -> void:
+	for child in get_children():
+		if child.has_method("_on_bind_card"):
+			child._on_bind_card(new_card_data)
+
+func traverse_player() -> void:
+	for child in get_children():
+		if child.has_method("_on_traverse_player"):
+			child._on_traverse_player()
+
+func can_play_card(card_data: CardData) -> bool:
+	return combatant_data.can_play_card(card_data)
 #enum TargetType {
 	#SELF,
 	#BATTLEFIELD,
@@ -158,6 +195,25 @@ func reset():
 	#ALL_ENEMIES,
 	#EVERYONE
 #}
+
+func spend_mana(card_data: CardData) -> bool:
+	if combatant_data.spend_mana(card_data):
+		return true
+	else:
+		return false
+
+func discard_summon_reserve_card(_deck: Deck) -> void:
+	for child in get_children():
+		if child.has_method("_on_discard_summon_reserve_card"):
+			child._on_discard_summon_reserve_card(_deck)
+
+func reset():
+	combatant_data.health = combatant_data.max_health
+	combatant_data.mana_red = combatant_data.max_mana_red
+	combatant_data.mana_green = combatant_data.max_mana_green
+	combatant_data.mana_blue = combatant_data.max_mana_blue
+	combatant_data.armor = combatant_data.starting_armor
+	combatant_data.stats_changed()
 
 func _on_target_area_area_entered(area: Area2D) -> void:
 	if area is not CardTargetSelectorArea:

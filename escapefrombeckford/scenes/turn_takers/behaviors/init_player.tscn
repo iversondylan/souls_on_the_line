@@ -1,6 +1,0 @@
-[gd_scene load_steps=2 format=3 uid="uid://pqwbdekjih3e"]
-
-[ext_resource type="Script" uid="uid://b7vj7h3c87uu7" path="res://scenes/turn_takers/behaviors/init_player.gd" id="1_44y6i"]
-
-[node name="InitPlayer" type="Node"]
-script = ExtResource("1_44y6i")

@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://2t8myn8agsqh"]
+
+[ext_resource type="Script" uid="uid://csljslxfgnidf" path="res://scenes/turn_takers/behaviors/npcai_behavior.gd" id="1_mak2u"]
+
+[node name="NPCAIBehavior" type="Node"]
+script = ExtResource("1_mak2u")

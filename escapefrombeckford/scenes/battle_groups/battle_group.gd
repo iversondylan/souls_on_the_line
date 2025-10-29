@@ -117,7 +117,7 @@ func update_combatant_position():
 
 func combatant_died(fighter: Fighter):
 	if fighter is SummonedAlly:
-		deck.discard_summon_reserve_card(fighter.card_data)
+		fighter.discard_summon_reserve_card(deck)
 	Events.dead_combatant_data.emit(fighter.combatant_data)
 	remove_combatant(fighter)
 
