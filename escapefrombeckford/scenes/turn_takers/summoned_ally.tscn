@@ -1,9 +1,10 @@
-[gd_scene load_steps=5 format=3 uid="uid://bfgbrcrt4dfjf"]
+[gd_scene load_steps=6 format=3 uid="uid://bfgbrcrt4dfjf"]
 
 [ext_resource type="Script" uid="uid://buubnon543t7p" path="res://scenes/turn_takers/summoned_ally.gd" id="1_on5pq"]
 [ext_resource type="PackedScene" uid="uid://dghmlrg1poqs7" path="res://scenes/combatant.tscn" id="3_e71qy"]
 [ext_resource type="PackedScene" uid="uid://dyge25hnclouq" path="res://scenes/modifier_system/modifier_system.tscn" id="3_pvn7a"]
 [ext_resource type="PackedScene" uid="uid://ckffsg04h2eyw" path="res://scenes/modifier_system/modifier.tscn" id="4_ri57q"]
+[ext_resource type="PackedScene" uid="uid://cvtelvimr3235" path="res://scenes/turn_takers/behaviors/init_friendly_area_left.tscn" id="5_ri57q"]
 
 [node name="SummonedAlly" type="Node2D"]
 script = ExtResource("1_on5pq")
@@ -19,3 +20,5 @@ type = 1
 
 [node name="CardCostModifier" parent="ModifierSystem" instance=ExtResource("4_ri57q")]
 type = 2
+
+[node name="InitFriendlyAreaLeft" parent="." instance=ExtResource("5_ri57q")]

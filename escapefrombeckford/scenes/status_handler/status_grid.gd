@@ -10,15 +10,6 @@ var battle_scene: BattleScene
 
 func _ready() -> void:
 	_update_visuals()
-	#var test := load("res://statuses/pinpoint.tres")
-	#await get_tree().create_timer(1.5).timeout
-	#add_status(test)
-	#await get_tree().create_timer(1.5).timeout
-	#add_status(test)
-	#await get_tree().create_timer(1.5).timeout
-	#_get_status(test.id).apply_status(null)
-	#await get_tree().create_timer(1.5).timeout
-	#_get_status(test.id).apply_status(null)
 
 func apply_statuses_by_type(proc_type: Status.ProcType) -> void:
 	#print("status_grid.gd apply_statuses_by_type() of %s" % status_parent)
@@ -41,7 +32,7 @@ func apply_statuses_by_type(proc_type: Status.ProcType) -> void:
 	tween.finished.connect(func(): statuses_applied.emit(proc_type))
 
 func add_status(status: Status) -> void:
-	status.battle_scene = battle_scene
+	#status.battle_scene = battle_scene
 	var stackable := status.stack_type != Status.StackType.NONE
 	
 	# Add it if it's new

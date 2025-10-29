@@ -15,13 +15,15 @@ func exit() -> void:
 	combatant.status_grid.apply_statuses_by_type(Status.ProcType.END_OF_TURN)
 
 func _set_combatant_data(new_data: CombatantData) -> void:
+	#combatant_data = new_data
+	#name = combatant_data.name
+	#combatant.combatant_data = combatant_data
 	
 	combatant_data = new_data
 	name = combatant_data.name
 	combatant.combatant_data = combatant_data
+	
 	load_ai()
-	#if not combatant_data.combatant_data_changed.is_connected(update_data_visuals):
-		#combatant_data.combatant_data_changed.connect(update_data_visuals)
 	if !combatant_data.combatant_data_changed.is_connected(update_action):
 		combatant_data.combatant_data_changed.connect(update_action)
 

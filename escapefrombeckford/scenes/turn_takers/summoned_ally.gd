@@ -2,16 +2,6 @@ class_name SummonedAlly extends NPCFighter
 
 var card_data: CardData
 
-func _ready() -> void:
-	combatant.target_area_area_entered.connect(_on_target_area_area_entered)
-	combatant.target_area_area_exited.connect(_on_target_area_area_exited)
-	Events.aura_changed.connect(_on_aura_changed)
-	Events.aura_removed.connect(_on_aura_removed)
-	area_left.monitorable = true
-	area_left.monitoring = true
-	area_left.fighter = self
-	target_area.combatant = self
-
 func die():
 	combatant_data.is_alive = false
 	#if card_with_id:

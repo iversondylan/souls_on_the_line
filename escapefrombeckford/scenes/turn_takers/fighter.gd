@@ -177,23 +177,24 @@ func _on_target_area_area_exited(area: Area2D) -> void:
 	hide_targeted_arrow()
 
 func _on_aura_changed(source_fighter: Fighter, primary_status: Status) -> void:
-	print("fighter.gd _on_aura_changed() applying %s" % primary_status.id)
+	print("fighter.gd _on_aura_changed() applying: %s" % primary_status.id)
 	match primary_status.aura_type:
 		Status.AuraType.ALLIES:
-			print("allies")
+			#print("allies")
 			if battle_group == source_fighter.battle_group and self != source_fighter:
-				print("same group and not self")
+				#print("same group and not self")
 				add_aura_secondary(source_fighter, primary_status.secondary_status)
 		Status.AuraType.ENEMIES:
-			print("enemies")
+			#print("enemies")
 			if battle_group != source_fighter.battle_group:
-				print("different group")
+				#print("different group")
 				add_aura_secondary(source_fighter, primary_status.secondary_status)
 
 
 ## THIS NEEDS TO BE CHANGED TO TRACK DUPLICATE AURAS AND SOURCES
 func add_aura_secondary(source_fighter: Fighter, aura_status: Status) -> void:
-	print("fighter.gd add_aura()")
+	print("fighter.gd add_aura_secondary() applying aura secondary: %s" % aura_status.id)
+	aura_status.status_parent = self
 	combatant.status_grid.add_status(aura_status)
 
 func _on_aura_removed(source_fighter: Fighter, aura_status: Status) -> void:
