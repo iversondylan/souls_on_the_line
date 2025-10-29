@@ -2,17 +2,18 @@ class_name SummonedAllyBehavior extends Node
 
 var card_data: CardData
 
-func _on_spawned() -> void:
+func _ready() -> void:
 	var fighter: Fighter = get_parent()
-	fighter.reset()
-	
+	if !fighter.is_node_ready():
+		await fighter.ready
+	#fighter.reset()
 	get_sibling("NPCAIBehavior").update_action()
 
 func _on_die() -> void:
 	var summoned_ally: SummonedAlly = get_parent()
 	Events.summon_reserve_card_released.emit(summoned_ally)
 
-func _on_bind_card(new_card_data: CardData) -> void:
+func bind_card(new_card_data: CardData) -> void:
 	card_data = new_card_data
 
 func _on_traverse_player() -> void:

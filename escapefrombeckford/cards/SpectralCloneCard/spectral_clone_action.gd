@@ -11,8 +11,10 @@ func activate(targets: Array[Node]) -> bool:
 	battle_scene.add_combatant(clone, 0, targets.size()-1)
 	clone.combatant_data = load("res://fighters/BasicClone/basic_clone_data.tres").duplicate()
 	
-	clone.bind_card(card_data)
-	clone.spawned()
+	for child in clone.get_children():
+		if child.has_method("bind_card"):
+			child.bind_card(card_data)
+	#clone.spawned()
 	SFXPlayer.play(card_data.sound)
 	
 	return true

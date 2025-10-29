@@ -41,6 +41,7 @@ func _set_combatant_data(new_data: CombatantData) -> void:
 	for child in get_children():
 		if child.has_method("_on_combatant_data_set"):
 			child._on_combatant_data_set(new_data)
+	reset()
 
 func _set_battle_scene(new_battle_scene: BattleScene) -> void:
 	battle_scene = new_battle_scene
@@ -107,10 +108,10 @@ func attack(targets: Array[Fighter], n_damage: int, n_attacks: int = 1, retarget
 	#status_icons.push_back(status_icon)
 	#status_bar.display_icons_from_data(status_icons)
 
-func spawned() -> void:
-	for child in get_children():
-		if child.has_method("_on_spawned"):
-			child._on_spawned()
+#func spawned() -> void:
+	#for child in get_children():
+		#if child.has_method("_on_spawned"):
+			#child._on_spawned()
 
 func set_anchor_position(_position: Vector2, animate: bool) -> void:
 	anchor_position = _position
@@ -174,10 +175,10 @@ func update_action() -> void:
 	#combatant_data.armor = combatant_data.starting_armor
 	#combatant_data.stats_changed()
 
-func bind_card(new_card_data: CardData) -> void:
-	for child in get_children():
-		if child.has_method("_on_bind_card"):
-			child._on_bind_card(new_card_data)
+#func bind_card(new_card_data: CardData) -> void:
+	#for child in get_children():
+		#if child.has_method("_on_bind_card"):
+			#child._on_bind_card(new_card_data)
 
 func traverse_player() -> void:
 	for child in get_children():

@@ -4,11 +4,11 @@ var member_var := 0
 
 func init_status(target: Node) -> void:
 	status_changed.connect(_on_status_changed.bind(target))
-	print("cruelty_echoes.gd init_status() target: " % target)
+	print("cruelty_echoes.gd init_status() target: %s" % target)
 	_on_status_changed(target)
 
 func apply_status(_target: Node) -> void:
-	print("cruelty_echoes.gd apply_status() target: " % _target)
+	print("cruelty_echoes.gd apply_status() target: %s" % _target)
 
 func _on_status_changed(target: Node) -> void:
 	print("cruelty_echoes.gd _on_status_changed() target: %s" % target)
