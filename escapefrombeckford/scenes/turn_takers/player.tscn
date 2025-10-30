@@ -4,7 +4,7 @@
 [ext_resource type="PackedScene" uid="uid://dghmlrg1poqs7" path="res://scenes/combatant.tscn" id="3_fypcg"]
 [ext_resource type="PackedScene" uid="uid://dyge25hnclouq" path="res://scenes/modifier_system/modifier_system.tscn" id="3_krq2t"]
 [ext_resource type="PackedScene" uid="uid://ckffsg04h2eyw" path="res://scenes/modifier_system/modifier.tscn" id="4_gnj2e"]
-[ext_resource type="PackedScene" uid="uid://cvtelvimr3235" path="res://scenes/turn_takers/behaviors/init_friendly_area_left.tscn" id="5_gnj2e"]
+[ext_resource type="PackedScene" uid="uid://cvtelvimr3235" path="res://scenes/turn_takers/behaviors/friendly_behavior.tscn" id="5_gnj2e"]
 [ext_resource type="PackedScene" uid="uid://pqwbdekjih3e" path="res://scenes/turn_takers/behaviors/player_behavior.tscn" id="6_e4ilh"]
 
 [node name="Player" type="Node2D"]
@@ -22,6 +22,6 @@ type = 1
 [node name="CardCostModifier" parent="ModifierSystem" instance=ExtResource("4_gnj2e")]
 type = 2
 
-[node name="InitFriendlyAreaLeft" parent="." instance=ExtResource("5_gnj2e")]
+[node name="FriendlyBehavior" parent="." instance=ExtResource("5_gnj2e")]
 
-[node name="InitPlayer" parent="." instance=ExtResource("6_e4ilh")]
+[node name="PlayerBehavior" parent="." instance=ExtResource("6_e4ilh")]

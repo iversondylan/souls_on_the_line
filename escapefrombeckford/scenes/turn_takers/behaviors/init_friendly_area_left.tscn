@@ -1,6 +1,0 @@
-[gd_scene load_steps=2 format=3 uid="uid://cvtelvimr3235"]
-
-[ext_resource type="Script" uid="uid://bh3u544b28osi" path="res://scenes/turn_takers/behaviors/init_friendly_area_left.gd" id="1_woblh"]
-
-[node name="InitFriendlyAreaLeft" type="Node"]
-script = ExtResource("1_woblh")

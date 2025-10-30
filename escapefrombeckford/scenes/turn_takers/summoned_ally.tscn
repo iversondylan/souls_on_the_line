@@ -4,7 +4,7 @@
 [ext_resource type="PackedScene" uid="uid://dghmlrg1poqs7" path="res://scenes/combatant.tscn" id="3_e71qy"]
 [ext_resource type="PackedScene" uid="uid://dyge25hnclouq" path="res://scenes/modifier_system/modifier_system.tscn" id="3_pvn7a"]
 [ext_resource type="PackedScene" uid="uid://ckffsg04h2eyw" path="res://scenes/modifier_system/modifier.tscn" id="4_ri57q"]
-[ext_resource type="PackedScene" uid="uid://cvtelvimr3235" path="res://scenes/turn_takers/behaviors/init_friendly_area_left.tscn" id="5_ri57q"]
+[ext_resource type="PackedScene" uid="uid://cvtelvimr3235" path="res://scenes/turn_takers/behaviors/friendly_behavior.tscn" id="5_ri57q"]
 [ext_resource type="PackedScene" uid="uid://2t8myn8agsqh" path="res://scenes/turn_takers/behaviors/npcai_behavior.tscn" id="6_on5pq"]
 [ext_resource type="PackedScene" uid="uid://lwyeupi6ld8k" path="res://scenes/turn_takers/behaviors/summoned_ally_behavior.tscn" id="7_5ikkc"]
 
@@ -23,7 +23,7 @@ type = 1
 [node name="CardCostModifier" parent="ModifierSystem" instance=ExtResource("4_ri57q")]
 type = 2
 
-[node name="InitFriendlyAreaLeft" parent="." instance=ExtResource("5_ri57q")]
+[node name="FriendlyBehavior" parent="." instance=ExtResource("5_ri57q")]
 
 [node name="NPCAIBehavior" parent="." instance=ExtResource("6_on5pq")]
 

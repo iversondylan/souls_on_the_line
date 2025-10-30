@@ -1,4 +1,4 @@
-class_name InitFriendlyAreaLeft extends Node
+class_name FriendlyBehavior extends Node
 
 func _ready() -> void:
 	var fighter: Fighter = get_parent()
