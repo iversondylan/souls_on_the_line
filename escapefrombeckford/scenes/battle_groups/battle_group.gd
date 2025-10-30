@@ -12,7 +12,7 @@ var acting_fighters: Array[Fighter] = []
 
 func reset_npc_actions() -> void:
 	for child in get_children():
-		if child is NPCFighter:
+		if has_ai_behavior(child):
 			child.current_action = null
 			child.update_action()
 
@@ -132,3 +132,9 @@ func _on_combatant_statuses_applied(proc_type: Status.ProcType, fighter: Fighter
 		Status.ProcType.END_OF_TURN:
 			acting_fighters.erase(fighter)
 			_next_turn_taker()
+
+func has_ai_behavior(node: Node) -> bool:
+	for child in node.get_children():
+		if child is NPCAIBehavior:
+			return true
+	return false

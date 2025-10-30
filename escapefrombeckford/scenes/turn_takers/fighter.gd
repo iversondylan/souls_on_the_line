@@ -79,7 +79,10 @@ func attack(targets: Array[Fighter], n_damage: int, n_attacks: int = 1, retarget
 	end = get_mean_position(targets)
 	tween.tween_property(self, "global_position", end, 0.4)
 	var damage_effect := DamageEffect.new()
-	damage_effect.n_damage = n_damage
+	
+	damage_effect.n_damage = modifier_system.get_modified_value(n_damage, Modifier.Type.DMG_DEALT)
+	modifier_system.get_modified_value(n_damage, Modifier.Type.DMG_DEALT)
+	
 	damage_effect.sound = combatant_data.attack_sound
 	tween.tween_callback(damage_effect.execute.bind(targets))
 	tween.tween_interval(0.5)
@@ -246,7 +249,6 @@ func _on_aura_changed(source_fighter: Fighter, primary_status: Status) -> void:
 			if battle_group != source_fighter.battle_group:
 				#print("different group")
 				add_aura_secondary(source_fighter, primary_status.secondary_status)
-
 
 ## THIS NEEDS TO BE CHANGED TO TRACK DUPLICATE AURAS AND SOURCES
 func add_aura_secondary(source_fighter: Fighter, aura_status: Status) -> void:

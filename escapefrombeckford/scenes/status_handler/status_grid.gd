@@ -7,6 +7,7 @@ const STATUS_DISPLAY_SCN = preload("res://scenes/status_handler/status_display.t
 
 var status_parent: Fighter
 var battle_scene: BattleScene
+var aura_registry: Dictionary = {}
 
 func _ready() -> void:
 	_update_visuals()
@@ -31,6 +32,18 @@ func apply_statuses_by_type(proc_type: Status.ProcType) -> void:
 	
 	tween.finished.connect(func(): statuses_applied.emit(proc_type))
 
+func add_and_get_aura_secondary(source: Fighter, status: Status) -> Status:
+	#this currently has no safety check that the status is an aura secondary status
+	aura_registry[source] = status
+	
+	var most_intense_status: Status
+	
+	for key in aura_registry:
+		if (!most_intense_status or aura_registry[key] > most_intense_status) and (aura_registry[key] as Status).id == status.id:
+			most_intense_status = aura_registry[key]	
+	
+	return null
+
 func add_status(status: Status) -> void:
 	#status.battle_scene = battle_scene
 	var stackable := status.stack_type != Status.StackType.NONE
@@ -49,6 +62,11 @@ func add_status(status: Status) -> void:
 	# If it's unique and exists, there's no effect
 	if !status.can_expire and !stackable:
 		return
+	
+	# If it's an aura secondary, intensity must be replaced, not added
+	if status.aura_type == Status.AuraType.SECONDARY:
+		_get_status(status.id).intensity = status.intensity
+		_update_visuals()
 	
 	# If it's duration-stackable, extend it
 	if status.can_expire and status.stack_type == Status.StackType.DURATION:

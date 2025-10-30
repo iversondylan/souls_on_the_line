@@ -5,7 +5,7 @@ signal status_changed()
 
 enum ProcType {START_OF_TURN, END_OF_TURN, EVENT_BASED}
 enum StackType {NONE, INTENSITY, DURATION}
-enum AuraType {NONE, ALLIES, ENEMIES}
+enum AuraType {NONE, ALLIES, ENEMIES, SECONDARY}
 
 @export_group("Status Data")
 @export var id: String

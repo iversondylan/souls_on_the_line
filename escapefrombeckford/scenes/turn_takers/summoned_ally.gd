@@ -1,4 +1,4 @@
-class_name SummonedAlly extends NPCFighter
+class_name SummonedAlly extends Ally
 
 #var card_data: CardData
 

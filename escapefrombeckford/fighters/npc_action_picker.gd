@@ -1,6 +1,6 @@
 class_name NPCActionPicker extends Node
 
-@export var combatant: NPCFighter: set = _set_combatant
+@export var combatant: Fighter: set = _set_combatant
 @export var target: Fighter: set = _set_target
 
 @onready var total_weight: float = 0.0
@@ -67,7 +67,7 @@ func _connect_children() -> void:
 	for child in get_children():
 		child.action_performed.connect(_on_npc_action_performed)
 
-func _set_combatant(_combatant: NPCFighter) -> void:
+func _set_combatant(_combatant: Fighter) -> void:
 	combatant = _combatant
 	for action: NPCAction in get_children():
 		action.combatant = combatant

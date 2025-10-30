@@ -1,4 +1,4 @@
-class_name Player extends Fighter
+class_name Player extends Friendly
 
 #func do_turn() -> void:
 	#Events.player_turn_started.emit()

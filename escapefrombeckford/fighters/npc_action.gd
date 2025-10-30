@@ -12,7 +12,7 @@ enum ActionCode {TIGER, TURTLE, TURKEY, TOUCAN, TARSIER, TAPIR}
 @export_range(0.0, 10.0) var chance_weight: float = 0.0
 @onready var accumulated_weight: float = 0.0
 
-var combatant: NPCFighter
+var combatant: Fighter
 var target: Fighter
 var player: Player
 var battle_scene: BattleScene
