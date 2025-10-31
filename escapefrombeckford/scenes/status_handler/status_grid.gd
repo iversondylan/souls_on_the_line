@@ -10,6 +10,7 @@ var battle_scene: BattleScene
 var aura_registry: Dictionary = {}
 
 func _ready() -> void:
+	Events.auras_requested.connect(_on_auras_requested)
 	_update_visuals()
 
 func apply_statuses_by_type(proc_type: Status.ProcType) -> void:
@@ -67,6 +68,7 @@ func add_status(status: Status) -> void:
 	if status.aura_type == Status.AuraType.SECONDARY:
 		_get_status(status.id).intensity = status.intensity
 		_update_visuals()
+		return
 	
 	# If it's duration-stackable, extend it
 	if status.can_expire and status.stack_type == Status.StackType.DURATION:
@@ -78,6 +80,16 @@ func add_status(status: Status) -> void:
 	if status.stack_type == Status.StackType.INTENSITY:
 		_get_status(status.id).intensity += status.intensity
 		_update_visuals()
+
+func get_most_intense_auras() -> Dictionary:
+	var most_intense_auras: Dictionary = {}
+	for key: Status in aura_registry:
+		if !most_intense_auras.has(key.id):
+			most_intense_auras[key.id] = aura_registry[key]
+		elif (aura_registry[key] as Status).intensity > (most_intense_auras[key.id] as Status).intensity:
+			most_intense_auras[key.id] = aura_registry[key]
+	return most_intense_auras
+	
 
 func _has_status(id: String) -> bool:
 	for status_display: StatusDisplay in get_children():
@@ -105,3 +117,6 @@ func _on_status_applied(status: Status) -> void:
 func _update_visuals() -> void:
 	reset_size()
 	position.x = -0.5 * size.x
+
+func _on_auras_requested(requester: Fighter) -> void:
+	pass

@@ -28,7 +28,7 @@ var anchor_position: Vector2 = Vector2(0, 0)
 func _ready() -> void:
 	combatant.target_area_area_entered.connect(_on_target_area_area_entered)
 	combatant.target_area_area_exited.connect(_on_target_area_area_exited)
-	Events.aura_changed.connect(_on_aura_changed)
+	Events.aura_changed.connect(on_aura_changed)
 	Events.aura_removed.connect(_on_aura_removed)
 	target_area.combatant = self
 	combatant.fighter = self
@@ -218,6 +218,7 @@ func reset():
 	combatant_data.mana_blue = combatant_data.max_mana_blue
 	combatant_data.armor = combatant_data.starting_armor
 	combatant_data.stats_changed()
+	Events.auras_requested.emit(self)
 
 func _on_target_area_area_entered(area: Area2D) -> void:
 	if area is not CardTargetSelectorArea:
@@ -236,25 +237,27 @@ func _on_target_area_area_entered(area: Area2D) -> void:
 func _on_target_area_area_exited(area: Area2D) -> void:
 	hide_targeted_arrow()
 
-func _on_aura_changed(source_fighter: Fighter, primary_status: Status) -> void:
-	print("fighter.gd _on_aura_changed() applying: %s" % primary_status.id)
-	match primary_status.aura_type:
+func on_aura_changed(source_fighter: Fighter, aura_primary: Status) -> void:
+	#print("fighter.gd _on_aura_changed() applying: %s" % primary_status.id)
+	match aura_primary.aura_type:
 		Status.AuraType.ALLIES:
 			#print("allies")
 			if battle_group == source_fighter.battle_group and self != source_fighter:
 				#print("same group and not self")
-				add_aura_secondary(source_fighter, primary_status.secondary_status)
+				add_aura_secondary(source_fighter, aura_primary)
 		Status.AuraType.ENEMIES:
 			#print("enemies")
 			if battle_group != source_fighter.battle_group:
 				#print("different group")
-				add_aura_secondary(source_fighter, primary_status.secondary_status)
+				add_aura_secondary(source_fighter, aura_primary)
 
 ## THIS NEEDS TO BE CHANGED TO TRACK DUPLICATE AURAS AND SOURCES
-func add_aura_secondary(source_fighter: Fighter, aura_status: Status) -> void:
-	print("fighter.gd add_aura_secondary() applying aura secondary: %s" % aura_status.id)
-	aura_status.status_parent = self
-	combatant.status_grid.add_status(aura_status)
+func add_aura_secondary(source_fighter: Fighter, aura_primary: Status) -> void:
+	#print("fighter.gd add_aura_secondary() applying aura secondary: %s" % aura_status.id)
+	var aura_secondary := aura_primary.secondary_status.duplicate()
+	aura_secondary.intensity = aura_primary.intensity
+	aura_secondary.status_parent = self
+	combatant.status_grid.add_status(aura_secondary)
 
 func _on_aura_removed(source_fighter: Fighter, aura_status: Status) -> void:
 	pass
