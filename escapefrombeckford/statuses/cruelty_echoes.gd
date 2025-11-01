@@ -1,4 +1,4 @@
-class_name CrueltyEchoes extends Status
+class_name CrueltyEchoes extends AuraSecondary
 
 const PRIMARY_ID: String = "echoed cruelty"
 

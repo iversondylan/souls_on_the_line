@@ -1,4 +1,4 @@
-class_name EchoedCrueltyStatus extends Status
+class_name EchoedCrueltyStatus extends AuraPrimary
 
 #var member_var := 0
 
