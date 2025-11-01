@@ -41,9 +41,15 @@ func add_and_get_aura_secondary(source: Fighter, status: Status) -> Status:
 	
 	for key in aura_registry:
 		if (!most_intense_status or aura_registry[key] > most_intense_status) and (aura_registry[key] as Status).id == status.id:
-			most_intense_status = aura_registry[key]	
-	
+			most_intense_status = aura_registry[key]
 	return null
+
+func get_aura_primaries() -> Array[Status]:
+	var aura_primaries: Array[Status] = []
+	for status_display: StatusDisplay in get_children():
+		if status_display.status.aura_type == Status.AuraType.ALLIES or status_display.status.aura_type == Status.AuraType.ENEMIES:
+			aura_primaries.push_back(status_display.status)
+	return aura_primaries
 
 func add_status(status: Status) -> void:
 	#status.battle_scene = battle_scene
@@ -81,14 +87,14 @@ func add_status(status: Status) -> void:
 		_get_status(status.id).intensity += status.intensity
 		_update_visuals()
 
-func get_most_intense_auras() -> Dictionary:
-	var most_intense_auras: Dictionary = {}
+func get_most_intense_aura_secondaries() -> Dictionary:
+	var most_intense_aura_secondaries: Dictionary = {}
 	for key: Status in aura_registry:
-		if !most_intense_auras.has(key.id):
-			most_intense_auras[key.id] = aura_registry[key]
-		elif (aura_registry[key] as Status).intensity > (most_intense_auras[key.id] as Status).intensity:
-			most_intense_auras[key.id] = aura_registry[key]
-	return most_intense_auras
+		if !most_intense_aura_secondaries.has(key.id):
+			most_intense_aura_secondaries[key.id] = aura_registry[key]
+		elif (aura_registry[key] as Status).intensity > (most_intense_aura_secondaries[key.id] as Status).intensity:
+			most_intense_aura_secondaries[key.id] = aura_registry[key]
+	return most_intense_aura_secondaries
 	
 
 func _has_status(id: String) -> bool:
@@ -119,4 +125,5 @@ func _update_visuals() -> void:
 	position.x = -0.5 * size.x
 
 func _on_auras_requested(requester: Fighter) -> void:
-	pass
+	for aura_primary: Status in get_aura_primaries():
+		requester.on_aura_changed(status_parent, aura_primary)
