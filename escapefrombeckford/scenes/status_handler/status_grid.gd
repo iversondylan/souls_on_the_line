@@ -37,12 +37,14 @@ func add_and_get_aura_secondary(source: Fighter, status: Status) -> Status:
 	#this currently has no safety check that the status is an aura secondary status
 	aura_registry[source] = status
 	
-	var most_intense_status: Status
+	var most_intense_status: Status = null
 	
 	for key in aura_registry:
-		if (!most_intense_status or aura_registry[key] > most_intense_status) and (aura_registry[key] as Status).id == status.id:
+		if !most_intense_status and (aura_registry[key] as Status).id == status.id:
 			most_intense_status = aura_registry[key]
-	return null
+		elif aura_registry[key] > most_intense_status and (aura_registry[key] as Status).id == status.id:
+			most_intense_status = aura_registry[key]
+	return most_intense_status
 
 func get_aura_primaries() -> Array[Status]:
 	var aura_primaries: Array[Status] = []
