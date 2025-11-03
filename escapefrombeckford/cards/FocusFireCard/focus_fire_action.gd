@@ -15,9 +15,9 @@ func activate(targets: Array[Node]) -> bool:
 	player.spend_mana(card_data)
 	#attack_group = 1
 	
-	var focus_effect := FocusEffect.new()
-	focus_effect.sound = card_data.sound
-	focus_effect.execute(correct_targets)
+	#var focus_effect := FocusEffect.new()
+	#focus_effect.sound = card_data.sound
+	#focus_effect.execute(correct_targets)
 	
 	var status_effect := StatusEffect.new()
 	var focused_status := FOCUSED_STATUS.duplicate()

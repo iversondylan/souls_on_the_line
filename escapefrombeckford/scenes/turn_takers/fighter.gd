@@ -81,7 +81,7 @@ func attack(targets: Array[Fighter], n_damage: int, n_attacks: int = 1, retarget
 	var damage_effect := DamageEffect.new()
 	
 	damage_effect.n_damage = modifier_system.get_modified_value(n_damage, Modifier.Type.DMG_DEALT)
-	modifier_system.get_modified_value(n_damage, Modifier.Type.DMG_DEALT)
+	#modifier_system.get_modified_value(n_damage, Modifier.Type.DMG_DEALT)
 	
 	damage_effect.sound = combatant_data.attack_sound
 	tween.tween_callback(damage_effect.execute.bind(targets))
@@ -125,13 +125,14 @@ func set_anchor_position(_position: Vector2, animate: bool) -> void:
 		position = anchor_position
 
 func take_damage(n_damage: int):
-	if combatant_data.check_lethal(n_damage):
+	var modified_damage := modifier_system.get_modified_value(n_damage, Modifier.Type.DMG_TAKEN)
+	if combatant_data.check_lethal(modified_damage):
 		combatant_data.is_alive = false
 		battle_group.update_combatant_position()
 	var tween: Tween = create_tween()
 	tween.tween_callback(Shaker.shake.bind(self, 16, 0.15))
 	tween.tween_interval(0.2)
-	tween.finished.connect(take_damage_part_2.bind(n_damage))
+	tween.finished.connect(take_damage_part_2.bind(modified_damage))
 
 func take_damage_part_2(n_damage: int) -> void:
 	var health_damage := combatant_data.take_damage(n_damage)
