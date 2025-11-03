@@ -1,11 +1,11 @@
 class_name FocusedStatus extends Status
 
-var member_var := 0
+const FOCUSED_ID := "focused"
 
 func init_status(_target: Node) -> void:
-	print("Initialize the status for target %s" % _target)
+	print("%s gets focused for %s turns." % [_target, duration])
+	Events.focused_gained.emit(self)
 
 func apply_status(_target: Node) -> void:
-	print("The status targets: %s" % _target)
-	print("Gets status extent of %s" % member_var)
 	status_applied.emit(self)
+	print("%s gets focused for %s turns." % [_target, duration])

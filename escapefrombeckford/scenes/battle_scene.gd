@@ -125,15 +125,13 @@ func get_front_combatant(battle_group_index: int) -> Fighter:
 	return null
 
 func get_front_or_focus(battle_group_index: int) -> Fighter:
-	var child_groups: Array[BattleGroup] = get_battle_groups()
-	#var child_combatants: Array[Fighter] = child_groups[battle_group_index].get_combatants()
-	#var front_combatant: Fighter = null
-	if child_groups[battle_group_index].focus and child_groups[battle_group_index].focus.combatant_data.is_alive:
-		return child_groups[battle_group_index].focus
-	
-	for child_combatant: Fighter in child_groups[battle_group_index].get_combatants():
-		if child_combatant.combatant_data.is_alive:
-			return child_combatant
+	for fighter: Fighter in groups[battle_group_index].get_combatants():
+		if fighter.combatant.status_grid._has_status(FocusedStatus.FOCUSED_ID) and fighter.combatant_data.is_alive:
+			return fighter
+
+	for fighter: Fighter in groups[battle_group_index].get_combatants():
+		if fighter.combatant_data.is_alive:
+			return fighter
 	return null
 
 func get_other_battle_group(idx: int) -> BattleGroup:

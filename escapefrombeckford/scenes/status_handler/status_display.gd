@@ -7,10 +7,9 @@ class_name StatusDisplay extends Control
 @onready var intensity: Label = $Stacks
 
 var status_parent: Fighter : set = _set_status_parent
-#func _ready() -> void:
-	#await get_tree().create_timer(1).timeout
-	#status.duration -= 1
-	#status.stacks -= 2
+
+func _ready() -> void:
+	Events.focused_gained.connect(_on_focused_gained)
 
 func _set_status(new_status) -> void:
 	if !is_node_ready():
@@ -48,5 +47,8 @@ func _on_status_changed() -> void:
 	
 	duration.text = str(status.duration)
 	intensity.text = str(status.intensity)
-	
+
+func _on_focused_gained(focused_status: Status):
+	if focused_status.status_parent != status_parent:
+		queue_free()
 	

@@ -9,6 +9,7 @@ func init_status(target: Node) -> void:
 	_on_status_changed(target)
 
 func apply_status(_target: Node) -> void:
+	status_applied.emit(self)
 	print("%s should take %s%% more damage." % [_target, MODIFIER*100])
 	
 	#var damage_effect := DamageEffect.new()

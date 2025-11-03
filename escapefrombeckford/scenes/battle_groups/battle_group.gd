@@ -6,9 +6,12 @@ class_name BattleGroup extends Node2D
 
 var battle_scene: BattleScene
 var deck: Deck
-var focus: Fighter = null
+#var focus: Fighter = null
 
 var acting_fighters: Array[Fighter] = []
+
+#func _ready() -> void:
+	#Events.gained_focus.connect(_on_gained_focus)
 
 func reset_npc_actions() -> void:
 	for child in get_children():
@@ -23,7 +26,7 @@ func start_turn() -> void:
 	acting_fighters.clear()
 	for fighter: Fighter in get_children():
 		acting_fighters.append(fighter)
-	focus = null
+	#focus = null
 	_next_turn_taker()
 
 func _next_turn_taker() -> void:
@@ -123,7 +126,14 @@ func combatant_died(fighter: Fighter):
 
 func _on_turn_taker_turn_complete(turn_taker_who_finished: Fighter) -> void:
 	turn_taker_who_finished.exit()
-	
+
+#func _on_gained_focus(new_fighter: Fighter) -> void:
+	#if new_fighter.battle_group != self:
+		#return
+	#for fighter: Fighter in get_combatants():
+		#if fighter != new_fighter:
+			#fighter.remove_focused()
+		
 
 func _on_combatant_statuses_applied(proc_type: Status.ProcType, fighter: Fighter) -> void:
 	match proc_type:

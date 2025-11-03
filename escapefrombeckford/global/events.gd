@@ -23,6 +23,7 @@ signal n_combatants_changed()
 signal aura_changed(source: Fighter, aura: AuraPrimary)
 signal aura_removed(source: Fighter, aura: AuraPrimary)
 signal auras_requested(requester: Fighter)
+signal focused_gained(status: Status)
 
 signal icon_tooltip_show_requested(usable_icon: UsableIcon)
 signal icon_tooltip_hide_requested()
