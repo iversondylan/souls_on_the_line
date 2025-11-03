@@ -258,6 +258,12 @@ func add_aura_secondary(source_fighter: Fighter, aura_primary: AuraPrimary) -> v
 func _on_aura_removed(source_fighter: Fighter, aura_status: Status) -> void:
 	pass
 
+func has_status(status_id: String) -> bool:
+	return combatant.status_grid._has_status(status_id)
+
+func is_alive() -> bool:
+	return combatant_data.is_alive
+
 func show_targeted_arrow() -> void:
 	targeted_arrow.show()
 

@@ -68,6 +68,15 @@ func add_combatant(fighter: Fighter, rank: int):
 	if rank - acted > 0:
 		acting_fighters.insert(rank - acted, fighter)
 
+func get_front_or_focus() -> Fighter:
+	for fighter: Fighter in get_combatants():
+		if fighter.has_status(FocusedStatus.FOCUSED_ID) and fighter.is_alive():
+			return fighter
+	for fighter: Fighter in get_combatants():
+		if fighter.is_alive():
+			return fighter
+	return null
+
 func remove_combatant(fighter: Fighter):
 	remove_child(fighter)
 	var dead_fighter_acting: bool = false
