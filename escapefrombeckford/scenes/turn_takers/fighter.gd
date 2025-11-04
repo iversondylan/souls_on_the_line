@@ -1,6 +1,8 @@
 class_name Fighter extends Node2D
 
 signal turn_taker_turn_complete(turn_taker: Fighter)
+signal statuses_applied(proc_type: Status.ProcType)
+
 @export var battle_group: BattleGroup
 @onready var combatant: Combatant = $Combatant
 @onready var character_sprite: Sprite2D = combatant.character_sprite
@@ -30,6 +32,7 @@ func _ready() -> void:
 	combatant.target_area_area_exited.connect(_on_target_area_area_exited)
 	Events.aura_changed.connect(on_aura_changed)
 	Events.aura_removed.connect(_on_aura_removed)
+	combatant.statuses_applied.connect(_on_combatant_statuses_applied)
 	target_area.combatant = self
 	combatant.fighter = self
 
@@ -280,3 +283,6 @@ func get_mean_position(targets: Array[Fighter]) -> Vector2:
 func turn_complete() -> void:
 	#print("turn_taker.gd turn_complete(): %s" % name)
 	turn_taker_turn_complete.emit(self)
+
+func _on_combatant_statuses_applied(proc_type: Status.ProcType) -> void:
+	statuses_applied.emit(proc_type)

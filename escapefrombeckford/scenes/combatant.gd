@@ -2,6 +2,7 @@ class_name Combatant extends Node2D
 
 signal target_area_area_entered(area: Area2D)
 signal target_area_area_exited(area: Area2D)
+signal statuses_applied(proc_type: Status.ProcType)
 
 @onready var character_sprite: Sprite2D = $CharacterArt
 @onready var target_area: CombatantTargetArea = $TargetArea
@@ -17,6 +18,9 @@ signal target_area_area_exited(area: Area2D)
 var combatant_data: CombatantData : set = _set_combatant_data
 var fighter: Fighter : set = _set_fighter
 var battle_scene: BattleScene : set = _set_battle_scene
+
+func _ready() -> void:
+	status_grid.statuses_applied.connect(_on_status_grid_statuses_applied)
 
 func _set_combatant_data(new_data: CombatantData) -> void:
 	combatant_data = new_data
@@ -71,3 +75,6 @@ func _on_target_area_area_entered(area: Area2D) -> void:
 
 func _on_target_area_area_exited(area: Area2D) -> void:
 	target_area_area_exited.emit(area)
+
+func _on_status_grid_statuses_applied(proc_type: Status.ProcType):
+	statuses_applied.emit(proc_type)

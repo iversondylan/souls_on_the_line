@@ -45,15 +45,16 @@ func get_combatants() -> Array[Fighter]:
 	return combatants
 
 func connect_combatant(fighter: Fighter):
-	fighter.combatant.status_grid.statuses_applied.connect(_on_combatant_statuses_applied.bind(fighter))
+	fighter.battle_group = self
+	fighter.statuses_applied.connect(_on_combatant_statuses_applied.bind(fighter))
+	#fighter.combatant.status_grid.statuses_applied.connect(_on_combatant_statuses_applied.bind(fighter))
 	fighter.turn_taker_turn_complete.connect(_on_turn_taker_turn_complete)
 
 func add_combatant(fighter: Fighter, rank: int):
-	var children: Array[Node] = get_children()
-	var n_children: int = children.size()
+	#var children: Array[Node] = get_children()
+	#var n_children: int = children.size()
 	add_child(fighter)
 	connect_combatant(fighter)
-	fighter.battle_group = self
 	move_child(fighter, rank)
 	Events.n_combatants_changed.emit()
 	update_combatant_position()

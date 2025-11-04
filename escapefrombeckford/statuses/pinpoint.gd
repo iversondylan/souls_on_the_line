@@ -19,13 +19,9 @@ func apply_status(_target: Node) -> void:
 	#status_applied.emit(self)
 
 func _on_status_changed(target: Node) -> void:
-	print("cruelty_echoes.gd _on_status_changed() stacks: %s" % intensity)
-	#print("cruelty_echoes.gd _on_status_changed() target: %s" % target)
 	assert(target.get("modifier_system"), "No modifier on %s" % target)
-	
 	var dmg_taken_modifier: Modifier = (target as Fighter).modifier_system.get_modifier(Modifier.Type.DMG_TAKEN)
 	assert(dmg_taken_modifier, "No dmg taken modifier on %s" % target)
-	
 	var pinpoint_modifier_value := dmg_taken_modifier.get_value(STATUS_ID)
 	
 	if !pinpoint_modifier_value:
