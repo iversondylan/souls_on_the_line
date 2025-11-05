@@ -52,6 +52,14 @@ func load_combatant_data():
 	targeted_arrow.position = Vector2(0, - combatant_data.height)
 	health_bar.update_health(combatant_data)
 
+func info_visible(visibility: bool) -> void:
+	intent_container.visible = visibility
+	status_bar.visible = visibility
+	health_bar.visible = visibility
+	status_grid.visible = visibility
+	
+	
+
 func update_data_visuals() -> void:
 	if !is_node_ready():
 		await ready

@@ -46,7 +46,7 @@ func _process(_delta: float) -> void:
 			#held_card.highlight()
 		if currently_selected_card_index >= 0 && currently_selected_card_index < hand_cards_arr.size():
 			hand_cards_arr[currently_selected_card_index].highlight()
-		hand_cards_arr[currently_selected_card_index].selected = true
+			hand_cards_arr[currently_selected_card_index].selected = true
 
 func add_card(card: CardData) -> void:
 	#print("hand.gd add_card() card_data: %s" % card)
