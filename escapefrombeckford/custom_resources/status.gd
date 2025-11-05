@@ -38,5 +38,5 @@ func _set_intensity(new_intensity: int) -> void:
 	intensity = new_intensity
 	status_changed.emit()
 
-func _on_status_changed(target: Node) -> void:
-	print("status.gd _on_status_changed(): virtual function called")
+#func _on_status_changed(target: Node) -> void:
+	#print("status.gd _on_status_changed(): virtual function called")
