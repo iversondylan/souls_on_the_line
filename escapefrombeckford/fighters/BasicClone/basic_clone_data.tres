@@ -7,16 +7,7 @@
 [resource]
 script = ExtResource("1_ago3s")
 name = "Shadow Clone"
-description = ""
 character_art = ExtResource("1_kbgrf")
-character_scale = 1.0
-facing_right = true
 height = 270
-max_health = 10
-max_mana_red = 3
-max_mana_green = 3
-max_mana_blue = 3
-starting_armor = 0
-team = 1
 ai = ExtResource("1_apdk4")
 metadata/_custom_type_script = "uid://cfatj0ryn8uv3"

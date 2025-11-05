@@ -9,5 +9,5 @@ func execute(targets: Array[Fighter]) -> void:
 	for target in targets:
 		if !target:
 			continue
-		target.take_damage(n_damage)
+		target.take_damage(n_damage, Modifier.Type.DMG_TAKEN)
 		SFXPlayer.play(sound)

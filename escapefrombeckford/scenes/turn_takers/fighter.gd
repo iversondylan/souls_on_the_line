@@ -127,8 +127,8 @@ func set_anchor_position(_position: Vector2, animate: bool) -> void:
 	else:
 		position = anchor_position
 
-func take_damage(n_damage: int):
-	var modified_damage := modifier_system.get_modified_value(n_damage, Modifier.Type.DMG_TAKEN)
+func take_damage(n_damage: int, modifier_type: Modifier.Type):
+	var modified_damage := modifier_system.get_modified_value(n_damage, modifier_type)
 	if combatant_data.check_lethal(modified_damage):
 		combatant_data.is_alive = false
 		battle_group.update_combatant_position()
