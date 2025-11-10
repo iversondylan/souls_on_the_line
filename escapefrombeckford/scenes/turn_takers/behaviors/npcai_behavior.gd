@@ -34,6 +34,11 @@ func update_action() -> void:
 		current_action = new_conditional_action
 		current_action.battle_scene = fighter.battle_scene
 
+func update_action_intent() -> void:
+	current_action.update_action_intent()
+	var fighter: Fighter = get_parent()
+	fighter.intent_container.display_icons([current_action.intent_data])
+
 func _set_current_action(_current_action: NPCAction) -> void:
 	var fighter: Fighter = get_parent()
 	if !fighter.combatant_data.is_alive:
@@ -41,10 +46,10 @@ func _set_current_action(_current_action: NPCAction) -> void:
 	current_action = _current_action
 	if current_action:
 		var intent_dataz: Array[IntentData]
-		var intent_data: IntentData = current_action.intent_data.duplicate()
+		#var intent_data: IntentData = current_action.intent_data.duplicate()
 		#var icon_with_text: IconWithText = IconWithText.new(icon_texture, icon_string, icon_tooltip_text)
 		current_action.update_action_intent()
-		intent_dataz.push_back(intent_data)
+		intent_dataz.push_back(current_action.intent_data)
 		fighter.intent_container.display_icons(intent_dataz)
 
 func _on_exit() -> void:

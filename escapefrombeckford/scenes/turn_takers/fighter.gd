@@ -30,6 +30,7 @@ func _ready() -> void:
 	Events.aura_changed.connect(on_aura_changed)
 	Events.aura_removed.connect(_on_aura_removed)
 	combatant.statuses_applied.connect(_on_combatant_statuses_applied)
+	modifier_system.modifier_changed.connect(_on_modifier_changed)
 	target_area.combatant = self
 	combatant.fighter = self
 
@@ -205,3 +206,10 @@ func turn_complete() -> void:
 
 func _on_combatant_statuses_applied(proc_type: Status.ProcType) -> void:
 	statuses_applied.emit(proc_type)
+
+func _on_modifier_changed() -> void:
+	print("fighter.gd _on_modifier_changed()")
+	for child in get_children():
+		if child.has_method("update_action_intent"):
+			child.update_action_intent()
+	
