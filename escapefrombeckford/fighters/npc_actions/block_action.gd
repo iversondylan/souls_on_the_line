@@ -19,5 +19,8 @@ func perform_action() -> void:
 			combatant.turn_complete()
 	)
 
+func update_action_intent() -> void:
+	intent_data.base_text = str(n_armor)
+
 func is_performable() -> bool:
 	return true

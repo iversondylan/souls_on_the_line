@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="IconData" load_steps=3 format=3 uid="uid://urab2x5rptxf"]
+[gd_resource type="Resource" script_class="IntentData" load_steps=3 format=3 uid="uid://urab2x5rptxf"]
 
 [ext_resource type="Script" uid="uid://r7rmt1h6rma3" path="res://custom_resources/intent_data.gd" id="1_i8p3g"]
 [ext_resource type="Texture2D" uid="uid://c0yql2msvjvmi" path="res://assets/sprites/assorted/target_reticule.png" id="1_yjqgm"]
@@ -6,6 +6,6 @@
 [resource]
 script = ExtResource("1_i8p3g")
 icon = ExtResource("1_yjqgm")
-text = "1"
+base_text = "error"
 tooltip_text = "Basic attacks will target this character."
 metadata/_custom_type_script = "uid://r7rmt1h6rma3"

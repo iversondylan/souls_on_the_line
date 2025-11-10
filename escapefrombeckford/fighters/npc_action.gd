@@ -12,7 +12,7 @@ enum ActionCode {TIGER, TURTLE, TURKEY, TOUCAN, TARSIER, TAPIR}
 @export_range(0.0, 10.0) var chance_weight: float = 0.0
 @onready var accumulated_weight: float = 0.0
 
-var combatant: Fighter
+var combatant: Fighter : set = set_fighter
 var target: Fighter
 var player: Player
 var battle_scene: BattleScene
@@ -29,5 +29,8 @@ func update_action_intent() -> void:
 func other_action_performed(npc_action: NPCAction) -> void:
 	pass
 
-func update_intent_text() -> void:
-	intent_data.current_text = intent_data.text
+func set_fighter(new_fighter: Fighter) -> void:
+	combatant = new_fighter
+
+#func update_intent_text() -> void:
+	#intent_data.current_text = intent_data.base_text

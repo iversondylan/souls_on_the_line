@@ -1,9 +1,13 @@
 extends NPCAction
 
-@export var n_damage := 6
-@export var n_attacks := 2
+@export var n_damage := 5
+@export var n_attacks := 1
 
 var spree: int = 0
+
+#func _ready() -> void:
+	#if !sound:
+		#sound = load("res://fighters/npc_actions/basic_melee_attack_action.gd")
 
 func perform_action() -> void:
 	if !combatant:
@@ -29,10 +33,16 @@ func is_performable() -> bool:
 		return false
 #
 func update_action_intent() -> void:
+	var modified_dmg := n_damage
+	modified_dmg = combatant.modifier_system.get_modified_value(n_damage, Modifier.Type.DMG_DEALT)
 	if n_attacks == 1:
-		intent_data.base_text = str(n_damage)
+		intent_data.base_text = str(modified_dmg)
 	else:
-		intent_data.base_text = str(n_attacks) + "x" + str(n_damage)
+		intent_data.base_text = str(n_attacks) + "x" + str(modified_dmg)
+
+func set_fighter(new_fighter: Fighter) -> void:
+	combatant = new_fighter
+	n_damage = combatant.combatant_data.max_mana_red
 
 func other_action_performed(npc_action: NPCAction) -> void:
 	spree = 0

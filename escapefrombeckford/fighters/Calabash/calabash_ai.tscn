@@ -1,24 +1,18 @@
-[gd_scene load_steps=7 format=3 uid="uid://cqa7fb6lhnjsk"]
+[gd_scene load_steps=5 format=3 uid="uid://cqa7fb6lhnjsk"]
 
 [ext_resource type="Script" uid="uid://cxu0uj66yny6s" path="res://fighters/npc_action_picker.gd" id="1_wm307"]
-[ext_resource type="Script" uid="uid://bnh82y5im27re" path="res://fighters/Calabash/attack_action.gd" id="2_rfjj5"]
-[ext_resource type="Texture2D" uid="uid://c54dbo8n7r3g" path="res://assets/sprites/assorted/attack.PNG" id="3_q0rio"]
-[ext_resource type="Script" uid="uid://r7rmt1h6rma3" path="res://custom_resources/intent_data.gd" id="4_l4viy"]
+[ext_resource type="Script" uid="uid://ckuvpamau6jyf" path="res://fighters/npc_actions/basic_melee_attack_action.gd" id="2_rfjj5"]
+[ext_resource type="Resource" uid="uid://dase6083j500o" path="res://intents/damage_icon.tres" id="3_cy0ih"]
 [ext_resource type="AudioStream" uid="uid://5buss22qggjn" path="res://assets/sfx/thrall_hit.wav" id="5_b4t5r"]
-
-[sub_resource type="Resource" id="Resource_rfjj5"]
-script = ExtResource("4_l4viy")
-icon = ExtResource("3_q0rio")
-text = "2x%s"
-tooltip_text = "??"
-metadata/_custom_type_script = "uid://r7rmt1h6rma3"
 
 [node name="CalabashAI" type="Node"]
 script = ExtResource("1_wm307")
 
 [node name="Attack" type="Node" parent="."]
 script = ExtResource("2_rfjj5")
-intent_data = SubResource("Resource_rfjj5")
+n_damage = 6
+n_attacks = 2
+intent_data = ExtResource("3_cy0ih")
 sound = ExtResource("5_b4t5r")
 choice_type = 1
 chance_weight = 1.0

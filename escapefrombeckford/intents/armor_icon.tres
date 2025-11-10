@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="IconData" load_steps=3 format=3 uid="uid://cery11eut7nhx"]
+[gd_resource type="Resource" script_class="IntentData" load_steps=3 format=3 uid="uid://cery11eut7nhx"]
 
 [ext_resource type="Script" uid="uid://r7rmt1h6rma3" path="res://custom_resources/intent_data.gd" id="1_0ptkm"]
 [ext_resource type="Texture2D" uid="uid://dob30qtbj3xk5" path="res://assets/sprites/assorted/block.PNG" id="1_unjxk"]
@@ -6,6 +6,6 @@
 [resource]
 script = ExtResource("1_0ptkm")
 icon = ExtResource("1_unjxk")
-text = "error"
+base_text = "error"
 tooltip_text = "[center]This character will  gain [color=\"008000\"]armor[/color] on its next turn.[/center]"
 metadata/_custom_type_script = "uid://r7rmt1h6rma3"
