@@ -6,11 +6,11 @@
 [ext_resource type="Script" uid="uid://r7rmt1h6rma3" path="res://custom_resources/intent_data.gd" id="4_l4viy"]
 [ext_resource type="AudioStream" uid="uid://5buss22qggjn" path="res://assets/sfx/thrall_hit.wav" id="5_b4t5r"]
 
-[sub_resource type="Resource" id="Resource_ulygu"]
+[sub_resource type="Resource" id="Resource_rfjj5"]
 script = ExtResource("4_l4viy")
 icon = ExtResource("3_q0rio")
-text = "Replace"
-tooltip_text = "ok"
+text = "2x%s"
+tooltip_text = "??"
 metadata/_custom_type_script = "uid://r7rmt1h6rma3"
 
 [node name="CalabashAI" type="Node"]
@@ -18,7 +18,7 @@ script = ExtResource("1_wm307")
 
 [node name="Attack" type="Node" parent="."]
 script = ExtResource("2_rfjj5")
-intent_icon = SubResource("Resource_ulygu")
+intent_data = SubResource("Resource_rfjj5")
 sound = ExtResource("5_b4t5r")
 choice_type = 1
 chance_weight = 1.0

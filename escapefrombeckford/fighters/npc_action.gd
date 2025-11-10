@@ -5,7 +5,7 @@ signal action_performed(npc_action: NPCAction)
 enum ChoiceType {CONDITIONAL, CHANCE}
 enum ActionCode {TIGER, TURTLE, TURKEY, TOUCAN, TARSIER, TAPIR}
 
-@export var intent_icon: IntentData
+@export var intent_data: IntentData
 @export var sound: AudioStream
 @export var choice_type: ChoiceType
 @export var code_type: ActionCode
@@ -27,4 +27,8 @@ func update_action_intent() -> void:
 	pass
 
 func other_action_performed(npc_action: NPCAction) -> void:
+	pass
+
+func update_intent_text() -> void:
+	intent_data
 	pass

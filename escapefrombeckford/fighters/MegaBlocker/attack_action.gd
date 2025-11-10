@@ -30,9 +30,9 @@ func is_performable() -> bool:
 #
 func update_action_intent() -> void:
 	if n_attacks == 1:
-		intent_icon.text = str(n_damage)
+		intent_data.text = str(n_damage)
 	else:
-		intent_icon.text = str(n_attacks) + "x" + str(n_damage)
+		intent_data.text = str(n_attacks) + "x" + str(n_damage)
 
 func other_action_performed(npc_action: NPCAction) -> void:
 	spree = 0

@@ -17,7 +17,7 @@ func clear_display():
 func display_icons(intent_dataz: Array[IntentData]):
 	clear_display()
 	for intent_data: IntentData in intent_dataz:
-		var intent_display = intent_display_scn.instantiate()
+		var intent_display : IntentDisplay = intent_display_scn.instantiate()
 		h_box_container.add_child(intent_display)
 		intent_display.load_icon_data(intent_data)
 

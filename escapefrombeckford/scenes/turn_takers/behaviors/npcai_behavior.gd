@@ -41,7 +41,7 @@ func _set_current_action(_current_action: NPCAction) -> void:
 	current_action = _current_action
 	if current_action:
 		var intent_dataz: Array[IntentData]
-		var intent_data: IntentData = current_action.intent_icon.duplicate()
+		var intent_data: IntentData = current_action.intent_data.duplicate()
 		#var icon_with_text: IconWithText = IconWithText.new(icon_texture, icon_string, icon_tooltip_text)
 		current_action.update_action_intent()
 		intent_dataz.push_back(intent_data)

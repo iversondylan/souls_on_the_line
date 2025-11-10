@@ -6,11 +6,10 @@
 [ext_resource type="Script" uid="uid://r7rmt1h6rma3" path="res://custom_resources/intent_data.gd" id="4_70y2c"]
 [ext_resource type="AudioStream" uid="uid://5buss22qggjn" path="res://assets/sfx/thrall_hit.wav" id="5_1vjgt"]
 
-[sub_resource type="Resource" id="Resource_25h0h"]
+[sub_resource type="Resource" id="Resource_2n3sl"]
 script = ExtResource("4_70y2c")
 icon = ExtResource("3_1vjgt")
-text = "X"
-tooltip_text = "This character will deal damage equal to your power."
+text = "%s"
 metadata/_custom_type_script = "uid://r7rmt1h6rma3"
 
 [node name="BasicCloneAI" type="Node"]
@@ -18,7 +17,7 @@ script = ExtResource("1_fednj")
 
 [node name="Attack" type="Node" parent="."]
 script = ExtResource("2_g3atf")
-intent_icon = SubResource("Resource_25h0h")
+intent_data = SubResource("Resource_2n3sl")
 sound = ExtResource("5_1vjgt")
 choice_type = 1
 chance_weight = 1.0

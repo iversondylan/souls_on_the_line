@@ -11,7 +11,8 @@ func load_icon_data(_intent_data: IntentData):
 	set_icon_values()
 
 func set_icon_values():
-	text.text = intent_data.current_text
+	print("intent_display.gd set_icon_values() text: %s" % intent_data.text)
+	text.text = intent_data.text
 	icon.set_texture(intent_data.icon)
 
 #func _process(_delta: float) -> void:
