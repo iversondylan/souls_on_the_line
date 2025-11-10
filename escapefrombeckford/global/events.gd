@@ -25,7 +25,7 @@ signal aura_removed(source: Fighter, aura: AuraPrimary)
 signal auras_requested(requester: Fighter)
 signal focused_gained(status: Status)
 
-signal icon_tooltip_show_requested(usable_icon: UsableIcon)
+signal icon_tooltip_show_requested(intent_display: IntentDisplay)
 signal icon_tooltip_hide_requested()
 
 signal hand_drawn()

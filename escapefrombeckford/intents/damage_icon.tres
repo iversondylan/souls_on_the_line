@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="IconData" load_steps=3 format=3 uid="uid://dase6083j500o"]
 
-[ext_resource type="Script" uid="uid://r7rmt1h6rma3" path="res://icon_data/icon_data.gd" id="1_213yo"]
+[ext_resource type="Script" uid="uid://r7rmt1h6rma3" path="res://custom_resources/intent_data.gd" id="1_213yo"]
 [ext_resource type="Texture2D" uid="uid://c54dbo8n7r3g" path="res://assets/sprites/assorted/attack.PNG" id="1_wn4b0"]
 
 [resource]

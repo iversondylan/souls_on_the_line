@@ -1,6 +1,7 @@
 extends NPCAction
 
 @export var n_damage := 6
+
 func perform_action() -> void:
 	if !combatant:
 		return

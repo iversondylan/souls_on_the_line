@@ -5,7 +5,7 @@ signal action_performed(npc_action: NPCAction)
 enum ChoiceType {CONDITIONAL, CHANCE}
 enum ActionCode {TIGER, TURTLE, TURKEY, TOUCAN, TARSIER, TAPIR}
 
-@export var intent_icon: IconData
+@export var intent_icon: IntentData
 @export var sound: AudioStream
 @export var choice_type: ChoiceType
 @export var code_type: ActionCode

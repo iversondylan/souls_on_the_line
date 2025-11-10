@@ -20,9 +20,6 @@ signal statuses_applied(proc_type: Status.ProcType)
 
 var combatant_data: CombatantData : set = _set_combatant_data
 var battle_scene: BattleScene : set = _set_battle_scene
-#STATUSES IS A PLACEHOLDER SYSTEM CURRENTLY
-#STATUSES SHOULD BE TRACKED DIFFERENTLY
-var statuses: Array[String] = []
 
 var fighter_tween: Tween
 var anchor_position: Vector2 = Vector2(0, 0)
@@ -63,61 +60,6 @@ func exit() -> void:
 	for child in get_children():
 		if child.has_method("_on_exit"):
 			child._on_exit()
-
-#func attack(targets: Array[Fighter], n_damage: int, n_attacks: int = 1, retarget: AttackEffect.RetargetPriority = AttackEffect.RetargetPriority.FRONT, explode: bool = false):
-	#combatant.health_bar.hide()
-	#var retargeting: bool = false
-	#if targets.size() == 1 and retarget == AttackEffect.RetargetPriority.FRONT:
-		#if !targets[0] or !targets[0].combatant_data.is_alive:
-			#var target_battle_group_index: int
-			#if get_parent() is BattleGroupEnemy:
-				#target_battle_group_index = 0
-			#else:
-				#target_battle_group_index = 1
-			#retargeting = true
-			#targets = [battle_scene.get_front_combatant(target_battle_group_index)]
-	#var start := global_position
-	#var tween: Tween = create_tween().set_trans(Tween.TRANS_QUINT)
-	#var end: Vector2
-	#end = get_mean_position(targets)
-	#tween.tween_property(self, "global_position", end, 0.4)
-	#var damage_effect := DamageEffect.new()
-	#
-	#damage_effect.n_damage = modifier_system.get_modified_value(n_damage, Modifier.Type.DMG_DEALT)
-	##modifier_system.get_modified_value(n_damage, Modifier.Type.DMG_DEALT)
-	#
-	#damage_effect.sound = combatant_data.attack_sound
-	#tween.tween_callback(damage_effect.execute.bind(targets))
-	#tween.tween_interval(0.5)
-	#n_attacks -= 1
-	#if n_attacks <= 0:
-		#if explode:
-			#tween.finished.connect( func(): die() )
-		#else:
-			#tween.tween_property(self, "position", anchor_position, 0.4)
-			#tween.finished.connect( 
-				#func(): 
-					#if battle_group.acting_fighters[0] == self:
-						#turn_complete()
-					#combatant.health_bar.show() )
-	#else:
-		#tween.finished.connect( func(): 
-			#attack(targets, n_damage, n_attacks, retarget, explode)
-			#)
-
-#func add_status(status: String) -> void:
-	#statuses.push_back(status)
-	#var focus_status_icon_resource : IconData = load("res://icon_data/focus_status_icon.tres")
-	#var status_icon: IconData = focus_status_icon_resource.duplicate()
-	#
-	#var status_icons: Array[IconData]
-	#status_icons.push_back(status_icon)
-	#status_bar.display_icons_from_data(status_icons)
-
-#func spawned() -> void:
-	#for child in get_children():
-		#if child.has_method("_on_spawned"):
-			#child._on_spawned()
 
 func set_anchor_position(_position: Vector2, animate: bool) -> void:
 	anchor_position = _position
@@ -177,15 +119,6 @@ func update_action() -> void:
 	for child in get_children():
 		if child.has_method("update_action"):
 			child.update_action()
-#func reset():
-	#combatant_data.health = combatant_data.max_health
-	#combatant_data.armor = combatant_data.starting_armor
-	#combatant_data.stats_changed()
-
-#func bind_card(new_card_data: CardData) -> void:
-	#for child in get_children():
-		#if child.has_method("_on_bind_card"):
-			#child._on_bind_card(new_card_data)
 
 func traverse_player() -> void:
 	for child in get_children():
@@ -194,15 +127,6 @@ func traverse_player() -> void:
 
 func can_play_card(card_data: CardData) -> bool:
 	return combatant_data.can_play_card(card_data)
-#enum TargetType {
-	#SELF,
-	#BATTLEFIELD,
-	#ALLY_OR_SELF,
-	#ALLY,
-	#SINGLE_ENEMY,
-	#ALL_ENEMIES,
-	#EVERYONE
-#}
 
 func spend_mana(card_data: CardData) -> bool:
 	if combatant_data.spend_mana(card_data):
@@ -255,7 +179,7 @@ func add_aura_secondary(source_fighter: Fighter, aura_primary: AuraPrimary) -> v
 	aura_secondary.source = source_fighter
 	aura_secondary.intensity = aura_primary.intensity
 	aura_secondary.status_parent = self
-	print("fighter.gd adding aura secondary. source: %s, intensity: %s, target: %s" % [aura_secondary.source, aura_secondary.intensity, aura_secondary.status_parent])
+	#print("fighter.gd adding aura secondary. source: %s, intensity: %s, target: %s" % [aura_secondary.source, aura_secondary.intensity, aura_secondary.status_parent])
 	combatant.status_grid.add_status(aura_secondary)
 
 func _on_aura_removed(source_fighter: Fighter, aura_status: Status) -> void:
@@ -276,9 +200,7 @@ func show_targeted_arrow() -> void:
 func hide_targeted_arrow() -> void:
 	targeted_arrow.hide()
 
-
 func turn_complete() -> void:
-	#print("turn_taker.gd turn_complete(): %s" % name)
 	turn_taker_turn_complete.emit(self)
 
 func _on_combatant_statuses_applied(proc_type: Status.ProcType) -> void:

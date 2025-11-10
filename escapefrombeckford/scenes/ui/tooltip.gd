@@ -12,13 +12,13 @@ func _ready() -> void:
 	modulate = Color.TRANSPARENT
 	hide()
 
-func show_tooltip(usable_icon: UsableIcon) -> void:
+func show_tooltip(intent_display: IntentDisplay) -> void:
 	is_visible = true
 	if tween:
 		tween.kill()
-	position = usable_icon.global_position
-	tooltip_icon.texture = usable_icon.icon_data.icon
-	tooltip_description.text = usable_icon.icon_data.tooltip_text
+	position = intent_display.global_position
+	tooltip_icon.texture = intent_display.icon_data.icon
+	tooltip_description.text = intent_display.icon_data.tooltip_text
 	tween = create_tween().set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_CUBIC)
 	tween.tween_callback(show)
 	tween.tween_property(self, "modulate", Color.WHITE, fade_seconds)

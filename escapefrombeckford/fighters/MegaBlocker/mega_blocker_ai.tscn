@@ -5,7 +5,7 @@
 [ext_resource type="Texture2D" uid="uid://c54dbo8n7r3g" path="res://assets/sprites/assorted/attack.PNG" id="3_1aga7"]
 [ext_resource type="Script" uid="uid://dl5oew0p8hu6h" path="res://fighters/MegaBlocker/block_action.gd" id="3_4c4ji"]
 [ext_resource type="Script" uid="uid://bmxx1w45e3jeo" path="res://fighters/MegaBlocker/mega_block_action.gd" id="4_qc3v1"]
-[ext_resource type="Script" uid="uid://r7rmt1h6rma3" path="res://icon_data/icon_data.gd" id="4_v7clg"]
+[ext_resource type="Script" uid="uid://r7rmt1h6rma3" path="res://custom_resources/intent_data.gd" id="4_v7clg"]
 [ext_resource type="AudioStream" uid="uid://5buss22qggjn" path="res://assets/sfx/thrall_hit.wav" id="5_h7yyt"]
 [ext_resource type="Texture2D" uid="uid://dob30qtbj3xk5" path="res://assets/sprites/assorted/block.PNG" id="6_h7yyt"]
 [ext_resource type="AudioStream" uid="uid://h4nxaoibaiuj" path="res://assets/sfx/block.wav" id="8_jpyf7"]

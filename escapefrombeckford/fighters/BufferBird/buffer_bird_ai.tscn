@@ -4,7 +4,7 @@
 [ext_resource type="Script" uid="uid://25ksl5joxkq0" path="res://fighters/BufferBird/wind_flurry_action.gd" id="2_65bsy"]
 [ext_resource type="Script" uid="uid://dembxs6kbsrkm" path="res://fighters/BufferBird/attack_action.gd" id="3_cj7o8"]
 [ext_resource type="Texture2D" uid="uid://op74eesa6fxw" path="res://assets/sprites/assorted/buff.PNG" id="3_yroh1"]
-[ext_resource type="Script" uid="uid://r7rmt1h6rma3" path="res://icon_data/icon_data.gd" id="4_apc06"]
+[ext_resource type="Script" uid="uid://r7rmt1h6rma3" path="res://custom_resources/intent_data.gd" id="4_apc06"]
 [ext_resource type="AudioStream" uid="uid://bqma66uwrtx2b" path="res://assets/sfx/crow_caw.wav" id="5_v4isy"]
 [ext_resource type="Texture2D" uid="uid://c54dbo8n7r3g" path="res://assets/sprites/assorted/attack.PNG" id="7_v4isy"]
 [ext_resource type="AudioStream" uid="uid://5buss22qggjn" path="res://assets/sfx/thrall_hit.wav" id="8_wylpu"]

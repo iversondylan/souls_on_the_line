@@ -1,16 +1,16 @@
 [gd_scene load_steps=5 format=3 uid="uid://cyg85d6gbb8yp"]
 
-[ext_resource type="Script" uid="uid://bdaa57dmtqmmr" path="res://icon_data/usable_icon.gd" id="1_b2l1d"]
-[ext_resource type="Texture2D" uid="uid://c54dbo8n7r3g" path="res://assets/sprites/assorted/attack.PNG" id="2_40kqg"]
-[ext_resource type="Theme" uid="uid://1dr1eewpv0jd" path="res://themes/ui_theme.tres" id="3_5n5p6"]
+[ext_resource type="Script" uid="uid://bdaa57dmtqmmr" path="res://intents/intent_display.gd" id="1_4pq5i"]
+[ext_resource type="Texture2D" uid="uid://c54dbo8n7r3g" path="res://assets/sprites/assorted/attack.PNG" id="2_ofwrp"]
+[ext_resource type="Theme" uid="uid://1dr1eewpv0jd" path="res://themes/ui_theme.tres" id="3_mp7f7"]
 
 [sub_resource type="LabelSettings" id="LabelSettings_np844"]
 font_size = 26
 
-[node name="UsableIcon" type="Control"]
+[node name="IntentDisplay" type="Control"]
 layout_mode = 3
 anchors_preset = 0
-script = ExtResource("1_b2l1d")
+script = ExtResource("1_4pq5i")
 
 [node name="Icon" type="TextureRect" parent="."]
 layout_mode = 0
@@ -19,7 +19,7 @@ offset_top = -27.0
 offset_right = 53.0
 offset_bottom = 37.0
 scale = Vector2(0.75, 0.75)
-texture = ExtResource("2_40kqg")
+texture = ExtResource("2_ofwrp")
 
 [node name="Text" type="Label" parent="."]
 layout_mode = 0
@@ -27,7 +27,7 @@ offset_left = -18.0
 offset_top = -25.0
 offset_right = -2.0
 offset_bottom = 20.0
-theme = ExtResource("3_5n5p6")
+theme = ExtResource("3_mp7f7")
 text = "1"
 label_settings = SubResource("LabelSettings_np844")
 horizontal_alignment = 2

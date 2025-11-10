@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="IconData" load_steps=3 format=3 uid="uid://byuvyxjanijtg"]
 
 [ext_resource type="Texture2D" uid="uid://op74eesa6fxw" path="res://assets/sprites/assorted/buff.PNG" id="1_5dmev"]
-[ext_resource type="Script" uid="uid://r7rmt1h6rma3" path="res://icon_data/icon_data.gd" id="1_ewjdf"]
+[ext_resource type="Script" uid="uid://r7rmt1h6rma3" path="res://custom_resources/intent_data.gd" id="1_ewjdf"]
 
 [resource]
 script = ExtResource("1_ewjdf")

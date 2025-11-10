@@ -10,7 +10,6 @@ func _on_combatant_data_set(data: CombatantData) -> void:
 
 func load_ai():
 	var fighter: Fighter = get_parent()
-	print("Loading AI for:", fighter.name)
 	if npc_action_picker:
 		npc_action_picker.queue_free()
 	if fighter.combatant_data.ai:
@@ -41,12 +40,12 @@ func _set_current_action(_current_action: NPCAction) -> void:
 		return
 	current_action = _current_action
 	if current_action:
-		var icon_dataz: Array[IconData]
-		var icon_data: IconData = current_action.intent_icon.duplicate()
+		var intent_dataz: Array[IntentData]
+		var intent_data: IntentData = current_action.intent_icon.duplicate()
 		#var icon_with_text: IconWithText = IconWithText.new(icon_texture, icon_string, icon_tooltip_text)
 		current_action.update_action_intent()
-		icon_dataz.push_back(icon_data)
-		fighter.intent_container.display_icons(icon_dataz)
+		intent_dataz.push_back(intent_data)
+		fighter.intent_container.display_icons(intent_dataz)
 
 func _on_exit() -> void:
 	update_action()
