@@ -30,5 +30,4 @@ func other_action_performed(npc_action: NPCAction) -> void:
 	pass
 
 func update_intent_text() -> void:
-	intent_data
-	pass
+	intent_data.current_text = intent_data.text

@@ -32,7 +32,7 @@ func is_performable() -> bool:
 		return false
 #
 func update_action_intent() -> void:
-	intent_data.text = ""
+	intent_data.base_text = ""
 
 func other_action_performed(npc_action: NPCAction) -> void:
 	spree = 0

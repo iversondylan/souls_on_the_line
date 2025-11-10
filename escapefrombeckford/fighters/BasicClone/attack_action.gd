@@ -23,4 +23,4 @@ func is_performable() -> bool:
 #
 func update_action_intent() -> void:
 	n_damage = battle_scene.get_player().combatant_data.max_mana_red
-	intent_data.text = str(n_damage)
+	intent_data.base_text = str(n_damage)

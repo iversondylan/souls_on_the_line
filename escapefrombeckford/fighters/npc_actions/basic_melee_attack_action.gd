@@ -1,9 +1,13 @@
 extends NPCAction
 
-@export var n_damage := 6
+@export var n_damage := 5
 @export var n_attacks := 2
 
 var spree: int = 0
+
+func _ready() -> void:
+	if !sound:
+		sound = load("res://fighters/npc_actions/basic_melee_attack_action.gd")
 
 func perform_action() -> void:
 	if !combatant:

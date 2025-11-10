@@ -1,5 +1,12 @@
 class_name BasicMeleeAttackEffect extends AttackEffect
 
+#enum RetargetPriority {NONE, FRONT}
+#var attacker: Fighter
+#var n_damage: int = 5
+#var n_attacks: int = 1
+#var retarget_priority: RetargetPriority = RetargetPriority.FRONT
+#var explode: bool = false
+
 func execute(input_targets: Array[Fighter]):
 	var tween := attacker.create_tween().set_trans(Tween.TRANS_QUINT)
 	attacker.info_visible(false)
