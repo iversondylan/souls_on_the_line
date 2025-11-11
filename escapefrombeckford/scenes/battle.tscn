@@ -25,15 +25,15 @@ size = Vector2(1200, 200)
 script = ExtResource("1_dd63g")
 music = ExtResource("2_3b6xh")
 
-[node name="Battle_Scene" type="CanvasLayer" parent="." groups=["battle_scene"]]
+[node name="Battle_Scene" type="Node2D" parent="." groups=["battle_scene"]]
 script = ExtResource("3_lcn8m")
 
 [node name="Background" type="TextureRect" parent="Battle_Scene"]
 anchors_preset = 2
 anchor_top = 1.0
 anchor_bottom = 1.0
-offset_top = -1080.0
 offset_right = 1920.0
+offset_bottom = 1080.0
 grow_vertical = 0
 texture = ExtResource("4_yhk5m")
 
@@ -53,7 +53,7 @@ script = ExtResource("7_rgwlw")
 position = Vector2(-600, -50)
 shape = SubResource("RectangleShape2D_eb6dy")
 
-[node name="Debug_UI" type="CanvasLayer" parent="."]
+[node name="Debug_UI" type="Node2D" parent="."]
 
 [node name="KillEnemiesButton" type="Button" parent="Debug_UI"]
 offset_top = 99.0
@@ -62,7 +62,7 @@ offset_bottom = 130.0
 theme = ExtResource("8_2tyvl")
 text = "kill enemies"
 
-[node name="Battle_UI" type="CanvasLayer" parent="." groups=["ui_layer"]]
+[node name="Battle_UI" type="Node2D" parent="." groups=["ui_layer"]]
 script = ExtResource("9_jujjx")
 
 [node name="EndTurn" type="Button" parent="Battle_UI"]
@@ -71,15 +71,13 @@ anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -197.0
-offset_top = -70.0
-offset_right = -18.0
-offset_bottom = -16.0
+offset_left = 1694.0
+offset_top = 994.0
+offset_right = 1873.0
+offset_bottom = 1048.0
 grow_horizontal = 0
 grow_vertical = 0
 text = "End Turn"
-
-[node name="Hand" parent="Battle_UI" instance=ExtResource("15_wvgjd")]
 
 [node name="Tooltip" parent="Battle_UI" instance=ExtResource("16_eynql")]
 
@@ -88,10 +86,10 @@ unique_name_in_owner = true
 anchors_preset = 2
 anchor_top = 1.0
 anchor_bottom = 1.0
-offset_left = 5.0
-offset_top = -133.0
-offset_right = 69.0
-offset_bottom = -69.0
+offset_left = 22.0
+offset_top = 985.0
+offset_right = 86.0
+offset_bottom = 1049.0
 grow_vertical = 0
 counter = NodePath("Counter")
 
@@ -114,10 +112,10 @@ anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -86.0
-offset_top = -133.0
-offset_right = -22.0
-offset_bottom = -69.0
+offset_left = 1611.0
+offset_top = 980.0
+offset_right = 1675.0
+offset_bottom = 1044.0
 grow_horizontal = 0
 grow_vertical = 0
 counter = NodePath("Counter")
@@ -136,6 +134,8 @@ horizontal_alignment = 1
 
 [node name="ManaPanel" parent="Battle_UI" instance=ExtResource("19_tgt58")]
 position = Vector2(190, 953)
+
+[node name="Hand" parent="Battle_UI" instance=ExtResource("15_wvgjd")]
 
 [node name="Visual_Overlays" type="CanvasLayer" parent="."]
 

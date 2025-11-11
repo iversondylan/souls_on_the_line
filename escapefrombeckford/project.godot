@@ -80,6 +80,7 @@ scroll_down={
 2d_physics/layer_3="combatants"
 2d_physics/layer_4="between_combatants"
 2d_physics/layer_5="map_rooms"
+2d_physics/layer_6="UsableCardClickAreas"
 
 [rendering]
 

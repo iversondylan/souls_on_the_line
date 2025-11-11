@@ -31,6 +31,17 @@ var playable := true : set = _set_playable
 var disabled := false
 var selected = false
 
+#@onready var space_state = get_world_2d().direct_space_state
+#
+#func _process(_delta):
+	#var q = PhysicsPointQueryParameters2D.new()
+	#q.position = get_global_mouse_position()
+	#q.collide_with_areas = true
+	#q.collision_mask = 1 << 5
+	#var hits = space_state.intersect_point(q)
+	#print("hits:", hits.size())
+
+
 func _ready() -> void:
 	Events.card_aim_started.connect(_on_card_drag_or_aiming_started)
 	Events.card_drag_started.connect(_on_card_drag_or_aiming_started)
@@ -83,17 +94,18 @@ func unhighlight():
 	card_visuals.glow.hide()
 
 func set_usable_card_z_index(index: int):
-	card_visuals.glow.z_index = index
-	card_visuals.card_front.z_index = index
-	card_visuals.name_label.z_index = index
-	card_visuals.description.z_index = index
-	card_visuals.card_art_rect.z_index = index
-	card_visuals.card_art_rect.z_index = index
-	card_visuals.cost_container.z_index = index
-	card_visuals.cost_red_sprites.z_index = index
-	card_visuals.cost_green_sprites.z_index = index
-	card_visuals.cost_blue_sprites.z_index = index
-	card_visuals.card_name_box.z_index = index
+	card_visuals.z_index = index
+	#card_visuals.glow.z_index = index
+	#card_visuals.card_front.z_index = index
+	#card_visuals.name_label.z_index = index
+	#card_visuals.description.z_index = index
+	#card_visuals.card_art_rect.z_index = index
+	#card_visuals.card_art_rect.z_index = index
+	#card_visuals.cost_container.z_index = index
+	#card_visuals.cost_red_sprites.z_index = index
+	#card_visuals.cost_green_sprites.z_index = index
+	#card_visuals.cost_blue_sprites.z_index = index
+	#card_visuals.card_name_box.z_index = index
 
 func get_cost() -> Array[int]:
 	return [card_data.cost_red, card_data.cost_green, card_data.cost_blue]
@@ -119,6 +131,8 @@ func _update_graphics():
 		card_visuals.description.set_text(card_data.description)
 
 func _on_click_area_mouse_entered() -> void:
+	print("collision area: %s, collision mask: %s" % [click_area_area2d.collision_layer, click_area_area2d.collision_mask])
+	print("monitoring: %s, monitorable: %s" % [click_area_area2d.monitoring, click_area_area2d.monitorable])
 	card_state_machine.on_mouse_entered()
 	mouse_entered.emit(self)
 

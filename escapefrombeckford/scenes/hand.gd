@@ -34,22 +34,56 @@ func _ready() -> void:
 	Events.player_turn_completed.connect(_on_player_turn_completed)
 
 func _process(_delta: float) -> void:
-	for usablecard in hand_cards_arr:
-		usablecard.unhighlight()
-	currently_selected_card_index = -1
-	if !currently_touched_cards_arr.is_empty():
-		for touched_card in currently_touched_cards_arr:
-			touched_card.selected = false
-			currently_selected_card_index = max(currently_selected_card_index, hand_cards_arr.find(touched_card))
-		
-		#if held_card:
-			#held_card.highlight()
-		if currently_selected_card_index >= 0 && currently_selected_card_index < hand_cards_arr.size():
-			hand_cards_arr[currently_selected_card_index].highlight()
-			hand_cards_arr[currently_selected_card_index].selected = true
+	var mouse_pos = get_global_mouse_position()
+	var space_state = get_world_2d().direct_space_state
+	
+	# Query all overlapping areas at the mouse position
+	var query = PhysicsPointQueryParameters2D.new()
+	query.position = mouse_pos
+	query.collision_mask = 1 << 5  # only detect things on layer 6
+	query.collide_with_areas = true
+	
+	var results = space_state.intersect_point(query)
+	#print("world_2d:", get_world_2d())
+	var hovered_cards: Array[UsableCard] = []
+	#print(results.map(func(r): return r["collider"].name))
+	for result in results:
+		#print(result)
+		var area = result["collider"]
+		#print("%s" % area)
+		if area is Area2D and area.get_parent() is UsableCard:
+			#print("%s" % area.get_parent())
+			hovered_cards.append(area.get_parent())
+	
+	# Clear highlight from all
+	for card in hand_cards_arr:
+		card.unhighlight()
+		card.selected = false
+	
+	# Choose topmost card visually (last in array or by z-index)
+	if not hovered_cards.is_empty():
+		#print("whaaat")
+		var top_card = hovered_cards.back()  # or sort by z_index if needed
+		top_card.highlight()
+		top_card.selected = true
+		currently_selected_card_index = hand_cards_arr.find(top_card)
+	else:
+		currently_selected_card_index = -1
+	#for usablecard in hand_cards_arr:
+		#usablecard.unhighlight()
+	#currently_selected_card_index = -1
+	#if !currently_touched_cards_arr.is_empty():
+		#for touched_card in currently_touched_cards_arr:
+			#touched_card.selected = false
+			#currently_selected_card_index = max(currently_selected_card_index, hand_cards_arr.find(touched_card))
+		#
+		##if held_card:
+			##held_card.highlight()
+		#if currently_selected_card_index >= 0 && currently_selected_card_index < hand_cards_arr.size():
+			#hand_cards_arr[currently_selected_card_index].highlight()
+			#hand_cards_arr[currently_selected_card_index].selected = true
 
 func add_card(card: CardData) -> void:
-	#print("hand.gd add_card() card_data: %s" % card)
 	var usable_card : UsableCard = usable_card_scn.instantiate()
 	usable_card.card_data = card
 	usable_card.hand = self
@@ -60,12 +94,9 @@ func add_card(card: CardData) -> void:
 	hand_cards_arr.push_back(usable_card)
 	hand_cards_node.add_child(usable_card)
 	usable_card.position = Vector2(30, 540)
-	#usable_card.load_card_data(card_with_id)
 	usable_card.reparent_requested.connect(_on_usable_card_reparent_requested)
 	usable_card.mouse_entered.connect(_handle_card_touched)
 	usable_card.mouse_exited.connect(_handle_card_untouched)
-	#usable_card.card_back_sprite2d.show()
-	#usable_card.move_and_flip(Vector2(30, 500), 1)
 	reposition_hand_cards()
 
 func draw_card() -> void:
@@ -200,10 +231,10 @@ func _on_player_turn_started() -> void:
 	draw_cards(5)
 
 func _on_card_drag_started(_usable_card: UsableCard) -> void:
-	_usable_card.set_usable_card_z_index(1)
+	_usable_card.set_usable_card_z_index(2)
 
 func _card_drag_or_aim_ended(_usable_card: UsableCard) -> void:
-	_usable_card.set_usable_card_z_index(0)
+	_usable_card.set_usable_card_z_index(1)
 
 func _on_player_turn_completed() -> void:
 	disable_hand_cards()

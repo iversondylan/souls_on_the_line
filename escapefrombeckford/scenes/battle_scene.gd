@@ -1,4 +1,4 @@
-class_name BattleScene extends CanvasLayer
+class_name BattleScene extends Node2D
 
 @onready var groups: Array[BattleGroup] = [$BattleGroupFriendly, $BattleGroupEnemy]
 var deck: Deck : set = _set_deck

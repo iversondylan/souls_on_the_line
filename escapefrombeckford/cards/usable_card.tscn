@@ -18,6 +18,7 @@ size = Vector2(225, 315)
 size = Vector2(225, 315)
 
 [node name="usable_card" type="Node2D"]
+z_index = 2
 script = ExtResource("1_f88n7")
 
 [node name="CardVisuals" parent="." instance=ExtResource("2_f727x")]
@@ -28,6 +29,8 @@ offset_bottom = 157.5
 mouse_filter = 2
 
 [node name="ClickArea" type="Area2D" parent="."]
+collision_layer = 32
+collision_mask = 32
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="ClickArea"]
 position = Vector2(0.5, 0.5)
