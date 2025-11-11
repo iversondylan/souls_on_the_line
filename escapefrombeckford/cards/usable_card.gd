@@ -131,8 +131,8 @@ func _update_graphics():
 		card_visuals.description.set_text(card_data.description)
 
 func _on_click_area_mouse_entered() -> void:
-	print("collision area: %s, collision mask: %s" % [click_area_area2d.collision_layer, click_area_area2d.collision_mask])
-	print("monitoring: %s, monitorable: %s" % [click_area_area2d.monitoring, click_area_area2d.monitorable])
+	#print("collision area: %s, collision mask: %s" % [click_area_area2d.collision_layer, click_area_area2d.collision_mask])
+	#print("monitoring: %s, monitorable: %s" % [click_area_area2d.monitoring, click_area_area2d.monitorable])
 	card_state_machine.on_mouse_entered()
 	mouse_entered.emit(self)
 
@@ -176,3 +176,16 @@ func _on_n_combatants_changed() -> void:
 
 func _on_player_combatant_data_changed() -> void:
 	playable = is_playable()
+
+func is_mouse_over() -> bool:
+	# Get the global mouse position
+	var mouse_pos = get_global_mouse_position()
+	# Get the Area2D and its CollisionShape2D
+	#var area = $ClickArea   # adjust path if your Area2D has a different name
+	var shape = click_area_area2d.get_node("CollisionShape2D").shape
+	if shape == null:
+		return false
+	# Transform mouse into the shape's local space
+	var local_pos = click_area_area2d.to_local(mouse_pos)
+	var extents = shape.extents
+	return abs(local_pos.x) <= extents.x and abs(local_pos.y) <= extents.y
