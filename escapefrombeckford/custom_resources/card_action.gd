@@ -77,3 +77,6 @@ func get_fighters(targets: Array[Node]) -> Array[Fighter]:
 			if target.combatant is Fighter:
 				attack_targets.push_back(target.combatant)
 	return attack_targets
+
+func get_description(description: String) -> String:
+	return description

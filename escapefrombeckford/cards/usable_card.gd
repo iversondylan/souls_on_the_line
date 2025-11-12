@@ -84,6 +84,7 @@ func _set_card_data(_card_data: CardData) -> void:
 		new_action.battle_scene = battle_scene
 		actions.push_back(new_action)
 	_update_graphics()
+	card_visuals.description.set_text(get_description())
 	playable = is_playable()
 
 func highlight():
@@ -93,19 +94,14 @@ func highlight():
 func unhighlight():
 	card_visuals.glow.hide()
 
+func get_description() -> String:
+	var base_description : String = card_data.description
+	if actions:
+		return actions[0].get_description(base_description)
+	return "error"
+
 func set_usable_card_z_index(index: int):
 	card_visuals.z_index = index
-	#card_visuals.glow.z_index = index
-	#card_visuals.card_front.z_index = index
-	#card_visuals.name_label.z_index = index
-	#card_visuals.description.z_index = index
-	#card_visuals.card_art_rect.z_index = index
-	#card_visuals.card_art_rect.z_index = index
-	#card_visuals.cost_container.z_index = index
-	#card_visuals.cost_red_sprites.z_index = index
-	#card_visuals.cost_green_sprites.z_index = index
-	#card_visuals.cost_blue_sprites.z_index = index
-	#card_visuals.card_name_box.z_index = index
 
 func get_cost() -> Array[int]:
 	return [card_data.cost_red, card_data.cost_green, card_data.cost_blue]
@@ -127,8 +123,6 @@ func activate() -> bool:
 func _update_graphics():
 	if card_visuals.name_label.get_text() != card_data.name:
 		card_visuals.name_label.set_text(card_data.name)
-	if card_visuals.description.get_text() != card_data.description:
-		card_visuals.description.set_text(card_data.description)
 
 func _on_click_area_mouse_entered() -> void:
 	#print("collision area: %s, collision mask: %s" % [click_area_area2d.collision_layer, click_area_area2d.collision_mask])

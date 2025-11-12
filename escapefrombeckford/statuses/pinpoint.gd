@@ -15,7 +15,7 @@ func init_status(target: Node) -> void:
 		dmg_taken_modifier.add_new_value(pinpoint_modifier_value)
 	if !status_changed.is_connected(_on_status_changed):
 		status_changed.connect(_on_status_changed.bind(dmg_taken_modifier))
-	print("pinpoint.gd init_status() target: %s" % target)
+	#print("pinpoint.gd init_status() target: %s" % target)
 	#_on_status_changed(target)
 #
 #func apply_status(_target: Node) -> void:

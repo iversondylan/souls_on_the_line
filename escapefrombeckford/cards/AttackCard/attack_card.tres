@@ -10,7 +10,7 @@ script = ExtResource("2_ajhol")
 target_type = 4
 rarity = 1
 name = "Attack"
-description = "Deal 6 damage."
+description = "Deal [color=\"ff0000\"]%s[/color] damage to target enemy."
 cost_red = 1
 texture = ExtResource("3_uwveu")
 actions = Array[GDScript]([ExtResource("1_votdm")])

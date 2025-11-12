@@ -118,8 +118,8 @@ func add_card(card: CardData) -> void:
 	hand_cards_node.add_child(usable_card)
 	usable_card.position = Vector2(30, 540)
 	usable_card.reparent_requested.connect(_on_usable_card_reparent_requested)
-	usable_card.mouse_entered.connect(_handle_card_touched)
-	usable_card.mouse_exited.connect(_handle_card_untouched)
+	#usable_card.mouse_entered.connect(_handle_card_touched)
+	#usable_card.mouse_exited.connect(_handle_card_untouched)
 	reposition_hand_cards()
 
 func draw_card() -> void:
@@ -226,17 +226,17 @@ func _update_card_transform(usable_card: UsableCard, angle_in_drag: float) -> vo
 	var pos: Vector2 = get_card_position(angle_in_drag)
 	usable_card.animate_to_position(pos, angle_in_drag, 0.5)
 
-func _handle_card_touched(usablecard: UsableCard):
-	if usablecard.card_state_machine.current_state.state == CardState.State.BASE:# and usablecard.disabled == false:
-		currently_touched_cards_arr.push_back(usablecard)
+#func _handle_card_touched(usablecard: UsableCard):
+	#if usablecard.card_state_machine.current_state.state == CardState.State.BASE:# and usablecard.disabled == false:
+		#currently_touched_cards_arr.push_back(usablecard)
 
-func _handle_card_untouched(usablecard: UsableCard):
-	usablecard.selected = false
-	var index: int = currently_touched_cards_arr.find(usablecard)
-	if index >= 0:
-		currently_touched_cards_arr.remove_at(index)
-	else:
-		print("usable_card.gd _handle_card_untouched() Error: attempted to remove card not in touched cards.")
+#func _handle_card_untouched(usablecard: UsableCard):
+	#usablecard.selected = false
+	#var index: int = currently_touched_cards_arr.find(usablecard)
+	#if index >= 0:
+		#currently_touched_cards_arr.remove_at(index)
+	#else:
+		#print("usable_card.gd _handle_card_untouched() Error: attempted to remove card not in touched cards.")
 
 func _on_usable_card_reparent_requested(_child: UsableCard) -> void:
 	reposition_hand_cards()
@@ -257,7 +257,7 @@ func _on_card_drag_started(_usable_card: UsableCard) -> void:
 	_usable_card.set_usable_card_z_index(2)
 
 func _card_drag_or_aim_ended(_usable_card: UsableCard) -> void:
-	_usable_card.set_usable_card_z_index(1)
+	_usable_card.set_usable_card_z_index(0)
 
 func _on_player_turn_completed() -> void:
 	disable_hand_cards()

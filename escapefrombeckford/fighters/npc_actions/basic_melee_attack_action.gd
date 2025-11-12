@@ -35,7 +35,7 @@ func is_performable() -> bool:
 func update_action_intent() -> void:
 	var modified_dmg := n_damage
 	modified_dmg = combatant.modifier_system.get_modified_value(n_damage, Modifier.Type.DMG_DEALT)
-	print("basic_melee_attack_action.gd update_action_intent() Fighter: %s, Text: %s" % [combatant.name, modified_dmg])
+	#                                                  print("basic_melee_attack_action.gd update_action_intent() Fighter: %s, Text: %s" % [combatant.name, modified_dmg])
 	if n_attacks == 1:
 		intent_data.base_text = str(modified_dmg)
 	else:

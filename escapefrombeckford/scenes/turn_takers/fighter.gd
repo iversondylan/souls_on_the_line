@@ -208,7 +208,7 @@ func _on_combatant_statuses_applied(proc_type: Status.ProcType) -> void:
 	statuses_applied.emit(proc_type)
 
 func _on_modifier_changed() -> void:
-	print("fighter.gd _on_modifier_changed()")
+	#print("fighter.gd _on_modifier_changed()")
 	for child in get_children():
 		if child.has_method("update_action_intent"):
 			child.update_action_intent()

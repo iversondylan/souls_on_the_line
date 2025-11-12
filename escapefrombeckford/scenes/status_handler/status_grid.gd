@@ -69,7 +69,7 @@ func add_status(status: Status) -> void:
 		_update_visuals()
 		return
 	elif status is AuraSecondary:
-		print("status_grid.gd add_status() updating AuraSecondary")
+		#print("status_grid.gd add_status() updating AuraSecondary")
 		add_or_replace_aura_secondary(status)
 		var most_intense_aura_secondary := get_most_intense_aura_secondary(status)
 		reconfigure_aura_secondaries_and_init(most_intense_aura_secondary)
@@ -118,10 +118,10 @@ func add_or_replace_aura_secondary(new_aura_secondary: AuraSecondary) -> void:
 		inactive_aura_secondaries.erase(aura_secondary)
 	
 	var status_display_with_this_aura := get_status_display_with_this_aura_id(new_aura_secondary)
-	print("intensity before: %s" % status_display_with_this_aura.status.intensity)
+	#print("intensity before: %s" % status_display_with_this_aura.status.intensity)
 	if new_aura_secondary.source == (status_display_with_this_aura.status as AuraSecondary).source:
 		status_display_with_this_aura.status = new_aura_secondary
-		print("intensity after: %s" % status_display_with_this_aura.status.intensity)
+		#print("intensity after: %s" % status_display_with_this_aura.status.intensity)
 	else:
 		inactive_aura_secondaries.push_back(new_aura_secondary)
 
@@ -131,8 +131,7 @@ func get_status_display_with_this_aura_id(aura_secondary: AuraSecondary) -> Stat
 		if !status_dislay.status:
 			continue
 		if status_dislay.status.id == aura_secondary.id:
-			if status_display_with_this_aura:
-				print("status_grid.gd reconfigure_aura_secondaries() ERROR: there are multiple status displays of this status id")
+			assert(not status_display_with_this_aura, "status_grid.gd reconfigure_aura_secondaries() ERROR: there are multiple status displays of this status id")
 			status_display_with_this_aura = status_dislay
 	return status_display_with_this_aura
 

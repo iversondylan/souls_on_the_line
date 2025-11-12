@@ -57,6 +57,8 @@ var card_status: CardStatus
 func is_single_targeted() -> bool:
 	return target_type == TargetType.SINGLE_ENEMY or target_type == TargetType.ALLY_OR_SELF or target_type == TargetType.ALLY or target_type == TargetType.BATTLEFIELD
 
+
+
 func _get_targets(targets: Array[Node]) -> Array[Node]:
 	if not targets:
 		return []

@@ -102,7 +102,9 @@ offset_bottom = 183.0
 mouse_filter = 2
 theme = ExtResource("3_2ndsp")
 theme_override_font_sizes/normal_font_size = 12
+bbcode_enabled = true
 text = "Card Description"
+scroll_active = false
 horizontal_alignment = 1
 vertical_alignment = 1
 

@@ -7,12 +7,13 @@ func init_status(target: Node) -> void:
 	_on_status_changed(target)
 
 func apply_status(target: Node) -> void:
-	print("Status applied: Echoed Cruelty")
+	pass
+	#print("Status applied: Echoed Cruelty")
 	#print("Gets status extent of %s" % member_var)
 	#status_applied.emit(self)
 
 func _on_status_changed(target: Node) -> void:
-	print("echoed_cruelty.gd _on_status_changed() stacks: %s" % intensity)
+	#print("echoed_cruelty.gd _on_status_changed() stacks: %s" % intensity)
 	Events.aura_changed.emit(status_parent, self)
 	
 	#This stuff is code for testing that buffs the work on the source.
