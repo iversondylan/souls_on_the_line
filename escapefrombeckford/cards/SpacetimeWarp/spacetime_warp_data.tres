@@ -7,14 +7,10 @@
 
 [resource]
 script = ExtResource("2_uiy48")
-id = 0
 card_type = 6
 target_type = 3
-rarity = 0
 name = "Spacetime Warp"
 description = "Teleport an ally to appear at the front of the group or behind you. Allies appearing behind you can attack after you end your turn."
-cost_red = 0
-cost_green = 0
 cost_blue = 1
 texture = ExtResource("4_ymuve")
 actions = Array[GDScript]([ExtResource("1_a1nap")])

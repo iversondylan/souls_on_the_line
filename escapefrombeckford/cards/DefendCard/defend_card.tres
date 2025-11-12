@@ -7,15 +7,10 @@
 
 [resource]
 script = ExtResource("1_sxbgo")
-id = 0
 card_type = 1
-target_type = 0
-rarity = 0
 name = "Defend"
-description = "Gain 5 armor."
-cost_red = 0
+description = "Gain [color=\"008000\"]%s[/color] armor."
 cost_green = 1
-cost_blue = 0
 texture = ExtResource("3_fh72t")
 actions = Array[GDScript]([ExtResource("1_14wc8")])
 sound = ExtResource("3_ur15d")

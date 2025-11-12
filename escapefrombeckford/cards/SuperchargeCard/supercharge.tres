@@ -7,15 +7,12 @@
 
 [resource]
 script = ExtResource("2_nfj5x")
-id = 0
 card_type = 4
 target_type = 3
 rarity = 1
 name = "Supercharge"
-description = "Increase an ally's damage by 25% for 2 turns and they attack immediately."
-cost_red = 0
+description = "Increase an ally's damage by %s%% for [color=\"008000\"]%s[/color] turns and they attack immediately."
 cost_green = 1
-cost_blue = 0
 texture = ExtResource("4_tainj")
 actions = Array[GDScript]([ExtResource("1_kmd1d")])
 sound = ExtResource("3_ua1rg")

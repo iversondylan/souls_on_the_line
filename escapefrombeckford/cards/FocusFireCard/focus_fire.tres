@@ -7,14 +7,10 @@
 
 [resource]
 script = ExtResource("1_numeo")
-id = 0
-card_type = 0
 target_type = 4
 rarity = 1
 name = "Focus Fire"
-description = "Mark an enemy to be the target of your minion's basic attacks. Only one enemy can be marked at a time."
-cost_red = 0
-cost_green = 0
+description = "Mark an enemy to be the target of your minion's basic attacks and it takes additional damage for [color=\"008000\"]%s[/color] turns."
 cost_blue = 1
 texture = ExtResource("4_n8er5")
 actions = Array[GDScript]([ExtResource("1_iwper")])

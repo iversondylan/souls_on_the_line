@@ -25,3 +25,7 @@ func activate(targets: Array[Node]) -> bool:
 	attack_effect.sound = card_data.sound
 	attack_effect.execute(attack_targets)
 	return true
+
+func get_description(description: String) -> String:
+	#var n_damage = player.modifier_system.get_modified_value(base_damage, Modifier.Type.DMG_DEALT)
+	return description % str(player.combatant_data.max_mana_red + 2)

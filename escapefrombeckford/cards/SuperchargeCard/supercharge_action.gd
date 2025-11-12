@@ -31,3 +31,7 @@ func activate(targets: Array[Node]) -> bool:
 ## Overwrite this function for special playable conditions like space for allies
 #func is_playable() -> bool:
 	#return player.can_play_card(card_data)
+
+func get_description(description: String) -> String:
+	var modified_duration := amplify_duration#player.modifier_system.get_modified_value(base_damage, Modifier.Type.DMG_DEALT)
+	return description % [str(floori(AmplifyStatus.MODIFIER*100)), str(modified_duration)]

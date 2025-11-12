@@ -23,3 +23,8 @@ func activate(targets: Array[Node]) -> bool:
 ## Overwrite this function for special playable conditions like space for allies
 #func is_playable() -> bool:
 	#return player.can_play_card(card_data)
+
+## Overwrite this function for dynamic card descriptions
+func get_description(description: String) -> String:
+	#var n_damage = player.modifier_system.get_modified_value(base_damage, Modifier.Type.DMG_DEALT)
+	return description# % n_damage

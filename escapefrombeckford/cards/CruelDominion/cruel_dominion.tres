@@ -11,6 +11,7 @@ card_type = 3
 rarity = 2
 name = "Cruel Dominion"
 deplete = true
+description = "At the start of your turn, empower your allies to deal %s additional damage."
 cost_red = 1
 cost_green = 1
 texture = ExtResource("4_kand5")
