@@ -6,18 +6,13 @@ signal tooltip_requested(card_data: CardData)
 @onready var visuals: CardVisuals = $Visuals
 var actions: Array[CardAction]
 
-func _ready() -> void:
-	print("MenuCard ready(): ", name, " at ", self.get_instance_id())
-
 func _set_card_data(new_card_data: CardData) -> void:
-	print("MenuCard _set_card_data called on ", name)
 	if !is_node_ready():
 		await ready
 	card_data = new_card_data
 	call_deferred("_apply_card_data")
 
 func _apply_card_data() -> void:
-	print("MenuCard _apply_card_data called on ", name)
 	visuals.card_data = card_data
 	actions.clear()
 	for action_script: GDScript in card_data.actions:
@@ -27,7 +22,6 @@ func _apply_card_data() -> void:
 	visuals.set_description(get_description())
 
 func get_description() -> String:
-	print("menu_card.gd get_descriptions()")
 	if actions:
 		return actions[0].get_unmod_description(card_data.description)
 	return "error"

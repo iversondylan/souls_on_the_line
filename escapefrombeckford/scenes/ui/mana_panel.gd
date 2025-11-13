@@ -15,12 +15,6 @@ func _ready() -> void:
 	green_mana = green_mana
 	blue_radial_bar.modulate = Color(0.236, 0.215, 0.503)
 	blue_mana = blue_mana
-	#for i in range(5):
-		#print(str(i))
-		#await get_tree().create_timer(1).timeout
-		#red_mana = 4-i
-		#green_mana = 4-i
-		#blue_mana = 4-i
 
 func set_green_mana(new_green_mana: int) -> void:
 	green_mana = new_green_mana

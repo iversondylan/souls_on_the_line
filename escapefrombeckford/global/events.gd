@@ -32,6 +32,7 @@ signal hand_drawn()
 signal hand_discarded()
 
 signal player_combatant_data_changed()
+signal player_modifier_changed()
 
 signal end_turn_button_pressed()
 

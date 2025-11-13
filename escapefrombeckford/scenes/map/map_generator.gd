@@ -27,11 +27,9 @@ var map_data: Array[Array]
 func make_map() -> Array[Array]:
 	map_data = _make_empty_grid()
 	var starting_points := _get_random_starting_points()
-	#print(str(starting_points))
 	for j in starting_points:
 		var current_j := j
 		for i in ENCOUNTERS - 1:
-			#print("current_j is %s" % current_j)
 			current_j = _make_connection(i, current_j)
 	
 	battle_pool.init_weights()
@@ -39,20 +37,6 @@ func make_map() -> Array[Array]:
 	_make_boss_room()
 	_make_random_room_weights()
 	_make_room_types()
-	
-	#var i:= 0
-	#for encounter in map_data:
-		#print("floor %s" % i)
-		#var used_rooms = encounter.filter(
-			#func(room: Room): return room.next_rooms.size() > 0
-		#)
-		#print(used_rooms)
-		#i += 1
-	#print(starting_points)
-	#var i := 0
-	#for encounter in map_data:
-		#print("encounter %s:\t%s" % [i, encounter])
-		#i += 1
 	
 	return map_data
 

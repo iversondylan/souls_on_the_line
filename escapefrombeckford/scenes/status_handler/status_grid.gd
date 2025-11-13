@@ -14,7 +14,6 @@ func _ready() -> void:
 	_update_visuals()
 
 func apply_statuses_by_type(proc_type: Status.ProcType) -> void:
-	#print("status_grid.gd apply_statuses_by_type() of %s" % status_parent)
 	if proc_type == Status.ProcType.EVENT_BASED:
 		return
 	
@@ -69,7 +68,6 @@ func add_status(status: Status) -> void:
 		_update_visuals()
 		return
 	elif status is AuraSecondary:
-		#print("status_grid.gd add_status() updating AuraSecondary")
 		add_or_replace_aura_secondary(status)
 		var most_intense_aura_secondary := get_most_intense_aura_secondary(status)
 		reconfigure_aura_secondaries_and_init(most_intense_aura_secondary)
@@ -97,9 +95,6 @@ func add_status(status: Status) -> void:
 		_update_visuals()
 
 func get_most_intense_aura_secondary(new_aura_secondary: AuraSecondary) -> AuraSecondary:
-	#add_or_replace_aura_secondary(new_aura_secondary)
-	#if !inactive_aura_secondaries.has(new_aura_secondary):
-		#print("status_grid.gd get_most_intense_aura_secondary() ERROR: the new aura_secondary is not in inactive_aura_secondaries")
 	var most_intense_aura_secondary: AuraSecondary = new_aura_secondary
 	for aura_secondary in inactive_aura_secondaries:
 		if new_aura_secondary.id == new_aura_secondary.id and aura_secondary.intensity > most_intense_aura_secondary.intensity:
@@ -118,10 +113,8 @@ func add_or_replace_aura_secondary(new_aura_secondary: AuraSecondary) -> void:
 		inactive_aura_secondaries.erase(aura_secondary)
 	
 	var status_display_with_this_aura := get_status_display_with_this_aura_id(new_aura_secondary)
-	#print("intensity before: %s" % status_display_with_this_aura.status.intensity)
 	if new_aura_secondary.source == (status_display_with_this_aura.status as AuraSecondary).source:
 		status_display_with_this_aura.status = new_aura_secondary
-		#print("intensity after: %s" % status_display_with_this_aura.status.intensity)
 	else:
 		inactive_aura_secondaries.push_back(new_aura_secondary)
 
@@ -140,7 +133,6 @@ func reconfigure_aura_secondaries_and_init(most_intense_aura_secondary: AuraSeco
 	if most_intense_aura_secondary == status_display_with_this_aura.status:
 		status_display_with_this_aura.status.init_status(status_parent)
 		return
-	#inactive_aura_secondaries.push_back(status_display_with_this_aura.status)
 	inactive_aura_secondaries.erase(most_intense_aura_secondary)
 	status_display_with_this_aura.status = most_intense_aura_secondary
 	status_display_with_this_aura.status.init_status(status_parent)

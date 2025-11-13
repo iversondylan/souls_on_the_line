@@ -10,7 +10,7 @@ script = ExtResource("1_241b1")
 target_type = 3
 rarity = 2
 name = "Berserker's Fury"
-description = "Sacrifice an ally and they deal [color=\"ff0000\"]%s[/color] to all enemies."
+description = "Sacrifice an ally and they deal [color=\"ff0000\"]%s[/color]%s to all enemies."
 cost_red = 1
 texture = ExtResource("3_65r7g")
 actions = Array[GDScript]([ExtResource("1_ib15p")])

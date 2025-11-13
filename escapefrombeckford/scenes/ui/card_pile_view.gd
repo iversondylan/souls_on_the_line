@@ -61,7 +61,6 @@ func _update_view(randomized: bool) -> void:
 		all_cards.shuffle()
 	
 	for card: CardData in all_cards:
-		print("card_pile_view Populating menu cards...", Time.get_ticks_msec())
 		var new_card := MENU_CARD_SCENE.instantiate() as MenuCard
 		card_grid.add_child(new_card)
 		new_card.card_data = card

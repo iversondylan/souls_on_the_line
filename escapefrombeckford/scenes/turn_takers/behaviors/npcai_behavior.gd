@@ -20,7 +20,6 @@ func load_ai():
 		npc_action_picker.battle_scene = fighter.battle_scene
 
 func update_action() -> void:
-	#print("npc_figher.gd updating action")
 	# Cooper was here
 	var fighter: Fighter = get_parent()
 	if !npc_action_picker:

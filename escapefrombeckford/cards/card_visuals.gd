@@ -18,9 +18,6 @@ var cost_green: int = 0 : set = set_cost_green
 var cost_blue: int = 0 : set = set_cost_blue
 var _card_data_internal: CardData
 
-func _ready() -> void:
-	print("CardVisuals ready(): ", name)
-
 func _set_card_data(value: CardData) -> void:
 	if !is_node_ready():
 		await ready

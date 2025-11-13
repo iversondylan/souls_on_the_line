@@ -3,11 +3,8 @@ class_name Deck extends Node
 signal draw_pile_size_changed(cards_amount)
 
 var card_collection: CardPile : set = _set_card_collection
-#@onready var card_pile := load("res://custom_resources/card_pile.gd")
-#var collection_pile : CardPile = CardPile.new()
 var draw_pile : CardPile = CardPile.new()
 var discard_pile : CardPile = CardPile.new()
-#var summon_reserve: CardPile
 var id_counter : int# = 0
 var first_shuffle: bool = true
 
@@ -75,10 +72,8 @@ func take_discards() -> void:
 	discard_pile.clear()
 
 func make_draw_pile():
-	#print("deck.gd make_draw_pile() first shuffle: %s" % first_shuffle)
 	if first_shuffle:
 		draw_pile = card_collection.duplicate(true)
-		#draw_pile_size_changed.emit(draw_pile.cards.size())
 		first_shuffle = false
 	else:
 		take_discards()
@@ -90,12 +85,9 @@ func _generate_card_id(_card_data: CardData):
 
 func draw_card() -> CardData:
 	if draw_pile_is_empty():
-		#print("deck.gd draw_card() draw_card(): draw pile is empty")
 		take_discards()
 		shuffle()
 	var drawn_card: CardData = draw_pile.draw_back()
-	#print("deck.gd draw_card() drawn_card: %s" % drawn_card)
-	#card_collection[drawn_card.id].card_status = CardWithID.CardStatus.HAND
 	draw_pile_size_changed.emit(draw_pile.cards.size())
 	return drawn_card
 
@@ -105,15 +97,3 @@ func shuffle() -> void:
 func clear() -> void:
 	draw_pile.clear()
 	draw_pile_size_changed.emit(draw_pile.cards.size())
-
-#func peek_top() -> CardWithID:
-	#return draw_pile.back()
-#
-#func put_card_on_top(card: CardWithID):
-	#draw_pile.push_back(card)
-
-#func _to_string() -> String:
-	#var _card_strings: PackedStringArray = []
-	#for i in range(draw_pile.size()):
-		#_card_strings.push_back("%s: %s" % [i+1, draw_pile[i].id])
-	#return "\n".join(_card_strings)

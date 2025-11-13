@@ -175,12 +175,10 @@ func on_aura_changed(source_fighter: Fighter, aura_primary: AuraPrimary) -> void
 
 ## THIS NEEDS TO BE CHANGED TO TRACK DUPLICATE AURAS AND SOURCES
 func add_aura_secondary(source_fighter: Fighter, aura_primary: AuraPrimary) -> void:
-	#print("fighter.gd add_aura_secondary() applying aura secondary: %s" % aura_status.id)
 	var aura_secondary := aura_primary.aura_secondary.duplicate()
 	aura_secondary.source = source_fighter
 	aura_secondary.intensity = aura_primary.intensity
 	aura_secondary.status_parent = self
-	#print("fighter.gd adding aura secondary. source: %s, intensity: %s, target: %s" % [aura_secondary.source, aura_secondary.intensity, aura_secondary.status_parent])
 	combatant.status_grid.add_status(aura_secondary)
 
 func _on_aura_removed(source_fighter: Fighter, aura_status: Status) -> void:
@@ -212,4 +210,7 @@ func _on_modifier_changed() -> void:
 	for child in get_children():
 		if child.has_method("update_action_intent"):
 			child.update_action_intent()
+	for child in get_children():
+		if child.has_method("_on_modifier_changed"):
+			child._on_modifier_changed()
 	

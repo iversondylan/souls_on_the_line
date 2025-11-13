@@ -1,5 +1,7 @@
 class_name PlayerBehavior extends Node
 
+
+
 func _ready() -> void:
 	var player: Player = get_parent()
 	if !player.is_node_ready():
@@ -20,3 +22,7 @@ func _on_hand_discarded() -> void:
 func _on_end_turn_button_pressed() -> void:
 	Events.player_turn_completed.emit()
 	Events.end_turn_button_pressed.disconnect(_on_end_turn_button_pressed)
+
+func _on_modifier_changed() -> void:
+	print("player_behavior.gd _on_modifier_changed()")
+	Events.player_modifier_changed.emit()

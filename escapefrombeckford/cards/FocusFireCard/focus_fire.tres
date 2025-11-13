@@ -10,7 +10,7 @@ script = ExtResource("1_numeo")
 target_type = 4
 rarity = 1
 name = "Focus Fire"
-description = "Mark an enemy to be the target of your minion's basic attacks and it takes additional damage for [color=\"008000\"]%s[/color] turns."
+description = "Focus allies' attacks on target enemy and it takes %s%% increased damage for [color=\"008000\"]%s[/color] turns."
 cost_blue = 1
 texture = ExtResource("4_n8er5")
 actions = Array[GDScript]([ExtResource("1_iwper")])

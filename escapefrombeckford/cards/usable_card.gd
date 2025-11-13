@@ -49,6 +49,7 @@ func _ready() -> void:
 	Events.card_drag_ended.connect(_on_card_drag_or_aiming_ended)
 	Events.n_combatants_changed.connect(_on_n_combatants_changed)
 	Events.player_combatant_data_changed.connect(_on_player_combatant_data_changed)
+	Events.player_modifier_changed.connect(_on_player_modifier_changed)
 	card_state_machine.init(self)
 
 func _input(event: InputEvent) -> void:
@@ -169,6 +170,9 @@ func _on_n_combatants_changed() -> void:
 
 func _on_player_combatant_data_changed() -> void:
 	playable = is_playable()
+
+func _on_player_modifier_changed() -> void:
+	card_visuals.set_description(get_description())
 
 func is_mouse_over() -> bool:
 	# Get the global mouse position
