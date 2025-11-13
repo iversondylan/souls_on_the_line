@@ -29,3 +29,7 @@ func activate(targets: Array[Node]) -> bool:
 func get_description(description: String) -> String:
 	#var n_damage = player.modifier_system.get_modified_value(base_damage, Modifier.Type.DMG_DEALT)
 	return description % str(player.combatant_data.max_mana_red + 2)
+
+func get_unmod_description(description: String) -> String:
+	print(description)
+	return description % "Power + 2"

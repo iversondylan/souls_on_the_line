@@ -1,7 +1,5 @@
 class_name CardVisuals extends Control
 
-@export var card_data: CardData : set = set_card_data
-
 @onready var glow: Sprite2D = %Glow
 @onready var card_front: TextureRect = %CardFront
 @onready var cost_blue_sprites: AnimatedSprite2D = %CostBlue
@@ -14,20 +12,28 @@ class_name CardVisuals extends Control
 @onready var description: RichTextLabel = %Description
 @onready var rarity: TextureRect = %Rarity
 
+@export var card_data: CardData : set = _set_card_data
 var cost_red: int = 0 : set = set_cost_red
 var cost_green: int = 0 : set = set_cost_green
 var cost_blue: int = 0 : set = set_cost_blue
+var _card_data_internal: CardData
 
-func set_card_data(_card_data: CardData) -> void:
+func _ready() -> void:
+	print("CardVisuals ready(): ", name)
+
+func _set_card_data(value: CardData) -> void:
 	if !is_node_ready():
 		await ready
-	card_data = _card_data
-	name_label.text = card_data.name
-	cost_red = _card_data.cost_red
-	cost_green = _card_data.cost_green
-	cost_blue = _card_data.cost_blue
-	card_art_rect.texture = _card_data.texture
-	rarity.modulate = CardData.RARITY_COLORS[card_data.rarity]
+	_card_data_internal = value
+	name_label.text = value.name
+	cost_red = value.cost_red
+	cost_green = value.cost_green
+	cost_blue = value.cost_blue
+	card_art_rect.texture = value.texture
+	rarity.modulate = CardData.RARITY_COLORS[value.rarity]
+
+func set_description(new_description: String) -> void:
+	description.set_text(new_description)
 
 func set_cost_red(cost: int) -> void:
 	cost_red = cost

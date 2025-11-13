@@ -16,6 +16,7 @@ func _ready() -> void:
 	
 
 func show_tooltip(card: CardData) -> void:
+	print("card_tooltip_popus.gd Populating menu cards...", Time.get_ticks_msec())
 	var new_card := MENU_CARD_SCENE.instantiate() as MenuCard
 	tooltip_card_container.add_child(new_card)
 	new_card.card_data = card

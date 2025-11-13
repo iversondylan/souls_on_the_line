@@ -14,6 +14,7 @@ card_data = ExtResource("2_fdvp4")
 
 [node name="Visuals" parent="." instance=ExtResource("2_atmdt")]
 layout_mode = 2
+card_data = ExtResource("2_fdvp4")
 
 [connection signal="gui_input" from="Visuals" to="." method="_on_visuals_gui_input"]
 [connection signal="mouse_entered" from="Visuals" to="." method="_on_visuals_mouse_entered"]

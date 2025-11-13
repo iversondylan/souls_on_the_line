@@ -95,9 +95,8 @@ func unhighlight():
 	card_visuals.glow.hide()
 
 func get_description() -> String:
-	var base_description : String = card_data.description
 	if actions:
-		return actions[0].get_description(base_description)
+		return actions[0].get_description(card_data.description)
 	return "error"
 
 func set_usable_card_z_index(index: int):

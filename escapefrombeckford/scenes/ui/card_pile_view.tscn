@@ -1,7 +1,6 @@
-[gd_scene load_steps=4 format=3 uid="uid://c634qgskmd0a"]
+[gd_scene load_steps=3 format=3 uid="uid://c634qgskmd0a"]
 
 [ext_resource type="Script" uid="uid://b7tf0vacewlm2" path="res://scenes/ui/card_pile_view.gd" id="1_5fd14"]
-[ext_resource type="PackedScene" uid="uid://d4g7iin5x7648" path="res://cards/menu_card/menu_card.tscn" id="1_iolsb"]
 [ext_resource type="PackedScene" uid="uid://c4ioesrs574d7" path="res://scenes/ui/card_tooltip_popup.tscn" id="3_vf8oq"]
 
 [node name="CardPileView" type="Control"]
@@ -57,84 +56,6 @@ size_flags_horizontal = 3
 size_flags_vertical = 3
 theme_override_constants/v_separation = 16
 columns = 6
-
-[node name="MenuCard" parent="MarginContainer/VBoxContainer/ScrollContainer/CardGrid" instance=ExtResource("1_iolsb")]
-layout_mode = 2
-
-[node name="MenuCard2" parent="MarginContainer/VBoxContainer/ScrollContainer/CardGrid" instance=ExtResource("1_iolsb")]
-layout_mode = 2
-
-[node name="MenuCard3" parent="MarginContainer/VBoxContainer/ScrollContainer/CardGrid" instance=ExtResource("1_iolsb")]
-layout_mode = 2
-
-[node name="MenuCard4" parent="MarginContainer/VBoxContainer/ScrollContainer/CardGrid" instance=ExtResource("1_iolsb")]
-layout_mode = 2
-
-[node name="MenuCard5" parent="MarginContainer/VBoxContainer/ScrollContainer/CardGrid" instance=ExtResource("1_iolsb")]
-layout_mode = 2
-
-[node name="MenuCard6" parent="MarginContainer/VBoxContainer/ScrollContainer/CardGrid" instance=ExtResource("1_iolsb")]
-layout_mode = 2
-
-[node name="MenuCard7" parent="MarginContainer/VBoxContainer/ScrollContainer/CardGrid" instance=ExtResource("1_iolsb")]
-layout_mode = 2
-
-[node name="MenuCard8" parent="MarginContainer/VBoxContainer/ScrollContainer/CardGrid" instance=ExtResource("1_iolsb")]
-layout_mode = 2
-
-[node name="MenuCard9" parent="MarginContainer/VBoxContainer/ScrollContainer/CardGrid" instance=ExtResource("1_iolsb")]
-layout_mode = 2
-
-[node name="MenuCard10" parent="MarginContainer/VBoxContainer/ScrollContainer/CardGrid" instance=ExtResource("1_iolsb")]
-layout_mode = 2
-
-[node name="MenuCard11" parent="MarginContainer/VBoxContainer/ScrollContainer/CardGrid" instance=ExtResource("1_iolsb")]
-layout_mode = 2
-
-[node name="MenuCard12" parent="MarginContainer/VBoxContainer/ScrollContainer/CardGrid" instance=ExtResource("1_iolsb")]
-layout_mode = 2
-
-[node name="MenuCard13" parent="MarginContainer/VBoxContainer/ScrollContainer/CardGrid" instance=ExtResource("1_iolsb")]
-layout_mode = 2
-
-[node name="MenuCard14" parent="MarginContainer/VBoxContainer/ScrollContainer/CardGrid" instance=ExtResource("1_iolsb")]
-layout_mode = 2
-
-[node name="MenuCard15" parent="MarginContainer/VBoxContainer/ScrollContainer/CardGrid" instance=ExtResource("1_iolsb")]
-layout_mode = 2
-
-[node name="MenuCard16" parent="MarginContainer/VBoxContainer/ScrollContainer/CardGrid" instance=ExtResource("1_iolsb")]
-layout_mode = 2
-
-[node name="MenuCard17" parent="MarginContainer/VBoxContainer/ScrollContainer/CardGrid" instance=ExtResource("1_iolsb")]
-layout_mode = 2
-
-[node name="MenuCard18" parent="MarginContainer/VBoxContainer/ScrollContainer/CardGrid" instance=ExtResource("1_iolsb")]
-layout_mode = 2
-
-[node name="MenuCard19" parent="MarginContainer/VBoxContainer/ScrollContainer/CardGrid" instance=ExtResource("1_iolsb")]
-layout_mode = 2
-
-[node name="MenuCard20" parent="MarginContainer/VBoxContainer/ScrollContainer/CardGrid" instance=ExtResource("1_iolsb")]
-layout_mode = 2
-
-[node name="MenuCard21" parent="MarginContainer/VBoxContainer/ScrollContainer/CardGrid" instance=ExtResource("1_iolsb")]
-layout_mode = 2
-
-[node name="MenuCard22" parent="MarginContainer/VBoxContainer/ScrollContainer/CardGrid" instance=ExtResource("1_iolsb")]
-layout_mode = 2
-
-[node name="MenuCard23" parent="MarginContainer/VBoxContainer/ScrollContainer/CardGrid" instance=ExtResource("1_iolsb")]
-layout_mode = 2
-
-[node name="MenuCard24" parent="MarginContainer/VBoxContainer/ScrollContainer/CardGrid" instance=ExtResource("1_iolsb")]
-layout_mode = 2
-
-[node name="MenuCard25" parent="MarginContainer/VBoxContainer/ScrollContainer/CardGrid" instance=ExtResource("1_iolsb")]
-layout_mode = 2
-
-[node name="MenuCard26" parent="MarginContainer/VBoxContainer/ScrollContainer/CardGrid" instance=ExtResource("1_iolsb")]
-layout_mode = 2
 
 [node name="BackButton" type="Button" parent="."]
 unique_name_in_owner = true

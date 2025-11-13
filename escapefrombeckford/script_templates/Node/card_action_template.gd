@@ -28,3 +28,7 @@ func activate(targets: Array[Node]) -> bool:
 func get_description(description: String) -> String:
 	#var n_damage = player.modifier_system.get_modified_value(base_damage, Modifier.Type.DMG_DEALT)
 	return description# % n_damage
+	
+## Overwrite this function for unmodified card descriptions
+func get_unmod_description(description: String) -> String:
+	return get_description(description)

@@ -80,3 +80,6 @@ func get_fighters(targets: Array[Node]) -> Array[Fighter]:
 
 func get_description(description: String) -> String:
 	return description
+
+func get_unmod_description(description: String) -> String:
+	return get_description(description)

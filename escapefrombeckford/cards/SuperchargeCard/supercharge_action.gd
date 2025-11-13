@@ -35,3 +35,7 @@ func activate(targets: Array[Node]) -> bool:
 func get_description(description: String) -> String:
 	var modified_duration := amplify_duration#player.modifier_system.get_modified_value(base_damage, Modifier.Type.DMG_DEALT)
 	return description % [str(floori(AmplifyStatus.MODIFIER*100)), str(modified_duration)]
+
+func get_unmod_description(description: String) -> String:
+	print(description)
+	return description % [str(floori(AmplifyStatus.MODIFIER*100)), str(amplify_duration)]

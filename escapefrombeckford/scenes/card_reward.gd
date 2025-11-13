@@ -56,6 +56,7 @@ func set_card_choices(new_card_choices: Array[CardData]) -> void:
 	_clear_rewards()
 	for card_data: CardData in card_choices:
 		#print("card_reward.gd set_card_choices(): card choice is " + str(card_data))
+		print("card_reward.gd Populating menu cards...", Time.get_ticks_msec())
 		var new_card : MenuCard = MENU_CARD.instantiate() as MenuCard
 		card_choice_container.add_child(new_card)
 		new_card.card_data = card_data
