@@ -38,11 +38,17 @@ func update_action_intent() -> void:
 	#                                                  print("basic_melee_attack_action.gd update_action_intent() Fighter: %s, Text: %s" % [combatant.name, modified_dmg])
 	if n_attacks == 1:
 		intent_data.base_text = str(modified_dmg)
+		intent_data.current_tooltip_text = intent_data.tooltip_text % str(modified_dmg)
 	else:
 		intent_data.base_text = str(n_attacks) + "x" + str(modified_dmg)
+		intent_data.current_tooltip_text = intent_data.tooltip_text % str(n_attacks) + "x" + str(modified_dmg)
 
 func other_action_performed(npc_action: NPCAction) -> void:
 	spree = 0
 
+func get_tooltip() -> String:
+	var modified_dmg := n_damage
+	modified_dmg = combatant.modifier_system.get_modified_value(n_damage, Modifier.Type.DMG_DEALT)
+	return intent_data.tooltip_text % str(modified_dmg)
 #func update_intent_text() -> void:
 	

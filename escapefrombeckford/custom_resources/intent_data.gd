@@ -5,6 +5,7 @@ class_name IntentData extends Resource
 @export_multiline var tooltip_text: String
 
 var current_text: String
+var current_tooltip_text: String
 
 func _set_text(string: String) -> void:
 	base_text = string

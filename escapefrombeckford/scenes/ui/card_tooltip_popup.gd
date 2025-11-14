@@ -16,11 +16,12 @@ func _ready() -> void:
 	
 
 func show_tooltip(card: CardData) -> void:
+	print("card_tooltip_popup.gd show_tooltip()")
 	var new_card := MENU_CARD_SCENE.instantiate() as MenuCard
 	tooltip_card_container.add_child(new_card)
 	new_card.card_data = card
 	new_card.tooltip_requested.connect(hide_tooltip.unbind(1))
-	card_description.text = card.description
+	#card_description.text = card.description
 	show()
 
 func hide_tooltip() -> void:

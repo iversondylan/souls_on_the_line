@@ -10,7 +10,6 @@ offset_bottom = 178.0
 size_flags_horizontal = 6
 size_flags_vertical = 4
 script = ExtResource("1_f806l")
-card_data = ExtResource("2_fdvp4")
 
 [node name="Visuals" parent="." instance=ExtResource("2_atmdt")]
 layout_mode = 2

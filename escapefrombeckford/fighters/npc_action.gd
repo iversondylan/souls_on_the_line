@@ -32,5 +32,7 @@ func other_action_performed(npc_action: NPCAction) -> void:
 func set_fighter(new_fighter: Fighter) -> void:
 	combatant = new_fighter
 
+#func update_tooltip() -> String:
+	#return intent_data.tooltip_text
 #func update_intent_text() -> void:
 	#intent_data.current_text = intent_data.base_text

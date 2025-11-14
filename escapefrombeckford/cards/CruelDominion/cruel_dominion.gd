@@ -30,5 +30,4 @@ func get_description(description: String) -> String:
 	return description % str(cruel_dominion_intensity)
 
 func get_unmod_description(description: String) -> String:
-	print(description)
 	return get_description(description)

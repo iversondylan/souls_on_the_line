@@ -37,5 +37,4 @@ func get_description(description: String) -> String:
 	return description % [str(floori(AmplifyStatus.MODIFIER*100)), str(modified_duration)]
 
 func get_unmod_description(description: String) -> String:
-	print(description)
 	return description % [str(floori(AmplifyStatus.MODIFIER*100)), str(amplify_duration)]

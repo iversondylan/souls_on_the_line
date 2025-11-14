@@ -23,5 +23,4 @@ func get_description(description: String) -> String:
 	return description % str(n_damage)
 
 func get_unmod_description(description: String) -> String:
-	print(description, str(base_damage))
 	return description % str(base_damage)

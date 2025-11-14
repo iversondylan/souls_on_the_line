@@ -2,15 +2,26 @@ class_name MenuCard extends CenterContainer
 
 signal tooltip_requested(card_data: CardData)
 
-@export var card_data: CardData : set = _set_card_data
+@export var card_data: CardData# : set = _set_card_data
 @onready var visuals: CardVisuals = $Visuals
 var actions: Array[CardAction]
 
-func _set_card_data(new_card_data: CardData) -> void:
-	if !is_node_ready():
+#func _ready() -> void:
+	#if card_data:
+		#_apply_card_data()
+
+func set_card_data(data: CardData) -> void:
+	card_data = data
+	if is_node_ready():
+		_apply_card_data()
+	else:
 		await ready
-	card_data = new_card_data
-	call_deferred("_apply_card_data")
+		_apply_card_data()
+#func _set_card_data(new_card_data: CardData) -> void:
+	#if !is_node_ready():
+		#await ready
+	#card_data = new_card_data
+	#call_deferred("_apply_card_data")
 
 func _apply_card_data() -> void:
 	visuals.card_data = card_data

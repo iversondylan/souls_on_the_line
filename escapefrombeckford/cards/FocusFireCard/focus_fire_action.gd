@@ -40,5 +40,4 @@ func get_description(description: String) -> String:
 	return description % [floori(PinpointStatus.MODIFIER*100), mod_duration]
 
 func get_unmod_description(description: String) -> String:
-	print(description)
 	return get_description(description)

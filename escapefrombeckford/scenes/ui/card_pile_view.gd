@@ -53,6 +53,7 @@ func show_current_view(new_title: String, randomized: bool = false) -> void:
 	_update_view.call_deferred(randomized)
 
 func _update_view(randomized: bool) -> void:
+	print("card_pile_view.gd _update_view()")
 	if !card_pile:
 		return
 	
@@ -63,7 +64,7 @@ func _update_view(randomized: bool) -> void:
 	for card: CardData in all_cards:
 		var new_card := MENU_CARD_SCENE.instantiate() as MenuCard
 		card_grid.add_child(new_card)
-		new_card.card_data = card
+		new_card.set_card_data(card)
 		new_card.tooltip_requested.connect(card_tooltip_popup.show_tooltip)
 	
 	show()

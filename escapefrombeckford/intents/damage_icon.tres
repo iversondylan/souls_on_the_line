@@ -7,5 +7,5 @@
 script = ExtResource("1_213yo")
 icon = ExtResource("1_wn4b0")
 base_text = "error"
-tooltip_text = "[center]This character will deal  [color=\"ff0000\"]damage[/color] on its next turn.[/center]"
+tooltip_text = "[center]This character will deal  %s damage on its next turn.[/center]"
 metadata/_custom_type_script = "uid://r7rmt1h6rma3"

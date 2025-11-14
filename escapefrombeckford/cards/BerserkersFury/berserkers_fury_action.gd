@@ -31,5 +31,4 @@ func get_description(description: String) -> String:
 	return description % [str(player.combatant_data.max_mana_red + 2), ""]
 
 func get_unmod_description(description: String) -> String:
-	print(description)
 	return description % ["Power", "+2"]
