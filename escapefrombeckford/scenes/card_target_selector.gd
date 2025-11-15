@@ -51,7 +51,7 @@ func _on_card_aim_started(card: UsableCard) -> void:
 	area_2d.monitoring = true
 	area_2d.monitorable = true
 	current_card = card
-	card
+	#card
 
 func _on_card_aim_ended(_card: UsableCard) -> void:
 	targeting = false

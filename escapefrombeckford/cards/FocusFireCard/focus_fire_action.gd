@@ -34,7 +34,7 @@ func activate(targets: Array[Node]) -> bool:
 	action_processed = true
 	return action_processed
 
-func get_description(description: String) -> String:
+func get_description(description: String, _target_fighter: Fighter = null) -> String:
 	##Duration should be moddable
 	var mod_duration = duration #player.modifier_system.get_modified_value(duration, Modifier.Type.STATUS_DURATION)
 	return description % [floori(PinpointStatus.MODIFIER*100), mod_duration]

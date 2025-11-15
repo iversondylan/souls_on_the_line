@@ -17,7 +17,7 @@ func activate(targets: Array[Node]) -> bool:
 	
 	return true
 
-func get_description(description: String) -> String:
+func get_description(description: String, _target_fighter: Fighter = null) -> String:
 	#var n_damage = player.modifier_system.get_modified_value(base_damage, Modifier.Type.DMG_DEALT)
 	return description % n_armor
 

@@ -78,7 +78,7 @@ func get_fighters(targets: Array[Node]) -> Array[Fighter]:
 				attack_targets.push_back(target.combatant)
 	return attack_targets
 
-func get_description(description: String) -> String:
+func get_description(description: String, _target_enemy: Fighter = null) -> String:
 	return description
 
 func get_unmod_description(description: String) -> String:
