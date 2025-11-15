@@ -24,3 +24,8 @@ func update_action_intent() -> void:
 
 func is_performable() -> bool:
 	return true
+
+func get_tooltip() -> String:
+	var base_string := "[center]This character will gain %s armor.[/center]"
+	#var modified_dmg := combatant.modifier_system.get_modified_value(n_damage, Modifier.Type.DMG_DEALT)
+	return base_string % n_armor

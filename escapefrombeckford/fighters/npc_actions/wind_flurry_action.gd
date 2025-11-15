@@ -36,3 +36,8 @@ func update_action_intent() -> void:
 
 func other_action_performed(npc_action: NPCAction) -> void:
 	spree = 0
+
+func get_tooltip() -> String:
+	var base_string := "[center]This character will empower itself.[/center]"
+	#var modified_dmg := combatant.modifier_system.get_modified_value(n_damage, Modifier.Type.DMG_DEALT)
+	return base_string

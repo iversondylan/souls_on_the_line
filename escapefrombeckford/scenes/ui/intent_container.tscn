@@ -1,8 +1,8 @@
 [gd_scene load_steps=2 format=3 uid="uid://dmw6560cffget"]
 
-[ext_resource type="Script" uid="uid://bvjyaqj2430fu" path="res://scenes/ui/icon_view_panel.gd" id="1_3poyy"]
+[ext_resource type="Script" uid="uid://bvjyaqj2430fu" path="res://scenes/ui/intent_container.gd" id="1_3poyy"]
 
-[node name="IconViewPanel" type="Node2D"]
+[node name="IntentContainer" type="Node2D"]
 script = ExtResource("1_3poyy")
 
 [node name="HBoxContainer" type="HBoxContainer" parent="."]

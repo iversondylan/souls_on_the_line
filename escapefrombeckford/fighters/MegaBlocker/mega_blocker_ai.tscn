@@ -15,14 +15,14 @@ script = ExtResource("1_i4h87")
 [node name="AttackAction" type="Node" parent="."]
 script = ExtResource("2_tu2mp")
 n_damage = 7
-intent_data = ExtResource("3_eno5c")
+base_intent_data = ExtResource("3_eno5c")
 sound = ExtResource("5_h7yyt")
 choice_type = 1
 chance_weight = 4.0
 
 [node name="BlockAction" type="Node" parent="."]
 script = ExtResource("3_4c4ji")
-intent_data = ExtResource("6_tu2mp")
+base_intent_data = ExtResource("6_tu2mp")
 sound = ExtResource("8_jpyf7")
 choice_type = 1
 code_type = 1
@@ -30,6 +30,6 @@ chance_weight = 1.0
 
 [node name="MegaBlockAction" type="Node" parent="."]
 script = ExtResource("4_qc3v1")
-intent_data = ExtResource("6_tu2mp")
+base_intent_data = ExtResource("6_tu2mp")
 sound = ExtResource("8_jpyf7")
 code_type = 1

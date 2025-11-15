@@ -47,8 +47,18 @@ func other_action_performed(npc_action: NPCAction) -> void:
 	spree = 0
 
 func get_tooltip() -> String:
-	var modified_dmg := n_damage
-	modified_dmg = combatant.modifier_system.get_modified_value(n_damage, Modifier.Type.DMG_DEALT)
-	return intent_data.tooltip_text % str(modified_dmg)
-#func update_intent_text() -> void:
+	#print("basic_melee_attack_action.gd get_tooltip() n_damage is %s" % n_damage)
+	if n_attacks == 1:
+		var base_string := "[center]This character will deal %s damage.[/center]"
+		var modified_dmg := combatant.modifier_system.get_modified_value(n_damage, Modifier.Type.DMG_DEALT)
+		return base_string % str(modified_dmg)
+	elif n_attacks == 2:
+		var base_string := "[center]This character will deal %s damage twice.[/center]"
+		var modified_dmg := combatant.modifier_system.get_modified_value(n_damage, Modifier.Type.DMG_DEALT)
+		return base_string % str(modified_dmg)
+	elif n_attacks >= 3:
+		var base_string := "[center]This character will deal %s damage %s times.[/center]"
+		var modified_dmg := combatant.modifier_system.get_modified_value(n_damage, Modifier.Type.DMG_DEALT)
+		return base_string % [modified_dmg, n_attacks]
+	return ""
 	

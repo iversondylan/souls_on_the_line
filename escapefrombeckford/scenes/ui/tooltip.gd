@@ -1,8 +1,10 @@
-class_name Tooltip extends PanelContainer
+class_name Tooltip extends Node2D
 
 @export var fade_seconds: float = 0.2
+
 @onready var tooltip_icon: TextureRect = %TooltipIcon
 @onready var tooltip_description: RichTextLabel = %TooltipDescription
+
 var tween: Tween
 var is_visible: bool = false
 
@@ -18,7 +20,7 @@ func show_tooltip(intent_display: IntentDisplay) -> void:
 		tween.kill()
 	position = intent_display.global_position
 	tooltip_icon.texture = intent_display.intent_data.icon
-	tooltip_description.text = intent_display.intent_data.current_tooltip_text
+	tooltip_description.text = intent_display.intent_data.action.get_tooltip()
 	tween = create_tween().set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_CUBIC)
 	tween.tween_callback(show)
 	tween.tween_property(self, "modulate", Color.WHITE, fade_seconds)

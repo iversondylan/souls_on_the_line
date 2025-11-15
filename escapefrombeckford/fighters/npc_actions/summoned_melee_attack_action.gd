@@ -47,3 +47,18 @@ func set_fighter(new_fighter: Fighter) -> void:
 
 func other_action_performed(npc_action: NPCAction) -> void:
 	spree = 0
+
+func get_tooltip() -> String:
+	if n_attacks == 1:
+		var base_string := "[center]This character will deal %s damage.[/center]"
+		var modified_dmg := combatant.modifier_system.get_modified_value(n_damage, Modifier.Type.DMG_DEALT)
+		return base_string % str(modified_dmg)
+	elif n_attacks == 2:
+		var base_string := "[center]This character will deal %s damage twice.[/center]"
+		var modified_dmg := combatant.modifier_system.get_modified_value(n_damage, Modifier.Type.DMG_DEALT)
+		return base_string % str(modified_dmg)
+	elif n_attacks >= 3:
+		var base_string := "[center]This character will deal %s damage %s times.[/center]"
+		var modified_dmg := combatant.modifier_system.get_modified_value(n_damage, Modifier.Type.DMG_DEALT)
+		return base_string % [modified_dmg, n_attacks]
+	return ""

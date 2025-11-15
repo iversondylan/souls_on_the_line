@@ -10,7 +10,7 @@ script = ExtResource("1_fednj")
 
 [node name="Attack" type="Node" parent="."]
 script = ExtResource("2_582px")
-intent_data = ExtResource("3_582px")
+base_intent_data = ExtResource("3_582px")
 sound = ExtResource("5_2n3sl")
 choice_type = 1
 chance_weight = 1.0

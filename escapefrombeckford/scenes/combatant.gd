@@ -10,8 +10,8 @@ signal statuses_applied(proc_type: Status.ProcType)
 @onready var health_bar: HealthBar = $HealthBar
 @onready var armor_sprite: Sprite2D = $Armor
 @onready var armor_label: Label = $Armor/Label
-@onready var status_bar: IconViewPanel = %StatusBar
-@onready var intent_container: IconViewPanel = $IconViewPanel
+#@onready var status_bar: IconViewPanel = %StatusBar
+@onready var intent_container: IntentContainer = $IntentContainer
 @onready var area_left: CombatantAreaLeft = $AreaLeft
 @onready var status_grid: StatusGrid = $StatusGrid
 
@@ -54,7 +54,7 @@ func load_combatant_data():
 
 func info_visible(visibility: bool) -> void:
 	intent_container.visible = visibility
-	status_bar.visible = visibility
+	#status_bar.visible = visibility
 	health_bar.visible = visibility
 	status_grid.visible = visibility
 	

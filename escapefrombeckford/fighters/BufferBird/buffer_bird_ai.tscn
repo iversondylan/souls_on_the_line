@@ -13,7 +13,7 @@ script = ExtResource("1_5ckb5")
 
 [node name="WindFlurry" type="Node" parent="."]
 script = ExtResource("2_65bsy")
-intent_data = ExtResource("3_apc06")
+base_intent_data = ExtResource("3_apc06")
 sound = ExtResource("5_v4isy")
 choice_type = 1
 chance_weight = 1.0
@@ -21,7 +21,7 @@ chance_weight = 1.0
 [node name="Attack" type="Node" parent="."]
 script = ExtResource("6_v4isy")
 n_attacks = 2
-intent_data = ExtResource("6_wylpu")
+base_intent_data = ExtResource("6_wylpu")
 sound = ExtResource("8_wylpu")
 choice_type = 1
 chance_weight = 1.0

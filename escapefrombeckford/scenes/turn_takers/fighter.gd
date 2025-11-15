@@ -11,8 +11,8 @@ signal statuses_applied(proc_type: Status.ProcType)
 @onready var health_bar: HealthBar = combatant.health_bar
 @onready var armor_sprite: Sprite2D = combatant.armor_sprite
 @onready var armor_label: Label = combatant.armor_label
-@onready var status_bar: IconViewPanel = combatant.status_bar
-@onready var intent_container: IconViewPanel = combatant.intent_container
+#@onready var status_bar: IconViewPanel = combatant.status_bar
+@onready var intent_container: IntentContainer = combatant.intent_container
 @onready var area_left: CombatantAreaLeft = combatant.area_left
 @onready var damage_number_scn: PackedScene = preload("res://scenes/ui/damage_number.tscn")
 @onready var blocked_message_scn: PackedScene = preload("res://scenes/ui/blocked_message.tscn")

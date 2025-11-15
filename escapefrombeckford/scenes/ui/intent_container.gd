@@ -1,4 +1,4 @@
-class_name IconViewPanel extends Node2D
+class_name IntentContainer extends Node2D
 
 #@onready var icon_container_scn: PackedScene = preload("res://scenes/ui/icon_container.tscn")
 @onready var intent_display_scn = preload("res://intents/intent_display.tscn")
