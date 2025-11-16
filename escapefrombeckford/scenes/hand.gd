@@ -28,7 +28,9 @@ var selected_card: UsableCard
 func _ready() -> void:
 	Events.card_played.connect(_on_card_played)
 	Events.player_turn_started.connect(_on_player_turn_started)
-	Events.card_drag_started.connect(_on_card_drag_started)
+	Events.card_drag_started.connect(_on_card_drag_or_aim_started)
+	Events.card_aim_started.connect(_on_card_drag_or_aim_started)
+	Events.battlefield_aim_started.connect(_on_card_drag_or_aim_started)
 	Events.card_drag_ended.connect(_card_drag_or_aim_ended)
 	Events.card_aim_ended.connect(_card_drag_or_aim_ended)
 	Events.player_turn_completed.connect(_on_player_turn_completed)
@@ -200,7 +202,7 @@ func _on_hand_area_mouse_exited() -> void:
 func _on_player_turn_started() -> void:
 	draw_cards(5)
 
-func _on_card_drag_started(_usable_card: UsableCard) -> void:
+func _on_card_drag_or_aim_started(_usable_card: UsableCard) -> void:
 	_usable_card.set_usable_card_z_index(2)
 
 func _card_drag_or_aim_ended(_usable_card: UsableCard) -> void:

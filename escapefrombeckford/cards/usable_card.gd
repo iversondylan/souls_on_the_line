@@ -25,22 +25,10 @@ var original_index := 0
 @onready var card_state_machine: CardStateMachine = $CardStateMachine as CardStateMachine
 @onready var targets: Array[Node] = []
 
-
 var tween: Tween
 var playable := true : set = _set_playable
 var disabled := false
 var selected = false
-
-#@onready var space_state = get_world_2d().direct_space_state
-#
-#func _process(_delta):
-	#var q = PhysicsPointQueryParameters2D.new()
-	#q.position = get_global_mouse_position()
-	#q.collide_with_areas = true
-	#q.collision_mask = 1 << 5
-	#var hits = space_state.intersect_point(q)
-	#print("hits:", hits.size())
-
 
 func _ready() -> void:
 	Events.card_aim_started.connect(_on_card_drag_or_aiming_started)
@@ -85,7 +73,7 @@ func _set_card_data(_card_data: CardData) -> void:
 		new_action.battle_scene = battle_scene
 		actions.push_back(new_action)
 	_update_graphics()
-	card_visuals.description.set_text(get_description())
+	update_description()
 	playable = is_playable()
 
 func highlight():
@@ -95,13 +83,25 @@ func highlight():
 func unhighlight():
 	card_visuals.glow.hide()
 
+func update_description() -> void:
+	card_visuals.description.set_text(get_description())
+
 func get_description() -> String:
+	#print("usable_card.gd get_description()")
+	var target_fighter: Fighter = null
+	if targets:
+		if targets[0] is CombatantTargetArea:
+			target_fighter = targets[0].combatant
+			#print("target fighter is %s" % target_fighter)
 	if actions:
-		return actions[0].get_description(card_data.description)
+		if target_fighter:
+			return actions[0].get_description(card_data.description, target_fighter)
+		else:
+			return actions[0].get_description(card_data.description)
 	return "error"
 
 func set_usable_card_z_index(index: int):
-	card_visuals.z_index = index
+	z_index = index
 
 func get_cost() -> Array[int]:
 	return [card_data.cost_red, card_data.cost_green, card_data.cost_blue]
