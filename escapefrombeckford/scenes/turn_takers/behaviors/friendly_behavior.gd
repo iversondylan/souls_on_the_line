@@ -1,4 +1,4 @@
-class_name FriendlyBehavior extends Node
+class_name FriendlyBehavior extends FighterBehavior
 
 func _ready() -> void:
 	var fighter: Fighter = get_parent()

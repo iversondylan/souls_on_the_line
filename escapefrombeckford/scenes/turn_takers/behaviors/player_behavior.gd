@@ -1,4 +1,4 @@
-class_name PlayerBehavior extends Node
+class_name PlayerBehavior extends FighterBehavior
 
 
 

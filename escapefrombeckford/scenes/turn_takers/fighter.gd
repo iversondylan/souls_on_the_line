@@ -40,7 +40,7 @@ func _set_combatant_data(new_data: CombatantData) -> void:
 	combatant.combatant_data = combatant_data
 	
 	for child in get_children():
-		if child.has_method("_on_combatant_data_set"):
+		if child is FighterBehavior:
 			child._on_combatant_data_set(new_data)
 	reset()
 
@@ -53,13 +53,13 @@ func _set_battle_scene(new_battle_scene: BattleScene) -> void:
 func enter() -> void:
 	combatant.status_grid.apply_statuses_by_type(Status.ProcType.START_OF_TURN)
 	for child in get_children():
-		if child.has_method("_on_enter"):
+		if child is FighterBehavior:
 			child._on_enter()
 
 func exit() -> void:
 	combatant.status_grid.apply_statuses_by_type(Status.ProcType.END_OF_TURN)
 	for child in get_children():
-		if child.has_method("_on_exit"):
+		if child is FighterBehavior:
 			child._on_exit()
 
 func set_anchor_position(_position: Vector2, animate: bool) -> void:
@@ -106,24 +106,24 @@ func die():
 			battle_group.combatant_died(self)
 				)
 	for child in get_children():
-		if child.has_method("_on_die"):
+		if child is FighterBehavior:
 			child._on_die()
 
 func do_turn() -> void:
 	combatant_data.set_armor(0)
 	combatant_data.reset_mana()
 	for child in get_children():
-		if child.has_method("_on_do_turn"):
+		if child is FighterBehavior:
 			child._on_do_turn()
 
 func update_action() -> void:
 	for child in get_children():
-		if child.has_method("update_action"):
+		if child is FighterBehavior:
 			child.update_action()
 
 func traverse_player() -> void:
 	for child in get_children():
-		if child.has_method("_on_traverse_player"):
+		if child is FighterBehavior:
 			child._on_traverse_player()
 
 func can_play_card(card_data: CardData) -> bool:
@@ -137,7 +137,7 @@ func spend_mana(card_data: CardData) -> bool:
 
 func discard_summon_reserve_card(_deck: Deck) -> void:
 	for child in get_children():
-		if child.has_method("_on_discard_summon_reserve_card"):
+		if child is FighterBehavior:
 			child._on_discard_summon_reserve_card(_deck)
 
 func reset():
@@ -208,9 +208,9 @@ func _on_combatant_statuses_applied(proc_type: Status.ProcType) -> void:
 func _on_modifier_changed() -> void:
 	#print("fighter.gd _on_modifier_changed()")
 	for child in get_children():
-		if child.has_method("update_action_intent"):
+		if child is FighterBehavior:
 			child.update_action_intent()
 	for child in get_children():
-		if child.has_method("_on_modifier_changed"):
+		if child is FighterBehavior:
 			child._on_modifier_changed()
 	

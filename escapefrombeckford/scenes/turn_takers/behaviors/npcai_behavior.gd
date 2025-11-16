@@ -1,12 +1,12 @@
-class_name NPCAIBehavior extends Node
+class_name NPCAIBehavior extends FighterBehavior
 
 var npc_action_picker: NPCActionPicker
 var current_action: NPCAction: set = _set_current_action
 
-func _on_combatant_data_set(data: CombatantData) -> void:
+func _on_combatant_data_set(_data: CombatantData) -> void:
 	load_ai()
-	if not data.combatant_data_changed.is_connected(update_action):
-		data.combatant_data_changed.connect(update_action)
+	if not _data.combatant_data_changed.is_connected(update_action):
+		_data.combatant_data_changed.connect(update_action)
 
 func load_ai():
 	var fighter: Fighter = get_parent()
