@@ -15,13 +15,15 @@ func init_status(target: Node) -> void:
 		dmg_dealt_modifier.add_new_value(amplify_modifier_value)
 	if !status_changed.is_connected(_on_status_changed):
 		status_changed.connect(_on_status_changed.bind(dmg_dealt_modifier))
-	#print("amplify.gd init_status() target: %s" % target)
-	#_on_status_changed(target)
-#
-#func apply_status(_target: Node) -> void:
-	#status_applied.emit(self)
-	#print("%s should take %s%% more damage." % [_target, MODIFIER*100])
 
 func _on_status_changed(dmg_dealt_modifier: Modifier) -> void:
 	if duration <= 0 and dmg_dealt_modifier:
 		dmg_dealt_modifier.remove_value(AMPLIFY_ID)
+
+func get_tooltip() -> String:
+	if duration == 1:
+		var base_tooltip: String = "Amplify: deals %s%% more damage for 1 turn."
+		return base_tooltip % floori(MODIFIER*100)
+	else:
+		var base_tooltip: String = "Amplify: deals %s%% more damage for %s turns."
+		return base_tooltip % [floori(MODIFIER*100), duration]

@@ -16,3 +16,7 @@ func apply_status(_target: Node) -> void:
 	
 	#print("Gets status extent of %s" % member_var)
 	status_applied.emit(self)
+
+func get_tooltip() -> String:
+	var base_tooltip: String = "Cruel Dominion: Each turn, empower your allies to deal %s additional damage."
+	return base_tooltip % intensity

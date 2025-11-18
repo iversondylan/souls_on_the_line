@@ -167,3 +167,8 @@ func _update_visuals() -> void:
 func _on_auras_requested(requester: Fighter) -> void:
 	for aura_primary: Status in get_aura_primaries():
 		requester.on_aura_changed(status_parent, aura_primary)
+
+
+func _on_gui_input(event: InputEvent) -> void:
+	if event.is_action_pressed("mouse_click"):
+		Events.status_tooltip_requested.emit(_get_all_statuses())

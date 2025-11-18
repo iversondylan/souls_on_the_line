@@ -31,6 +31,7 @@ var account: RunAccount
 var player_data: PlayerData
 var starting_deck: CardPile
 var draftable_cards: CardPile
+var available_arcana: Arcana
 var deck: Deck
 
 func _ready() -> void:
@@ -43,6 +44,7 @@ func _ready() -> void:
 			player_data.set_health(player_data.max_health)
 			starting_deck = run_startup.deck.duplicate()
 			draftable_cards = run_startup.draftable_cards.duplicate()
+			available_arcana = run_startup.available_arcana.duplicate()
 			print("run.gd STARTING RUN WITH NEW CHARACTER")
 			_start_run()
 		RunStartup.StartupType.CONTINUED_RUN:

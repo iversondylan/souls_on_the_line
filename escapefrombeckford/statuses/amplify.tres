@@ -11,5 +11,5 @@ stack_type = 2
 can_expire = true
 duration = 1
 icon = ExtResource("1_pto7b")
-tooltip = "TO DO"
+tooltip = "error"
 metadata/_custom_type_script = "uid://cueedkb1u8vxy"

@@ -26,3 +26,10 @@ func _on_status_changed(dmg_taken_modifier: Modifier) -> void:
 	if duration <= 0 and dmg_taken_modifier:
 		dmg_taken_modifier.remove_value(STATUS_ID)
 	
+func get_tooltip() -> String:
+	if duration == 1:
+		var base_tooltip: String = "Pinpoint: takes %s%% more damage for 1 turn."
+		return base_tooltip % floori(MODIFIER*100)
+	else:
+		var base_tooltip: String = "Pinpoint: takes %s%% more damage for %s turns."
+		return base_tooltip % [floori(MODIFIER*100), duration]

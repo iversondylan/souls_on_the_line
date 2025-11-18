@@ -10,20 +10,21 @@ var actions: Array[CardAction]
 	#if card_data:
 		#_apply_card_data()
 
-func set_card_data(data: CardData) -> void:
-	card_data = data
-	if is_node_ready():
-		_apply_card_data()
-	else:
-		await ready
-		_apply_card_data()
+#func set_card_data(data: CardData) -> void:
+	#card_data = data
+	#if is_node_ready():
+		#_apply_card_data()
+	#else:
+		#await ready
+		#_apply_card_data()
 #func _set_card_data(new_card_data: CardData) -> void:
 	#if !is_node_ready():
 		#await ready
 	#card_data = new_card_data
 	#call_deferred("_apply_card_data")
 
-func _apply_card_data() -> void:
+func set_card_data(new_card_data: CardData) -> void:
+	card_data = new_card_data
 	visuals.card_data = card_data
 	actions.clear()
 	for action_script: GDScript in card_data.actions:

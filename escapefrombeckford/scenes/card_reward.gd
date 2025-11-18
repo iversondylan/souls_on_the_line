@@ -55,5 +55,6 @@ func set_card_choices(new_card_choices: Array[CardData]) -> void:
 	for card_data: CardData in card_choices:
 		var new_card : MenuCard = MENU_CARD.instantiate() as MenuCard
 		card_choice_container.add_child(new_card)
-		new_card.card_data = card_data
+		#new_card.card_data = card_data
+		new_card.set_card_data(card_data)
 		new_card.tooltip_requested.connect(_show_tooltip)

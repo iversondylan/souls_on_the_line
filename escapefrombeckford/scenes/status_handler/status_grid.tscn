@@ -3,5 +3,8 @@
 [ext_resource type="Script" uid="uid://crlpc0dl0mpvi" path="res://scenes/status_handler/status_grid.gd" id="1_8505g"]
 
 [node name="StatusGrid" type="GridContainer"]
+mouse_filter = 0
 columns = 6
 script = ExtResource("1_8505g")
+
+[connection signal="gui_input" from="." to="." method="_on_gui_input"]

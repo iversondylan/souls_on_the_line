@@ -28,3 +28,7 @@ func _on_status_changed(target: Node) -> void:
 	
 	echoed_cruelty_modifier_value.flat_value = intensity
 	dmg_dealt_modifier.add_new_value(echoed_cruelty_modifier_value)
+
+func get_tooltip() -> String:
+	var base_tooltip: String = "Cruelty Echoes [from Aura: Echoed Cruelty]: Deals %s additional damage."
+	return base_tooltip % intensity
