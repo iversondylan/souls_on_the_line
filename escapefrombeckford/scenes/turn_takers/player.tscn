@@ -7,7 +7,7 @@
 [ext_resource type="PackedScene" uid="uid://cvtelvimr3235" path="res://scenes/turn_takers/behaviors/friendly_behavior.tscn" id="5_gnj2e"]
 [ext_resource type="PackedScene" uid="uid://pqwbdekjih3e" path="res://scenes/turn_takers/behaviors/player_behavior.tscn" id="6_e4ilh"]
 
-[node name="Player" type="Node2D"]
+[node name="Player" type="Node2D" groups=["player"]]
 script = ExtResource("1_gnj2e")
 
 [node name="Combatant" parent="." instance=ExtResource("3_fypcg")]

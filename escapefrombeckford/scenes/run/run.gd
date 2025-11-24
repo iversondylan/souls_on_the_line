@@ -14,6 +14,7 @@ const TREASURE_SCN := preload("res://scenes/treasure/treasure_room.tscn")
 
 @onready var current_view: Node = $CurrentView
 @onready var gold_display: GoldDisplay = %GoldDisplay
+@onready var arcana_system: ArcanaSystem = %ArcanaSystem
 
 @onready var collection_button: CardPileOpener = %CollectionButton
 @onready var collection_pile_view: CardPileView = %CollectionPileView
@@ -99,6 +100,7 @@ func _init_top_bar() -> void:
 	player_data.combatant_data_changed.connect(health_panel.update_health.bind(player_data))
 	health_panel.update_health(player_data)
 	gold_display.run_account = account
+	arcana_system.add_arcanum(player_data.starting_arcanum)
 	collection_button.card_pile = deck.card_collection
 	collection_pile_view.card_pile = deck.card_collection
 	collection_pile_view.deck = deck
@@ -109,6 +111,7 @@ func _on_battle_entered(room: Room) -> void:
 	battle_scn.player_data = player_data
 	battle_scn.deck = deck
 	battle_scn.battle_data = room.battle_data
+	battle_scn.arcana = arcana_system
 	battle_scn.start_battle()
 
 func _on_rest_site_entered() -> void:

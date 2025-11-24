@@ -93,6 +93,9 @@ func take_damage_part_2(n_damage: int) -> void:
 	if combatant_data.health <= 0:
 		die()
 
+func heal(n_heal: int) -> void:
+	combatant_data.heal(n_heal)
+
 func add_armor(amount: int):
 	combatant_data.add_armor(amount)
 
@@ -110,8 +113,8 @@ func die():
 			child._on_die()
 
 func do_turn() -> void:
-	combatant_data.set_armor(0)
-	combatant_data.reset_mana()
+	#combatant_data.set_armor(0)
+	#combatant_data.reset_mana()
 	for child in get_children():
 		if child is FighterBehavior:
 			child._on_do_turn()

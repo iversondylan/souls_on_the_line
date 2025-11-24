@@ -8,7 +8,7 @@ class_name Battle extends Node2D
 		$Debug_UI.visible = debug_mode
 @export var music: AudioStream
 @export var battle_data: BattleData
-
+@export var arcana: ArcanaSystem
 
 @onready var player_scn: PackedScene = preload("res://scenes/turn_takers/player.tscn")
 @onready var enemy_scn: PackedScene = preload("res://scenes/turn_takers/enemy.tscn")
@@ -91,9 +91,21 @@ func start_battle():
 	hand.empty_hand()
 	deck.reset()
 	deck.make_draw_pile()
-	initialize_card_pile_ui()
-	BattleController.transition(BattleController.BattleState.FRIENDLY_TURN)
+	
+	#initialize_card_pile_ui()
+	#BattleController.transition(BattleController.BattleState.FRIENDLY_TURN)
 	MusicPlayer.play(music, true)
+	
+	arcana.arcana_activated.connect(_on_arcana_activated)
+	arcana.activate_arcana_by_type(Arcanum.Type.START_OF_COMBAT)
+
+func _on_arcana_activated(type: Arcanum.Type) -> void:
+	match type:
+		Arcanum.Type.START_OF_COMBAT:
+			initialize_card_pile_ui()
+			BattleController.transition(BattleController.BattleState.FRIENDLY_TURN)
+		Arcanum.Type.END_OF_COMBAT:
+			BattleController.transition(BattleController.BattleState.VICTORY)
 
 func make_player_combatant() -> void:
 	var new_player: Player = player_scn.instantiate()
@@ -138,7 +150,8 @@ func _on_dead_combatant_data(combatant_data: CombatantData):
 
 func _on_battle_group_empty(_battle_group: BattleGroup) -> void:
 	if _battle_group is BattleGroupEnemy:
-		BattleController.transition(BattleController.BattleState.VICTORY)
+		arcana.activate_arcana_by_type(Arcanum.Type.END_OF_COMBAT)
+		#BattleController.transition(BattleController.BattleState.VICTORY)
 
 func _on_summon_reserve_card_released(summoned_ally: SummonedAlly) -> void:
 	var perspective_card: PerspectiveCard = perspective_card_scn.instantiate()

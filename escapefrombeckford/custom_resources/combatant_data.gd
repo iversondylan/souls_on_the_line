@@ -111,6 +111,12 @@ func set_mana_blue(value: int) -> void:
 	mana_blue = value
 	stats_changed()
 
+func add_mana(n_red: int, n_green: int, n_blue: int) -> void:
+	mana_red += n_red
+	mana_green += n_green
+	mana_blue += n_blue
+	stats_changed()
+
 func reset_mana() -> void:
 	mana_red = max_mana_red
 	mana_green = max_mana_green

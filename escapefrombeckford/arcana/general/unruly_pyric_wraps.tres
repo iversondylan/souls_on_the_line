@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="Trinket" load_steps=3 format=3 uid="uid://dohwwwoux6ubx"]
+
+[ext_resource type="Texture2D" uid="uid://dngnha78cu11v" path="res://assets/sprites/arcana_placeholders/mittens.png" id="1_oaq64"]
+[ext_resource type="Script" uid="uid://cnmucv1qsei4i" path="res://custom_resources/arcanum.gd" id="2_c2xod"]
+
+[resource]
+script = ExtResource("2_c2xod")
+trinket_name = "Unruly Pyric Wraps"
+id = "unruly_pyric_wraps"
+icon = ExtResource("1_oaq64")
+tooltip_description = "At the start of your turn, deal 1 damage to all enemies."
+metadata/_custom_type_script = "uid://cnmucv1qsei4i"
