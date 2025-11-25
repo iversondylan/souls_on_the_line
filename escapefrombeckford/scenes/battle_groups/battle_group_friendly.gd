@@ -40,4 +40,6 @@ func get_n_summoned_allies() -> int:
 	return n_allies
 
 func _on_friendly_turn_started() -> void:
+	for fighter: Fighter in get_combatants():
+		fighter.turn_reset()
 	start_turn()

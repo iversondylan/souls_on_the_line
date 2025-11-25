@@ -25,11 +25,11 @@ signal combatant_data_changed()
 
 #var fighter: Fighter
 var is_alive: bool = true
-var health: int : set = set_health
-var armor: int : set = set_armor
-var mana_red: int : set = set_mana_red
-var mana_green: int : set = set_mana_green
-var mana_blue: int : set = set_mana_blue
+var health: int# : set = set_health
+var armor: int# : set = set_armor
+var mana_red: int# : set = set_mana_red
+var mana_green: int# : set = set_mana_green
+var mana_blue: int# : set = set_mana_blue
 var rank: int
 
 func stats_changed() -> void:
@@ -40,6 +40,13 @@ func stats_changed() -> void:
 func set_health(value : int) -> void:
 	health = clampi(value, 0, max_health)
 	stats_changed()
+
+func reset_health() -> void:
+	health = max_health
+	stats_changed()
+
+func reset_armor() -> void:
+	set_armor(starting_armor)
 
 func set_armor(value : int) -> void:
 	armor = clampi(value, 0, 999)
@@ -97,19 +104,18 @@ func spend_mana(card_data: CardData) -> bool:
 		return true
 	else:
 		return false
-	
 
-func set_mana_red(value: int) -> void:
-	mana_red = value
-	stats_changed()
-
-func set_mana_green(value: int) -> void:
-	mana_green = value
-	stats_changed()
-
-func set_mana_blue(value: int) -> void:
-	mana_blue = value
-	stats_changed()
+#func set_mana_red(value: int) -> void:
+	#mana_red = value
+	#stats_changed()
+#
+#func set_mana_green(value: int) -> void:
+	#mana_green = value
+	#stats_changed()
+#
+#func set_mana_blue(value: int) -> void:
+	#mana_blue = value
+	#stats_changed()
 
 func add_mana(n_red: int, n_green: int, n_blue: int) -> void:
 	mana_red += n_red

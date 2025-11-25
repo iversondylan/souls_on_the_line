@@ -9,10 +9,18 @@ func activate(targets: Array[Node]) -> bool:
 	var combatant_scn: PackedScene = load("res://scenes/turn_takers/summoned_ally.tscn")
 	var clone: SummonedAlly = combatant_scn.instantiate()
 	battle_scene.add_combatant(clone, 0, targets.size()-1)
-	clone.combatant_data = load("res://fighters/BasicClone/basic_clone_data.tres").duplicate()
+	var clone_data: CombatantData = load("res://fighters/BasicClone/basic_clone_data.tres").duplicate()
+	
+	clone_data.max_mana_red = player.combatant_data.max_mana_red
+	clone_data.max_mana_green = player.combatant_data.max_mana_green
+	clone_data.max_mana_blue = player.combatant_data.max_mana_blue
+	
+	clone.combatant_data = clone_data
+	
+	
 	
 	for child in clone.get_children():
-		if child.has_method("bind_card"):
+		if child is FighterBehavior:
 			child.bind_card(card_data)
 	#clone.spawned()
 	SFXPlayer.play(card_data.sound)

@@ -21,7 +21,7 @@ func activate(targets: Array[Node]) -> bool:
 	var attack_effect := BasicMeleeAttackEffect.new()
 	#attack_effect.targets = [battle_scene.get_front_or_focus(1)]
 	attack_effect.attacker = correct_targets[0]
-	attack_effect.n_damage = player.combatant_data.max_mana_red
+	attack_effect.n_damage = correct_targets[0].combatant_data.max_mana_red
 	attack_effect.n_attacks = 1
 	attack_effect.sound = card_data.sound
 	attack_effect.execute([battle_scene.get_front_or_focus(1)])

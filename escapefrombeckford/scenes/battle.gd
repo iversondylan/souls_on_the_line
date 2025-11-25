@@ -127,7 +127,7 @@ func make_enemies() -> void:
 
 		new_enemy.combatant_data = enemy_data.duplicate()
 		
-		new_enemy.reset()
+		#new_enemy.reset()
 		new_enemy.update_action()
 
 func _on_end_turn_pressed() -> void:
