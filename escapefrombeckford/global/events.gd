@@ -10,6 +10,9 @@ signal enemy_turn_started()
 signal enemy_turn_ended()
 signal game_over_started()
 signal victory_started()
+signal reset_friendlies()
+signal reset_enemies()
+
 
 # battle mechanics events
 signal card_aim_started(usable_card: UsableCard)

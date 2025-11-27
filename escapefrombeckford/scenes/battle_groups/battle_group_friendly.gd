@@ -7,6 +7,7 @@ func _ready() -> void:
 	#Events.combatant_died.connect(_combatant_died)
 	#Events.combatant_actions_completed.connect(_on_combatant_actions_completed)
 	Events.friendly_turn_started.connect(_on_friendly_turn_started)
+	Events.reset_friendlies.connect(turn_reset)
 	#Events.enemy_turn_started.connect(_on_enemy_turn_started)
 	#Events.turn_taker_turn_completed.connect(_on_turn_taker_turn_complete) #MUST RESTORE THIS!!!!!!
 	#Events.npc_action_completed.connect(_on_npc_action_completed)
@@ -40,6 +41,6 @@ func get_n_summoned_allies() -> int:
 	return n_allies
 
 func _on_friendly_turn_started() -> void:
-	for fighter: Fighter in get_combatants():
-		fighter.turn_reset()
+	#for fighter: Fighter in get_combatants():
+		#fighter.turn_reset()
 	start_turn()

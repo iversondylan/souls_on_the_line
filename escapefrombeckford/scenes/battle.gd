@@ -42,7 +42,7 @@ var wait_for_anims: bool = false
 func _ready() -> void:
 	get_tree().paused = false
 	BattleController.current_state = BattleController.BattleState.PRE_GAME
-
+	Events.pre_game_ended.connect(_on_pre_game_ended)
 	Events.dead_combatant_data.connect(_on_dead_combatant_data)
 	Events.battle_group_empty.connect(_on_battle_group_empty)
 	Events.player_combatant_data_changed.connect(_on_player_data_changed)
@@ -97,13 +97,14 @@ func start_battle():
 	MusicPlayer.play(music, true)
 	
 	arcana.arcana_activated.connect(_on_arcana_activated)
-	arcana.activate_arcana_by_type(Arcanum.Type.START_OF_COMBAT)
+	BattleController.transition(BattleController.BattleState.FRIENDLY_TURN)
+	#arcana.activate_arcana_by_type(Arcanum.Type.START_OF_COMBAT)
 
 func _on_arcana_activated(type: Arcanum.Type) -> void:
 	match type:
 		Arcanum.Type.START_OF_COMBAT:
 			initialize_card_pile_ui()
-			BattleController.transition(BattleController.BattleState.FRIENDLY_TURN)
+			#BattleController.transition(BattleController.BattleState.FRIENDLY_TURN)
 		Arcanum.Type.END_OF_COMBAT:
 			BattleController.transition(BattleController.BattleState.VICTORY)
 
@@ -168,3 +169,6 @@ func _on_victory_started():
 
 func _on_kill_enemies_button_pressed() -> void:
 	battle_scene.kill_enemies()
+
+func _on_pre_game_ended() -> void:
+	pass

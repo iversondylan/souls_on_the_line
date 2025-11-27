@@ -128,11 +128,15 @@ func update_combatant_position():
 			fighter.set_anchor_position(Vector2(left_bound+increment*n, 0), false)
 		n += 1
 
-func combatant_died(fighter: Fighter):
+func combatant_died(fighter: Fighter) -> void:
 	if fighter is SummonedAlly:
 		fighter.discard_summon_reserve_card(deck)
 	Events.dead_combatant_data.emit(fighter.combatant_data)
 	remove_combatant(fighter)
+
+func turn_reset() -> void:
+	for fighter: Fighter in get_combatants():
+		fighter.turn_reset()
 
 func _on_turn_taker_turn_complete(turn_taker_who_finished: Fighter) -> void:
 	turn_taker_who_finished.exit()

@@ -33,6 +33,8 @@ func transition(next_state: BattleState):
 		return
 	match current_state:
 		BattleState.PRE_GAME:
+			Events.reset_enemies.emit()
+			Events.reset_friendlies.emit()
 			Events.pre_game_ended.emit()
 		BattleState.FRIENDLY_TURN:
 			Events.friendly_turn_ended.emit()
