@@ -53,3 +53,9 @@ func get_sibling(_name: String) -> Node:
 
 func _on_discard_summon_reserve_card(_deck: Deck) -> void:
 	pass
+
+func _on_turn_reset() -> void:
+	pass
+
+func _on_battle_reset() -> void:
+	pass

@@ -50,6 +50,7 @@ func _ready() -> void:
 	Events.summon_reserve_card_released.connect(_on_summon_reserve_card_released)
 	Events.game_over_started.connect(_on_game_over_started)
 	Events.victory_started.connect(_on_victory_started)
+	Events.request_activate_arcana_by_type.connect(_on_request_activate_arcana_by_type)
 
 	draw_pile_button.pressed.connect(draw_pile_view.show_current_draw_view.bind("Draw Pile", true))
 	discard_pile_button.pressed.connect(discard_pile_view.show_current_discard_view.bind("Discard Pile"))
@@ -95,15 +96,27 @@ func start_battle():
 	#initialize_card_pile_ui()
 	#BattleController.transition(BattleController.BattleState.FRIENDLY_TURN)
 	MusicPlayer.play(music, true)
-	
+	Events.battle_reset.emit()
 	arcana.arcana_activated.connect(_on_arcana_activated)
-	BattleController.transition(BattleController.BattleState.FRIENDLY_TURN)
-	#arcana.activate_arcana_by_type(Arcanum.Type.START_OF_COMBAT)
+	#BattleController.transition(BattleController.BattleState.FRIENDLY_TURN)
+	Events.request_activate_arcana_by_type.emit(Arcanum.Type.START_OF_COMBAT)
+
+func _on_request_activate_arcana_by_type(type: Arcanum.Type):
+	match type:
+		Arcanum.Type.START_OF_COMBAT:
+			arcana.activate_arcana_by_type(Arcanum.Type.START_OF_COMBAT)
+		Arcanum.Type.START_OF_TURN:
+			arcana.activate_arcana_by_type(Arcanum.Type.START_OF_TURN)
+		Arcanum.Type.END_OF_TURN:
+			arcana.activate_arcana_by_type(Arcanum.Type.END_OF_TURN)
+		Arcanum.Type.END_OF_COMBAT:
+			arcana.activate_arcana_by_type(Arcanum.Type.END_OF_COMBAT)
 
 func _on_arcana_activated(type: Arcanum.Type) -> void:
 	match type:
 		Arcanum.Type.START_OF_COMBAT:
 			initialize_card_pile_ui()
+			Events.first_friendly_turn_started.emit()
 			#BattleController.transition(BattleController.BattleState.FRIENDLY_TURN)
 		Arcanum.Type.END_OF_COMBAT:
 			BattleController.transition(BattleController.BattleState.VICTORY)

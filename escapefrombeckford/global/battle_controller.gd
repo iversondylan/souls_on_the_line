@@ -28,40 +28,6 @@ func pause():
 func resume():
 	is_running = true
 
-func end_phase() -> void:
-	match current_state:
-		BattleState.PRE_GAME:
-			Events.reset_enemies.emit()
-			Events.reset_friendlies.emit()
-			Events.pre_game_ended.emit()
-		BattleState.FRIENDLY_TURN:
-			Events.friendly_turn_ended.emit()
-		BattleState.ENEMY_TURN:
-			Events.enemy_turn_ended.emit()
-		BattleState.GAME_OVER:
-			pass
-		BattleState.VICTORY:
-			pass
-
-func begin_phase(next_state: BattleState) -> void:
-	current_state = next_state
-	
-	match current_state:
-		BattleState.PRE_GAME:
-			pass
-		BattleState.FRIENDLY_TURN:
-			turn_number += 1
-			Events.friendly_turn_started.emit()
-		BattleState.ENEMY_TURN:
-			turn_number += 1
-			Events.enemy_turn_started.emit()
-		BattleState.GAME_OVER:
-			is_running = false
-			Events.game_over_started.emit()
-		BattleState.VICTORY:
-			is_running = false
-			Events.victory_started.emit()
-
 func transition(next_state: BattleState):
 	if !is_running:
 		return

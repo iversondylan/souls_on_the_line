@@ -27,7 +27,7 @@ var selected_card: UsableCard
 
 func _ready() -> void:
 	Events.card_played.connect(_on_card_played)
-	Events.player_turn_started.connect(_on_player_turn_started)
+	Events.request_draw_hand.connect(_on_request_draw_hand)
 	Events.card_drag_started.connect(_on_card_drag_or_aim_started)
 	Events.card_aim_started.connect(_on_card_drag_or_aim_started)
 	Events.battlefield_aim_started.connect(_on_card_drag_or_aim_started)
@@ -74,7 +74,7 @@ func add_card(card: CardData) -> void:
 func draw_card() -> void:
 	add_card(deck.draw_card())
 
-func draw_cards(n_cards: int) -> void:
+func draw_hand(n_cards: int) -> void:
 	var tween := create_tween()
 	for i in range(n_cards):
 		tween.tween_callback(draw_card)
@@ -102,7 +102,7 @@ func deplete_card(usable_card: UsableCard):
 	hand_cards_arr.erase(usable_card)
 	usable_card.queue_free()
 
-func discard_cards(usable_cards: Array[UsableCard]):
+func discard_hand(usable_cards: Array[UsableCard]):
 	if !usable_cards:
 		Events.hand_discarded.emit()
 		return
@@ -199,8 +199,8 @@ func _on_hand_area_mouse_entered() -> void:
 func _on_hand_area_mouse_exited() -> void:
 	mouse_in_hand_area = false
 
-func _on_player_turn_started() -> void:
-	draw_cards(5)
+func _on_request_draw_hand() -> void:
+	draw_hand(5)
 
 func _on_card_drag_or_aim_started(_usable_card: UsableCard) -> void:
 	_usable_card.set_usable_card_z_index(2)
@@ -210,4 +210,4 @@ func _card_drag_or_aim_ended(_usable_card: UsableCard) -> void:
 
 func _on_player_turn_completed() -> void:
 	disable_hand_cards()
-	discard_cards(remove_cards_by_entities(get_hand_cards()))
+	discard_hand(remove_cards_by_entities(get_hand_cards()))

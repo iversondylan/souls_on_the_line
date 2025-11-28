@@ -32,9 +32,11 @@ func start_turn() -> void:
 func _next_turn_taker() -> void:
 	if acting_fighters.is_empty():
 		if self is BattleGroupEnemy:
-			BattleController.transition(BattleController.BattleState.FRIENDLY_TURN)
+			Events.request_friendly_turn.emit()
+			#BattleController.transition(BattleController.BattleState.FRIENDLY_TURN)
 		elif self is BattleGroupFriendly:
-			BattleController.transition(BattleController.BattleState.ENEMY_TURN)
+			Events.request_enemy_turn.emit()
+			#BattleController.transition(BattleController.BattleState.ENEMY_TURN)
 		return
 	acting_fighters[0].enter()
 

@@ -29,6 +29,7 @@ func _ready() -> void:
 	combatant.target_area_area_exited.connect(_on_target_area_area_exited)
 	Events.aura_changed.connect(on_aura_changed)
 	Events.aura_removed.connect(_on_aura_removed)
+	Events.battle_reset.connect(battle_reset)
 	combatant.statuses_applied.connect(_on_combatant_statuses_applied)
 	modifier_system.modifier_changed.connect(_on_modifier_changed)
 	target_area.combatant = self
@@ -42,9 +43,9 @@ func _set_combatant_data(new_data: CombatantData) -> void:
 	for child in get_children():
 		if child is FighterBehavior:
 			child._on_combatant_data_set(new_data)
-	if self is not Player:
-		combatant_data.reset_health()
-	turn_reset()
+	#if self is not Player:
+		#combatant_data.reset_health()
+	#turn_reset()
 
 func _set_battle_scene(new_battle_scene: BattleScene) -> void:
 	battle_scene = new_battle_scene
@@ -153,6 +154,11 @@ func discard_summon_reserve_card(_deck: Deck) -> void:
 	#combatant_data.armor = combatant_data.starting_armor
 	#combatant_data.stats_changed()
 	#Events.auras_requested.emit(self)
+
+func battle_reset() -> void:
+	for child in get_children():
+		if child is FighterBehavior:
+			child._on_battle_reset()
 
 func turn_reset() -> void:
 	combatant_data.reset_armor()
