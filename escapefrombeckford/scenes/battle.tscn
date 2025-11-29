@@ -1,4 +1,4 @@
-[gd_scene load_steps=20 format=3 uid="uid://k11cug4p8o3l"]
+[gd_scene load_steps=19 format=3 uid="uid://k11cug4p8o3l"]
 
 [ext_resource type="Script" uid="uid://dixfcu6jmx0kd" path="res://scenes/battle.gd" id="1_dd63g"]
 [ext_resource type="AudioStream" uid="uid://dqm0r66m6ggwt" path="res://assets/music/enchanted tiki 86.mp3" id="2_3b6xh"]
@@ -10,7 +10,6 @@
 [ext_resource type="Theme" uid="uid://d2wc7fposrlqs" path="res://themes/wizard_theme.tres" id="8_2tyvl"]
 [ext_resource type="Script" uid="uid://ckq1sgjqlphh3" path="res://scenes/ui/battle_ui.gd" id="9_jujjx"]
 [ext_resource type="PackedScene" uid="uid://cy1kfsc2qfglo" path="res://scenes/hand.tscn" id="15_wvgjd"]
-[ext_resource type="PackedScene" uid="uid://3hsvnd70wteq" path="res://scenes/ui/tooltip.tscn" id="16_eynql"]
 [ext_resource type="PackedScene" uid="uid://bxtf6la07t0t5" path="res://scenes/ui/card_pile_opener.tscn" id="17_ariee"]
 [ext_resource type="PackedScene" uid="uid://cmc2ypry076mq" path="res://scenes/ui/status_view.tscn" id="18_h4dll"]
 [ext_resource type="Theme" uid="uid://1dr1eewpv0jd" path="res://themes/ui_theme.tres" id="18_s5alk"]
@@ -79,8 +78,6 @@ offset_bottom = 1048.0
 grow_horizontal = 0
 grow_vertical = 0
 text = "End Turn"
-
-[node name="Tooltip" parent="Battle_UI" instance=ExtResource("16_eynql")]
 
 [node name="DrawPileButton" parent="Battle_UI" node_paths=PackedStringArray("counter") instance=ExtResource("17_ariee")]
 unique_name_in_owner = true

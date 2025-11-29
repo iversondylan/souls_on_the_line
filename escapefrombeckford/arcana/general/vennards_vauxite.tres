@@ -1,11 +1,10 @@
-[gd_resource type="Resource" script_class="Trinket" load_steps=3 format=3 uid="uid://ddk882ai8akyt"]
+[gd_resource type="Resource" load_steps=3 format=3 uid="uid://ddk882ai8akyt"]
 
 [ext_resource type="Texture2D" uid="uid://uabxbq5l78jq" path="res://assets/sprites/arcana_placeholders/stone-stack.png" id="1_2sw5b"]
-[ext_resource type="Script" uid="uid://cnmucv1qsei4i" path="res://custom_resources/arcanum.gd" id="2_yh6q1"]
+[ext_resource type="Script" uid="uid://boculpcypnt7j" path="res://arcana/general/vennards_vauxite.gd" id="2_700dm"]
 
 [resource]
-script = ExtResource("2_yh6q1")
-trinket_name = "Vennard's Vauxite"
+script = ExtResource("2_700dm")
 id = "vennards_vauxite"
 type = 2
 icon = ExtResource("1_2sw5b")

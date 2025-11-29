@@ -21,4 +21,13 @@ func flash() -> void:
 
 func _on_gui_input(event: InputEvent) -> void:
 	if event.is_action_pressed("mouse_click"):
-		print("Arcanum tooltip")
+		Events.arcanum_popup_requested.emit(arcanum)
+
+
+
+func _on_mouse_entered() -> void:
+	Events.arcanum_tooltip_show_requested.emit(self as ArcanumDisplay)
+
+
+func _on_mouse_exited() -> void:
+	Events.tooltip_hide_requested.emit()

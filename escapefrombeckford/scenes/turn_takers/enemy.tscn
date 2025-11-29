@@ -6,7 +6,7 @@
 [ext_resource type="PackedScene" uid="uid://ckffsg04h2eyw" path="res://scenes/modifier_system/modifier.tscn" id="4_ha5k6"]
 [ext_resource type="PackedScene" uid="uid://2t8myn8agsqh" path="res://scenes/turn_takers/behaviors/npcai_behavior.tscn" id="5_ha5k6"]
 
-[node name="Enemy" type="Node2D"]
+[node name="Enemy" type="Node2D" groups=["enemies"]]
 script = ExtResource("1_w30da")
 
 [node name="Combatant" parent="." instance=ExtResource("2_irlvq")]

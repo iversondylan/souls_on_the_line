@@ -15,8 +15,8 @@ func set_icon_values():
 	icon.set_texture(intent_data.icon)
 
 func _on_mouse_entered() -> void:
-	Events.icon_tooltip_show_requested.emit(self as IntentDisplay)
+	Events.intent_tooltip_show_requested.emit(self as IntentDisplay)
 
 
 func _on_mouse_exited() -> void:
-	Events.icon_tooltip_hide_requested.emit()
+	Events.tooltip_hide_requested.emit()

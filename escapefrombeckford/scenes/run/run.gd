@@ -18,6 +18,7 @@ const TREASURE_SCN := preload("res://scenes/treasure/treasure_room.tscn")
 
 @onready var collection_button: CardPileOpener = %CollectionButton
 @onready var collection_pile_view: CardPileView = %CollectionPileView
+@onready var arcanum_tooltip_popup: ArcanumTooltipPopup = %ArcanumTooltipPopup
 
 @onready var map_button: Button = %MapButton
 @onready var battle_button: Button = %BattleButton
@@ -100,7 +101,9 @@ func _init_top_bar() -> void:
 	player_data.combatant_data_changed.connect(health_panel.update_health.bind(player_data))
 	health_panel.update_health(player_data)
 	gold_display.run_account = account
+	
 	arcana_system.add_arcanum(player_data.starting_arcanum)
+	
 	collection_button.card_pile = deck.card_collection
 	collection_pile_view.card_pile = deck.card_collection
 	collection_pile_view.deck = deck

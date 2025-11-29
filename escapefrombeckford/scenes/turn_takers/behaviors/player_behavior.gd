@@ -9,7 +9,6 @@ func _ready() -> void:
 	Events.hand_drawn.connect(_on_hand_drawn)
 	Events.hand_discarded.connect(_on_hand_discarded)
 	Events.arcana_activated.connect(_on_arcana_activated)
-	
 
 func _on_do_turn() -> void:
 	Events.request_activate_arcana_by_type.emit(Arcanum.Type.START_OF_TURN)

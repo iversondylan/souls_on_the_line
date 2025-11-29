@@ -1,18 +1,16 @@
 extends Arcanum
 
-var member_var := 0
-
-func initialize_arcanum(_arcanum_display: ArcanumDisplay) -> void:
-	print("arcanum.gd initialize_arcanum(): unrly pyric wraps.")
+var damage := 2
 
 func activate_arcanum(arcanum_display: ArcanumDisplay) -> void:
+	var enemies: Array[Fighter] = []
+	for node: Node in arcanum_display.get_tree().get_nodes_in_group("enemies"):
+		if node is Fighter:
+			enemies.push_back(node)
+		else:
+			print("unruly_pyric_wraps.gd error: node is not Fighter")
+	var damage_effect := DamageEffect.new()
+	damage_effect.n_damage = damage
+	damage_effect.modifier_type = Modifier.Type.NO_MODIFIER
+	damage_effect.execute(enemies)
 	arcanum_display.flash()
-	#print("arcanum.gd activate_arcanum(): This happens at specific times based on the Relic.Type property.")
-
-func deactivate_arcanum(_arcanum_display: ArcanumDisplay) -> void:
-	print("arcanum.gd deactivate_arcanum(): this gets called when an ArcanumDisplay is exiting scene tree.")
-	print("Event-based arcana should disconnect from Events bus here.")
-
-# we can provide unique tooltips per arcanum
-func get_tooltip() -> String:
-	return tooltip_description

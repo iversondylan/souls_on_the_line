@@ -4,17 +4,31 @@ class_name Tooltip extends Node2D
 
 @onready var tooltip_icon: TextureRect = %TooltipIcon
 @onready var tooltip_description: RichTextLabel = %TooltipDescription
+@onready var panel_container: PanelContainer = $PanelContainer
 
 var tween: Tween
 var is_visible: bool = false
 
 func _ready() -> void:
-	Events.icon_tooltip_show_requested.connect(show_tooltip)
-	Events.icon_tooltip_hide_requested.connect(hide_tooltip)
+	Events.intent_tooltip_show_requested.connect(show_intent_tooltip)
+	Events.arcanum_tooltip_show_requested.connect(show_arcanum_tooltip)
+	Events.tooltip_hide_requested.connect(hide_tooltip)
 	modulate = Color.TRANSPARENT
 	hide()
 
-func show_tooltip(intent_display: IntentDisplay) -> void:
+func show_arcanum_tooltip(arcanum_display: ArcanumDisplay) -> void:
+	is_visible = true
+	if tween: 
+		tween.kill()
+	tooltip_icon.texture = arcanum_display.arcanum.icon
+	position = arcanum_display.global_position + Vector2(0.0, 1.8*panel_container.size.y)
+	
+	tooltip_description.text = arcanum_display.arcanum.get_tooltip()
+	tween = create_tween().set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_CUBIC)
+	tween.tween_callback(show)
+	tween.tween_property(self, "modulate", Color.WHITE, fade_seconds)
+
+func show_intent_tooltip(intent_display: IntentDisplay) -> void:
 	is_visible = true
 	if tween:
 		tween.kill()

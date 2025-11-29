@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3 uid="uid://ceemxcslkt31b"]
+[gd_scene load_steps=13 format=3 uid="uid://ceemxcslkt31b"]
 
 [ext_resource type="Script" uid="uid://c0e8h833ypklr" path="res://scenes/run/run.gd" id="1_l7o68"]
 [ext_resource type="Resource" uid="uid://ck8qxvs3me11h" path="res://scenes/run/run_startup.tres" id="2_o4jfg"]
@@ -10,6 +10,8 @@
 [ext_resource type="Theme" uid="uid://1dr1eewpv0jd" path="res://themes/ui_theme.tres" id="6_wo0nw"]
 [ext_resource type="PackedScene" uid="uid://c634qgskmd0a" path="res://scenes/ui/card_pile_view.tscn" id="7_0tt4g"]
 [ext_resource type="PackedScene" uid="uid://c2yr5yhrn3jcb" path="res://arcana/arcanum_system.tscn" id="7_yeia0"]
+[ext_resource type="PackedScene" uid="uid://b32tn7y6k3shn" path="res://scenes/ui/arcanum_tooltip_popup.tscn" id="11_cnkn7"]
+[ext_resource type="PackedScene" uid="uid://3hsvnd70wteq" path="res://scenes/ui/tooltip.tscn" id="11_g42ja"]
 
 [node name="Run" type="Node"]
 script = ExtResource("1_l7o68")
@@ -112,3 +114,9 @@ horizontal_alignment = 1
 [node name="CollectionPileView" parent="TopBar" instance=ExtResource("7_0tt4g")]
 unique_name_in_owner = true
 visible = false
+
+[node name="ArcanumTooltipPopup" parent="TopBar" instance=ExtResource("11_cnkn7")]
+unique_name_in_owner = true
+visible = false
+
+[node name="Tooltip" parent="." instance=ExtResource("11_g42ja")]

@@ -7,15 +7,16 @@ signal request_activate_arcana_by_type(type: Arcanum.Type)
 signal arcana_activated(type: Arcanum.Type)
 signal request_draw_hand()
 signal hand_drawn()
+signal end_turn_button_pressed()
 signal player_turn_completed()
 signal hand_discarded()
 signal request_enemy_turn()
-signal request_friendly_turn()
 signal enemy_turn_started()
+signal request_friendly_turn()
 signal friendly_turn_started()
 signal request_victory()
 signal request_defeat()
-signal end_turn_button_pressed()
+
 
 ## battle mechanics events
 signal card_aim_started(usable_card: UsableCard)
@@ -39,9 +40,11 @@ signal mouse_entered_card(usable_card: UsableCard)
 signal mouse_exited_card(usable_card: UsableCard)
 
 ## info/menu events
-signal icon_tooltip_show_requested(intent_display: IntentDisplay)
-signal icon_tooltip_hide_requested()
+signal intent_tooltip_show_requested(intent_display: IntentDisplay)
+signal arcanum_tooltip_show_requested(arcanum_display: ArcanumDisplay)
+signal tooltip_hide_requested()
 signal status_tooltip_requested(statuses: Array[Status])
+signal arcanum_popup_requested(arcanum: Arcanum)
 
 ## battle transition events
 signal battle_over_screen_requested(text: String, outcome: BattleOverPanel.Outcome)

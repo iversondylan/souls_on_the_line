@@ -17,7 +17,7 @@ func _ready() -> void:
 	#await get_tree().create_timer(1.0).timeout
 	add_arcanum(preload("res://arcana/general/thales_flask.tres"))
 	#await get_tree().create_timer(1.0).timeout
-	#add_arcanum(preload("res://arcana/general/thales_flask.tres"))
+	add_arcanum(preload("res://arcana/general/vennards_vauxite.tres"))
 
 func activate_arcana_by_type(type: Arcanum.Type) -> void:
 	if type == Arcanum.Type.EVENT_BASED:
