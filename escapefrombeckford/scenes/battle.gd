@@ -30,6 +30,9 @@ class_name Battle extends Node2D
 @onready var draw_pile_view: CardPileView = %DrawPileView
 @onready var discard_pile_view: CardPileView = %DiscardPileView
 
+#enum Turn {FRIENDLY_TURN, ENEMY_TURN}
+#
+#var current_turn := Turn.FRIENDLY_TURN
 var player_data: PlayerData
 var player: Player
 var deck: Deck : set = _set_deck
@@ -48,9 +51,13 @@ func _ready() -> void:
 	Events.player_combatant_data_changed.connect(_on_player_data_changed)
 	Events.hand_drawn.connect(_on_hand_drawn)
 	Events.summon_reserve_card_released.connect(_on_summon_reserve_card_released)
-	Events.game_over_started.connect(_on_game_over_started)
-	Events.victory_started.connect(_on_victory_started)
+	Events.request_defeat.connect(_on_request_defeat)
+	Events.request_victory.connect(_on_request_victory)
 	Events.request_activate_arcana_by_type.connect(_on_request_activate_arcana_by_type)
+	Events.request_enemy_turn.connect(_on_request_enemy_turn)
+	Events.request_friendly_turn.connect(_on_request_friendly_turn)
+	Events.arcana_activated.connect(_on_arcana_activated)
+	
 
 	draw_pile_button.pressed.connect(draw_pile_view.show_current_draw_view.bind("Draw Pile", true))
 	discard_pile_button.pressed.connect(discard_pile_view.show_current_discard_view.bind("Discard Pile"))
@@ -82,8 +89,8 @@ func start_battle():
 	
 	battle_scene.clear_combatants()
 	
-	BattleController.is_running = true
-	BattleController.turn_number = 0
+	#BattleController.is_running = true
+	#BattleController.turn_number = 0
 	
 	make_player_combatant()
 	make_enemies()
@@ -97,7 +104,7 @@ func start_battle():
 	#BattleController.transition(BattleController.BattleState.FRIENDLY_TURN)
 	MusicPlayer.play(music, true)
 	Events.battle_reset.emit()
-	arcana.arcana_activated.connect(_on_arcana_activated)
+	
 	#BattleController.transition(BattleController.BattleState.FRIENDLY_TURN)
 	Events.request_activate_arcana_by_type.emit(Arcanum.Type.START_OF_COMBAT)
 
@@ -108,18 +115,29 @@ func _on_request_activate_arcana_by_type(type: Arcanum.Type):
 		Arcanum.Type.START_OF_TURN:
 			arcana.activate_arcana_by_type(Arcanum.Type.START_OF_TURN)
 		Arcanum.Type.END_OF_TURN:
+			print("battle.gd _on_request_activate_arcana_by_type() END_OF_TURN")
 			arcana.activate_arcana_by_type(Arcanum.Type.END_OF_TURN)
 		Arcanum.Type.END_OF_COMBAT:
 			arcana.activate_arcana_by_type(Arcanum.Type.END_OF_COMBAT)
+
+func _on_request_enemy_turn() -> void:
+	BattleController.current_state = BattleController.BattleState.ENEMY_TURN
+	Events.enemy_turn_started.emit()
+
+func _on_request_friendly_turn() -> void:
+	BattleController.current_state = BattleController.BattleState.FRIENDLY_TURN
+	Events.friendly_turn_started.emit()
 
 func _on_arcana_activated(type: Arcanum.Type) -> void:
 	match type:
 		Arcanum.Type.START_OF_COMBAT:
 			initialize_card_pile_ui()
+			BattleController.current_state = BattleController.BattleState.FRIENDLY_TURN
 			Events.first_friendly_turn_started.emit()
 			#BattleController.transition(BattleController.BattleState.FRIENDLY_TURN)
 		Arcanum.Type.END_OF_COMBAT:
-			BattleController.transition(BattleController.BattleState.VICTORY)
+			Events.request_victory.emit()
+			
 
 func make_player_combatant() -> void:
 	var new_player: Player = player_scn.instantiate()
@@ -160,7 +178,8 @@ func _on_hand_drawn() -> void:
 
 func _on_dead_combatant_data(combatant_data: CombatantData):
 	if combatant_data == player.combatant_data:
-		BattleController.transition(BattleController.BattleState.GAME_OVER)
+		Events.request_defeat.emit()
+		#BattleController.transition(BattleController.BattleState.GAME_OVER)
 
 func _on_battle_group_empty(_battle_group: BattleGroup) -> void:
 	if _battle_group is BattleGroupEnemy:
@@ -172,11 +191,11 @@ func _on_summon_reserve_card_released(summoned_ally: SummonedAlly) -> void:
 	battle_ui.add_child(perspective_card)
 	perspective_card.zoom_card(summoned_ally.global_position + Vector2(0, -summoned_ally.combatant_data.height/2.0), discard_pile_button.global_position)
 
-func _on_game_over_started():
+func _on_request_defeat():
 	#print("main.gd _on_game_over_started()")
 	Events.battle_over_screen_requested.emit("YOU DIED", BattleOverPanel.Outcome.LOSE)
 
-func _on_victory_started():
+func _on_request_victory():
 	#print("main.gd _on_victory_started()")
 	Events.battle_over_screen_requested.emit("PATH CLEARED", BattleOverPanel.Outcome.WIN)
 

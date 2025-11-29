@@ -8,11 +8,14 @@ func _ready() -> void:
 		await player.ready
 	Events.hand_drawn.connect(_on_hand_drawn)
 	Events.hand_discarded.connect(_on_hand_discarded)
+	Events.arcana_activated.connect(_on_arcana_activated)
+	
 
 func _on_do_turn() -> void:
 	Events.request_draw_hand.emit()
 
 func _on_hand_drawn() -> void:
+	#print("_on_hand_drawn()")
 	Events.end_turn_button_pressed.connect(_on_end_turn_button_pressed)
 
 func _on_hand_discarded() -> void:
@@ -20,12 +23,13 @@ func _on_hand_discarded() -> void:
 	fighter.turn_complete()
 
 func _on_end_turn_button_pressed() -> void:
+	print("player_behavior.gd _on_end_turn_button_pressed()")
 	Events.request_activate_arcana_by_type.emit(Arcanum.Type.END_OF_TURN)
 	#Events.player_turn_completed.emit() #replace with arcana call. Put player_turn_complete.emit() in battle.gd
 	Events.end_turn_button_pressed.disconnect(_on_end_turn_button_pressed)
 
 func _on_modifier_changed() -> void:
-	print("player_behavior.gd _on_modifier_changed()")
+	#print("player_behavior.gd _on_modifier_changed()")
 	Events.player_modifier_changed.emit()
 
 func _on_arcana_activated(type: Arcanum.Type) -> void:
@@ -33,4 +37,10 @@ func _on_arcana_activated(type: Arcanum.Type) -> void:
 		Arcanum.Type.START_OF_TURN:
 			Events.request_draw_hand.emit()
 		Arcanum.Type.END_OF_TURN:
+			print("player_behavior.gd _on_arcana_activated() (END_OF_TURN)")
 			Events.player_turn_completed.emit()
+
+func _on_battle_reset() -> void:
+	var fighter: Fighter = get_parent()
+	fighter.combatant_data.reset_armor()
+	fighter.combatant_data.reset_mana()

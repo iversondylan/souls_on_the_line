@@ -1,6 +1,6 @@
 class_name ArcanaSystem extends HBoxContainer
 
-signal arcana_activated(type: Arcanum.Type)
+#signal arcana_activated(type: Arcanum.Type)
 
 const ARCANUM_APPLY_INTERVAL := 0.5
 const ARCANUM_DISPLAY = preload("res://arcana/arcanum_display.tscn")
@@ -29,7 +29,7 @@ func activate_arcana_by_type(type: Arcanum.Type) -> void:
 	)
 	
 	if arcanum_queue.is_empty():
-		arcana_activated.emit(type)
+		Events.arcana_activated.emit(type)
 		return
 	
 	var tween := create_tween()
@@ -37,7 +37,7 @@ func activate_arcana_by_type(type: Arcanum.Type) -> void:
 		tween.tween_callback(arcanum_display.arcanum.activate_arcanum.bind(arcanum_display))
 		tween.tween_interval(ARCANUM_APPLY_INTERVAL)
 	
-	tween.finished.connect(func(): arcana_activated.emit(type))
+	tween.finished.connect(func(): Events.arcana_activated.emit(type))
 
 func add_arcana(arcana: Array[Arcanum]) -> void:
 	for arcanum: Arcanum in arcana:

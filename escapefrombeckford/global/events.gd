@@ -2,11 +2,11 @@ extends Node
 
 # battle flow events
 signal pre_game_ended()
-signal friendly_turn_started()
+
 signal request_draw_hand()
 signal player_turn_completed()
 signal friendly_turn_ended()
-signal enemy_turn_started()
+
 signal enemy_turn_ended()
 signal game_over_started()
 signal victory_started()
@@ -17,8 +17,13 @@ signal reset_enemies()
 signal battle_reset() #1-way signal to fighters, immediately followed by arcanum call
 signal first_friendly_turn_started() #called after start of battle arcana in battle.gd
 signal request_activate_arcana_by_type(type: Arcanum.Type)
+signal arcana_activated(type: Arcanum.Type)
 signal request_enemy_turn()
 signal request_friendly_turn()
+signal enemy_turn_started()
+signal friendly_turn_started()
+signal request_victory()
+signal request_defeat()
 #
 
 # battle mechanics events

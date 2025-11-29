@@ -62,3 +62,9 @@ func _on_do_turn() -> void:
 	current_action.perform_action()
 	current_action = null
 	fighter.intent_container.clear_display()
+
+func _on_battle_reset() -> void:
+	var fighter: Fighter = get_parent()
+	fighter.combatant_data.reset_armor()
+	fighter.combatant_data.reset_mana()
+	fighter.combatant_data.reset_health()

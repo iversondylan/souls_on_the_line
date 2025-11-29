@@ -16,7 +16,7 @@ func activate(targets: Array[Node]) -> bool:
 	clone_data.max_mana_blue = player.combatant_data.max_mana_blue
 	
 	clone.combatant_data = clone_data
-	
+	clone.reset()
 	
 	
 	for child in clone.get_children():

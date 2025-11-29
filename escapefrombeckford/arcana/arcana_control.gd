@@ -25,6 +25,8 @@ func _ready() -> void:
 	_on_arcana_child_order_changed()
 
 func update() -> void:
+	if !is_instance_valid(right_button):
+		return
 	n_arcana = arcana_container.get_child_count()
 	max_page = ceili(n_arcana / float(ARCANA_PER_PAGE))
 	

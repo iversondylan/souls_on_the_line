@@ -29,7 +29,7 @@ func _ready() -> void:
 	combatant.target_area_area_exited.connect(_on_target_area_area_exited)
 	Events.aura_changed.connect(on_aura_changed)
 	Events.aura_removed.connect(_on_aura_removed)
-	Events.battle_reset.connect(battle_reset)
+	Events.battle_reset.connect(_battle_reset)
 	combatant.statuses_applied.connect(_on_combatant_statuses_applied)
 	modifier_system.modifier_changed.connect(_on_modifier_changed)
 	target_area.combatant = self
@@ -146,16 +146,13 @@ func discard_summon_reserve_card(_deck: Deck) -> void:
 		if child is FighterBehavior:
 			child._on_discard_summon_reserve_card(_deck)
 
-#func reset():
-	#combatant_data.health = combatant_data.max_health
-	#combatant_data.mana_red = combatant_data.max_mana_red
-	#combatant_data.mana_green = combatant_data.max_mana_green
-	#combatant_data.mana_blue = combatant_data.max_mana_blue
-	#combatant_data.armor = combatant_data.starting_armor
-	#combatant_data.stats_changed()
-	#Events.auras_requested.emit(self)
+func reset():
+	combatant_data.reset_armor()
+	combatant_data.reset_mana()
+	combatant_data.reset_health()
+	Events.auras_requested.emit(self)
 
-func battle_reset() -> void:
+func _battle_reset() -> void:
 	for child in get_children():
 		if child is FighterBehavior:
 			child._on_battle_reset()
