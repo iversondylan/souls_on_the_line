@@ -1,32 +1,23 @@
 extends Node
 
-# battle flow events
-signal pre_game_ended()
-
-signal request_draw_hand()
-signal player_turn_completed()
-signal friendly_turn_ended()
-
-signal enemy_turn_ended()
-signal game_over_started()
-signal victory_started()
-signal reset_friendlies()
-signal reset_enemies()
-
-## revised battle flow events
+## battle flow events
 signal battle_reset() #1-way signal to fighters, immediately followed by arcanum call
 signal first_friendly_turn_started() #called after start of battle arcana in battle.gd
 signal request_activate_arcana_by_type(type: Arcanum.Type)
 signal arcana_activated(type: Arcanum.Type)
+signal request_draw_hand()
+signal hand_drawn()
+signal player_turn_completed()
+signal hand_discarded()
 signal request_enemy_turn()
 signal request_friendly_turn()
 signal enemy_turn_started()
 signal friendly_turn_started()
 signal request_victory()
 signal request_defeat()
-#
+signal end_turn_button_pressed()
 
-# battle mechanics events
+## battle mechanics events
 signal card_aim_started(usable_card: UsableCard)
 signal card_aim_ended(usable_card: UsableCard)
 signal battlefield_aim_started(usable_card: UsableCard)
@@ -39,37 +30,25 @@ signal aura_changed(source: Fighter, aura: AuraPrimary)
 signal aura_removed(source: Fighter, aura: AuraPrimary)
 signal auras_requested(requester: Fighter)
 signal focused_gained(status: Status)
+signal summon_reserve_card_released(summoned_ally: SummonedAlly)
+signal player_combatant_data_changed()
+signal player_modifier_changed()
+signal dead_combatant_data(combatant_data: CombatantData)
+signal battle_group_empty(battle_group: BattleGroup)
+signal mouse_entered_card(usable_card: UsableCard)
+signal mouse_exited_card(usable_card: UsableCard)
 
-# info/menu events
+## info/menu events
 signal icon_tooltip_show_requested(intent_display: IntentDisplay)
 signal icon_tooltip_hide_requested()
 signal status_tooltip_requested(statuses: Array[Status])
 
-signal hand_drawn()
-signal hand_discarded()
-
-signal player_combatant_data_changed()
-signal player_modifier_changed()
-
-signal end_turn_button_pressed()
-
-signal summon_reserve_card_released(summoned_ally: SummonedAlly)
-
-#signal need_updated_game_state()
-
-signal dead_combatant_data(combatant_data: CombatantData)
-signal battle_group_empty(battle_group: BattleGroup)
-
-
-signal mouse_entered_card(usable_card: UsableCard)
-signal mouse_exited_card(usable_card: UsableCard)
-
-# battle transition events
+## battle transition events
 signal battle_over_screen_requested(text: String, outcome: BattleOverPanel.Outcome)
 signal battle_won()
 signal battle_rewards_exited()
 
-# navigation events
+## navigation events
 signal map_exited(room: Room)
 signal shop_exited()
 signal campfire_exited

@@ -45,7 +45,7 @@ var wait_for_anims: bool = false
 func _ready() -> void:
 	get_tree().paused = false
 	BattleController.current_state = BattleController.BattleState.PRE_GAME
-	Events.pre_game_ended.connect(_on_pre_game_ended)
+	#Events.pre_game_ended.connect(_on_pre_game_ended)
 	Events.dead_combatant_data.connect(_on_dead_combatant_data)
 	Events.battle_group_empty.connect(_on_battle_group_empty)
 	Events.player_combatant_data_changed.connect(_on_player_data_changed)

@@ -11,7 +11,7 @@ const ARCANUM_DISPLAY = preload("res://arcana/arcanum_display.tscn")
 func _ready() -> void:
 	arcana_container.child_exiting_tree.connect(_on_arcanum_display_exiting_tree)
 	
-	#add_arcanum(preload("res://arcana/general/unruly_pyric_wraps.tres"))
+	add_arcanum(preload("res://arcana/general/unruly_pyric_wraps.tres"))
 	#await get_tree().create_timer(1.0).timeout
 	add_arcanum(preload("res://arcana/general/sigil_of_mana.tres"))
 	#await get_tree().create_timer(1.0).timeout
