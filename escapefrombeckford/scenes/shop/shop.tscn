@@ -1,7 +1,17 @@
-[gd_scene load_steps=3 format=3 uid="uid://csf5mgsw4psnr"]
+[gd_scene load_steps=5 format=3 uid="uid://csf5mgsw4psnr"]
 
 [ext_resource type="Script" uid="uid://d1jkbwk3ol66f" path="res://scenes/shop/shop.gd" id="1_qaxay"]
-[ext_resource type="Theme" uid="uid://d2wc7fposrlqs" path="res://themes/wizard_theme.tres" id="2_akdv1"]
+[ext_resource type="Texture2D" uid="uid://dqdcx4h1y8epd" path="res://assets/character_visuals/venroy/venroy_1.PNG" id="2_qaxay"]
+
+[sub_resource type="Gradient" id="Gradient_8pjve"]
+colors = PackedColorArray(0, 0, 0, 1, 0.145099, 0.0492933, 0.00292548, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_7lxhl"]
+gradient = SubResource("Gradient_8pjve")
+fill_from = Vector2(0.5, 0.166667)
+fill_to = Vector2(0.5, 1)
+metadata/_snap_enabled = true
+metadata/_snap_count = 6
 
 [node name="Shop" type="Control"]
 layout_mode = 3
@@ -12,40 +22,28 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_qaxay")
 
-[node name="ColorRect" type="ColorRect" parent="."]
-layout_mode = 1
+[node name="BackgroundLayer" type="CanvasLayer" parent="."]
+
+[node name="TextureRect" type="TextureRect" parent="BackgroundLayer"]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-mouse_filter = 2
-color = Color(0.129713, 0.068814, 0.194495, 0.635294)
+texture = SubResource("GradientTexture2D_7lxhl")
+metadata/_edit_use_anchors_ = true
 
-[node name="VBoxContainer" type="VBoxContainer" parent="."]
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -95.0
-offset_top = -55.0
-offset_right = 95.0
-offset_bottom = 55.0
-grow_horizontal = 2
-grow_vertical = 2
+[node name="DecorationLayer" type="CanvasLayer" parent="."]
 
-[node name="Label" type="Label" parent="VBoxContainer"]
-layout_mode = 2
-theme = ExtResource("2_akdv1")
-text = "Shop"
-horizontal_alignment = 1
-vertical_alignment = 1
+[node name="Shopkeeper" type="TextureRect" parent="DecorationLayer"]
+custom_minimum_size = Vector2(900, 1200)
+offset_left = 1045.0
+offset_top = 67.0
+offset_right = 1945.0
+offset_bottom = 1267.0
+texture = ExtResource("2_qaxay")
+expand_mode = 1
+stretch_mode = 5
 
-[node name="Button" type="Button" parent="VBoxContainer"]
-custom_minimum_size = Vector2(190, 60)
-layout_mode = 2
-text = "Go Back"
-
-[connection signal="pressed" from="VBoxContainer/Button" to="." method="_on_button_pressed"]
+[node name="UILayer" type="CanvasLayer" parent="."]
+layer = 2
