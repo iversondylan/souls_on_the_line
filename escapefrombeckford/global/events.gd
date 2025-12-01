@@ -56,3 +56,8 @@ signal map_exited(room: Room)
 signal shop_exited()
 signal campfire_exited
 signal treasure_room_exited()
+
+## Shop related events
+signal shop_entered(shop: Shop)
+signal shop_arcanum_bought(arcanum: Arcanum, gold_cost: int)
+signal shop_card_bought(card_data: CardData, gold_cost: int)

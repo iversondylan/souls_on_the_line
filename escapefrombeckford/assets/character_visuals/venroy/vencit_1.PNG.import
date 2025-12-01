@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://dqdcx4h1y8epd"
-path="res://.godot/imported/venroy_1.PNG-3be762185644d52362190e7f4e433041.ctex"
+path="res://.godot/imported/vencit_1.PNG-e865873e864653cc412111f93094f52a.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/character_visuals/venroy/venroy_1.PNG"
-dest_files=["res://.godot/imported/venroy_1.PNG-3be762185644d52362190e7f4e433041.ctex"]
+source_file="res://assets/character_visuals/venroy/vencit_1.PNG"
+dest_files=["res://.godot/imported/vencit_1.PNG-e865873e864653cc412111f93094f52a.ctex"]
 
 [params]
 

@@ -44,9 +44,9 @@ func _ready() -> void:
 		RunStartup.StartupType.NEW_RUN:
 			player_data = run_startup.player_data.create_instance()
 			player_data.set_health(player_data.max_health)
-			starting_deck = run_startup.deck.duplicate()
-			draftable_cards = run_startup.draftable_cards.duplicate()
-			available_arcana = run_startup.available_arcana.duplicate()
+			starting_deck = run_startup.player_data.starting_deck.duplicate()
+			draftable_cards = run_startup.player_data.draftable_cards.duplicate()
+			available_arcana = run_startup.player_data.possible_arcana.duplicate()
 			print("run.gd STARTING RUN WITH NEW CHARACTER")
 			_start_run()
 		RunStartup.StartupType.CONTINUED_RUN:
@@ -58,6 +58,9 @@ func _start_run() -> void:
 	deck = Deck.new()
 	deck.card_collection = starting_deck
 	account.deck = deck
+	
+	##This is for messing around with extra starting gold
+	account.gold += player_data.bonus_starting_gold
 	
 	_connect_signals()
 	_init_top_bar()
@@ -121,6 +124,14 @@ func _on_rest_site_entered() -> void:
 	var campfire := _change_view(CAMPFIRE_SCN) as Campfire
 	campfire.player_data = player_data
 
+func _on_shop_entered() -> void:
+	var shop := _change_view(SHOP_SCN) as Shop
+	shop.player_data = player_data
+	shop.run_account = account
+	shop.arcana_system = arcana_system
+	Events.shop_entered.emit(shop)
+	shop.populate_shop()
+
 func _on_battle_won() -> void:
 	var rewards_scn := _change_view(BATTLE_REWARDS_SCN) as BattleRewardsScreen
 	rewards_scn.run_account = account
@@ -139,7 +150,7 @@ func _on_map_exited(room: Room) -> void:
 		Room.RoomType.REST:
 			_on_rest_site_entered()
 		Room.RoomType.SHOP:
-			_change_view(SHOP_SCN)
+			_on_shop_entered()
 		Room.RoomType.BOSS:
 			_on_battle_entered(room)
 	
