@@ -8,7 +8,8 @@ const ARCANUM_DISPLAY_SCN = preload("res://arcana/arcanum_display.tscn")
 @onready var price: HBoxContainer = %Price
 @onready var price_label: Label = %PriceLabel
 @onready var buy_button: Button = %BuyButton
-@onready var gold_cost := randi_range(100, 300)
+@onready var original_gold_cost := randi_range(100, 300)
+@onready var gold_cost: int = original_gold_cost
 
 func update(run_account: RunAccount) -> void:
 	if !arcanum_container or !price or !buy_button:

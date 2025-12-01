@@ -97,7 +97,7 @@ func _connect_signals() -> void:
 	campfire_button.pressed.connect(_change_view.bind(CAMPFIRE_SCN))
 	map_button.pressed.connect(_show_map)
 	rewards_button.pressed.connect(_change_view.bind(BATTLE_REWARDS_SCN))
-	shop_button.pressed.connect(_change_view.bind(SHOP_SCN))
+	shop_button.pressed.connect(_on_shop_entered)
 	treasure_button.pressed.connect(_change_view.bind(TREASURE_SCN))
 
 func _init_top_bar() -> void:
@@ -129,7 +129,7 @@ func _on_shop_entered() -> void:
 	shop.player_data = player_data
 	shop.run_account = account
 	shop.arcana_system = arcana_system
-	Events.shop_entered.emit(shop)
+	Events.request_shop_modifiers.emit(shop)
 	shop.populate_shop()
 
 func _on_battle_won() -> void:

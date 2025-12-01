@@ -25,6 +25,8 @@ func _ready() -> void:
 	
 	Events.shop_card_bought.connect(_on_shop_card_bought)
 	Events.shop_arcanum_bought.connect(_on_shop_arcanum_bought)
+	Events.shop_modifier_acquired.connect(_on_shop_modifier_acquired)
+	modifier_system.modifier_changed.connect(_recalculate_prices)
 	
 	_blink_timer_setup()
 	blink_timer.timeout.connect(_on_blink_timer_timeout)
@@ -85,6 +87,14 @@ func _update_items() -> void:
 	for shop_card: ShopCard in card_container.get_children():
 		shop_card.update(run_account)
 
+func _recalculate_prices() -> void:
+	for shop_arcanum: ShopArcanum in arcanum_container.get_children():
+		shop_arcanum.gold_cost = _get_updated_shop_cost(shop_arcanum.original_gold_cost)
+		shop_arcanum.update(run_account)
+	for shop_card: ShopCard in card_container.get_children():
+		shop_card.gold_cost = _get_updated_shop_cost(shop_card.original_gold_cost)
+		shop_card.update(run_account)
+
 func _on_back_button_pressed() -> void:
 	Events.shop_exited.emit()
 
@@ -97,3 +107,7 @@ func _on_shop_arcanum_bought(arcanum: Arcanum, gold_cost: int) -> void:
 	arcana_system.add_arcanum(arcanum)
 	run_account.gold -= gold_cost
 	_update_items()
+
+func _on_shop_modifier_acquired() -> void:
+	print("_on_shop_modifier_acquired")
+	Events.request_shop_modifiers.emit(self)

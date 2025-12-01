@@ -3,7 +3,8 @@ class_name FavoringScales extends Arcanum
 @export_range(1, 100) var discount := 50
 
 func initialize_arcanum(arcanum_display: ArcanumDisplay) -> void:
-	Events.shop_entered.connect(add_shop_modifier.bind(arcanum_display))
+	Events.request_shop_modifiers.connect(add_shop_modifier.bind(arcanum_display))
+	Events.shop_modifier_acquired.emit()
 
 func deactivate_relic(_arcanum_display: ArcanumDisplay) -> void:
 	Events.shop_entered.disconnect(add_shop_modifier)

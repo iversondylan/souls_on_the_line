@@ -8,7 +8,8 @@ const MENU_CARD_SCN = preload("res://cards/menu_card/menu_card.tscn")
 @onready var price: HBoxContainer = %Price
 @onready var price_label: Label = %PriceLabel
 @onready var buy_button: Button = %BuyButton
-@onready var gold_cost := randi_range(100, 300)
+@onready var original_gold_cost := randi_range(100, 300)
+@onready var gold_cost: int = original_gold_cost
 
 var current_menu_card: MenuCard
 

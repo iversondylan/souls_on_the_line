@@ -58,6 +58,7 @@ signal campfire_exited
 signal treasure_room_exited()
 
 ## Shop related events
-signal shop_entered(shop: Shop)
+signal request_shop_modifiers(shop: Shop)
+signal shop_modifier_acquired()
 signal shop_arcanum_bought(arcanum: Arcanum, gold_cost: int)
 signal shop_card_bought(card_data: CardData, gold_cost: int)
