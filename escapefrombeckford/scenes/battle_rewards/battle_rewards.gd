@@ -11,6 +11,7 @@ const CARD_TEXT := "Add New Card"
 
 @export var run_account: RunAccount
 @export var player_data: CombatantData
+@export var arcanum_system: ArcanaSystem
 
 @onready var rewards: VBoxContainer = %Rewards
 
@@ -39,6 +40,16 @@ func add_card_reward() -> void:
 	card_reward_button.reward_text = CARD_TEXT
 	card_reward_button.pressed.connect(_show_card_reward)
 	rewards.add_child.call_deferred(card_reward_button)
+
+func add_arcanum_reward(arcanum: Arcanum) -> void:
+	var arcanum_reward := REWARD_BUTTON.instantiate() as RewardButton
+	arcanum_reward.reward_texture = arcanum.icon
+	arcanum_reward.reward_text = arcanum.arcanum_name
+	arcanum_reward.pressed.connect(_on_arcanum_reward_taken.bind(arcanum))
+	rewards.add_child.call_deferred(arcanum_reward)
+
+func _on_arcanum_reward_taken(arcanum: Arcanum) -> void:
+	pass
 
 func _show_card_reward() -> void:
 	if !run_account or !player_data:

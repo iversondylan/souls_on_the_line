@@ -15,8 +15,6 @@ const SHOP_ARCANUM_SCN = preload("res://scenes/shop/shop_arcanum.tscn")
 @onready var card_tooltip_popup: CardTooltipPopup = %CardTooltipPopup
 @onready var modifier_system: ModifierSystem = $ModifierSystem
 
-
-
 func _ready() -> void:
 	for shop_card: ShopCard in card_container.get_children():
 		shop_card.queue_free()
@@ -30,7 +28,6 @@ func _ready() -> void:
 	
 	_blink_timer_setup()
 	blink_timer.timeout.connect(_on_blink_timer_timeout)
-	
 
 func _blink_timer_setup() -> void:
 	blink_timer.wait_time = randf_range(1.0, 5.0)
