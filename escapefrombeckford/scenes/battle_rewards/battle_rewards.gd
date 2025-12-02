@@ -49,7 +49,10 @@ func add_arcanum_reward(arcanum: Arcanum) -> void:
 	rewards.add_child.call_deferred(arcanum_reward)
 
 func _on_arcanum_reward_taken(arcanum: Arcanum) -> void:
-	pass
+	if !arcanum or !arcanum_system:
+		return
+	
+	arcanum_system.add_arcanum(arcanum)
 
 func _show_card_reward() -> void:
 	if !run_account or !player_data:
