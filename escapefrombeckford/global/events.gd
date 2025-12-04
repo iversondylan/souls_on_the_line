@@ -55,7 +55,7 @@ signal battle_rewards_exited()
 signal map_exited(room: Room)
 signal shop_exited()
 signal campfire_exited
-signal treasure_room_exited()
+signal treasure_room_exited(found_arcanum: Arcanum)
 
 ## Shop related events
 signal request_shop_modifiers(shop: Shop)

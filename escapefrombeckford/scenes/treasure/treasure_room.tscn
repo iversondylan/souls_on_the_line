@@ -1,28 +1,11 @@
-[gd_scene load_steps=15 format=3 uid="uid://c4tto5c3yx2dt"]
+[gd_scene load_steps=16 format=3 uid="uid://c4tto5c3yx2dt"]
 
 [ext_resource type="Script" uid="uid://q4dorm0smiab" path="res://scenes/treasure/treasure_room.gd" id="1_x7vk5"]
 [ext_resource type="Theme" uid="uid://d2wc7fposrlqs" path="res://themes/wizard_theme.tres" id="2_0vo2r"]
+[ext_resource type="Resource" uid="uid://cv7ssxqkw1opq" path="res://fighters/Player/cole_data.tres" id="2_xqacy"]
 [ext_resource type="Texture2D" uid="uid://dn47tj5km1o13" path="res://assets/sprites/unsuitable_images/chest_closed.png" id="3_6u0ip"]
 [ext_resource type="Texture2D" uid="uid://c0211utrbnx3m" path="res://assets/sprites/unsuitable_images/chest_open.png" id="4_xqacy"]
 [ext_resource type="Texture2D" uid="uid://cbbohhy0ybxvy" path="res://assets/sprites/assorted/coin.PNG" id="5_wm2hw"]
-
-[sub_resource type="Animation" id="Animation_oq7sg"]
-resource_name = "highlight"
-length = 2.0
-loop_mode = 1
-step = 0.05
-tracks/0/type = "value"
-tracks/0/imported = false
-tracks/0/enabled = true
-tracks/0/path = NodePath(".:scale")
-tracks/0/interp = 1
-tracks/0/loop_wrap = true
-tracks/0/keys = {
-"times": PackedFloat32Array(0, 0.2, 0.4),
-"transitions": PackedFloat32Array(1, 1, 1),
-"update": 0,
-"values": [Vector2(1, 1), Vector2(1.05, 1.05), Vector2(1, 1)]
-}
 
 [sub_resource type="Animation" id="Animation_h5ee4"]
 length = 0.001
@@ -63,8 +46,27 @@ tracks/2/keys = {
 "values": [false]
 }
 
+[sub_resource type="Animation" id="Animation_oq7sg"]
+resource_name = "highlight"
+length = 2.0
+loop_mode = 1
+step = 0.05
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:scale")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.2, 0.4),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector2(1, 1), Vector2(1.05, 1.05), Vector2(1, 1)]
+}
+
 [sub_resource type="Animation" id="Animation_qf6bn"]
 resource_name = "open"
+length = 0.8
 step = 0.05
 tracks/0/type = "value"
 tracks/0/imported = false
@@ -89,6 +91,20 @@ tracks/1/keys = {
 "transitions": PackedFloat32Array(1),
 "update": 1,
 "values": [true]
+}
+tracks/2/type = "method"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("..")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0.8),
+"transitions": PackedFloat32Array(1),
+"values": [{
+"args": [],
+"method": &"_on_treasure_opened"
+}]
 }
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_8s1wt"]
@@ -128,7 +144,9 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 2
 script = ExtResource("1_x7vk5")
+player_data = ExtResource("2_xqacy")
 
 [node name="ColorRect" type="ColorRect" parent="."]
 layout_mode = 1
@@ -161,11 +179,6 @@ text = "Treasure"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="Button" type="Button" parent="VBoxContainer"]
-custom_minimum_size = Vector2(190, 60)
-layout_mode = 2
-text = "Go Back"
-
 [node name="TextureRect" type="TextureRect" parent="."]
 layout_mode = 1
 anchors_preset = 8
@@ -180,9 +193,11 @@ offset_bottom = 454.0
 grow_horizontal = 2
 grow_vertical = 2
 pivot_offset = Vector2(320, 240)
+mouse_filter = 0
 texture = ExtResource("3_6u0ip")
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="TextureRect"]
+unique_name_in_owner = true
 libraries = {
 &"": SubResource("AnimationLibrary_8s1wt")
 }
@@ -198,4 +213,4 @@ one_shot = true
 explosiveness = 0.9
 process_material = SubResource("ParticleProcessMaterial_a8r63")
 
-[connection signal="pressed" from="VBoxContainer/Button" to="." method="_on_button_pressed"]
+[connection signal="gui_input" from="TextureRect" to="." method="_on_texture_rect_gui_input"]

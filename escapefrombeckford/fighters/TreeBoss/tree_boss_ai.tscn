@@ -1,0 +1,7 @@
+[gd_scene load_steps=2 format=3 uid="uid://dsouyaaodve1p"]
+
+[ext_resource type="Script" uid="uid://cxu0uj66yny6s" path="res://fighters/npc_action_picker.gd" id="1_il0rs"]
+
+[node name="TreeBossAi" type="Node"]
+script = ExtResource("1_il0rs")
+metadata/_custom_type_script = "uid://cxu0uj66yny6s"

@@ -91,14 +91,14 @@ func _connect_signals() -> void:
 	Events.campfire_exited.connect(_show_map)
 	Events.map_exited.connect(_on_map_exited)
 	Events.shop_exited.connect(_show_map)
-	Events.treasure_room_exited.connect(_show_map)
+	Events.treasure_room_exited.connect(_on_treasure_room_exited)
 	
 	battle_button.pressed.connect(_change_view.bind(BATTLE_SCN))
 	campfire_button.pressed.connect(_change_view.bind(CAMPFIRE_SCN))
 	map_button.pressed.connect(_show_map)
 	rewards_button.pressed.connect(_change_view.bind(BATTLE_REWARDS_SCN))
 	shop_button.pressed.connect(_on_shop_entered)
-	treasure_button.pressed.connect(_change_view.bind(TREASURE_SCN))
+	treasure_button.pressed.connect(_on_treasure_room_entered)
 
 func _init_top_bar() -> void:
 	player_data.combatant_data_changed.connect(health_panel.update_health.bind(player_data))
@@ -141,12 +141,26 @@ func _on_battle_won() -> void:
 	rewards_scn.add_gold_reward(map.last_room.battle_data.roll_gold_reward())
 	rewards_scn.add_card_reward()
 
+func _on_treasure_room_entered() -> void:
+	var treasure_scn := _change_view(TREASURE_SCN) as TreasureRoom
+	treasure_scn.arcanum_system = arcana_system
+	treasure_scn.player_data = player_data
+	treasure_scn.generate_arcanum()
+
+func _on_treasure_room_exited(arcanum: Arcanum) -> void:
+	var reward_scn := _change_view(BATTLE_REWARDS_SCN) as BattleRewardsScreen
+	reward_scn.run_account = account
+	reward_scn.player_data = player_data
+	reward_scn.arcanum_system = arcana_system
+	
+	reward_scn.add_arcanum_reward(arcanum)
+
 func _on_map_exited(room: Room) -> void:
 	match room.type:
 		Room.RoomType.BATTLE:
 			_on_battle_entered(room)
 		Room.RoomType.TREASURE:
-			_change_view(TREASURE_SCN)
+			_on_treasure_room_entered()
 		Room.RoomType.REST:
 			_on_rest_site_entered()
 		Room.RoomType.SHOP:

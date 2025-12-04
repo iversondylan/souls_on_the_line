@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="CombatantData" load_steps=3 format=3 uid="uid://djebnruw2l1ik"]
+
+[ext_resource type="Texture2D" uid="uid://eg204ufmsub7" path="res://assets/sprites/unsuitable_images/tree_boss.png" id="1_44bnb"]
+[ext_resource type="Script" uid="uid://cfatj0ryn8uv3" path="res://custom_resources/combatant_data.gd" id="1_nxtje"]
+
+[resource]
+script = ExtResource("1_nxtje")
+name = "Tree Man"
+character_art = ExtResource("1_44bnb")
+portrait = ExtResource("1_44bnb")
+metadata/_custom_type_script = "uid://cfatj0ryn8uv3"
