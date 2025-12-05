@@ -1,7 +1,21 @@
-[gd_scene load_steps=2 format=3 uid="uid://dsouyaaodve1p"]
+[gd_scene load_steps=6 format=3 uid="uid://dsouyaaodve1p"]
 
 [ext_resource type="Script" uid="uid://cxu0uj66yny6s" path="res://fighters/npc_action_picker.gd" id="1_il0rs"]
+[ext_resource type="Script" uid="uid://dmehygmppq7rv" path="res://fighters/TreeBoss/might_buff_action.gd" id="2_ifhqb"]
+[ext_resource type="Resource" uid="uid://cncpdi6y3g33u" path="res://intents/might_icon.tres" id="3_jxs7s"]
+[ext_resource type="AudioStream" uid="uid://dckpwe7myth7n" path="res://assets/sfx/transition t04 soft 016.wav" id="4_58cr0"]
+[ext_resource type="Script" uid="uid://bsbd5m6knirq6" path="res://fighters/TreeBoss/attack_action.gd" id="5_vcceo"]
 
 [node name="TreeBossAi" type="Node"]
 script = ExtResource("1_il0rs")
 metadata/_custom_type_script = "uid://cxu0uj66yny6s"
+
+[node name="MightBuffAction" type="Node" parent="."]
+script = ExtResource("2_ifhqb")
+base_intent_data = ExtResource("3_jxs7s")
+sound = ExtResource("4_58cr0")
+
+[node name="AttackAction" type="Node" parent="."]
+script = ExtResource("5_vcceo")
+
+[node name="MightBuffAction3" type="Node" parent="."]

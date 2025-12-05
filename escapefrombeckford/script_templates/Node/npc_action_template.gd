@@ -1,31 +1,28 @@
 # meta-name: NPCAction
 # meta-description: Create an action script for an NPCAction node
-class_name MyNewNPCAction extends NPCAction
+extends NPCAction
+
+@export var n_damage := 5
+@export var n_attacks := 1
 
 var spree: int = 0
-
 
 func perform_action() -> void:
 	if !combatant:
 		return
-		var tween := create_tween().set_trans(Tween.TRANS_QUINT)
-		spree += 1
-		tween.tween_interval(0.25)
-		
-		tween.finished.connect(
-			func():
-				action_performed.emit(self)
-				combatant.turn_complete()
-		)
+	###updating target to front combatant###
+	if combatant.battle_group is BattleGroupEnemy:
+		target = battle_scene.get_front_or_focus(0)
 	else:
-		var tween := create_tween()
-		tween.tween_interval(0.5)
-		tween.finished.connect(
-			func():
-				action_performed.emit(self)
-				combatant.turn_complete()
-		)
-
+		target = battle_scene.get_front_or_focus(1)
+	if target:
+		var attack_effect := BasicMeleeAttackEffect.new()
+		#attack_effect.targets = [target]
+		attack_effect.attacker = combatant
+		attack_effect.n_damage = n_damage
+		attack_effect.n_attacks = n_attacks
+		attack_effect.sound = sound
+		attack_effect.execute([target])
 
 func is_performable() -> bool:
 	if spree <= 1:
@@ -34,7 +31,32 @@ func is_performable() -> bool:
 		return false
 #
 func update_action_intent() -> void:
-	intent_data.text = ""
+	var modified_dmg := n_damage
+	modified_dmg = combatant.modifier_system.get_modified_value(n_damage, Modifier.Type.DMG_DEALT)
+	#                                                  print("basic_melee_attack_action.gd update_action_intent() Fighter: %s, Text: %s" % [combatant.name, modified_dmg])
+	if n_attacks == 1:
+		intent_data.base_text = str(modified_dmg)
+		intent_data.current_tooltip_text = intent_data.tooltip_text % str(modified_dmg)
+	else:
+		intent_data.base_text = str(n_attacks) + "x" + str(modified_dmg)
+		intent_data.current_tooltip_text = intent_data.tooltip_text % str(n_attacks) + "x" + str(modified_dmg)
 
 func other_action_performed(npc_action: NPCAction) -> void:
 	spree = 0
+
+func get_tooltip() -> String:
+	#print("basic_melee_attack_action.gd get_tooltip() n_damage is %s" % n_damage)
+	if n_attacks == 1:
+		var base_string := "[center]This character will deal %s damage.[/center]"
+		var modified_dmg := combatant.modifier_system.get_modified_value(n_damage, Modifier.Type.DMG_DEALT)
+		return base_string % str(modified_dmg)
+	elif n_attacks == 2:
+		var base_string := "[center]This character will deal %s damage twice.[/center]"
+		var modified_dmg := combatant.modifier_system.get_modified_value(n_damage, Modifier.Type.DMG_DEALT)
+		return base_string % str(modified_dmg)
+	elif n_attacks >= 3:
+		var base_string := "[center]This character will deal %s damage %s times.[/center]"
+		var modified_dmg := combatant.modifier_system.get_modified_value(n_damage, Modifier.Type.DMG_DEALT)
+		return base_string % [modified_dmg, n_attacks]
+	return ""
+	

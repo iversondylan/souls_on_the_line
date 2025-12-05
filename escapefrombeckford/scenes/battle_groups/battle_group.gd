@@ -164,3 +164,28 @@ func has_ai_behavior(node: Node) -> bool:
 		if child is NPCAIBehavior:
 			return true
 	return false
+
+func get_target_for_action(action: NPCAction, source: Fighter) -> Fighter:
+	# 1. Build the context
+	var ctx := TargetContext.new()
+	ctx.source = source
+	ctx.action = action
+	ctx.base_target = _get_default_target_for(source, action)
+	ctx.final_target = ctx.base_target
+
+	# 2. Run the modifier pipeline
+	_apply_target_modifiers(ctx)
+
+	# 3. Return the result
+	return ctx.final_target
+
+func _get_default_target_for(source: Fighter, action: NPAction) -> Fighter:
+	# For now, just “front enemy”. This is your old `get_front` part.
+	# You can expand this later for different targeting patterns.
+	var enemies := _get_enemy_side(source)
+	if enemies.size() == 0:
+		return null
+	return enemies[0]   # front enemy
+
+func _get_enemy_side(source: Fighter) -> Array[Fighter]:
+	return enemy_fighters if source.is_player_side() else player_fighters
