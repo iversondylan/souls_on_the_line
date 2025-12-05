@@ -135,3 +135,41 @@ func get_other_battle_group(idx: int) -> BattleGroup:
 		push_error("Index must be 0 or 1")
 		return null
 	return groups[1 - idx]
+
+
+func get_target_for_action(action: NPCAction, source: Fighter) -> Fighter:
+	# 1. Build the context
+	var ctx := TargetContext.new()
+	ctx.source = source
+	ctx.action = action
+	ctx.base_target = _get_default_target_for(source, action)
+	ctx.final_target = ctx.base_target
+	# 2. Run the modifier pipeline
+	_apply_target_modifiers(ctx)
+
+	# 3. Return the result
+	return ctx.final_target
+
+func _apply_target_modifiers(ctx: TargetContext) -> void:
+	for fighter in get_all_combatants():
+		fighter.modify_target(ctx)
+	# later:
+	# apply arcana modifiers
+	# apply global event modifiers
+	# apply battlefield rules
+
+func _get_default_target_for(source: Fighter, _action: NPCAction) -> Fighter:
+	# For now: always front enemy
+	return get_front_enemy_of(source)
+
+func get_front_enemy_of(source: Fighter) -> Fighter:
+	var enemies = get_enemy_fighters_of(source)
+	if enemies.is_empty():
+		return null
+	return enemies[0]
+
+func get_enemy_fighters_of(source: Fighter) -> Array[Fighter]:
+	if source.get_parent() is BattleGroupFriendly:
+		return get_combatants_in_group(1)
+	else:
+		return get_combatants_in_group(0)

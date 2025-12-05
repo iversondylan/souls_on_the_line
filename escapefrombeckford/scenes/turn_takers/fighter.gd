@@ -226,3 +226,21 @@ func _on_modifier_changed() -> void:
 		if child is FighterBehavior:
 			child._on_modifier_changed()
 	
+func modify_target(ctx: TargetContext) -> void:
+	# Only apply if this fighter has focus.
+	if not has_focus():
+		return
+	
+	# Check that the attack is targeting this fighter's side.
+	if not _is_attack_targeting_me(ctx):
+		return
+	
+	# Redirect final target to this fighter.
+	ctx.final_target = self
+
+func _is_attack_targeting_me(ctx: TargetContext) -> bool:
+	# Source and self must be on opposite sides.
+	return ctx.source.get_parent() != get_parent()
+
+func has_focus() -> bool:
+	return combatant.status_grid._has_status(PinpointStatus.ID)

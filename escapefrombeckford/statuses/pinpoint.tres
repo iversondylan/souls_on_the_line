@@ -5,12 +5,10 @@
 
 [resource]
 script = ExtResource("2_6hpfl")
-id = "pinpoint"
-proc_type = 0
+id = "focus"
 stack_type = 2
 can_expire = true
 duration = 1
-intensity = 0
 icon = ExtResource("1_6hpfl")
 tooltip = "TO DO"
 metadata/_custom_type_script = "uid://cueedkb1u8vxy"
