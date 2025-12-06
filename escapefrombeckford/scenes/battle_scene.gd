@@ -54,10 +54,6 @@ func get_n_combatants_in_group(group_index: int) -> int:
 
 func get_n_summoned_allies() -> int:
 	return (groups[0] as BattleGroupFriendly).get_n_summoned_allies()
-	#for group: BattleGroup in groups:
-		#if group is BattleGroupFriendly:
-			#return group.get_n_summoned_allies()
-	#return 0
 
 func get_allies_of(fighter: Fighter) -> Array[Fighter]:
 	var index := get_index_of_parent_group(fighter)
@@ -142,8 +138,10 @@ func get_targets_for_attack_effect(effect: AttackEffect, source: Fighter) -> Arr
 	var ctx := AttackTargetContext.new()
 	ctx.source = source
 	ctx.effect = effect
-	ctx.base_targets = _get_default_attack_targets_for(source, effect)
-	ctx.final_targets = ctx.base_targets
+	ctx.base_targets = _get_base_targets(source, effect)
+	ctx.base_targets = ctx.base_targets.filter(func(t): return t != null)
+	ctx.final_targets = ctx.base_targets.duplicate()
+	ctx.is_single_target_intent = _get_if_single_target(effect)
 	# 2. Run the modifier pipeline
 	_apply_target_modifiers(ctx)
 
@@ -158,9 +156,22 @@ func _apply_target_modifiers(ctx: AttackTargetContext) -> void:
 	# apply global event modifiers
 	# apply battlefield rules
 
-func _get_default_attack_targets_for(source: Fighter, _effect: AttackEffect) -> Array[Fighter]:
+func _get_base_targets(source: Fighter, effect: AttackEffect) -> Array[Fighter]:
 	# For now: always front enemy
-	return [get_front_enemy_of(source)]
+	match effect.target_type:
+		AttackEffect.TargetType.STANDARD:
+			return [get_front_enemy_of(source)]
+		AttackEffect.TargetType.ALL_OPPONENTS:
+			return get_enemies_of(source)
+	return []
+
+func _get_if_single_target(effect: AttackEffect) -> bool:
+	match effect.target_type:
+		AttackEffect.TargetType.STANDARD:
+			return true
+		AttackEffect.TargetType.ALL_OPPONENTS:
+			return false
+	return false
 
 func get_front_enemy_of(source: Fighter) -> Fighter:
 	var enemies = get_enemy_fighters_of(source)

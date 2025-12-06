@@ -17,7 +17,7 @@ func perform_action() -> void:
 			#combatant.doing_turn = false
 			#combatant.turn_complete = true
 			action_performed.emit(self)
-			combatant.turn_complete()
+			combatant.resolve_action()
 	)
 
 func update_action_intent() -> void:

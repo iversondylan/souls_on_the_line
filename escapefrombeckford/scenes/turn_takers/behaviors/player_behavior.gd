@@ -19,7 +19,7 @@ func _on_hand_drawn() -> void:
 
 func _on_hand_discarded() -> void:
 	var fighter: Fighter = get_parent()
-	fighter.turn_complete()
+	fighter.resolve_action()
 
 func _on_end_turn_button_pressed() -> void:
 	Events.request_activate_arcana_by_type.emit(Arcanum.Type.END_OF_TURN)

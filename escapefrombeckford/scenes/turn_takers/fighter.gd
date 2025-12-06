@@ -1,6 +1,6 @@
 class_name Fighter extends Node2D
 
-signal turn_taker_turn_complete(turn_taker: Fighter)
+signal action_resolved(turn_taker: Fighter)
 signal statuses_applied(proc_type: Status.ProcType)
 
 @export var battle_group: BattleGroup
@@ -81,7 +81,7 @@ func take_damage(n_damage: int, modifier_type: Modifier.Type):
 	var tween: Tween = create_tween()
 	tween.tween_callback(Shaker.shake.bind(self, 16, 0.15))
 	tween.tween_interval(0.2)
-	tween.finished.connect(take_damage_part_2.bind(modified_damage))
+	tween.tween_callback(take_damage_part_2.bind(modified_damage))
 
 func take_damage_part_2(n_damage: int) -> void:
 	var health_damage := combatant_data.take_damage(n_damage)
@@ -102,12 +102,13 @@ func heal(n_heal: int) -> void:
 func add_armor(amount: int):
 	combatant_data.add_armor(amount)
 
+##for future: death must cancel pending action resolution
 func die():
 	combatant_data.is_alive = false
 	battle_group.update_combatant_position()
 	var death_tween: Tween = create_tween()
 	death_tween.tween_property(character_sprite, "modulate", Color.BLACK, 0.3)
-	death_tween.finished.connect(
+	death_tween.tween_callback(
 		func():
 			battle_group.combatant_died(self)
 				)
@@ -116,8 +117,6 @@ func die():
 			child._on_die()
 
 func do_turn() -> void:
-	#combatant_data.set_armor(0)
-	#combatant_data.reset_mana()
 	for child in get_children():
 		if child is FighterBehavior:
 			child._on_do_turn()
@@ -203,6 +202,8 @@ func info_visible(visibility: bool) -> void:
 	combatant.info_visible(visibility)
 
 func is_alive() -> bool:
+	if !is_node_ready() or !combatant_data:
+		return true
 	return combatant_data.is_alive
 
 func show_targeted_arrow() -> void:
@@ -211,8 +212,8 @@ func show_targeted_arrow() -> void:
 func hide_targeted_arrow() -> void:
 	targeted_arrow.hide()
 
-func turn_complete() -> void:
-	turn_taker_turn_complete.emit(self)
+func resolve_action() -> void:
+	action_resolved.emit(self)
 
 func _on_combatant_statuses_applied(proc_type: Status.ProcType) -> void:
 	statuses_applied.emit(proc_type)
@@ -227,16 +228,17 @@ func _on_modifier_changed() -> void:
 			child._on_modifier_changed()
 	
 func modify_target(ctx: AttackTargetContext) -> void:
-	# Only apply if this fighter has focus.
+	## Only apply if this fighter has focus.
 	if !has_focus():
 		return
 	
-	# Check that the attack is targeting this fighter's side.
+	## Check that the attack is targeting this fighter's side.
 	if !_is_attack_targeting_us(ctx):
 		return
 	
-	# Redirect final target to this fighter.
-	ctx.final_target = [self]
+	## Redirect final target to this fighter if it's not multi-target.
+	if !ctx.final_targets.has(self) and ctx.is_single_target_intent:
+		ctx.final_targets = [self]
 
 func _is_attack_targeting_us(ctx: AttackTargetContext) -> bool:
 	# Source and self must be on opposite sides.

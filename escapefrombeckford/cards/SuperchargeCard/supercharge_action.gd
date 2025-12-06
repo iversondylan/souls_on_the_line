@@ -27,7 +27,7 @@ func activate(targets: Array[Node]) -> bool:
 	attack_effect.n_attacks = 1
 	attack_effect.battle_scene = battle_scene
 	attack_effect.sound = card_data.sound
-	attack_effect.start()
+	attack_effect.execute()
 	
 	return true
 

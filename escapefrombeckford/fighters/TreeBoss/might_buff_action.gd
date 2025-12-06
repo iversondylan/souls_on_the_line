@@ -23,7 +23,7 @@ func perform_action() -> void:
 	get_tree().create_timer(0.6, false).timeout.connect(
 		func():
 			action_performed.emit(self)
-			combatant.turn_complete()
+			combatant.resolve_action()
 	)
 
 

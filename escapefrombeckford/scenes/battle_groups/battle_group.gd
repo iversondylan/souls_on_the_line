@@ -1,17 +1,11 @@
 class_name BattleGroup extends Node2D
 
-
-
 @export var faces_right: bool = true
 
 var battle_scene: BattleScene
 var deck: Deck
-#var focus: Fighter = null
 
 var acting_fighters: Array[Fighter] = []
-
-#func _ready() -> void:
-	#Events.gained_focus.connect(_on_gained_focus)
 
 func reset_npc_actions() -> void:
 	for child in get_children():
@@ -26,35 +20,30 @@ func start_turn() -> void:
 	acting_fighters.clear()
 	for fighter: Fighter in get_children():
 		acting_fighters.append(fighter)
-	#focus = null
 	_next_turn_taker()
 
 func _next_turn_taker() -> void:
 	if acting_fighters.is_empty():
 		if self is BattleGroupEnemy:
 			Events.request_friendly_turn.emit()
-			#BattleController.transition(BattleController.BattleState.FRIENDLY_TURN)
 		elif self is BattleGroupFriendly:
 			Events.request_enemy_turn.emit()
-			#BattleController.transition(BattleController.BattleState.ENEMY_TURN)
 		return
 	acting_fighters[0].enter()
 
 func get_combatants() -> Array[Fighter]:
 	var combatants: Array[Fighter] = []
 	for child: Fighter in get_children():
-		combatants.push_back(child)
+		if child.is_alive():
+			combatants.push_back(child)
 	return combatants
 
 func connect_combatant(fighter: Fighter):
 	fighter.battle_group = self
 	fighter.statuses_applied.connect(_on_combatant_statuses_applied.bind(fighter))
-	#fighter.combatant.status_grid.statuses_applied.connect(_on_combatant_statuses_applied.bind(fighter))
-	fighter.turn_taker_turn_complete.connect(_on_turn_taker_turn_complete)
+	fighter.action_resolved.connect(_on_turn_taker_action_resolved)
 
 func add_combatant(fighter: Fighter, rank: int):
-	#var children: Array[Node] = get_children()
-	#var n_children: int = children.size()
 	add_child(fighter)
 	connect_combatant(fighter)
 	move_child(fighter, rank)
@@ -116,10 +105,10 @@ func combatant_is_there(fighter: Fighter) -> bool:
 		return false
 
 func update_combatant_position():
-	var window_dist: int = get_viewport_rect().size.x * 3 / 16
+	var window_dist: float = get_viewport_rect().size.x * 3.0 / 16.0
 	var left_bound: float = -window_dist
 	var right_bound: float = window_dist
-	var fighters: Array[Fighter] = get_combatants()
+	var fighters: Array[Fighter] = get_combatants()#.filter(func(fighter: Fighter): return fighter.is_alive())
 	var n_fighters: int = fighters.size()
 	var increment: float = (right_bound - left_bound) / (n_fighters + 1)
 	var n: int = 1
@@ -140,16 +129,11 @@ func turn_reset() -> void:
 	for fighter: Fighter in get_combatants():
 		fighter.turn_reset()
 
-func _on_turn_taker_turn_complete(turn_taker_who_finished: Fighter) -> void:
+func _on_turn_taker_action_resolved(turn_taker_who_finished: Fighter) -> void:
+	if turn_taker_who_finished != acting_fighters[0]:
+		#print("battle_group.gd _on_turn_taker_turn_complete() turn_taker_who_finished is not the acting fighter.")
+		return
 	turn_taker_who_finished.exit()
-
-#func _on_gained_focus(new_fighter: Fighter) -> void:
-	#if new_fighter.battle_group != self:
-		#return
-	#for fighter: Fighter in get_combatants():
-		#if fighter != new_fighter:
-			#fighter.remove_focused()
-		
 
 func _on_combatant_statuses_applied(proc_type: Status.ProcType, fighter: Fighter) -> void:
 	match proc_type:

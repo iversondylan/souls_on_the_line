@@ -17,14 +17,14 @@ func activate(targets: Array[Node]) -> bool:
 	attack_count = 1
 	
 	var attack_effect := BasicMeleeAttackEffect.new()
-	#attack_effect.targets = attack_targets
+	attack_effect.target_type = AttackEffect.TargetType.ALL_OPPONENTS
 	attack_effect.attacker = correct_targets[0]
 	attack_effect.n_damage = attack_damage
 	attack_effect.n_attacks = attack_count
 	attack_effect.explode = true
 	attack_effect.battle_scene = battle_scene
 	attack_effect.sound = card_data.sound
-	attack_effect.start()
+	attack_effect.execute()
 	return true
 
 func get_description(description: String, _target_fighter: Fighter = null) -> String:
