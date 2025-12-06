@@ -2,6 +2,7 @@ class_name AttackEffect
 extends Effect
 
 enum RetargetPriority {NONE, FRONT}
+var battle_scene: BattleScene
 var attacker: Fighter
 var n_damage: int = 0
 var n_attacks: int = 1

@@ -1,3 +1,4 @@
+#basic_melee_attack_action.gd
 extends NPCAction
 
 @export var n_damage := 5
