@@ -14,9 +14,10 @@ func activate(targets: Array[Node]) -> bool:
 	player.spend_mana(card_data)
 	
 	var damage_effect := DamageEffect.new()
+	damage_effect.targets = correct_targets
 	damage_effect.n_damage = 6
 	damage_effect.sound = card_data.sound
-	damage_effect.execute(correct_targets)
+	damage_effect.execute()
 	
 	return true
 
@@ -25,7 +26,7 @@ func activate(targets: Array[Node]) -> bool:
 	#return player.can_play_card(card_data)
 
 ## Overwrite this function for dynamic card descriptions
-func get_description(description: String) -> String:
+func get_description(description: String, _fighter: Fighter = null) -> String:
 	#var n_damage = player.modifier_system.get_modified_value(base_damage, Modifier.Type.DMG_DEALT)
 	return description# % n_damage
 	

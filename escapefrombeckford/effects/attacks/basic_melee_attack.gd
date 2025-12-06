@@ -7,17 +7,18 @@ class_name BasicMeleeAttackEffect extends AttackEffect
 #var retarget_priority: RetargetPriority = RetargetPriority.FRONT
 #var explode: bool = false
 
-func execute(input_targets: Array[Fighter]):
+func execute():
 	var tween := attacker.create_tween().set_trans(Tween.TRANS_QUINT)
 	attacker.info_visible(false)
-	var targets: Array[Fighter] = _get_valid_targets(input_targets)
+	targets = battle_scene.get_targets_for_attack_effect(self, attacker)#_get_valid_targets(targets)
 	var end: Vector2
 	end = get_mean_position(targets)
 	tween.tween_property(attacker, "global_position", end, 0.4)
 	var damage_effect := DamageEffect.new()
+	damage_effect.targets = targets
 	damage_effect.n_damage = attacker.modifier_system.get_modified_value(n_damage, Modifier.Type.DMG_DEALT)
 	damage_effect.sound = sound
-	tween.tween_callback(damage_effect.execute.bind(targets))
+	tween.tween_callback(damage_effect.execute)
 	tween.tween_interval(0.5)
 	n_attacks -= 1
 	if n_attacks <= 0:
@@ -32,5 +33,5 @@ func execute(input_targets: Array[Fighter]):
 					attacker.info_visible(true) )
 	else:
 		tween.finished.connect( func(): 
-			execute(targets)
+			execute()
 			)

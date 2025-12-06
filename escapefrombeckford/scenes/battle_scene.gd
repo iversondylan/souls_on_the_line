@@ -137,20 +137,20 @@ func get_other_battle_group(idx: int) -> BattleGroup:
 	return groups[1 - idx]
 
 
-func get_target_for_action(action: NPCAction, source: Fighter) -> Fighter:
+func get_targets_for_attack_effect(effect: AttackEffect, source: Fighter) -> Array[Fighter]:
 	# 1. Build the context
-	var ctx := TargetContext.new()
+	var ctx := AttackTargetContext.new()
 	ctx.source = source
-	ctx.action = action
-	ctx.base_target = _get_default_target_for(source, action)
-	ctx.final_target = ctx.base_target
+	ctx.effect = effect
+	ctx.base_targets = _get_default_attack_targets_for(source, effect)
+	ctx.final_targets = ctx.base_targets
 	# 2. Run the modifier pipeline
 	_apply_target_modifiers(ctx)
 
 	# 3. Return the result
-	return ctx.final_target
+	return ctx.final_targets
 
-func _apply_target_modifiers(ctx: TargetContext) -> void:
+func _apply_target_modifiers(ctx: AttackTargetContext) -> void:
 	for fighter in get_all_combatants():
 		fighter.modify_target(ctx)
 	# later:
@@ -158,9 +158,9 @@ func _apply_target_modifiers(ctx: TargetContext) -> void:
 	# apply global event modifiers
 	# apply battlefield rules
 
-func _get_default_target_for(source: Fighter, _action: NPCAction) -> Fighter:
+func _get_default_attack_targets_for(source: Fighter, _effect: AttackEffect) -> Array[Fighter]:
 	# For now: always front enemy
-	return get_front_enemy_of(source)
+	return [get_front_enemy_of(source)]
 
 func get_front_enemy_of(source: Fighter) -> Fighter:
 	var enemies = get_enemy_fighters_of(source)

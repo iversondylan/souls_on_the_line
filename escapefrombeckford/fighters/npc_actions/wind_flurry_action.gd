@@ -13,9 +13,9 @@ func perform_action() -> void:
 		#target = battle_scene.get_front_or_focus(1)
 	if target:
 		var buff_effect := BuffEffect.new()
-		#buff_effect.targets = [combatant]
+		buff_effect.targets = [combatant]
 		buff_effect.sound = sound
-		buff_effect.execute([combatant])
+		buff_effect.execute()
 	get_tree().create_timer(0.6, false).timeout.connect(
 		func():
 			action_performed.emit(self)

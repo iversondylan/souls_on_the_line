@@ -12,9 +12,10 @@ func activate(targets: Array[Node]) -> bool:
 	player.spend_mana(card_data)
 	
 	var damage_effect := DamageEffect.new()
+	damage_effect.targets = correct_targets
 	damage_effect.n_damage = player.modifier_system.get_modified_value(base_damage, Modifier.Type.DMG_DEALT)
 	damage_effect.sound = card_data.sound
-	damage_effect.execute(correct_targets)
+	damage_effect.execute()
 
 	return true
 

@@ -23,8 +23,9 @@ func perform_action() -> void:
 		attack_effect.attacker = combatant
 		attack_effect.n_damage = n_damage
 		attack_effect.n_attacks = n_attacks
+		attack_effect.battle_scene = battle_scene
 		attack_effect.sound = sound
-		attack_effect.execute([target])
+		attack_effect.execute()
 
 func is_performable() -> bool:
 	if spree <= 1:

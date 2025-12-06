@@ -1,0 +1,7 @@
+# attack_target_context.gd
+class_name AttackTargetContext extends RefCounted
+
+var source: Fighter        # who is acting
+var effect: AttackEffect
+var base_targets: Array[Fighter]   # default target (e.g. front enemy)
+var final_targets: Array[Fighter]  # starts as base_target, then gets modified

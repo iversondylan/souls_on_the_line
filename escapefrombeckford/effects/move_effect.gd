@@ -1,4 +1,4 @@
 extends Effect
 
-func execute(_targets: Array[Fighter]) -> void:
+func execute() -> void:
 	pass

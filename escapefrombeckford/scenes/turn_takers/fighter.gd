@@ -226,19 +226,19 @@ func _on_modifier_changed() -> void:
 		if child is FighterBehavior:
 			child._on_modifier_changed()
 	
-func modify_target(ctx: TargetContext) -> void:
+func modify_target(ctx: AttackTargetContext) -> void:
 	# Only apply if this fighter has focus.
-	if not has_focus():
+	if !has_focus():
 		return
 	
 	# Check that the attack is targeting this fighter's side.
-	if not _is_attack_targeting_me(ctx):
+	if !_is_attack_targeting_us(ctx):
 		return
 	
 	# Redirect final target to this fighter.
-	ctx.final_target = self
+	ctx.final_target = [self]
 
-func _is_attack_targeting_me(ctx: TargetContext) -> bool:
+func _is_attack_targeting_us(ctx: AttackTargetContext) -> bool:
 	# Source and self must be on opposite sides.
 	return ctx.source.get_parent() != get_parent()
 

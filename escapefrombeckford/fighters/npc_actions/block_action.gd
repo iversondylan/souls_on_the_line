@@ -7,9 +7,10 @@ func perform_action() -> void:
 		return
 	
 	var block_effect := BlockEffect.new()
+	block_effect.targets = [combatant]
 	block_effect.n_armor = n_armor
 	block_effect.sound = sound
-	block_effect.execute([combatant])
+	block_effect.execute()
 	
 	get_tree().create_timer(0.6, false).timeout.connect( #CHANGE TIME BACK T0 0.6
 		func():

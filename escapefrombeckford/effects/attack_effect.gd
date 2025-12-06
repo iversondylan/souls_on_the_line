@@ -9,19 +9,19 @@ var n_attacks: int = 1
 var retarget_priority: RetargetPriority = RetargetPriority.FRONT
 var explode: bool = false
 
-func execute(targets: Array[Fighter]):
+func execute():
 	push_error("AttackEffect.execute() must be implemented in subclass.")
 
-func _get_valid_targets(input_targets: Array[Fighter]) -> Array[Fighter]:
-	if input_targets.size() == 1 and retarget_priority == AttackEffect.RetargetPriority.FRONT:
-		if !input_targets[0] or !input_targets[0].is_alive():
-			var target_battle_group_index: int
-			if attacker.get_parent() is BattleGroupEnemy:
-				target_battle_group_index = 0
-			else:
-				target_battle_group_index = 1
-			return [attacker.battle_scene.get_front_or_focus(target_battle_group_index)]
-	return input_targets
+#func _get_valid_targets(input_targets: Array[Fighter]) -> Array[Fighter]:
+	#if input_targets.size() == 1 and retarget_priority == AttackEffect.RetargetPriority.FRONT:
+		#if !input_targets[0] or !input_targets[0].is_alive():
+			#var target_battle_group_index: int
+			#if attacker.get_parent() is BattleGroupEnemy:
+				#target_battle_group_index = 0
+			#else:
+				#target_battle_group_index = 1
+			#return [attacker.battle_scene.get_front_or_focus(target_battle_group_index)]
+	#return input_targets
 
 func get_mean_position(targets: Array[Fighter]) -> Vector2:
 	var cum_target_position := Vector2.ZERO

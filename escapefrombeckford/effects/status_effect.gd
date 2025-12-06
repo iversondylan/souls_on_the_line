@@ -6,7 +6,7 @@ var status: Status
 ##var battle_scene: BattleScene
 ##for non-auras, targets should be aura targets,
 ##for auras, targets should be the aura source
-func execute(targets: Array[Fighter]) -> void:
+func execute() -> void:
 	#print("status_effect.gd execute()")
 	#if status.aura_type == Status.AuraType.NONE:
 	#print("status_effect.gd aura_type_none")

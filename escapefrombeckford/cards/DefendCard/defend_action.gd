@@ -11,9 +11,10 @@ func activate(targets: Array[Node]) -> bool:
 	player.spend_mana(card_data)
 	
 	var block_effect = BlockEffect.new()
+	block_effect.targets = correct_targets
 	block_effect.n_armor = n_armor
 	block_effect.sound = card_data.sound
-	block_effect.execute(correct_targets)
+	block_effect.execute()
 	
 	return true
 

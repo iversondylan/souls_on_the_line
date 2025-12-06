@@ -13,23 +13,20 @@ func activate(targets: Array[Node]) -> bool:
 		return false
 	
 	player.spend_mana(card_data)
-	#attack_group = 1
-	
-	#var focus_effect := FocusEffect.new()
-	#focus_effect.sound = card_data.sound
-	#focus_effect.execute(correct_targets)
 	
 	var status_effect := StatusEffect.new()
+	status_effect.targets = correct_targets
 	var focused_status := FOCUSED_STATUS.duplicate()
 	focused_status.duration = duration
 	status_effect.status = focused_status
-	status_effect.execute(correct_targets)
+	status_effect.execute()
 	
 	status_effect = StatusEffect.new()
+	status_effect.targets = correct_targets
 	var pinpoint_status := PINPOINT_STATUS.duplicate()
 	pinpoint_status.duration = duration
 	status_effect.status = pinpoint_status
-	status_effect.execute(correct_targets)
+	status_effect.execute()
 	
 	action_processed = true
 	return action_processed

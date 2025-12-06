@@ -14,10 +14,11 @@ func perform_action() -> void:
 		return
 	
 	var status_effect := StatusEffect.new()
+	status_effect.targets = [combatant]
 	var might := MIGHT_STATUS.duplicate() as Might
 	might.intensity = intensity_per_action
 	status_effect.status = might
-	status_effect.execute([combatant])
+	status_effect.execute()
 	
 	get_tree().create_timer(0.6, false).timeout.connect(
 		func():

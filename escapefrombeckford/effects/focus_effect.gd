@@ -1,7 +1,7 @@
 class_name FocusEffect
 extends Effect
 
-func execute(targets: Array[Fighter]) -> void:
+func execute() -> void:
 	if targets.size() != 1:
 		return
 	targets[0].battle_group.focus = targets[0]

@@ -11,7 +11,7 @@ func activate(targets: Array[Node]) -> bool:
 	
 	player.spend_mana(card_data)
 	
-	var attack_targets: Array[Fighter] = battle_scene.get_combatants_in_group(1)
+	#var attack_targets: Array[Fighter] = battle_scene.get_combatants_in_group(1)
 	
 	attack_damage = player.combatant_data.max_mana_red + 2
 	attack_count = 1
@@ -22,8 +22,9 @@ func activate(targets: Array[Node]) -> bool:
 	attack_effect.n_damage = attack_damage
 	attack_effect.n_attacks = attack_count
 	attack_effect.explode = true
+	attack_effect.battle_scene = battle_scene
 	attack_effect.sound = card_data.sound
-	attack_effect.execute(attack_targets)
+	attack_effect.execute()
 	return true
 
 func get_description(description: String, _target_fighter: Fighter = null) -> String:
