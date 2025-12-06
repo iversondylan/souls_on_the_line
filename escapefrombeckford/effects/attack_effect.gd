@@ -9,8 +9,14 @@ var n_attacks: int = 1
 var retarget_priority: RetargetPriority = RetargetPriority.FRONT
 var explode: bool = false
 
-func execute():
-	push_error("AttackEffect.execute() must be implemented in subclass.")
+func start():
+	execute_step()
+
+func execute_step():
+	push_error("Must be implemented by subclass")
+
+#func execute():
+	#push_error("AttackEffect.execute() must be implemented in subclass.")
 
 #func _get_valid_targets(input_targets: Array[Fighter]) -> Array[Fighter]:
 	#if input_targets.size() == 1 and retarget_priority == AttackEffect.RetargetPriority.FRONT:
@@ -23,7 +29,10 @@ func execute():
 			#return [attacker.battle_scene.get_front_or_focus(target_battle_group_index)]
 	#return input_targets
 
-func get_mean_position(targets: Array[Fighter]) -> Vector2:
+func get_mean_position() -> Vector2:
+	print("attack_effect.gd get_mean_position()")
+	if !targets:
+		return attacker.anchor_position
 	var cum_target_position := Vector2.ZERO
 	var n_targets: float = float(targets.size())
 	for target: Fighter in targets:

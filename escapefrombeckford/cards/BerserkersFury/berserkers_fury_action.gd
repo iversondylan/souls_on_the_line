@@ -24,7 +24,7 @@ func activate(targets: Array[Node]) -> bool:
 	attack_effect.explode = true
 	attack_effect.battle_scene = battle_scene
 	attack_effect.sound = card_data.sound
-	attack_effect.execute()
+	attack_effect.start()
 	return true
 
 func get_description(description: String, _target_fighter: Fighter = null) -> String:
