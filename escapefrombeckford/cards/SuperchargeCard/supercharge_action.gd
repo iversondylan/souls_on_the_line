@@ -15,7 +15,9 @@ func activate(targets: Array[Node]) -> bool:
 	var status_effect := StatusEffect.new()
 	status_effect.targets = correct_targets
 	var amplify_status := AMPLIFY_STATUS.duplicate()
+	amplify_status.stack_type = Status.StackType.DURATION
 	amplify_status.duration = amplify_duration
+	amplify_status.can_expire = true
 	status_effect.status = amplify_status
 	status_effect.execute()
 	
@@ -37,7 +39,7 @@ func activate(targets: Array[Node]) -> bool:
 
 func get_description(description: String, _target_fighter: Fighter = null) -> String:
 	var modified_duration := amplify_duration#player.modifier_system.get_modified_value(base_damage, Modifier.Type.DMG_DEALT)
-	return description % [str(floori(AmplifyStatus.MODIFIER*100)), str(modified_duration)]
+	return description % [str(floori(AmplifyStatus.MULT_VALUE*100)), str(modified_duration)]
 
 func get_unmod_description(description: String) -> String:
-	return description % [str(floori(AmplifyStatus.MODIFIER*100)), str(amplify_duration)]
+	return description % [str(floori(AmplifyStatus.MULT_VALUE*100)), str(amplify_duration)]

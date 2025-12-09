@@ -132,7 +132,7 @@ func get_other_battle_group(idx: int) -> BattleGroup:
 		return null
 	return groups[1 - idx]
 
-
+##attack effect target pipeline
 func get_targets_for_attack_effect(effect: AttackEffect, source: Fighter) -> Array[Fighter]:
 	# 1. Build the context
 	var ctx := AttackTargetContext.new()
@@ -184,3 +184,16 @@ func get_enemy_fighters_of(source: Fighter) -> Array[Fighter]:
 		return get_combatants_in_group(1)
 	else:
 		return get_combatants_in_group(0)
+
+##Numerical Modifier System
+func get_modifier_tokens_for(fighter: Fighter) -> Array[ModifierToken]:
+	var tokens: Array[ModifierToken] = []
+
+	for combatant in get_all_combatants():
+		if !combatant.is_alive():
+			continue
+		tokens.append_array(
+			combatant.combatant.status_grid.get_modifier_tokens()
+		)
+
+	return tokens

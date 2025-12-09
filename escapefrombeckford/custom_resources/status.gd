@@ -27,6 +27,12 @@ func init_status(_target: Node) -> void:
 func apply_status(_target: Node) -> void:
 	status_applied.emit(self)
 
+func get_modifier_tokens() -> Array[ModifierToken]:
+	return []
+
+func contributes_modifier() -> bool:
+	return false
+
 func get_tooltip() -> String:
 	return tooltip
 

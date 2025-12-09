@@ -32,6 +32,7 @@ func _ready() -> void:
 	Events.battle_reset.connect(_battle_reset)
 	combatant.statuses_applied.connect(_on_combatant_statuses_applied)
 	modifier_system.modifier_changed.connect(_on_modifier_changed)
+	combatant.status_grid.modifier_tokens_changed.connect(modifier_system.mark_dirty)
 	target_area.combatant = self
 	combatant.fighter = self
 
@@ -226,7 +227,12 @@ func _on_modifier_changed() -> void:
 	for child in get_children():
 		if child is FighterBehavior:
 			child._on_modifier_changed()
-	
+
+func get_modifier_tokens() -> Array[ModifierToken]:
+	if !battle_scene:
+		return []
+	return battle_scene.get_modifier_tokens_for(self)
+
 func modify_target(ctx: AttackTargetContext) -> void:
 	## Only apply if this fighter has focus.
 	if !has_focus():

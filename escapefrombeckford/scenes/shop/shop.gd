@@ -31,7 +31,7 @@ func _ready() -> void:
 
 func _blink_timer_setup() -> void:
 	blink_timer.wait_time = randf_range(1.0, 5.0)
-	blink_timer.execute()
+	blink_timer.start()
 
 func _on_blink_timer_timeout() -> void:
 	shopkeeper_animation.play("blink")

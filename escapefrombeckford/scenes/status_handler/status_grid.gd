@@ -1,6 +1,7 @@
 class_name StatusGrid extends GridContainer
 
 signal statuses_applied(proc_type: Status.ProcType)
+signal modifier_tokens_changed()
 
 const STATUS_APPLY_INTERVAL := 0.25
 const STATUS_DISPLAY_SCN = preload("res://scenes/status_handler/status_display.tscn")
@@ -51,6 +52,18 @@ func get_aura_primaries() -> Array[Status]:
 		if status_display.status is AuraPrimary:
 			aura_primaries.push_back(status_display.status)
 	return aura_primaries
+
+func get_modifier_tokens() -> Array[ModifierToken]:
+	var tokens: Array[ModifierToken] = []
+	
+	for status in _get_all_statuses():
+		if status and status.contributes_modifier():
+			tokens.append_array(status.get_modifier_tokens())
+	if tokens:
+		print("status_grid.gd get_modifier_tokens tokens: %s" % tokens[0].source_id)
+	#else:
+		#print("status_grid.gd get_modifier_tokens no tokens")
+	return tokens
 
 func add_status(status: Status) -> void:
 	
@@ -172,3 +185,7 @@ func _on_auras_requested(requester: Fighter) -> void:
 func _on_gui_input(event: InputEvent) -> void:
 	if event.is_action_pressed("mouse_click"):
 		Events.status_tooltip_requested.emit(_get_all_statuses())
+
+func _on_status_changed(_status: Status) -> void:
+	if status_parent and status_parent.modifier_system:
+		status_parent.modifier_system.mark_dirty()
