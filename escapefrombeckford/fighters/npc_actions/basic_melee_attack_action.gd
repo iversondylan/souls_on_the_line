@@ -9,15 +9,8 @@ var spree: int = 0
 func perform_action() -> void:
 	if !combatant:
 		return
-	###updating target to front combatant###
-	#target = battle_scene.get_target_for_action(self, combatant)
-	#if combatant.battle_group is BattleGroupEnemy:
-		#target = battle_scene.get_front_or_focus(0)
-	#else:
-		#target = battle_scene.get_front_or_focus(1)
 	if target:
 		var attack_effect := BasicMeleeAttackEffect.new()
-		#attack_effect.targets = [target]
 		attack_effect.attacker = combatant
 		attack_effect.n_damage = n_damage
 		attack_effect.n_attacks = n_attacks

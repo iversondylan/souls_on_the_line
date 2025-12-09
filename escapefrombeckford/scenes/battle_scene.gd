@@ -192,8 +192,74 @@ func get_modifier_tokens_for(fighter: Fighter) -> Array[ModifierToken]:
 	for combatant in get_all_combatants():
 		if !combatant.is_alive():
 			continue
-		tokens.append_array(
-			combatant.combatant.status_grid.get_modifier_tokens()
-		)
+
+		var source: Fighter = combatant
+		var same_group := source.battle_group == fighter.battle_group
+
+		for token in source.combatant.status_grid.get_modifier_tokens():
+			match token.scope:
+				ModifierToken.Scope.GLOBAL:
+					# Always applies to everyone
+					tokens.append(token)
+
+				ModifierToken.Scope.SELF:
+					# Only applies to the source itself
+					if source == fighter:
+						tokens.append(token)
+
+				ModifierToken.Scope.TARGET:
+					# Two cases:
+					# 1) Normal “targeted” token (non-aura) — uses token.owner.
+					# 2) Aura-style token — routed by allies/enemies tags.
+					if token.tags.has(Aura.AURA_SECONDARY_FLAG):
+						# Aura-style routing
+						if token.tags.has("aura_allies"):
+							# Applies to source + allies (you can exclude self if you want)
+							if same_group:
+								tokens.append(token)
+						elif token.tags.has("aura_enemies"):
+							# Applies to enemies of the source
+							if !same_group:
+								tokens.append(token)
+					else:
+						# Non-aura TARGET token: only for its explicit owner
+						if token.owner == fighter:
+							tokens.append(token)
 
 	return tokens
+	#var tokens: Array[ModifierToken] = []
+#
+	#for combatant in get_all_combatants():
+		#if !combatant.is_alive():
+			#continue
+		#for token in combatant.combatant.status_grid.get_modifier_tokens():
+			#match token.scope:
+				#ModifierToken.Scope.GLOBAL:
+					#tokens.append(token)
+				#ModifierToken.Scope.SELF:
+					#if combatant == fighter:
+						#tokens.append(token)
+				#ModifierToken.Scope.TARGET:
+					#if token.owner == fighter:
+						#tokens.append(token)
+#
+	#return tokens
+
+func _passes_aura_rules(source: Fighter, target: Fighter, aura: Aura) -> bool:
+	# Always apply to self
+	if source == target:
+		return true
+
+	match aura.aura_type:
+		Aura.AuraType.ALLIES:
+			return source.battle_group == target.battle_group
+
+		Aura.AuraType.ENEMIES:
+			return source.battle_group != target.battle_group
+
+	return false
+
+func _on_modifier_tokens_changed(mod_type: Modifier.Type) -> void:
+	for fighter in get_all_combatants():
+		if fighter.is_alive():
+			fighter.modifier_system.mark_dirty(mod_type)

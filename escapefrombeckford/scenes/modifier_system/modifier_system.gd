@@ -2,12 +2,14 @@ class_name ModifierSystem extends Node
 
 signal modifier_changed()
 
-var _cache := {}              # Modifier.Type -> int
-var _dirty := {}              # Modifier.Type -> bool
+var _cache: Dictionary = {}   # Modifier.Type -> ResolvedModifier
+var _dirty: Dictionary = {}   # Modifier.Type -> bool
 
 var dirty: bool = true
 
 func _ready() -> void:
+	for type in Modifier.Type.values():
+		_dirty[type] = true
 	for modifier: Modifier in get_children():
 		modifier.modifier_changed.connect(_modifier_changed)
 
@@ -24,13 +26,38 @@ func get_modifier(type: Modifier.Type) -> Modifier:
 	return null
 
 func get_modified_value(base: int, type: Modifier.Type) -> int:
+	var mod := get_resolved_modifier(type)
+	return floori((base + mod.flat) * mod.mult)
+
+func _build_resolved_modifier(type: Modifier.Type) -> ResolvedModifier:
+	var result := ResolvedModifier.new()
+
+	for token in get_modifier_tokens_for(type):
+		result.flat += token.flat_value
+		result.mult *= (1.0 + token.mult_value)
+	return result
+
+func get_resolved_modifier(type: Modifier.Type) -> ResolvedModifier:
 	if !_dirty.get(type, true) and _cache.has(type):
 		return _cache[type]
 
-	var value := _compute_modified_value(base, type)
-	_cache[type] = value
+	var resolved := _build_resolved_modifier(type)
+	_cache[type] = resolved
 	_dirty[type] = false
-	return value
+	return resolved
+
+func get_modifier_tokens_for(type: Modifier.Type) -> Array[ModifierToken]:
+	if !owner or !owner.battle_scene:
+		return []
+
+	var all_tokens: Array[ModifierToken] = owner.battle_scene.get_modifier_tokens_for(owner)
+	var relevant: Array[ModifierToken] = []
+
+	for token in all_tokens:
+		if token.type == type:
+			relevant.append(token)
+
+	return relevant
 
 func _compute_modified_value(base: int, type: Modifier.Type) -> int:
 	print("modifier_system.gd _compute_modified_value() base: %s, type: %s" % [base, type])

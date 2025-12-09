@@ -33,6 +33,9 @@ func get_modifier_tokens() -> Array[ModifierToken]:
 func contributes_modifier() -> bool:
 	return false
 
+func get_contributed_modifier_types() -> Array[Modifier.Type]:
+	return []
+
 func get_tooltip() -> String:
 	return tooltip
 
@@ -43,6 +46,9 @@ func _set_duration(new_duration: int) -> void:
 func _set_intensity(new_intensity: int) -> void:
 	intensity = new_intensity
 	status_changed.emit()
+
+func is_expired() -> bool:
+	return can_expire and duration <= 0
 
 #func _on_status_changed(target: Node) -> void:
 	#print("status.gd _on_status_changed(): virtual function called")

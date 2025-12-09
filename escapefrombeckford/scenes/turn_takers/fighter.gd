@@ -32,7 +32,7 @@ func _ready() -> void:
 	Events.battle_reset.connect(_battle_reset)
 	combatant.statuses_applied.connect(_on_combatant_statuses_applied)
 	modifier_system.modifier_changed.connect(_on_modifier_changed)
-	combatant.status_grid.modifier_tokens_changed.connect(modifier_system.mark_dirty)
+	#combatant.status_grid.modifier_tokens_changed.connect(modifier_system.mark_dirty)
 	target_area.combatant = self
 	combatant.fighter = self
 

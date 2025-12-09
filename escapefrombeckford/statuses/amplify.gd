@@ -36,6 +36,9 @@ func get_modifier_tokens() -> Array[ModifierToken]:
 func contributes_modifier() -> bool:
 	return true
 
+func get_contributed_modifier_types() -> Array[Modifier.Type]:
+	return [Modifier.Type.DMG_DEALT]
+
 func _on_status_changed(dmg_dealt_modifier: Modifier) -> void:
 	if duration <= 0 and dmg_dealt_modifier:
 		dmg_dealt_modifier.remove_value(AMPLIFY_ID)

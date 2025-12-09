@@ -1,23 +1,37 @@
 class_name CruelDominionStatus extends Status
 
 const ECHOED_CRUELTY_STATUS := preload("res://statuses/echoed_cruelty.tres")
-#var intensity_stacks_per_turn := 2
 
-#func init_status(_target: Node) -> void:
-	#print("Initialize the status for target %s" % _target)
+func apply_status(target: Node) -> void:
+	if !(target is Fighter):
+		return
 
-func apply_status(_target: Node) -> void:
-	#print("applied cruel dominion status on %s" % _target)
-	var status_effect := StatusEffect.new()
-	status_effect.targets = [_target]
-	var echoed_cruelty := ECHOED_CRUELTY_STATUS.duplicate()
-	echoed_cruelty.intensity = intensity#intensity_stacks_per_turn
-	status_effect.status = echoed_cruelty
-	status_effect.execute()
-	
-	#print("Gets status extent of %s" % member_var)
+	var echoed := ECHOED_CRUELTY_STATUS.duplicate()
+	echoed.intensity = intensity
+
+	var effect := StatusEffect.new()
+	effect.targets = [target]
+	effect.status = echoed
+	effect.execute()
+
 	status_applied.emit(self)
 
 func get_tooltip() -> String:
-	var base_tooltip: String = "Cruel Dominion: Each turn, empower your allies to deal %s additional damage."
-	return base_tooltip % intensity
+	return "Cruel Dominion: Each turn, empower your allies to deal %s additional damage." % intensity
+
+#class_name CruelDominionStatus extends Status
+#
+#const ECHOED_CRUELTY_STATUS := preload("res://statuses/echoed_cruelty.tres")
+#
+#func apply_status(_target: Node) -> void:
+	#var status_effect := StatusEffect.new()
+	#status_effect.targets = [_target]
+	#var echoed_cruelty := ECHOED_CRUELTY_STATUS.duplicate()
+	#echoed_cruelty.intensity = intensity
+	#status_effect.status = echoed_cruelty
+	#status_effect.execute()
+	#status_applied.emit(self)
+#
+#func get_tooltip() -> String:
+	#var base_tooltip: String = "Cruel Dominion: Each turn, empower your allies to deal %s additional damage."
+	#return base_tooltip % intensity

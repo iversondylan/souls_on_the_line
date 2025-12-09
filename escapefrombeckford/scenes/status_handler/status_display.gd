@@ -51,4 +51,3 @@ func _on_status_changed() -> void:
 func _on_focused_gained(focused_status: Status):
 	if focused_status.status_parent != status_parent and status.id == FocusedStatus.FOCUSED_ID:
 		queue_free()
-	

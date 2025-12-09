@@ -1,7 +1,7 @@
 class_name StatusGrid extends GridContainer
 
 signal statuses_applied(proc_type: Status.ProcType)
-signal modifier_tokens_changed()
+signal modifier_tokens_changed(type: Modifier.Type)
 
 const STATUS_APPLY_INTERVAL := 0.25
 const STATUS_DISPLAY_SCN = preload("res://scenes/status_handler/status_display.tscn")
@@ -59,10 +59,6 @@ func get_modifier_tokens() -> Array[ModifierToken]:
 	for status in _get_all_statuses():
 		if status and status.contributes_modifier():
 			tokens.append_array(status.get_modifier_tokens())
-	if tokens:
-		print("status_grid.gd get_modifier_tokens tokens: %s" % tokens[0].source_id)
-	#else:
-		#print("status_grid.gd get_modifier_tokens no tokens")
 	return tokens
 
 func add_status(status: Status) -> void:
@@ -75,9 +71,11 @@ func add_status(status: Status) -> void:
 		var new_status_display := STATUS_DISPLAY_SCN.instantiate() as StatusDisplay
 		add_child(new_status_display)
 		new_status_display.status = status
+		new_status_display.status.status_changed.connect(_on_status_changed.bind(new_status_display.status))
 		new_status_display.status_parent = status_parent
 		new_status_display.status.status_applied.connect(_on_status_applied)
 		new_status_display.status.init_status(status_parent)
+		mark_dirty_for_status(status)
 		_update_visuals()
 		return
 	elif status is AuraSecondary:
@@ -93,19 +91,35 @@ func add_status(status: Status) -> void:
 	# and only the most intense should be active and visible
 	if status is AuraSecondary:
 		_get_status(status.id).intensity = status.intensity
+		mark_dirty_for_status(status)
 		_update_visuals()
 		return
 	
 	# If it's duration-stackable, extend it
 	if status.can_expire and status.stack_type == Status.StackType.DURATION:
 		_get_status(status.id).duration += status.duration
+		mark_dirty_for_status(status)
 		_update_visuals()
 		return
 	
 	# If it's intensity-stackable, intensify it
 	if status.stack_type == Status.StackType.INTENSITY:
 		_get_status(status.id).intensity += status.intensity
+		mark_dirty_for_status(status)
 		_update_visuals()
+
+func mark_dirty_for_status(status: Status) -> void:
+	if !status.contributes_modifier():
+		return
+
+	for mod_type in status.get_contributed_modifier_types():
+		status_parent.modifier_system.mark_dirty(mod_type)
+
+		#notify BattleScene immediately
+		modifier_tokens_changed.emit(mod_type)
+	#if status.contributes_modifier():
+		#for mod_type in status.get_contributed_modifier_types():
+			#status_parent.modifier_system.mark_dirty(mod_type)
 
 func get_most_intense_aura_secondary(new_aura_secondary: AuraSecondary) -> AuraSecondary:
 	var most_intense_aura_secondary: AuraSecondary = new_aura_secondary
@@ -171,6 +185,7 @@ func _get_all_statuses() -> Array[Status]:
 func _on_status_applied(status: Status) -> void:
 	if status.can_expire:
 		status.duration -= 1
+	_remove_expired_statuses()
 	_update_visuals()
 
 func _update_visuals() -> void:
@@ -186,6 +201,33 @@ func _on_gui_input(event: InputEvent) -> void:
 	if event.is_action_pressed("mouse_click"):
 		Events.status_tooltip_requested.emit(_get_all_statuses())
 
-func _on_status_changed(_status: Status) -> void:
-	if status_parent and status_parent.modifier_system:
-		status_parent.modifier_system.mark_dirty()
+func _on_status_changed(status: Status) -> void:
+	if status.is_expired():
+		_remove_expired_statuses()
+		return
+	if !status.contributes_modifier():
+		return
+	for mod_type in status.get_contributed_modifier_types():
+		status_parent.modifier_system.mark_dirty(mod_type)
+		modifier_tokens_changed.emit(mod_type)
+
+func _remove_expired_statuses() -> void:
+	var to_remove: Array[StatusDisplay] = []
+
+	for status_display: StatusDisplay in get_children():
+		var status := status_display.status
+		if status and status.is_expired():
+			to_remove.append(status_display)
+
+	for status_display in to_remove:
+		_remove_status_display(status_display)
+
+func _remove_status_display(status_display: StatusDisplay) -> void:
+	var status := status_display.status
+	
+	# Invalidate modifiers BEFORE removal
+	if status.contributes_modifier():
+		for mod_type in status.get_contributed_modifier_types():
+			status_parent.modifier_system.mark_dirty(mod_type)
+	
+	status_display.queue_free()
