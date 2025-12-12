@@ -63,7 +63,7 @@ func add_combatant(fighter: Fighter, rank: int):
 
 func get_front_or_focus() -> Fighter:
 	for fighter: Fighter in get_combatants():
-		if fighter.has_status(FocusedStatus.FOCUSED_ID) and fighter.is_alive():
+		if fighter.has_status(MarkedStatus.MARKED_ID) and fighter.is_alive():
 			return fighter
 	for fighter: Fighter in get_combatants():
 		if fighter.is_alive():

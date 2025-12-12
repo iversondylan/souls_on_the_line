@@ -1,6 +1,6 @@
-class_name FocusedStatus extends Status
+class_name MarkedStatus extends Status
 
-const FOCUSED_ID := "focused"
+const MARKED_ID := "marked"
 
 func init_status(_target: Node) -> void:
 	#print("%s gets focused for %s turns." % [_target, duration])

@@ -4,17 +4,18 @@ const AMPLIFY_ID := "amplify"
 const MULT_VALUE := 0.5
 
 func init_status(target: Node) -> void:
-	assert(target.get("modifier_system"), "No modifier on %s" % target)
-	var dmg_dealt_modifier: Modifier = (target as Fighter).modifier_system.get_modifier(Modifier.Type.DMG_DEALT)
-	assert(dmg_dealt_modifier, "No dmg dealt modifier on %s" % target)
-	var amplify_modifier_value := dmg_dealt_modifier.get_value(AMPLIFY_ID)
-	
-	if !amplify_modifier_value:
-		amplify_modifier_value = ModifierValue.create_new_modifier(AMPLIFY_ID, ModifierValue.Type.MULT)
-		amplify_modifier_value.mult_value = MULT_VALUE
-		dmg_dealt_modifier.add_new_value(amplify_modifier_value)
-	if !status_changed.is_connected(_on_status_changed):
-		status_changed.connect(_on_status_changed.bind(dmg_dealt_modifier))
+	pass
+	#assert(target.get("modifier_system"), "No modifier on %s" % target)
+	#var dmg_dealt_modifier: Modifier = (target as Fighter).modifier_system.get_modifier(Modifier.Type.DMG_DEALT)
+	#assert(dmg_dealt_modifier, "No dmg dealt modifier on %s" % target)
+	#var amplify_modifier_value := dmg_dealt_modifier.get_value(AMPLIFY_ID)
+	#
+	#if !amplify_modifier_value:
+		#amplify_modifier_value = ModifierValue.create_new_modifier(AMPLIFY_ID, ModifierValue.Type.MULT)
+		#amplify_modifier_value.mult_value = MULT_VALUE
+		#dmg_dealt_modifier.add_new_value(amplify_modifier_value)
+	#if !status_changed.is_connected(_on_status_changed):
+		#status_changed.connect(_on_status_changed.bind(dmg_dealt_modifier))
 
 func get_modifier_tokens() -> Array[ModifierToken]:
 	# If expired, contribute nothing
@@ -36,6 +37,7 @@ func get_modifier_tokens() -> Array[ModifierToken]:
 func contributes_modifier() -> bool:
 	return true
 
+##Must return type of numerical modifier.
 func get_contributed_modifier_types() -> Array[Modifier.Type]:
 	return [Modifier.Type.DMG_DEALT]
 
@@ -44,8 +46,9 @@ func _on_status_changed(dmg_dealt_modifier: Modifier) -> void:
 		dmg_dealt_modifier.remove_value(AMPLIFY_ID)
 
 func get_tooltip() -> String:
+	var base_tooltip: String
 	if duration == 1:
-		var base_tooltip: String = "Amplify: deals %s%% more damage for 1 turn."
+		base_tooltip = "Amplify: deals %s%% more damage for 1 turn."
 		return base_tooltip % floori(MULT_VALUE*100)
-	var base_tooltip: String = "Amplify: deals %s%% more damage for %s turns."
+	base_tooltip = "Amplify: deals %s%% more damage for %s turns."
 	return base_tooltip % [floori(MULT_VALUE*100), duration]

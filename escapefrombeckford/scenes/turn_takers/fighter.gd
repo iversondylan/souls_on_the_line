@@ -234,8 +234,8 @@ func get_modifier_tokens() -> Array[ModifierToken]:
 	return battle_scene.get_modifier_tokens_for(self)
 
 func modify_target(ctx: AttackTargetContext) -> void:
-	## Only apply if this fighter has focus.
-	if !has_focus():
+	## Only apply if this fighter is marked.
+	if !is_marked():
 		return
 	
 	## Check that the attack is targeting this fighter's side.
@@ -250,5 +250,5 @@ func _is_attack_targeting_us(ctx: AttackTargetContext) -> bool:
 	# Source and self must be on opposite sides.
 	return ctx.source.get_parent() != get_parent()
 
-func has_focus() -> bool:
+func is_marked() -> bool:
 	return combatant.status_grid._has_status(PinpointStatus.ID)

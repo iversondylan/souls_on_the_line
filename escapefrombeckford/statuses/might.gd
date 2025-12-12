@@ -3,24 +3,23 @@ class_name Might extends Status
 #var member_var := 0
 const ID = "might"
 
-func init_status(target: Node) -> void:
-	status_changed.connect(_on_status_changed.bind(target))
-	_on_status_changed(target)
+func contributes_modifier() -> bool:
+	return true
 
-func _on_status_changed(target: Node) -> void:
+func get_contributed_modifier_types() -> Array[Modifier.Type]:
+	return [Modifier.Type.DMG_DEALT]
 
-	assert(target.get("modifier_system"), "No modifier on %s" % target)
-	
-	var dmg_dealt_modifier: Modifier = (target as Fighter).modifier_system.get_modifier(Modifier.Type.DMG_DEALT)
-	assert(dmg_dealt_modifier, "No dmg dealt modifier on %s" % target)
-	
-	var modifier_value := dmg_dealt_modifier.get_value(ID)
-	
-	if !modifier_value:
-		modifier_value = ModifierValue.create_new_modifier(ID, ModifierValue.Type.FLAT)
-	
-	modifier_value.flat_value = intensity
-	dmg_dealt_modifier.add_new_value(modifier_value)
+func get_modifier_tokens() -> Array[ModifierToken]:
+	var token := ModifierToken.new()
+	token.type = Modifier.Type.DMG_DEALT
+	token.flat_value = intensity
+	token.mult_value = 0.0
+	token.source_id = ID
+	token.owner = status_parent
+	token.scope = ModifierToken.Scope.SELF
+	token.tags = [ID]
+
+	return [token]
 	
 func get_tooltip() -> String:
 	var base_tooltip: String = "Might: Deals %s additional damage."

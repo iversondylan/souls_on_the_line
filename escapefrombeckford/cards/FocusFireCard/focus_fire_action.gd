@@ -1,6 +1,6 @@
 extends CardAction
 
-const FOCUSED_STATUS = preload("res://statuses/focused.tres")
+const MARKED_STATUS = preload("res://statuses/marked.tres")
 const PINPOINT_STATUS = preload("res://statuses/pinpoint.tres")
 var duration := 2
 #var focused_duration := 2
@@ -16,7 +16,7 @@ func activate(targets: Array[Node]) -> bool:
 	
 	var status_effect := StatusEffect.new()
 	status_effect.targets = correct_targets
-	var focused_status := FOCUSED_STATUS.duplicate()
+	var focused_status := MARKED_STATUS.duplicate()
 	focused_status.duration = duration
 	status_effect.status = focused_status
 	status_effect.execute()
@@ -34,7 +34,7 @@ func activate(targets: Array[Node]) -> bool:
 func get_description(description: String, _target_fighter: Fighter = null) -> String:
 	##Duration should be moddable
 	var mod_duration = duration #player.modifier_system.get_modified_value(duration, Modifier.Type.STATUS_DURATION)
-	return description % [floori(PinpointStatus.MODIFIER*100), mod_duration]
+	return description % [floori(PinpointStatus.MULT_VALUE*100), mod_duration]
 
 func get_unmod_description(description: String) -> String:
 	return get_description(description)
