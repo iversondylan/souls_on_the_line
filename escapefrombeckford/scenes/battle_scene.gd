@@ -2,11 +2,18 @@ class_name BattleScene extends Node2D
 
 @onready var groups: Array[BattleGroup] = [$BattleGroupFriendly, $BattleGroupEnemy]
 var deck: Deck : set = _set_deck
-#var run_account: RunAccount
+var run: Run : set = _set_run
 
 func _ready() -> void:
 	for group : BattleGroup in groups:
 		group.battle_scene = self
+
+func _set_run(new_run: Run) -> void:
+	run = new_run
+	if !is_node_ready():
+		await ready
+	for group: BattleGroup in groups:
+		group.run = run
 
 func _set_deck(_deck: Deck) -> void:
 	deck = _deck
@@ -227,7 +234,7 @@ func get_modifier_tokens_for(fighter: Fighter) -> Array[ModifierToken]:
 						if token.owner == fighter:
 							tokens.append(token)
 	# Arcana / run-wide
-	tokens.append_array(run_account.get_modifier_tokens())
+	#tokens.append_array(run_account.get_modifier_tokens())
 	return tokens
 	#var tokens: Array[ModifierToken] = []
 #

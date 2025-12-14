@@ -4,6 +4,7 @@ class_name BattleGroup extends Node2D
 
 var battle_scene: BattleScene
 var deck: Deck
+var run: Run
 
 var acting_fighters: Array[Fighter] = []
 
@@ -40,6 +41,7 @@ func get_combatants() -> Array[Fighter]:
 
 func connect_combatant(fighter: Fighter):
 	fighter.battle_group = self
+	fighter.run = run
 	fighter.statuses_applied.connect(_on_combatant_statuses_applied.bind(fighter))
 	fighter.action_resolved.connect(_on_turn_taker_action_resolved)
 	fighter.combatant.status_grid.modifier_tokens_changed.connect(battle_scene._on_modifier_tokens_changed)

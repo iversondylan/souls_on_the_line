@@ -7,6 +7,8 @@ var _dirty: Dictionary = {}   # Modifier.Type -> bool
 
 var dirty: bool = true
 
+var run: Run
+
 func _ready() -> void:
 	for type in Modifier.Type.values():
 		_dirty[type] = true
@@ -26,6 +28,7 @@ func _ready() -> void:
 	#return null
 
 func get_modified_value(base: int, type: Modifier.Type) -> int:
+	print("modifier_system.gd get_modified_value() owner: %s base: %s, type: %s" % [get_parent(), base, Modifier.Type.keys()[type]])
 	var mod := get_resolved_modifier(type)
 	return floori((base + mod.flat) * mod.mult)
 
@@ -46,37 +49,52 @@ func get_resolved_modifier(type: Modifier.Type) -> ResolvedModifier:
 	_dirty[type] = false
 	return resolved
 
+
+
 func get_modifier_tokens_for(type: Modifier.Type) -> Array[ModifierToken]:
-	var tokens: Array[ModifierToken] = []
+	print("get_modifier_tokens_for() start of function")
+	if !run:
+		print("no run")
+		return []
 
-	if owner == null:
-		return tokens
+	var all_tokens: Array[ModifierToken] = run.get_modifier_tokens_for(owner)
+	var relevant: Array[ModifierToken] = []
+	#print("get_modifier_tokens_for() relevant: %s" % relevant)
+	for token in all_tokens:
+		if token.type == type:
+			relevant.append(token)
 
-	# --- BATTLE CONTEXT ---
-	if owner is Fighter and owner.battle_scene:
-		for token in owner.battle_scene.get_modifier_tokens_for(owner):
-			if token.type == type:
-				tokens.append(token)
-		return tokens
-
-	# --- SHOP CONTEXT ---
-	if owner is Shop:
-		# Arcana-driven shop modifiers
-		if owner.arcana_system:
-			for arcanum: Arcanum in owner.arcana_system.get_all_arcana():
-				if arcanum.contributes_modifier():
-					for token in arcanum.get_modifier_tokens():
-						if token.type == type:
-							tokens.append(token)
-		return tokens
-
-	# --- RUN / PLAYER CONTEXT (future-proofing) ---
-	if owner.has_method("get_modifier_tokens"):
-		for token in owner.get_modifier_tokens():
-			if token.type == type:
-				tokens.append(token)
-
-	return tokens
+	return relevant
+	#var tokens: Array[ModifierToken] = []
+#
+	#if owner == null:
+		#return tokens
+#
+	## --- BATTLE CONTEXT ---
+	#if owner is Fighter and owner.battle_scene:
+		#for token in owner.battle_scene.get_modifier_tokens_for(owner):
+			#if token.type == type:
+				#tokens.append(token)
+		#return tokens
+#
+	## --- SHOP CONTEXT ---
+	#if owner is Shop:
+		## Arcana-driven shop modifiers
+		#if owner.arcana_system:
+			#for arcanum: Arcanum in owner.arcana_system.get_all_arcana():
+				#if arcanum.contributes_modifier():
+					#for token in arcanum.get_modifier_tokens():
+						#if token.type == type:
+							#tokens.append(token)
+		#return tokens
+#
+	## --- RUN / PLAYER CONTEXT (future-proofing) ---
+	#if owner.has_method("get_modifier_tokens"):
+		#for token in owner.get_modifier_tokens():
+			#if token.type == type:
+				#tokens.append(token)
+#
+	#return tokens
 
 #func get_modifier_tokens_for(type: Modifier.Type) -> Array[ModifierToken]:
 	#if !owner or !owner.battle_scene:

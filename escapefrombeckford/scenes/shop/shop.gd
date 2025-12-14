@@ -15,6 +15,8 @@ const SHOP_ARCANUM_SCN = preload("res://scenes/shop/shop_arcanum.tscn")
 @onready var card_tooltip_popup: CardTooltipPopup = %CardTooltipPopup
 @onready var modifier_system: ModifierSystem = $ModifierSystem
 
+var run: Run
+
 func _ready() -> void:
 	for shop_card: ShopCard in card_container.get_children():
 		shop_card.queue_free()

@@ -20,7 +20,7 @@ signal statuses_applied(proc_type: Status.ProcType)
 
 var combatant_data: CombatantData : set = _set_combatant_data
 var battle_scene: BattleScene : set = _set_battle_scene
-
+var run: Run : set = _set_run
 var fighter_tween: Tween
 var anchor_position: Vector2 = Vector2(0, 0)
 
@@ -53,6 +53,12 @@ func _set_battle_scene(new_battle_scene: BattleScene) -> void:
 	if !is_node_ready():
 		await ready
 	combatant.battle_scene = battle_scene
+
+func _set_run(new_run) -> void:
+	run = new_run
+	if !is_node_ready():
+		await ready
+	modifier_system.run = run
 
 func enter() -> void:
 	combatant.status_grid.apply_statuses_by_type(Status.ProcType.START_OF_TURN)

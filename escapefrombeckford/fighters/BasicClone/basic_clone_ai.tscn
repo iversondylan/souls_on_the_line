@@ -12,5 +12,3 @@ script = ExtResource("1_fednj")
 script = ExtResource("2_582px")
 base_intent_data = ExtResource("3_582px")
 sound = ExtResource("5_2n3sl")
-choice_type = 1
-chance_weight = 1.0

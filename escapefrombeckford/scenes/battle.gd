@@ -36,7 +36,7 @@ class_name Battle extends Node2D
 var player_data: PlayerData
 var player: Player
 var deck: Deck : set = _set_deck
-#var run_account: RunAccount : set = _set_run_account
+var run: Run : set = _set_run
 
 
 var mouse_pressed: bool = false
@@ -64,6 +64,12 @@ func _ready() -> void:
 	discard_pile_button.pressed.connect(discard_pile_view.show_current_discard_view.bind("Discard Pile"))
 	
 	hand.battle_scene = battle_scene
+
+func _set_run(new_run: Run) -> void:
+	run = new_run
+	if !is_node_ready():
+		await ready
+	battle_scene.run = run
 
 func _set_deck(_deck: Deck) -> void:
 	deck = _deck
