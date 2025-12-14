@@ -13,17 +13,17 @@ func _ready() -> void:
 	for modifier: Modifier in get_children():
 		modifier.modifier_changed.connect(_modifier_changed)
 
-func has_modifier(type: Modifier.Type) -> bool:
-	for modifier: Modifier in get_children():
-		if modifier.type == type:
-			return true
-	return false
+#func has_modifier(type: Modifier.Type) -> bool:
+	#for modifier: Modifier in get_children():
+		#if modifier.type == type:
+			#return true
+	#return false
 	
-func get_modifier(type: Modifier.Type) -> Modifier:
-	for modifier: Modifier in get_children():
-		if modifier.type == type:
-			return modifier
-	return null
+#func get_modifier(type: Modifier.Type) -> Modifier:
+	#for modifier: Modifier in get_children():
+		#if modifier.type == type:
+			#return modifier
+	#return null
 
 func get_modified_value(base: int, type: Modifier.Type) -> int:
 	var mod := get_resolved_modifier(type)
@@ -47,17 +47,50 @@ func get_resolved_modifier(type: Modifier.Type) -> ResolvedModifier:
 	return resolved
 
 func get_modifier_tokens_for(type: Modifier.Type) -> Array[ModifierToken]:
-	if !owner or !owner.battle_scene:
-		return []
+	var tokens: Array[ModifierToken] = []
 
-	var all_tokens: Array[ModifierToken] = owner.battle_scene.get_modifier_tokens_for(owner)
-	var relevant: Array[ModifierToken] = []
+	if owner == null:
+		return tokens
 
-	for token in all_tokens:
-		if token.type == type:
-			relevant.append(token)
+	# --- BATTLE CONTEXT ---
+	if owner is Fighter and owner.battle_scene:
+		for token in owner.battle_scene.get_modifier_tokens_for(owner):
+			if token.type == type:
+				tokens.append(token)
+		return tokens
 
-	return relevant
+	# --- SHOP CONTEXT ---
+	if owner is Shop:
+		# Arcana-driven shop modifiers
+		if owner.arcana_system:
+			for arcanum: Arcanum in owner.arcana_system.get_all_arcana():
+				if arcanum.contributes_modifier():
+					for token in arcanum.get_modifier_tokens():
+						if token.type == type:
+							tokens.append(token)
+		return tokens
+
+	# --- RUN / PLAYER CONTEXT (future-proofing) ---
+	if owner.has_method("get_modifier_tokens"):
+		for token in owner.get_modifier_tokens():
+			if token.type == type:
+				tokens.append(token)
+
+	return tokens
+
+#func get_modifier_tokens_for(type: Modifier.Type) -> Array[ModifierToken]:
+	#if !owner or !owner.battle_scene:
+		#return []
+#
+	#var all_tokens: Array[ModifierToken] = owner.battle_scene.get_modifier_tokens_for(owner)
+	#var relevant: Array[ModifierToken] = []
+#
+	#for token in all_tokens:
+		#if token.type == type:
+			#relevant.append(token)
+#
+	#return relevant
+
 
 func _compute_modified_value(base: int, type: Modifier.Type) -> int:
 	print("modifier_system.gd _compute_modified_value() base: %s, type: %s" % [base, type])

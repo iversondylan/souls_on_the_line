@@ -36,6 +36,7 @@ class_name Battle extends Node2D
 var player_data: PlayerData
 var player: Player
 var deck: Deck : set = _set_deck
+#var run_account: RunAccount : set = _set_run_account
 
 
 var mouse_pressed: bool = false
@@ -68,6 +69,12 @@ func _set_deck(_deck: Deck) -> void:
 	deck = _deck
 	hand.deck = deck
 	battle_scene.deck = deck
+
+#func _set_run_account(new_run_account: RunAccount) -> void:
+	#run_account = new_run_account
+	#if !is_node_ready():
+		#await ready
+	#battle_scene.run_account = run_account
 
 func initialize_card_pile_ui() -> void:
 	draw_pile_button.card_pile = deck.draw_pile

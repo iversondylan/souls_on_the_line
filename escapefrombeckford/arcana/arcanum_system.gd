@@ -19,6 +19,17 @@ func _ready() -> void:
 	#await get_tree().create_timer(1.0).timeout
 	#add_arcanum(preload("res://arcana/general/vennards_vauxite.tres"))
 
+func get_modifier_tokens() -> Array[ModifierToken]:
+	var tokens: Array[ModifierToken] = []
+	var arcanum_displays := _get_all_arcanum_display_nodes()
+	for arcanum_display: ArcanumDisplay in arcanum_displays:
+		#var arcanum := arcanum_display.arcanum
+		if !arcanum_display.arcanum:
+			continue
+		if arcanum_display.arcanum.contributes_modifier():
+			tokens.append_array(arcanum_display.arcanum.get_modifier_tokens())
+	return tokens
+
 func activate_arcana_by_type(type: Arcanum.Type) -> void:
 	if type == Arcanum.Type.EVENT_BASED:
 		return

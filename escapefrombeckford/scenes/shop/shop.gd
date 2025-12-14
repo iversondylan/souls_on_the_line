@@ -75,6 +75,11 @@ func _generate_shop_arcana() -> void:
 		new_shop_arcanum.gold_cost = _get_updated_shop_cost(new_shop_arcanum.gold_cost)
 		new_shop_arcanum.update(run_account)
 
+func get_modifier_tokens() -> Array[ModifierToken]:
+	if arcana_system:
+		return arcana_system.get_modifier_tokens()
+	return []
+
 func _get_updated_shop_cost(orig_cost: int) -> int:
 	return modifier_system.get_modified_value(orig_cost, Modifier.Type.SHOP_COST)
 

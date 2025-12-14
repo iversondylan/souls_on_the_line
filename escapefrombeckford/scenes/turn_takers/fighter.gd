@@ -27,8 +27,8 @@ var anchor_position: Vector2 = Vector2(0, 0)
 func _ready() -> void:
 	combatant.target_area_area_entered.connect(_on_target_area_area_entered)
 	combatant.target_area_area_exited.connect(_on_target_area_area_exited)
-	Events.aura_changed.connect(on_aura_changed)
-	Events.aura_removed.connect(_on_aura_removed)
+	#Events.aura_changed.connect(on_aura_changed)
+	#Events.aura_removed.connect(_on_aura_removed)
 	Events.battle_reset.connect(_battle_reset)
 	combatant.statuses_applied.connect(_on_combatant_statuses_applied)
 	modifier_system.modifier_changed.connect(_on_modifier_changed)
@@ -150,7 +150,7 @@ func reset():
 	combatant_data.reset_armor()
 	combatant_data.reset_mana()
 	combatant_data.reset_health()
-	Events.auras_requested.emit(self)
+	#Events.auras_requested.emit(self)
 
 func _battle_reset() -> void:
 	for child in get_children():
@@ -175,26 +175,26 @@ func _on_target_area_area_entered(area: Area2D) -> void:
 			if self is Enemy:
 				show_targeted_arrow()
 
-func _on_target_area_area_exited(area: Area2D) -> void:
+func _on_target_area_area_exited(_area: Area2D) -> void:
 	hide_targeted_arrow()
 
-func on_aura_changed(source_fighter: Fighter, aura_primary: AuraPrimary) -> void:
-	if aura_primary.aura_type == AuraPrimary.AuraType.ALLIES:
-		if battle_group == source_fighter.battle_group and self != source_fighter:
-			add_aura_secondary(source_fighter, aura_primary)
-	elif battle_group != source_fighter.battle_group:
-		add_aura_secondary(source_fighter, aura_primary)
-
-## THIS NEEDS TO BE CHANGED TO TRACK DUPLICATE AURAS AND SOURCES
-func add_aura_secondary(source_fighter: Fighter, aura_primary: AuraPrimary) -> void:
-	var aura_secondary := aura_primary.aura_secondary.duplicate()
-	aura_secondary.source = source_fighter
-	aura_secondary.intensity = aura_primary.intensity
-	aura_secondary.status_parent = self
-	combatant.status_grid.add_status(aura_secondary)
-
-func _on_aura_removed(source_fighter: Fighter, aura_status: Status) -> void:
-	pass
+#func on_aura_changed(source_fighter: Fighter, aura_primary: AuraPrimary) -> void:
+	#if aura_primary.aura_type == AuraPrimary.AuraType.ALLIES:
+		#if battle_group == source_fighter.battle_group and self != source_fighter:
+			#add_aura_secondary(source_fighter, aura_primary)
+	#elif battle_group != source_fighter.battle_group:
+		#add_aura_secondary(source_fighter, aura_primary)
+#
+### THIS NEEDS TO BE CHANGED TO TRACK DUPLICATE AURAS AND SOURCES
+#func add_aura_secondary(source_fighter: Fighter, aura_primary: AuraPrimary) -> void:
+	#var aura_secondary := aura_primary.aura_secondary.duplicate()
+	#aura_secondary.source = source_fighter
+	#aura_secondary.intensity = aura_primary.intensity
+	#aura_secondary.status_parent = self
+	#combatant.status_grid.add_status(aura_secondary)
+#
+#func _on_aura_removed(source_fighter: Fighter, aura_status: Status) -> void:
+	#pass
 
 func has_status(status_id: String) -> bool:
 	return combatant.status_grid._has_status(status_id)

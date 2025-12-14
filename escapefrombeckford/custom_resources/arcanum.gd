@@ -11,16 +11,27 @@ enum Type {START_OF_TURN, START_OF_COMBAT, END_OF_TURN, END_OF_COMBAT, EVENT_BAS
 @export_multiline var flavor_text: String
 @export_multiline var lore: String
 
-func activate_arcanum(arcanum_display: ArcanumDisplay) -> void:
+var arcanum_display: ArcanumDisplay
+
+func activate_arcanum(_arcanum_display: ArcanumDisplay) -> void:
 	pass
+
+func get_modifier_tokens() -> Array[ModifierToken]:
+	return []
+
+func contributes_modifier() -> bool:
+	return false
+
+func get_contributed_modifier_types() -> Array[Modifier.Type]:
+	return []
 
 # This method should be implemented by event-based arcana
 # that connect to the Events bus to make sure that they
 # are disconnected when an arcanum is removed.
-func deactivate_arcanum(arcanum_display: ArcanumDisplay) -> void:
+func deactivate_arcanum(_arcanum_display: ArcanumDisplay) -> void:
 	pass
 
-func initialize_arcanum(arcanum_display: ArcanumDisplay) -> void:
+func initialize_arcanum(_arcanum_display: ArcanumDisplay) -> void:
 	pass
 
 func get_tooltip() -> String:

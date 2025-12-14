@@ -14,6 +14,7 @@ func _set_arcanum(new_arcanum: Arcanum) -> void:
 	if !is_node_ready():
 		await ready
 	arcanum = new_arcanum
+	arcanum.arcanum_display = self
 	icon.texture = arcanum.icon
 
 func flash() -> void:

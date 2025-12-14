@@ -3,8 +3,8 @@ class_name PinpointStatus extends Status
 const ID := "pinpoint"
 const MULT_VALUE := 0.5
 
-func init_status(_target: Node) -> void:
-	pass
+#func init_status(_target: Node) -> void:
+	#pass
 	#assert(target.get("modifier_system"), "No modifier on %s" % target)
 	#var dmg_taken_modifier: Modifier = (target as Fighter).modifier_system.get_modifier(Modifier.Type.DMG_TAKEN)
 	#assert(dmg_taken_modifier, "No dmg taken modifier on %s" % target)

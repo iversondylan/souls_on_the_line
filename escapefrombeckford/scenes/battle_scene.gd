@@ -2,6 +2,7 @@ class_name BattleScene extends Node2D
 
 @onready var groups: Array[BattleGroup] = [$BattleGroupFriendly, $BattleGroupEnemy]
 var deck: Deck : set = _set_deck
+#var run_account: RunAccount
 
 func _ready() -> void:
 	for group : BattleGroup in groups:
@@ -120,8 +121,8 @@ func get_front_combatant(battle_group_index: int) -> Fighter:
 			return child_combatant
 	return null
 
-func get_front_or_focus(battle_group_index: int) -> Fighter:
-	return groups[battle_group_index].get_front_or_focus()
+#func get_front_or_focus(battle_group_index: int) -> Fighter:
+	#return groups[battle_group_index].get_front_or_focus()
 
 func get_other_battle_group(idx: int) -> BattleGroup:
 	if groups.size() != 2:
@@ -225,7 +226,8 @@ func get_modifier_tokens_for(fighter: Fighter) -> Array[ModifierToken]:
 						# Non-aura TARGET token: only for its explicit owner
 						if token.owner == fighter:
 							tokens.append(token)
-
+	# Arcana / run-wide
+	tokens.append_array(run_account.get_modifier_tokens())
 	return tokens
 	#var tokens: Array[ModifierToken] = []
 #

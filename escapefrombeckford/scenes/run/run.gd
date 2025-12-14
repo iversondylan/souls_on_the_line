@@ -114,6 +114,7 @@ func _init_top_bar() -> void:
 
 func _on_battle_entered(room: Room) -> void:
 	var battle_scn: Battle = _change_view(BATTLE_SCN) as Battle
+	#battle_scn.run_account = account
 	battle_scn.player_data = player_data
 	battle_scn.deck = deck
 	battle_scn.battle_data = room.battle_data

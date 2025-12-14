@@ -1,12 +1,10 @@
-[gd_resource type="Resource" script_class="EchoedCrueltyStatus" load_steps=4 format=3 uid="uid://da5t2wbovt8qx"]
+[gd_resource type="Resource" script_class="EchoedCrueltyStatus" load_steps=3 format=3 uid="uid://da5t2wbovt8qx"]
 
 [ext_resource type="Texture2D" uid="uid://cwl6v4fdaiv58" path="res://assets/sprites/card_elements/wrathful_intent/shadow.png" id="1_18iun"]
 [ext_resource type="Script" uid="uid://0oai3oy81n86" path="res://statuses/echoed_cruelty.gd" id="2_dcqir"]
-[ext_resource type="Resource" uid="uid://dj7pixubmwnwc" path="res://statuses/cruelty_echoes.tres" id="3_dcqir"]
 
 [resource]
 script = ExtResource("2_dcqir")
-aura_secondary = ExtResource("3_dcqir")
 id = "echoed cruelty"
 stack_type = 1
 intensity = 2
