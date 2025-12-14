@@ -8,10 +8,8 @@ const STATUS_DISPLAY_SCN = preload("res://scenes/status_handler/status_display.t
 
 var status_parent: Fighter
 var battle_scene: BattleScene
-#var inactive_aura_secondaries: Array[AuraSecondary] = []
 
 func _ready() -> void:
-	#Events.auras_requested.connect(_on_auras_requested)
 	_update_visuals()
 
 func apply_statuses_by_type(proc_type: Status.ProcType) -> void:
@@ -33,26 +31,6 @@ func apply_statuses_by_type(proc_type: Status.ProcType) -> void:
 	
 	tween.finished.connect(func(): statuses_applied.emit(proc_type))
 
-#func add_and_get_aura_secondary(status: AuraSecondary) -> AuraSecondary:
-	##this currently has no safety check that the status is an aura secondary status
-	#aura_registry[source] = status
-	#
-	#var most_intense_status: Status = null
-	#
-	#for key in aura_registry:
-		#if !most_intense_status and (aura_registry[key] as Status).id == status.id:
-			#most_intense_status = aura_registry[key]
-		#elif aura_registry[key] > most_intense_status and (aura_registry[key] as Status).id == status.id:
-			#most_intense_status = aura_registry[key]
-	#return most_intense_status
-
-#func get_aura_primaries() -> Array[Status]:
-	#var aura_primaries: Array[Status] = []
-	#for status_display: StatusDisplay in get_children():
-		#if status_display.status is AuraPrimary:
-			#aura_primaries.push_back(status_display.status)
-	#return aura_primaries
-
 func get_modifier_tokens() -> Array[ModifierToken]:
 	var tokens: Array[ModifierToken] = []
 	
@@ -63,10 +41,8 @@ func get_modifier_tokens() -> Array[ModifierToken]:
 
 func add_status(status: Status) -> void:
 	
-	#status.battle_scene = battle_scene
 	var stackable := status.stack_type != Status.StackType.NONE
 	
-	# Add it if it's new
 	if !_has_status(status.id):
 		var new_status_display := STATUS_DISPLAY_SCN.instantiate() as StatusDisplay
 		add_child(new_status_display)
@@ -78,24 +54,9 @@ func add_status(status: Status) -> void:
 		mark_dirty_for_status(status)
 		_update_visuals()
 		return
-	#elif status is AuraSecondary:
-		#add_or_replace_aura_secondary(status)
-		#var most_intense_aura_secondary := get_most_intense_aura_secondary(status)
-		#reconfigure_aura_secondaries_and_init(most_intense_aura_secondary)
-	
-	# If it's unique and exists, there's no effect
 	if !status.can_expire and !stackable:
 		return
 	
-	# If it's an aura secondary, intensity must be replaced, not added
-	# and only the most intense should be active and visible
-	#if status is AuraSecondary:
-		#_get_status(status.id).intensity = status.intensity
-		#mark_dirty_for_status(status)
-		#_update_visuals()
-		#return
-	
-	# If it's duration-stackable, extend it
 	if status.can_expire and status.stack_type == Status.StackType.DURATION:
 		_get_status(status.id).duration += status.duration
 		mark_dirty_for_status(status)
@@ -114,55 +75,8 @@ func mark_dirty_for_status(status: Status) -> void:
 
 	for mod_type in status.get_contributed_modifier_types():
 		status_parent.modifier_system.mark_dirty(mod_type)
-
-		#notify BattleScene immediately
+	
 		modifier_tokens_changed.emit(mod_type)
-	#if status.contributes_modifier():
-		#for mod_type in status.get_contributed_modifier_types():
-			#status_parent.modifier_system.mark_dirty(mod_type)
-
-#func get_most_intense_aura_secondary(new_aura_secondary: AuraSecondary) -> AuraSecondary:
-	#var most_intense_aura_secondary: AuraSecondary = new_aura_secondary
-	#for aura_secondary in inactive_aura_secondaries:
-		#if new_aura_secondary.id == new_aura_secondary.id and aura_secondary.intensity > most_intense_aura_secondary.intensity:
-			#most_intense_aura_secondary = aura_secondary
-	#for status_display: StatusDisplay in get_children():
-		#if status_display.status.id == new_aura_secondary.id and status_display.status.intensity > most_intense_aura_secondary.intensity:
-			#most_intense_aura_secondary = status_display.status
-	#return most_intense_aura_secondary
-
-#func add_or_replace_aura_secondary(new_aura_secondary: AuraSecondary) -> void:
-	#var auras_with_same_source: Array[AuraSecondary] = []
-	#for aura_secondary in inactive_aura_secondaries:
-		#if aura_secondary.source == new_aura_secondary.source:
-			#auras_with_same_source.push_back(aura_secondary)
-	#for aura_secondary in auras_with_same_source:
-		#inactive_aura_secondaries.erase(aura_secondary)
-	#
-	#var status_display_with_this_aura := get_status_display_with_this_aura_id(new_aura_secondary)
-	#if new_aura_secondary.source == (status_display_with_this_aura.status as AuraSecondary).source:
-		#status_display_with_this_aura.status = new_aura_secondary
-	#else:
-		#inactive_aura_secondaries.push_back(new_aura_secondary)
-
-#func get_status_display_with_this_aura_id(aura_secondary: AuraSecondary) -> StatusDisplay:
-	#var status_display_with_this_aura: StatusDisplay = null
-	#for status_dislay: StatusDisplay in get_children():
-		#if !status_dislay.status:
-			#continue
-		#if status_dislay.status.id == aura_secondary.id:
-			#assert(not status_display_with_this_aura, "status_grid.gd reconfigure_aura_secondaries() ERROR: there are multiple status displays of this status id")
-			#status_display_with_this_aura = status_dislay
-	#return status_display_with_this_aura
-
-#func reconfigure_aura_secondaries_and_init(most_intense_aura_secondary: AuraSecondary) -> void:
-	#var status_display_with_this_aura := get_status_display_with_this_aura_id(most_intense_aura_secondary)
-	#if most_intense_aura_secondary == status_display_with_this_aura.status:
-		#status_display_with_this_aura.status.init_status(status_parent)
-		#return
-	#inactive_aura_secondaries.erase(most_intense_aura_secondary)
-	#status_display_with_this_aura.status = most_intense_aura_secondary
-	#status_display_with_this_aura.status.init_status(status_parent)
 
 func _has_status(id: String) -> bool:
 	for status_display: StatusDisplay in get_children():
@@ -191,10 +105,6 @@ func _on_status_applied(status: Status) -> void:
 func _update_visuals() -> void:
 	reset_size()
 	position.x = -0.5 * size.x
-
-#func _on_auras_requested(requester: Fighter) -> void:
-	#for aura_primary: Status in get_aura_primaries():
-		#requester.on_aura_changed(status_parent, aura_primary)
 
 
 func _on_gui_input(event: InputEvent) -> void:

@@ -21,17 +21,17 @@ func get_contributed_modifier_types() -> Array[Modifier.Type]:
 
 
 
-func initialize_arcanum(_arcanum_display: ArcanumDisplay) -> void:
-	Events.request_shop_modifiers.connect(add_shop_modifier.bind(arcanum_display))
-	Events.shop_modifier_acquired.emit()
-
-
-
-func deactivate_relic(_arcanum_display: ArcanumDisplay) -> void:
-	Events.shop_entered.disconnect(add_shop_modifier)
-
-func add_shop_modifier(shop: Shop, arcanum_display: ArcanumDisplay) -> void:
-	arcanum_display.flash()
+#func initialize_arcanum(_arcanum_display: ArcanumDisplay) -> void:
+	#Events.request_shop_modifiers.connect(add_shop_modifier.bind(arcanum_display))
+	#Events.shop_modifier_acquired.emit()
+#
+#
+#
+#func deactivate_relic(_arcanum_display: ArcanumDisplay) -> void:
+	#Events.shop_entered.disconnect(add_shop_modifier)
+#
+#func add_shop_modifier(shop: Shop, arcanum_display: ArcanumDisplay) -> void:
+	#arcanum_display.flash()
 	
 	#var shop_cost_modifier := shop.modifier_system.get_modifier(Modifier.Type.SHOP_COST)
 	#assert(shop_cost_modifier, "No shop cost modifier in shop.")
