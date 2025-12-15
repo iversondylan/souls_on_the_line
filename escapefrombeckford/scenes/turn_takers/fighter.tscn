@@ -1,9 +1,8 @@
-[gd_scene load_steps=5 format=3 uid="uid://hmlq44lm1hhy"]
+[gd_scene load_steps=4 format=3 uid="uid://hmlq44lm1hhy"]
 
 [ext_resource type="Script" uid="uid://cvnmw8uy8jnjp" path="res://scenes/turn_takers/fighter.gd" id="1_uuo64"]
 [ext_resource type="PackedScene" uid="uid://dghmlrg1poqs7" path="res://scenes/combatant.tscn" id="3_1ndhb"]
 [ext_resource type="PackedScene" uid="uid://dyge25hnclouq" path="res://scenes/modifier_system/modifier_system.tscn" id="3_3jkxi"]
-[ext_resource type="PackedScene" uid="uid://ckffsg04h2eyw" path="res://scenes/modifier_system/modifier.tscn" id="4_tww78"]
 
 [node name="Fighter" type="Node2D"]
 script = ExtResource("1_uuo64")
@@ -11,11 +10,3 @@ script = ExtResource("1_uuo64")
 [node name="Combatant" parent="." instance=ExtResource("3_1ndhb")]
 
 [node name="ModifierSystem" parent="." instance=ExtResource("3_3jkxi")]
-
-[node name="DmgDealtModifier" parent="ModifierSystem" instance=ExtResource("4_tww78")]
-
-[node name="DmgTakenModifier" parent="ModifierSystem" instance=ExtResource("4_tww78")]
-type = 1
-
-[node name="CardCostModifier" parent="ModifierSystem" instance=ExtResource("4_tww78")]
-type = 2

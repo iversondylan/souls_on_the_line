@@ -12,8 +12,8 @@ var run: Run
 func _ready() -> void:
 	for type in Modifier.Type.values():
 		_dirty[type] = true
-	for modifier: Modifier in get_children():
-		modifier.modifier_changed.connect(_modifier_changed)
+	#for modifier: Modifier in get_children():
+		#modifier.modifier_changed.connect(_modifier_changed)
 
 func get_modified_value(base: int, type: Modifier.Type) -> int:
 	print("modifier_system.gd get_modified_value() owner: %s base: %s, type: %s" % [get_parent(), base, Modifier.Type.keys()[type]])

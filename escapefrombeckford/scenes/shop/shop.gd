@@ -30,7 +30,7 @@ func _ready() -> void:
 	
 	Events.shop_card_bought.connect(_on_shop_card_bought)
 	Events.shop_arcanum_bought.connect(_on_shop_arcanum_bought)
-	Events.shop_modifier_acquired.connect(_on_shop_modifier_acquired)
+	#Events.shop_modifier_acquired.connect(_on_shop_modifier_acquired)
 	modifier_system.modifier_changed.connect(_recalculate_prices)
 	
 	_blink_timer_setup()
@@ -82,10 +82,10 @@ func _generate_shop_arcana() -> void:
 		new_shop_arcanum.gold_cost = _get_updated_shop_cost(new_shop_arcanum.gold_cost)
 		new_shop_arcanum.update(run_account)
 
-func get_modifier_tokens() -> Array[ModifierToken]:
-	if arcana_system:
-		return arcana_system.get_modifier_tokens()
-	return []
+#func get_modifier_tokens() -> Array[ModifierToken]:
+	#if arcana_system:
+		#return arcana_system.get_modifier_tokens()
+	#return []
 
 func _get_updated_shop_cost(orig_cost: int) -> int:
 	return modifier_system.get_modified_value(orig_cost, Modifier.Type.SHOP_COST)
@@ -117,9 +117,9 @@ func _on_shop_arcanum_bought(arcanum: Arcanum, gold_cost: int) -> void:
 	run_account.gold -= gold_cost
 	_update_items()
 
-func _on_shop_modifier_acquired() -> void:
-	print("_on_shop_modifier_acquired")
-	Events.request_shop_modifiers.emit(self)
+#func _on_shop_modifier_acquired() -> void:
+	#print("_on_shop_modifier_acquired")
+	#Events.request_shop_modifiers.emit(self)
 
 func on_modifier_tokens_changed(mod_type: Modifier.Type) -> void:
 	modifier_system.mark_dirty(mod_type)

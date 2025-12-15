@@ -1,9 +1,8 @@
-[gd_scene load_steps=6 format=3 uid="uid://4btlny3vkuo7"]
+[gd_scene load_steps=5 format=3 uid="uid://4btlny3vkuo7"]
 
 [ext_resource type="Script" uid="uid://d3ce1fryycd5t" path="res://scenes/turn_takers/enemy.gd" id="1_w30da"]
 [ext_resource type="PackedScene" uid="uid://dghmlrg1poqs7" path="res://scenes/combatant.tscn" id="2_irlvq"]
 [ext_resource type="PackedScene" uid="uid://dyge25hnclouq" path="res://scenes/modifier_system/modifier_system.tscn" id="3_heb07"]
-[ext_resource type="PackedScene" uid="uid://ckffsg04h2eyw" path="res://scenes/modifier_system/modifier.tscn" id="4_ha5k6"]
 [ext_resource type="PackedScene" uid="uid://2t8myn8agsqh" path="res://scenes/turn_takers/behaviors/npcai_behavior.tscn" id="5_ha5k6"]
 
 [node name="Enemy" type="Node2D" groups=["enemies"]]
@@ -12,13 +11,5 @@ script = ExtResource("1_w30da")
 [node name="Combatant" parent="." instance=ExtResource("2_irlvq")]
 
 [node name="ModifierSystem" parent="." instance=ExtResource("3_heb07")]
-
-[node name="DmgDealtModifier" parent="ModifierSystem" instance=ExtResource("4_ha5k6")]
-
-[node name="DmgTakenModifier" parent="ModifierSystem" instance=ExtResource("4_ha5k6")]
-type = 1
-
-[node name="CardCostModifier" parent="ModifierSystem" instance=ExtResource("4_ha5k6")]
-type = 2
 
 [node name="NPCAIBehavior" parent="." instance=ExtResource("5_ha5k6")]

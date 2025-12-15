@@ -1,9 +1,8 @@
-[gd_scene load_steps=7 format=3 uid="uid://bsbjpqdmo8sfe"]
+[gd_scene load_steps=6 format=3 uid="uid://bsbjpqdmo8sfe"]
 
 [ext_resource type="Script" uid="uid://c0vkpxx23mmsl" path="res://scenes/turn_takers/player.gd" id="1_gnj2e"]
 [ext_resource type="PackedScene" uid="uid://dghmlrg1poqs7" path="res://scenes/combatant.tscn" id="3_fypcg"]
 [ext_resource type="PackedScene" uid="uid://dyge25hnclouq" path="res://scenes/modifier_system/modifier_system.tscn" id="3_krq2t"]
-[ext_resource type="PackedScene" uid="uid://ckffsg04h2eyw" path="res://scenes/modifier_system/modifier.tscn" id="4_gnj2e"]
 [ext_resource type="PackedScene" uid="uid://cvtelvimr3235" path="res://scenes/turn_takers/behaviors/friendly_behavior.tscn" id="5_gnj2e"]
 [ext_resource type="PackedScene" uid="uid://pqwbdekjih3e" path="res://scenes/turn_takers/behaviors/player_behavior.tscn" id="6_e4ilh"]
 
@@ -13,14 +12,6 @@ script = ExtResource("1_gnj2e")
 [node name="Combatant" parent="." instance=ExtResource("3_fypcg")]
 
 [node name="ModifierSystem" parent="." instance=ExtResource("3_krq2t")]
-
-[node name="DmgDealtModifier" parent="ModifierSystem" instance=ExtResource("4_gnj2e")]
-
-[node name="DmgTakenModifier" parent="ModifierSystem" instance=ExtResource("4_gnj2e")]
-type = 1
-
-[node name="CardCostModifier" parent="ModifierSystem" instance=ExtResource("4_gnj2e")]
-type = 2
 
 [node name="FriendlyBehavior" parent="." instance=ExtResource("5_gnj2e")]
 
