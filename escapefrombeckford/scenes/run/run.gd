@@ -8,6 +8,8 @@ const CAMPFIRE_SCN := preload("res://scenes/campfire/campfire.tscn")
 const SHOP_SCN := preload("res://scenes/shop/shop.tscn")
 const TREASURE_SCN := preload("res://scenes/treasure/treasure_room.tscn")
 
+
+
 @export var run_startup: RunStartup
 
 @onready var map: Map = $Map
@@ -37,6 +39,7 @@ var available_arcana: Arcana
 var deck: Deck
 
 func _ready() -> void:
+	arcana_system.modifier_tokens_changed.connect(_on_modifier_tokens_changed)
 	if !run_startup:
 		return
 	
@@ -126,6 +129,7 @@ func _on_rest_site_entered() -> void:
 	campfire.player_data = player_data
 
 func _on_shop_entered() -> void:
+	print("run.gd _on_shop_entered()")
 	var shop := _change_view(SHOP_SCN) as Shop
 	shop.run = self
 	shop.player_data = player_data
@@ -194,4 +198,14 @@ func _get_active_battle_scene() -> BattleScene:
 		return view.battle_scene
 	return null
 	
-	
+func _on_modifier_tokens_changed(mod_type: Modifier.Type) -> void:
+	if current_view.get_child_count() == 0:
+		return
+
+	var view := current_view.get_child(0)
+
+	if view.has_method("on_modifier_tokens_changed"):
+		view.on_modifier_tokens_changed(mod_type)
+	#for fighter in get_all_combatants():
+		#if fighter.is_alive():
+			#fighter.modifier_system.mark_dirty(mod_type)

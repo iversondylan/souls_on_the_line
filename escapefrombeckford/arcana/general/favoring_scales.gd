@@ -4,14 +4,23 @@ const ID := "favoring_scales"
 
 @export_range(1, 100) var discount := 50
 
-func get_modifier_tokens() -> Array[ModifierToken]:
+func get_modifier_tokens_for(_target: Node) -> Array[ModifierToken]:
 	var token := ModifierToken.new()
 	token.type = Modifier.Type.SHOP_COST
 	token.mult_value = -discount / 100.0
 	token.scope = ModifierToken.Scope.GLOBAL
 	token.source_id = ID
-	token.owner = arcanum_display # or ArcanaSystem
+	token.owner = arcanum_display
 	return [token]
+
+#func get_modifier_tokens() -> Array[ModifierToken]:
+	#var token := ModifierToken.new()
+	#token.type = Modifier.Type.SHOP_COST
+	#token.mult_value = -discount / 100.0
+	#token.scope = ModifierToken.Scope.GLOBAL
+	#token.source_id = ID
+	#token.owner = arcanum_display # or ArcanaSystem
+	#return [token]
 
 func contributes_modifier() -> bool:
 	return true

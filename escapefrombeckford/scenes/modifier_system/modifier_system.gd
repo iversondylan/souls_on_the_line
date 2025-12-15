@@ -17,10 +17,13 @@ func _ready() -> void:
 
 func get_modified_value(base: int, type: Modifier.Type) -> int:
 	print("modifier_system.gd get_modified_value() owner: %s base: %s, type: %s" % [get_parent(), base, Modifier.Type.keys()[type]])
+	print("run is: %s" % run)
 	var mod := get_resolved_modifier(type)
+	print("modified value: %s" % floori((base + mod.flat) * mod.mult))
 	return floori((base + mod.flat) * mod.mult)
 
 func _build_resolved_modifier(type: Modifier.Type) -> ResolvedModifier:
+	print("_build_resolved_modifier()")
 	var result := ResolvedModifier.new()
 
 	for token in get_modifier_tokens_for(type):
@@ -38,7 +41,7 @@ func get_resolved_modifier(type: Modifier.Type) -> ResolvedModifier:
 	return resolved
 
 func get_modifier_tokens_for(type: Modifier.Type) -> Array[ModifierToken]:
-	print("get_modifier_tokens_for() start of function")
+	print("get_modifier_tokens_for()")
 	if !run:
 		print("no run")
 		return []
@@ -52,7 +55,7 @@ func get_modifier_tokens_for(type: Modifier.Type) -> Array[ModifierToken]:
 	return relevant
 
 func _compute_modified_value(base: int, type: Modifier.Type) -> int:
-	print("modifier_system.gd _compute_modified_value() base: %s, type: %s" % [base, type])
+	#print("modifier_system.gd _compute_modified_value() base: %s, type: %s" % [base, type])
 	var tokens := get_parent().get_modifier_tokens() as Array[ModifierToken]
 	var applicable: Array[ModifierToken] = []
 
@@ -93,6 +96,7 @@ func _modifier_changed() -> void:
 	modifier_changed.emit()
 
 func mark_dirty(type: Modifier.Type = Modifier.Type.NO_MODIFIER) -> void:
+	print("modifier_system.gd mark_dirty() type: %s" % Modifier.Type.keys()[type])
 	if type == Modifier.Type.NO_MODIFIER:
 		_dirty.clear()
 	else:

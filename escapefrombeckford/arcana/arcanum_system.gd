@@ -5,6 +5,8 @@ class_name ArcanaSystem extends HBoxContainer
 const ARCANUM_APPLY_INTERVAL := 0.5
 const ARCANUM_DISPLAY = preload("res://arcana/arcanum_display.tscn")
 
+signal modifier_tokens_changed(mod_type: Modifier.Type)
+
 @onready var arcana_control: ArcanaControl = $ArcanaControl
 @onready var arcana_container: HBoxContainer = %ArcanaContainer
 
@@ -33,17 +35,6 @@ func get_modifier_tokens_for(target: Node) -> Array[ModifierToken]:
 			)
 
 	return tokens
-
-#func get_modifier_tokens() -> Array[ModifierToken]:
-	#var tokens: Array[ModifierToken] = []
-	#var arcanum_displays := _get_all_arcanum_display_nodes()
-	#for arcanum_display: ArcanumDisplay in arcanum_displays:
-		##var arcanum := arcanum_display.arcanum
-		#if !arcanum_display.arcanum:
-			#continue
-		#if arcanum_display.arcanum.contributes_modifier():
-			#tokens.append_array(arcanum_display.arcanum.get_modifier_tokens())
-	#return tokens
 
 func activate_arcana_by_type(type: Arcanum.Type) -> void:
 	if type == Arcanum.Type.EVENT_BASED:
@@ -77,6 +68,10 @@ func add_arcanum(arcanum: Arcanum) -> void:
 	arcana_container.add_child(new_arcanum_display)
 	new_arcanum_display.arcanum = arcanum
 	new_arcanum_display.arcanum.initialize_arcanum(new_arcanum_display)
+	
+	if arcanum.contributes_modifier():
+		for mod_type in arcanum.get_contributed_modifier_types():
+			modifier_tokens_changed.emit(mod_type)
 
 func has_arcanum(id: String) -> bool:
 	for arcanum_display: ArcanumDisplay in arcana_container.get_children():

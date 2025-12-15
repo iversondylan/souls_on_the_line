@@ -195,6 +195,8 @@ func get_enemy_fighters_of(source: Fighter) -> Array[Fighter]:
 
 ##Numerical Modifier System
 func get_modifier_tokens_for(fighter: Fighter) -> Array[ModifierToken]:
+	
+	
 	var tokens: Array[ModifierToken] = []
 
 	for combatant in get_all_combatants():
@@ -205,6 +207,8 @@ func get_modifier_tokens_for(fighter: Fighter) -> Array[ModifierToken]:
 		var same_group := source.battle_group == fighter.battle_group
 
 		for token in source.combatant.status_grid.get_modifier_tokens():
+			if token.scope == ModifierToken.Scope.GLOBAL and token.tags.has(Aura.AURA_SECONDARY_FLAG):
+				push_error("Aura token must not be GLOBAL: %s" % token.source_id)
 			match token.scope:
 				ModifierToken.Scope.GLOBAL:
 					# Always applies to everyone
@@ -236,23 +240,6 @@ func get_modifier_tokens_for(fighter: Fighter) -> Array[ModifierToken]:
 	# Arcana / run-wide
 	#tokens.append_array(run_account.get_modifier_tokens())
 	return tokens
-	#var tokens: Array[ModifierToken] = []
-#
-	#for combatant in get_all_combatants():
-		#if !combatant.is_alive():
-			#continue
-		#for token in combatant.combatant.status_grid.get_modifier_tokens():
-			#match token.scope:
-				#ModifierToken.Scope.GLOBAL:
-					#tokens.append(token)
-				#ModifierToken.Scope.SELF:
-					#if combatant == fighter:
-						#tokens.append(token)
-				#ModifierToken.Scope.TARGET:
-					#if token.owner == fighter:
-						#tokens.append(token)
-#
-	#return tokens
 
 func _passes_aura_rules(source: Fighter, target: Fighter, aura: Aura) -> bool:
 	# Always apply to self

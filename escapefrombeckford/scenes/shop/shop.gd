@@ -15,7 +15,12 @@ const SHOP_ARCANUM_SCN = preload("res://scenes/shop/shop_arcanum.tscn")
 @onready var card_tooltip_popup: CardTooltipPopup = %CardTooltipPopup
 @onready var modifier_system: ModifierSystem = $ModifierSystem
 
-var run: Run
+var run: Run: set = _set_run
+
+func _set_run(value) -> void:
+		run = value
+		if modifier_system:
+			modifier_system.run = run
 
 func _ready() -> void:
 	for shop_card: ShopCard in card_container.get_children():
@@ -115,3 +120,6 @@ func _on_shop_arcanum_bought(arcanum: Arcanum, gold_cost: int) -> void:
 func _on_shop_modifier_acquired() -> void:
 	print("_on_shop_modifier_acquired")
 	Events.request_shop_modifiers.emit(self)
+
+func on_modifier_tokens_changed(mod_type: Modifier.Type) -> void:
+	modifier_system.mark_dirty(mod_type)

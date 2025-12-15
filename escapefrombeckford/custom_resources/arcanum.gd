@@ -16,7 +16,7 @@ var arcanum_display: ArcanumDisplay
 func activate_arcanum(_arcanum_display: ArcanumDisplay) -> void:
 	pass
 
-func get_modifier_tokens() -> Array[ModifierToken]:
+func get_modifier_tokens_for(_target: Node) -> Array[ModifierToken]:
 	return []
 
 func contributes_modifier() -> bool:

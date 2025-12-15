@@ -76,12 +76,6 @@ func _set_deck(_deck: Deck) -> void:
 	hand.deck = deck
 	battle_scene.deck = deck
 
-#func _set_run_account(new_run_account: RunAccount) -> void:
-	#run_account = new_run_account
-	#if !is_node_ready():
-		#await ready
-	#battle_scene.run_account = run_account
-
 func initialize_card_pile_ui() -> void:
 	draw_pile_button.card_pile = deck.draw_pile
 	
@@ -217,3 +211,6 @@ func _on_kill_enemies_button_pressed() -> void:
 
 func _on_pre_game_ended() -> void:
 	pass
+
+func on_modifier_tokens_changed(mod_type: Modifier.Type) -> void:
+	battle_scene._on_modifier_tokens_changed(mod_type)
