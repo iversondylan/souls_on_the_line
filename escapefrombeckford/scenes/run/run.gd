@@ -12,6 +12,10 @@ const TREASURE_SCN := preload("res://scenes/treasure/treasure_room.tscn")
 
 @export var run_startup: RunStartup
 
+##Main menu startup will need to populate 
+##this variable before changing scenes.
+#@export var arcana_catalog: Arcana
+
 @onready var map: Map = $Map
 
 @onready var current_view: Node = $CurrentView
@@ -30,26 +34,36 @@ const TREASURE_SCN := preload("res://scenes/treasure/treasure_room.tscn")
 @onready var campfire_button: Button = %CampfireButton
 @onready var health_panel: HealthBar = $TopBar/Items/HealthPanel
 
+#@onready var arcana_catalog: Arcana = load("res://arcana/arcana_catalog_2.tres")
+
 
 var account: RunAccount
 var player_data: PlayerData
+var arcana_catalog: Arcana
+#var arcana_reward_pool: ArcanaRewardPool
 var starting_deck: CardPile
 var draftable_cards: CardPile
-var available_arcana: Arcana
+#var available_arcana: Arcana
 var deck: Deck
 
 func _ready() -> void:
 	arcana_system.modifier_tokens_changed.connect(_on_modifier_tokens_changed)
 	if !run_startup:
 		return
-	
+	#print("arcana_catalog resource path:", arcana_catalog.resource_path)
+	#print("arcana count:", arcana_catalog.arcana.size())
+	#print("Arcana catalog: ", arcana_catalog)
+	#print("catalog length: ", arcana_catalog.arcana.size())
+	#for arcanum: Arcanum in arcana_catalog.arcana:
+		#print("arcanum: %s" % arcanum)
 	match run_startup.startup_type:
 		RunStartup.StartupType.NEW_RUN:
 			player_data = run_startup.player_data.create_instance()
 			player_data.set_health(player_data.max_health)
 			starting_deck = run_startup.player_data.starting_deck.duplicate()
 			draftable_cards = run_startup.player_data.draftable_cards.duplicate()
-			available_arcana = run_startup.player_data.possible_arcana.duplicate()
+			#arcana_reward_pool = run_startup.player_data.arcana_reward_pool.duplicate()
+			arcana_catalog = run_startup.arcana_catalog.duplicate()
 			print("run.gd STARTING RUN WITH NEW CHARACTER")
 			_start_run()
 		RunStartup.StartupType.CONTINUED_RUN:
@@ -135,6 +149,8 @@ func _on_shop_entered() -> void:
 	shop.player_data = player_data
 	shop.run_account = account
 	shop.arcana_system = arcana_system
+	shop.arcana_catalog = arcana_catalog
+	shop.arcana_reward_pool = player_data.arcana_reward_pool
 	Events.request_shop_modifiers.emit(shop)
 	shop.populate_shop()
 

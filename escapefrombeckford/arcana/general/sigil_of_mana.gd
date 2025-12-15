@@ -1,5 +1,7 @@
 extends Arcanum
 
+const ID := "sigil_of_mana"
+
 var member_var := 0
 
 func activate_arcanum(arcanum_display: ArcanumDisplay) -> void:

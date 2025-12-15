@@ -1,15 +1,11 @@
-[gd_resource type="Resource" script_class="RunStartup" load_steps=6 format=3 uid="uid://ck8qxvs3me11h"]
+[gd_resource type="Resource" script_class="RunStartup" load_steps=4 format=3 uid="uid://ck8qxvs3me11h"]
 
-[ext_resource type="Resource" uid="uid://gsb7q5fcn68v" path="res://fighters/Player/cole_basic_deck.tres" id="1_fwnab"]
-[ext_resource type="Resource" uid="uid://c2vwnaxjh24mf" path="res://fighters/Player/cole_arcana.tres" id="1_mfh37"]
+[ext_resource type="Resource" uid="uid://dk5tv1hrr615d" path="res://arcana/arcana_catalog.tres" id="1_fwnab"]
 [ext_resource type="Script" uid="uid://dlxexdxlypm2o" path="res://scenes/run/run_startup.gd" id="1_ujbn8"]
-[ext_resource type="Resource" uid="uid://bb2svevqwn2v7" path="res://fighters/Player/cole_draftable_cards.tres" id="2_mfh37"]
 [ext_resource type="Resource" uid="uid://cv7ssxqkw1opq" path="res://fighters/Player/cole_data.tres" id="3_onvgd"]
 
 [resource]
 script = ExtResource("1_ujbn8")
 player_data = ExtResource("3_onvgd")
-deck = ExtResource("1_fwnab")
-draftable_cards = ExtResource("2_mfh37")
-available_arcana = ExtResource("1_mfh37")
+arcana_catalog = ExtResource("1_fwnab")
 metadata/_custom_type_script = "uid://dlxexdxlypm2o"

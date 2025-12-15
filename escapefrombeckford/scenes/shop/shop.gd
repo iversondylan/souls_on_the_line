@@ -16,6 +16,8 @@ const SHOP_ARCANUM_SCN = preload("res://scenes/shop/shop_arcanum.tscn")
 @onready var modifier_system: ModifierSystem = $ModifierSystem
 
 var run: Run: set = _set_run
+var arcana_reward_pool: ArcanaRewardPool
+var arcana_catalog: Arcana
 
 func _set_run(value) -> void:
 		run = value
@@ -67,20 +69,41 @@ func _generate_shop_cards() -> void:
 		new_shop_card.update(run_account)
 
 func _generate_shop_arcana() -> void:
-	var shop_arcanaz: Array[Arcanum] = []
-	var available_arcana := player_data.possible_arcana.arcana.filter(
-		func(arcanum: Arcanum):
-			return !arcana_system.has_arcanum(arcanum.id)
-	) as Array[Arcanum]
-	available_arcana.shuffle()
-	shop_arcanaz = available_arcana.slice(0, 3)
-	
-	for arcanum: Arcanum in shop_arcanaz:
-		var new_shop_arcanum := SHOP_ARCANUM_SCN.instantiate() as ShopArcanum
-		arcanum_container.add_child(new_shop_arcanum)
-		new_shop_arcanum.arcanum = arcanum
-		new_shop_arcanum.gold_cost = _get_updated_shop_cost(new_shop_arcanum.gold_cost)
-		new_shop_arcanum.update(run_account)
+	var eligible_arcana: Array[Arcanum] = []
+	print("_generate_shop_arcana()")
+	for arcanum_id: String in arcana_reward_pool.allowed_ids:
+		print("_generate_shop_arcana() arcanum_id: %s" % arcanum_id)
+	for arcanum: Arcanum in arcana_catalog.arcana:
+		print("shop.gd _generate_shop_arcana() looping arcana: %s" % arcanum.id)
+		if is_arcanum_eligible(arcanum):
+			eligible_arcana.append(arcanum)
+
+	if eligible_arcana.is_empty():
+		print("shop.gd _generate_shop_arcana() arcana empty" % eligible_arcana)
+		return
+	#print("shop.gd _generate_shop_arcana() eligible_arcana: %s" % eligible_arcana)
+	eligible_arcana.shuffle()
+
+	for arcanum: Arcanum in eligible_arcana.slice(0, 3):
+		var shop_arcanum := SHOP_ARCANUM_SCN.instantiate() as ShopArcanum
+		arcanum_container.add_child(shop_arcanum)
+		shop_arcanum.arcanum = arcanum
+		shop_arcanum.gold_cost = _get_updated_shop_cost(shop_arcanum.gold_cost)
+		shop_arcanum.update(run_account)
+	#var shop_arcanaz: Array[Arcanum] = []
+	#var available_arcana := player_data.possible_arcana.arcana.filter(
+		#func(arcanum: Arcanum):
+			#return !arcana_system.has_arcanum(arcanum.id)
+	#) as Array[Arcanum]
+	#available_arcana.shuffle()
+	#shop_arcanaz = available_arcana.slice(0, 3)
+	#
+	#for arcanum: Arcanum in shop_arcanaz:
+		#var new_shop_arcanum := SHOP_ARCANUM_SCN.instantiate() as ShopArcanum
+		#arcanum_container.add_child(new_shop_arcanum)
+		#new_shop_arcanum.arcanum = arcanum
+		#new_shop_arcanum.gold_cost = _get_updated_shop_cost(new_shop_arcanum.gold_cost)
+		#new_shop_arcanum.update(run_account)
 
 #func get_modifier_tokens() -> Array[ModifierToken]:
 	#if arcana_system:
@@ -123,3 +146,19 @@ func _on_shop_arcanum_bought(arcanum: Arcanum, gold_cost: int) -> void:
 
 func on_modifier_tokens_changed(mod_type: Modifier.Type) -> void:
 	modifier_system.mark_dirty(mod_type)
+
+func is_arcanum_eligible(arcanum: Arcanum) -> bool:
+	if arcanum.starter_arcanum:
+		print("it's a starter")
+		return false
+	##Note
+	##If performance ever matters:
+	##replace Array.has() with Dictionary or Set
+	if !arcana_reward_pool.allowed_ids.has(arcanum.id):
+		print("it's not in arcana_reward_pool.allowed_ids")
+		return false
+	if arcana_system.has_arcanum(arcanum.id):
+		print("the arcana system already has it")
+		return false
+	print("it's eligible")
+	return true

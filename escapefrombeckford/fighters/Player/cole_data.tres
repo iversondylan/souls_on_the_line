@@ -1,6 +1,7 @@
-[gd_resource type="Resource" script_class="PlayerData" load_steps=8 format=3 uid="uid://cv7ssxqkw1opq"]
+[gd_resource type="Resource" script_class="PlayerData" load_steps=9 format=3 uid="uid://cv7ssxqkw1opq"]
 
 [ext_resource type="Texture2D" uid="uid://ppn4laxwte56" path="res://assets/sprites/assorted/cole.PNG" id="1_8y483"]
+[ext_resource type="Resource" uid="uid://c8kt337vs6465" path="res://fighters/Player/arcana_reward_pool.tres" id="1_fcpfp"]
 [ext_resource type="Script" uid="uid://bql7t8sctwe10" path="res://custom_resources/player_data.gd" id="1_i82qw"]
 [ext_resource type="Resource" uid="uid://bb2svevqwn2v7" path="res://fighters/Player/cole_draftable_cards.tres" id="2_guhpy"]
 [ext_resource type="Texture2D" uid="uid://cd1e7xebxf3sc" path="res://assets/sprites/assorted/cole_portrait.png" id="2_qttha"]
@@ -15,6 +16,7 @@ possible_arcana = ExtResource("3_mgnya")
 starting_deck = ExtResource("7_fcpfp")
 draftable_cards = ExtResource("2_guhpy")
 bonus_starting_gold = 700
+arcana_reward_pool = ExtResource("1_fcpfp")
 name = "Cole"
 description = "Cole creates spectral clones of himself. Once an instructor at Beckford Academy, he now flees with a powerful Artifact, pursued by mages who want it back."
 character_art = ExtResource("1_8y483")

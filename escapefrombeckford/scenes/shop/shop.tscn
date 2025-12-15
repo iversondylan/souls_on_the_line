@@ -1,4 +1,4 @@
-[gd_scene load_steps=15 format=3 uid="uid://csf5mgsw4psnr"]
+[gd_scene load_steps=14 format=3 uid="uid://csf5mgsw4psnr"]
 
 [ext_resource type="Script" uid="uid://d1jkbwk3ol66f" path="res://scenes/shop/shop.gd" id="1_qaxay"]
 [ext_resource type="Texture2D" uid="uid://dqdcx4h1y8epd" path="res://assets/character_visuals/venroy/vencit_1.PNG" id="2_qaxay"]
@@ -8,7 +8,6 @@
 [ext_resource type="PackedScene" uid="uid://c4ioesrs574d7" path="res://scenes/ui/card_tooltip_popup.tscn" id="5_ctpgp"]
 [ext_resource type="PackedScene" uid="uid://6rwtjllgr66t" path="res://scenes/shop/shop_arcanum.tscn" id="5_ptf86"]
 [ext_resource type="PackedScene" uid="uid://dyge25hnclouq" path="res://scenes/modifier_system/modifier_system.tscn" id="8_tp26b"]
-[ext_resource type="PackedScene" uid="uid://ckffsg04h2eyw" path="res://scenes/modifier_system/modifier.tscn" id="9_vk20h"]
 
 [sub_resource type="Gradient" id="Gradient_8pjve"]
 colors = PackedColorArray(0, 0, 0, 1, 0.145099, 0.0492933, 0.00292548, 1)
@@ -195,8 +194,5 @@ unique_name_in_owner = true
 visible = false
 
 [node name="ModifierSystem" parent="." instance=ExtResource("8_tp26b")]
-
-[node name="ShopCostModifier" parent="ModifierSystem" instance=ExtResource("9_vk20h")]
-type = 3
 
 [connection signal="pressed" from="UILayer/BackButton" to="." method="_on_back_button_pressed"]
