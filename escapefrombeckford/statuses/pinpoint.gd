@@ -3,20 +3,6 @@ class_name PinpointStatus extends Status
 const ID := "pinpoint"
 const MULT_VALUE := 0.5
 
-#func init_status(_target: Node) -> void:
-	#pass
-	#assert(target.get("modifier_system"), "No modifier on %s" % target)
-	#var dmg_taken_modifier: Modifier = (target as Fighter).modifier_system.get_modifier(Modifier.Type.DMG_TAKEN)
-	#assert(dmg_taken_modifier, "No dmg taken modifier on %s" % target)
-	#var pinpoint_modifier_value := dmg_taken_modifier.get_value(ID)
-	#
-	#if !pinpoint_modifier_value:
-		#pinpoint_modifier_value = ModifierValue.create_new_modifier(ID, ModifierValue.Type.MULT)
-		#pinpoint_modifier_value.mult_value = MODIFIER
-		#dmg_taken_modifier.add_new_value(pinpoint_modifier_value)
-	#if !status_changed.is_connected(_on_status_changed):
-		#status_changed.connect(_on_status_changed.bind(dmg_taken_modifier))
-
 func get_modifier_tokens() -> Array[ModifierToken]:
 	# If expired, contribute nothing
 	#print("pinpoint.gd get_modifier_tokens()")

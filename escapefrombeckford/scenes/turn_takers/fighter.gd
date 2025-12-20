@@ -243,7 +243,8 @@ func modify_target(ctx: AttackTargetContext) -> void:
 	## Only apply if this fighter is marked.
 	if !is_marked():
 		return
-	
+	if !self.is_alive():
+		return
 	## Check that the attack is targeting this fighter's side.
 	if !_is_attack_targeting_us(ctx):
 		return
