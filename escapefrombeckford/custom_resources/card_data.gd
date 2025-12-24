@@ -49,7 +49,7 @@ const RARITY_COLORS := {
 @export var cost_green: int
 @export var cost_blue: int
 @export var texture: Texture2D
-@export var actions: Array[GDScript] = []
+@export var actions: Array[CardAction] = []
 @export var sound: AudioStream
 
 var card_status: CardStatus

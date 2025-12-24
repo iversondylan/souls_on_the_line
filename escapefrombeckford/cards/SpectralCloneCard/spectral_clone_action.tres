@@ -1,0 +1,9 @@
+[gd_resource type="Resource" load_steps=2 format=3 uid="uid://c5qjmc4akover"]
+
+[ext_resource type="Script" uid="uid://buhtw3540mbls" path="res://cards/SpectralCloneCard/spectral_clone_action.gd" id="1_a8436"]
+
+[resource]
+script = ExtResource("1_a8436")
+action_type = 5
+requires_summon_slot = true
+metadata/_custom_type_script = "uid://wtk5v77fcqvn"

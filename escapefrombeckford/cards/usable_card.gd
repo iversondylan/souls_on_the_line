@@ -65,13 +65,13 @@ func _set_card_data(_card_data: CardData) -> void:
 		await ready
 	card_data = _card_data
 	card_visuals.card_data = card_data
-	for action_script : GDScript in card_data.actions:
-		var new_action = CardAction.new()
-		new_action.set_script(action_script)
-		new_action.card_data = card_data
-		new_action.player = player
-		new_action.battle_scene = battle_scene
-		actions.push_back(new_action)
+	#for action_script : GDScript in card_data.actions:
+		#var new_action = CardAction.new()
+		#new_action.set_script(action_script)
+		#new_action.card_data = card_data
+		#new_action.player = player
+		#new_action.battle_scene = battle_scene
+		#actions.push_back(new_action)
 	_update_graphics()
 	update_description()
 	playable = is_playable()
@@ -107,18 +107,64 @@ func get_cost() -> Array[int]:
 	return [card_data.cost_red, card_data.cost_green, card_data.cost_blue]
 
 func activate() -> bool:
-	var action_processed: bool = false
-	for action : CardAction in actions:
-		action_processed = action.activate(targets)
-	if action_processed: 
-		Events.card_played.emit(self)
-		if card_data.deplete or card_data.card_type == CardData.CardType.POWER:
-			hand.deplete_card(hand.remove_card_by_entity(self))
-		elif card_data.card_type == CardData.CardType.SUMMON:
-			hand.reserve_summon_card(hand.remove_card_by_entity(self))
-		else:
-			hand.discard_card(hand.remove_card_by_entity(self))
-	return action_processed
+	# 1. Resolve targets ONCE
+	var resolved_targets: CardResolvedTarget = resolve_targets(targets)
+	if resolved_targets.is_empty():
+		return false
+
+	# 2. Check playability (safety guard)
+	if !player.can_play_card(card_data):
+		return false
+
+	# 3. Spend mana ONCE (not per action)
+	player.spend_mana(card_data)
+
+	# 4. Build context
+	var resolved := resolve_targets(targets)
+	if resolved.fighters.is_empty() and !resolved.is_battlefield:
+		return false
+
+	var ctx := CardActionContext.new()
+	ctx.player = player
+	ctx.battle_scene = battle_scene
+	ctx.card_data = card_data
+	ctx.resolved_target = resolved
+
+	# 5. Execute actions in order
+	var any_action_executed := false
+	for action: CardAction in card_data.actions:
+		if action.activate(ctx):
+			any_action_executed = true
+
+	# 6. If nothing happened, refund / abort
+	if !any_action_executed:
+		return false
+
+	# 7. Emit event
+	Events.card_played.emit(self)
+
+	# 8. Handle card destination
+	if card_data.deplete or card_data.card_type == CardData.CardType.POWER:
+		hand.deplete_card(hand.remove_card_by_entity(self))
+	elif card_data.card_type == CardData.CardType.SUMMON:
+		hand.reserve_summon_card(hand.remove_card_by_entity(self))
+	else:
+		hand.discard_card(hand.remove_card_by_entity(self))
+
+	return true
+	#var action_processed: bool = false
+	#
+	#for action : CardAction in actions:
+		#action_processed = action.activate(targets)
+	#if action_processed: 
+		#Events.card_played.emit(self)
+		#if card_data.deplete or card_data.card_type == CardData.CardType.POWER:
+			#hand.deplete_card(hand.remove_card_by_entity(self))
+		#elif card_data.card_type == CardData.CardType.SUMMON:
+			#hand.reserve_summon_card(hand.remove_card_by_entity(self))
+		#else:
+			#hand.discard_card(hand.remove_card_by_entity(self))
+	#return action_processed
 
 func _update_graphics():
 	if card_visuals.name_label.get_text() != card_data.name:
@@ -154,12 +200,13 @@ func _set_playable(value: bool) -> void:
 	else:
 		card_visuals.cost_container.set_modulate(Color(1, 1, 1, 1))
 
-func is_playable() -> bool:
-	var currently_playable: bool = true
-	for card_action: CardAction in actions:
-		if !card_action.is_playable():
-			currently_playable = false
-	return currently_playable
+#func is_playable() -> bool:
+	#var currently_playable: bool = true
+	#
+	#for card_action: CardAction in card_data.actions:
+		#if !card_action.is_playable():
+			#currently_playable = false
+	#return currently_playable
 
 func _on_card_drag_or_aiming_ended(_usable_card: UsableCard) -> void:
 	disabled = false
@@ -186,3 +233,67 @@ func is_mouse_over() -> bool:
 	var local_pos = click_area_area2d.to_local(mouse_pos)
 	var extents = shape.extents
 	return abs(local_pos.x) <= extents.x and abs(local_pos.y) <= extents.y
+
+## This function handles checking for and getting Fighters for all 
+## card target types that target fighters. BATTLEFIELD target types
+# should not use it because they target TargetAreaLeft 
+func resolve_targets(new_targets: Array[Node]) -> CardResolvedTarget:
+	
+	var result := CardResolvedTarget.new()
+	
+	match card_data.target_type:
+		CardData.TargetType.SELF:
+			result.fighters = [player]
+		
+		CardData.TargetType.BATTLEFIELD:
+			#var correct_targets: Array[Fighter] = []
+			for target in new_targets:
+				if target is CombatantAreaLeft or target is BattleSceneAreaLeft:
+					result.areas.append(target)
+			result.insert_index = new_targets.size() - 1
+		
+		CardData.TargetType.ALLY_OR_SELF:
+			#var correct_targets: Array[Fighter] = []
+			if new_targets[0] is CombatantTargetArea:
+				if new_targets[0].combatant is Player or new_targets[0].combatant is SummonedAlly:
+					result.fighters = [new_targets[0]]
+		
+		CardData.TargetType.ALLY:
+			#var correct_targets: Array[Fighter]  = []
+			if new_targets[0] is CombatantTargetArea:
+				if new_targets[0].combatant is SummonedAlly:
+					result.fighters = [new_targets[0]]
+		
+		CardData.TargetType.SINGLE_ENEMY:
+			#if !new_targets:
+				#return []
+			#var correct_targets: Array[Fighter]  = []
+			if new_targets[0] is CombatantTargetArea:
+				if new_targets[0].combatant is Enemy:
+					result.fighters = [new_targets[0]]
+		
+		CardData.TargetType.ALL_ENEMIES:
+			result.fighters = battle_scene.get_combatants_in_group(1)# as Array[Fighter]
+		
+		CardData.TargetType.EVERYONE:
+			result.fighters = battle_scene.get_all_combatants()# as Array[Fighter]
+	return result
+
+func is_playable() -> bool:
+	if !player.can_play_card(card_data):
+		return false
+
+	for action in card_data.actions:
+		if action.requires_summon_slot:
+			if battle_scene.get_n_summoned_allies() >= player.combatant_data.max_mana_blue:
+				return false
+
+	return true
+
+func get_fighters(new_targets: Array[Node]) -> Array[Fighter]:
+	var attack_targets: Array[Fighter]
+	for target in new_targets:
+		if target is CombatantTargetArea:
+			if target.combatant is Fighter:
+				attack_targets.push_back(target.combatant)
+	return attack_targets
