@@ -5,7 +5,7 @@ signal modifier_changed()
 var _cache: Dictionary = {}   # Modifier.Type -> ResolvedModifier
 var _dirty: Dictionary = {}   # Modifier.Type -> bool
 
-var dirty: bool = true
+#var dirty: bool = true
 
 var run: Run
 
