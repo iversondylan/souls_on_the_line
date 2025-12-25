@@ -24,13 +24,13 @@ func activate(ctx: CardActionContext) -> bool:
 
 	return true
 
+func get_preview_source_fighter(player: Player, _resolved: CardResolvedTarget) -> Fighter:
+	return player
 
 func get_description(description: String, target: Fighter = null) -> String:
 	if !target:
 		return description
 	return description % [str(target.combatant_data.max_mana_red + bonus_damage), ""]
-
-
 
 func get_unmod_description(description: String) -> String:
 	return description % ["Power", "+" + str(bonus_damage)]

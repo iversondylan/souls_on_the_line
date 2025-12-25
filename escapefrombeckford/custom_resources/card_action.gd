@@ -36,7 +36,8 @@ func is_playable(ctx: CardActionContext) -> bool:
 	#EVERYONE
 #}
 
-
+func get_preview_source_fighter(_player: Player, resolved: CardResolvedTarget) -> Fighter:
+	return null if resolved.fighters.is_empty() else resolved.fighters[0]
 
 func get_description(description: String, _target_enemy: Fighter = null) -> String:
 	return description

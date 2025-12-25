@@ -90,17 +90,10 @@ func get_description() -> String:
 	if card_data.actions.is_empty():
 		return card_data.description
 
-	# Resolve targets the same way activation does
 	var resolved := resolve_targets(targets)
-
-	# Pick a representative fighter for preview, if any
-	var preview_fighter: Fighter = null
-	if !resolved.fighters.is_empty():
-		preview_fighter = resolved.fighters[0]
-
-	# Let the FIRST action handle description formatting
-	# (you can generalize later if needed)
 	var action := card_data.actions[0]
+
+	var preview_fighter := action.get_preview_source_fighter(player, resolved)
 
 	if preview_fighter:
 		return action.get_description(card_data.description, preview_fighter)
