@@ -1,8 +1,8 @@
 extends CardAction
 
-const CRUEL_DOMINION_STATUS := preload("res://statuses/cruel_dominion.tres")
+const PINPOINT_STATUS := preload("res://statuses/pinpoint.tres")
 
-@export var cruel_dominion_intensity: int = 2
+@export var duration: int = 2
 
 func activate(ctx: CardActionContext) -> bool:
 	var targets := ctx.resolved_target.fighters
@@ -12,19 +12,24 @@ func activate(ctx: CardActionContext) -> bool:
 	var status_effect := StatusEffect.new()
 	status_effect.targets = targets
 
-	var cruel_dominion := CRUEL_DOMINION_STATUS.duplicate()
-	cruel_dominion.intensity = cruel_dominion_intensity
+	var pinpoint_status := PINPOINT_STATUS.duplicate()
+	pinpoint_status.duration = duration
 
-	status_effect.status = cruel_dominion
-	status_effect.sound = ctx.card_data.sound
+	status_effect.status = pinpoint_status
 	status_effect.execute()
 
 	return true
 
 
 func get_description(description: String, _target_fighter: Fighter = null) -> String:
-	return description % str(cruel_dominion_intensity)
+	return description % [
+		str(floori(PinpointStatus.MULT_VALUE * 100)),
+		str(duration)
+	]
 
 
 func get_unmod_description(description: String) -> String:
-	return get_description(description)
+	return description % [
+		str(floori(PinpointStatus.MULT_VALUE * 100)),
+		str(duration)
+	]

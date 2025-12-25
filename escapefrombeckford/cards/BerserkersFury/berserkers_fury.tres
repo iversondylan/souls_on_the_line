@@ -1,7 +1,8 @@
-[gd_resource type="Resource" script_class="CardData" load_steps=5 format=3 uid="uid://ds3np5rpek8ot"]
+[gd_resource type="Resource" script_class="CardData" load_steps=6 format=3 uid="uid://ds3np5rpek8ot"]
 
+[ext_resource type="Script" uid="uid://wtk5v77fcqvn" path="res://custom_resources/card_action.gd" id="1_65r7g"]
 [ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://custom_resources/card_data.gd" id="1_241b1"]
-[ext_resource type="Script" uid="uid://b43di6hrx5dk5" path="res://cards/BerserkersFury/berserkers_fury_action.gd" id="1_ib15p"]
+[ext_resource type="Resource" uid="uid://c3c4c48khrwxu" path="res://cards/BerserkersFury/berserkers_fury_action.tres" id="2_lqu2x"]
 [ext_resource type="Texture2D" uid="uid://cv6qmfmw23it7" path="res://assets/sprites/assorted/explosion.jpg" id="3_65r7g"]
 [ext_resource type="AudioStream" uid="uid://bq5ec6mssamqd" path="res://assets/sfx/Fire impact 1.wav" id="3_lqu2x"]
 
@@ -13,6 +14,6 @@ name = "Berserker's Fury"
 description = "Sacrifice an ally and they deal [color=\"ff0000\"]%s[/color]%s to all enemies."
 cost_red = 1
 texture = ExtResource("3_65r7g")
-actions = Array[GDScript]([ExtResource("1_ib15p")])
+actions = Array[ExtResource("1_65r7g")]([ExtResource("2_lqu2x")])
 sound = ExtResource("3_lqu2x")
 metadata/_custom_type_script = "uid://d2f0qepe047dc"

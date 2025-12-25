@@ -1,0 +1,7 @@
+[gd_resource type="Resource" load_steps=2 format=3 uid="uid://c3c4c48khrwxu"]
+
+[ext_resource type="Script" uid="uid://b43di6hrx5dk5" path="res://cards/BerserkersFury/berserkers_fury_action.gd" id="1_4t8kt"]
+
+[resource]
+script = ExtResource("1_4t8kt")
+metadata/_custom_type_script = "uid://wtk5v77fcqvn"

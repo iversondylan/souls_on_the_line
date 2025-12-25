@@ -1,18 +1,19 @@
 extends CardAction
 
 
-func activate(targets: Array[Node]) -> bool:
-	
-	var correct_targets: Array[Fighter] = correct_fighters(targets)
-	if !correct_targets:
+func activate(ctx: CardActionContext) -> bool:
+	var targets := ctx.resolved_target.fighters
+	if targets.is_empty():
 		return false
-	
-	player.spend_mana(card_data)
 
-	#SHOULD PROBABLY MAKE MOVE EFFECT TO PROCESS DIFFERENT KINDS OF MOVES AND PLAY SOUND
-	correct_targets[0].traverse_player()
-	SFXPlayer.play(card_data.sound)
+	var fighter := targets[0]
+
+	# NOTE:
+	# This should eventually become a MoveEffect,
+	# but keeping it direct for now is fine.
+	fighter.traverse_player()
 	
+	SFXPlayer.play(ctx.card_data.sound)
 	return true
 
 func get_description(description: String, _target_fighter: Fighter = null) -> String:

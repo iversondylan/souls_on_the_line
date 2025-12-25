@@ -1,35 +1,36 @@
 extends CardAction
 
+@export var bonus_damage: int = 2
+@export var attacks: int = 1
 
-func activate(targets: Array[Node]) -> bool:
-	var attack_damage: int = 0
-	var attack_count: int = 0
-	
-	var correct_targets: Array[Fighter] = correct_fighters(targets)
-	if !correct_targets:
+func activate(ctx: CardActionContext) -> bool:
+	var attackers := ctx.resolved_target.fighters
+	if attackers.is_empty():
 		return false
-	
-	player.spend_mana(card_data)
-	
-	#var attack_targets: Array[Fighter] = battle_scene.get_combatants_in_group(1)
-	
-	attack_damage = player.combatant_data.max_mana_red + 2
-	attack_count = 1
-	
+
+	var attacker := attackers[0]
+
+	var attack_damage := attacker.combatant_data.max_mana_red + bonus_damage
+
 	var attack_effect := BasicMeleeAttackEffect.new()
 	attack_effect.target_type = AttackEffect.TargetType.ALL_OPPONENTS
-	attack_effect.attacker = correct_targets[0]
+	attack_effect.attacker = attacker
 	attack_effect.n_damage = attack_damage
-	attack_effect.n_attacks = attack_count
+	attack_effect.n_attacks = attacks
 	attack_effect.explode = true
-	attack_effect.battle_scene = battle_scene
-	attack_effect.sound = card_data.sound
+	attack_effect.battle_scene = ctx.battle_scene
+	attack_effect.sound = ctx.card_data.sound
 	attack_effect.execute()
+
 	return true
 
-func get_description(description: String, _target_fighter: Fighter = null) -> String:
-	#var n_damage = player.modifier_system.get_modified_value(base_damage, Modifier.Type.DMG_DEALT)
-	return description % [str(player.combatant_data.max_mana_red + 2), ""]
+
+func get_description(description: String, target: Fighter = null) -> String:
+	if !target:
+		return description
+	return description % [str(target.combatant_data.max_mana_red + bonus_damage), ""]
+
+
 
 func get_unmod_description(description: String) -> String:
-	return description % ["Power", "+2"]
+	return description % ["Power", "+" + str(bonus_damage)]

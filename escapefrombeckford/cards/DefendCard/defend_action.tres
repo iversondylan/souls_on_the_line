@@ -1,0 +1,8 @@
+[gd_resource type="Resource" load_steps=2 format=3 uid="uid://ikcpprhw8x78"]
+
+[ext_resource type="Script" uid="uid://d1k31h0qas6no" path="res://cards/DefendCard/defend_action.gd" id="1_m14uf"]
+
+[resource]
+script = ExtResource("1_m14uf")
+action_type = 2
+metadata/_custom_type_script = "uid://wtk5v77fcqvn"

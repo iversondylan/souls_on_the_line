@@ -87,18 +87,26 @@ func update_description() -> void:
 	card_visuals.description.set_text(get_description())
 
 func get_description() -> String:
-	#print("usable_card.gd get_description()")
-	var target_fighter: Fighter = null
-	if targets:
-		if targets[0] is CombatantTargetArea:
-			target_fighter = targets[0].combatant
-			#print("target fighter is %s" % target_fighter)
-	if actions:
-		if target_fighter:
-			return actions[0].get_description(card_data.description, target_fighter)
-		else:
-			return actions[0].get_description(card_data.description)
-	return "error"
+	if card_data.actions.is_empty():
+		return card_data.description
+
+	# Resolve targets the same way activation does
+	var resolved := resolve_targets(targets)
+
+	# Pick a representative fighter for preview, if any
+	var preview_fighter: Fighter = null
+	if !resolved.fighters.is_empty():
+		preview_fighter = resolved.fighters[0]
+
+	# Let the FIRST action handle description formatting
+	# (you can generalize later if needed)
+	var action := card_data.actions[0]
+
+	if preview_fighter:
+		return action.get_description(card_data.description, preview_fighter)
+	else:
+		return action.get_description(card_data.description)
+
 
 func set_usable_card_z_index(index: int):
 	z_index = index

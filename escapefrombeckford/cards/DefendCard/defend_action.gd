@@ -2,20 +2,17 @@ extends CardAction
 
 var n_armor := 5
 
-func activate(targets: Array[Node]) -> bool:
-	
-	var correct_targets: Array[Fighter] = correct_fighters(targets)
-	if !correct_targets:
+func activate(ctx: CardActionContext) -> bool:
+	var targets := ctx.resolved_target.fighters
+	if targets.is_empty():
 		return false
-	
-	player.spend_mana(card_data)
-	
-	var block_effect = BlockEffect.new()
-	block_effect.targets = correct_targets
+
+	var block_effect := BlockEffect.new()
+	block_effect.targets = targets
 	block_effect.n_armor = n_armor
-	block_effect.sound = card_data.sound
+	block_effect.sound = ctx.card_data.sound
 	block_effect.execute()
-	
+
 	return true
 
 func get_description(description: String, _target_fighter: Fighter = null) -> String:

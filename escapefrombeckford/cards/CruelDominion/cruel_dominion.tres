@@ -1,6 +1,7 @@
-[gd_resource type="Resource" script_class="CardData" load_steps=5 format=3 uid="uid://qoedpmaije5m"]
+[gd_resource type="Resource" script_class="CardData" load_steps=6 format=3 uid="uid://qoedpmaije5m"]
 
-[ext_resource type="Script" uid="uid://vpt8dytf1ycc" path="res://cards/CruelDominion/cruel_dominion.gd" id="1_dlq1m"]
+[ext_resource type="Script" uid="uid://wtk5v77fcqvn" path="res://custom_resources/card_action.gd" id="1_dlq1m"]
+[ext_resource type="Resource" uid="uid://dqpfr84hqn454" path="res://cards/CruelDominion/cruel_dominion_action.tres" id="2_16jh5"]
 [ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://custom_resources/card_data.gd" id="2_yf47j"]
 [ext_resource type="AudioStream" uid="uid://cmmgf7rayiriu" path="res://assets/sprites/card_elements/wrathful_intent/dark_call.wav" id="3_16jh5"]
 [ext_resource type="Texture2D" uid="uid://c7co4hctuwrut" path="res://assets/sprites/card_elements/wrathful_intent/wrath_card_art.png" id="4_kand5"]
@@ -15,6 +16,6 @@ description = "At the start of each of your turns, empower your allies to deal %
 cost_red = 1
 cost_green = 1
 texture = ExtResource("4_kand5")
-actions = Array[GDScript]([ExtResource("1_dlq1m")])
+actions = Array[ExtResource("1_dlq1m")]([ExtResource("2_16jh5")])
 sound = ExtResource("3_16jh5")
 metadata/_custom_type_script = "uid://d2f0qepe047dc"

@@ -1,0 +1,7 @@
+[gd_resource type="Resource" load_steps=2 format=3 uid="uid://ce1lg5k4uob75"]
+
+[ext_resource type="Script" uid="uid://bvtjs02t4l8n5" path="res://cards/FocusFireCard/pinpoint_action.gd" id="1_tel1a"]
+
+[resource]
+script = ExtResource("1_tel1a")
+metadata/_custom_type_script = "uid://wtk5v77fcqvn"
