@@ -25,11 +25,4 @@ func description_arity() -> int:
 	return 1
 
 func get_description_values(_ctx: CardActionContext) -> Array:
-	return [duration]
-
-func get_description(_ctx: CardActionContext, base_text: String) -> String:
-	return get_unmod_description(base_text)
-
-
-func get_unmod_description(base_text: String) -> String:
-	return base_text % str(cruel_dominion_intensity)
+	return [cruel_dominion_intensity]
