@@ -24,6 +24,12 @@ func activate(ctx: CardActionContext) -> bool:
 
 	return true
 
+func description_arity() -> int:
+	return 1
+
+func get_description_values(_ctx: CardActionContext) -> Array:
+	return [duration]
+
 func get_description(ctx: CardActionContext, base_text: String) -> String:
 	var p := ctx.player
 	return base_text % [str(p.combatant_data.max_mana_red + bonus_damage), ""]

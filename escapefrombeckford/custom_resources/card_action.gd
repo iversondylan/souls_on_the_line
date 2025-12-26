@@ -31,13 +31,6 @@ func activate(_ctx: CardActionContext) -> bool:
 # If no placeholders remain, this text may be appended instead of formatted.
 # --------------------------------
 
-# UI preview: default behavior falls back to old get_description signature
-func get_description(_ctx: CardActionContext, base_text: String) -> String:
-	return base_text
-
-func get_unmod_description(base_text: String) -> String:
-	return base_text
-
 func description_arity() -> int:
 	# Number of %s this action consumes
 	return 0

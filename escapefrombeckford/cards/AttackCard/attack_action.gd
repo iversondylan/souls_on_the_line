@@ -23,17 +23,31 @@ func activate(ctx: CardActionContext) -> bool:
 
 	return true
 
-func get_description(ctx: CardActionContext, base_text: String) -> String:
-	var damage := ctx.player.modifier_system.get_modified_value(base_damage, Modifier.Type.DMG_DEALT)
+func description_arity() -> int:
+	return 1
 
+func get_description_values(ctx: CardActionContext) -> Array:
+	
+	var damage := ctx.player.modifier_system.get_modified_value(base_damage, Modifier.Type.DMG_DEALT)
 	var target: Fighter = null
 	if !ctx.resolved_target.fighters.is_empty():
 		target = ctx.resolved_target.fighters[0]
 	if target:
 		damage = target.modifier_system.get_modified_value(damage, Modifier.Type.DMG_TAKEN)
+	
+	return [damage]
 
-	return base_text % str(damage)
-
-
-func get_unmod_description(description: String) -> String:
-	return description % str(base_damage)
+#func get_description(ctx: CardActionContext, base_text: String) -> String:
+	#var damage := ctx.player.modifier_system.get_modified_value(base_damage, Modifier.Type.DMG_DEALT)
+#
+	#var target: Fighter = null
+	#if !ctx.resolved_target.fighters.is_empty():
+		#target = ctx.resolved_target.fighters[0]
+	#if target:
+		#damage = target.modifier_system.get_modified_value(damage, Modifier.Type.DMG_TAKEN)
+#
+	#return base_text % str(damage)
+#
+#
+#func get_unmod_description(description: String) -> String:
+	#return description % str(base_damage)
