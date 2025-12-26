@@ -14,9 +14,10 @@ func get_description() -> String:
 	if card_data.actions.is_empty():
 		return card_data.description
 
-	# Menu cards NEVER have context → always unmodified description
-	var action := card_data.actions[0]
-	return action.get_unmod_description(card_data.description)
+	var text := card_data.description
+	for action in card_data.actions:
+		text = action.get_unmod_description(text)
+	return text
 
 func _on_visuals_mouse_entered() -> void:
 	visuals.glow.show()

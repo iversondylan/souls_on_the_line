@@ -1,9 +1,5 @@
 class_name CardAction extends Resource
 
-#var card_data: CardData
-#var battle_scene: BattleScene
-#var player: Player
-
 enum ActionType {
 	MELEE_ATTACK,
 	DAMAGE,
@@ -20,27 +16,32 @@ enum ActionType {
 @export var requires_target: bool = true
 
 func activate(_ctx: CardActionContext) -> bool:
-	push_error("Must override CardAction.activate()")
+	push_error("Override activate(ctx) in CardAction.")
 	return false
 
-func is_playable(ctx: CardActionContext) -> bool:
-	return ctx.player.can_play_card(ctx.card_data)
+# --- DESCRIPTION CONTRACT ---
+# Each CardAction:
+# 1. Declares how many placeholders it consumes
+# 2. Supplies exactly that many concrete values
+# 3. Leaves remaining placeholders intact ("%s") for later actions
+#
+# FUTURE NOTE (Dylan):
+# Later, add:
+# @export var modular_description: String
+# If no placeholders remain, this text may be appended instead of formatted.
+# --------------------------------
 
-#enum TargetType {
-	#SELF,
-	#BATTLEFIELD,
-	#ALLY_OR_SELF,
-	#ALLY,
-	#SINGLE_ENEMY,
-	#ALL_ENEMIES,
-	#EVERYONE
-#}
+# UI preview: default behavior falls back to old get_description signature
+func get_description(_ctx: CardActionContext, base_text: String) -> String:
+	return base_text
 
-func get_preview_source_fighter(_player: Player, resolved: CardResolvedTarget) -> Fighter:
-	return null if resolved.fighters.is_empty() else resolved.fighters[0]
+func get_unmod_description(base_text: String) -> String:
+	return base_text
 
-func get_description(description: String, _target_enemy: Fighter = null) -> String:
-	return description
+func description_arity() -> int:
+	# Number of %s this action consumes
+	return 0
 
-func get_unmod_description(description: String) -> String:
-	return get_description(description)
+func get_description_values(_ctx: CardActionContext) -> Array:
+	# Return exactly description_arity() values
+	return []

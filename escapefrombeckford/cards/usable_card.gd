@@ -87,19 +87,39 @@ func update_description() -> void:
 	card_visuals.description.set_text(get_description())
 
 func get_description() -> String:
-	if card_data.actions.is_empty():
-		return card_data.description
+	var text := card_data.description
 
+	# Build preview context
 	var resolved := resolve_targets(targets)
-	var action := card_data.actions[0]
 
-	var preview_fighter := action.get_preview_source_fighter(player, resolved)
+	var ctx := CardActionContext.new()
+	ctx.player = player
+	ctx.battle_scene = battle_scene
+	ctx.card_data = card_data
+	ctx.resolved_target = resolved
 
-	if preview_fighter:
-		return action.get_description(card_data.description, preview_fighter)
-	else:
-		return action.get_description(card_data.description)
+	for action: CardAction in card_data.actions:
+		var total_slots := count_placeholders(text)
+		var consume := action.description_arity()
 
+		if consume == 0:
+			continue
+
+		assert(total_slots >= consume)
+
+		var values := action.get_description_values(ctx)
+
+		assert(values.size() == consume)
+
+		# Fill remaining slots with "%s" to preserve them
+		var args: Array = []
+		args.append_array(values)
+		for i in range(total_slots - consume):
+			args.append("%s")
+
+		text = text % args
+
+	return text
 
 func set_usable_card_z_index(index: int):
 	z_index = index
@@ -298,3 +318,6 @@ func get_fighters(new_targets: Array[Node]) -> Array[Fighter]:
 			if target.combatant is Fighter:
 				attack_targets.push_back(target.combatant)
 	return attack_targets
+
+func count_placeholders(text: String) -> int:
+	return text.count("%s")

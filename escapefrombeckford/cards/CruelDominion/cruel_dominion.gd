@@ -22,9 +22,9 @@ func activate(ctx: CardActionContext) -> bool:
 	return true
 
 
-func get_description(description: String, _target_fighter: Fighter = null) -> String:
-	return description % str(cruel_dominion_intensity)
+func get_description(_ctx: CardActionContext, base_text: String) -> String:
+	return get_unmod_description(base_text)
 
 
-func get_unmod_description(description: String) -> String:
-	return get_description(description)
+func get_unmod_description(base_text: String) -> String:
+	return base_text % str(cruel_dominion_intensity)

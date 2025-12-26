@@ -23,22 +23,16 @@ func activate(ctx: CardActionContext) -> bool:
 
 	return true
 
+func get_description(ctx: CardActionContext, base_text: String) -> String:
+	var damage := ctx.player.modifier_system.get_modified_value(base_damage, Modifier.Type.DMG_DEALT)
 
-func get_description(description: String, target_fighter: Fighter = null) -> String:
-	# Preview damage using the player as the source
-	var damage := ctx_preview_player().modifier_system.get_modified_value(
-		base_damage,
-		Modifier.Type.DMG_DEALT
-	)
+	var target: Fighter = null
+	if !ctx.resolved_target.fighters.is_empty():
+		target = ctx.resolved_target.fighters[0]
+	if target:
+		damage = target.modifier_system.get_modified_value(damage, Modifier.Type.DMG_TAKEN)
 
-	# If a target is known, preview mitigation as well
-	if target_fighter:
-		damage = target_fighter.modifier_system.get_modified_value(
-			damage,
-			Modifier.Type.DMG_TAKEN
-		)
-
-	return description % str(damage)
+	return base_text % str(damage)
 
 
 func get_unmod_description(description: String) -> String:

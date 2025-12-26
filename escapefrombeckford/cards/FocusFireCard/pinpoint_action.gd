@@ -20,16 +20,8 @@ func activate(ctx: CardActionContext) -> bool:
 
 	return true
 
+func description_arity() -> int:
+	return 2
 
-func get_description(description: String, _target_fighter: Fighter = null) -> String:
-	return description % [
-		str(floori(PinpointStatus.MULT_VALUE * 100)),
-		str(duration)
-	]
-
-
-func get_unmod_description(description: String) -> String:
-	return description % [
-		str(floori(PinpointStatus.MULT_VALUE * 100)),
-		str(duration)
-	]
+func get_description_values(_ctx: CardActionContext) -> Array:
+	return [floori(PinpointStatus.MULT_VALUE * 100), duration]

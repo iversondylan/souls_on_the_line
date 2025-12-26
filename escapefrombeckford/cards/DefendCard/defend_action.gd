@@ -15,9 +15,9 @@ func activate(ctx: CardActionContext) -> bool:
 
 	return true
 
-func get_description(description: String, _target_fighter: Fighter = null) -> String:
+func get_description(_ctx: CardActionContext, base_text: String) -> String:
 	#var n_damage = player.modifier_system.get_modified_value(base_damage, Modifier.Type.DMG_DEALT)
-	return description % n_armor
+	return get_unmod_description(base_text)
 
-func get_unmod_description(description: String) -> String:
-	return get_description(description)
+func get_unmod_description(base_text: String) -> String:
+	return base_text % n_armor
