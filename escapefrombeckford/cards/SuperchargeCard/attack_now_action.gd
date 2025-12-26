@@ -17,17 +17,12 @@ func activate(ctx: CardActionContext) -> bool:
 	attack_effect.battle_scene = ctx.battle_scene
 	attack_effect.sound = ctx.card_data.sound
 	attack_effect.n_damage = attacker.combatant_data.max_mana_red
-	#match damage_source:
-		#DamageSource.MAX_RED_MANA:
-			#attack_effect.n_damage = attacker.combatant_data.max_mana_red
-		#_:
-			#attack_effect.n_damage = 0
-
+	
 	attack_effect.execute()
 	return true
 
 func description_arity() -> int:
-	return 1
+	return 0
 
 func get_description_values(_ctx: CardActionContext) -> Array:
-	return [duration]
+	return []

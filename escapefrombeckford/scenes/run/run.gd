@@ -127,6 +127,7 @@ func _init_top_bar() -> void:
 	collection_button.card_pile = deck.card_collection
 	collection_pile_view.card_pile = deck.card_collection
 	collection_pile_view.deck = deck
+	collection_pile_view.player_data = player_data
 	collection_button.pressed.connect(collection_pile_view.show_current_collection_view.bind("Collection"))
 
 func _on_battle_entered(room: Room) -> void:

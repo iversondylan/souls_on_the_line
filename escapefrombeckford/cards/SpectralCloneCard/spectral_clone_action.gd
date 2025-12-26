@@ -14,14 +14,7 @@ func activate(ctx: CardActionContext) -> bool:
 	return true
 
 func description_arity() -> int:
-	return 1
+	return 0
 
 func get_description_values(_ctx: CardActionContext) -> Array:
-	return [duration]
-
-func get_description(description: String, _target_fighter: Fighter = null) -> String:
-	#var n_damage = player.modifier_system.get_modified_value(base_damage, Modifier.Type.DMG_DEALT)
-	return description# % n_damage
-
-func get_unmod_description(description: String) -> String:
-	return get_description(description)
+	return []

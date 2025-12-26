@@ -23,7 +23,7 @@ func activate(ctx: CardActionContext) -> bool:
 	return true
 
 func description_arity() -> int:
-	return 1
+	return 2
 
 func get_description_values(_ctx: CardActionContext) -> Array:
-	return [duration]
+	return [floori(AmplifyStatus.MULT_VALUE*100), amplify_duration]

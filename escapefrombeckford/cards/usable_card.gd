@@ -96,29 +96,33 @@ func get_description() -> String:
 	ctx.player = player
 	ctx.battle_scene = battle_scene
 	ctx.card_data = card_data
-	ctx.resolved_target = resolved
+	if resolved:
+		ctx.resolved_target = resolved
 
 	for action: CardAction in card_data.actions:
-		var total_slots := count_placeholders(text)
+		var total_slots := TextUtils.count_placeholders(text)
 		var consume := action.description_arity()
-
+		
 		if consume == 0:
 			continue
-
+		
 		assert(total_slots >= consume)
-
+		
 		var values := action.get_description_values(ctx)
-
+		
 		assert(values.size() == consume)
-
+		
 		# Fill remaining slots with "%s" to preserve them
+		
 		var args: Array = []
-		args.append_array(values)
+		for v in values:
+			args.append(v)
+		
 		for i in range(total_slots - consume):
 			args.append("%s")
-
+		
 		text = text % args
-
+	
 	return text
 
 func set_usable_card_z_index(index: int):
@@ -260,7 +264,12 @@ func is_mouse_over() -> bool:
 # should not use it because they target TargetAreaLeft 
 func resolve_targets(new_targets: Array[Node]) -> CardResolvedTarget:
 	
+	
+	
 	var result := CardResolvedTarget.new()
+	
+	if !new_targets:
+		return result
 	
 	match card_data.target_type:
 		CardData.TargetType.SELF:
@@ -277,13 +286,13 @@ func resolve_targets(new_targets: Array[Node]) -> CardResolvedTarget:
 			#var correct_targets: Array[Fighter] = []
 			if new_targets[0] is CombatantTargetArea:
 				if new_targets[0].combatant is Player or new_targets[0].combatant is SummonedAlly:
-					result.fighters = [new_targets[0]]
+					result.fighters = [new_targets[0].combatant] as Array[Fighter]
 		
 		CardData.TargetType.ALLY:
 			#var correct_targets: Array[Fighter]  = []
 			if new_targets[0] is CombatantTargetArea:
 				if new_targets[0].combatant is SummonedAlly:
-					result.fighters = [new_targets[0]]
+					result.fighters = [new_targets[0].combatant] as Array[Fighter]
 		
 		CardData.TargetType.SINGLE_ENEMY:
 			#if !new_targets:
@@ -291,7 +300,7 @@ func resolve_targets(new_targets: Array[Node]) -> CardResolvedTarget:
 			#var correct_targets: Array[Fighter]  = []
 			if new_targets[0] is CombatantTargetArea:
 				if new_targets[0].combatant is Enemy:
-					result.fighters = [new_targets[0]]
+					result.fighters = [new_targets[0].combatant] as Array[Fighter]
 		
 		CardData.TargetType.ALL_ENEMIES:
 			result.fighters = battle_scene.get_combatants_in_group(1)# as Array[Fighter]
@@ -318,6 +327,3 @@ func get_fighters(new_targets: Array[Node]) -> Array[Fighter]:
 			if target.combatant is Fighter:
 				attack_targets.push_back(target.combatant)
 	return attack_targets
-
-func count_placeholders(text: String) -> int:
-	return text.count("%s")

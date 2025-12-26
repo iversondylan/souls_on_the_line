@@ -10,6 +10,7 @@ const MENU_CARD_SCENE := preload("res://cards/menu_card/menu_card.tscn")
 @onready var back_button: Button = %BackButton
 
 var deck: Deck
+var player_data: PlayerData
 
 func _ready() -> void:
 	back_button.pressed.connect(hide)
@@ -65,6 +66,7 @@ func _update_view(randomized: bool) -> void:
 		var new_card := MENU_CARD_SCENE.instantiate() as MenuCard
 		card_grid.add_child(new_card)
 		new_card.set_card_data(card)
+		new_card.player_data = player_data
 		new_card.tooltip_requested.connect(card_tooltip_popup.show_tooltip)
 	
 	show()
