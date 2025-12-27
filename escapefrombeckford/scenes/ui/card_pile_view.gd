@@ -64,9 +64,10 @@ func _update_view(randomized: bool) -> void:
 	
 	for card: CardData in all_cards:
 		var new_card := MENU_CARD_SCENE.instantiate() as MenuCard
+		new_card.player_data = player_data
 		card_grid.add_child(new_card)
 		new_card.set_card_data(card)
-		new_card.player_data = player_data
+		
 		new_card.tooltip_requested.connect(card_tooltip_popup.show_tooltip)
 	
 	show()

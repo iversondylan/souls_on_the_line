@@ -194,10 +194,10 @@ func _on_map_exited(room: Room) -> void:
 func get_modifier_tokens_for(target: Node) -> Array[ModifierToken]:
 	print("run.gd get_modifier_tokens()")
 	var tokens: Array[ModifierToken] = []
-
+	
 	# 1. Arcana (global, persistent)
 	tokens.append_array(arcana_system.get_modifier_tokens_for(target))
-
+	
 	# 2. Combat-only tokens (if in battle)
 	var battle_scene := _get_active_battle_scene()
 	if battle_scene and target is Fighter:
@@ -206,7 +206,7 @@ func get_modifier_tokens_for(target: Node) -> Array[ModifierToken]:
 	for token: ModifierToken in tokens:
 		print("run.gd get_modifier_tokens() token owner: %s" % token.owner)
 	# 3. Future: map effects, curses, difficulty scaling, etc.
-
+	
 	return tokens
 
 func _get_active_battle_scene() -> BattleScene:
@@ -218,11 +218,8 @@ func _get_active_battle_scene() -> BattleScene:
 func _on_modifier_tokens_changed(mod_type: Modifier.Type) -> void:
 	if current_view.get_child_count() == 0:
 		return
-
+	
 	var view := current_view.get_child(0)
-
+	
 	if view.has_method("on_modifier_tokens_changed"):
 		view.on_modifier_tokens_changed(mod_type)
-	#for fighter in get_all_combatants():
-		#if fighter.is_alive():
-			#fighter.modifier_system.mark_dirty(mod_type)

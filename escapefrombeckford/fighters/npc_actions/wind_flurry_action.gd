@@ -34,7 +34,7 @@ func is_performable() -> bool:
 func update_action_intent() -> void:
 	intent_data.base_text = ""
 
-func other_action_performed(npc_action: NPCAction) -> void:
+func other_action_performed(_npc_action: NPCAction) -> void:
 	spree = 0
 
 func get_tooltip() -> String:

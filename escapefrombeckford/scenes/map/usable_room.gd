@@ -47,7 +47,7 @@ func show_selected() -> void:
 
 
 
-func _on_input_event(viewport: Node, event: InputEvent, shape_idx: int) -> void:
+func _on_input_event(_viewport: Node, event: InputEvent, _shape_idx: int) -> void:
 	if !room_available or !event.is_action_pressed("mouse_click"):
 		return
 	

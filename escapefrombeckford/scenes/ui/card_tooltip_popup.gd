@@ -9,11 +9,12 @@ const MENU_CARD_SCENE := preload("res://cards/menu_card/menu_card.tscn")
 @onready var tooltip_card_container: CenterContainer = %TooltipCardContainer
 @onready var card_description: RichTextLabel = %CardDescription
 
+var player_data: PlayerData
+
 func _ready() -> void:
 	for card: MenuCard in tooltip_card_container.get_children():
 		card.queue_free()
 	background.color = background_color
-	
 
 func show_tooltip(card: CardData) -> void:
 	print("card_tooltip_popup.gd show_tooltip()")

@@ -25,7 +25,7 @@ func _set_max_health(new_health: int) -> void:
 	_update_visuals()
 
 func _set_health(new_health) -> void:
-	var old_health := health
+	#var old_health := health
 	health = min(health_bar.max_value, new_health)
 	health_bar.value = health
 	damage_health = health

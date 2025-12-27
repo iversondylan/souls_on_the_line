@@ -17,7 +17,7 @@ var point_b_old: Vector2 = Vector2(1000.0,600.0)
 
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
-func _process(delta: float) -> void:
+func _process(_delta: float) -> void:
 	sprite_2d.material.set_shader_parameter('up_left',Vector2(0-squeeze, 0+10*squeeze**2.0))
 	sprite_2d.material.set_shader_parameter('up_right',Vector2(1+squeeze, 0+10*squeeze**2.0))
 	sprite_2d.material.set_shader_parameter('down_right',Vector2(1-squeeze, 1-10*squeeze**2.0))

@@ -31,7 +31,7 @@ func perform_action() -> void:
 func update_action_intent() -> void:
 	pass
 
-func other_action_performed(npc_action: NPCAction) -> void:
+func other_action_performed(_npc_action: NPCAction) -> void:
 	pass
 
 func set_fighter(new_fighter: Fighter) -> void:

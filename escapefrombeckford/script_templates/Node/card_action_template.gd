@@ -1,35 +1,40 @@
 # meta-name: CardAction
-# meta-description: Create an card action 
+# meta-description: Create a card action (context-driven)
+
 extends CardAction
 
-#const PINPOINT_STATUS = preload("res://statuses/pinpoint.tres")
-#var pinpoint_duration := 1
+@export_group("Action Parameters")
+# Example parameters — delete or replace
+@export var base_value: int = 0
 
-func activate(targets: Array[Node]) -> bool:
-	
-	var correct_targets: Array[Fighter] = correct_fighters(targets)
-	if !correct_targets:
+# -------------------------------------------------
+# EXECUTION
+# -------------------------------------------------
+func activate(ctx: CardActionContext) -> bool:
+	# Always pull targets from the resolved context
+	var targets := ctx.resolved_target.fighters
+	if targets.is_empty():
 		return false
-	
-	player.spend_mana(card_data)
-	
-	var damage_effect := DamageEffect.new()
-	damage_effect.targets = correct_targets
-	damage_effect.n_damage = 6
-	damage_effect.sound = card_data.sound
-	damage_effect.execute()
-	
+
+	# Example effect (replace with your real logic)
+	var effect := DamageEffect.new()
+	effect.targets = targets
+	effect.n_damage = base_value
+	effect.sound = ctx.card_data.sound
+	effect.execute()
+
 	return true
 
-## Overwrite this function for special playable conditions like space for allies
-#func is_playable() -> bool:
-	#return player.can_play_card(card_data)
 
-## Overwrite this function for dynamic card descriptions
-func get_description(description: String, _fighter: Fighter = null) -> String:
-	#var n_damage = player.modifier_system.get_modified_value(base_damage, Modifier.Type.DMG_DEALT)
-	return description# % n_damage
-	
-## Overwrite this function for unmodified card descriptions
-func get_unmod_description(description: String) -> String:
-	return get_description(description)
+# -------------------------------------------------
+# DESCRIPTION CONTRACT
+# -------------------------------------------------
+# Number of %s placeholders this action consumes
+func description_arity() -> int:
+	return 1
+
+
+# Values to inject into the description
+# Must return EXACTLY description_arity() values
+func get_description_values(ctx: CardActionContext) -> Array:
+	return [base_value]

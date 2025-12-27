@@ -23,17 +23,17 @@ func _ready() -> void:
 
 func get_modifier_tokens_for(target: Node) -> Array[ModifierToken]:
 	var tokens: Array[ModifierToken] = []
-
+	
 	for arcanum_display: ArcanumDisplay in _get_all_arcanum_display_nodes():
 		var arcanum := arcanum_display.arcanum
 		if !arcanum:
 			continue
-
+	
 		if arcanum.contributes_modifier():
 			tokens.append_array(
 				arcanum.get_modifier_tokens_for(target)
 			)
-
+	
 	return tokens
 
 func activate_arcana_by_type(type: Arcanum.Type) -> void:

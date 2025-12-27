@@ -27,27 +27,16 @@ func description_arity() -> int:
 	return 1
 
 func get_description_values(ctx: CardActionContext) -> Array:
-	
-	var damage := ctx.player.modifier_system.get_modified_value(base_damage, Modifier.Type.DMG_DEALT)
-	var target: Fighter = null
-	if !ctx.resolved_target.fighters.is_empty():
-		target = ctx.resolved_target.fighters[0]
-	if target:
-		damage = target.modifier_system.get_modified_value(damage, Modifier.Type.DMG_TAKEN)
-	
-	return [damage]
-
-#func get_description(ctx: CardActionContext, base_text: String) -> String:
-	#var damage := ctx.player.modifier_system.get_modified_value(base_damage, Modifier.Type.DMG_DEALT)
-#
-	#var target: Fighter = null
-	#if !ctx.resolved_target.fighters.is_empty():
-		#target = ctx.resolved_target.fighters[0]
-	#if target:
-		#damage = target.modifier_system.get_modified_value(damage, Modifier.Type.DMG_TAKEN)
-#
-	#return base_text % str(damage)
-#
-#
-#func get_unmod_description(description: String) -> String:
-	#return description % str(base_damage)
+	var base := base_damage
+	# Prefer live player (modifiers)
+	if ctx.player:
+		base = ctx.player.modifier_system.get_modified_value(base, Modifier.Type.DMG_DEALT)
+	elif ctx.player_data:
+		# Optional: preview using PlayerData if you want
+		base = base_damage  # or derived from player_data later
+	# Apply target-side preview if present
+	if ctx.resolved_target and !ctx.resolved_target.fighters.is_empty():
+		var target := ctx.resolved_target.fighters[0]
+		if target and target.modifier_system:
+			base = target.modifier_system.get_modified_value(base, Modifier.Type.DMG_TAKEN)
+	return [base]

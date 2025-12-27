@@ -35,7 +35,7 @@ func update_action_intent() -> void:
 		intent_data.base_text = str(n_attacks) + "x" + str(modified_dmg)
 		intent_data.current_tooltip_text = intent_data.tooltip_text % str(n_attacks) + "x" + str(modified_dmg)
 
-func other_action_performed(npc_action: NPCAction) -> void:
+func other_action_performed(_npc_action: NPCAction) -> void:
 	spree = 0
 
 func get_tooltip() -> String:

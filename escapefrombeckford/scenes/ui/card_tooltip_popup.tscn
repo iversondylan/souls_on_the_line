@@ -1,7 +1,6 @@
-[gd_scene load_steps=3 format=3 uid="uid://c4ioesrs574d7"]
+[gd_scene load_steps=2 format=3 uid="uid://c4ioesrs574d7"]
 
 [ext_resource type="Script" uid="uid://cdgec8fxy03ep" path="res://scenes/ui/card_tooltip_popup.gd" id="1_ckt8b"]
-[ext_resource type="PackedScene" uid="uid://d4g7iin5x7648" path="res://cards/menu_card/menu_card.tscn" id="2_xpdyn"]
 
 [node name="CardTooltipPopup" type="Control"]
 layout_mode = 3
@@ -39,9 +38,6 @@ grow_vertical = 2
 
 [node name="TooltipCardContainer" type="CenterContainer" parent="VBoxContainer"]
 unique_name_in_owner = true
-layout_mode = 2
-
-[node name="MenuCard" parent="VBoxContainer/TooltipCardContainer" instance=ExtResource("2_xpdyn")]
 layout_mode = 2
 
 [node name="CardDescription" type="RichTextLabel" parent="VBoxContainer"]

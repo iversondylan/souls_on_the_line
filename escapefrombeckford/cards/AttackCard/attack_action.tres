@@ -1,0 +1,8 @@
+[gd_resource type="Resource" load_steps=2 format=3 uid="uid://bo4i2gqxgp3ek"]
+
+[ext_resource type="Script" uid="uid://cl5kqakmjj4ox" path="res://cards/AttackCard/attack_action.gd" id="1_tdme7"]
+
+[resource]
+script = ExtResource("1_tdme7")
+action_type = 1
+metadata/_custom_type_script = "uid://wtk5v77fcqvn"

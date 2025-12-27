@@ -1,10 +1,13 @@
 class_name CardActionContext extends RefCounted
 
-var player: Player
-var battle_scene: BattleScene
+# Always available
 var card_data: CardData
-var resolved_target: CardResolvedTarget
 
+# Optional (menu vs run vs battle)
+var player: Player
+var player_data: PlayerData
+var battle_scene: BattleScene
+var resolved_target: CardResolvedTarget
 
 # Pipeline outputs (mutable)
 var summoned_fighters: Array[Fighter] = []
