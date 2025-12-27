@@ -13,6 +13,7 @@ signal combatant_data_changed()
 
 @export_group("Gameplay Data")
 @export var max_health: int = 10
+
 @export var max_mana_red: int = 3
 @export var max_mana_green: int = 3
 @export var max_mana_blue: int = 3
@@ -24,13 +25,21 @@ signal combatant_data_changed()
 @export var attack_sound: AudioStream = load("res://assets/sfx/thrall_hit.wav")
 
 #var fighter: Fighter
-var is_alive: bool = true
-var health: int# : set = set_health
+var alive: bool = true
+var health: int = -1# : set = set_health
 var armor: int# : set = set_armor
 var mana_red: int# : set = set_mana_red
 var mana_green: int# : set = set_mana_green
 var mana_blue: int# : set = set_mana_blue
 var rank: int
+
+func ensure_initialized():
+	if health < 0:
+		health = max_health
+
+func is_alive() -> bool:
+	ensure_initialized()
+	return health > 0 and alive
 
 func stats_changed() -> void:
 	if self is PlayerData:
@@ -62,7 +71,7 @@ func take_damage(damage: int) -> int:
 		armor = armor - damage
 	else:
 		health_loss = damage - armor
-		health -= health_loss
+		health = clampi(health - health_loss, 0, max_health)
 		armor = 0
 	stats_changed()
 	return health_loss
@@ -79,7 +88,7 @@ func check_lethal(damage: int) -> bool:
 			return false
 
 func take_health_damage(damage : int) -> void:
-	health -= damage
+	health = clampi(health - damage, 0, max_health)
 	stats_changed()
 
 func heal(amount : int) -> void:
@@ -91,7 +100,7 @@ func create_instance() -> CombatantData:
 	instance.health = max_health
 	instance.armor = 0
 	instance.reset_mana()
-	stats_changed()
+	instance.stats_changed()
 	return instance
 	
 

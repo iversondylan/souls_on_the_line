@@ -83,7 +83,7 @@ func set_anchor_position(_position: Vector2, animate: bool) -> void:
 func take_damage(n_damage: int, modifier_type: Modifier.Type):
 	var modified_damage := modifier_system.get_modified_value(n_damage, modifier_type)
 	if combatant_data.check_lethal(modified_damage):
-		combatant_data.is_alive = false
+		combatant_data.alive = false
 		battle_group.update_combatant_position()
 	var tween: Tween = create_tween()
 	tween.tween_callback(Shaker.shake.bind(self, 16, 0.15))
@@ -111,7 +111,7 @@ func add_armor(amount: int):
 
 ##for future: death must cancel pending action resolution
 func die():
-	combatant_data.is_alive = false
+	combatant_data.alive = false
 	battle_group.update_combatant_position()
 	var death_tween: Tween = create_tween()
 	death_tween.tween_property(character_sprite, "modulate", Color.BLACK, 0.3)
@@ -210,8 +210,11 @@ func info_visible(visibility: bool) -> void:
 
 func is_alive() -> bool:
 	if !is_node_ready() or !combatant_data:
+		print("fighter.gd is_alive() defaulting to true")
 		return true
-	return combatant_data.is_alive
+	var alive: bool = combatant_data.is_alive()
+	print("fighter.gd combatant_data reporting is_alive: %s" % alive)
+	return alive
 
 func show_targeted_arrow() -> void:
 	targeted_arrow.show()
@@ -243,7 +246,7 @@ func modify_target(ctx: AttackTargetContext) -> void:
 	## Only apply if this fighter is marked.
 	if !is_marked():
 		return
-	if !self.is_alive():
+	if !is_alive():
 		return
 	## Check that the attack is targeting this fighter's side.
 	if !_is_attack_targeting_us(ctx):

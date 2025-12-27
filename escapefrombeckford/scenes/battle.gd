@@ -150,7 +150,7 @@ func make_player_combatant() -> void:
 	var new_player: Player = player_scn.instantiate()
 	battle_scene.add_combatant(new_player, 0, 0)
 	new_player.combatant_data = player_data
-	player_data.is_alive = true
+	player_data.alive = true
 	battle_scene.set_player(new_player)
 	player = new_player
 	hand.player = new_player

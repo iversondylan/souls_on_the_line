@@ -24,5 +24,6 @@ portrait = ExtResource("2_qttha")
 character_scale = 0.6
 height = 270
 max_health = 50
+health = 50
 team = 0
 metadata/_custom_type_script = "uid://bql7t8sctwe10"

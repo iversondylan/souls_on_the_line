@@ -7,16 +7,10 @@
 [resource]
 script = ExtResource("1_tpc1r")
 name = "Thrall"
-description = ""
 character_art = ExtResource("1_geldf")
-character_scale = 1.0
 facing_right = false
 height = 270
-max_health = 10
-max_mana_red = 3
-max_mana_green = 3
-max_mana_blue = 3
-starting_armor = 0
+health = 10
 team = 2
 ai = ExtResource("1_564gw")
 metadata/_custom_type_script = "uid://cfatj0ryn8uv3"

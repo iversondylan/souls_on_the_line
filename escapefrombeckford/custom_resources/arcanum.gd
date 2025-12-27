@@ -13,6 +13,8 @@ enum Type {START_OF_TURN, START_OF_COMBAT, END_OF_TURN, END_OF_COMBAT, EVENT_BAS
 
 var arcanum_display: ArcanumDisplay
 
+# TODO: migrate to ArcanumContext (avoid tree/group lookup)
+
 func activate_arcanum(_arcanum_display: ArcanumDisplay) -> void:
 	pass
 
@@ -37,8 +39,6 @@ func initialize_arcanum(_arcanum_display: ArcanumDisplay) -> void:
 func get_tooltip() -> String:
 	return tooltip_description
 
-##OH NO THIS SYSTEM IS AWFUL BECAUSE IT LOOPS OVER EVERY POSSIBLE PLAYER ARCANUM FOR EACH POSSIBLE ARCANUM, PROBABLY
-## Looping occurs in arcana.gd
 func can_appear_as_reward(player: PlayerData) -> bool:
 	if starter_arcanum:
 		return false

@@ -7,17 +7,10 @@
 [resource]
 script = ExtResource("1_rmw54")
 name = "Buffer Bird"
-description = ""
 character_art = ExtResource("1_7ocbv")
 portrait = ExtResource("1_7ocbv")
 character_scale = 0.25
-facing_right = true
 height = 270
-max_health = 10
-max_mana_red = 3
-max_mana_green = 3
-max_mana_blue = 3
-starting_armor = 0
-team = 1
+health = 10
 ai = ExtResource("1_0aghq")
 metadata/_custom_type_script = "uid://cfatj0ryn8uv3"

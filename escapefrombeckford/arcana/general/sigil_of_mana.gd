@@ -1,6 +1,6 @@
 extends Arcanum
 
-const ID := "sigil_of_mana"
+#const ID := "sigil_of_mana"
 
 var member_var := 0
 

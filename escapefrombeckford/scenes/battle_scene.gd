@@ -124,7 +124,7 @@ func get_front_combatant(battle_group_index: int) -> Fighter:
 	#var child_combatants: Array[Fighter] = child_groups[battle_group_index].get_combatants()
 	#var front_combatant: Fighter = null
 	for child_combatant: Fighter in child_groups[battle_group_index].get_combatants():
-		if child_combatant.combatant_data.is_alive:
+		if child_combatant.is_alive():
 			return child_combatant
 	return null
 

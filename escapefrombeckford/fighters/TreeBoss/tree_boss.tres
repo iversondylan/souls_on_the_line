@@ -10,5 +10,6 @@ name = "Magister Rowan Fellhart"
 character_art = ExtResource("1_44bnb")
 portrait = ExtResource("1_44bnb")
 max_health = 60
+health = 60
 ai = ExtResource("1_cwhu7")
 metadata/_custom_type_script = "uid://cfatj0ryn8uv3"

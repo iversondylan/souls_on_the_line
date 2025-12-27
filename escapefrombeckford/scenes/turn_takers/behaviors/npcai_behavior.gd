@@ -40,7 +40,7 @@ func update_action_intent() -> void:
 
 func _set_current_action(_current_action: NPCAction) -> void:
 	var fighter: Fighter = get_parent()
-	if !fighter.combatant_data.is_alive:
+	if !fighter.is_alive():
 		return
 	current_action = _current_action
 	if current_action:

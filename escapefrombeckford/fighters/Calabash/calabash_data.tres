@@ -7,17 +7,11 @@
 [resource]
 script = ExtResource("1_ihj0n")
 name = "Calabash"
-description = ""
 character_art = ExtResource("1_0je4i")
 portrait = ExtResource("1_0je4i")
 character_scale = 0.03
 facing_right = false
 height = 320
-max_health = 10
-max_mana_red = 3
-max_mana_green = 3
-max_mana_blue = 3
-starting_armor = 0
-team = 1
+health = 10
 ai = ExtResource("1_ddxw7")
 metadata/_custom_type_script = "uid://cfatj0ryn8uv3"
