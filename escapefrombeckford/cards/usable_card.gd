@@ -31,7 +31,6 @@ var disabled := false
 var selected = false
 
 func _ready() -> void:
-	print("usable card ready")
 	Events.card_aim_started.connect(_on_card_drag_or_aiming_started)
 	Events.card_drag_started.connect(_on_card_drag_or_aiming_started)
 	Events.card_aim_ended.connect(_on_card_drag_or_aiming_ended)
@@ -82,9 +81,6 @@ func update_description() -> void:
 
 func get_description() -> String:
 	var text := card_data.description
-	#PRE-ESCAPE literal percents so they survive multi-pass formatting
-	#text = text.replace("%", "%%")
-	# Build preview context
 	var resolved := resolve_targets(targets)
 
 	var ctx := CardActionContext.new()
@@ -117,8 +113,7 @@ func get_description() -> String:
 			args.append("%s")
 		
 		text = text % args
-	#RESTORE literal percents
-	#text = text.replace("%%", "%")
+	text = TextUtils.percent_to_symbol(text)
 	return text
 
 func set_usable_card_z_index(index: int):
@@ -130,7 +125,7 @@ func get_cost() -> Array[int]:
 func activate() -> bool:
 	# 1. Resolve targets ONCE
 	var resolved_targets: CardResolvedTarget = resolve_targets(targets)
-	if resolved_targets.is_empty():
+	if resolved_targets.fighters.is_empty() and resolved_targets.areas.is_empty():
 		return false
 
 	# 2. Check playability (safety guard)
@@ -138,22 +133,24 @@ func activate() -> bool:
 		return false
 
 	# 3. Spend mana ONCE (not per action)
+	print("spending mana")
 	player.spend_mana(card_data)
 
 	# 4. Build context
 	#var resolved := resolve_targets(targets)
-	if resolved_targets.fighters.is_empty() and !resolved_targets.is_battlefield:
-		return false
-
+	#if resolved_targets.fighters.is_empty() and !resolved_targets.is_battlefield:
+		#return false
+	print("making context")
 	var ctx := CardActionContext.new()
 	ctx.player = player
 	ctx.battle_scene = battle_scene
 	ctx.card_data = card_data
 	ctx.resolved_target = resolved_targets
-
+	
 	# 5. Execute actions in order
 	var any_action_executed := false
 	for action: CardAction in card_data.actions:
+		print("about to activate an action")
 		if action.activate(ctx):
 			any_action_executed = true
 

@@ -8,8 +8,8 @@ signal tooltip_requested(card_data: CardData)
 # Must be set by parent (Run / Shop / Collection)
 var player_data: PlayerData
 
-func _ready() -> void:
-	print("menu card ready")
+#func _ready() -> void:
+	#print("menu card ready")
 
 func set_card_data(new_card_data: CardData) -> void:
 	card_data = new_card_data
@@ -18,10 +18,7 @@ func set_card_data(new_card_data: CardData) -> void:
 
 func get_description() -> String:
 	var text := card_data.description
-	#PRE-ESCAPE literal percents so they survive multi-pass formatting
-	#text = text.replace("%%", "%")
-	# Build preview context
-	#var resolved := resolve_targets(targets)
+
 	if !player_data:
 		push_warning("MenuCard has no player_data; descriptions may be unscaled.")
 	var ctx := CardActionContext.new()
@@ -49,8 +46,7 @@ func get_description() -> String:
 			args.append("%s")
 		
 		text = text % args
-	#RESTORE literal percents
-	#text = text.replace("%", "%%")
+	text = TextUtils.percent_to_symbol(text)
 	return text
 
 func _on_visuals_mouse_entered() -> void:

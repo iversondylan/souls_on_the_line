@@ -144,7 +144,7 @@ func _on_rest_site_entered() -> void:
 	campfire.player_data = player_data
 
 func _on_shop_entered() -> void:
-	print("run.gd _on_shop_entered()")
+	#print("run.gd _on_shop_entered()")
 	var shop := _change_view(SHOP_SCN) as Shop
 	shop.run = self
 	shop.player_data = player_data
@@ -192,7 +192,7 @@ func _on_map_exited(room: Room) -> void:
 			_on_battle_entered(room)
 	
 func get_modifier_tokens_for(target: Node) -> Array[ModifierToken]:
-	print("run.gd get_modifier_tokens()")
+	#print("run.gd get_modifier_tokens()")
 	var tokens: Array[ModifierToken] = []
 	
 	# 1. Arcana (global, persistent)
@@ -203,8 +203,8 @@ func get_modifier_tokens_for(target: Node) -> Array[ModifierToken]:
 	if battle_scene and target is Fighter:
 		tokens.append_array(battle_scene.get_modifier_tokens_for(target))
 	
-	for token: ModifierToken in tokens:
-		print("run.gd get_modifier_tokens() token owner: %s" % token.owner)
+	#for token: ModifierToken in tokens:
+		#print("run.gd get_modifier_tokens() token owner: %s" % token.owner)
 	# 3. Future: map effects, curses, difficulty scaling, etc.
 	
 	return tokens

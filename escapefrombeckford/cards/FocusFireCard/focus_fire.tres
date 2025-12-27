@@ -12,7 +12,7 @@ script = ExtResource("1_numeo")
 target_type = 4
 rarity = 1
 name = "Focus Fire"
-description = "Focus allies' attacks on target enemy for %s turns and it takes %s%% increased damage for [color=\"008000\"]%s[/color] turns."
+description = "Focus allies' attacks on target enemy for %s turns and it takes %spercent increased damage for [color=\"008000\"]%s[/color] turns."
 cost_blue = 1
 texture = ExtResource("4_n8er5")
 actions = Array[ExtResource("1_6prab")]([ExtResource("2_1owkf"), ExtResource("3_unp7j")])
