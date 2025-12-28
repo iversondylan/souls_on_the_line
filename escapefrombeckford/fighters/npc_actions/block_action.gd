@@ -24,13 +24,13 @@ func perform(ctx: NPCAIContext) -> void:
 	else:
 		fighter.resolve_action()
 
-func get_intent_values(ctx: NPCAIContext) -> Dictionary:
+func get_intent_values(_ctx: NPCAIContext) -> Dictionary:
 	return {
 		"armor": n_armor
 	}
 
-func get_tooltip(ctx: NPCAIContext) -> String:
+func get_tooltip(_ctx: NPCAIContext) -> String:
 	return "[center]This character will gain %s armor.[/center]" % n_armor
 
-func is_performable(ctx: NPCAIContext) -> bool:
+func is_performable(_ctx: NPCAIContext) -> bool:
 	return true

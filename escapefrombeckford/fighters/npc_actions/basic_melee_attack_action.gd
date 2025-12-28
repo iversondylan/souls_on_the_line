@@ -6,8 +6,9 @@ class_name MeleeAttackAction extends NPCAction
 @export var spree_limit: int = 1
 
 func is_performable(ctx: NPCAIContext) -> bool:
-	var spree: int = int(ctx.state.get("spree", 0))
-	return spree <= spree_limit
+	#var spree: int = int(ctx.state.get("spree", 0))
+	#return spree <= spree_limit
+	return true
 
 func get_intent_values(ctx: NPCAIContext) -> Dictionary:
 	var dmg := ctx.combatant.modifier_system.get_modified_value(
@@ -37,5 +38,6 @@ func perform(ctx: NPCAIContext) -> void:
 
 	effect.execute()
 
-	# If execute() is synchronous:
-	fighter.resolve_action()
+	#" If execute() is synchronous:"
+	#I think they're not synchronous. Attack effects do call resolve_action()
+	#fighter.resolve_action()

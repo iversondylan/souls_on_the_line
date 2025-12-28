@@ -34,7 +34,7 @@ func show_intent_tooltip(intent_display: IntentDisplay) -> void:
 		tween.kill()
 	position = intent_display.global_position
 	tooltip_icon.texture = intent_display.intent_data.icon
-	tooltip_description.text = intent_display.intent_data.action.get_tooltip()
+	tooltip_description.text = intent_display.intent_data.tooltip
 	tween = create_tween().set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_CUBIC)
 	tween.tween_callback(show)
 	tween.tween_property(self, "modulate", Color.WHITE, fade_seconds)

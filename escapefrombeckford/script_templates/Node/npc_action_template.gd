@@ -1,63 +1,71 @@
 # meta-name: NPCAction
 # meta-description: Create an action script for an NPCAction node
+
+# my_new_npc_action.gd
+class_name MyNewNPCAction
 extends NPCAction
 
-@export var n_damage := 5
-@export var n_attacks := 1
+@export_group("Attack Parameters")
+@export var base_damage: int = 5
+@export var n_attacks: int = 1
 
-var spree: int = 0
+@export_group("Behavior")
+@export var spree_limit: int = 1
 
-func perform_action() -> void:
-	if !combatant:
+func is_performable(ctx: NPCAIContext) -> bool:
+	var spree: int = int(ctx.state.get("spree", 0))
+	return spree <= spree_limit
+
+func get_intent_values(ctx: NPCAIContext) -> Dictionary:
+	var modified_damage: int = ctx.combatant.modifier_system.get_modified_value(
+		base_damage,
+		Modifier.Type.DMG_DEALT
+	)
+
+	return {
+		"dmg": modified_damage,
+		"hits": n_attacks
+	}
+
+func get_tooltip(ctx: NPCAIContext) -> String:
+	var values: Dictionary = get_intent_values(ctx)
+	var dmg: int = int(values.get("dmg", 0))
+	var hits: int = int(values.get("hits", 1))
+
+	if hits == 1:
+		return "[center]This character will deal %s damage.[/center]" % dmg
+	elif hits == 2:
+		return "[center]This character will deal %s damage twice.[/center]" % dmg
+	else:
+		return "[center]This character will deal %s damage %s times.[/center]" % [dmg, hits]
+
+
+
+func perform(ctx: NPCAIContext) -> void:
+	var fighter := ctx.combatant
+	if !fighter:
 		return
-	###updating target to front combatant###
-	if combatant.battle_group is BattleGroupEnemy:
-		target = battle_scene.get_front_or_focus(0)
-	else:
-		target = battle_scene.get_front_or_focus(1)
-	if target:
-		var attack_effect := BasicMeleeAttackEffect.new()
-		#attack_effect.targets = [target]
-		attack_effect.attacker = combatant
-		attack_effect.n_damage = n_damage
-		attack_effect.n_attacks = n_attacks
-		attack_effect.battle_scene = battle_scene
-		attack_effect.sound = sound
-		attack_effect.execute()
 
-func is_performable() -> bool:
-	if spree <= 1:
-		return true
-	else:
-		return false
-#
-func update_action_intent() -> void:
-	var modified_dmg := n_damage
-	modified_dmg = combatant.modifier_system.get_modified_value(n_damage, Modifier.Type.DMG_DEALT)
-	#                                                  print("basic_melee_attack_action.gd update_action_intent() Fighter: %s, Text: %s" % [combatant.name, modified_dmg])
-	if n_attacks == 1:
-		intent_data.base_text = str(modified_dmg)
-		intent_data.current_tooltip_text = intent_data.tooltip_text % str(modified_dmg)
-	else:
-		intent_data.base_text = str(n_attacks) + "x" + str(modified_dmg)
-		intent_data.current_tooltip_text = intent_data.tooltip_text % str(n_attacks) + "x" + str(modified_dmg)
+	# Update AI state
+	ctx.state["spree"] = int(ctx.state.get("spree", 0)) + 1
 
-func other_action_performed(npc_action: NPCAction) -> void:
-	spree = 0
+	var effect := BasicMeleeAttackEffect.new()
+	effect.attacker = fighter
+	effect.n_damage = base_damage
+	effect.n_attacks = n_attacks
+	effect.battle_scene = ctx.battle_scene
+	effect.sound = sound
 
-func get_tooltip() -> String:
-	#print("basic_melee_attack_action.gd get_tooltip() n_damage is %s" % n_damage)
-	if n_attacks == 1:
-		var base_string := "[center]This character will deal %s damage.[/center]"
-		var modified_dmg := combatant.modifier_system.get_modified_value(n_damage, Modifier.Type.DMG_DEALT)
-		return base_string % str(modified_dmg)
-	elif n_attacks == 2:
-		var base_string := "[center]This character will deal %s damage twice.[/center]"
-		var modified_dmg := combatant.modifier_system.get_modified_value(n_damage, Modifier.Type.DMG_DEALT)
-		return base_string % str(modified_dmg)
-	elif n_attacks >= 3:
-		var base_string := "[center]This character will deal %s damage %s times.[/center]"
-		var modified_dmg := combatant.modifier_system.get_modified_value(n_damage, Modifier.Type.DMG_DEALT)
-		return base_string % [modified_dmg, n_attacks]
-	return ""
-	
+	effect.execute()
+
+	# IMPORTANT: always resolve
+	fighter.resolve_action()
+
+
+func save_state(ctx: NPCAIContext) -> Dictionary:
+	return {
+		"spree": int(ctx.state.get("spree", 0))
+	}
+
+func load_state(ctx: NPCAIContext, data: Dictionary) -> void:
+	ctx.state["spree"] = int(data.get("spree", 0))

@@ -12,7 +12,7 @@ func reset_npc_actions() -> void:
 	for child in get_children():
 		if has_ai_behavior(child):
 			child.current_action = null
-			child.update_action()
+			#child.update_action()
 
 func start_turn() -> void:
 	if get_child_count() == 0:

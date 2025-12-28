@@ -33,12 +33,11 @@ var mana_green: int# : set = set_mana_green
 var mana_blue: int# : set = set_mana_blue
 var rank: int
 
-func ensure_initialized():
+func init():
 	if health < 0:
 		health = max_health
 
 func is_alive() -> bool:
-	ensure_initialized()
 	return health > 0 and alive
 
 func stats_changed() -> void:

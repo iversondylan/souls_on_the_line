@@ -44,9 +44,6 @@ func _set_combatant_data(new_data: CombatantData) -> void:
 	for child in get_children():
 		if child is FighterBehavior:
 			child._on_combatant_data_set(new_data)
-	#if self is not Player:
-		#combatant_data.reset_health()
-	#turn_reset()
 
 func _set_battle_scene(new_battle_scene: BattleScene) -> void:
 	battle_scene = new_battle_scene
@@ -128,11 +125,6 @@ func do_turn() -> void:
 		if child is FighterBehavior:
 			child._on_do_turn()
 
-func update_action() -> void:
-	for child in get_children():
-		if child is FighterBehavior:
-			child.update_action()
-
 func traverse_player() -> void:
 	for child in get_children():
 		if child is FighterBehavior:
@@ -184,24 +176,6 @@ func _on_target_area_area_entered(area: Area2D) -> void:
 func _on_target_area_area_exited(_area: Area2D) -> void:
 	hide_targeted_arrow()
 
-#func on_aura_changed(source_fighter: Fighter, aura_primary: AuraPrimary) -> void:
-	#if aura_primary.aura_type == AuraPrimary.AuraType.ALLIES:
-		#if battle_group == source_fighter.battle_group and self != source_fighter:
-			#add_aura_secondary(source_fighter, aura_primary)
-	#elif battle_group != source_fighter.battle_group:
-		#add_aura_secondary(source_fighter, aura_primary)
-#
-### THIS NEEDS TO BE CHANGED TO TRACK DUPLICATE AURAS AND SOURCES
-#func add_aura_secondary(source_fighter: Fighter, aura_primary: AuraPrimary) -> void:
-	#var aura_secondary := aura_primary.aura_secondary.duplicate()
-	#aura_secondary.source = source_fighter
-	#aura_secondary.intensity = aura_primary.intensity
-	#aura_secondary.status_parent = self
-	#combatant.status_grid.add_status(aura_secondary)
-#
-#func _on_aura_removed(source_fighter: Fighter, aura_status: Status) -> void:
-	#pass
-
 func has_status(status_id: String) -> bool:
 	return combatant.status_grid._has_status(status_id)
 
@@ -210,10 +184,8 @@ func info_visible(visibility: bool) -> void:
 
 func is_alive() -> bool:
 	if !is_node_ready() or !combatant_data:
-		#print("fighter.gd is_alive() defaulting to true")
 		return true
 	var alive: bool = combatant_data.is_alive()
-	#print("fighter.gd combatant_data reporting is_alive: %s" % alive)
 	return alive
 
 func show_targeted_arrow() -> void:
@@ -229,12 +201,9 @@ func _on_combatant_statuses_applied(proc_type: Status.ProcType) -> void:
 	statuses_applied.emit(proc_type)
 
 func _on_modifier_changed() -> void:
-	#print("fighter.gd _on_modifier_changed()")
 	for child in get_children():
 		if child is FighterBehavior:
 			child.update_action_intent()
-	for child in get_children():
-		if child is FighterBehavior:
 			child._on_modifier_changed()
 
 func get_modifier_tokens() -> Array[ModifierToken]:

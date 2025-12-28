@@ -96,9 +96,6 @@ func start_battle():
 	
 	battle_scene.clear_combatants()
 	
-	#BattleController.is_running = true
-	#BattleController.turn_number = 0
-	
 	make_player_combatant()
 	make_enemies()
 	
@@ -107,12 +104,9 @@ func start_battle():
 	deck.reset()
 	deck.make_draw_pile()
 	
-	#initialize_card_pile_ui()
-	#BattleController.transition(BattleController.BattleState.FRIENDLY_TURN)
 	MusicPlayer.play(music, true)
 	Events.battle_reset.emit()
 	
-	#BattleController.transition(BattleController.BattleState.FRIENDLY_TURN)
 	Events.request_activate_arcana_by_type.emit(Arcanum.Type.START_OF_COMBAT)
 
 func _on_request_activate_arcana_by_type(type: Arcanum.Type):
@@ -141,7 +135,6 @@ func _on_arcana_activated(type: Arcanum.Type) -> void:
 			initialize_card_pile_ui()
 			BattleController.current_state = BattleController.BattleState.FRIENDLY_TURN
 			Events.first_friendly_turn_started.emit()
-			#BattleController.transition(BattleController.BattleState.FRIENDLY_TURN)
 		Arcanum.Type.END_OF_COMBAT:
 			Events.request_victory.emit()
 			
@@ -163,11 +156,11 @@ func make_enemies() -> void:
 		var new_enemy: Enemy = enemy_scn.instantiate()
 		var new_enemy_index: int = battle_scene.get_n_combatants_in_group(1)
 		battle_scene.add_combatant(new_enemy, 1, new_enemy_index)
-
-		new_enemy.combatant_data = enemy_data.duplicate()
+		var new_data: CombatantData = enemy_data.duplicate()
+		new_data.init()
+		new_enemy.combatant_data = new_data
 		
-		#new_enemy.reset()
-		new_enemy.update_action()
+
 
 func _on_end_turn_pressed() -> void:
 	if wait_for_anims:

@@ -12,6 +12,8 @@ func load_ai():
 func _on_enter() -> void:
 	pass
 
+## There are some legacy virtual functions here to clean up
+
 func update_action() -> void:
 	pass
 

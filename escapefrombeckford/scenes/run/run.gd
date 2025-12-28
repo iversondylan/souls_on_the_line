@@ -34,28 +34,17 @@ const TREASURE_SCN := preload("res://scenes/treasure/treasure_room.tscn")
 @onready var campfire_button: Button = %CampfireButton
 @onready var health_panel: HealthBar = $TopBar/Items/HealthPanel
 
-#@onready var arcana_catalog: Arcana = load("res://arcana/arcana_catalog_2.tres")
-
-
 var account: RunAccount
 var player_data: PlayerData
 var arcana_catalog: Arcana
-#var arcana_reward_pool: ArcanaRewardPool
 var starting_deck: CardPile
 var draftable_cards: CardPile
-#var available_arcana: Arcana
 var deck: Deck
 
 func _ready() -> void:
 	arcana_system.modifier_tokens_changed.connect(_on_modifier_tokens_changed)
 	if !run_startup:
 		return
-	#print("arcana_catalog resource path:", arcana_catalog.resource_path)
-	#print("arcana count:", arcana_catalog.arcana.size())
-	#print("Arcana catalog: ", arcana_catalog)
-	#print("catalog length: ", arcana_catalog.arcana.size())
-	#for arcanum: Arcanum in arcana_catalog.arcana:
-		#print("arcanum: %s" % arcanum)
 	match run_startup.startup_type:
 		RunStartup.StartupType.NEW_RUN:
 			player_data = run_startup.player_data.create_instance()

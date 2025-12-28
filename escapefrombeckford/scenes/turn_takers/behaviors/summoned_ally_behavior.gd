@@ -7,7 +7,7 @@ func _ready() -> void:
 	if !fighter.is_node_ready():
 		await fighter.ready
 	#fighter.reset()
-	get_sibling("NPCAIBehavior").update_action()
+	#get_sibling("NPCAIBehavior").update_action()
 
 func _on_die() -> void:
 	var summoned_ally: SummonedAlly = get_parent()
