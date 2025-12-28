@@ -5,6 +5,8 @@
 
 [resource]
 script = ExtResource("1_2oqmf")
+hp_threshold = 8
+choice_type = 0
 intent_icon = ExtResource("1_2t3ut")
-intent_text_template = "{block}"
+intent_text_template = "{armor}"
 metadata/_custom_type_script = "uid://bmxx1w45e3jeo"

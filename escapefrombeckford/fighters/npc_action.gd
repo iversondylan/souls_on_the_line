@@ -12,8 +12,9 @@ enum ChoiceType { CONDITIONAL, CHANCE }
 @export var intent_icon: Texture2D
 @export var intent_text_template: String = ""  # e.g. "{dmg}", "2x{dmg}"
 
-@export_group("Audio")
+@export_group("Resolution Impact")
 @export var sound: AudioStream
+@export var resolve_delay: float = 0.6
 
 
 ## Whether this action can currently be taken
@@ -35,6 +36,19 @@ func get_intent_data(ctx: NPCAIContext) -> IntentData:
 func perform(_ctx: NPCAIContext) -> void:
 	push_error("NPCAction.perform() not implemented")
 
+
+func resolve_after_delay(ctx: NPCAIContext) -> void:
+	var fighter := ctx.combatant
+	if !fighter:
+		return
+
+	if resolve_delay > 0.0:
+		fighter.get_tree().create_timer(resolve_delay, false).timeout.connect(
+			func():
+				fighter.resolve_action()
+		)
+	else:
+		fighter.resolve_action()
 
 ## Optional tooltip
 func get_tooltip(_ctx: NPCAIContext) -> String:

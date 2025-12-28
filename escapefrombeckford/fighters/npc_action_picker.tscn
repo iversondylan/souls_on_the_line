@@ -1,6 +1,0 @@
-[gd_scene load_steps=2 format=3 uid="uid://c1ueyew5drg3k"]
-
-[ext_resource type="Script" uid="uid://cxu0uj66yny6s" path="res://fighters/npc_action_picker.gd" id="1_66igk"]
-
-[node name="NPCActionPicker" type="Node"]
-script = ExtResource("1_66igk")

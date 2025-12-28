@@ -7,8 +7,10 @@ func _ready() -> void:
 	pass
 
 func clear_display():
+	print("intent_container.gd clear_display()")
 	for child in h_box_container.get_children():
-		child.queue_free()
+		h_box_container.remove_child(child)
+		child.free()
 
 func display_icons(intent_dataz: Array[IntentData]):
 	clear_display()

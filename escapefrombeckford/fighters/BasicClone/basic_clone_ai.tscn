@@ -1,12 +1,95 @@
-[gd_scene load_steps=4 format=3 uid="uid://lfyj4ttgcedh"]
+[gd_scene load_steps=3 format=3 uid="uid://6ikusdhu35gh"]
 
-[ext_resource type="Script" uid="uid://cxu0uj66yny6s" path="res://fighters/npc_action_picker.gd" id="1_fednj"]
 [ext_resource type="Script" uid="uid://f870sbk7cagk" path="res://fighters/npc_actions/summoned_melee_attack_action.gd" id="2_582px"]
-[ext_resource type="AudioStream" uid="uid://5buss22qggjn" path="res://assets/sfx/thrall_hit.wav" id="5_2n3sl"]
+
+[sub_resource type="GDScript" id="GDScript_gxfis"]
+script/source = "#class_name NPCActionPicker extends Node
+#
+#@export var combatant: Fighter: set = _set_combatant
+#@export var target: Fighter: set = _set_target
+#
+#@onready var total_weight: float = 0.0
+#
+##var player: Player
+#var battle_scene: BattleScene : set = _set_battle_scene
+#
+#func _ready() -> void:
+	##target = battle_scene.get_front_combatant(0)
+	#_connect_children()
+	#make_chances()
+#
+#func _set_battle_scene(_battle_scene: BattleScene) -> void:
+	#battle_scene = _battle_scene
+	#target = battle_scene.get_front_combatant(0)
+	##for action: NPCAction in get_children():
+		##action.battle_scene = battle_scene
+#
+#func get_action() -> NPCAction:
+	#var action := get_first_conditional_action()
+	#if action:
+		#action.update_action_intent()
+		#return action
+	#action = get_chance_based_action()
+	#action.update_action_intent()
+	#return action
+#
+#func get_first_conditional_action() -> NPCAction:
+	#var action: NPCAction
+	#for child in get_children():
+		#action = child as NPCAction
+		#if !action or action.choice_type != NPCAction.ChoiceType.CONDITIONAL:
+			#continue
+		#if action.is_performable() and action.choice_type == NPCAction.ChoiceType.CONDITIONAL:
+			#return action
+	#return null
+#
+#func get_chance_based_action() -> NPCAction:
+	#make_chances()
+	#var action: NPCAction
+	#var roll := randf_range(0.0, total_weight)
+	#for child in get_children():
+		#action = child as NPCAction
+		#if not action or action.choice_type != NPCAction.ChoiceType.CHANCE:
+			#continue
+		#if action.accumulated_weight > roll:
+			#return action
+	#return null
+#
+#func make_chances() -> void:
+	#var action: NPCAction
+	#total_weight = 0
+	#for child in get_children():
+		#action = child as NPCAction
+		#if !action or action.choice_type != NPCAction.ChoiceType.CHANCE:
+			#continue
+		#elif action.is_performable():
+			#total_weight += action.chance_weight
+			#action.accumulated_weight = total_weight
+		#else:
+			#action.accumulated_weight = 0
+#
+#func _connect_children() -> void:
+	#for child in get_children():
+		#child.action_performed.connect(_on_npc_action_performed)
+#
+#func _set_combatant(_combatant: Fighter) -> void:
+	#combatant = _combatant
+	#for action: NPCAction in get_children():
+		#action.combatant = combatant
+#
+#func _set_target(_combatant: Fighter) -> void:
+	#target = _combatant
+	#for action in get_children():
+		#action.target = target
+		#
+#func _on_npc_action_performed(npc_action: NPCAction) -> void:
+	#for child in get_children():
+		#if child != npc_action:
+			#child.other_action_performed(npc_action)
+"
 
 [node name="BasicCloneAI" type="Node"]
-script = ExtResource("1_fednj")
+script = SubResource("GDScript_gxfis")
 
 [node name="Attack" type="Node" parent="."]
 script = ExtResource("2_582px")
-sound = ExtResource("5_2n3sl")

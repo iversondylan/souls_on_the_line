@@ -2,7 +2,7 @@
 class_name BlockAction extends NPCAction
 
 @export var n_armor: int = 5
-@export var delay_seconds: float = 0.6
+#@export var resolve_delay: float = 0.6
 
 func perform(ctx: NPCAIContext) -> void:
 	var fighter := ctx.combatant
@@ -15,19 +15,10 @@ func perform(ctx: NPCAIContext) -> void:
 	block_effect.sound = sound
 	block_effect.execute()
 
-	# Delay resolution (matches your old timing)
-	if delay_seconds > 0.0:
-		fighter.get_tree().create_timer(delay_seconds, false).timeout.connect(
-			func():
-				fighter.resolve_action()
-		)
-	else:
-		fighter.resolve_action()
+	resolve_after_delay(ctx)
 
 func get_intent_values(_ctx: NPCAIContext) -> Dictionary:
-	return {
-		"armor": n_armor
-	}
+	return { "armor": n_armor }
 
 func get_tooltip(_ctx: NPCAIContext) -> String:
 	return "[center]This character will gain %s armor.[/center]" % n_armor

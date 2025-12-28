@@ -3,6 +3,7 @@ class_name EmergencyBlockAction extends NPCAction
 
 @export var armor_amount: int = 15
 @export var hp_threshold: int = 5
+#@export var resolve_delay: float = 0.6
 
 func is_performable(ctx: NPCAIContext) -> bool:
 	if ctx.state.get("used", false):
@@ -12,7 +13,6 @@ func is_performable(ctx: NPCAIContext) -> bool:
 func perform(ctx: NPCAIContext) -> void:
 	var fighter := ctx.combatant
 	if !fighter:
-		fighter.resolve_action()
 		return
 
 	var block := BlockEffect.new()
@@ -22,7 +22,10 @@ func perform(ctx: NPCAIContext) -> void:
 	block.execute()
 
 	ctx.state["used"] = true
-	fighter.resolve_action()
+	resolve_after_delay(ctx)
+
+func get_intent_values(_ctx: NPCAIContext) -> Dictionary:
+	return { "armor": armor_amount }
 
 func save_state(ctx: NPCAIContext) -> Dictionary:
 	return { "used": ctx.state.get("used", false) }

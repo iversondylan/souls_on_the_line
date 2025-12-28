@@ -5,6 +5,7 @@
 
 [resource]
 script = ExtResource("1_co7s2")
+base_damage = 3
 intent_icon = ExtResource("1_lg2ls")
 intent_text_template = "{dmg}"
 metadata/_custom_type_script = "uid://ckuvpamau6jyf"

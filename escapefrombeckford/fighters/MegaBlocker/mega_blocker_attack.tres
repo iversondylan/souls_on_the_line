@@ -7,4 +7,5 @@
 script = ExtResource("1_njf6u")
 intent_icon = ExtResource("1_kcv8e")
 intent_text_template = "{dmg}"
+resolve_delay = 0.0
 metadata/_custom_type_script = "uid://ckuvpamau6jyf"

@@ -5,7 +5,7 @@ class_name MeleeAttackAction extends NPCAction
 @export var n_attacks: int = 1
 @export var spree_limit: int = 1
 
-func is_performable(ctx: NPCAIContext) -> bool:
+func is_performable(_ctx: NPCAIContext) -> bool:
 	#var spree: int = int(ctx.state.get("spree", 0))
 	#return spree <= spree_limit
 	return true
