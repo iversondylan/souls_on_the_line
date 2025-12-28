@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="CombatantData" load_steps=4 format=3 uid="uid://b21fke2hh3mrg"]
 
-[ext_resource type="PackedScene" uid="uid://c6l2cty68tsob" path="res://fighters/MegaBlocker/mega_blocker_ai.tscn" id="1_564gw"]
+[ext_resource type="Resource" uid="uid://7hi0c0m1vnpb" path="res://fighters/MegaBlocker/mega_blocker_ai_profile.tres" id="1_6qdot"]
 [ext_resource type="Texture2D" uid="uid://dtvvequ1w1dlu" path="res://assets/sprites/assorted/enemy_thrall_mage.png" id="1_geldf"]
 [ext_resource type="Script" uid="uid://cfatj0ryn8uv3" path="res://custom_resources/combatant_data.gd" id="1_tpc1r"]
 
@@ -10,7 +10,6 @@ name = "Thrall"
 character_art = ExtResource("1_geldf")
 facing_right = false
 height = 270
-health = 10
 team = 2
-ai = ExtResource("1_564gw")
+ai = ExtResource("1_6qdot")
 metadata/_custom_type_script = "uid://cfatj0ryn8uv3"

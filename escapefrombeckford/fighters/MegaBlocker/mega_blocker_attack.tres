@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="MeleeAttackAction" load_steps=3 format=3 uid="uid://cx8lb7pxxv4vq"]
+
+[ext_resource type="Texture2D" uid="uid://c54dbo8n7r3g" path="res://assets/sprites/assorted/attack.PNG" id="1_kcv8e"]
+[ext_resource type="Script" uid="uid://ckuvpamau6jyf" path="res://fighters/npc_actions/basic_melee_attack_action.gd" id="1_njf6u"]
+
+[resource]
+script = ExtResource("1_njf6u")
+intent_icon = ExtResource("1_kcv8e")
+intent_text_template = "{dmg}"
+metadata/_custom_type_script = "uid://ckuvpamau6jyf"

@@ -19,7 +19,7 @@ signal combatant_data_changed()
 @export var max_mana_blue: int = 3
 @export var starting_armor: int = 0
 @export var team: int = 1
-@export var ai: PackedScene
+@export var ai: NPCAIProfile
 
 @export_group("Audio")
 @export var attack_sound: AudioStream = load("res://assets/sfx/thrall_hit.wav")

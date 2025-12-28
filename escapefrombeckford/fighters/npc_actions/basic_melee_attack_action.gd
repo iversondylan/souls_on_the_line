@@ -1,56 +1,41 @@
-#basic_melee_attack_action.gd
-extends NPCAction
+# melee_attack_action.gd
+class_name MeleeAttackAction extends NPCAction
 
-@export var n_damage := 5
-@export var n_attacks := 1
+@export var base_damage: int = 5
+@export var n_attacks: int = 1
+@export var spree_limit: int = 1
 
-var spree: int = 0
+func is_performable(ctx: NPCAIContext) -> bool:
+	var spree: int = int(ctx.state.get("spree", 0))
+	return spree <= spree_limit
 
-func perform_action() -> void:
-	if !combatant:
+func get_intent_values(ctx: NPCAIContext) -> Dictionary:
+	var dmg := ctx.combatant.modifier_system.get_modified_value(
+		base_damage,
+		Modifier.Type.DMG_DEALT
+	)
+	return {
+		"dmg": dmg,
+		"hits": n_attacks
+	}
+
+func perform(ctx: NPCAIContext) -> void:
+	var fighter := ctx.combatant
+	if !fighter:
+		fighter.resolve_action()
 		return
-	if target:
-		var attack_effect := BasicMeleeAttackEffect.new()
-		attack_effect.attacker = combatant
-		attack_effect.n_damage = n_damage
-		attack_effect.n_attacks = n_attacks
-		attack_effect.battle_scene = battle_scene
-		attack_effect.sound = sound
-		attack_effect.execute()
 
-func is_performable() -> bool:
-	if spree <= 1:
-		return true
-	else:
-		return false
-#
-func update_action_intent() -> void:
-	var modified_dmg := n_damage
-	modified_dmg = combatant.modifier_system.get_modified_value(n_damage, Modifier.Type.DMG_DEALT)
-	#                                                  print("basic_melee_attack_action.gd update_action_intent() Fighter: %s, Text: %s" % [combatant.name, modified_dmg])
-	if n_attacks == 1:
-		intent_data.base_text = str(modified_dmg)
-		intent_data.current_tooltip_text = intent_data.tooltip_text % str(modified_dmg)
-	else:
-		intent_data.base_text = str(n_attacks) + "x" + str(modified_dmg)
-		intent_data.current_tooltip_text = intent_data.tooltip_text % str(n_attacks) + "x" + str(modified_dmg)
+	var effect := BasicMeleeAttackEffect.new()
+	effect.attacker = fighter
+	effect.n_damage = base_damage
+	effect.n_attacks = n_attacks
+	effect.battle_scene = ctx.battle_scene
+	effect.sound = sound
 
-func other_action_performed(_npc_action: NPCAction) -> void:
-	spree = 0
+	# Update spree state
+	ctx.state["spree"] = ctx.state.get("spree", 0) + 1
 
-func get_tooltip() -> String:
-	#print("basic_melee_attack_action.gd get_tooltip() n_damage is %s" % n_damage)
-	if n_attacks == 1:
-		var base_string := "[center]This character will deal %s damage.[/center]"
-		var modified_dmg := combatant.modifier_system.get_modified_value(n_damage, Modifier.Type.DMG_DEALT)
-		return base_string % str(modified_dmg)
-	elif n_attacks == 2:
-		var base_string := "[center]This character will deal %s damage twice.[/center]"
-		var modified_dmg := combatant.modifier_system.get_modified_value(n_damage, Modifier.Type.DMG_DEALT)
-		return base_string % str(modified_dmg)
-	elif n_attacks >= 3:
-		var base_string := "[center]This character will deal %s damage %s times.[/center]"
-		var modified_dmg := combatant.modifier_system.get_modified_value(n_damage, Modifier.Type.DMG_DEALT)
-		return base_string % [modified_dmg, n_attacks]
-	return ""
-	
+	effect.execute()
+
+	# If execute() is synchronous:
+	fighter.resolve_action()

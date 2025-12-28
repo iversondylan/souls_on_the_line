@@ -1,13 +1,13 @@
 [gd_resource type="Resource" script_class="CombatantData" load_steps=4 format=3 uid="uid://dwy6ym7cfiix7"]
 
 [ext_resource type="Script" uid="uid://cfatj0ryn8uv3" path="res://custom_resources/combatant_data.gd" id="1_ago3s"]
-[ext_resource type="PackedScene" uid="uid://lfyj4ttgcedh" path="res://fighters/BasicClone/basic_clone_ai.tscn" id="1_apdk4"]
 [ext_resource type="Texture2D" uid="uid://boidn5bneb5f0" path="res://assets/sprites/assorted/player_mage.png" id="1_kbgrf"]
+[ext_resource type="Resource" uid="uid://dueva43wmh3no" path="res://fighters/BasicClone/basic_clone_ai_profile.tres" id="1_sriky"]
 
 [resource]
 script = ExtResource("1_ago3s")
 name = "Shadow Clone"
 character_art = ExtResource("1_kbgrf")
 height = 270
-ai = ExtResource("1_apdk4")
+ai = ExtResource("1_sriky")
 metadata/_custom_type_script = "uid://cfatj0ryn8uv3"

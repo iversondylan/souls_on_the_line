@@ -210,10 +210,10 @@ func info_visible(visibility: bool) -> void:
 
 func is_alive() -> bool:
 	if !is_node_ready() or !combatant_data:
-		print("fighter.gd is_alive() defaulting to true")
+		#print("fighter.gd is_alive() defaulting to true")
 		return true
 	var alive: bool = combatant_data.is_alive()
-	print("fighter.gd combatant_data reporting is_alive: %s" % alive)
+	#print("fighter.gd combatant_data reporting is_alive: %s" % alive)
 	return alive
 
 func show_targeted_arrow() -> void:

@@ -1,12 +1,10 @@
-[gd_scene load_steps=9 format=3 uid="uid://c6l2cty68tsob"]
+[gd_scene load_steps=7 format=3 uid="uid://c6l2cty68tsob"]
 
 [ext_resource type="Script" uid="uid://cxu0uj66yny6s" path="res://fighters/npc_action_picker.gd" id="1_i4h87"]
 [ext_resource type="Script" uid="uid://ckuvpamau6jyf" path="res://fighters/npc_actions/basic_melee_attack_action.gd" id="2_tu2mp"]
 [ext_resource type="Script" uid="uid://dl5oew0p8hu6h" path="res://fighters/npc_actions/block_action.gd" id="3_4c4ji"]
-[ext_resource type="Resource" uid="uid://dase6083j500o" path="res://intents/damage_icon.tres" id="3_eno5c"]
-[ext_resource type="Script" uid="uid://bmxx1w45e3jeo" path="res://fighters/npc_actions/mega_block_action.gd" id="4_qc3v1"]
+[ext_resource type="Script" uid="uid://bmxx1w45e3jeo" path="res://fighters/npc_actions/emergency_block_action.gd" id="4_qc3v1"]
 [ext_resource type="AudioStream" uid="uid://5buss22qggjn" path="res://assets/sfx/thrall_hit.wav" id="5_h7yyt"]
-[ext_resource type="Resource" uid="uid://cery11eut7nhx" path="res://intents/armor_icon.tres" id="6_tu2mp"]
 [ext_resource type="AudioStream" uid="uid://h4nxaoibaiuj" path="res://assets/sfx/block.wav" id="8_jpyf7"]
 
 [node name="MegaBlockerAI" type="Node"]
@@ -14,22 +12,13 @@ script = ExtResource("1_i4h87")
 
 [node name="AttackAction" type="Node" parent="."]
 script = ExtResource("2_tu2mp")
-n_damage = 7
-base_intent_data = ExtResource("3_eno5c")
-sound = ExtResource("5_h7yyt")
-choice_type = 1
 chance_weight = 4.0
+sound = ExtResource("5_h7yyt")
 
 [node name="BlockAction" type="Node" parent="."]
 script = ExtResource("3_4c4ji")
-base_intent_data = ExtResource("6_tu2mp")
 sound = ExtResource("8_jpyf7")
-choice_type = 1
-code_type = 1
-chance_weight = 1.0
 
 [node name="MegaBlockAction" type="Node" parent="."]
 script = ExtResource("4_qc3v1")
-base_intent_data = ExtResource("6_tu2mp")
 sound = ExtResource("8_jpyf7")
-code_type = 1

@@ -16,8 +16,8 @@ func _ready() -> void:
 func _set_battle_scene(_battle_scene: BattleScene) -> void:
 	battle_scene = _battle_scene
 	target = battle_scene.get_front_combatant(0)
-	for action: NPCAction in get_children():
-		action.battle_scene = battle_scene
+	#for action: NPCAction in get_children():
+		#action.battle_scene = battle_scene
 
 func get_action() -> NPCAction:
 	var action := get_first_conditional_action()

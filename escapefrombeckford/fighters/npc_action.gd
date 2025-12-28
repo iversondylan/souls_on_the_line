@@ -1,45 +1,65 @@
-class_name NPCAction extends Node
+# npc_action.gd
+class_name NPCAction
+extends Resource
 
-signal action_performed(npc_action: NPCAction)
+enum ChoiceType { CONDITIONAL, CHANCE }
 
-enum ChoiceType {CONDITIONAL, CHANCE}
-enum ActionCode {TIGER, TURTLE, TURKEY, TOUCAN, TARSIER, TAPIR}
+@export_group("Selection")
+@export var choice_type: ChoiceType = ChoiceType.CHANCE
+@export var chance_weight: float = 1.0
 
-@export var base_intent_data: IntentData
+@export_group("Intent")
+@export var intent_icon: Texture2D
+@export var intent_text_template: String = ""  # e.g. "{dmg}", "2x{dmg}"
+
+@export_group("Audio")
 @export var sound: AudioStream
-@export var choice_type: ChoiceType
-@export var code_type: ActionCode
-@export_range(0.0, 10.0) var chance_weight: float = 0.0
-@onready var accumulated_weight: float = 0.0
-var intent_data: IntentData
 
-var combatant: Fighter : set = set_fighter
-var target: Fighter
-var player: Player
-var battle_scene: BattleScene
 
-func _ready() -> void:
-	intent_data = base_intent_data.duplicate()
-	intent_data.action = self
+## Whether this action can currently be taken
+func is_performable(_ctx: NPCAIContext) -> bool:
+	return true
 
-func is_performable() -> bool:
-	return false
 
-func perform_action() -> void:
+## Called when showing intent
+func get_intent_data(ctx: NPCAIContext) -> IntentData:
+	var intent := IntentData.new()
+	intent.icon = intent_icon
+	intent.base_text = _format_intent_text(ctx)
+	intent.tooltip = get_tooltip(ctx)
+	return intent
+
+
+## Execute the action
+## MUST eventually call ctx.combatant.resolve_action()
+func perform(_ctx: NPCAIContext) -> void:
+	push_error("NPCAction.perform() not implemented")
+
+
+## Optional tooltip
+func get_tooltip(_ctx: NPCAIContext) -> String:
+	return ""
+
+
+## Optional persistent state
+func save_state(_ctx: NPCAIContext) -> Dictionary:
+	return {}
+
+
+func load_state(_ctx: NPCAIContext, _data: Dictionary) -> void:
 	pass
 
-func update_action_intent() -> void:
-	pass
+func _format_intent_text(ctx: NPCAIContext) -> String:
+	if intent_text_template == "":
+		return ""
 
-func other_action_performed(_npc_action: NPCAction) -> void:
-	pass
+	var values := get_intent_values(ctx)
+	var text := intent_text_template
+	for k in values.keys():
+		text = text.replace("{" + k + "}", str(values[k]))
+	return text
 
-func set_fighter(new_fighter: Fighter) -> void:
-	combatant = new_fighter
 
-func get_tooltip() -> String:
-	return "error"
-#func update_tooltip() -> String:
-	#return intent_data.tooltip_text
-#func update_intent_text() -> void:
-	#intent_data.current_text = intent_data.base_text
+## Override if you want dynamic numbers
+func get_intent_values(_ctx: NPCAIContext) -> Dictionary:
+	return {}

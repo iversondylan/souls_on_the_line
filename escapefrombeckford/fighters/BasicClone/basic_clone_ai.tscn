@@ -1,8 +1,7 @@
-[gd_scene load_steps=5 format=3 uid="uid://lfyj4ttgcedh"]
+[gd_scene load_steps=4 format=3 uid="uid://lfyj4ttgcedh"]
 
 [ext_resource type="Script" uid="uid://cxu0uj66yny6s" path="res://fighters/npc_action_picker.gd" id="1_fednj"]
 [ext_resource type="Script" uid="uid://f870sbk7cagk" path="res://fighters/npc_actions/summoned_melee_attack_action.gd" id="2_582px"]
-[ext_resource type="Resource" uid="uid://dase6083j500o" path="res://intents/damage_icon.tres" id="3_582px"]
 [ext_resource type="AudioStream" uid="uid://5buss22qggjn" path="res://assets/sfx/thrall_hit.wav" id="5_2n3sl"]
 
 [node name="BasicCloneAI" type="Node"]
@@ -10,5 +9,4 @@ script = ExtResource("1_fednj")
 
 [node name="Attack" type="Node" parent="."]
 script = ExtResource("2_582px")
-base_intent_data = ExtResource("3_582px")
 sound = ExtResource("5_2n3sl")

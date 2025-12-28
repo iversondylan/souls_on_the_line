@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="EmergencyBlockAction" load_steps=3 format=3 uid="uid://dnkgkdy6leoku"]
+
+[ext_resource type="Script" uid="uid://bmxx1w45e3jeo" path="res://fighters/npc_actions/emergency_block_action.gd" id="1_2oqmf"]
+[ext_resource type="Texture2D" uid="uid://dob30qtbj3xk5" path="res://assets/sprites/assorted/block.PNG" id="1_2t3ut"]
+
+[resource]
+script = ExtResource("1_2oqmf")
+intent_icon = ExtResource("1_2t3ut")
+intent_text_template = "{block}"
+metadata/_custom_type_script = "uid://bmxx1w45e3jeo"

@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="BlockAction" load_steps=3 format=3 uid="uid://cdi1ok8yv6b4l"]
+
+[ext_resource type="Script" uid="uid://dl5oew0p8hu6h" path="res://fighters/npc_actions/block_action.gd" id="1_h4l3s"]
+[ext_resource type="Texture2D" uid="uid://dob30qtbj3xk5" path="res://assets/sprites/assorted/block.PNG" id="1_ubf13"]
+
+[resource]
+script = ExtResource("1_h4l3s")
+intent_icon = ExtResource("1_ubf13")
+intent_text_template = "{armor}"
+metadata/_custom_type_script = "uid://dl5oew0p8hu6h"

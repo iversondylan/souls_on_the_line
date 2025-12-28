@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="CombatantData" load_steps=4 format=3 uid="uid://dquci30xue6eo"]
 
-[ext_resource type="PackedScene" uid="uid://bh43xfsx3lxpc" path="res://fighters/BufferBird/buffer_bird_ai.tscn" id="1_0aghq"]
+[ext_resource type="Resource" uid="uid://xw2ha8sh5j4f" path="res://fighters/BufferBird/buffer_bird_ai_profile.tres" id="1_0aghq"]
 [ext_resource type="Texture2D" uid="uid://bb2atap1ej445" path="res://assets/character_visuals/buffer_bird/DemonRaven (1).png" id="1_7ocbv"]
 [ext_resource type="Script" uid="uid://cfatj0ryn8uv3" path="res://custom_resources/combatant_data.gd" id="1_rmw54"]
 
@@ -11,6 +11,5 @@ character_art = ExtResource("1_7ocbv")
 portrait = ExtResource("1_7ocbv")
 character_scale = 0.25
 height = 270
-health = 10
 ai = ExtResource("1_0aghq")
 metadata/_custom_type_script = "uid://cfatj0ryn8uv3"

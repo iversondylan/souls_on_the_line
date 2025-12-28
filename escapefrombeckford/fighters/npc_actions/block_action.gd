@@ -1,32 +1,36 @@
-extends NPCAction
+# block_action.gd
+class_name BlockAction extends NPCAction
 
 @export var n_armor: int = 5
+@export var delay_seconds: float = 0.6
 
-func perform_action() -> void:
-	if !combatant or !target:
+func perform(ctx: NPCAIContext) -> void:
+	var fighter := ctx.combatant
+	if !fighter:
 		return
-	
+
 	var block_effect := BlockEffect.new()
-	block_effect.targets = [combatant]
+	block_effect.targets = [fighter]
 	block_effect.n_armor = n_armor
 	block_effect.sound = sound
 	block_effect.execute()
-	
-	get_tree().create_timer(0.6, false).timeout.connect( #CHANGE TIME BACK T0 0.6
-		func():
-			#combatant.doing_turn = false
-			#combatant.turn_complete = true
-			action_performed.emit(self)
-			combatant.resolve_action()
-	)
 
-func update_action_intent() -> void:
-	intent_data.base_text = str(n_armor)
+	# Delay resolution (matches your old timing)
+	if delay_seconds > 0.0:
+		fighter.get_tree().create_timer(delay_seconds, false).timeout.connect(
+			func():
+				fighter.resolve_action()
+		)
+	else:
+		fighter.resolve_action()
 
-func is_performable() -> bool:
+func get_intent_values(ctx: NPCAIContext) -> Dictionary:
+	return {
+		"armor": n_armor
+	}
+
+func get_tooltip(ctx: NPCAIContext) -> String:
+	return "[center]This character will gain %s armor.[/center]" % n_armor
+
+func is_performable(ctx: NPCAIContext) -> bool:
 	return true
-
-func get_tooltip() -> String:
-	var base_string := "[center]This character will gain %s armor.[/center]"
-	#var modified_dmg := combatant.modifier_system.get_modified_value(n_damage, Modifier.Type.DMG_DEALT)
-	return base_string % n_armor
