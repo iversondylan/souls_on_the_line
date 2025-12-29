@@ -7,6 +7,10 @@ enum ChoiceType { CONDITIONAL, CHANCE }
 @export_group("Selection")
 @export var choice_type: ChoiceType = ChoiceType.CHANCE
 @export var chance_weight: float = 1.0
+@export var performable_models: Array[NPCPerformableModel]
+@export var spree_model: NPCSpreeModel
+@export var weight_model: NPCWeightModel
+@export var state_models: Array[NPCStateModel] = []
 
 @export_group("Intent")
 @export var intent_icon: Texture2D
@@ -18,7 +22,10 @@ enum ChoiceType { CONDITIONAL, CHANCE }
 
 
 ## Whether this action can currently be taken
-func is_performable(_ctx: NPCAIContext) -> bool:
+func is_performable(ctx: NPCAIContext) -> bool:
+	for model in performable_models:
+		if not model.is_performable(ctx):
+			return false
 	return true
 
 
@@ -33,8 +40,13 @@ func get_intent_data(ctx: NPCAIContext) -> IntentData:
 
 ## Execute the action
 ## MUST eventually call ctx.combatant.resolve_action()
-func perform(_ctx: NPCAIContext) -> void:
-	push_error("NPCAction.perform() not implemented")
+func perform(ctx: NPCAIContext) -> void:
+	#_execute(ctx)  # subclass-specific (attack, block, etc.)
+
+	for model in state_models:
+		model.on_perform(ctx)
+
+	resolve_after_delay(ctx)
 
 
 func resolve_after_delay(ctx: NPCAIContext) -> void:
@@ -77,3 +89,6 @@ func _format_intent_text(ctx: NPCAIContext) -> String:
 ## Override if you want dynamic numbers
 func get_intent_values(_ctx: NPCAIContext) -> Dictionary:
 	return {}
+
+func get_state(ctx: NPCAIContext) -> Dictionary:
+	return ctx.state

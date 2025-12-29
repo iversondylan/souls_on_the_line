@@ -38,7 +38,3 @@ func perform(ctx: NPCAIContext) -> void:
 	ctx.state["spree"] = ctx.state.get("spree", 0) + 1
 
 	effect.execute()
-
-	#" If execute() is synchronous:"
-	#I think they're not synchronous. Attack effects do call resolve_action()
-	#fighter.resolve_action()
