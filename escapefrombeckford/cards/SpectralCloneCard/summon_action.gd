@@ -16,13 +16,18 @@ func activate(ctx: CardActionContext) -> bool:
 	combatant_data.max_mana_blue = ctx.player.combatant_data.max_mana_blue
 	
 	summoned_ally.combatant_data = combatant_data
-	#summoned_ally.reset()
+	for child in summoned_ally.get_children():
+			if child is NPCAIBehavior:
+				child.plan_next_intent()
+				child.refresh_intent_display_only()
 	
-	
+	var summon_behavior := summoned_ally.get_node_or_null("SummonedAllyBehavior")
+	if summon_behavior:
+		summon_behavior.bind_card(ctx.card_data)
 	
 	ctx.summoned_fighters.append(summoned_ally)
 	ctx.affected_fighters.append(summoned_ally)
-	# copy stats, bind card, etc.
+	
 	return true
 
 func description_arity() -> int:

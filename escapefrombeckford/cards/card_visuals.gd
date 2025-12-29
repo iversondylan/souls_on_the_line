@@ -19,6 +19,7 @@ var cost_blue: int = 0 : set = set_cost_blue
 var _card_data_internal: CardData
 
 func _set_card_data(value: CardData) -> void:
+	assert(value != null, "CardVisuals received null CardData")
 	if !is_node_ready():
 		await ready
 	_card_data_internal = value

@@ -133,14 +133,14 @@ func activate() -> bool:
 		return false
 
 	# 3. Spend mana ONCE (not per action)
-	print("spending mana")
+	#print("spending mana")
 	player.spend_mana(card_data)
 
 	# 4. Build context
 	#var resolved := resolve_targets(targets)
 	#if resolved_targets.fighters.is_empty() and !resolved_targets.is_battlefield:
 		#return false
-	print("making context")
+	#print("making context")
 	var ctx := CardActionContext.new()
 	ctx.player = player
 	ctx.battle_scene = battle_scene
@@ -150,7 +150,7 @@ func activate() -> bool:
 	# 5. Execute actions in order
 	var any_action_executed := false
 	for action: CardAction in card_data.actions:
-		print("about to activate an action")
+		#print("about to activate an action")
 		if action.activate(ctx):
 			any_action_executed = true
 

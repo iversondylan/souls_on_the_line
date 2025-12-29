@@ -21,6 +21,7 @@ func get_intent_values(ctx: NPCAIContext) -> Dictionary:
 	}
 
 func perform(ctx: NPCAIContext) -> void:
+	ctx.combatant.intent_container.clear_display()
 	var fighter := ctx.combatant
 	if !fighter:
 		fighter.resolve_action()

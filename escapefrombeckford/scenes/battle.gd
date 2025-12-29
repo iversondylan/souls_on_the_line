@@ -110,11 +110,9 @@ func start_battle():
 	Events.request_activate_arcana_by_type.emit(Arcanum.Type.START_OF_COMBAT)
 
 func _plan_initial_enemy_intents() -> void:
-	# Group 1 is enemies in your BattleScene
 	for enemy: Fighter in battle_scene.get_combatants_in_group(1):
 		for child in enemy.get_children():
 			if child is NPCAIBehavior:
-				# Ensure it has a plan and show it immediately
 				child.plan_next_intent()
 				child.refresh_intent_display_only()
 

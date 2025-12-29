@@ -9,8 +9,7 @@ var id_counter : int# = 0
 var first_shuffle: bool = true
 
 
-func add_card(card_data: CardData): #change to CardData as input
-	#var card_id = _generate_card_id(card_data)
+func add_card(card_data: CardData):
 	card_data.card_status = CardData.CardStatus.PRE_GAME
 	card_data.id = id_counter
 	card_collection.add_back(card_data)
@@ -18,29 +17,16 @@ func add_card(card_data: CardData): #change to CardData as input
 	id_counter += 1
 
 func _set_card_collection(_card_pile: CardPile) -> void:
-	#print("deck.gd OH NO SETTING CARD COLLECTION")
 	card_collection = _card_pile
 	id_counter = 0
 	for card_data: CardData in card_collection.cards:
 		card_data.id = id_counter
 		id_counter += 1
-	
-#func add_card_pile(card_pile: CardPile) -> void:
-	#for card: CardData in card_pile.cards:
-		#add_card(card)
 
 func add_card_to_discard(card_data: CardData):
-	#if !ready:
-		#await ready
-	#card_collection[card_data.id].card_status = CardWithID.CardStatus.DISCARD_PILE
 	discard_pile.add_back(card_data)
 
-#func add_card_to_summon_reserve(card_with_id: CardWithID) -> void:
-	#card_collection[card_with_id.id].card_status = CardWithID.CardStatus.SUMMON_RESERVE
-	#summon_reserve.push_back(card_with_id)
-
 func discard_summon_reserve_card(card_data: CardData) -> void:
-	#summon_reserve.erase(card_with_id)
 	add_card_to_discard(card_data)
 
 func draw_pile_is_empty() -> bool:
@@ -50,8 +36,6 @@ func reset():
 	draw_pile.clear()
 	discard_pile.clear()
 	id_counter = 0
-	#for card in card_collection.values():
-		#card.card_status = CardData.CardStatus.PRE_GAME
 	first_shuffle = true
 
 func clear_discard():
@@ -87,7 +71,12 @@ func draw_card() -> CardData:
 	if draw_pile_is_empty():
 		take_discards()
 		shuffle()
-	var drawn_card: CardData = draw_pile.draw_back()
+
+	if draw_pile_is_empty():
+		push_error("Deck.draw_card(): No cards available to draw")
+		return null
+
+	var drawn_card := draw_pile.draw_back()
 	draw_pile_size_changed.emit(draw_pile.cards.size())
 	return drawn_card
 

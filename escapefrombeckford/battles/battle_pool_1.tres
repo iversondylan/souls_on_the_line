@@ -1,10 +1,12 @@
-[gd_resource type="Resource" script_class="BattlePool" load_steps=4 format=3 uid="uid://hkw3l5xa63gq"]
+[gd_resource type="Resource" script_class="BattlePool" load_steps=6 format=3 uid="uid://hkw3l5xa63gq"]
 
 [ext_resource type="Script" uid="uid://be1v8qevmc2xw" path="res://custom_resources/battle_data.gd" id="1_c5yi3"]
 [ext_resource type="Script" uid="uid://b203gsihy5ttn" path="res://custom_resources/battle_pool.gd" id="2_coyo0"]
-[ext_resource type="Resource" uid="uid://dgcyu7avn4dkc" path="res://battles/tier_0_thralls.tres" id="2_w50om"]
+[ext_resource type="Resource" uid="uid://mdppqf4p4ssa" path="res://battles/tier_0_bufferbirds.tres" id="3_w50om"]
+[ext_resource type="Resource" uid="uid://bro14nbxe02ih" path="res://battles/tier_1_calabash.tres" id="4_r0qmu"]
+[ext_resource type="Resource" uid="uid://ltkmv5n6kd6t" path="res://battles/tier_1_thralls_bird.tres" id="5_fo83u"]
 
 [resource]
 script = ExtResource("2_coyo0")
-pool = Array[ExtResource("1_c5yi3")]([ExtResource("2_w50om")])
+pool = Array[ExtResource("1_c5yi3")]([ExtResource("3_w50om"), ExtResource("4_r0qmu"), ExtResource("5_fo83u")])
 metadata/_custom_type_script = "uid://b203gsihy5ttn"

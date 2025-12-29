@@ -7,30 +7,43 @@ const KEY_PLANNED_IDX := "planned_idx"
 
 func _make_context() -> NPCAIContext:
 	var fighter: Fighter = get_parent()
-
+	
 	var ctx := NPCAIContext.new()
 	ctx.combatant = fighter
 	ctx.battle_scene = fighter.battle_scene
-
-	ctx.state = get_meta("ai_state") # MUST already exist
+	ctx.state = get_meta("ai_state")
 	ctx.rng = get_meta("ai_rng")
-
 	return ctx
 
 func _on_combatant_data_set(_data: CombatantData) -> void:
 	assert(_data.ai, "CombatantData has no ai profile")
 	ai_profile = _data.ai
 
-	# Initialize state ONCE
+	# init state + rng ONCE
 	set_meta("ai_state", {})
-	set_meta("ai_rng", RandomNumberGenerator.new())
-	get_meta("ai_rng").randomize()
+	var rng := RandomNumberGenerator.new()
+	rng.randomize()
+	set_meta("ai_rng", rng)
 
-	plan_next_intent()
+	# IMPORTANT: do NOT plan here (battle_scene / turn order may not be ready yet)
+	# Instead: Battle.start_battle() should plan initial intents after enemies exist.
 
-	if not _data.combatant_data_changed.is_connected(_refresh_intent_display_only):
-		_data.combatant_data_changed.connect(_refresh_intent_display_only)
+	if not _data.combatant_data_changed.is_connected(_on_stats_changed):
+		_data.combatant_data_changed.connect(_on_stats_changed)
 
+func _on_stats_changed() -> void:
+	# Hard conditional takeover ONLY in response to player/allies causing stat changes
+	var fighter: Fighter = get_parent()
+	if !fighter.is_alive() or !ai_profile:
+		return
+
+	var ctx := _make_context()
+
+	# if a conditional is now valid, overwrite the plan and refresh the display
+	var cond_idx := _get_first_conditional_idx(ctx)
+	if cond_idx != -1:
+		ctx.state[KEY_PLANNED_IDX] = cond_idx
+	_refresh_intent_display_only()
 
 	## Cooper was here
 func update_action_intent() -> void:
@@ -71,49 +84,44 @@ func _roll_chance_idx(ctx: NPCAIContext) -> int:
 	return pool[-1]
 
 func plan_next_intent() -> void:
+	# ONLY RNG HERE.
 	var fighter: Fighter = get_parent()
 	if !fighter.is_alive() or !ai_profile:
 		return
-
+	
 	var ctx := _make_context()
-
+	
+	# Roll a chance plan for next turn (do NOT check conditionals here)
 	var chance_idx := _roll_chance_idx(ctx)
-	ctx.state[KEY_PLANNED_CHANCE_IDX] = chance_idx
+	ctx.state[KEY_PLANNED_IDX] = chance_idx
 
-	var planned_idx := chance_idx
-
-	var cond_idx := _get_first_conditional_idx(ctx)
-	if cond_idx != -1:
-		planned_idx = cond_idx
-		ctx.state["locked_conditional"] = true
-	else:
-		ctx.state["locked_conditional"] = false
-
-	ctx.state[KEY_PLANNED_IDX] = planned_idx
-	# NO DISPLAY HERE
+func refresh_intent_display_only() -> void:
+	_refresh_intent_display_only()
 
 func _refresh_intent_display_only() -> void:
 	var fighter: Fighter = get_parent()
 	if !fighter.is_alive() or !ai_profile:
 		fighter.intent_container.clear_display()
 		return
-
+	
 	var ctx := _make_context()
-
-	# If a hard conditional becomes valid due to player/allies actions,
-	# it should immediately replace the planned intent.
-	_apply_conditional_takeover_if_needed(ctx)
-
-	if not ctx.state.has(KEY_PLANNED_IDX):
+	
+	# Do NOT show intent while acting
+	if ctx.state.get("is_acting", false):
 		return
-
-	var planned_idx: int = int(ctx.state[KEY_PLANNED_IDX])
+	
+	if not ctx.state.has(KEY_PLANNED_IDX):
+	# No plan yet — do NOT clear.
+	# This happens transiently on first turn due to modifier churn.
+		return
+	
+	var planned_idx := int(ctx.state[KEY_PLANNED_IDX])
 	var action := _get_action_by_idx(planned_idx)
-
+	
 	if !action:
 		fighter.intent_container.clear_display()
 		return
-
+	
 	fighter.intent_container.display_icons([action.get_intent_data(ctx)])
 
 
@@ -136,32 +144,46 @@ func _apply_conditional_takeover_if_needed(ctx: NPCAIContext) -> bool:
 	return true
 
 func _on_enter() -> void:
+	# At start of THIS fighter's turn:
+	# show what was already planned earlier
 	_refresh_intent_display_only()
 
+
 func _on_exit() -> void:
-	# NPC just finished its turn: plan & show next intent now
+	var ctx := _make_context()
+
+	# UNLOCK intent display
+	ctx.state["is_acting"] = false
+
+	# Plan + show next intent
 	plan_next_intent()
+	_refresh_intent_display_only()
 
 func _on_do_turn() -> void:
-	
 	var fighter: Fighter = get_parent()
-	
 	if !fighter.is_alive() or !ai_profile:
 		fighter.resolve_action()
 		return
-	
-	# Clear intent as soon as the action starts
-	print("clearing display for turn")
-	fighter.intent_container.clear_display()
-	print("display should be cleared")
-	
+
 	var ctx := _make_context()
-	var action := _get_action_for_execution(ctx)
+
+	# LOCK intent display while acting
+	ctx.state["is_acting"] = true
+
+	# Clear intent immediately (visual gap)
+	#fighter.intent_container.clear_display()
+
+	# Safety: if nothing planned, plan once
+	if not ctx.state.has(KEY_PLANNED_IDX):
+		plan_next_intent()
+
+	var idx := int(ctx.state.get(KEY_PLANNED_IDX, -1))
+	var action := _get_action_by_idx(idx)
 	if !action:
 		fighter.resolve_action()
 		return
-	
-	action.perform(ctx) # action must eventually resolve_action()
+
+	action.perform(ctx) # must eventually call fighter.resolve_action()
 
 func _on_battle_reset() -> void:
 	if has_meta("ai_state"):

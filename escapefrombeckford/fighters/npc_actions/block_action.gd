@@ -5,6 +5,7 @@ class_name BlockAction extends NPCAction
 #@export var resolve_delay: float = 0.6
 
 func perform(ctx: NPCAIContext) -> void:
+	ctx.combatant.intent_container.clear_display()
 	var fighter := ctx.combatant
 	if !fighter:
 		return

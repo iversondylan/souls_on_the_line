@@ -6,11 +6,10 @@ class_name IntentContainer extends Node2D
 func _ready() -> void:
 	pass
 
-func clear_display():
-	print("intent_container.gd clear_display()")
+func clear_display() -> void:
 	for child in h_box_container.get_children():
-		h_box_container.remove_child(child)
-		child.free()
+		h_box_container.remove_child(child) # important: immediate layout update
+		child.queue_free()
 
 func display_icons(intent_dataz: Array[IntentData]):
 	clear_display()

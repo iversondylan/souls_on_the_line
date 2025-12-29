@@ -11,6 +11,7 @@ func is_performable(ctx: NPCAIContext) -> bool:
 	return ctx.combatant.combatant_data.health <= hp_threshold
 
 func perform(ctx: NPCAIContext) -> void:
+	ctx.combatant.intent_container.clear_display()
 	var fighter := ctx.combatant
 	if !fighter:
 		return

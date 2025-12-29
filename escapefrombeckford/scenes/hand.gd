@@ -58,6 +58,11 @@ func _process(_delta: float) -> void:
 		currently_selected_card_index = -1
 
 func add_card(card: CardData) -> void:
+	
+	if card == null:
+		push_error("Hand.add_card(): tried to add null CardData")
+		return
+	
 	var usable_card : UsableCard = usable_card_scn.instantiate()
 	usable_card.card_data = card
 	usable_card.hand = self
@@ -174,18 +179,6 @@ func get_card_position(angle_deg_flt: float) -> Vector2:
 func _update_card_transform(usable_card: UsableCard, angle_in_drag: float) -> void:
 	var pos: Vector2 = get_card_position(angle_in_drag)
 	usable_card.animate_to_position(pos, angle_in_drag, 0.5)
-
-#func _handle_card_touched(usablecard: UsableCard):
-	#if usablecard.card_state_machine.current_state.state == CardState.State.BASE:# and usablecard.disabled == false:
-		#currently_touched_cards_arr.push_back(usablecard)
-
-#func _handle_card_untouched(usablecard: UsableCard):
-	#usablecard.selected = false
-	#var index: int = currently_touched_cards_arr.find(usablecard)
-	#if index >= 0:
-		#currently_touched_cards_arr.remove_at(index)
-	#else:
-		#print("usable_card.gd _handle_card_untouched() Error: attempted to remove card not in touched cards.")
 
 func _on_usable_card_reparent_requested(_child: UsableCard) -> void:
 	reposition_hand_cards()
