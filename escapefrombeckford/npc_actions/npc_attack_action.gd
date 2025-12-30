@@ -47,7 +47,7 @@ func perform(ctx: NPCAIContext) -> void:
 	# Configure effect
 	effect.attacker = fighter
 	effect.damage = damage_model.get_damage(ctx)
-	effect.strikes = strike_model.get_strikes(ctx)
+	effect.strikes = strikes_model.get_strikes(ctx)
 	effect.battle_scene = ctx.battle_scene
 	effect.sound = sound
 
