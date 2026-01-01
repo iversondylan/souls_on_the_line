@@ -19,6 +19,8 @@ enum ChoiceType { CONDITIONAL, CHANCE }
 @export var sound: AudioStream
 @export var resolve_delay: float = 0.6
 
+var remaining_effect_packages: Array[NPCEffectPackage]
+var current_ctx: NPCAIContext
 
 ## Whether this action can currently be taken
 func is_performable(ctx: NPCAIContext) -> bool:
@@ -30,46 +32,83 @@ func is_performable(ctx: NPCAIContext) -> bool:
 
 # --- Effect package pipeline ---
 
+
+func perform(ctx: NPCAIContext) -> void:
+	current_ctx = ctx
+	remaining_effect_packages = effect_packages.duplicate()
+
+	# Action-level state models (once)
+	for m in state_models:
+		m.change_state(ctx)
+
+	_next_effect_package()
+
+func _next_effect_package() -> void:
+	if remaining_effect_packages.is_empty():
+		_finish_action()
+		return
+
+	var pkg : NPCEffectPackage = remaining_effect_packages.pop_front()
+
+	# Clear per-effect params
+	current_ctx.params.clear()
+
+	# Package-level state models (persistent state)
+	for m in pkg.state_models:
+		m.change_state(current_ctx)
+
+	# Package-level param models (ephemeral)
+	for m in pkg.param_models:
+		m.change_params(current_ctx)
+
+	# Execute orchestration sequence
+	pkg.effect.execute(current_ctx)
+
+func _on_sequence_done() -> void:
+	_next_effect_package()
+
+func _finish_action() -> void:
+	current_ctx.combatant.resolve_action()
+	current_ctx = null
+
 func _change_state(models: Array[StateModel], ctx: NPCAIContext) -> void:
 	for m in models:
 		if m:
 			m.change_state(ctx)
 
-func _make_effect_context(ai_ctx: NPCAIContext) -> NPCAIContext:
-	var ctx := NPCAIContext.new()
+#func _run_effect_package(pkg: NPCEffectPackage, ai_ctx: NPCAIContext) -> void:
+	## A) state models first, mutating shared ai_ctx.state
+	#_change_state(pkg.state_models, ai_ctx)
+	## B) build fresh per-effect context (shares ai_ctx.state but fresh params)
+	#var eff_ctx := _make_effect_context(ai_ctx)
+	## C) run effect sequence
+	#_execute_effect_sequence(pkg, eff_ctx)
 
-	# stable references (shared)
-	ctx.combatant = ai_ctx.combatant
-	ctx.battle_scene = ai_ctx.battle_scene
-	ctx.rng = ai_ctx.rng
-	ctx.state = ai_ctx.state          # IMPORTANT: shared persistent state
+#func _make_effect_context(ai_ctx: NPCAIContext) -> NPCAIContext:
+	#var ctx := NPCAIContext.new()
+	#
+	## stable references (shared)
+	#ctx.combatant = ai_ctx.combatant
+	#ctx.battle_scene = ai_ctx.battle_scene
+	#ctx.rng = ai_ctx.rng
+	#ctx.state = ai_ctx.state          # IMPORTANT: shared persistent state
+	#
+	## per-effect fields (fresh)
+	#ctx.params = {}
+	#ctx.preview = ai_ctx.preview
+	#
+	#return ctx
 
-	# per-effect fields (fresh)
-	ctx.params = {}
-	ctx.preview = ai_ctx.preview
+#func _execute_effect_sequence(pkg: NPCEffectPackage, eff_ctx: NPCAIContext) -> void:
+	## 1) param models populate eff_ctx.params
+	#for m in pkg.param_models:
+		#if m:
+			#m.change_params(eff_ctx)
+	#
+	## 2) execute the orchestration sequence
+	#if pkg.effect:
+		#pkg.effect.execute(eff_ctx)
 
-	return ctx
-
-func _execute_effect_sequence(pkg: NPCEffectPackage, eff_ctx: NPCAIContext) -> void:
-	# 1) param models populate eff_ctx.params
-	for m in pkg.param_models:
-		if m:
-			m.change_params(eff_ctx)
-
-	# 2) execute the orchestration sequence
-	if pkg.effect:
-		pkg.effect.execute(eff_ctx)
-
-func _run_effect_package(pkg: NPCEffectPackage, ai_ctx: NPCAIContext) -> void:
-	# A) state models first, mutating shared ai_ctx.state
-	_change_state(state_models, ai_ctx)
-	_change_state(pkg.state_models, ai_ctx)
-
-	# B) build fresh per-effect context (shares ai_ctx.state but fresh params)
-	var eff_ctx := _make_effect_context(ai_ctx)
-
-	# C) run effect sequence
-	_execute_effect_sequence(pkg, eff_ctx)
 
 ## Called when showing intent
 func get_intent_data(ctx: NPCAIContext) -> IntentData:
@@ -79,16 +118,6 @@ func get_intent_data(ctx: NPCAIContext) -> IntentData:
 	intent.tooltip = get_tooltip(ctx)
 	return intent
 
-
-## Execute the action
-## MUST eventually call ctx.combatant.resolve_action()
-func perform(ctx: NPCAIContext) -> void:
-	#_execute(ctx)  # subclass-specific (attack, block, etc.)
-
-	for model in state_models:
-		model.on_perform(ctx)
-
-	resolve_after_delay(ctx)
 
 
 func resolve_after_delay(ctx: NPCAIContext) -> void:

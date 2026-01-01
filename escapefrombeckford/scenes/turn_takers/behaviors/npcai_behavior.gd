@@ -68,7 +68,7 @@ func _roll_chance_idx(ctx: NPCAIContext) -> int:
 	for i in range(ai_profile.actions.size()):
 		var a := ai_profile.actions[i]
 		if a.choice_type == NPCAction.ChoiceType.CHANCE and a.is_performable(ctx):
-			total += a.get_chance_weight()
+			total += a.get_chance_weight(ctx)
 			pool.append(i)
 	
 	if pool.is_empty():
@@ -79,7 +79,7 @@ func _roll_chance_idx(ctx: NPCAIContext) -> int:
 		return -1
 	var acc := 0.0
 	for i in pool:
-		acc += ai_profile.actions[i].get_chance_weight()
+		acc += ai_profile.actions[i].get_chance_weight(ctx)
 		if roll <= acc:
 			return i
 	
