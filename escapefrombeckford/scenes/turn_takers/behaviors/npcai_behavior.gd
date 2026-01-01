@@ -64,23 +64,25 @@ func _get_first_conditional_idx(ctx: NPCAIContext) -> int:
 func _roll_chance_idx(ctx: NPCAIContext) -> int:
 	var total := 0.0
 	var pool: Array[int] = []
-
+	
 	for i in range(ai_profile.actions.size()):
 		var a := ai_profile.actions[i]
 		if a.choice_type == NPCAction.ChoiceType.CHANCE and a.is_performable(ctx):
-			total += a.chance_weight
+			total += a.get_chance_weight()
 			pool.append(i)
-
+	
 	if pool.is_empty():
 		return -1
-
+	
 	var roll := ctx.rng.randf() * total
+	if total <= 0.0:
+		return -1
 	var acc := 0.0
 	for i in pool:
-		acc += ai_profile.actions[i].chance_weight
+		acc += ai_profile.actions[i].get_chance_weight()
 		if roll <= acc:
 			return i
-
+	
 	return pool[-1]
 
 func plan_next_intent() -> void:
@@ -134,11 +136,11 @@ func _apply_conditional_takeover_if_needed(ctx: NPCAIContext) -> bool:
 	var cond_idx := _get_first_conditional_idx(ctx)
 	if cond_idx == -1:
 		return false
-
+	
 	var cur_idx: int = int(ctx.state.get(KEY_PLANNED_IDX, -1))
 	if cur_idx == cond_idx:
 		return false # already showing conditional
-
+	
 	ctx.state[KEY_PLANNED_IDX] = cond_idx
 	ctx.state["locked_conditional"] = true
 	return true
@@ -151,10 +153,10 @@ func _on_enter() -> void:
 
 func _on_exit() -> void:
 	var ctx := _make_context()
-
+	
 	# UNLOCK intent display
 	ctx.state["is_acting"] = false
-
+	
 	# Plan + show next intent
 	plan_next_intent()
 	_refresh_intent_display_only()

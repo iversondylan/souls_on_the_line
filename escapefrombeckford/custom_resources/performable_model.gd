@@ -1,4 +1,4 @@
-class_name NPCPerformableModel extends Resource
+class_name PerformableModel extends Resource
 
 func is_performable(_ctx: NPCAIContext) -> bool:
 	return true
