@@ -1,6 +1,5 @@
 # npc_action.gd
-class_name NPCAction
-extends Resource
+class_name NPCAction extends Resource
 
 enum ChoiceType { CONDITIONAL, CHANCE }
 
@@ -28,23 +27,49 @@ func is_performable(ctx: NPCAIContext) -> bool:
 			return false
 	return true
 
-func _run_effect_package(pkg: NPCEffectPackage, ai_ctx: NPCAIContext) -> void:
+
+# --- Effect package pipeline ---
+
+func _change_state(models: Array[StateModel], ctx: NPCAIContext) -> void:
+	for m in models:
+		if m:
+			m.change_state(ctx)
+
+func _make_effect_context(ai_ctx: NPCAIContext) -> NPCAIContext:
 	var ctx := NPCAIContext.new()
 
-	# copy stable references
+	# stable references (shared)
 	ctx.combatant = ai_ctx.combatant
 	ctx.battle_scene = ai_ctx.battle_scene
 	ctx.rng = ai_ctx.rng
-	ctx.state = ai_ctx.state      # shared persistent AI state
+	ctx.state = ai_ctx.state          # IMPORTANT: shared persistent state
 
-	# per-effect fields
+	# per-effect fields (fresh)
 	ctx.params = {}
 	ctx.preview = ai_ctx.preview
 
-	for model in pkg.models:
-		model.apply(ctx)
+	return ctx
 
-	pkg.effect.execute(ctx)
+func _execute_effect_sequence(pkg: NPCEffectPackage, eff_ctx: NPCAIContext) -> void:
+	# 1) param models populate eff_ctx.params
+	for m in pkg.param_models:
+		if m:
+			m.change_params(eff_ctx)
+
+	# 2) execute the orchestration sequence
+	if pkg.effect:
+		pkg.effect.execute(eff_ctx)
+
+func _run_effect_package(pkg: NPCEffectPackage, ai_ctx: NPCAIContext) -> void:
+	# A) state models first, mutating shared ai_ctx.state
+	_change_state(state_models, ai_ctx)
+	_change_state(pkg.state_models, ai_ctx)
+
+	# B) build fresh per-effect context (shares ai_ctx.state but fresh params)
+	var eff_ctx := _make_effect_context(ai_ctx)
+
+	# C) run effect sequence
+	_execute_effect_sequence(pkg, eff_ctx)
 
 ## Called when showing intent
 func get_intent_data(ctx: NPCAIContext) -> IntentData:
@@ -111,25 +136,14 @@ func get_state(ctx: NPCAIContext) -> Dictionary:
 	return ctx.state
 
 
-func get_chance_weight() -> float:
-	# Base authored weight
+func get_chance_weight(ctx: NPCAIContext) -> float:
 	var weight := chance_weight
+	var state := ctx.state if ctx and ctx.state else {}
 
-	# Read AI state
-	var state : Dictionary = get_meta("ai_state") if has_meta("ai_state") else {}
-
-	# Hard disable always wins
 	if state.get(NPCKeys.CHANCE_DISABLED, false):
 		return 0.0
 
-	# Additive modifier
 	weight += float(state.get(NPCKeys.CHANCE_ADD, 0.0))
-
-	# Multiplicative modifier
 	weight *= float(state.get(NPCKeys.CHANCE_MULT, 1.0))
 
-	# Clamp for safety
-	if weight < 0.0:
-		return 0.0
-
-	return weight
+	return maxf(weight, 0.0)

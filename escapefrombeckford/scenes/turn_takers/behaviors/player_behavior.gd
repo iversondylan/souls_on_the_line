@@ -12,7 +12,6 @@ func _ready() -> void:
 
 func _on_do_turn() -> void:
 	Events.request_activate_arcana_by_type.emit(Arcanum.Type.START_OF_TURN)
-	
 
 func _on_hand_drawn() -> void:
 	Events.end_turn_button_pressed.connect(_on_end_turn_button_pressed)
