@@ -1,7 +1,10 @@
-[gd_resource type="Resource" script_class="BlockAction" load_steps=3 format=3 uid="uid://cdi1ok8yv6b4l"]
+[gd_resource type="Resource" script_class="BlockAction" load_steps=6 format=3 uid="uid://cdi1ok8yv6b4l"]
 
+[ext_resource type="Script" uid="uid://3jde7uhq2yho" path="res://custom_resources/npc_effect_package.gd" id="1_37f7b"]
 [ext_resource type="Script" uid="uid://dl5oew0p8hu6h" path="res://fighters/npc_actions/block_action.gd" id="1_h4l3s"]
 [ext_resource type="Texture2D" uid="uid://dob30qtbj3xk5" path="res://assets/sprites/assorted/block.PNG" id="1_ubf13"]
+[ext_resource type="Script" uid="uid://q408gy2b4q6a" path="res://custom_resources/performable_model.gd" id="3_pu00f"]
+[ext_resource type="Script" uid="uid://cuj4qvyx6dedj" path="res://custom_resources/state_model.gd" id="5_db15l"]
 
 [resource]
 script = ExtResource("1_h4l3s")

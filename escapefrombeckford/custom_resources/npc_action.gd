@@ -19,10 +19,13 @@ enum ChoiceType { CONDITIONAL, CHANCE }
 @export var sound: AudioStream
 @export var resolve_delay: float = 0.6
 
+# These two member variables should be clear except when the action is running,
+# which is from perform() -> _finish_action(). This is to keep the action
+# pseudo-stateless. State should live on NPCAIBehavior.
 var remaining_effect_packages: Array[NPCEffectPackage]
 var current_ctx: NPCAIContext
 
-## Whether this action can currently be taken
+# Whether this action can currently be taken
 func is_performable(ctx: NPCAIContext) -> bool:
 	for model in performable_models:
 		if !model.is_performable(ctx):
@@ -62,7 +65,17 @@ func _next_effect_package() -> void:
 		m.change_params(current_ctx)
 
 	# Execute orchestration sequence
-	pkg.effect.execute(current_ctx)
+	_execute_effect_sequence(pkg, current_ctx)
+	#pkg.effect.execute(current_ctx)
+
+func _execute_effect_sequence(pkg: NPCEffectPackage, ctx: NPCAIContext) -> void:
+	if pkg.effect:
+		pkg.effect.execute(
+			ctx,
+			Callable(self, "_on_sequence_done")
+		)
+	else:
+		_on_sequence_done()
 
 func _on_sequence_done() -> void:
 	_next_effect_package()
@@ -76,41 +89,7 @@ func _change_state(models: Array[StateModel], ctx: NPCAIContext) -> void:
 		if m:
 			m.change_state(ctx)
 
-#func _run_effect_package(pkg: NPCEffectPackage, ai_ctx: NPCAIContext) -> void:
-	## A) state models first, mutating shared ai_ctx.state
-	#_change_state(pkg.state_models, ai_ctx)
-	## B) build fresh per-effect context (shares ai_ctx.state but fresh params)
-	#var eff_ctx := _make_effect_context(ai_ctx)
-	## C) run effect sequence
-	#_execute_effect_sequence(pkg, eff_ctx)
-
-#func _make_effect_context(ai_ctx: NPCAIContext) -> NPCAIContext:
-	#var ctx := NPCAIContext.new()
-	#
-	## stable references (shared)
-	#ctx.combatant = ai_ctx.combatant
-	#ctx.battle_scene = ai_ctx.battle_scene
-	#ctx.rng = ai_ctx.rng
-	#ctx.state = ai_ctx.state          # IMPORTANT: shared persistent state
-	#
-	## per-effect fields (fresh)
-	#ctx.params = {}
-	#ctx.preview = ai_ctx.preview
-	#
-	#return ctx
-
-#func _execute_effect_sequence(pkg: NPCEffectPackage, eff_ctx: NPCAIContext) -> void:
-	## 1) param models populate eff_ctx.params
-	#for m in pkg.param_models:
-		#if m:
-			#m.change_params(eff_ctx)
-	#
-	## 2) execute the orchestration sequence
-	#if pkg.effect:
-		#pkg.effect.execute(eff_ctx)
-
-
-## Called when showing intent
+# Called when showing intent
 func get_intent_data(ctx: NPCAIContext) -> IntentData:
 	var intent := IntentData.new()
 	intent.icon = intent_icon

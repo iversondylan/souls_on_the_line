@@ -121,15 +121,10 @@ func get_battle_groups() -> Array[BattleGroup]:
 
 func get_front_combatant(battle_group_index: int) -> Fighter:
 	var child_groups = get_battle_groups()
-	#var child_combatants: Array[Fighter] = child_groups[battle_group_index].get_combatants()
-	#var front_combatant: Fighter = null
 	for child_combatant: Fighter in child_groups[battle_group_index].get_combatants():
 		if child_combatant.is_alive():
 			return child_combatant
 	return null
-
-#func get_front_or_focus(battle_group_index: int) -> Fighter:
-	#return groups[battle_group_index].get_front_or_focus()
 
 func get_other_battle_group(idx: int) -> BattleGroup:
 	if groups.size() != 2:
@@ -141,79 +136,55 @@ func get_other_battle_group(idx: int) -> BattleGroup:
 	return groups[1 - idx]
 
 ##attack effect target pipeline
-func get_targets_for_attack_effect(effect: AttackEffect, source: Fighter) -> Array[Fighter]:
-	# 1. Build the context
-	var ctx := AttackTargetContext.new()
-	ctx.source = source
-	ctx.effect = effect
-	ctx.base_targets = _get_base_targets(source, effect)
-	ctx.base_targets = ctx.base_targets.filter(func(t): return t != null)
-	ctx.final_targets = ctx.base_targets.duplicate()
-	ctx.is_single_target_intent = _get_if_single_target(effect)
-	# 2. Run the modifier pipeline
-	_apply_target_modifiers(ctx)
 
-	# 3. Return the result
-	return ctx.final_targets
+func get_targets_for_attack_sequence(ai_ctx: NPCAIContext) -> Array[Fighter]:
+	var atk_ctx := AttackTargetContext.new()
+	atk_ctx.source = ai_ctx.combatant
+	atk_ctx.params = ai_ctx.params
+	atk_ctx.base_targets = _get_base_targets_for_attack_sequence(
+		atk_ctx.source,
+		atk_ctx.params
+	)
+	atk_ctx.base_targets = atk_ctx.base_targets.filter(func(t): return t != null)
+	atk_ctx.final_targets = atk_ctx.base_targets.duplicate()
+	atk_ctx.is_single_target_intent = _get_if_single_target_sequence(atk_ctx.params)
+	_apply_target_modifiers(atk_ctx)
+	return atk_ctx.final_targets
 
-func get_targets_for_npc_attack_effect(effect: NPCAttackEffect, source: Fighter) -> Array[Fighter]:
-	var ctx := AttackTargetContext.new()
-	ctx.source = source
-	ctx.attack_effect = effect
-	
-	ctx.base_targets = _get_base_targets_for_npc(source, effect)
-	
-	ctx.base_targets = ctx.base_targets.filter(func(t): return t != null)
-	ctx.final_targets = ctx.base_targets.duplicate()
-	ctx.is_single_target_intent = _get_if_single_target_effect(effect)
-	
-	_apply_target_modifiers(ctx)
-	return ctx.final_targets
+func _get_base_targets_for_attack_sequence(
+	source: Fighter,
+	params: Dictionary
+) -> Array[Fighter]:
+	var target_type : String = params.get(
+		NPCKeys.TARGET_TYPE,
+		NPCAttackSequence.TARGET_STANDARD
+	)
+	match target_type:
+		NPCAttackSequence.TARGET_STANDARD:
+			return [get_front_enemy_of(source)]
+		NPCAttackSequence.TARGET_OPPONENTS:
+			return get_enemies_of(source)
+		NPCAttackSequence.TARGET_ALL:
+			return get_all_combatants()
+	return []
+
+func _get_if_single_target_sequence(params: Dictionary) -> bool:
+	var target_type : String = params.get(
+		NPCKeys.TARGET_TYPE,
+		NPCAttackSequence.TARGET_STANDARD
+	)
+	match target_type:
+		NPCAttackSequence.TARGET_STANDARD:
+			return true
+		NPCAttackSequence.TARGET_OPPONENTS:
+			return false
+		NPCAttackSequence.TARGET_ALL:
+			return false
+	return false
 
 func _apply_target_modifiers(ctx: AttackTargetContext) -> void:
 	for fighter in get_all_combatants():
 		fighter.modify_target(ctx)
-	# later:
-	# apply arcana modifiers
-	# apply global event modifiers
-	# apply battlefield rules
-
-func _get_base_targets_for_npc(source: Fighter, effect: NPCAttackEffect) -> Array[Fighter]:
-	match effect.target_type:
-		NPCAttackEffect.TargetType.STANDARD:
-			return [get_front_enemy_of(source)]
-		NPCAttackEffect.TargetType.ALL_OPPONENTS:
-			return get_enemies_of(source)
-		NPCAttackEffect.TargetType.ALL:
-			return get_all_combatants()
-	return []
-
-func _get_base_targets(source: Fighter, effect: AttackEffect) -> Array[Fighter]:
-	# For now: always front enemy
-	match effect.target_type:
-		AttackEffect.TargetType.STANDARD:
-			return [get_front_enemy_of(source)]
-		AttackEffect.TargetType.ALL_OPPONENTS:
-			return get_enemies_of(source)
-	return []
-
-func _get_if_single_target(effect: AttackEffect) -> bool:
-	match effect.target_type:
-		AttackEffect.TargetType.STANDARD:
-			return true
-		AttackEffect.TargetType.ALL_OPPONENTS:
-			return false
-	return false
-
-func _get_if_single_target_effect(effect: NPCAttackEffect) -> bool:
-	match effect.target_type:
-		NPCAttackEffect.TargetType.STANDARD:
-			return true
-		NPCAttackEffect.TargetType.ALL_OPPONENTS:
-			return false
-		NPCAttackEffect.TargetType.ALL:
-			return false
-	return false
 
 func get_front_enemy_of(source: Fighter) -> Fighter:
 	var enemies = get_enemy_fighters_of(source)
