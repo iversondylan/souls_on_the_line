@@ -1,7 +1,8 @@
-[gd_resource type="Resource" script_class="NPCEffectPackage" load_steps=6 format=3 uid="uid://c6l1vg0cltw6p"]
+[gd_resource type="Resource" script_class="NPCEffectPackage" load_steps=7 format=3 uid="uid://c6l1vg0cltw6p"]
 
 [ext_resource type="Script" uid="uid://c4bdbfkkrojcr" path="res://npc_actions/npc_attack_sequence.gd" id="1_wwl2o"]
 [ext_resource type="Script" uid="uid://b8d5j6ne4mt88" path="res://custom_resources/param_model.gd" id="2_swyxl"]
+[ext_resource type="Resource" uid="uid://c6usn1gcev33x" path="res://fighters/MegaBlocker/flat_damage_5.tres" id="3_wwl2o"]
 [ext_resource type="Script" uid="uid://3jde7uhq2yho" path="res://custom_resources/npc_effect_package.gd" id="4_seq3t"]
 [ext_resource type="Script" uid="uid://cuj4qvyx6dedj" path="res://custom_resources/state_model.gd" id="5_68l43"]
 
@@ -12,4 +13,5 @@ metadata/_custom_type_script = "uid://c4bdbfkkrojcr"
 [resource]
 script = ExtResource("4_seq3t")
 effect = SubResource("Resource_5rg7a")
+param_models = Array[ExtResource("2_swyxl")]([ExtResource("3_wwl2o")])
 metadata/_custom_type_script = "uid://3jde7uhq2yho"

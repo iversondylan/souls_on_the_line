@@ -11,6 +11,7 @@ const ARMOR_AMOUNT := "armor_amount"
 
 # AI state
 const ATTACK_SPREE := "attack_spree"
+const USED_1 := "used_1"
 const COOLDOWN_1 := "cooldown_1"
 
 # Chance-weight protocol

@@ -1,0 +1,7 @@
+[gd_resource type="Resource" script_class="HealthBelowThresholdPerformableModel" load_steps=2 format=3 uid="uid://d12p7takhv8gq"]
+
+[ext_resource type="Script" uid="uid://dch7t88g6xmwy" path="res://npc_actions/performable/health_below_threshold_performable_model.gd" id="1_ue8pa"]
+
+[resource]
+script = ExtResource("1_ue8pa")
+metadata/_custom_type_script = "uid://dch7t88g6xmwy"

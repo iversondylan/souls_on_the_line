@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="NPCEffectPackage" load_steps=6 format=3 uid="uid://dcr4tncgc8ubg"]
+
+[ext_resource type="Resource" uid="uid://db532u4nfvip4" path="res://npc_actions/npc_block_sequence.tres" id="1_0dn8v"]
+[ext_resource type="Script" uid="uid://b8d5j6ne4mt88" path="res://custom_resources/param_model.gd" id="1_ai140"]
+[ext_resource type="Script" uid="uid://3jde7uhq2yho" path="res://custom_resources/npc_effect_package.gd" id="2_p7uda"]
+[ext_resource type="Script" uid="uid://cuj4qvyx6dedj" path="res://custom_resources/state_model.gd" id="3_0dn8v"]
+[ext_resource type="Resource" uid="uid://b0jqk2c5hjflx" path="res://fighters/MegaBlocker/flat_armor_15.tres" id="3_3428i"]
+
+[resource]
+script = ExtResource("2_p7uda")
+effect = ExtResource("1_0dn8v")
+param_models = Array[ExtResource("1_ai140")]([ExtResource("3_3428i")])
+metadata/_custom_type_script = "uid://3jde7uhq2yho"

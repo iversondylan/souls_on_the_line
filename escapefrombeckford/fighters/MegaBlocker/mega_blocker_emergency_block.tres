@@ -1,11 +1,21 @@
-[gd_resource type="Resource" script_class="EmergencyBlockAction" load_steps=3 format=3 uid="uid://dnkgkdy6leoku"]
+[gd_resource type="Resource" script_class="NPCAction" load_steps=10 format=3 uid="uid://dnkgkdy6leoku"]
 
-[ext_resource type="Script" uid="uid://bmxx1w45e3jeo" path="res://fighters/npc_actions/emergency_block_action.gd" id="1_2oqmf"]
 [ext_resource type="Texture2D" uid="uid://dob30qtbj3xk5" path="res://assets/sprites/assorted/block.PNG" id="1_2t3ut"]
+[ext_resource type="Script" uid="uid://3jde7uhq2yho" path="res://custom_resources/npc_effect_package.gd" id="1_dwbsa"]
+[ext_resource type="Resource" uid="uid://dcr4tncgc8ubg" path="res://fighters/MegaBlocker/emergency_block_pkg.tres" id="2_3o1dh"]
+[ext_resource type="Script" uid="uid://q408gy2b4q6a" path="res://custom_resources/performable_model.gd" id="4_um3j2"]
+[ext_resource type="Resource" uid="uid://dh7ogdb558g7u" path="res://fighters/MegaBlocker/not_used_1_yet_performable.tres" id="5_wh4cq"]
+[ext_resource type="Resource" uid="uid://d12p7takhv8gq" path="res://fighters/MegaBlocker/health_below_threshold_performable.tres" id="6_oftyv"]
+[ext_resource type="Script" uid="uid://cuj4qvyx6dedj" path="res://custom_resources/state_model.gd" id="6_wh4cq"]
+[ext_resource type="Script" uid="uid://bcih413oy6v73" path="res://custom_resources/npc_action.gd" id="7_rsak8"]
+[ext_resource type="Resource" uid="uid://cboaeigdxkc1a" path="res://fighters/MegaBlocker/mark_used_1_state.tres" id="9_lacm8"]
 
 [resource]
-script = ExtResource("1_2oqmf")
+script = ExtResource("7_rsak8")
+effect_packages = Array[ExtResource("1_dwbsa")]([ExtResource("2_3o1dh")])
 choice_type = 0
+performable_models = Array[ExtResource("4_um3j2")]([ExtResource("5_wh4cq"), ExtResource("6_oftyv")])
+state_models = Array[ExtResource("6_wh4cq")]([ExtResource("9_lacm8")])
 intent_icon = ExtResource("1_2t3ut")
 intent_text_template = "{armor}"
 metadata/_custom_type_script = "uid://bmxx1w45e3jeo"

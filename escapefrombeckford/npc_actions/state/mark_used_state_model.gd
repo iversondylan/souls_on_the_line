@@ -1,0 +1,10 @@
+# mark_used_state_model.gd
+class_name MarkUsedStateModel
+extends StateModel
+
+@export var key: String = NPCKeys.USED_1
+@export var value: bool = true
+
+func change_state(ctx: NPCAIContext) -> NPCAIContext:
+	ctx.state[key] = value
+	return ctx
