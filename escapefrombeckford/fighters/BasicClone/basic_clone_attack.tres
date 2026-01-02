@@ -1,11 +1,13 @@
-[gd_resource type="Resource" script_class="MeleeAttackAction" load_steps=3 format=3 uid="uid://blaif4hjpsppa"]
+[gd_resource type="Resource" script_class="NPCAction" load_steps=6 format=3 uid="uid://blaif4hjpsppa"]
 
-[ext_resource type="Script" uid="uid://ckuvpamau6jyf" path="res://fighters/npc_actions/basic_melee_attack_action.gd" id="1_co7s2"]
+[ext_resource type="Script" uid="uid://3jde7uhq2yho" path="res://custom_resources/npc_effect_package.gd" id="1_66boj"]
 [ext_resource type="Texture2D" uid="uid://c54dbo8n7r3g" path="res://assets/sprites/assorted/attack.PNG" id="1_lg2ls"]
+[ext_resource type="Script" uid="uid://q408gy2b4q6a" path="res://custom_resources/performable_model.gd" id="3_444xd"]
+[ext_resource type="Script" uid="uid://bcih413oy6v73" path="res://custom_resources/npc_action.gd" id="4_1eq2d"]
+[ext_resource type="Script" uid="uid://cuj4qvyx6dedj" path="res://custom_resources/state_model.gd" id="5_a8yk3"]
 
 [resource]
-script = ExtResource("1_co7s2")
-base_damage = 3
+script = ExtResource("4_1eq2d")
 intent_icon = ExtResource("1_lg2ls")
 intent_text_template = "{dmg}"
 metadata/_custom_type_script = "uid://ckuvpamau6jyf"
