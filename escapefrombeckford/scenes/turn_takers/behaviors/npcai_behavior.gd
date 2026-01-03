@@ -1,7 +1,7 @@
 # npcai_behavior.gd
 class_name NPCAIBehavior extends FighterBehavior
 
-const KEY_PLANNED_CHANCE_IDX := "planned_chance_idx"
+#const KEY_PLANNED_CHANCE_IDX := "planned_chance_idx"
 const KEY_PLANNED_IDX := "planned_idx"
 
 @export var ai_profile: NPCAIProfile
@@ -77,8 +77,8 @@ func _get_action_by_idx(idx: int) -> NPCAction:
 
 func _get_first_conditional_idx(ctx: NPCAIContext) -> int:
 	for i in range(ai_profile.actions.size()):
-		var a := ai_profile.actions[i]
-		if a.choice_type == NPCAction.ChoiceType.CONDITIONAL and a.is_performable(ctx):
+		var action := ai_profile.actions[i]
+		if action.choice_type == NPCAction.ChoiceType.CONDITIONAL and _is_action_performable(action, ctx):
 			return i
 	return -1
 
@@ -88,11 +88,11 @@ func _roll_chance_idx(ctx: NPCAIContext) -> int:
 	var pool: Array[int] = []
 
 	for i in range(ai_profile.actions.size()):
-		var a := ai_profile.actions[i]
-		if a.choice_type == NPCAction.ChoiceType.CHANCE and _is_action_performable(a, ctx):
-			var w := _get_action_chance_weight(a, ctx)
-			if w > 0.0:
-				total += w
+		var action := ai_profile.actions[i]
+		if action.choice_type == NPCAction.ChoiceType.CHANCE and _is_action_performable(action, ctx):
+			var weight := _get_action_chance_weight(action, ctx)
+			if weight > 0.0:
+				total += weight
 				pool.append(i)
 
 	if pool.is_empty() or total <= 0.0:
@@ -107,14 +107,24 @@ func _roll_chance_idx(ctx: NPCAIContext) -> int:
 
 	return pool[-1]
 
-
 func plan_next_intent() -> void:
 	var fighter: Fighter = get_parent()
 	if !fighter.is_alive() or !ai_profile:
 		return
 
 	var ctx := _make_context()
-	ctx.state[KEY_PLANNED_IDX] = _roll_chance_idx(ctx)
+
+	# 1) CONDITIONAL actions have priority
+	for i in range(ai_profile.actions.size()):
+		var action := ai_profile.actions[i]
+		if action.choice_type == NPCAction.ChoiceType.CONDITIONAL:
+			if _is_action_performable(action, ctx):
+				ctx.state[KEY_PLANNED_IDX] = i
+				return
+
+	# 2) Otherwise, roll among CHANCE actions
+	var chance_idx := _roll_chance_idx(ctx)
+	ctx.state[KEY_PLANNED_IDX] = chance_idx
 
 
 # -------------------------------------------------------------------
@@ -149,8 +159,14 @@ func _build_intent_from_action(action: NPCAction, ctx: NPCAIContext) -> IntentDa
 	_change_params_only(action, ctx)
 	# Base authored data
 	intent.icon = action.intent_icon
-	intent.base_text = action.intent_text_model.get_text(ctx)
-	intent.tooltip = action.tooltip_model.get_text(ctx)
+	if action.intent_text_model:
+		intent.base_text = action.intent_text_model.get_text(ctx)
+	else:
+		intent.base_text = ""
+	if action.tooltip_model:
+		intent.tooltip = action.tooltip_model.get_text(ctx)
+	else:
+		intent.tooltip = ""
 	#ctx.params.clear()
 	return intent
 
@@ -158,60 +174,6 @@ func _change_params_only(action: NPCAction, ctx: NPCAIContext) -> void:
 	for pkg in action.effect_packages:
 		for model in pkg.param_models:
 			model.change_params(ctx)
-	
-
-#func _format_intent_text(template: String, ctx: NPCAIContext) -> String:
-	#if template == "":
-		#return ""
-	#
-	#var values := _get_intent_values(ctx)
-	#var text := template
-	#
-	#for k in values.keys():
-		#text = text.replace("{" + k + "}", str(values[k]))
-#
-	#return text
-
-
-#func _get_intent_values(ctx: NPCAIContext) -> Dictionary:
-	#var values := {}
-#
-	#if not ctx.state.has(KEY_PLANNED_IDX):
-		#return values
-#
-	#var action := _get_action_by_idx(int(ctx.state[KEY_PLANNED_IDX]))
-	#if not action:
-		#return values
-#
-	## Scratch context for intent evaluation
-	#var scratch := NPCAIContext.new()
-	#scratch.combatant = ctx.combatant
-	#scratch.battle_scene = ctx.battle_scene
-	#scratch.rng = ctx.rng
-	#scratch.state = ctx.state        # shared, read-only by convention
-	#scratch.params = {}
-	#scratch.forecast = true
-#
-	## IMPORTANT:
-	## We do NOT run state_models here.
-	## Only param_models, in order, for preview consistency.
-	#for pkg in action.effect_packages:
-		#for m in pkg.param_models:
-			#m.change_params(scratch)
-#
-	## Pull commonly-used intent values
-	#if scratch.params.has(NPCKeys.DAMAGE):
-		#values["dmg"] = scratch.params[NPCKeys.DAMAGE]
-#
-	#if scratch.params.has(NPCKeys.STRIKES):
-		#values["strikes"] = scratch.params[NPCKeys.STRIKES]
-#
-	#if scratch.params.has(NPCKeys.ARMOR_AMOUNT):
-		#values["armor"] = scratch.params[NPCKeys.ARMOR_AMOUNT]
-#
-	#return values
-
-
 
 # -------------------------------------------------------------------
 # Turn lifecycle
@@ -222,6 +184,7 @@ func _on_enter() -> void:
 
 
 func _on_exit() -> void:
+	print("_on_exit()")
 	var ctx := _make_context()
 	ctx.state["is_acting"] = false
 	plan_next_intent()
@@ -264,6 +227,7 @@ func _on_do_turn() -> void:
 	ctx.state["is_acting"] = true
 
 	if not ctx.state.has(KEY_PLANNED_IDX):
+		print("_on_do_turn() there's no KEY_PLANNED_IDX")
 		plan_next_intent()
 
 	var action := _get_action_by_idx(int(ctx.state.get(KEY_PLANNED_IDX, -1)))
