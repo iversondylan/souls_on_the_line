@@ -19,5 +19,5 @@ func change_params(ctx: NPCAIContext) -> NPCAIContext:
 	if total < 0:
 		total = 0
 
-	ctx.params[NPCKeys.DAMAGE] = total
+	ctx.params[NPCKeys.DAMAGE] = ctx.combatant.modifier_system.get_modified_value(total, Modifier.Type.DMG_DEALT)
 	return ctx

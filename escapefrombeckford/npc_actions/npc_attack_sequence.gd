@@ -64,10 +64,7 @@ func _execute_strike(ctx: NPCAIContext, base_dmg: int, remaining: int, on_done: 
 		dmg_effect.targets = targets
 
 		# IMPORTANT: match old: modified per hit
-		dmg_effect.n_damage = fighter.modifier_system.get_modified_value(
-			base_dmg,
-			Modifier.Type.DMG_DEALT
-		)
+		dmg_effect.n_damage = base_dmg#fighter.modifier_system.get_modified_value(base_dmg, Modifier.Type.DMG_DEALT)
 
 		dmg_effect.sound = sound
 		dmg_effect.execute()

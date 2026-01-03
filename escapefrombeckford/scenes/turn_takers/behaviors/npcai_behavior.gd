@@ -1,3 +1,4 @@
+# npcai_behavior.gd
 class_name NPCAIBehavior extends FighterBehavior
 
 const KEY_PLANNED_CHANCE_IDX := "planned_chance_idx"
@@ -5,54 +6,74 @@ const KEY_PLANNED_IDX := "planned_idx"
 
 @export var ai_profile: NPCAIProfile
 
+# ---- Action execution state (MOVED from NPCAction) ----
+var current_action: NPCAction = null
+var action_ctx: NPCAIContext = null
+var remaining_effect_packages: Array[NPCEffectPackage] = []
+
+
+# -------------------------------------------------------------------
+# Context construction
+# -------------------------------------------------------------------
+
 func _make_context() -> NPCAIContext:
 	var fighter: Fighter = get_parent()
-	
+
 	var ctx := NPCAIContext.new()
 	ctx.combatant = fighter
 	ctx.battle_scene = fighter.battle_scene
 	ctx.state = get_meta("ai_state")
 	ctx.rng = get_meta("ai_rng")
+	ctx.params = {}
+	ctx.forecast = false
 	return ctx
+
+
+# -------------------------------------------------------------------
+# Initialization
+# -------------------------------------------------------------------
 
 func _on_combatant_data_set(_data: CombatantData) -> void:
 	assert(_data.ai, "CombatantData has no ai profile")
 	ai_profile = _data.ai
 
-	# init state + rng ONCE
+	# Init persistent AI state + RNG ONCE
 	set_meta("ai_state", {})
 	var rng := RandomNumberGenerator.new()
 	rng.randomize()
 	set_meta("ai_rng", rng)
 
-	# IMPORTANT: do NOT plan here (battle_scene / turn order may not be ready yet)
-	# Instead: Battle.start_battle() should plan initial intents after enemies exist.
-
 	if not _data.combatant_data_changed.is_connected(_on_stats_changed):
 		_data.combatant_data_changed.connect(_on_stats_changed)
 
+
+# -------------------------------------------------------------------
+# Planning logic (UNCHANGED)
+# -------------------------------------------------------------------
+
 func _on_stats_changed() -> void:
-	# Hard conditional takeover ONLY in response to player/allies causing stat changes
 	var fighter: Fighter = get_parent()
 	if !fighter.is_alive() or !ai_profile:
 		return
 
 	var ctx := _make_context()
-
-	# if a conditional is now valid, overwrite the plan and refresh the display
 	var cond_idx := _get_first_conditional_idx(ctx)
 	if cond_idx != -1:
 		ctx.state[KEY_PLANNED_IDX] = cond_idx
+
 	_refresh_intent_display_only()
 
-	## Cooper was here
+
 func update_action_intent() -> void:
+	# Cooper was here
 	_refresh_intent_display_only()
+
 
 func _get_action_by_idx(idx: int) -> NPCAction:
 	if !ai_profile or idx < 0 or idx >= ai_profile.actions.size():
 		return null
 	return ai_profile.actions[idx]
+
 
 func _get_first_conditional_idx(ctx: NPCAIContext) -> int:
 	for i in range(ai_profile.actions.size()):
@@ -61,105 +82,177 @@ func _get_first_conditional_idx(ctx: NPCAIContext) -> int:
 			return i
 	return -1
 
+
 func _roll_chance_idx(ctx: NPCAIContext) -> int:
 	var total := 0.0
 	var pool: Array[int] = []
-	
+
 	for i in range(ai_profile.actions.size()):
 		var a := ai_profile.actions[i]
-		if a.choice_type == NPCAction.ChoiceType.CHANCE and a.is_performable(ctx):
-			total += a.get_chance_weight(ctx)
-			pool.append(i)
-	
-	if pool.is_empty():
+		if a.choice_type == NPCAction.ChoiceType.CHANCE and _is_action_performable(a, ctx):
+			var w := _get_action_chance_weight(a, ctx)
+			if w > 0.0:
+				total += w
+				pool.append(i)
+
+	if pool.is_empty() or total <= 0.0:
 		return -1
-	
+
 	var roll := ctx.rng.randf() * total
-	if total <= 0.0:
-		return -1
 	var acc := 0.0
 	for i in pool:
-		acc += ai_profile.actions[i].get_chance_weight(ctx)
+		acc += _get_action_chance_weight(ai_profile.actions[i], ctx)
 		if roll <= acc:
 			return i
-	
+
 	return pool[-1]
 
+
 func plan_next_intent() -> void:
-	# ONLY RNG HERE.
 	var fighter: Fighter = get_parent()
 	if !fighter.is_alive() or !ai_profile:
 		return
-	
-	var ctx := _make_context()
-	
-	# Roll a chance plan for next turn (do NOT check conditionals here)
-	var chance_idx := _roll_chance_idx(ctx)
-	ctx.state[KEY_PLANNED_IDX] = chance_idx
 
-func refresh_intent_display_only() -> void:
-	_refresh_intent_display_only()
+	var ctx := _make_context()
+	ctx.state[KEY_PLANNED_IDX] = _roll_chance_idx(ctx)
+
+
+# -------------------------------------------------------------------
+# Intent display
+# -------------------------------------------------------------------
 
 func _refresh_intent_display_only() -> void:
 	var fighter: Fighter = get_parent()
 	if !fighter.is_alive() or !ai_profile:
 		fighter.intent_container.clear_display()
 		return
-	
 	var ctx := _make_context()
-	
-	# Do NOT show intent while acting
+	# Do not show intent while acting
 	if ctx.state.get("is_acting", false):
 		return
-	
 	if not ctx.state.has(KEY_PLANNED_IDX):
-	# No plan yet — do NOT clear.
-	# This happens transiently on first turn due to modifier churn.
 		return
-	
-	var planned_idx := int(ctx.state[KEY_PLANNED_IDX])
-	var action := _get_action_by_idx(planned_idx)
-	
+	var action := _get_action_by_idx(int(ctx.state[KEY_PLANNED_IDX]))
 	if !action:
 		fighter.intent_container.clear_display()
 		return
-	
-	fighter.intent_container.display_icons([action.get_intent_data(ctx)])
+	var intent := _build_intent_from_action(action, ctx)
+	fighter.intent_container.display_icons([intent])
+
+func refresh_intent_display_only() -> void:
+	_refresh_intent_display_only()
 
 
-func _get_action_for_execution(ctx: NPCAIContext) -> NPCAction:
-	var idx: int = int(ctx.state.get(KEY_PLANNED_IDX, -1))
-	return _get_action_by_idx(idx)
+func _build_intent_from_action(action: NPCAction, ctx: NPCAIContext) -> IntentData:
+	var intent := IntentData.new()
+	ctx.params.clear()
+	_change_params_only(action, ctx)
+	# Base authored data
+	intent.icon = action.intent_icon
+	intent.base_text = action.intent_text_model.get_text(ctx)
+	intent.tooltip = action.tooltip_model.get_text(ctx)
+	#ctx.params.clear()
+	return intent
 
-func _apply_conditional_takeover_if_needed(ctx: NPCAIContext) -> bool:
-	# returns true if it changed the plan
-	var cond_idx := _get_first_conditional_idx(ctx)
-	if cond_idx == -1:
-		return false
+func _change_params_only(action: NPCAction, ctx: NPCAIContext) -> void:
+	for pkg in action.effect_packages:
+		for model in pkg.param_models:
+			model.change_params(ctx)
 	
-	var cur_idx: int = int(ctx.state.get(KEY_PLANNED_IDX, -1))
-	if cur_idx == cond_idx:
-		return false # already showing conditional
-	
-	ctx.state[KEY_PLANNED_IDX] = cond_idx
-	ctx.state["locked_conditional"] = true
-	return true
+
+#func _format_intent_text(template: String, ctx: NPCAIContext) -> String:
+	#if template == "":
+		#return ""
+	#
+	#var values := _get_intent_values(ctx)
+	#var text := template
+	#
+	#for k in values.keys():
+		#text = text.replace("{" + k + "}", str(values[k]))
+#
+	#return text
+
+
+#func _get_intent_values(ctx: NPCAIContext) -> Dictionary:
+	#var values := {}
+#
+	#if not ctx.state.has(KEY_PLANNED_IDX):
+		#return values
+#
+	#var action := _get_action_by_idx(int(ctx.state[KEY_PLANNED_IDX]))
+	#if not action:
+		#return values
+#
+	## Scratch context for intent evaluation
+	#var scratch := NPCAIContext.new()
+	#scratch.combatant = ctx.combatant
+	#scratch.battle_scene = ctx.battle_scene
+	#scratch.rng = ctx.rng
+	#scratch.state = ctx.state        # shared, read-only by convention
+	#scratch.params = {}
+	#scratch.forecast = true
+#
+	## IMPORTANT:
+	## We do NOT run state_models here.
+	## Only param_models, in order, for preview consistency.
+	#for pkg in action.effect_packages:
+		#for m in pkg.param_models:
+			#m.change_params(scratch)
+#
+	## Pull commonly-used intent values
+	#if scratch.params.has(NPCKeys.DAMAGE):
+		#values["dmg"] = scratch.params[NPCKeys.DAMAGE]
+#
+	#if scratch.params.has(NPCKeys.STRIKES):
+		#values["strikes"] = scratch.params[NPCKeys.STRIKES]
+#
+	#if scratch.params.has(NPCKeys.ARMOR_AMOUNT):
+		#values["armor"] = scratch.params[NPCKeys.ARMOR_AMOUNT]
+#
+	#return values
+
+
+
+# -------------------------------------------------------------------
+# Turn lifecycle
+# -------------------------------------------------------------------
 
 func _on_enter() -> void:
-	# At start of THIS fighter's turn:
-	# show what was already planned earlier
 	_refresh_intent_display_only()
 
 
 func _on_exit() -> void:
 	var ctx := _make_context()
-	
-	# UNLOCK intent display
 	ctx.state["is_acting"] = false
-	
-	# Plan + show next intent
 	plan_next_intent()
 	_refresh_intent_display_only()
+
+# -------------------------------------------------------------------
+# ACTION UTILITIES
+# -------------------------------------------------------------------
+
+func _is_action_performable(action: NPCAction, ctx: NPCAIContext) -> bool:
+	for model in action.performable_models:
+		if not model.is_performable(ctx):
+			return false
+	return true
+
+func _get_action_chance_weight(action: NPCAction, ctx: NPCAIContext) -> float:
+	var weight := action.chance_weight
+	var state := ctx.state if ctx and ctx.state else {}
+
+	if state.get(NPCKeys.CHANCE_DISABLED, false):
+		return 0.0
+
+	weight += float(state.get(NPCKeys.CHANCE_ADD, 0.0))
+	weight *= float(state.get(NPCKeys.CHANCE_MULT, 1.0))
+
+	return maxf(weight, 0.0)
+
+
+# -------------------------------------------------------------------
+# ACTION EXECUTION (MOVED FROM NPCAction)
+# -------------------------------------------------------------------
 
 func _on_do_turn() -> void:
 	var fighter: Fighter = get_parent()
@@ -168,24 +261,82 @@ func _on_do_turn() -> void:
 		return
 
 	var ctx := _make_context()
-
-	# LOCK intent display while acting
 	ctx.state["is_acting"] = true
 
-	# Clear intent immediately (visual gap)
-	#fighter.intent_container.clear_display()
-
-	# Safety: if nothing planned, plan once
 	if not ctx.state.has(KEY_PLANNED_IDX):
 		plan_next_intent()
 
-	var idx := int(ctx.state.get(KEY_PLANNED_IDX, -1))
-	var action := _get_action_by_idx(idx)
-	if !action:
+	var action := _get_action_by_idx(int(ctx.state.get(KEY_PLANNED_IDX, -1)))
+	if not action:
 		fighter.resolve_action()
 		return
 
-	action.perform(ctx) # must eventually call fighter.resolve_action()
+	_start_action(action, ctx)
+
+
+func _start_action(action: NPCAction, ctx: NPCAIContext) -> void:
+	current_action = action
+	action_ctx = ctx
+	remaining_effect_packages = action.effect_packages.duplicate()
+
+	# Action-level state models (once)
+	for m in action.state_models:
+		if m:
+			m.change_state(ctx)
+
+	_next_effect_package()
+
+
+func _next_effect_package() -> void:
+	if remaining_effect_packages.is_empty():
+		_finish_action()
+		return
+
+	var pkg : NPCEffectPackage = remaining_effect_packages.pop_front()
+
+	# Clear per-effect params
+	action_ctx.params.clear()
+
+	# Package-level state models
+	for m in pkg.state_models:
+		if m:
+			m.change_state(action_ctx)
+
+	# Package-level param models
+	for m in pkg.param_models:
+		if m:
+			m.change_params(action_ctx)
+
+	_execute_effect_sequence(pkg)
+
+
+func _execute_effect_sequence(pkg: NPCEffectPackage) -> void:
+	if pkg.effect:
+		pkg.effect.execute(
+			action_ctx,
+			Callable(self, "_on_sequence_done")
+		)
+	else:
+		_on_sequence_done()
+
+
+func _on_sequence_done() -> void:
+	_next_effect_package()
+
+
+func _finish_action() -> void:
+	var fighter := action_ctx.combatant
+	current_action = null
+	action_ctx = null
+	remaining_effect_packages.clear()
+
+	if fighter:
+		fighter.resolve_action()
+
+
+# -------------------------------------------------------------------
+# Reset
+# -------------------------------------------------------------------
 
 func _on_battle_reset() -> void:
 	if has_meta("ai_state"):
