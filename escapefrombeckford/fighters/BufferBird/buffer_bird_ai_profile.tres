@@ -1,10 +1,8 @@
-[gd_resource type="Resource" script_class="NPCAIProfile" load_steps=4 format=3 uid="uid://xw2ha8sh5j4f"]
+[gd_resource type="Resource" script_class="NPCAIProfile" load_steps=3 format=3 uid="uid://xw2ha8sh5j4f"]
 
 [ext_resource type="Script" uid="uid://bcih413oy6v73" path="res://custom_resources/npc_action.gd" id="1_n12hd"]
 [ext_resource type="Script" uid="uid://bdsvca1cpka5s" path="res://custom_resources/npc_ai_profile.gd" id="2_s5ktp"]
-[ext_resource type="Resource" uid="uid://xf2ioeve1d0p" path="res://fighters/BufferBird/buffer_bird_attack.tres" id="2_tm40n"]
 
 [resource]
 script = ExtResource("2_s5ktp")
-actions = Array[ExtResource("1_n12hd")]([ExtResource("2_tm40n")])
 metadata/_custom_type_script = "uid://bdsvca1cpka5s"

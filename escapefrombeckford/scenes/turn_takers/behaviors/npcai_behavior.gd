@@ -174,7 +174,13 @@ func _build_intent_from_action(action: NPCAction, ctx: NPCAIContext) -> IntentDa
 func _change_params_only(action: NPCAction, ctx: NPCAIContext) -> void:
 	for pkg in action.effect_packages:
 		for model in pkg.param_models:
-			model.change_params(ctx)
+			if not model:
+				push_warning(
+					"Null ParamModel in %s (%s)"
+					% [pkg.resource_name, action.resource_name]
+				)
+				continue
+			model.change_params(ctx) # <----- ERROR HERE
 
 # -------------------------------------------------------------------
 # Turn lifecycle
