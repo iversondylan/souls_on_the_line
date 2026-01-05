@@ -7,30 +7,41 @@ func activate(ctx: CardActionContext) -> bool:
 	var attackers := ctx.resolved_target.fighters
 	if attackers.is_empty():
 		return false
-
-	# Berserker's Fury always targets a summoned ally
-	var ally: Fighter = attackers[0]
-
-	# Base damage scales from the ALLY
-	var base_damage := ally.combatant_data.max_mana_red + bonus_damage
-
-	# Apply the ally's outgoing damage modifiers
-	var final_damage := ally.modifier_system.get_modified_value(
-		base_damage,
-		Modifier.Type.DMG_DEALT
-	)
-
-	var attack_effect := BasicMeleeAttackEffect.new()
-	attack_effect.target_type = AttackEffect.TargetType.ALL_OPPONENTS
-	attack_effect.attacker = ally
-	attack_effect.n_damage = final_damage
-	attack_effect.n_attacks = attacks
-	attack_effect.explode = true
-	attack_effect.battle_scene = ctx.battle_scene
-	attack_effect.sound = ctx.card_data.sound
-	attack_effect.execute()
-
+	
+	
+	var attacker: Fighter = attackers[0]
+	if !attacker:
+		return false
+	
+	# Build NPCAIContext for the sequence.
+	var ai_ctx := NPCAIContext.new()
+	ai_ctx.combatant = attacker
+	ai_ctx.battle_scene = ctx.battle_scene
+	if !ai_ctx.battle_scene:
+		return false
+	
+	# Card-generated sequences get a fresh, non-persistent state bucket by default.
+	ai_ctx.state = {}
+	ai_ctx.params = {}
+	ai_ctx.forecast = false
+	
+	var base_damage := attacker.combatant_data.max_mana_red + bonus_damage
+	var final_damage := attacker.modifier_system.get_modified_value(base_damage, Modifier.Type.DMG_DEALT)
+	# Params consumed by NPCAttackSequence.
+	ai_ctx.params[NPCKeys.DAMAGE] = final_damage
+	ai_ctx.params[NPCKeys.STRIKES] = attacks
+	ai_ctx.params[NPCKeys.TARGET_TYPE] = NPCAttackSequence.TARGET_OPPONENTS
+	ai_ctx.params[NPCKeys.EXPLODE_ON_FINISH] = true
+	
+	# Run sequence
+	var seq := NPCAttackSequence.new()
+	seq.sound = ctx.card_data.sound
+	seq.execute(ai_ctx, Callable(self, "_on_card_attack_sequence_done"))
+	
 	return true
+
+func _on_card_attack_sequence_done() -> void:
+	pass
 
 
 func description_arity() -> int:

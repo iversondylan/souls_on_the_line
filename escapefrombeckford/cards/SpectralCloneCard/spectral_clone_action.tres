@@ -1,11 +1,13 @@
-[gd_resource type="Resource" load_steps=3 format=3 uid="uid://c5qjmc4akover"]
+[gd_resource type="Resource" load_steps=4 format=3 uid="uid://c5qjmc4akover"]
 
 [ext_resource type="Script" uid="uid://buhtw3540mbls" path="res://cards/SpectralCloneCard/summon_action.gd" id="1_uj6cq"]
 [ext_resource type="Resource" uid="uid://dwy6ym7cfiix7" path="res://fighters/BasicClone/basic_clone_data.tres" id="2_brs4w"]
+[ext_resource type="AudioStream" uid="uid://bhgtqvxlst0g" path="res://assets/sfx/summon_zap.wav" id="2_gj3hl"]
 
 [resource]
 script = ExtResource("1_uj6cq")
 summon_data = ExtResource("2_brs4w")
+sound = ExtResource("2_gj3hl")
 action_type = 5
 requires_summon_slot = true
 metadata/_custom_type_script = "uid://wtk5v77fcqvn"

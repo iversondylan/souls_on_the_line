@@ -1,13 +1,18 @@
-[gd_resource type="Resource" script_class="NPCEffectPackage" load_steps=6 format=3 uid="uid://b2msyscyo236"]
+[gd_resource type="Resource" script_class="NPCEffectPackage" load_steps=7 format=3 uid="uid://b2msyscyo236"]
 
-[ext_resource type="Resource" uid="uid://db532u4nfvip4" path="res://npc_actions/npc_block_sequence.tres" id="1_3jwma"]
 [ext_resource type="Script" uid="uid://b8d5j6ne4mt88" path="res://custom_resources/param_model.gd" id="1_j5k6l"]
+[ext_resource type="Script" uid="uid://b7gxnbfwou6qw" path="res://npc_actions/npc_block_sequence.gd" id="1_m8e8n"]
 [ext_resource type="Script" uid="uid://3jde7uhq2yho" path="res://custom_resources/npc_effect_package.gd" id="2_3jwma"]
+[ext_resource type="AudioStream" uid="uid://h4nxaoibaiuj" path="res://assets/sfx/block.wav" id="2_vpxm2"]
 [ext_resource type="Script" uid="uid://cuj4qvyx6dedj" path="res://custom_resources/state_model.gd" id="3_3rjl4"]
-[ext_resource type="Resource" uid="uid://bl041k85026h4" path="res://fighters/MegaBlocker/flat_armor_5.tres" id="3_m8e8n"]
+
+[sub_resource type="Resource" id="Resource_vpxm2"]
+script = ExtResource("1_m8e8n")
+sound = ExtResource("2_vpxm2")
+metadata/_custom_type_script = "uid://b7gxnbfwou6qw"
 
 [resource]
 script = ExtResource("2_3jwma")
-effect = ExtResource("1_3jwma")
-param_models = Array[ExtResource("1_j5k6l")]([ExtResource("3_m8e8n")])
+effect = SubResource("Resource_vpxm2")
+param_models = Array[ExtResource("1_j5k6l")]([null])
 metadata/_custom_type_script = "uid://3jde7uhq2yho"

@@ -1,13 +1,19 @@
-[gd_resource type="Resource" script_class="NPCEffectPackage" load_steps=6 format=3 uid="uid://cc04i46wsvhqo"]
+[gd_resource type="Resource" script_class="NPCEffectPackage" load_steps=8 format=3 uid="uid://cc04i46wsvhqo"]
 
-[ext_resource type="Resource" uid="uid://bnqqhpu1itcb3" path="res://npc_actions/npc_attack_sequence.tres" id="1_rd7he"]
 [ext_resource type="Script" uid="uid://b8d5j6ne4mt88" path="res://custom_resources/param_model.gd" id="1_waeop"]
+[ext_resource type="Script" uid="uid://c4bdbfkkrojcr" path="res://npc_actions/npc_attack_sequence.gd" id="1_y5jhk"]
+[ext_resource type="AudioStream" uid="uid://5buss22qggjn" path="res://assets/sfx/thrall_hit.wav" id="2_373j8"]
 [ext_resource type="Script" uid="uid://3jde7uhq2yho" path="res://custom_resources/npc_effect_package.gd" id="2_rd7he"]
 [ext_resource type="Script" uid="uid://cuj4qvyx6dedj" path="res://custom_resources/state_model.gd" id="3_npohi"]
 [ext_resource type="Resource" uid="uid://c2313wqave6gn" path="res://fighters/BasicClone/mana_red_plus_1_damage.tres" id="3_y5jhk"]
 
+[sub_resource type="Resource" id="Resource_byb7d"]
+script = ExtResource("1_y5jhk")
+sound = ExtResource("2_373j8")
+metadata/_custom_type_script = "uid://c4bdbfkkrojcr"
+
 [resource]
 script = ExtResource("2_rd7he")
-effect = ExtResource("1_rd7he")
+effect = SubResource("Resource_byb7d")
 param_models = Array[ExtResource("1_waeop")]([ExtResource("3_y5jhk")])
 metadata/_custom_type_script = "uid://3jde7uhq2yho"

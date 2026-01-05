@@ -118,7 +118,6 @@ func _plan_initial_enemy_intents() -> void:
 			if child is NPCAIBehavior:
 				child.plan_next_intent()
 				child.refresh_intent_display_only()
-				print("battle.gd _plan_initial_enemy_intents()", child.get_meta("ai_state").get(NPCAIBehavior.KEY_PLANNED_IDX, "no KEY_PLANNED_IDX"))
 
 func _on_request_activate_arcana_by_type(type: Arcanum.Type):
 	match type:

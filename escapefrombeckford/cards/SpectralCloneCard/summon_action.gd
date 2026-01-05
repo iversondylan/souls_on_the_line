@@ -3,6 +3,7 @@ extends CardAction
 const SUMMONED_ALLY_SCN := preload("res://scenes/turn_takers/summoned_ally.tscn")
 
 @export var summon_data: CombatantData
+@export var sound: AudioStream
 
 func activate(ctx: CardActionContext) -> bool:
 	var insert_at := ctx.resolved_target.insert_index
@@ -14,7 +15,7 @@ func activate(ctx: CardActionContext) -> bool:
 	combatant_data.max_mana_red = ctx.player.combatant_data.max_mana_red
 	combatant_data.max_mana_green = ctx.player.combatant_data.max_mana_green
 	combatant_data.max_mana_blue = ctx.player.combatant_data.max_mana_blue
-	
+	SFXPlayer.play(sound)
 	summoned_ally.combatant_data = combatant_data
 	for child in summoned_ally.get_children():
 			if child is NPCAIBehavior:

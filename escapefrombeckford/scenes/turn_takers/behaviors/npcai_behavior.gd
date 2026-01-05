@@ -3,6 +3,7 @@ class_name NPCAIBehavior extends FighterBehavior
 
 #const KEY_PLANNED_CHANCE_IDX := "planned_chance_idx"
 const KEY_PLANNED_IDX := "planned_idx"
+const BASE_IMPACT_DELAY := 1.2
 
 @export var ai_profile: NPCAIProfile
 
@@ -18,7 +19,7 @@ var remaining_effect_packages: Array[NPCEffectPackage] = []
 
 func _make_context() -> NPCAIContext:
 	var fighter: Fighter = get_parent()
-
+	
 	var ctx := NPCAIContext.new()
 	ctx.combatant = fighter
 	ctx.battle_scene = fighter.battle_scene
@@ -184,7 +185,6 @@ func _on_enter() -> void:
 
 
 func _on_exit() -> void:
-	print("_on_exit()")
 	var ctx := _make_context()
 	ctx.state["is_acting"] = false
 	plan_next_intent()
@@ -253,7 +253,7 @@ func _start_action(action: NPCAction, ctx: NPCAIContext) -> void:
 
 func _next_effect_package() -> void:
 	if remaining_effect_packages.is_empty():
-		_finish_action()
+		_start_impact_delay()#_finish_action()
 		return
 
 	var pkg : NPCEffectPackage = remaining_effect_packages.pop_front()
@@ -287,6 +287,11 @@ func _execute_effect_sequence(pkg: NPCEffectPackage) -> void:
 func _on_sequence_done() -> void:
 	_next_effect_package()
 
+func _start_impact_delay() -> void:
+	var fighter: Fighter = get_parent()
+	fighter.intent_container.clear_display()
+	get_tree().create_timer(BASE_IMPACT_DELAY/2.0, false).timeout.connect(_finish_action)
+	
 
 func _finish_action() -> void:
 	var fighter := action_ctx.combatant

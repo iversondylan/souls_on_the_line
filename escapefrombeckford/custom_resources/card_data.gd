@@ -56,37 +56,3 @@ var card_status: CardStatus
 
 func is_single_targeted() -> bool:
 	return target_type == TargetType.SINGLE_ENEMY or target_type == TargetType.ALLY_OR_SELF or target_type == TargetType.ALLY or target_type == TargetType.BATTLEFIELD
-
-
-
-func _get_targets(targets: Array[Node]) -> Array[Node]:
-	if not targets:
-		return []
-
-	var tree := targets[0].get_tree()
-	#Events.need_updated_game_state.emit()
-	match target_type:
-		TargetType.SELF:
-			return tree.get_nodes_in_group("player")
-		TargetType.BATTLEFIELD:
-			return tree.get_nodes_in_group("battle_scene")
-		TargetType.ALLY_OR_SELF:
-			return tree.get_nodes_in_group("allies") + tree.get_nodes_in_group("player")
-		#TargetType.ALLY:
-			#for target in targets:
-				#if target is Combatant:
-					#if target.combatant_data.team == 1:
-						#return [target]
-			#return []
-		#TargetType.SINGLE_ENEMY:
-			#for target in targets:
-				#if target is Combatant:
-					#if target.combatant_data.team == 2:
-						#return [target]
-			#return []
-		TargetType.ALL_ENEMIES:
-			return tree.get_nodes_in_group("enemies")
-		TargetType.EVERYONE:
-			return tree.get_nodes_in_group("enemies") + tree.get_nodes_in_group("allies") + tree.get_nodes_in_group("player")
-		_:
-			return []
