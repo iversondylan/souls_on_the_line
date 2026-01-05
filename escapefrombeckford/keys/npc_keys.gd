@@ -6,7 +6,6 @@ const STRIKES := "strikes"
 const ATTACK_MODE := "attack_mode"
 const TARGET_TYPE := "target_type"
 const EXPLODE_ON_FINISH := "explode_on_finish"
-
 const ARMOR_AMOUNT := "armor_amount"
 
 # AI state
