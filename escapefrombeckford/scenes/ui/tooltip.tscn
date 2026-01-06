@@ -9,9 +9,9 @@
 script = ExtResource("2_o3msy")
 
 [node name="PanelContainer" type="PanelContainer" parent="."]
-offset_left = -120.0
-offset_top = -200.0
-offset_right = 120.0
+offset_left = -160.0
+offset_top = -240.0
+offset_right = 160.0
 offset_bottom = -40.0
 mouse_filter = 2
 theme = ExtResource("1_kv0sd")
@@ -43,7 +43,8 @@ layout_mode = 2
 size_flags_vertical = 3
 mouse_filter = 2
 theme = ExtResource("4_o3msy")
-theme_override_font_sizes/normal_font_size = 16
+theme_override_font_sizes/normal_font_size = 20
+theme_override_font_sizes/bold_font_size = 20
 bbcode_enabled = true
-text = "Tooltip description.
+text = "[center][b]Tooltip[/b][/center]
 Tooltip description."

@@ -1,7 +1,8 @@
-[gd_resource type="Theme" load_steps=3 format=3 uid="uid://1dr1eewpv0jd"]
+[gd_resource type="Theme" load_steps=4 format=3 uid="uid://1dr1eewpv0jd"]
 
 [ext_resource type="FontFile" uid="uid://ds3b4ujyapi6w" path="res://assets/fonts/Prompt/Prompt-Medium.ttf" id="1_xxbg1"]
 [ext_resource type="FontFile" uid="uid://c2rq2miy1lk1c" path="res://assets/fonts/Prompt/Prompt-Italic.ttf" id="2_gfhtu"]
+[ext_resource type="FontFile" uid="uid://djns5swnj6ron" path="res://assets/fonts/Prompt/Prompt-Bold.ttf" id="2_qa7hf"]
 
 [resource]
 Button/font_sizes/font_size = 26
@@ -9,5 +10,6 @@ Button/fonts/font = ExtResource("1_xxbg1")
 Label/font_sizes/font_size = 26
 Label/fonts/font = ExtResource("1_xxbg1")
 RichTextLabel/constants/line_separation = 0
+RichTextLabel/fonts/bold_font = ExtResource("2_qa7hf")
 RichTextLabel/fonts/italics_font = ExtResource("2_gfhtu")
 RichTextLabel/fonts/normal_font = ExtResource("1_xxbg1")

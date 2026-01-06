@@ -1,4 +1,4 @@
-# attack_intent_text_model.gd
+# block_intent_text_model.gd
 class_name BlockIntentTextModel
 extends TextModel
 

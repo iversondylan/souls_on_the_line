@@ -1,9 +1,14 @@
 # npc_attack_sequence.gd
 class_name NPCAttackSequence extends NPCEffectSequence
 
+# target_type values
 const TARGET_STANDARD := "target_standard"
 const TARGET_OPPONENTS := "target_opponents"
 const TARGET_ALL := "target_all"
+
+# attack_mode values
+const ATTACK_MODE_MELEE := "melee"
+const ATTACK_MODE_RANGED := "ranged"
 
 @export var sound: AudioStream
 
