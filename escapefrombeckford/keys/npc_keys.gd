@@ -7,6 +7,7 @@ const ATTACK_MODE := "attack_mode"
 const TARGET_TYPE := "target_type"
 const EXPLODE_ON_FINISH := "explode_on_finish"
 const ARMOR_AMOUNT := "armor_amount"
+const PROJECTILE_SCENE := "projectile_scene"
 
 # AI state
 const ATTACK_SPREE := "attack_spree"

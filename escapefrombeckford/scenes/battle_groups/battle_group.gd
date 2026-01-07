@@ -117,9 +117,9 @@ func update_combatant_position():
 	var n: int = 1
 	for fighter in fighters:
 		if faces_right:
-			fighter.set_anchor_position(Vector2(right_bound-increment*n, 0), false)
+			fighter.set_anchor_position(Vector2(right_bound-increment*n, 0), true)
 		else:
-			fighter.set_anchor_position(Vector2(left_bound+increment*n, 0), false)
+			fighter.set_anchor_position(Vector2(left_bound+increment*n, 0), true)
 		n += 1
 
 func combatant_died(fighter: Fighter) -> void:

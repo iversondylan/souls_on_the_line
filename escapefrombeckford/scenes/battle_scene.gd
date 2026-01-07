@@ -112,6 +112,45 @@ func get_player() -> Player:
 func set_player(new_player: Player) -> void:
 	groups[0].player = new_player
 
+## Returns positional displacement of `fighter` relative to the Player.
+##  0  = the player
+##  1  = one position behind the player
+## -1  = one position in front of the player
+## -2  = two positions in front of the player
+## etc.
+##
+## If the fighter is not in the same group as the Player,
+## returns 0 and emits a warning.
+func get_player_pos_delta(fighter: Fighter) -> int:
+	if !fighter:
+		push_warning("get_player_pos_delta: fighter is null")
+		return 0
+
+	var player := get_player()
+	if !player:
+		push_warning("get_player_pos_delta: no player found in battle")
+		return 0
+
+	var player_group := player.get_parent()
+	var fighter_group := fighter.get_parent()
+
+	if fighter_group != player_group:
+		push_warning("fighter has no player in group")
+		return 0
+
+	var fighters: Array[Fighter] = player_group.get_combatants()
+
+	var player_index := fighters.find(player)
+	var fighter_index := fighters.find(fighter)
+
+	if player_index == -1 or fighter_index == -1:
+		push_warning("get_player_pos_delta: fighter or player not found in group combatants")
+		return 0
+
+	# Displacement: behind player = positive, ahead = negative
+	return fighter_index - player_index
+
+
 func get_battle_groups() -> Array[BattleGroup]:
 	var battle_groups: Array[BattleGroup] = []
 	for child_group in get_children():

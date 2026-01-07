@@ -2,6 +2,7 @@
 extends CardAction
 
 @export var attacks: int = 1
+@export var param_models: Array[ParamModel]
 
 func activate(ctx: CardActionContext) -> bool:
 	# Keep the same guard you had: require at least one resolved fighter.
@@ -34,7 +35,8 @@ func activate(ctx: CardActionContext) -> bool:
 	ai_ctx.params[NPCKeys.DAMAGE] = attacker.modifier_system.get_modified_value(base_damage, Modifier.Type.DMG_DEALT)
 	ai_ctx.params[NPCKeys.STRIKES] = attacks
 	ai_ctx.params[NPCKeys.TARGET_TYPE] = NPCAttackSequence.TARGET_STANDARD
-	
+	for model in param_models:
+		model.change_params(ai_ctx)
 	# Run sequence
 	var seq := NPCAttackSequence.new()
 	seq.sound = ctx.card_data.sound

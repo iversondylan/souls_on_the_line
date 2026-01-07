@@ -22,7 +22,8 @@ var combatant_data: CombatantData : set = _set_combatant_data
 var battle_scene: BattleScene : set = _set_battle_scene
 var run: Run : set = _set_run
 var fighter_tween: Tween
-var anchor_position: Vector2 = Vector2(0, 0)
+var anchor_position: Vector2# = Vector2(0, 0)
+var has_anchor_position: bool = false
 
 func _ready() -> void:
 	combatant.target_area_area_entered.connect(_on_target_area_area_entered)
@@ -71,11 +72,12 @@ func exit() -> void:
 
 func set_anchor_position(_position: Vector2, animate: bool) -> void:
 	anchor_position = _position
-	if animate:
+	if animate and has_anchor_position:
 		var tween = create_tween()
-		tween.tween_property(self, "anchor_position", _position, 0.4)
+		tween.tween_property(self, "position", anchor_position, 0.15)
 	else:
 		position = anchor_position
+	has_anchor_position = true
 
 func take_damage(n_damage: int, modifier_type: Modifier.Type):
 	var modified_damage := modifier_system.get_modified_value(n_damage, modifier_type)

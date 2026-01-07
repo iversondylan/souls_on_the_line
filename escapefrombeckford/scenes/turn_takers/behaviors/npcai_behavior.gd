@@ -180,7 +180,7 @@ func _change_params_only(action: NPCAction, ctx: NPCAIContext) -> void:
 					% [pkg.resource_name, action.resource_name]
 				)
 				continue
-			model.change_params(ctx) # <----- ERROR HERE
+			model.change_params(ctx)
 
 # -------------------------------------------------------------------
 # Turn lifecycle
