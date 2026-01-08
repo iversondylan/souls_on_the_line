@@ -8,6 +8,10 @@ const TARGET_TYPE := "target_type"
 const EXPLODE_ON_FINISH := "explode_on_finish"
 const ARMOR_AMOUNT := "armor_amount"
 const PROJECTILE_SCENE := "projectile_scene"
+const STATUS_SCENE := "status_scene"
+const STATUS_INTENSITY := "status_intensity"
+const STATUS_DURATION := "status_duration"
+const STATUS_STACK_TYPE := "status_stack_type"
 
 # AI state
 const ATTACK_SPREE := "attack_spree"

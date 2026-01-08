@@ -3,6 +3,8 @@ class_name NPCAIBehavior extends FighterBehavior
 
 #const KEY_PLANNED_CHANCE_IDX := "planned_chance_idx"
 const KEY_PLANNED_IDX := "planned_idx"
+const HP_AT_TURN_START := "hp_at_turn_start"
+const DMG_SINCE_LAST_TURN := "dmg_since_last_turn"
 const BASE_IMPACT_DELAY := 1.2
 
 @export var ai_profile: NPCAIProfile
@@ -40,6 +42,10 @@ func _on_combatant_data_set(_data: CombatantData) -> void:
 
 	# Init persistent AI state + RNG ONCE
 	set_meta("ai_state", {})
+	var state = get_meta("ai_state")
+	state[HP_AT_TURN_START] = _data.health
+	print("_on_comb_dat_set hp_sta: %s" % state.get(HP_AT_TURN_START))
+	state[DMG_SINCE_LAST_TURN] = 0
 	var rng := RandomNumberGenerator.new()
 	rng.randomize()
 	set_meta("ai_rng", rng)
@@ -56,6 +62,17 @@ func _on_stats_changed() -> void:
 	var fighter: Fighter = get_parent()
 	if !fighter.is_alive() or !ai_profile:
 		return
+	print("_on_stats_changed() outside the if")
+	
+	var state = get_meta("ai_state")
+	print("_on_stats_changed() state: %s" % state)
+	print("_on_stats_changed() hp_at_turn_start: %s" % state.get(HP_AT_TURN_START))
+	if state and state.has(HP_AT_TURN_START):
+		print("_on_stats_changed() in the if")
+		var cur_hp : int = fighter.combatant_data.health
+		var delta : int = state[HP_AT_TURN_START] - cur_hp
+		if delta > 0:
+			state[DMG_SINCE_LAST_TURN] += delta
 
 	var ctx := _make_context()
 	var cond_idx := _get_first_conditional_idx(ctx)
@@ -187,6 +204,10 @@ func _change_params_only(action: NPCAction, ctx: NPCAIContext) -> void:
 # -------------------------------------------------------------------
 
 func _on_enter() -> void:
+	var fighter: Fighter = get_parent()
+	var state : Dictionary = get_meta("ai_state")
+	state[HP_AT_TURN_START] = fighter.combatant_data.health
+	state[DMG_SINCE_LAST_TURN] = 0
 	_refresh_intent_display_only()
 
 
@@ -314,5 +335,6 @@ func _finish_action() -> void:
 # -------------------------------------------------------------------
 
 func _on_battle_reset() -> void:
-	if has_meta("ai_state"):
-		set_meta("ai_state", {})
+	pass
+	#if has_meta("ai_state"):
+		#set_meta("ai_state", {})

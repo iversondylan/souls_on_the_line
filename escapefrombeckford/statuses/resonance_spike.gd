@@ -1,6 +1,6 @@
-class_name EchoedCrueltyStatus extends Aura
+class_name ResonanceSpikeStatus extends Aura
 
-const ID := "echoed_cruelty"
+const ID := "resonance_spike"
 
 func contributes_modifier() -> bool:
 	return true
@@ -25,4 +25,4 @@ func get_modifier_tokens() -> Array[ModifierToken]:
 	return [token]
 
 func get_tooltip() -> String:
-	return "Echoed Cruelty [Aura]: Allies deal %s additional damage." % intensity
+	return "Resonance Spike [Aura]: Allies deal +%s damage until the start of this unit’s next turn." % intensity

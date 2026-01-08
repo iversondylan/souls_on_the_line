@@ -73,8 +73,8 @@ func exit() -> void:
 func set_anchor_position(_position: Vector2, animate: bool) -> void:
 	anchor_position = _position
 	if animate and has_anchor_position:
-		var tween = create_tween()
-		tween.tween_property(self, "position", anchor_position, 0.15)
+		var tween = create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+		tween.tween_property(self, "position", anchor_position, 0.12)
 	else:
 		position = anchor_position
 	has_anchor_position = true
@@ -222,7 +222,8 @@ func modify_target(ctx: AttackTargetContext) -> void:
 	## Check that the attack is targeting this fighter's side.
 	if !_is_attack_targeting_us(ctx):
 		return
-	
+	if ctx.params.get(NPCKeys.ATTACK_MODE) != NPCAttackSequence.ATTACK_MODE_RANGED:
+		return
 	## Redirect final target to this fighter if it's not multi-target.
 	if !ctx.final_targets.has(self) and ctx.is_single_target_intent:
 		ctx.final_targets = [self]

@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="CombatantData" load_steps=4 format=3 uid="uid://cyoj8vcxd7rxl"]
+
+[ext_resource type="Resource" uid="uid://bnuvrx00ghv" path="res://fighters/PowerBlocker/power_blocker_ai.tres" id="1_2apmm"]
+[ext_resource type="Texture2D" uid="uid://dtvvequ1w1dlu" path="res://assets/sprites/assorted/enemy_thrall_mage.png" id="2_nob0j"]
+[ext_resource type="Script" uid="uid://cfatj0ryn8uv3" path="res://custom_resources/combatant_data.gd" id="3_n5lri"]
+
+[resource]
+script = ExtResource("3_n5lri")
+name = "Thrall"
+character_art = ExtResource("2_nob0j")
+facing_right = false
+height = 270
+max_health = 30
+team = 2
+ai = ExtResource("1_2apmm")
+metadata/_custom_type_script = "uid://cfatj0ryn8uv3"

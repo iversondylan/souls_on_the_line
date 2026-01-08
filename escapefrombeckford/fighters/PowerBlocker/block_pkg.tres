@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="NPCEffectPackage" load_steps=8 format=3 uid="uid://dcxgjl672yljc"]
+
+[ext_resource type="Script" uid="uid://b7gxnbfwou6qw" path="res://npc_actions/npc_block_sequence.gd" id="1_3d3lt"]
+[ext_resource type="Script" uid="uid://b8d5j6ne4mt88" path="res://custom_resources/param_model.gd" id="1_jgou3"]
+[ext_resource type="Script" uid="uid://3jde7uhq2yho" path="res://custom_resources/npc_effect_package.gd" id="2_rhor3"]
+[ext_resource type="Script" uid="uid://cuj4qvyx6dedj" path="res://custom_resources/state_model.gd" id="3_3d3lt"]
+[ext_resource type="Script" uid="uid://csw8sovsyb4vq" path="res://npc_actions/armor_amount/flat_armor_model.gd" id="3_bx3w1"]
+
+[sub_resource type="Resource" id="Resource_bcyun"]
+script = ExtResource("1_3d3lt")
+metadata/_custom_type_script = "uid://b7gxnbfwou6qw"
+
+[sub_resource type="Resource" id="Resource_aelau"]
+script = ExtResource("3_bx3w1")
+armor = 10
+metadata/_custom_type_script = "uid://csw8sovsyb4vq"
+
+[resource]
+script = ExtResource("2_rhor3")
+effect = SubResource("Resource_bcyun")
+param_models = Array[ExtResource("1_jgou3")]([SubResource("Resource_aelau")])
+metadata/_custom_type_script = "uid://3jde7uhq2yho"
