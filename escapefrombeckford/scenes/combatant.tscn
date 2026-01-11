@@ -25,6 +25,7 @@ font_color = Color(0.47967, 0.346496, 0.233082, 1)
 script = ExtResource("1_srv24")
 
 [node name="CharacterArt" type="Sprite2D" parent="."]
+modulate = Color(0.38, 0.64866674, 1, 1)
 position = Vector2(0, -135)
 scale = Vector2(2.69, 2.69)
 texture = ExtResource("3_8636n")

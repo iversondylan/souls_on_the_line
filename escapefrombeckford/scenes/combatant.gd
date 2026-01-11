@@ -45,6 +45,7 @@ func load_combatant_data():
 	if !is_node_ready():
 		await ready
 	character_sprite.texture = combatant_data.character_art #.set_texture(combatant_data.character_art)
+	character_sprite.modulate = combatant_data.color_tint
 	var scalar: float = float(combatant_data.height) / character_sprite.texture.get_height()
 	character_sprite.scale = Vector2(scalar, scalar)
 	character_sprite.position = Vector2(0, - combatant_data.height / 2.0)

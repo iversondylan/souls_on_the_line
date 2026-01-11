@@ -6,11 +6,11 @@
 
 [resource]
 script = ExtResource("3_n5lri")
-name = "Thrall"
+name = "Power Blocker"
 character_art = ExtResource("2_nob0j")
 facing_right = false
 height = 270
-max_health = 30
+max_health = 20
 team = 2
 ai = ExtResource("1_2apmm")
 metadata/_custom_type_script = "uid://cfatj0ryn8uv3"

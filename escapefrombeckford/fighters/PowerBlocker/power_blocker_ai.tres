@@ -2,8 +2,8 @@
 
 [ext_resource type="Script" uid="uid://bcih413oy6v73" path="res://custom_resources/npc_action.gd" id="1_d3acu"]
 [ext_resource type="Script" uid="uid://bdsvca1cpka5s" path="res://custom_resources/npc_ai_profile.gd" id="2_gf3rg"]
-[ext_resource type="Resource" uid="uid://c37usc0kpgf2s" path="res://fighters/PowerBlocker/shaky_attack.tres" id="2_ve3xa"]
-[ext_resource type="Resource" uid="uid://is66ocmth6xa" path="res://fighters/PowerBlocker/power_block.tres" id="3_ivhwn"]
+[ext_resource type="Resource" uid="uid://c37usc0kpgf2s" path="res://fighters/PowerBlocker/shaky_attack_action.tres" id="2_ve3xa"]
+[ext_resource type="Resource" uid="uid://is66ocmth6xa" path="res://fighters/PowerBlocker/power_block_action.tres" id="3_ivhwn"]
 
 [resource]
 script = ExtResource("2_gf3rg")

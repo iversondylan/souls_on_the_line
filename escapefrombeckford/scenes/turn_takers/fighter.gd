@@ -111,6 +111,7 @@ func add_armor(amount: int):
 ##for future: death must cancel pending action resolution
 func die():
 	combatant_data.alive = false
+	battle_group.battle_scene._on_modifier_tokens_changed(Modifier.Type.COMBAT_MODIFIERS)
 	battle_group.update_combatant_position()
 	var death_tween: Tween = create_tween()
 	death_tween.tween_property(character_sprite, "modulate", Color.BLACK, 0.3)

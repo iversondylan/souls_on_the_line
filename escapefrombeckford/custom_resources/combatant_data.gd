@@ -10,6 +10,7 @@ signal combatant_data_changed()
 @export var character_scale: float = 1
 @export var facing_right: bool = true
 @export var height: int = 365
+@export var color_tint: Color = Color.WHITE
 
 @export_group("Gameplay Data")
 @export var max_health: int = 10

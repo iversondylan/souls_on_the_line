@@ -97,8 +97,12 @@ func _modifier_changed() -> void:
 
 func mark_dirty(type: Modifier.Type = Modifier.Type.NO_MODIFIER) -> void:
 	#print("modifier_system.gd mark_dirty() type: %s" % Modifier.Type.keys()[type])
+	
 	if type == Modifier.Type.NO_MODIFIER:
 		_dirty.clear()
+	elif type == Modifier.Type.COMBAT_MODIFIERS:
+		_dirty[Modifier.Type.DMG_DEALT] = true
+		_dirty[Modifier.Type.DMG_TAKEN] = true
 	else:
 		_dirty[type] = true
 	
