@@ -108,7 +108,7 @@ func add_armor(amount: int):
 ##for future: death must cancel pending action resolution
 func die():
 	combatant_data.alive = false
-	
+	print(name, " died")
 	combatant.status_grid.end_non_self_statuses()
 	
 	battle_group.update_combatant_position()

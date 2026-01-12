@@ -9,6 +9,9 @@ func get_contributed_modifier_types() -> Array[Modifier.Type]:
 	return [Modifier.Type.DMG_DEALT]
 
 func get_modifier_tokens() -> Array[ModifierToken]:
+	if is_expired():
+		print("resonance_spike_status.gd is expired but tokens requested")
+		return []
 	var token := ModifierToken.new()
 	token.type = Modifier.Type.DMG_DEALT
 	token.flat_value = intensity

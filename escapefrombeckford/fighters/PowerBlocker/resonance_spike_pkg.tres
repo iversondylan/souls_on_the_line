@@ -14,7 +14,7 @@ metadata/_custom_type_script = "uid://oygxxtaqev43"
 [sub_resource type="Resource" id="Resource_s6f2k"]
 script = ExtResource("3_u42nn")
 status_scene = ExtResource("4_0fjth")
-intensity = 4
+intensity = 3
 metadata/_custom_type_script = "uid://cccygrstrra8t"
 
 [resource]

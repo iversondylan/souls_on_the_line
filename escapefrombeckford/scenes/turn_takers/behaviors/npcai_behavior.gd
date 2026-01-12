@@ -200,6 +200,7 @@ func _change_params_only(action: NPCAction, ctx: NPCAIContext) -> void:
 func _on_enter() -> void:
 	var fighter: Fighter = get_parent()
 	var state : Dictionary = get_meta("ai_state")
+	#print("_on_enter() name: ", get_parent().name, " state: ", state)
 	state[HP_AT_TURN_START] = fighter.combatant_data.health
 	state[DMG_SINCE_LAST_TURN] = 0
 	_refresh_intent_display_only()
@@ -243,19 +244,19 @@ func _on_do_turn() -> void:
 	if !fighter.is_alive() or !ai_profile:
 		fighter.resolve_action()
 		return
-
+	
 	var ctx := _make_context()
 	ctx.state["is_acting"] = true
-
+	
 	if not ctx.state.has(KEY_PLANNED_IDX):
 		print("_on_do_turn() there's no KEY_PLANNED_IDX")
 		plan_next_intent()
-
+	
 	var action := _get_action_by_idx(int(ctx.state.get(KEY_PLANNED_IDX, -1)))
 	if not action:
 		fighter.resolve_action()
 		return
-
+	
 	_start_action(action, ctx)
 
 

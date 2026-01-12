@@ -51,5 +51,8 @@ func _set_intensity(new_intensity: int) -> void:
 func is_expired() -> bool:
 	return can_expire and duration <= 0
 
+func affects_others() -> bool:
+	return false
+
 #func _on_status_changed(target: Node) -> void:
 	#print("status.gd _on_status_changed(): virtual function called")

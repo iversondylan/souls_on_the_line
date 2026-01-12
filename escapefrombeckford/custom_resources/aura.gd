@@ -28,3 +28,6 @@ func contributes_modifier() -> bool:
 
 func get_contributed_modifier_types() -> Array[Modifier.Type]:
 	return []
+
+func affects_others() -> bool:
+	return true

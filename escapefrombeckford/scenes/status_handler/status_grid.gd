@@ -35,6 +35,12 @@ func get_modifier_tokens() -> Array[ModifierToken]:
 	var tokens: Array[ModifierToken] = []
 	
 	for status in _get_all_statuses():
+		if !status:
+			print("status_grid.gd a nonexistent status is being skipped")
+			continue
+		if status.is_expired():
+			print("status_grid.gd an expired status is being skipped")
+			continue
 		if status and status.contributes_modifier():
 			tokens.append_array(status.get_modifier_tokens())
 	return tokens
@@ -75,7 +81,7 @@ func mark_dirty_for_status(status: Status) -> void:
 
 	for mod_type in status.get_contributed_modifier_types():
 		status_parent.modifier_system.mark_dirty(mod_type)
-		if _status_affects_others(status):
+		if status.affects_others():
 			modifier_tokens_changed.emit(mod_type)
 
 func _has_status(id: String) -> bool:
@@ -119,11 +125,11 @@ func _on_status_changed(status: Status) -> void:
 		return
 	for mod_type in status.get_contributed_modifier_types():
 		status_parent.modifier_system.mark_dirty(mod_type)
-		if _status_affects_others(status):
+		if status.affects_others():
 			modifier_tokens_changed.emit(mod_type)
 
 func _remove_expired_statuses() -> void:
-	print("status_grid.gd _remove_expired_statuses")
+	#print("status_grid.gd _remove_expired_statuses")
 	var to_remove: Array[StatusDisplay] = []
 
 	for status_display: StatusDisplay in get_children():
@@ -135,17 +141,17 @@ func _remove_expired_statuses() -> void:
 		_remove_status_display(status_display)
 
 func _remove_status_display(status_display: StatusDisplay) -> void:
-	print("status_grid.gd _remove_status_display")
+	#print("status_grid.gd _remove_status_display")
 	var status := status_display.status
 	
 	if status.contributes_modifier():
 		for mod_type in status.get_contributed_modifier_types():
-			print("contributing mod type: %s" % Modifier.Type.keys()[mod_type])
+			#print("contributing mod type: %s" % Modifier.Type.keys()[mod_type])
 			status_parent.modifier_system.mark_dirty(mod_type)
-			if _status_affects_others(status):
-				print("and emitting modifier_tokens_changed")
+			if status.affects_others():
+				#print("and emitting modifier_tokens_changed")
 				modifier_tokens_changed.emit(mod_type)
-	
+	remove_child(status_display)
 	status_display.queue_free()
 
 func end_non_self_statuses() -> void:
@@ -154,7 +160,7 @@ func end_non_self_statuses() -> void:
 		var status := status_display.status
 		if !status:
 			continue
-		if !_status_affects_others(status):
+		if !status.affects_others():
 			continue
 		to_end.append(status_display)
 	for status_display in to_end:
@@ -174,10 +180,10 @@ func _force_expire_status(status_display: StatusDisplay) -> void:
 		# We still want proper removal + dirtying
 		_remove_status_display(status_display)
 
-func _status_affects_others(status: Status) -> bool:
-	if !status.contributes_modifier():
-		return false
-	for token in status.get_modifier_tokens():
-		if token.scope != ModifierToken.Scope.SELF:
-			return true
-	return false
+#func _status_affects_others(status: Status) -> bool:
+	#if !status.contributes_modifier():
+		#return false
+	#for token in status.get_modifier_tokens():
+		#if token.scope != ModifierToken.Scope.SELF:
+			#return true
+	#return false

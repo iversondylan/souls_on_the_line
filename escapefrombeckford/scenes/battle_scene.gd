@@ -300,6 +300,7 @@ func _passes_aura_rules(source: Fighter, target: Fighter, aura: Aura) -> bool:
 	return false
 
 func _on_modifier_tokens_changed(mod_type: Modifier.Type) -> void:
+	print("battle_scene.gd _on_modifier_tokens_changed()")
 	for fighter in get_all_combatants():
 		if fighter.is_alive():
 			fighter.modifier_system.mark_dirty(mod_type)
