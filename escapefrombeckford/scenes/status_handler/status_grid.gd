@@ -75,8 +75,8 @@ func mark_dirty_for_status(status: Status) -> void:
 
 	for mod_type in status.get_contributed_modifier_types():
 		status_parent.modifier_system.mark_dirty(mod_type)
-	
-		modifier_tokens_changed.emit(mod_type)
+		if _status_affects_others(status):
+			modifier_tokens_changed.emit(mod_type)
 
 func _has_status(id: String) -> bool:
 	for status_display: StatusDisplay in get_children():
@@ -119,9 +119,11 @@ func _on_status_changed(status: Status) -> void:
 		return
 	for mod_type in status.get_contributed_modifier_types():
 		status_parent.modifier_system.mark_dirty(mod_type)
-		modifier_tokens_changed.emit(mod_type)
+		if _status_affects_others(status):
+			modifier_tokens_changed.emit(mod_type)
 
 func _remove_expired_statuses() -> void:
+	print("status_grid.gd _remove_expired_statuses")
 	var to_remove: Array[StatusDisplay] = []
 
 	for status_display: StatusDisplay in get_children():
@@ -133,11 +135,49 @@ func _remove_expired_statuses() -> void:
 		_remove_status_display(status_display)
 
 func _remove_status_display(status_display: StatusDisplay) -> void:
+	print("status_grid.gd _remove_status_display")
 	var status := status_display.status
 	
-	# Invalidate modifiers BEFORE removal
 	if status.contributes_modifier():
 		for mod_type in status.get_contributed_modifier_types():
+			print("contributing mod type: %s" % Modifier.Type.keys()[mod_type])
 			status_parent.modifier_system.mark_dirty(mod_type)
+			if _status_affects_others(status):
+				print("and emitting modifier_tokens_changed")
+				modifier_tokens_changed.emit(mod_type)
 	
 	status_display.queue_free()
+
+func end_non_self_statuses() -> void:
+	var to_end: Array[StatusDisplay] = []
+	for status_display: StatusDisplay in get_children():
+		var status := status_display.status
+		if !status:
+			continue
+		if !_status_affects_others(status):
+			continue
+		to_end.append(status_display)
+	for status_display in to_end:
+		_force_expire_status(status_display)
+	# If ever this is used not upon death, will need to call _update_visuals()
+
+func _force_expire_status(status_display: StatusDisplay) -> void:
+	var status := status_display.status
+	if !status:
+		return
+
+	# Force it into an expired state
+	if status.can_expire:
+		status.duration = 0
+	else:
+		# Non-expiring but non-self (e.g. aura-style permanent effects)
+		# We still want proper removal + dirtying
+		_remove_status_display(status_display)
+
+func _status_affects_others(status: Status) -> bool:
+	if !status.contributes_modifier():
+		return false
+	for token in status.get_modifier_tokens():
+		if token.scope != ModifierToken.Scope.SELF:
+			return true
+	return false

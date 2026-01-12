@@ -1,3 +1,4 @@
+# modifier_token.gd
 class_name ModifierToken extends RefCounted
 
 enum Scope { GLOBAL, SELF, TARGET }
@@ -11,10 +12,10 @@ var priority: int = 0
 
 
 
-var scope: Scope = Scope.GLOBAL #The entity responsible for emitting this token
-#The status holder for SELF tokens
-#The aura source for aura-secondaries
-#The battle scene or relic for GLOBAL tokens
+var scope: Scope = Scope.GLOBAL # The entity responsible for emitting this token
+# The status holder for SELF tokens
+# The aura source for aura-secondaries
+# The battle scene or relic for GLOBAL tokens
 
 # Semantic flags (optional)
 var tags: Array[String] = []

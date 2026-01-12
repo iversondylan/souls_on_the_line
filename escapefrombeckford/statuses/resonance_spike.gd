@@ -19,7 +19,7 @@ func get_modifier_tokens() -> Array[ModifierToken]:
 	token.scope = ModifierToken.Scope.TARGET
 	token.tags = [
 		Aura.AURA_SECONDARY_FLAG,
-		"aura_allies"
+		Aura.AURA_ALLIES
 	]
 	
 	return [token]

@@ -1,3 +1,4 @@
+# fighter.gd
 class_name Fighter extends Node2D
 
 signal action_resolved(turn_taker: Fighter)
@@ -11,7 +12,6 @@ signal statuses_applied(proc_type: Status.ProcType)
 @onready var health_bar: HealthBar = combatant.health_bar
 @onready var armor_sprite: Sprite2D = combatant.armor_sprite
 @onready var armor_label: Label = combatant.armor_label
-#@onready var status_bar: IconViewPanel = combatant.status_bar
 @onready var intent_container: IntentContainer = combatant.intent_container
 @onready var area_left: CombatantAreaLeft = combatant.area_left
 @onready var damage_number_scn: PackedScene = preload("res://scenes/ui/damage_number.tscn")
@@ -28,12 +28,9 @@ var has_anchor_position: bool = false
 func _ready() -> void:
 	combatant.target_area_area_entered.connect(_on_target_area_area_entered)
 	combatant.target_area_area_exited.connect(_on_target_area_area_exited)
-	#Events.aura_changed.connect(on_aura_changed)
-	#Events.aura_removed.connect(_on_aura_removed)
 	Events.battle_reset.connect(_battle_reset)
 	combatant.statuses_applied.connect(_on_combatant_statuses_applied)
 	modifier_system.modifier_changed.connect(_on_modifier_changed)
-	#combatant.status_grid.modifier_tokens_changed.connect(modifier_system.mark_dirty)
 	target_area.combatant = self
 	combatant.fighter = self
 
@@ -111,7 +108,9 @@ func add_armor(amount: int):
 ##for future: death must cancel pending action resolution
 func die():
 	combatant_data.alive = false
-	battle_group.battle_scene._on_modifier_tokens_changed(Modifier.Type.COMBAT_MODIFIERS)
+	
+	combatant.status_grid.end_non_self_statuses()
+	
 	battle_group.update_combatant_position()
 	var death_tween: Tween = create_tween()
 	death_tween.tween_property(character_sprite, "modulate", Color.BLACK, 0.3)

@@ -1,3 +1,4 @@
+# status.gd
 class_name Status extends Resource
 
 signal status_applied(status: Status)
