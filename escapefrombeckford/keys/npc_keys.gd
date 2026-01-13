@@ -11,7 +11,8 @@ const PROJECTILE_SCENE := "projectile_scene"
 const STATUS_SCENE := "status_scene"
 const STATUS_INTENSITY := "status_intensity"
 const STATUS_DURATION := "status_duration"
-const STATUS_STACK_TYPE := "status_stack_type"
+#const STATUS_STACK_TYPE := "status_stack_type"
+#const STATUS_EXPIRATION_POLICY := "expiration_policy"
 
 # AI state
 const ATTACK_SPREE := "attack_spree"

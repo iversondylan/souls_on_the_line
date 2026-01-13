@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="MarkedStatus" load_steps=3 format=3 uid="uid://bh05r8var8mj3"]
+[gd_resource type="Resource" script_class="PinpointStatus" load_steps=3 format=3 uid="uid://bh05r8var8mj3"]
 
 [ext_resource type="Texture2D" uid="uid://dm3sd42a0p6ao" path="res://assets/sprites/assorted/pinpoint.PNG" id="1_6hpfl"]
 [ext_resource type="Script" uid="uid://cy0q0jk4gcgm1" path="res://statuses/pinpoint.gd" id="2_6hpfl"]
@@ -7,7 +7,7 @@
 script = ExtResource("2_6hpfl")
 id = "pinpoint"
 stack_type = 2
-can_expire = true
+expiration_policy = 0
 duration = 1
 icon = ExtResource("1_6hpfl")
 tooltip = "TO DO"

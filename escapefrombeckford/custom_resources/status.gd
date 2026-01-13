@@ -6,12 +6,17 @@ signal status_changed()
 
 enum ProcType {START_OF_TURN, END_OF_TURN, EVENT_BASED}
 enum StackType {NONE, INTENSITY, DURATION}
+enum ExpirationPolicy {
+	DURATION,        # duration ticks down
+	GROUP_TURN_END,  # expires at end of group turn
+	EVENT_OR_NEVER,  # expires when something external says so or permanent
+}
 
 @export_group("Status Data")
 @export var id: String
 @export var proc_type: ProcType
 @export var stack_type: StackType
-@export var can_expire: bool
+@export var expiration_policy: ExpirationPolicy = ExpirationPolicy.EVENT_OR_NEVER
 @export var duration: int : set = _set_duration
 @export var intensity: int : set = _set_intensity
 
@@ -49,7 +54,7 @@ func _set_intensity(new_intensity: int) -> void:
 	status_changed.emit()
 
 func is_expired() -> bool:
-	return can_expire and duration <= 0
+	return expiration_policy == ExpirationPolicy.DURATION and duration <= 0
 
 func affects_others() -> bool:
 	return false

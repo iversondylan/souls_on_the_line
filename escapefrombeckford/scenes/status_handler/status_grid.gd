@@ -60,10 +60,10 @@ func add_status(status: Status) -> void:
 		mark_dirty_for_status(status)
 		_update_visuals()
 		return
-	if !status.can_expire and !stackable:
+	if status.expiration_policy != Status.ExpirationPolicy.DURATION and !stackable:
 		return
 	
-	if status.can_expire and status.stack_type == Status.StackType.DURATION:
+	if status.expiration_policy == Status.ExpirationPolicy.DURATION and status.stack_type == Status.StackType.DURATION:
 		_get_status(status.id).duration += status.duration
 		mark_dirty_for_status(status)
 		_update_visuals()
@@ -103,7 +103,7 @@ func _get_all_statuses() -> Array[Status]:
 	return statuses
 
 func _on_status_applied(status: Status) -> void:
-	if status.can_expire:
+	if status.expiration_policy == Status.ExpirationPolicy.DURATION:
 		status.duration -= 1
 	_remove_expired_statuses()
 	_update_visuals()
@@ -173,7 +173,7 @@ func _force_expire_status(status_display: StatusDisplay) -> void:
 		return
 
 	# Force it into an expired state
-	if status.can_expire:
+	if status.expiration_policy == Status.ExpirationPolicy.DURATION:
 		status.duration = 0
 	else:
 		# Non-expiring but non-self (e.g. aura-style permanent effects)

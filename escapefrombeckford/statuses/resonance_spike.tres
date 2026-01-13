@@ -7,7 +7,7 @@
 script = ExtResource("1_d6qqx")
 id = "resonance_spike"
 stack_type = 1
-can_expire = true
+expiration_policy = 0
 duration = 1
 icon = ExtResource("1_g4yb5")
 metadata/_custom_type_script = "uid://byl8kucecx6c0"
