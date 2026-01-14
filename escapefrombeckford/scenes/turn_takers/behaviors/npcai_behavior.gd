@@ -212,6 +212,12 @@ func _on_exit() -> void:
 	plan_next_intent()
 	_refresh_intent_display_only()
 
+#func _on_group_turn_start() -> void:
+	#pass
+
+func _on_group_turn_end() -> void:
+	pass
+
 # -------------------------------------------------------------------
 # ACTION UTILITIES
 # -------------------------------------------------------------------

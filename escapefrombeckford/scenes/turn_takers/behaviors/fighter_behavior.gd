@@ -29,6 +29,12 @@ func _on_exit() -> void:
 func _on_do_turn() -> void:
 	pass
 
+func _on_group_turn_start() -> void:
+	pass
+
+func _on_group_turn_end() -> void:
+	pass
+
 func _on_hand_drawn() -> void:
 	pass
 

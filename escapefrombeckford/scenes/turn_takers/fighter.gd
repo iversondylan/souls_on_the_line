@@ -67,6 +67,16 @@ func exit() -> void:
 		if child is FighterBehavior:
 			child._on_exit()
 
+func group_turn_start() -> void:
+	for child in get_children():
+		if child is FighterBehavior:
+			child._on_group_turn_start()
+
+func group_turn_end() -> void:
+	for child in get_children():
+		if child is FighterBehavior:
+			child._on_group_turn_end()
+
 func set_anchor_position(_position: Vector2, animate: bool) -> void:
 	anchor_position = _position
 	if animate and has_anchor_position:
