@@ -6,8 +6,9 @@
 [resource]
 script = ExtResource("1_d6qqx")
 id = "resonance_spike"
+proc_type = 2
 stack_type = 1
-expiration_policy = 0
-duration = 1
+expiration_policy = 2
+intensity = 3
 icon = ExtResource("1_g4yb5")
 metadata/_custom_type_script = "uid://byl8kucecx6c0"

@@ -1,10 +1,11 @@
-[gd_resource type="Resource" script_class="NPCAction" load_steps=13 format=3 uid="uid://0xsyxblnoxoc"]
+[gd_resource type="Resource" script_class="NPCAction" load_steps=14 format=3 uid="uid://0xsyxblnoxoc"]
 
 [ext_resource type="Script" uid="uid://3jde7uhq2yho" path="res://custom_resources/npc_effect_package.gd" id="1_d445l"]
 [ext_resource type="Resource" uid="uid://clsg7idcvlho1" path="res://fighters/BacklineGreenhorn/greenhorn_attack_pkg.tres" id="2_6e1wr"]
 [ext_resource type="Script" uid="uid://q408gy2b4q6a" path="res://custom_resources/performable_model.gd" id="2_7f0vk"]
 [ext_resource type="Texture2D" uid="uid://dp3uhdoaut1lx" path="res://assets/sprites/assorted/fireball.png" id="3_0ngfj"]
 [ext_resource type="Script" uid="uid://bcih413oy6v73" path="res://custom_resources/npc_action.gd" id="3_so6ii"]
+[ext_resource type="Script" uid="uid://dtwuyctovqk5r" path="res://custom_resources/intent_lifecycle_model.gd" id="4_0ngfj"]
 [ext_resource type="Script" uid="uid://cuj4qvyx6dedj" path="res://custom_resources/state_model.gd" id="4_8ks22"]
 [ext_resource type="Script" uid="uid://cgyx5yvchgfsk" path="res://npc_actions/text/attack_intent_text_model.gd" id="4_vwlju"]
 [ext_resource type="Script" uid="uid://dn2f2q20b4rcx" path="res://npc_actions/performable/not_in_front_performable_model.gd" id="6_1y0nc"]

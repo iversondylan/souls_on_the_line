@@ -1,9 +1,10 @@
-[gd_resource type="Resource" script_class="NPCAction" load_steps=11 format=3 uid="uid://c37usc0kpgf2s"]
+[gd_resource type="Resource" script_class="NPCAction" load_steps=12 format=3 uid="uid://c37usc0kpgf2s"]
 
 [ext_resource type="Script" uid="uid://3jde7uhq2yho" path="res://custom_resources/npc_effect_package.gd" id="1_vk75x"]
 [ext_resource type="Resource" uid="uid://dhh24wmkgmsu8" path="res://fighters/PowerBlocker/shaky_attack_pkg.tres" id="2_nw5jf"]
 [ext_resource type="Texture2D" uid="uid://c54dbo8n7r3g" path="res://assets/sprites/assorted/attack.PNG" id="3_jar83"]
 [ext_resource type="Script" uid="uid://cgyx5yvchgfsk" path="res://npc_actions/text/attack_intent_text_model.gd" id="4_8885v"]
+[ext_resource type="Script" uid="uid://dtwuyctovqk5r" path="res://custom_resources/intent_lifecycle_model.gd" id="4_nw5jf"]
 [ext_resource type="Script" uid="uid://q408gy2b4q6a" path="res://custom_resources/performable_model.gd" id="5_kr3g8"]
 [ext_resource type="Script" uid="uid://c6ct26bt0re1k" path="res://npc_actions/performable/took_heavy_damage_performable_model.gd" id="6_hu3ud"]
 [ext_resource type="Script" uid="uid://bcih413oy6v73" path="res://custom_resources/npc_action.gd" id="7_n6odd"]

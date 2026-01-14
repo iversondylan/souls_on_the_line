@@ -131,12 +131,12 @@ func _on_status_changed(status: Status) -> void:
 func _remove_expired_statuses() -> void:
 	#print("status_grid.gd _remove_expired_statuses")
 	var to_remove: Array[StatusDisplay] = []
-
+	
 	for status_display: StatusDisplay in get_children():
 		var status := status_display.status
 		if status and status.is_expired():
 			to_remove.append(status_display)
-
+	
 	for status_display in to_remove:
 		_remove_status_display(status_display)
 
@@ -153,6 +153,22 @@ func _remove_status_display(status_display: StatusDisplay) -> void:
 				modifier_tokens_changed.emit(mod_type)
 	remove_child(status_display)
 	status_display.queue_free()
+
+## NOTE:
+## StatusGrid enforces uniqueness by (status.id, status_parent).
+## Multiple fighters may emit the same aura, but a single fighter
+## must not apply the same primary status to itself more than once.
+## Intent-lifecycle statuses rely on this contract.
+func remove_status_by_id(id: String) -> void:
+	if id == "":
+		return
+
+	for status_display: StatusDisplay in get_children():
+		if status_display.status and status_display.status.id == id:
+			_remove_status_display(status_display)
+			_update_visuals()
+			return
+
 
 func end_non_self_statuses() -> void:
 	var to_end: Array[StatusDisplay] = []
@@ -171,7 +187,7 @@ func _force_expire_status(status_display: StatusDisplay) -> void:
 	var status := status_display.status
 	if !status:
 		return
-
+	
 	# Force it into an expired state
 	if status.expiration_policy == Status.ExpirationPolicy.DURATION:
 		status.duration = 0
@@ -182,14 +198,14 @@ func _force_expire_status(status_display: StatusDisplay) -> void:
 
 func clear_group_turn_end_statuses() -> void:
 	var to_remove: Array[StatusDisplay] = []
-
+	
 	for status_display: StatusDisplay in get_children():
 		var status := status_display.status
 		if !status:
 			continue
 		if status.expiration_policy == Status.ExpirationPolicy.GROUP_TURN_END:
 			to_remove.append(status_display)
-
+	
 	for status_display in to_remove:
 		_remove_status_display(status_display)
 
@@ -198,7 +214,7 @@ func clear_group_turn_end_statuses() -> void:
 
 func clear_group_turn_start_statuses() -> void:
 	var to_remove: Array[StatusDisplay] = []
-
+	
 	for status_display: StatusDisplay in get_children():
 		var status := status_display.status
 		if !status:
@@ -206,8 +222,8 @@ func clear_group_turn_start_statuses() -> void:
 		# If you later add GROUP_TURN_START, this is where it goes
 		if status.expiration_policy == Status.ExpirationPolicy.GROUP_TURN_START:
 			to_remove.append(status_display)
-
+	
 	for status_display in to_remove:
 		_remove_status_display(status_display)
-
+	
 	_update_visuals()
