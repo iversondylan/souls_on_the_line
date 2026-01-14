@@ -15,7 +15,7 @@ func activate(ctx: CardActionContext) -> bool:
 	var amplify_status := AMPLIFY_STATUS.duplicate()
 	amplify_status.stack_type = Status.StackType.DURATION
 	amplify_status.duration = amplify_duration
-	amplify_status.can_expire = true
+	amplify_status.expiration_policy = Status.ExpirationPolicy.DURATION
 
 	status_effect.status = amplify_status
 	status_effect.execute()

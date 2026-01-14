@@ -267,6 +267,7 @@ func _on_do_turn() -> void:
 
 
 func _start_action(action: NPCAction, ctx: NPCAIContext) -> void:
+	ctx.combatant.intent_container.clear_display()
 	current_action = action
 	action_ctx = ctx
 	remaining_effect_packages = action.effect_packages.duplicate()
@@ -317,7 +318,7 @@ func _on_sequence_done() -> void:
 
 func _start_impact_delay() -> void:
 	var fighter: Fighter = get_parent()
-	fighter.intent_container.clear_display()
+	#fighter.intent_container.clear_display()
 	get_tree().create_timer(BASE_IMPACT_DELAY/2.0, false).timeout.connect(_finish_action)
 	
 

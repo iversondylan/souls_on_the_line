@@ -13,6 +13,7 @@ func activate(ctx: CardActionContext) -> bool:
 	status_effect.targets = targets
 
 	var pinpoint_status := PINPOINT_STATUS.duplicate()
+	pinpoint_status.expiration_policy = Status.ExpirationPolicy.DURATION
 	pinpoint_status.duration = duration
 
 	status_effect.status = pinpoint_status

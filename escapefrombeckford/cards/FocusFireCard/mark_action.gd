@@ -13,6 +13,7 @@ func activate(ctx: CardActionContext) -> bool:
 	status_effect.targets = targets
 
 	var marked_status := MARKED_STATUS.duplicate()
+	marked_status.expiration_policy = Status.ExpirationPolicy.DURATION
 	marked_status.duration = duration
 
 	status_effect.status = marked_status

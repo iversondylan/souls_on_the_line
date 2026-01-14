@@ -14,7 +14,7 @@ func execute(ctx: NPCAIContext, on_done: Callable) -> void:
 		return
 	
 	# Duplicate to never mutate the .tres
-	var status := status_res.duplicate()
+	var status : Status = status_res.duplicate()
 	
 	# Optional authored parameters
 	if ctx.params.has(NPCKeys.STATUS_INTENSITY):
@@ -23,8 +23,11 @@ func execute(ctx: NPCAIContext, on_done: Callable) -> void:
 	if ctx.params.has(NPCKeys.STATUS_DURATION):
 		status.duration = int(ctx.params[NPCKeys.STATUS_DURATION])
 	
-	if ctx.params.has(NPCKeys.STATUS_STACK_TYPE):
-		status.stack_type = ctx.params[NPCKeys.STATUS_STACK_TYPE]
+	#if ctx.params.has(NPCKeys.STATUS_STACK_TYPE):
+		#status.stack_type = ctx.params[NPCKeys.STATUS_STACK_TYPE]
+	#
+	#if ctx.params.has(NPCKeys.STATUS_EXPIRATION_POLICY):
+		#status.expiration_policy = ctx.params[NPCKeys.STATUS_STACK_TYPE]
 	
 	# Apply
 	var effect := StatusEffect.new()
