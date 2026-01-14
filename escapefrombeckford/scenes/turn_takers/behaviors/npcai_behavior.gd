@@ -61,18 +61,23 @@ func _on_stats_changed() -> void:
 	if !fighter.is_alive() or !ai_profile:
 		return
 	
-	var state = get_meta("ai_state")
-	if state and state.has(HP_AT_TURN_START):
-		var cur_hp : int = fighter.combatant_data.health
-		var delta : int = state[HP_AT_TURN_START] - cur_hp
-		if delta > 0:
-			state[DMG_SINCE_LAST_TURN] = delta
+	#var state = get_meta("ai_state")
+	#if state and state.has(HP_AT_TURN_START):
+		#var cur_hp : int = fighter.combatant_data.health
+		#var delta : int = state[HP_AT_TURN_START] - cur_hp
+		#if delta > 0:
+			#state[DMG_SINCE_LAST_TURN] = delta
+#
+	#var ctx := _make_context()
+	#var cond_idx := _get_first_conditional_idx(ctx)
+	#if cond_idx != -1:
+		## add hook here?
+		#ctx.state[KEY_PLANNED_IDX] = cond_idx
 
-	var ctx := _make_context()
-	var cond_idx := _get_first_conditional_idx(ctx)
-	if cond_idx != -1:
-		ctx.state[KEY_PLANNED_IDX] = cond_idx
+	plan_next_intent(true)   # hooks allowed here
+	_refresh_intent_display_only()
 
+	
 	_refresh_intent_display_only()
 
 
@@ -119,24 +124,60 @@ func _roll_chance_idx(ctx: NPCAIContext) -> int:
 
 	return pool[-1]
 
-func plan_next_intent() -> void:
+func plan_next_intent(allow_hooks: bool = true) -> void:
 	var fighter: Fighter = get_parent()
 	if !fighter.is_alive() or !ai_profile:
 		return
 
 	var ctx := _make_context()
+	var state := ctx.state
+
+	var prev_idx: int = state.get(KEY_PLANNED_IDX, -1)
+	var new_idx: int = -1
 
 	# 1) CONDITIONAL actions have priority
 	for i in range(ai_profile.actions.size()):
 		var action := ai_profile.actions[i]
-		if action.choice_type == NPCAction.ChoiceType.CONDITIONAL:
-			if _is_action_performable(action, ctx):
-				ctx.state[KEY_PLANNED_IDX] = i
-				return
+		if action.choice_type != NPCAction.ChoiceType.CONDITIONAL:
+			continue
+		if _is_action_performable(action, ctx):
+			new_idx = i
+			break
 
 	# 2) Otherwise, roll among CHANCE actions
-	var chance_idx := _roll_chance_idx(ctx)
-	ctx.state[KEY_PLANNED_IDX] = chance_idx
+	if new_idx == -1:
+		new_idx = _roll_chance_idx(ctx)
+
+	state[KEY_PLANNED_IDX] = new_idx
+
+	# 3) Fire hook only when explicitly allowed
+	if allow_hooks and prev_idx != new_idx:
+		_on_planned_intent_changed(prev_idx, new_idx)
+
+
+func _on_planned_intent_changed(prev_idx: int, new_idx: int) -> void:
+	# Called ONLY during mid-turn replanning (e.g. posture break, heavy damage)
+
+	var prev_action := _get_action_by_idx(prev_idx)
+	var new_action := _get_action_by_idx(new_idx)
+
+	# Defensive: if nothing meaningful changed, do nothing
+	if prev_action == new_action:
+		return
+	
+	
+	### THESE HOOKS NEED TO BE FIXED TO WORK WITH INTENT LIFECYCLE MODELS
+	## ---- Intent ended hooks ----
+	#if prev_action:
+		#for model in prev_action.on_intent_ended_models:
+			#if model:
+				#model.on_intent_ended(_make_context())
+#
+	## ---- Intent chosen hooks ----
+	#if new_action:
+		#for model in new_action.on_intent_chosen_models:
+			#if model:
+				#model.on_intent_chosen(_make_context())
 
 
 # -------------------------------------------------------------------
@@ -200,7 +241,6 @@ func _change_params_only(action: NPCAction, ctx: NPCAIContext) -> void:
 func _on_enter() -> void:
 	var fighter: Fighter = get_parent()
 	var state : Dictionary = get_meta("ai_state")
-	#print("_on_enter() name: ", get_parent().name, " state: ", state)
 	state[HP_AT_TURN_START] = fighter.combatant_data.health
 	state[DMG_SINCE_LAST_TURN] = 0
 	_refresh_intent_display_only()
@@ -209,7 +249,7 @@ func _on_enter() -> void:
 func _on_exit() -> void:
 	var ctx := _make_context()
 	ctx.state["is_acting"] = false
-	plan_next_intent()
+	plan_next_intent(false)
 	_refresh_intent_display_only()
 
 #func _on_group_turn_start() -> void:
@@ -317,7 +357,7 @@ func _on_sequence_done() -> void:
 	_next_effect_package()
 
 func _start_impact_delay() -> void:
-	var fighter: Fighter = get_parent()
+	#var fighter: Fighter = get_parent()
 	#fighter.intent_container.clear_display()
 	get_tree().create_timer(BASE_IMPACT_DELAY/2.0, false).timeout.connect(_finish_action)
 	

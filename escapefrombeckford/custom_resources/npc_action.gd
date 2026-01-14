@@ -10,6 +10,7 @@ enum ChoiceType { CONDITIONAL, CHANCE }
 @export var chance_weight: float = 1.0
 @export var performable_models: Array[PerformableModel]
 @export var state_models: Array[StateModel]
+@export var intent_lifecycle_models: Array[IntentLifecycleModel]
 
 @export_group("Intent")
 @export var intent_icon: Texture2D

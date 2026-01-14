@@ -8,6 +8,7 @@ enum ProcType {START_OF_TURN, END_OF_TURN, EVENT_BASED}
 enum StackType {NONE, INTENSITY, DURATION}
 enum ExpirationPolicy {
 	DURATION,        # duration ticks down
+	GROUP_TURN_START,  # expires at start of group turn
 	GROUP_TURN_END,  # expires at end of group turn
 	EVENT_OR_NEVER,  # expires when something external says so or permanent
 }

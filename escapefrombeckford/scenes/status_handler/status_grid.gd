@@ -180,10 +180,34 @@ func _force_expire_status(status_display: StatusDisplay) -> void:
 		# We still want proper removal + dirtying
 		_remove_status_display(status_display)
 
-#func _status_affects_others(status: Status) -> bool:
-	#if !status.contributes_modifier():
-		#return false
-	#for token in status.get_modifier_tokens():
-		#if token.scope != ModifierToken.Scope.SELF:
-			#return true
-	#return false
+func clear_group_turn_end_statuses() -> void:
+	var to_remove: Array[StatusDisplay] = []
+
+	for status_display: StatusDisplay in get_children():
+		var status := status_display.status
+		if !status:
+			continue
+		if status.expiration_policy == Status.ExpirationPolicy.GROUP_TURN_END:
+			to_remove.append(status_display)
+
+	for status_display in to_remove:
+		_remove_status_display(status_display)
+
+	_update_visuals()
+
+
+func clear_group_turn_start_statuses() -> void:
+	var to_remove: Array[StatusDisplay] = []
+
+	for status_display: StatusDisplay in get_children():
+		var status := status_display.status
+		if !status:
+			continue
+		# If you later add GROUP_TURN_START, this is where it goes
+		if status.expiration_policy == Status.ExpirationPolicy.GROUP_TURN_START:
+			to_remove.append(status_display)
+
+	for status_display in to_remove:
+		_remove_status_display(status_display)
+
+	_update_visuals()
