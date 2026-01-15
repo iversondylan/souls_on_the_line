@@ -60,5 +60,10 @@ func is_expired() -> bool:
 func affects_others() -> bool:
 	return false
 
+func on_removed() -> void:
+	pass
+
+func affects_intent_legality() -> bool:
+	return false
 #func _on_status_changed(target: Node) -> void:
 	#print("status.gd _on_status_changed(): virtual function called")

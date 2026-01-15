@@ -5,7 +5,7 @@
 [ext_resource type="Texture2D" uid="uid://op74eesa6fxw" path="res://assets/sprites/assorted/buff.PNG" id="4_b3a1h"]
 [ext_resource type="Script" uid="uid://bqd5160umo0sl" path="res://npc_actions/text/block_intent_text_model.gd" id="5_1t84l"]
 [ext_resource type="Script" uid="uid://dtwuyctovqk5r" path="res://custom_resources/intent_lifecycle_model.gd" id="5_dry04"]
-[ext_resource type="Script" uid="uid://dbd3fjfn7d3ah" path="res://npc_actions/intent_lifecycle/status_during_intent_lifecycle_model.gd" id="5_ujduo"]
+[ext_resource type="Script" uid="uid://dbd3fjfn7d3ah" path="res://npc_actions/intent_lifecycle/status_from_opp_turn_model.gd" id="5_ujduo"]
 [ext_resource type="Resource" uid="uid://bfon8dtpvipfp" path="res://statuses/resonance_spike.tres" id="6_usgkw"]
 [ext_resource type="Script" uid="uid://q408gy2b4q6a" path="res://custom_resources/performable_model.gd" id="6_xpi5l"]
 [ext_resource type="Script" uid="uid://bcih413oy6v73" path="res://custom_resources/npc_action.gd" id="7_d6afi"]

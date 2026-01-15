@@ -2,6 +2,7 @@ class_name StatusGrid extends GridContainer
 
 signal statuses_applied(proc_type: Status.ProcType)
 signal modifier_tokens_changed(type: Modifier.Type)
+signal intent_conditions_changed()
 
 const STATUS_APPLY_INTERVAL := 0.25
 const STATUS_DISPLAY_SCN = preload("res://scenes/status_handler/status_display.tscn")
@@ -45,40 +46,92 @@ func get_modifier_tokens() -> Array[ModifierToken]:
 			tokens.append_array(status.get_modifier_tokens())
 	return tokens
 
+
+#func add_status(status: Status) -> void:
+	#
+	#var stackable := status.stack_type != Status.StackType.NONE
+	#
+	#if !_has_status(status.id):
+		#var new_status_display := STATUS_DISPLAY_SCN.instantiate() as StatusDisplay
+		#add_child(new_status_display)
+		#new_status_display.status = status
+		#new_status_display.status.status_changed.connect(_on_status_changed.bind(new_status_display.status))
+		#new_status_display.status_parent = status_parent
+		#new_status_display.status.status_applied.connect(_on_status_applied)
+		#new_status_display.status.init_status(status_parent)
+		#mark_dirty_for_status(status)
+		#_update_visuals()
+		#return
+	#if status.expiration_policy != Status.ExpirationPolicy.DURATION and !stackable:
+		#return
+	#
+	#if status.expiration_policy == Status.ExpirationPolicy.DURATION and status.stack_type == Status.StackType.DURATION:
+		#_get_status(status.id).duration += status.duration
+		#mark_dirty_for_status(status)
+		#_update_visuals()
+		#return
+	#
+	## If it's intensity-stackable, intensify it
+	#if status.stack_type == Status.StackType.INTENSITY:
+		#_get_status(status.id).intensity += status.intensity
+		#mark_dirty_for_status(status)
+		#_update_visuals()
+
 func add_status(status: Status) -> void:
-	
-	var stackable := status.stack_type != Status.StackType.NONE
-	
+	if !status:
+		return
+
+	# If status does not exist yet → just add it
 	if !_has_status(status.id):
-		var new_status_display := STATUS_DISPLAY_SCN.instantiate() as StatusDisplay
-		add_child(new_status_display)
-		new_status_display.status = status
-		new_status_display.status.status_changed.connect(_on_status_changed.bind(new_status_display.status))
-		new_status_display.status_parent = status_parent
-		new_status_display.status.status_applied.connect(_on_status_applied)
-		new_status_display.status.init_status(status_parent)
-		mark_dirty_for_status(status)
-		_update_visuals()
+		_add_new_status(status)
 		return
-	if status.expiration_policy != Status.ExpirationPolicy.DURATION and !stackable:
+
+	var existing := _get_status(status.id)
+	if !existing:
 		return
+
+	match status.stack_type:
+		Status.StackType.NONE:
+			# Explicit replacement semantics
+			remove_status_by_id(status.id)
+			_add_new_status(status)
+			return
+
+		Status.StackType.DURATION:
+			if status.expiration_policy == Status.ExpirationPolicy.DURATION:
+				existing.duration += status.duration
+				mark_dirty_for_status(existing)
+				_update_visuals()
+			return
+
+		Status.StackType.INTENSITY:
+			existing.intensity += status.intensity
+			mark_dirty_for_status(existing)
+			_update_visuals()
+			return
+	if status.affects_intent_legality():
+		intent_conditions_changed.emit()
+
+func _add_new_status(status: Status) -> void:
+	var new_status_display := STATUS_DISPLAY_SCN.instantiate() as StatusDisplay
+	add_child(new_status_display)
 	
-	if status.expiration_policy == Status.ExpirationPolicy.DURATION and status.stack_type == Status.StackType.DURATION:
-		_get_status(status.id).duration += status.duration
-		mark_dirty_for_status(status)
-		_update_visuals()
-		return
+	new_status_display.status = status
+	new_status_display.status_parent = status_parent
 	
-	# If it's intensity-stackable, intensify it
-	if status.stack_type == Status.StackType.INTENSITY:
-		_get_status(status.id).intensity += status.intensity
-		mark_dirty_for_status(status)
-		_update_visuals()
+	status.status_changed.connect(_on_status_changed.bind(status))
+	status.status_applied.connect(_on_status_applied)
+	
+	status.init_status(status_parent)
+	
+	mark_dirty_for_status(status)
+	_update_visuals()
+
 
 func mark_dirty_for_status(status: Status) -> void:
 	if !status.contributes_modifier():
 		return
-
+	
 	for mod_type in status.get_contributed_modifier_types():
 		status_parent.modifier_system.mark_dirty(mod_type)
 		if status.affects_others():
@@ -143,7 +196,7 @@ func _remove_expired_statuses() -> void:
 func _remove_status_display(status_display: StatusDisplay) -> void:
 	#print("status_grid.gd _remove_status_display")
 	var status := status_display.status
-	
+	status.on_removed()
 	remove_child(status_display)
 	status_display.queue_free()
 	
@@ -154,7 +207,9 @@ func _remove_status_display(status_display: StatusDisplay) -> void:
 			if status.affects_others():
 				#print("and emitting modifier_tokens_changed")
 				modifier_tokens_changed.emit(mod_type)
-	
+	if status.affects_intent_legality():
+		intent_conditions_changed.emit()
+
 
 ## NOTE:
 ## StatusGrid enforces uniqueness by (status.id, status_parent).
@@ -164,7 +219,7 @@ func _remove_status_display(status_display: StatusDisplay) -> void:
 func remove_status_by_id(id: String) -> void:
 	if id == "":
 		return
-
+	
 	for status_display: StatusDisplay in get_children():
 		if status_display.status and status_display.status.id == id:
 			_remove_status_display(status_display)

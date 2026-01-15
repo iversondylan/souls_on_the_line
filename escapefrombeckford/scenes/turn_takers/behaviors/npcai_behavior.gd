@@ -50,6 +50,9 @@ func _on_combatant_data_set(_data: CombatantData) -> void:
 
 	if not _data.combatant_data_changed.is_connected(_on_stats_changed):
 		_data.combatant_data_changed.connect(_on_stats_changed)
+	var grid : StatusGrid = get_parent().combatant.status_grid
+	if grid and not grid.intent_conditions_changed.is_connected(_on_intent_conditions_changed):
+		grid.intent_conditions_changed.connect(_on_intent_conditions_changed)
 
 
 # -------------------------------------------------------------------
@@ -68,6 +71,11 @@ func _on_stats_changed() -> void:
 		if delta > 0:
 			state[DMG_SINCE_LAST_TURN] = delta
 
+	plan_next_intent(true)
+	_refresh_intent_display_only()
+
+func _on_intent_conditions_changed() -> void:
+	# Mid-cycle replanning allowed
 	plan_next_intent(true)
 	_refresh_intent_display_only()
 
@@ -202,7 +210,7 @@ func _on_opposing_group_turn_start() -> void:
 
 	# Commit intent-time effects (telegraphs, posture, channeling, etc.)
 	for model in action.intent_lifecycle_models:
-		model.on_intent_chosen(ctx)
+		model.on_opposing_group_start(ctx)
 
 	# Mark as committed so it won't reapply mid-cycle
 	state["telegraph_committed"] = true
@@ -336,6 +344,10 @@ func _on_do_turn() -> void:
 func _start_action(action: NPCAction, ctx: NPCAIContext) -> void:
 	ctx.combatant.intent_container.clear_display()
 	current_action = action
+	
+	for model: IntentLifecycleModel in current_action.intent_lifecycle_models:
+		model.on_ability_started(ctx)
+	
 	action_ctx = ctx
 	remaining_effect_packages = action.effect_packages.duplicate()
 

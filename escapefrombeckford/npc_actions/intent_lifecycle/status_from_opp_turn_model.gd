@@ -1,5 +1,5 @@
-# status_during_intent_lifecycle_model.gd
-class_name StatusDuringIntentLifecycleModel
+# status_from_opp_turn_model.gd
+class_name StatusFromOppTurnModel
 extends IntentLifecycleModel
 
 ## The status to apply while this intent is active.
@@ -7,7 +7,7 @@ extends IntentLifecycleModel
 ## ->don't apply the same status to the same fighter more than once
 @export var status: Status
 
-func on_intent_chosen(ctx: NPCAIContext) -> void:
+func on_opposing_group_start(ctx: NPCAIContext) -> void:
 	if !ctx or !ctx.combatant or !status:
 		return
 

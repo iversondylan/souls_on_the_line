@@ -19,3 +19,6 @@ func on_opposing_group_start(_ctx: NPCAIContext) -> void:
 
 func on_my_group_end(_ctx: NPCAIContext) -> void:
 	pass
+
+func on_ability_started(_ctx: NPCAIContext) -> void:
+	pass
