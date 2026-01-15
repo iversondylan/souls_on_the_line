@@ -20,6 +20,35 @@ func _set_deck(_deck: Deck) -> void:
 	for group: BattleGroup in groups:
 		group.deck = deck
 
+func friendly_group_turn_start() -> void:
+	for group: BattleGroup in groups:
+		if group is BattleGroupFriendly:
+			group.my_turn_start()
+		elif group is BattleGroupEnemy:
+			group.opposing_turn_start()
+
+func friendly_group_turn_end() -> void:
+	for group: BattleGroup in groups:
+		if group is BattleGroupFriendly:
+			group.my_turn_end()
+		elif group is BattleGroupEnemy:
+			group.opposing_turn_end()
+
+
+func enemy_group_turn_start() -> void:
+	for group: BattleGroup in groups:
+		if group is BattleGroupFriendly:
+			group.opposing_turn_start()
+		elif group is BattleGroupEnemy:
+			group.my_turn_start()
+
+func enemy_group_turn_end() -> void:
+	for group: BattleGroup in groups:
+		if group is BattleGroupFriendly:
+			group.opposing_turn_end()
+		elif group is BattleGroupEnemy:
+			group.my_turn_end()
+
 func get_index_of_parent_group(fighter: Fighter) -> int:
 	for i in range(groups.size()):
 		if groups[i].get_combatants().has(fighter):
@@ -38,7 +67,7 @@ func kill_enemies() -> void:
 	var fighters := get_enemies()
 	for fighter: Fighter in fighters:
 		groups[1].combatant_died(fighter)
-		
+
 
 func clear_combatants():
 	for group in groups:
@@ -304,3 +333,4 @@ func _on_modifier_tokens_changed(mod_type: Modifier.Type) -> void:
 	for fighter in get_all_combatants():
 		if fighter.is_alive():
 			fighter.modifier_system.mark_dirty(mod_type)
+			#fighter._on_modifier_changed()

@@ -42,6 +42,7 @@ func get_modifier_tokens() -> Array[ModifierToken]:
 			print("status_grid.gd an expired status is being skipped")
 			continue
 		if status and status.contributes_modifier():
+			print("status_grid.gd get_modifier_tokens ", status_parent.name, " appending tokens for ", status.id)
 			tokens.append_array(status.get_modifier_tokens())
 	return tokens
 
@@ -144,6 +145,9 @@ func _remove_status_display(status_display: StatusDisplay) -> void:
 	#print("status_grid.gd _remove_status_display")
 	var status := status_display.status
 	
+	remove_child(status_display)
+	status_display.queue_free()
+	
 	if status.contributes_modifier():
 		for mod_type in status.get_contributed_modifier_types():
 			#print("contributing mod type: %s" % Modifier.Type.keys()[mod_type])
@@ -151,8 +155,7 @@ func _remove_status_display(status_display: StatusDisplay) -> void:
 			if status.affects_others():
 				#print("and emitting modifier_tokens_changed")
 				modifier_tokens_changed.emit(mod_type)
-	remove_child(status_display)
-	status_display.queue_free()
+	
 
 ## NOTE:
 ## StatusGrid enforces uniqueness by (status.id, status_parent).

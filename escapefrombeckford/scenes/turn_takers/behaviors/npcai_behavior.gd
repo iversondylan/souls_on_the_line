@@ -171,11 +171,6 @@ func plan_next_intent(allow_hooks: bool = false) -> void:
 	# ---- Commit new intent ----
 	state[KEY_PLANNED_IDX] = new_idx
 
-	# ---- Always apply intent-time effects ----
-	var new_action := _get_action_by_idx(new_idx)
-	if new_action:
-		for model in new_action.intent_lifecycle_models:
-			model.on_intent_chosen(ctx)
 
 
 
@@ -185,7 +180,37 @@ func _on_planned_intent_changed(prev_idx: int, _new_idx: int, ctx: NPCAIContext)
 		for model in prev_action.intent_lifecycle_models:
 			model.on_intent_canceled(ctx)
 
+func _on_opposing_group_turn_start() -> void:
+	var ctx := _make_context()
+	var state : Dictionary = ctx.state
 
+	# Defensive: no planning data
+	if !state.has(KEY_PLANNED_IDX):
+		return
+
+	# Prevent double-commit in the same cycle
+	if state.get("telegraph_committed", false):
+		return
+
+	var idx : int = int(state.get(KEY_PLANNED_IDX, -1))
+	if idx < 0:
+		return
+
+	var action := _get_action_by_idx(idx)
+	if !action:
+		return
+
+	# Commit intent-time effects (telegraphs, posture, channeling, etc.)
+	for model in action.intent_lifecycle_models:
+		model.on_intent_chosen(ctx)
+
+	# Mark as committed so it won't reapply mid-cycle
+	state["telegraph_committed"] = true
+
+func _on_group_turn_end() -> void:
+	var state : Dictionary = get_meta("ai_state")
+	if state:
+		state["telegraph_committed"] = false
 
 # -------------------------------------------------------------------
 # Intent display
@@ -259,11 +284,6 @@ func _on_exit() -> void:
 	plan_next_intent(false)
 	_refresh_intent_display_only()
 
-#func _on_group_turn_start() -> void:
-	#pass
-
-func _on_group_turn_end() -> void:
-	pass
 
 # -------------------------------------------------------------------
 # ACTION UTILITIES

@@ -21,23 +21,35 @@ func start_turn() -> void:
 	acting_fighters.clear()
 	for fighter: Fighter in get_children():
 		acting_fighters.append(fighter)
-		fighter.group_turn_start() #<- new
 	_next_turn_taker()
 
 func _next_turn_taker() -> void:
 	if acting_fighters.is_empty():
-		end_turn() #<- new
+		end_turn()
 		return
 	acting_fighters[0].enter()
 
 func end_turn() -> void:
-	for fighter: Fighter in get_children():
-		fighter.group_turn_end()
 	if self is BattleGroupEnemy:
 		Events.request_friendly_turn.emit()
 	elif self is BattleGroupFriendly:
 		Events.request_enemy_turn.emit()
-	
+
+func my_turn_start() -> void:
+	for fighter: Fighter in get_combatants():
+		fighter.my_group_turn_start()
+
+func opposing_turn_start() -> void:
+	for fighter: Fighter in get_combatants():
+		fighter.opposing_group_turn_start()
+
+func my_turn_end() -> void:
+	for fighter: Fighter in get_combatants():
+		fighter.my_group_turn_end()
+
+func opposing_turn_end() -> void:
+	for fighter: Fighter in get_combatants():
+		fighter.opposing_group_turn_end()
 
 func get_combatants() -> Array[Fighter]:
 	var combatants: Array[Fighter] = []

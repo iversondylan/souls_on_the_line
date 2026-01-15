@@ -106,6 +106,7 @@ func start_battle():
 	hand.empty_hand()
 	deck.reset()
 	deck.make_draw_pile()
+	battle_scene.friendly_group_turn_start()
 	
 	MusicPlayer.play(music, true)
 	
@@ -132,11 +133,15 @@ func _on_request_activate_arcana_by_type(type: Arcanum.Type):
 			arcana.activate_arcana_by_type(Arcanum.Type.END_OF_COMBAT)
 
 func _on_request_enemy_turn() -> void:
+	battle_scene.friendly_group_turn_end()
 	BattleController.current_state = BattleController.BattleState.ENEMY_TURN
+	battle_scene.enemy_group_turn_start()
 	Events.enemy_turn_started.emit()
 
 func _on_request_friendly_turn() -> void:
+	battle_scene.enemy_group_turn_end()
 	BattleController.current_state = BattleController.BattleState.FRIENDLY_TURN
+	battle_scene.friendly_group_turn_start()
 	Events.friendly_turn_started.emit()
 
 func _on_arcana_activated(type: Arcanum.Type) -> void:

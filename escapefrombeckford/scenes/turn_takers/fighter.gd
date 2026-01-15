@@ -67,17 +67,25 @@ func exit() -> void:
 		if child is FighterBehavior:
 			child._on_exit()
 
-func group_turn_start() -> void:
-	combatant.status_grid.clear_group_turn_start_statuses()
-	#for child in get_children():
-		#if child is FighterBehavior:
-			#child._on_group_turn_start()
+func my_group_turn_start() -> void:
+	pass
 
-func group_turn_end() -> void:
+func opposing_group_turn_start() -> void:
+	for child in get_children():
+		if child is FighterBehavior:
+			child._on_opposing_group_turn_start()
+
+func my_group_turn_end() -> void:
+	for child in get_children():
+		if child is FighterBehavior:
+			child._on_group_turn_end()
 	combatant.status_grid.clear_group_turn_end_statuses()
-	#for child in get_children():
-		#if child is FighterBehavior:
-			#child._on_group_turn_end()
+
+func opposing_group_turn_end() -> void:
+	for child in get_children():
+		if child is FighterBehavior:
+			child._on_group_turn_end()
+	combatant.status_grid.clear_group_turn_end_statuses()
 
 func set_anchor_position(_position: Vector2, animate: bool) -> void:
 	anchor_position = _position
@@ -215,6 +223,7 @@ func _on_combatant_statuses_applied(proc_type: Status.ProcType) -> void:
 	statuses_applied.emit(proc_type)
 
 func _on_modifier_changed() -> void:
+	print("fighter.gd _on_modifier_changed() name: ", name)
 	for child in get_children():
 		if child is FighterBehavior:
 			child.update_action_intent()

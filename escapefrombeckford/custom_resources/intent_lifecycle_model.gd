@@ -13,3 +13,9 @@ func on_intent_chosen(_ctx: NPCAIContext) -> void:
 ## due to reprioritization or interruption via plan_next_intent(allow_hooks = true)
 func on_intent_canceled(_ctx: NPCAIContext) -> void:
 	pass
+
+func on_opposing_group_start(_ctx: NPCAIContext) -> void:
+	pass
+
+func on_my_group_end(_ctx: NPCAIContext) -> void:
+	pass
