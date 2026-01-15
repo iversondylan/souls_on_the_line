@@ -26,7 +26,7 @@ func contributes_modifier() -> bool:
 
 ##Must return type of numerical modifier.
 func get_contributed_modifier_types() -> Array[Modifier.Type]:
-	return [Modifier.Type.DMG_DEALT]
+	return [Modifier.Type.DMG_TAKEN]
 
 func _on_status_changed(dmg_taken_modifier: Modifier) -> void:
 	if duration <= 0 and dmg_taken_modifier:
