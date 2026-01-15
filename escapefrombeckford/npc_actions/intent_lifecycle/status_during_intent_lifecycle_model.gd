@@ -27,7 +27,7 @@ func on_intent_chosen(ctx: NPCAIContext) -> void:
 ## Called when this action stops being the planned intent
 ## due to reprioritization or interruption
 func on_intent_canceled(ctx: NPCAIContext) -> void:
-	print("status_during_intent_lifecycle_model.gd on_intent_canceled(ctx: NPCAIContext)")
+	print("status_during_intent_lifecycle_model.gd on_intent_canceled()")
 	if !ctx or !ctx.combatant or !status:
 		return
 

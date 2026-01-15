@@ -42,7 +42,6 @@ func get_modifier_tokens() -> Array[ModifierToken]:
 			print("status_grid.gd an expired status is being skipped")
 			continue
 		if status and status.contributes_modifier():
-			print("status_grid.gd get_modifier_tokens ", status_parent.name, " appending tokens for ", status.id)
 			tokens.append_array(status.get_modifier_tokens())
 	return tokens
 
