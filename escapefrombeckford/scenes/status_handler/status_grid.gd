@@ -80,37 +80,39 @@ func get_modifier_tokens() -> Array[ModifierToken]:
 func add_status(status: Status) -> void:
 	if !status:
 		return
-
+	if status.affects_intent_legality():
+		intent_conditions_changed.emit()
 	# If status does not exist yet → just add it
 	if !_has_status(status.id):
 		_add_new_status(status)
 		return
-
+	
 	var existing := _get_status(status.id)
 	if !existing:
 		return
-
-	match status.stack_type:
-		Status.StackType.NONE:
+	
+	match status.reapply_type:
+		Status.ReapplyType.REPLACE:
 			# Explicit replacement semantics
 			remove_status_by_id(status.id)
 			_add_new_status(status)
 			return
-
-		Status.StackType.DURATION:
+		
+		Status.ReapplyType.DURATION:
 			if status.expiration_policy == Status.ExpirationPolicy.DURATION:
 				existing.duration += status.duration
 				mark_dirty_for_status(existing)
 				_update_visuals()
 			return
-
-		Status.StackType.INTENSITY:
+		
+		Status.ReapplyType.INTENSITY:
 			existing.intensity += status.intensity
 			mark_dirty_for_status(existing)
 			_update_visuals()
 			return
-	if status.affects_intent_legality():
-		intent_conditions_changed.emit()
+		Status.ReapplyType.IGNORE:
+			return
+	
 
 func _add_new_status(status: Status) -> void:
 	var new_status_display := STATUS_DISPLAY_SCN.instantiate() as StatusDisplay

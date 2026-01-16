@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="NPCEffectPackage" load_steps=10 format=3 uid="uid://clsg7idcvlho1"]
+[gd_resource type="Resource" script_class="NPCEffectPackage" load_steps=12 format=3 uid="uid://clsg7idcvlho1"]
 
 [ext_resource type="Script" uid="uid://b8d5j6ne4mt88" path="res://custom_resources/param_model.gd" id="1_v6pk5"]
 [ext_resource type="Script" uid="uid://c4bdbfkkrojcr" path="res://npc_actions/npc_attack_sequence.gd" id="1_y8w4g"]
@@ -6,6 +6,7 @@
 [ext_resource type="Script" uid="uid://db3rq0sfeqpw1" path="res://npc_actions/damage/flat_damage_model.gd" id="3_3h11n"]
 [ext_resource type="Script" uid="uid://cuj4qvyx6dedj" path="res://custom_resources/state_model.gd" id="3_y8w4g"]
 [ext_resource type="Script" uid="uid://c2r27w5ki2tiw" path="res://npc_actions/attack_mode/ranged_model.gd" id="4_3h11n"]
+[ext_resource type="Script" uid="uid://c0ihk6f0wbrv3" path="res://npc_actions/strikes/constant_strikes_model.gd" id="5_imkji"]
 
 [sub_resource type="Resource" id="Resource_imkji"]
 script = ExtResource("1_y8w4g")
@@ -13,15 +14,19 @@ metadata/_custom_type_script = "uid://c4bdbfkkrojcr"
 
 [sub_resource type="Resource" id="Resource_54jk5"]
 script = ExtResource("3_3h11n")
-damage = 4
+damage = 2
 metadata/_custom_type_script = "uid://db3rq0sfeqpw1"
 
 [sub_resource type="Resource" id="Resource_30ryo"]
 script = ExtResource("4_3h11n")
 metadata/_custom_type_script = "uid://c2r27w5ki2tiw"
 
+[sub_resource type="Resource" id="Resource_nyouf"]
+script = ExtResource("5_imkji")
+metadata/_custom_type_script = "uid://c0ihk6f0wbrv3"
+
 [resource]
 script = ExtResource("2_t0ppj")
 effect = SubResource("Resource_imkji")
-param_models = Array[ExtResource("1_v6pk5")]([SubResource("Resource_54jk5"), SubResource("Resource_30ryo")])
+param_models = Array[ExtResource("1_v6pk5")]([SubResource("Resource_54jk5"), SubResource("Resource_30ryo"), SubResource("Resource_nyouf")])
 metadata/_custom_type_script = "uid://3jde7uhq2yho"

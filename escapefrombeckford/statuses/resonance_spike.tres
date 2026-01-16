@@ -1,13 +1,14 @@
 [gd_resource type="Resource" script_class="ResonanceSpikeStatus" load_steps=3 format=3 uid="uid://bfon8dtpvipfp"]
 
 [ext_resource type="Script" uid="uid://byl8kucecx6c0" path="res://statuses/resonance_spike.gd" id="1_d6qqx"]
-[ext_resource type="Texture2D" uid="uid://olvkkcqhhcrq" path="res://assets/sprites/assorted/star.png" id="1_g4yb5"]
+[ext_resource type="Texture2D" uid="uid://cnj435rpb1haa" path="res://assets/sprites/statuses/resonance_spike.png" id="1_g4yb5"]
 
 [resource]
 script = ExtResource("1_d6qqx")
 id = "resonance_spike"
 proc_type = 2
-stack_type = 1
+number_display_type = 1
+reapply_type = 2
 expiration_policy = 2
 intensity = 3
 icon = ExtResource("1_g4yb5")

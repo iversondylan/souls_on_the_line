@@ -5,7 +5,8 @@ signal status_applied(status: Status)
 signal status_changed()
 
 enum ProcType {START_OF_TURN, END_OF_TURN, EVENT_BASED}
-enum StackType {NONE, INTENSITY, DURATION}
+enum NumberDisplayType {NONE, INTENSITY, DURATION}
+enum ReapplyType {INTENSITY, DURATION, REPLACE, IGNORE}
 enum ExpirationPolicy {
 	DURATION,        # duration ticks down
 	GROUP_TURN_START,  # expires at start of group turn
@@ -16,7 +17,8 @@ enum ExpirationPolicy {
 @export_group("Status Data")
 @export var id: String
 @export var proc_type: ProcType
-@export var stack_type: StackType
+@export var number_display_type: NumberDisplayType
+@export var reapply_type: ReapplyType
 @export var expiration_policy: ExpirationPolicy = ExpirationPolicy.EVENT_OR_NEVER
 @export var duration: int : set = _set_duration
 @export var intensity: int : set = _set_intensity

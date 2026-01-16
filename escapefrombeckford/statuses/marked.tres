@@ -6,11 +6,10 @@
 [resource]
 script = ExtResource("1_7p861")
 id = "marked"
-proc_type = null
-stack_type = 2
+number_display_type = 2
+reapply_type = 1
 expiration_policy = 0
 duration = 2
-intensity = null
 icon = ExtResource("1_o5s2w")
 tooltip = "TO DO"
 metadata/_custom_type_script = "uid://cueedkb1u8vxy"

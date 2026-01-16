@@ -6,7 +6,8 @@
 [resource]
 script = ExtResource("2_6hpfl")
 id = "pinpoint"
-stack_type = 2
+number_display_type = 2
+reapply_type = 1
 expiration_policy = 0
 duration = 1
 icon = ExtResource("1_6hpfl")
