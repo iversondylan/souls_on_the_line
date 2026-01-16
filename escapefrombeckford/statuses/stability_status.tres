@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="StabilityStatus" load_steps=3 format=3 uid="uid://cyf7n0vefm434"]
+
+[ext_resource type="Script" uid="uid://dijsb75uy608c" path="res://statuses/stability_status.gd" id="1_lontd"]
+[ext_resource type="Texture2D" uid="uid://xd5qxjp7x057" path="res://assets/sprites/statuses/stability.png" id="1_x1brp"]
+
+[resource]
+script = ExtResource("1_lontd")
+max_stability = 5
+id = "stability"
+proc_type = 2
+number_display_type = 1
+reapply_type = 2
+expiration_policy = 2
+icon = ExtResource("1_x1brp")
+metadata/_custom_type_script = "uid://dijsb75uy608c"

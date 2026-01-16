@@ -6,7 +6,7 @@
 [resource]
 script = ExtResource("2_nj4t5")
 id = "might"
-stack_type = 1
+number_display_type = 1
 intensity = 1
 icon = ExtResource("1_u532r")
 metadata/_custom_type_script = "uid://cueedkb1u8vxy"

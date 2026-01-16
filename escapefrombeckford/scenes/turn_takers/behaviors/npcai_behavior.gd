@@ -6,6 +6,8 @@ const KEY_PLANNED_IDX := "planned_idx"
 const HP_AT_TURN_START := "hp_at_turn_start"
 const DMG_SINCE_LAST_TURN := "dmg_since_last_turn"
 const BASE_IMPACT_DELAY := 1.2
+const STABILITY_BROKEN := "stability_broken"
+const IS_ACTING := "is_acting"
 
 @export var ai_profile: NPCAIProfile
 
@@ -79,40 +81,14 @@ func _on_intent_conditions_changed() -> void:
 	plan_next_intent(true)
 	_refresh_intent_display_only()
 
-#func _on_stats_changed() -> void:
-	#var fighter: Fighter = get_parent()
-	#if !fighter.is_alive() or !ai_profile:
-		#return
-	#
-	#var state = get_meta("ai_state")
-	#if state and state.has(HP_AT_TURN_START):
-		#var cur_hp : int = fighter.combatant_data.health
-		#var delta : int = state[HP_AT_TURN_START] - cur_hp
-		#if delta > 0:
-			#state[DMG_SINCE_LAST_TURN] = delta
-##
-	#var ctx := _make_context()
-	#var cond_idx := _get_first_conditional_idx(ctx)
-	#if cond_idx != -1:
-		#ctx.state[KEY_PLANNED_IDX] = cond_idx
-#
-	#plan_next_intent(true)   # hooks allowed here
-	#_refresh_intent_display_only()
-#
-	#
-	#_refresh_intent_display_only()
-
-
 func update_action_intent() -> void:
 	# Cooper was here
 	_refresh_intent_display_only()
-
 
 func _get_action_by_idx(idx: int) -> NPCAction:
 	if !ai_profile or idx < 0 or idx >= ai_profile.actions.size():
 		return null
 	return ai_profile.actions[idx]
-
 
 func _get_first_conditional_idx(ctx: NPCAIContext) -> int:
 	for i in range(ai_profile.actions.size()):
@@ -120,7 +96,6 @@ func _get_first_conditional_idx(ctx: NPCAIContext) -> int:
 		if action.choice_type == NPCAction.ChoiceType.CONDITIONAL and _is_action_performable(action, ctx):
 			return i
 	return -1
-
 
 func _roll_chance_idx(ctx: NPCAIContext) -> int:
 	var total := 0.0
@@ -173,20 +148,24 @@ func plan_next_intent(allow_hooks: bool = false) -> void:
 		return
 
 	# ---- Interrupt-only cleanup ----
-	if allow_hooks:
+	if allow_hooks and _can_cancel_intent(state):
 		_on_planned_intent_changed(prev_idx, new_idx, ctx)
 
 	# ---- Commit new intent ----
 	state[KEY_PLANNED_IDX] = new_idx
-
-
-
 
 func _on_planned_intent_changed(prev_idx: int, _new_idx: int, ctx: NPCAIContext) -> void:
 	var prev_action := _get_action_by_idx(prev_idx)
 	if prev_action:
 		for model in prev_action.intent_lifecycle_models:
 			model.on_intent_canceled(ctx)
+
+func _can_cancel_intent(state: Dictionary) -> bool:
+	if state.get(IS_ACTING, false):
+		return false
+	#if state.get("telegraph_committed", false):
+		#return false
+	return true
 
 func _on_opposing_group_turn_start() -> void:
 	var ctx := _make_context()
@@ -231,7 +210,7 @@ func _refresh_intent_display_only() -> void:
 		return
 	var ctx := _make_context()
 	# Do not show intent while acting
-	if ctx.state.get("is_acting", false):
+	if ctx.state.get(IS_ACTING, false):
 		return
 	if not ctx.state.has(KEY_PLANNED_IDX):
 		return
@@ -251,7 +230,13 @@ func _build_intent_from_action(action: NPCAction, ctx: NPCAIContext) -> IntentDa
 	ctx.params.clear()
 	_change_params_only(action, ctx)
 	# Base authored data
+	
 	intent.icon = action.intent_icon
+	# Override icon if attack mode is ranged
+	if ctx.params.has(NPCKeys.ATTACK_MODE):
+		if ctx.params[NPCKeys.ATTACK_MODE] == NPCAttackSequence.ATTACK_MODE_RANGED:
+			if action.intent_icon_ranged:
+				intent.icon = action.intent_icon_ranged
 	if action.intent_text_model:
 		intent.base_text = action.intent_text_model.get_text(ctx)
 	else:
@@ -288,7 +273,8 @@ func _on_enter() -> void:
 
 func _on_exit() -> void:
 	var ctx := _make_context()
-	ctx.state["is_acting"] = false
+	ctx.state[IS_ACTING] = false
+	ctx.state[STABILITY_BROKEN] = false
 	plan_next_intent(false)
 	_refresh_intent_display_only()
 
@@ -327,7 +313,7 @@ func _on_do_turn() -> void:
 		return
 	
 	var ctx := _make_context()
-	ctx.state["is_acting"] = true
+	ctx.state[IS_ACTING] = true
 	
 	if not ctx.state.has(KEY_PLANNED_IDX):
 		print("_on_do_turn() there's no KEY_PLANNED_IDX")

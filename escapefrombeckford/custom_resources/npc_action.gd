@@ -14,6 +14,7 @@ enum ChoiceType { CONDITIONAL, CHANCE }
 
 @export_group("Intent")
 @export var intent_icon: Texture2D
+@export var intent_icon_ranged: Texture2D
 @export var intent_text_model: TextModel
 @export var tooltip_model: TextModel
 

@@ -23,7 +23,7 @@ texture = ExtResource("2_ofwrp")
 
 [node name="Text" type="Label" parent="."]
 layout_mode = 0
-offset_left = -18.0
+offset_left = -60.0
 offset_top = -25.0
 offset_right = -2.0
 offset_bottom = 20.0

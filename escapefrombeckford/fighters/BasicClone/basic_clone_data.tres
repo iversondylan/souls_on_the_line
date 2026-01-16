@@ -9,5 +9,6 @@ script = ExtResource("1_ago3s")
 name = "Shadow Clone"
 character_art = ExtResource("1_kbgrf")
 height = 270
+max_health = 5
 ai = ExtResource("1_sriky")
 metadata/_custom_type_script = "uid://cfatj0ryn8uv3"
