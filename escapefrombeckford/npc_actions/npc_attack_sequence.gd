@@ -14,7 +14,8 @@ const ATTACK_MODE_RANGED := "ranged"
 const DEFAULT_PROJECTILE_SCENE := "res://VFX/projectiles/fireball/fireball.tscn"
 
 @export var sound: AudioStream
-
+#@export var melee_approach_sound
+#@export var melee_impact_sound
 
 func execute(ctx: NPCAIContext, on_done: Callable) -> void:
 	var fighter := ctx.combatant
