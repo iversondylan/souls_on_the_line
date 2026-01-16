@@ -1,3 +1,4 @@
+# card_action_context.gd
 class_name CardActionContext extends RefCounted
 
 # Always available

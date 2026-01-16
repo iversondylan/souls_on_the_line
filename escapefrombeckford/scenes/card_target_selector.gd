@@ -1,3 +1,4 @@
+# card_target_selector.gd
 extends Node2D
 
 const ARC_POINTS := 8
@@ -21,6 +22,9 @@ func _process(_delta: float) -> void:
 	
 	area_2d.position = get_local_mouse_position()
 	card_arc.points = _get_points()
+	
+	if current_card and current_card.card_data.target_type == CardData.TargetType.BATTLEFIELD:
+		_update_battlefield_arrow()
 
 func _get_points() -> Array:
 	var points := []
@@ -54,12 +58,7 @@ func _on_card_aim_started(card: UsableCard) -> void:
 	#card
 
 func _on_card_aim_ended(_card: UsableCard) -> void:
-	targeting = false
-	card_arc.clear_points()
-	area_2d.position = Vector2.ZERO
-	area_2d.monitoring = false
-	area_2d.monitorable = false
-	current_card = null
+	_end_targeting()
 
 func _on_battlefield_aim_started(card: UsableCard) -> void:
 	if not card.card_data.target_type == CardData.TargetType.BATTLEFIELD:
@@ -72,12 +71,7 @@ func _on_battlefield_aim_started(card: UsableCard) -> void:
 	current_card = card
 
 func _on_battlefield_aim_ended(_card: UsableCard) -> void:
-	targeting = false
-	card_arc.clear_points()
-	area_2d.position = Vector2.ZERO
-	area_2d.monitoring = false
-	area_2d.monitorable = false
-	current_card = null
+	_end_targeting()
 
 func _on_area_2d_area_entered(area: Area2D) -> void:
 	if !current_card or !targeting:
@@ -87,6 +81,8 @@ func _on_area_2d_area_entered(area: Area2D) -> void:
 		
 		current_card.targets.append(area)
 		current_card.update_description()
+	
+	#_update_battlefield_arrow()
 
 func _on_area_2d_area_exited(area: Area2D) -> void:
 	if !current_card or !targeting:
@@ -94,3 +90,40 @@ func _on_area_2d_area_exited(area: Area2D) -> void:
 	
 	current_card.targets.erase(area)
 	current_card.update_description()
+	
+	#_update_battlefield_arrow()
+
+func _end_targeting():
+	targeting = false
+	card_arc.clear_points()
+	area_2d.position = Vector2.ZERO
+	area_2d.monitoring = false
+	area_2d.monitorable = false
+
+	if current_card and current_card.battle_scene:
+		current_card.battle_scene.target_arrow.hide()
+
+	current_card = null
+
+
+func _update_battlefield_arrow():
+	if !current_card or !targeting:
+		return
+
+	if current_card.card_data.target_type != CardData.TargetType.BATTLEFIELD:
+		return
+
+	# Only count the valid "slot" areas (ignore any stray overlaps)
+	var slot_targets: Array[Node] = []
+	for t in current_card.targets:
+		if t is CombatantAreaLeft or t is BattleSceneAreaLeft:
+			slot_targets.append(t)
+
+	if slot_targets.is_empty():
+		current_card.battle_scene.target_arrow.hide()
+		return
+
+	# Slot index is derived from how many slot areas we’re currently overlapping
+	var slot_index := slot_targets.size() - 1
+	var pos := current_card.battle_scene.get_summon_slot_position(0, slot_index)
+	current_card.battle_scene.target_arrow.show_at(pos)

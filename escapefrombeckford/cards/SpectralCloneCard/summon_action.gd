@@ -1,3 +1,4 @@
+# summon_action.gd
 extends CardAction
 
 const SUMMONED_ALLY_SCN := preload("res://scenes/turn_takers/summoned_ally.tscn")

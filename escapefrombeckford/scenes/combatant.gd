@@ -1,3 +1,4 @@
+# combatant.gd
 class_name Combatant extends Node2D
 
 signal target_area_area_entered(area: Area2D)

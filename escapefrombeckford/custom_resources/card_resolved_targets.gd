@@ -1,3 +1,4 @@
+# card_resolved_targets.gd
 class_name CardResolvedTarget extends RefCounted
 
 var fighters: Array[Fighter] = []

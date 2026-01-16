@@ -1,3 +1,4 @@
+# battle_group.gd
 class_name BattleGroup extends Node2D
 
 @export var faces_right: bool = true
@@ -82,15 +83,6 @@ func add_combatant(fighter: Fighter, rank: int):
 	if rank - acted > 0:
 		acting_fighters.insert(rank - acted, fighter)
 
-#func get_front_or_focus() -> Fighter:
-	#for fighter: Fighter in get_combatants():
-		#if fighter.has_status(MarkedStatus.MARKED_ID) and fighter.is_alive():
-			#return fighter
-	#for fighter: Fighter in get_combatants():
-		#if fighter.is_alive():
-			#return fighter
-	#return null
-
 func remove_combatant(fighter: Fighter):
 	remove_child(fighter)
 	var dead_fighter_acting: bool = false
@@ -127,7 +119,7 @@ func combatant_is_there(fighter: Fighter) -> bool:
 		return false
 
 func update_combatant_position():
-	var window_dist: float = get_viewport_rect().size.x * 3.0 / 16.0
+	var window_dist: float = get_window_dist()
 	var left_bound: float = -window_dist
 	var right_bound: float = window_dist
 	var fighters: Array[Fighter] = get_combatants()#.filter(func(fighter: Fighter): return fighter.is_alive())
@@ -140,6 +132,37 @@ func update_combatant_position():
 		else:
 			fighter.set_anchor_position(Vector2(left_bound+increment*n, 0), true)
 		n += 1
+
+func get_window_dist() -> float:
+	return get_viewport_rect().size.x * 3.0 / 16.0
+
+
+func get_summon_slot_position(slot_index: int) -> Vector2:
+	var window_dist := get_window_dist()
+	var left_bound := -window_dist
+	var right_bound := window_dist
+	
+	var fighters := get_combatants()
+	var n_fighters := fighters.size()
+	
+	# No fighters → center
+	if n_fighters == 0:
+		return global_position
+	
+	# Same increment as fighters
+	var increment := (right_bound - left_bound) / (n_fighters + 1)
+	
+	# Slots run from:
+	# 0.5, 1.5, 2.5, ..., n_fighters + 0.5
+	var slot_n := slot_index + 0.5
+	
+	var x: float
+	if faces_right:
+		x = right_bound - increment * slot_n
+	else:
+		x = left_bound + increment * slot_n
+	
+	return global_position + Vector2(x, 0)
 
 func combatant_died(fighter: Fighter) -> void:
 	if fighter is SummonedAlly:

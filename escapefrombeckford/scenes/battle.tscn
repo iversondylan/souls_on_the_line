@@ -1,4 +1,4 @@
-[gd_scene load_steps=19 format=3 uid="uid://k11cug4p8o3l"]
+[gd_scene load_steps=21 format=3 uid="uid://k11cug4p8o3l"]
 
 [ext_resource type="Script" uid="uid://dixfcu6jmx0kd" path="res://scenes/battle.gd" id="1_dd63g"]
 [ext_resource type="AudioStream" uid="uid://dqm0r66m6ggwt" path="res://assets/music/enchanted tiki 86.mp3" id="2_3b6xh"]
@@ -8,7 +8,9 @@
 [ext_resource type="PackedScene" uid="uid://0jk65n5vl1s7" path="res://scenes/battle_groups/battle_group_enemy.tscn" id="6_xn15y"]
 [ext_resource type="Script" uid="uid://b4bb2s8x838ip" path="res://scenes/battle_scene_area_left.gd" id="7_rgwlw"]
 [ext_resource type="Theme" uid="uid://d2wc7fposrlqs" path="res://themes/wizard_theme.tres" id="8_2tyvl"]
+[ext_resource type="Texture2D" uid="uid://deopg8hjud5es" path="res://assets/sprites/assorted/arrow_down.png" id="8_h4dll"]
 [ext_resource type="Script" uid="uid://ckq1sgjqlphh3" path="res://scenes/ui/battle_ui.gd" id="9_jujjx"]
+[ext_resource type="Script" uid="uid://b0ws73jyx6b4c" path="res://scenes/battlefield_target_arrow.gd" id="9_p0caf"]
 [ext_resource type="PackedScene" uid="uid://cy1kfsc2qfglo" path="res://scenes/hand.tscn" id="15_wvgjd"]
 [ext_resource type="PackedScene" uid="uid://bxtf6la07t0t5" path="res://scenes/ui/card_pile_opener.tscn" id="17_ariee"]
 [ext_resource type="PackedScene" uid="uid://cmc2ypry076mq" path="res://scenes/ui/status_view.tscn" id="18_h4dll"]
@@ -52,6 +54,13 @@ script = ExtResource("7_rgwlw")
 [node name="CollisionShapeLeft" type="CollisionShape2D" parent="Battle_Scene/BattleSceneAreaLeft"]
 position = Vector2(-600, -50)
 shape = SubResource("RectangleShape2D_eb6dy")
+
+[node name="TargetArrow" type="Sprite2D" parent="Battle_Scene"]
+visible = false
+position = Vector2(0, -18)
+scale = Vector2(0.153333, 0.153333)
+texture = ExtResource("8_h4dll")
+script = ExtResource("9_p0caf")
 
 [node name="Debug_UI" type="Node2D" parent="."]
 

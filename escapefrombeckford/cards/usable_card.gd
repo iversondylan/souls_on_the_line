@@ -1,3 +1,4 @@
+# usable_card.gd
 class_name UsableCard extends Node2D
 
 signal reparent_requested(which_usable_card: UsableCard)

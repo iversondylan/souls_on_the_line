@@ -1,6 +1,8 @@
 class_name BattleScene extends Node2D
 
 @onready var groups: Array[BattleGroup] = [$BattleGroupFriendly, $BattleGroupEnemy]
+@onready var target_arrow: Sprite2D = $TargetArrow
+
 var deck: Deck : set = _set_deck
 var run: Run : set = _set_run
 
@@ -202,6 +204,9 @@ func get_other_battle_group(idx: int) -> BattleGroup:
 		push_error("Index must be 0 or 1")
 		return null
 	return groups[1 - idx]
+
+func get_summon_slot_position(battle_group_index: int, slot_index: int) -> Vector2:
+		return groups[battle_group_index].get_summon_slot_position(slot_index)
 
 ##attack effect target pipeline
 
