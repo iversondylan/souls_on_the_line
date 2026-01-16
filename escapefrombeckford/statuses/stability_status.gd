@@ -61,6 +61,16 @@ func on_removed() -> void:
 		var data := fighter.combatant_data
 		if data and data.combatant_data_changed.is_connected(_on_combatant_data_changed):
 			data.combatant_data_changed.disconnect(_on_combatant_data_changed)
+	else:
+		return
+	
+	var ai := fighter.get_node_or_null("NPCAIBehavior")
+	if !ai:
+		return
+
+	var state : Dictionary = ai.get_meta("ai_state")
+	if state:
+		state[NPCAIBehavior.STABILITY_BROKEN] = true
 
 func get_tooltip() -> String:
 	return "Stability: %s remaining. Breaking stability will interrupt this unit’s action." % intensity

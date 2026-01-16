@@ -6,6 +6,8 @@ const KEY_PLANNED_IDX := "planned_idx"
 const HP_AT_TURN_START := "hp_at_turn_start"
 const DMG_SINCE_LAST_TURN := "dmg_since_last_turn"
 const BASE_IMPACT_DELAY := 1.2
+const STABILITY_BROKEN := "stability_broken"
+const IS_ACTING := "is_acting"
 
 @export var ai_profile: NPCAIProfile
 
@@ -231,7 +233,7 @@ func _refresh_intent_display_only() -> void:
 		return
 	var ctx := _make_context()
 	# Do not show intent while acting
-	if ctx.state.get("is_acting", false):
+	if ctx.state.get(IS_ACTING, false):
 		return
 	if not ctx.state.has(KEY_PLANNED_IDX):
 		return
@@ -288,7 +290,8 @@ func _on_enter() -> void:
 
 func _on_exit() -> void:
 	var ctx := _make_context()
-	ctx.state["is_acting"] = false
+	ctx.state[IS_ACTING] = false
+	ctx.state[STABILITY_BROKEN] = false
 	plan_next_intent(false)
 	_refresh_intent_display_only()
 
@@ -327,7 +330,7 @@ func _on_do_turn() -> void:
 		return
 	
 	var ctx := _make_context()
-	ctx.state["is_acting"] = true
+	ctx.state[IS_ACTING] = true
 	
 	if not ctx.state.has(KEY_PLANNED_IDX):
 		print("_on_do_turn() there's no KEY_PLANNED_IDX")
