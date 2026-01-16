@@ -118,26 +118,7 @@ func combatant_is_there(fighter: Fighter) -> bool:
 	else:
 		return false
 
-func update_combatant_position():
-	var window_dist: float = get_window_dist()
-	var left_bound: float = -window_dist
-	var right_bound: float = window_dist
-	var fighters: Array[Fighter] = get_combatants()#.filter(func(fighter: Fighter): return fighter.is_alive())
-	var n_fighters: int = fighters.size()
-	var increment: float = (right_bound - left_bound) / (n_fighters + 1)
-	var n: int = 1
-	for fighter in fighters:
-		if faces_right:
-			fighter.set_anchor_position(Vector2(right_bound-increment*n, 0), true)
-		else:
-			fighter.set_anchor_position(Vector2(left_bound+increment*n, 0), true)
-		n += 1
-
-func get_window_dist() -> float:
-	return get_viewport_rect().size.x * 3.0 / 16.0
-
-
-func get_summon_slot_position(slot_index: int) -> Vector2:
+func _get_layout_params() -> Dictionary:
 	var window_dist := get_window_dist()
 	var left_bound := -window_dist
 	var right_bound := window_dist
@@ -145,24 +126,53 @@ func get_summon_slot_position(slot_index: int) -> Vector2:
 	var fighters := get_combatants()
 	var n_fighters := fighters.size()
 	
-	# No fighters → center
-	if n_fighters == 0:
+	var increment := 0.0
+	if n_fighters > 0:
+		increment = (right_bound - left_bound) / (n_fighters + 1)
+	
+	return {
+		"left": left_bound,
+		"right": right_bound,
+		"increment": increment,
+		"n_fighters": n_fighters
+	}
+
+func _get_x_for_slot(slot: float) -> float:
+	var p := _get_layout_params()
+	
+	if p.n_fighters == 0:
+		return 0.0
+	
+	if faces_right:
+		return p.right - p.increment * slot
+	else:
+		return p.left + p.increment * slot
+
+
+func update_combatant_position():
+	var fighters := get_combatants()
+	var slot := 1.0
+	
+	for fighter in fighters:
+		var x := _get_x_for_slot(slot)
+		fighter.set_anchor_position(Vector2(x, 0), true)
+		slot += 1.0
+
+
+func get_window_dist() -> float:
+	return get_viewport_rect().size.x * 3.0 / 16.0
+
+
+func get_summon_slot_position(slot_index: int) -> Vector2:
+	var p := _get_layout_params()
+	
+	if p.n_fighters == 0:
 		return global_position
 	
-	# Same increment as fighters
-	var increment := (right_bound - left_bound) / (n_fighters + 1)
-	
-	# Slots run from:
-	# 0.5, 1.5, 2.5, ..., n_fighters + 0.5
-	var slot_n := slot_index + 0.5
-	
-	var x: float
-	if faces_right:
-		x = right_bound - increment * slot_n
-	else:
-		x = left_bound + increment * slot_n
-	
+	var slot := slot_index + 0.5
+	var x := _get_x_for_slot(slot)
 	return global_position + Vector2(x, 0)
+
 
 func combatant_died(fighter: Fighter) -> void:
 	if fighter is SummonedAlly:

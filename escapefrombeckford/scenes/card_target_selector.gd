@@ -81,8 +81,6 @@ func _on_area_2d_area_entered(area: Area2D) -> void:
 		
 		current_card.targets.append(area)
 		current_card.update_description()
-	
-	#_update_battlefield_arrow()
 
 func _on_area_2d_area_exited(area: Area2D) -> void:
 	if !current_card or !targeting:
@@ -101,7 +99,7 @@ func _end_targeting():
 	area_2d.monitorable = false
 
 	if current_card and current_card.battle_scene:
-		current_card.battle_scene.target_arrow.hide()
+		current_card.battle_scene.target_arrow.hide_arrow()
 
 	current_card = null
 
