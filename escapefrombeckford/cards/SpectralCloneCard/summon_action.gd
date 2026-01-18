@@ -1,36 +1,39 @@
 # summon_action.gd
 extends CardAction
 
-const SUMMONED_ALLY_SCN := preload("res://scenes/turn_takers/summoned_ally.tscn")
-
 @export var summon_data: CombatantData
-@export var sound: AudioStream
+@export var sound: Sound
 
 func activate(ctx: CardActionContext) -> bool:
-	var insert_at := ctx.resolved_target.insert_index
-	#var combatant_scn: PackedScene = load("res://scenes/turn_takers/summoned_ally.tscn")
-	var summoned_ally: SummonedAlly = SUMMONED_ALLY_SCN.instantiate()
-	ctx.battle_scene.add_combatant(summoned_ally, 0, insert_at)
-	var combatant_data: CombatantData = summon_data.duplicate()
-	combatant_data.init()
-	combatant_data.max_mana_red = ctx.player.combatant_data.max_mana_red
-	combatant_data.max_mana_green = ctx.player.combatant_data.max_mana_green
-	combatant_data.max_mana_blue = ctx.player.combatant_data.max_mana_blue
-	SFXPlayer.play(sound)
-	summoned_ally.combatant_data = combatant_data
-	for child in summoned_ally.get_children():
-			if child is NPCAIBehavior:
-				child.plan_next_intent()
-				child.refresh_intent_display_only()
-	
-	var summon_behavior := summoned_ally.get_node_or_null("SummonedAllyBehavior")
-	if summon_behavior:
-		summon_behavior.bind_card(ctx.card_data)
-	
-	ctx.summoned_fighters.append(summoned_ally)
-	ctx.affected_fighters.append(summoned_ally)
-	
+	if !ctx.battle_scene or !ctx.resolved_target:
+		return false
+
+	var effect := SummonEffect.new()
+	effect.battle_scene = ctx.battle_scene
+	effect.insert_index = ctx.resolved_target.insert_index
+	effect.summon_data = _build_clone_data(ctx)
+	effect.sound = sound
+
+	if ctx.card_data and not ctx.card_data.deplete:
+		effect.bound_card_data = ctx.card_data
+
+	effect.execute()
+	effect.apply_to_card_context(ctx)
+
 	return true
+
+
+func _build_clone_data(ctx: CardActionContext) -> CombatantData:
+	var data := summon_data.duplicate()
+	data.init()
+
+	# Spectral clones inherit mana caps from player
+	if ctx.player and ctx.player.combatant_data:
+		data.max_mana_red = ctx.player.combatant_data.max_mana_red
+		data.max_mana_green = ctx.player.combatant_data.max_mana_green
+		data.max_mana_blue = ctx.player.combatant_data.max_mana_blue
+
+	return data
 
 func description_arity() -> int:
 	return 0

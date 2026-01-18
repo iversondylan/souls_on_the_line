@@ -19,5 +19,5 @@ enum ChoiceType { CONDITIONAL, CHANCE }
 @export var tooltip_model: TextModel
 
 @export_group("Resolution Impact")
-@export var sound: AudioStream
+#@export var sound: AudioStream
 @export var resolve_delay: float = 0.6

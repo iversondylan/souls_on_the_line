@@ -3,7 +3,7 @@ extends CardAction
 const AMPLIFY_STATUS := preload("res://statuses/amplify.tres")
 
 @export var amplify_duration: int = 2
-@export var amplify_sound: AudioStream = preload("res://assets/sfx/Supercharge.wav")
+@export var amplify_sound: Sound = preload("res://audio/supercharge_application.tres")
 
 func activate(ctx: CardActionContext) -> bool:
 	var targets := ctx.resolved_target.fighters

@@ -1,7 +1,7 @@
 # npc_block_sequence.gd
 class_name NPCBlockSequence extends NPCEffectSequence
 
-@export var sound: AudioStream
+@export var sound: Sound
 
 
 func execute(ctx: NPCAIContext, on_done: Callable) -> void:

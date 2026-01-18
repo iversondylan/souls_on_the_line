@@ -1,11 +1,11 @@
 [gd_resource type="Resource" script_class="NPCEffectPackage" load_steps=11 format=3 uid="uid://cc04i46wsvhqo"]
 
 [ext_resource type="AudioStream" uid="uid://c0peefiowda5m" path="res://assets/sfx/explodemini.wav" id="1_byb7d"]
+[ext_resource type="Resource" uid="uid://ddrxex8lotgxn" path="res://audio/melee_impact.tres" id="1_q8mnf"]
 [ext_resource type="Script" uid="uid://b8d5j6ne4mt88" path="res://custom_resources/param_model.gd" id="1_waeop"]
 [ext_resource type="Script" uid="uid://c4bdbfkkrojcr" path="res://npc_actions/npc_attack_sequence.gd" id="1_y5jhk"]
 [ext_resource type="Script" uid="uid://3jde7uhq2yho" path="res://custom_resources/npc_effect_package.gd" id="2_rd7he"]
 [ext_resource type="Script" uid="uid://cuj4qvyx6dedj" path="res://custom_resources/state_model.gd" id="3_npohi"]
-[ext_resource type="AudioStream" uid="uid://5buss22qggjn" path="res://assets/sfx/thrall_hit.wav" id="3_q8mnf"]
 [ext_resource type="Resource" uid="uid://c2313wqave6gn" path="res://fighters/BasicClone/mana_red_plus_1_damage.tres" id="3_y5jhk"]
 [ext_resource type="Script" uid="uid://ciectlejwqbj" path="res://npc_actions/attack_mode/ranged_behind_player_model.gd" id="4_y5jhk"]
 

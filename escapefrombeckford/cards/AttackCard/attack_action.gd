@@ -1,3 +1,4 @@
+# attack_action.gd
 extends CardAction
 
 @export var base_damage: int = 5

@@ -23,7 +23,8 @@ signal combatant_data_changed()
 @export var ai: NPCAIProfile
 
 @export_group("Audio")
-@export var attack_sound: AudioStream = load("res://assets/sfx/thrall_hit.wav")
+#@export var melee_impact_sound: Sound# = load("res://assets/sfx/thrall_hit.wav")
+#@export var ranged_impact_sound: Sound
 
 #var fighter: Fighter
 var alive: bool = true

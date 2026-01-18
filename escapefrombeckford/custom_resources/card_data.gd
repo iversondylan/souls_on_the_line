@@ -1,3 +1,4 @@
+# card_data.gd
 class_name CardData extends Resource
 
 enum CardType {
@@ -50,7 +51,7 @@ const RARITY_COLORS := {
 @export var cost_blue: int
 @export var texture: Texture2D
 @export var actions: Array[CardAction] = []
-@export var sound: AudioStream
+#@export var sound: Sound
 
 var card_status: CardStatus
 
