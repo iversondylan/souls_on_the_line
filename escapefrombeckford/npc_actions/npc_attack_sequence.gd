@@ -13,9 +13,10 @@ const ATTACK_MODE_RANGED := "ranged"
 # default projectile
 const DEFAULT_PROJECTILE_SCENE := "res://VFX/projectiles/fireball/fireball.tscn"
 
-@export var sound: AudioStream
+@export var sound: AudioStream = preload("res://assets/sfx/thrall_hit.wav")
 #@export var melee_approach_sound
 #@export var melee_impact_sound
+@export var ranged_impact_sound: AudioStream = preload("res://assets/sfx/explode.wav")
 
 func execute(ctx: NPCAIContext, on_done: Callable) -> void:
 	var fighter := ctx.combatant
@@ -84,7 +85,7 @@ func _play_melee(
 	tween.tween_property(fighter, "global_position", end_pos, 0.4)
 	
 	tween.tween_callback(func():
-		_apply_damage(ctx, targets, base_dmg)
+		_apply_damage(ctx, targets, base_dmg, sound)
 	)
 	
 	tween.tween_interval(0.2)
@@ -109,7 +110,7 @@ func _play_ranged(
 	
 	var projectile_scene := load(projectile_path)
 	if !projectile_scene:
-		_apply_damage(ctx, targets, base_dmg)
+		_apply_damage(ctx, targets, base_dmg, ranged_impact_sound)
 		_execute_strike(ctx, base_dmg, remaining - 1, on_done)
 		return
 	
@@ -145,7 +146,7 @@ func _play_ranged(
 	tween.tween_property(projectile, "global_position", end_pos, 0.35)
 	
 	tween.tween_callback(func():
-		_apply_damage(ctx, targets, base_dmg)
+		_apply_damage(ctx, targets, base_dmg, ranged_impact_sound)
 	)
 	
 	tween.tween_callback(func():
@@ -164,11 +165,11 @@ func _play_ranged(
 # DAMAGE + FINISH
 # -------------------------------------------------------------------
 
-func _apply_damage(_ctx: NPCAIContext, targets: Array[Fighter], base_dmg: int) -> void:
+func _apply_damage(_ctx: NPCAIContext, targets: Array[Fighter], base_dmg: int, impact_sound: AudioStream) -> void:
 	var dmg_effect := DamageEffect.new()
 	dmg_effect.targets = targets
 	dmg_effect.n_damage = base_dmg
-	dmg_effect.sound = sound
+	dmg_effect.sound = impact_sound
 	dmg_effect.execute()
 
 

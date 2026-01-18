@@ -12,7 +12,7 @@
 [ext_resource type="Script" uid="uid://bcih413oy6v73" path="res://custom_resources/npc_action.gd" id="7_d6afi"]
 [ext_resource type="Resource" uid="uid://cyf7n0vefm434" path="res://statuses/stability_status.tres" id="8_d6afi"]
 [ext_resource type="Script" uid="uid://cuj4qvyx6dedj" path="res://custom_resources/state_model.gd" id="8_ujduo"]
-[ext_resource type="Script" path="res://npc_actions/performable/keep_stability_performable_model.gd" id="9_b3a1h"]
+[ext_resource type="Script" uid="uid://bfkcesydr8xy8" path="res://npc_actions/performable/keep_stability_performable_model.gd" id="9_b3a1h"]
 
 [sub_resource type="Resource" id="Resource_usgkw"]
 script = ExtResource("5_ujduo")

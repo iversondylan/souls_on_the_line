@@ -4,6 +4,7 @@ extends Effect
 var status: Status
 
 func execute() -> void:
+	SFXPlayer.play(sound)#, -6.0)
 	for target in targets:
 		if !target:
 			continue

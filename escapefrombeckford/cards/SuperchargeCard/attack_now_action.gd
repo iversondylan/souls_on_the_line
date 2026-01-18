@@ -39,7 +39,7 @@ func activate(ctx: CardActionContext) -> bool:
 		model.change_params(ai_ctx)
 	# Run sequence
 	var seq := NPCAttackSequence.new()
-	seq.sound = ctx.card_data.sound
+	#seq.sound = ctx.card_data.sound
 	seq.execute(ai_ctx, Callable(self, "_on_card_attack_sequence_done"))
 	
 	return true

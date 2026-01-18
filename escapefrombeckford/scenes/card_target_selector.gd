@@ -22,9 +22,6 @@ func _process(_delta: float) -> void:
 	
 	area_2d.position = get_local_mouse_position()
 	card_arc.points = _get_points()
-	
-	#if current_card and current_card.card_data.target_type == CardData.TargetType.BATTLEFIELD:
-		#_update_battlefield_arrow()
 
 func _get_points() -> Array:
 	var points := []
@@ -90,17 +87,17 @@ func _on_area_2d_area_exited(area: Area2D) -> void:
 	current_card.targets.erase(area)
 	current_card.update_description()
 	_update_battlefield_arrow()
-
+	
 func _end_targeting():
 	targeting = false
 	card_arc.clear_points()
 	area_2d.position = Vector2.ZERO
 	area_2d.monitoring = false
 	area_2d.monitorable = false
-
+	
 	if current_card and current_card.battle_scene:
 		current_card.battle_scene.target_arrow.hide_arrow()
-
+	
 	current_card = null
 
 

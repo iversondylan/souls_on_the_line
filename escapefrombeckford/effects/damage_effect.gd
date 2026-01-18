@@ -8,4 +8,4 @@ func execute() -> void:
 		if !target:
 			continue
 		target.take_damage(n_damage, modifier_type)
-		SFXPlayer.play(sound)
+	SFXPlayer.play(sound)
