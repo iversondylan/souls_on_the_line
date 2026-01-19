@@ -146,10 +146,10 @@ func do_turn() -> void:
 		if child is FighterBehavior:
 			child._on_do_turn()
 
-func traverse_player() -> void:
-	for child in get_children():
-		if child is FighterBehavior:
-			child._on_traverse_player()
+#func traverse_player() -> void:
+	#for child in get_children():
+		#if child is FighterBehavior:
+			#child._on_traverse_player()
 
 func can_play_card(card_data: CardData) -> bool:
 	return combatant_data.can_play_card(card_data)
@@ -214,6 +214,11 @@ func show_targeted_arrow() -> void:
 
 func hide_targeted_arrow() -> void:
 	targeted_arrow.hide()
+
+func set_pending_turn_glow(_on: bool) -> void:
+	# TODO: set shader param / outline / modulate
+	pass
+
 
 func resolve_action() -> void:
 	action_resolved.emit(self)

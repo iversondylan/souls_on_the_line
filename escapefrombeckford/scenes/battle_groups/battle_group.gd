@@ -8,6 +8,7 @@ var deck: Deck
 var run: Run
 
 var acting_fighters: Array[Fighter] = []
+var _restored_turn_this_group_turn: Dictionary = {} # int instance_id -> true
 
 func reset_npc_actions() -> void:
 	for child in get_children():
@@ -19,7 +20,9 @@ func start_turn() -> void:
 	if get_child_count() == 0:
 		print("battle_group.gd start_turn() ERROR: stuck with no fighters")
 		return
+	_restored_turn_this_group_turn.clear()
 	acting_fighters.clear()
+	
 	for fighter: Fighter in get_children():
 		acting_fighters.append(fighter)
 	_next_turn_taker()
@@ -72,6 +75,7 @@ func add_combatant(fighter: Fighter, rank: int):
 	move_child(fighter, rank)
 	Events.n_combatants_changed.emit()
 	update_combatant_position()
+	_recompute_intents_for_group()
 	
 	if acting_fighters.is_empty():
 		return
@@ -92,6 +96,7 @@ func remove_combatant(fighter: Fighter):
 	fighter.queue_free()
 	Events.n_combatants_changed.emit()
 	update_combatant_position()
+	_recompute_intents_for_group()
 	if get_child_count() == 0:
 		Events.battle_group_empty.emit(self)
 	
@@ -158,6 +163,117 @@ func update_combatant_position():
 		fighter.set_anchor_position(Vector2(x, 0), true)
 		slot += 1.0
 
+func execute_move(effect: MoveEffect) -> void:
+	if !effect or !effect.actor:
+		return
+
+	var before_order: Array[Fighter] = get_combatants()
+	var before_acting: Array[Fighter] = acting_fighters.duplicate()
+
+	match effect.move_type:
+		MoveEffect.MoveType.TRAVERSE_PLAYER:
+			if self is BattleGroupFriendly:
+				(self as BattleGroupFriendly)._traverse_player(effect.actor)
+			else:
+				push_warning("BattleGroup.execute_move() tried to traverse player on non-friendly group.")
+
+		MoveEffect.MoveType.MOVE_TO_FRONT:
+			move_child(effect.actor, 0)
+
+		MoveEffect.MoveType.MOVE_TO_BACK:
+			move_child(effect.actor, get_child_count() - 1)
+
+		MoveEffect.MoveType.SWAP_WITH_TARGET:
+			if effect.target:
+				_swap(effect.actor, effect.target)
+
+		MoveEffect.MoveType.INSERT_AT_INDEX:
+			if effect.index >= 0:
+				move_child(effect.actor, effect.index)
+
+	_reconcile_acting_list(before_order, before_acting, effect)
+	update_combatant_position()
+	_recompute_intents_for_group()
+
+
+func _swap(actor: Fighter, target: Fighter) -> void:
+	pass
+
+func _reconcile_acting_list(
+	before_order: Array[Fighter],
+	before_acting: Array[Fighter],
+	effect: MoveEffect
+) -> void:
+	# After-move living order (front -> back)
+	var after_order: Array[Fighter] = get_combatants()
+
+	# If the group isn't in a turn (or no queue), just rebuild from order
+	if before_acting.is_empty():
+		acting_fighters = after_order.duplicate()
+		_update_pending_turn_glow()
+		return
+
+	var current_actor: Fighter = before_acting[0]
+	if !current_actor or !is_instance_valid(current_actor) or !after_order.has(current_actor):
+		# Current actor got removed / died mid-move; rebuild conservatively
+		acting_fighters = after_order.duplicate()
+		_update_pending_turn_glow()
+		return
+
+	# Who had already acted BEFORE the move?
+	var before_acting_set := {}
+	for f in before_acting:
+		if f:
+			before_acting_set[f.get_instance_id()] = true
+
+	var before_acted_set := {}
+	for f in before_order:
+		if f and !before_acting_set.has(f.get_instance_id()):
+			before_acted_set[f.get_instance_id()] = true
+
+	# Rebuild queue:
+	# - keep current actor first
+	# - include everyone positioned AFTER current actor in after_order
+	#   IF they are eligible to still take a turn
+	var new_queue: Array[Fighter] = [current_actor]
+	var cur_idx := after_order.find(current_actor)
+
+	for i in range(after_order.size()):
+		var f := after_order[i]
+		if !f or f == current_actor:
+			continue
+
+		# Anything that is now BEFORE the current actor is considered "past"
+		# to avoid time-paradox turn order changes mid-action.
+		if i < cur_idx:
+			continue
+
+		var id := f.get_instance_id()
+		var already_acted := before_acted_set.has(id)
+
+		if already_acted:
+			# Allow a single restore per fighter per group turn, only if effect allows it
+			if effect and effect.can_restore_turn and !_restored_turn_this_group_turn.has(id):
+				_restored_turn_this_group_turn[id] = true
+				new_queue.append(f)
+			# else: skip (they already acted)
+		else:
+			# Not yet acted => keep them
+			new_queue.append(f)
+
+	acting_fighters = new_queue
+	_update_pending_turn_glow()
+
+func _update_pending_turn_glow() -> void:
+	#var pending := {}
+	#for f in acting_fighters:
+		#if f:
+			#pending[f.get_instance_id()] = true
+#
+	#for f in get_combatants():
+		#if f and f.has_method("set_pending_turn_glow"):
+			#f.set_pending_turn_glow(pending.has(f.get_instance_id()))
+	pass
 
 func get_window_dist() -> float:
 	return get_viewport_rect().size.x * 3.0 / 16.0
@@ -203,3 +319,11 @@ func has_ai_behavior(node: Node) -> bool:
 		if child is NPCAIBehavior:
 			return true
 	return false
+
+func _recompute_intents_for_group() -> void:
+	for fighter: Fighter in get_combatants():
+		if has_ai_behavior(fighter):
+			for child in fighter.get_children():
+				if child is NPCAIBehavior:
+					child.plan_next_intent()
+					child.refresh_intent_display_only()

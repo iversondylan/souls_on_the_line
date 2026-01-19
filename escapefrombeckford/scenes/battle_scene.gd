@@ -208,6 +208,26 @@ func get_other_battle_group(idx: int) -> BattleGroup:
 func get_summon_slot_position(battle_group_index: int, slot_index: int) -> Vector2:
 		return groups[battle_group_index].get_summon_slot_position(slot_index)
 
+func execute_move(effect: MoveEffect) -> void:
+	var group := get_group_for_actor(effect.actor)
+	if not group:
+		push_warning(
+		"BattleScene.execute_move(): Actor %s not found in any BattleGroup"
+		% effect.actor.name
+		)
+		return
+	group.execute_move(effect)
+
+
+func get_group_for_actor(actor: Fighter) -> BattleGroup:
+	if not actor:
+		return null
+	var parent := actor.get_parent()
+	for group: BattleGroup in groups:
+		if group == parent:
+			return group
+	return null
+
 ##attack effect target pipeline
 
 func get_targets_for_attack_sequence(ai_ctx: NPCAIContext) -> Array[Fighter]:

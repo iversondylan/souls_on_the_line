@@ -2,6 +2,7 @@ extends CardAction
 
 @export var bonus_damage: int = 2
 @export var attacks: int = 1
+@export var melee_impact_sound: Sound = preload("res://audio/aoe_explosion.tres")
 
 func activate(ctx: CardActionContext) -> bool:
 	var attackers := ctx.resolved_target.fighters
@@ -28,6 +29,7 @@ func activate(ctx: CardActionContext) -> bool:
 	var base_damage := attacker.combatant_data.max_mana_red + bonus_damage
 	var final_damage := attacker.modifier_system.get_modified_value(base_damage, Modifier.Type.DMG_DEALT)
 	# Params consumed by NPCAttackSequence.
+	ai_ctx.params[NPCKeys.ATTACK_MODE] = NPCAttackSequence.ATTACK_MODE_MELEE
 	ai_ctx.params[NPCKeys.DAMAGE] = final_damage
 	ai_ctx.params[NPCKeys.STRIKES] = attacks
 	ai_ctx.params[NPCKeys.TARGET_TYPE] = NPCAttackSequence.TARGET_OPPONENTS
@@ -35,7 +37,7 @@ func activate(ctx: CardActionContext) -> bool:
 	
 	# Run sequence
 	var seq := NPCAttackSequence.new()
-	seq.sound = ctx.card_data.sound
+	seq.melee_impact_sound = melee_impact_sound
 	seq.execute(ai_ctx, Callable(self, "_on_card_attack_sequence_done"))
 	
 	return true
