@@ -1,3 +1,4 @@
+# battle_group_friendly.gd
 class_name BattleGroupFriendly extends BattleGroup
 
 var player: Player

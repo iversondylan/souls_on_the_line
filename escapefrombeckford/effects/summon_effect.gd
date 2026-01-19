@@ -4,9 +4,8 @@ class_name SummonEffect extends Effect
 const SUMMONED_ALLY_SCN := preload("res://scenes/turn_takers/summoned_ally.tscn")
 
 # Fallback for early testing / safety
-const DEFAULT_SUMMON_DATA := preload(
-	"res://fighters/BasicClone/basic_clone_data.tres"
-)
+const DEFAULT_SUMMON_DATA := preload("res://fighters/BasicClone/basic_clone_data.tres")
+const DEFAULT_SUMMON_SOUND := preload("res://audio/summon_zap.tres")
 
 # Required
 var battle_scene: BattleScene
@@ -54,6 +53,8 @@ func execute() -> void:
 	# --- Sound ---
 	if sound:
 		SFXPlayer.play(sound)
+	else:
+		SFXPlayer.play(DEFAULT_SUMMON_SOUND)
 
 func apply_to_card_context(ctx: CardActionContext) -> void:
 	if !ctx or !summoned_fighter:

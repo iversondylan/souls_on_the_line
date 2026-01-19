@@ -1,3 +1,4 @@
+# summoned_ally_behavior.gd
 class_name SummonedAllyBehavior extends FighterBehavior
 
 var card_data: CardData
