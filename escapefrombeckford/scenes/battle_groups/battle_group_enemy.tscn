@@ -5,4 +5,6 @@
 [node name="BattleGroupEnemy" type="Node2D"]
 script = ExtResource("1_o2s2l")
 
+[node name="PreviewLayer" type="Node2D" parent="."]
+
 [connection signal="child_order_changed" from="." to="." method="_on_child_order_changed"]

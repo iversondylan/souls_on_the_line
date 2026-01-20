@@ -140,11 +140,9 @@ func activate() -> bool:
 	# 4. Build context
 	
 	var needs_replace := false
-	var summon_action: SummonAction = null
 	
 	for action in card_data.actions:
 		if action.requires_summon_slot():
-			summon_action = action
 			needs_replace = battle_scene.get_n_summoned_allies() >= player.combatant_data.max_mana_blue
 	
 	var ctx := CardActionContext.new()
@@ -154,8 +152,14 @@ func activate() -> bool:
 	ctx.resolved_target = resolved_targets
 	
 	if needs_replace:
-		# DON’T spend mana, DON’T execute actions, DON’T move card.
-		Events.request_summon_replace.emit(self, ctx)
+		var summon_action := _get_first_summon_action()
+		if summon_action == null:
+			push_warning("Summon replace requested but card has no SummonAction")
+			return false
+
+		var effect := summon_action.build_effect(ctx)
+
+		Events.request_summon_replace.emit(self, ctx, effect)
 		return true
 	
 	player.spend_mana(card_data)
@@ -182,6 +186,12 @@ func activate() -> bool:
 		hand.discard_card(hand.remove_card_by_entity(self))
 
 	return true
+
+func _get_first_summon_action() -> SummonAction:
+	for action in card_data.actions:
+		if action is SummonAction:
+			return action
+	return null
 
 func _update_graphics():
 	if card_visuals.name_label.get_text() != card_data.name:

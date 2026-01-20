@@ -1,4 +1,4 @@
-[gd_scene load_steps=21 format=3 uid="uid://k11cug4p8o3l"]
+[gd_scene load_steps=22 format=3 uid="uid://k11cug4p8o3l"]
 
 [ext_resource type="Script" uid="uid://dixfcu6jmx0kd" path="res://scenes/battle.gd" id="1_dd63g"]
 [ext_resource type="AudioStream" uid="uid://dqm0r66m6ggwt" path="res://assets/music/enchanted tiki 86.mp3" id="2_3b6xh"]
@@ -12,6 +12,7 @@
 [ext_resource type="Script" uid="uid://ckq1sgjqlphh3" path="res://scenes/ui/battle_ui.gd" id="9_jujjx"]
 [ext_resource type="Script" uid="uid://b0ws73jyx6b4c" path="res://scenes/battlefield_target_arrow.gd" id="9_p0caf"]
 [ext_resource type="PackedScene" uid="uid://cy1kfsc2qfglo" path="res://scenes/hand.tscn" id="15_wvgjd"]
+[ext_resource type="PackedScene" uid="uid://chyl400nmwlxo" path="res://scenes/summon_replace_prompt.tscn" id="16_61i1y"]
 [ext_resource type="PackedScene" uid="uid://bxtf6la07t0t5" path="res://scenes/ui/card_pile_opener.tscn" id="17_ariee"]
 [ext_resource type="PackedScene" uid="uid://cmc2ypry076mq" path="res://scenes/ui/status_view.tscn" id="18_h4dll"]
 [ext_resource type="Theme" uid="uid://1dr1eewpv0jd" path="res://themes/ui_theme.tres" id="18_s5alk"]
@@ -25,7 +26,6 @@ size = Vector2(1200, 200)
 
 [node name="Battle" type="Node2D"]
 script = ExtResource("1_dd63g")
-debug_mode = null
 music = ExtResource("2_3b6xh")
 
 [node name="Battle_Scene" type="Node2D" parent="." groups=["battle_scene"]]
@@ -144,6 +144,10 @@ horizontal_alignment = 1
 position = Vector2(190, 953)
 
 [node name="Hand" parent="Battle_UI" instance=ExtResource("15_wvgjd")]
+
+[node name="SummonReplacePrompt" parent="Battle_UI" instance=ExtResource("16_61i1y")]
+visible = false
+position = Vector2(960, 131)
 
 [node name="Visual_Overlays" type="CanvasLayer" parent="."]
 

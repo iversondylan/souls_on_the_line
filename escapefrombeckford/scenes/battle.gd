@@ -1,3 +1,4 @@
+# battle.gd
 class_name Battle extends Node2D
 
 @export var debug_mode: bool = true:
@@ -290,23 +291,38 @@ func _make_summon_ghost(effect: SummonEffect) -> Node2D:
 	var ghost := Node2D.new()
 	var spr := Sprite2D.new()
 	ghost.add_child(spr)
-	
-	# Use the summon_data character art if available
-	if effect.summon_data and effect.summon_data.character_art:
-		spr.texture = effect.summon_data.character_art
-		spr.modulate.a = 0.35
+
+	var data: CombatantData = effect.summon_data
+	if data == null or data.character_art == null:
+		return ghost
+
+	spr.texture = data.character_art
+
+	# tint + transparency (match combatant style)
+	var c := data.color_tint
+	c.a = 0.55
+	spr.modulate = c
+
+	# match combatant scaling/offset
+	var scalar: float = float(data.height) / float(spr.texture.get_height())
+	spr.scale = Vector2(scalar, scalar)
+	spr.position = Vector2(0, -data.height / 2.0)
+
+	# optional: ensure it draws on top of background / under fighters
+	ghost.z_index = 5
+
 	return ghost
 
 func _set_candidate_selectable_visuals(a: SummonedAlly, on: bool) -> void:
 	if on:
 		#a.show_targeted_arrow() # or keep arrow only on hover; your call
 		# If you can repurpose pending_turn_glow as “selectable glow”, do it here:
-		a.pending_turn_glow.show()
+		a.set_fade_mark(true)
 	else:
 		#a.hide_targeted_arrow()
 		# Restore pending_turn_glow based on turn logic if needed:
 		# safest is hide and let _update_pending_turn_glow() reapply after modal ends
-		a.pending_turn_glow.hide()
+		a.set_fade_mark(false)
 
 func _on_combatant_target_hovered(f: Fighter) -> void:
 	if interaction_mode != InteractionMode.SUMMON_REPLACE:
@@ -429,3 +445,4 @@ func _end_summon_replace_mode() -> void:
 
 	# IMPORTANT: restore pending turn glow after you messed with it
 	(battle_scene.groups[0] as BattleGroupFriendly)._update_pending_turn_glow()
+	hand.enable_hand_cards()

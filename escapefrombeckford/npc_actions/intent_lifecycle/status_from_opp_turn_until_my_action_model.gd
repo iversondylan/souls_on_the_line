@@ -29,7 +29,6 @@ func on_ability_started(ctx: NPCAIContext) -> void:
 	grid.remove_status_by_id(status.id)
 
 func on_intent_canceled(ctx: NPCAIContext) -> void:
-	print("status_during_intent_lifecycle_model.gd on_intent_canceled()")
 	if !ctx or !ctx.combatant or !status:
 		return
 	

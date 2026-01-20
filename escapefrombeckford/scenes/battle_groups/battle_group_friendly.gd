@@ -14,7 +14,7 @@ func start_first_friendly_turn() -> void:
 	_restored_turn_this_group_turn.clear()
 	acting_fighters.clear()
 	var reached_player: bool = false
-	for fighter: Fighter in get_children():
+	for fighter: Fighter in get_combatants():
 		if fighter is Player and !reached_player:
 			reached_player = true
 		if reached_player:
@@ -39,7 +39,7 @@ func _traverse_player(ally: Fighter) -> void:
 
 func get_n_summoned_allies() -> int:
 	var n_allies: int = 0
-	for child in get_children():
+	for child in get_combatants():
 		if child is SummonedAlly:
 			n_allies += 1
 	return n_allies

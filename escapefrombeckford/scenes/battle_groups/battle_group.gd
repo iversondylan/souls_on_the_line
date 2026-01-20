@@ -2,6 +2,7 @@
 class_name BattleGroup extends Node2D
 
 @export var faces_right: bool = true
+@onready var preview_layer: Node2D = $PreviewLayer
 
 var battle_scene: BattleScene
 var deck: Deck
@@ -14,7 +15,7 @@ var _preview_node: Node2D = null
 var _preview_index: int = -1
 
 func reset_npc_actions() -> void:
-	for child in get_children():
+	for child in get_combatants():
 		if has_ai_behavior(child):
 			child.current_action = null
 			#child.update_action()
@@ -26,7 +27,7 @@ func start_turn() -> void:
 	_restored_turn_this_group_turn.clear()
 	acting_fighters.clear()
 	
-	for fighter: Fighter in get_children():
+	for fighter: Fighter in get_combatants():
 		acting_fighters.append(fighter)
 	_update_pending_turn_glow()
 	_next_turn_taker()
@@ -61,8 +62,8 @@ func opposing_turn_end() -> void:
 
 func get_combatants() -> Array[Fighter]:
 	var combatants: Array[Fighter] = []
-	for child: Fighter in get_children():
-		if child.is_alive():
+	for child in get_children():
+		if child is Fighter and child.is_alive():
 			combatants.push_back(child)
 	return combatants
 
@@ -86,7 +87,7 @@ func add_combatant(fighter: Fighter, rank: int):
 		return
 	
 	var acted: int = -1
-	for combatant in get_children():
+	for combatant in get_combatants():
 		if !acting_fighters.has(combatant):
 			acted += 1
 	if rank - acted > 0:
@@ -338,11 +339,22 @@ func _update_pending_turn_glow() -> void:
 			f.set_pending_turn_glow(Fighter.TurnStatus.TURN_PENDING if acting_fighters.has(f) else Fighter.TurnStatus.NONE)
 
 func set_preview(node: Node2D, insert_index: int) -> void:
+	# remove old preview
+	if _preview_node and is_instance_valid(_preview_node):
+		_preview_node.queue_free()
+
 	_preview_node = node
 	_preview_index = insert_index
+
+	# IMPORTANT: actually add it to the tree
+	preview_layer.add_child(_preview_node)
+
 	update_combatant_position()
 
 func clear_preview() -> void:
+	if _preview_node and is_instance_valid(_preview_node):
+		_preview_node.queue_free()
+
 	_preview_node = null
 	_preview_index = -1
 	update_combatant_position()

@@ -161,6 +161,11 @@ func disable_hand_cards() -> void:
 		usable_card.unhighlight()
 		usable_card.disabled = true
 
+func enable_hand_cards() -> void:
+	for usable_card in hand_cards_arr:
+		usable_card.disabled = false
+
+
 func reposition_hand_cards():
 	var card_spread_angle_flt : float = 0
 	var current_card_angle_flt : float = 0

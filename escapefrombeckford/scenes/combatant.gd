@@ -9,6 +9,7 @@ signal statuses_applied(proc_type: Status.ProcType)
 @onready var target_area: CombatantTargetArea = $TargetArea
 @onready var targeted_arrow: Sprite2D = $TargetedArrow
 @onready var pending_turn_glow: Sprite2D = $PendingTurnGlow
+@onready var fade_mark: Sprite2D = $FadeMark
 
 @onready var health_bar: HealthBar = $HealthBar
 @onready var armor_sprite: Sprite2D = $Armor

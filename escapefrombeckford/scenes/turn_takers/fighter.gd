@@ -12,6 +12,7 @@ enum TurnStatus {TURN_PENDING, TURN_ACTIVE, NONE}
 @onready var target_area: CombatantTargetArea = combatant.target_area
 @onready var targeted_arrow: Sprite2D = combatant.targeted_arrow
 @onready var pending_turn_glow: Sprite2D = combatant.pending_turn_glow
+@onready var fade_mark: Sprite2D = combatant.fade_mark
 @onready var health_bar: HealthBar = combatant.health_bar
 @onready var armor_sprite: Sprite2D = combatant.armor_sprite
 @onready var armor_label: Label = combatant.armor_label
@@ -234,7 +235,11 @@ func set_pending_turn_glow(status: TurnStatus) -> void:
 		TurnStatus.NONE:
 			pending_turn_glow.hide()
 
-
+func set_fade_mark(show_it: bool) -> void:
+	if show_it:
+		fade_mark.show()
+	else:
+		fade_mark.hide()
 
 func resolve_action() -> void:
 	action_resolved.emit(self)

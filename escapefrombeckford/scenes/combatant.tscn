@@ -1,4 +1,4 @@
-[gd_scene load_steps=16 format=3 uid="uid://dghmlrg1poqs7"]
+[gd_scene load_steps=17 format=3 uid="uid://dghmlrg1poqs7"]
 
 [ext_resource type="Script" uid="uid://c7eaxdgts512j" path="res://scenes/combatant.gd" id="1_srv24"]
 [ext_resource type="Texture2D" uid="uid://dob30qtbj3xk5" path="res://assets/sprites/assorted/block.PNG" id="2_8cehy"]
@@ -9,6 +9,7 @@
 [ext_resource type="PackedScene" uid="uid://b5kimimy0ccq0" path="res://scenes/ui/health_bar.tscn" id="4_uacnx"]
 [ext_resource type="Texture2D" uid="uid://deopg8hjud5es" path="res://assets/sprites/assorted/arrow_down.png" id="6_8636n"]
 [ext_resource type="Script" uid="uid://b5nvhcs5afo2m" path="res://scenes/combatant_target_area.gd" id="6_srv24"]
+[ext_resource type="Texture2D" uid="uid://wmwqkwmui7i4" path="res://assets/sprites/assorted/scythe.png" id="6_y8vuy"]
 [ext_resource type="Script" uid="uid://c0eafxkkyruv0" path="res://scenes/combatant_area_left.gd" id="8_ng0uf"]
 [ext_resource type="PackedScene" uid="uid://nfe134n0rm1g" path="res://scenes/status_handler/status_grid.tscn" id="10_ue35o"]
 
@@ -54,6 +55,12 @@ position = Vector2(0, -18)
 scale = Vector2(0.153333, 0.153333)
 texture = ExtResource("6_8636n")
 
+[node name="FadeMark" type="Sprite2D" parent="."]
+visible = false
+position = Vector2(0, -151.99998)
+scale = Vector2(0.1, 0.1)
+texture = ExtResource("6_y8vuy")
+
 [node name="IntentContainer" parent="." instance=ExtResource("3_ecchv")]
 position = Vector2(0, -270)
 
@@ -94,5 +101,6 @@ offset_bottom = 171.0
 
 [connection signal="area_entered" from="TargetArea" to="." method="_on_target_area_area_entered"]
 [connection signal="area_exited" from="TargetArea" to="." method="_on_target_area_area_exited"]
+[connection signal="input_event" from="TargetArea" to="." method="_on_target_area_input_event"]
 [connection signal="mouse_entered" from="TargetArea" to="." method="_on_target_area_mouse_entered"]
 [connection signal="mouse_exited" from="TargetArea" to="." method="_on_target_area_mouse_exited"]
