@@ -1,7 +1,8 @@
-[gd_scene load_steps=14 format=3 uid="uid://dghmlrg1poqs7"]
+[gd_scene load_steps=16 format=3 uid="uid://dghmlrg1poqs7"]
 
 [ext_resource type="Script" uid="uid://c7eaxdgts512j" path="res://scenes/combatant.gd" id="1_srv24"]
 [ext_resource type="Texture2D" uid="uid://dob30qtbj3xk5" path="res://assets/sprites/assorted/block.PNG" id="2_8cehy"]
+[ext_resource type="Texture2D" uid="uid://bm2kp2h3bv3t2" path="res://assets/sprites/assorted/turn_taker_glow.png" id="2_ue35o"]
 [ext_resource type="Texture2D" uid="uid://dtvvequ1w1dlu" path="res://assets/sprites/assorted/enemy_thrall_mage.png" id="3_8636n"]
 [ext_resource type="PackedScene" uid="uid://dmw6560cffget" path="res://scenes/ui/intent_container.tscn" id="3_ecchv"]
 [ext_resource type="Theme" uid="uid://1dr1eewpv0jd" path="res://themes/ui_theme.tres" id="4_8636n"]
@@ -10,6 +11,8 @@
 [ext_resource type="Script" uid="uid://b5nvhcs5afo2m" path="res://scenes/combatant_target_area.gd" id="6_srv24"]
 [ext_resource type="Script" uid="uid://c0eafxkkyruv0" path="res://scenes/combatant_area_left.gd" id="8_ng0uf"]
 [ext_resource type="PackedScene" uid="uid://nfe134n0rm1g" path="res://scenes/status_handler/status_grid.tscn" id="10_ue35o"]
+
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_y8vuy"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_2bsiw"]
 size = Vector2(100, 270)
@@ -23,6 +26,13 @@ font_color = Color(0.47967, 0.346496, 0.233082, 1)
 
 [node name="Combatant" type="Node2D"]
 script = ExtResource("1_srv24")
+
+[node name="PendingTurnGlow" type="Sprite2D" parent="."]
+visible = false
+material = SubResource("CanvasItemMaterial_y8vuy")
+position = Vector2(0, -20)
+scale = Vector2(0.5222222, 0.31111112)
+texture = ExtResource("2_ue35o")
 
 [node name="CharacterArt" type="Sprite2D" parent="."]
 modulate = Color(0.38, 0.64866674, 1, 1)
@@ -84,3 +94,5 @@ offset_bottom = 171.0
 
 [connection signal="area_entered" from="TargetArea" to="." method="_on_target_area_area_entered"]
 [connection signal="area_exited" from="TargetArea" to="." method="_on_target_area_area_exited"]
+[connection signal="mouse_entered" from="TargetArea" to="." method="_on_target_area_mouse_entered"]
+[connection signal="mouse_exited" from="TargetArea" to="." method="_on_target_area_mouse_exited"]

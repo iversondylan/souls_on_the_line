@@ -1,3 +1,4 @@
+# card_aiming_state.gd
 extends CardState
 
 const MOUSE_Y_SNAPBACK_THRESHOLD := 1060

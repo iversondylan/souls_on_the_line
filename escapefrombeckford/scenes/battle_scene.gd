@@ -1,3 +1,5 @@
+# battle_scene.gd
+
 class_name BattleScene extends Node2D
 
 @onready var groups: Array[BattleGroup] = [$BattleGroupFriendly, $BattleGroupEnemy]

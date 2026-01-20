@@ -43,6 +43,16 @@ var mouse_pressed: bool = false
 var enemy_character_state: int = 0
 var wait_for_anims: bool = false
 
+enum InteractionMode { NORMAL, SUMMON_REPLACE }
+var interaction_mode := InteractionMode.NORMAL
+
+var summon_replace_card: UsableCard
+var summon_replace_ctx: CardActionContext
+var summon_replace_effect: SummonEffect
+var summon_replace_insert_index: int
+var summon_replace_ghost: Node2D
+var summon_replace_candidates: Array[SummonedAlly] = []
+
 func _ready() -> void:
 	get_tree().paused = false
 	BattleController.current_state = BattleController.BattleState.PRE_GAME
@@ -222,3 +232,12 @@ func _on_pre_game_ended() -> void:
 
 func on_modifier_tokens_changed(mod_type: Modifier.Type) -> void:
 	battle_scene._on_modifier_tokens_changed(mod_type)
+
+func _lock_for_modal() -> void:
+	wait_for_anims = true
+	hand.disable_hand_cards()
+	battle_ui.set_end_turn_enabled(false) # implement if you don’t have it
+
+func _unlock_from_modal() -> void:
+	wait_for_anims = false
+	battle_ui.set_end_turn_enabled(true)

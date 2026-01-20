@@ -1,6 +1,8 @@
 # spacetime_warp_action.gd
 extends CardAction
 
+@export var sound: Sound = preload("res://audio/warp_zap.tres")
+
 func activate(ctx: CardActionContext) -> bool:
 	if !ctx or !ctx.battle_scene or !ctx.resolved_target:
 		return false
@@ -20,7 +22,7 @@ func activate(ctx: CardActionContext) -> bool:
 	move.move_type = MoveEffect.MoveType.TRAVERSE_PLAYER
 	move.can_restore_turn = true
 	# Optional: if you add sound to MoveEffect later, you can pass it here.
-	# move.sound = ctx.card_data.sound
+	move.sound = sound
 	
 	ctx.battle_scene.execute_move(move)
 	

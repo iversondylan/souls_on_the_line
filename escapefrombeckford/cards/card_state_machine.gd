@@ -1,3 +1,4 @@
+# card_state_machine.gd
 class_name CardStateMachine extends Node
 
 @export var initial_state: CardState

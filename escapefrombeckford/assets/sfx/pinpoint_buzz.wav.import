@@ -3,12 +3,12 @@
 importer="wav"
 type="AudioStreamWAV"
 uid="uid://idwtyj2act0h"
-path="res://.godot/imported/focus_buzz.wav-4ec7c0c4e1d04d8fc6f2707589d7930e.sample"
+path="res://.godot/imported/pinpoint_buzz.wav-66b232bfd3c0b1c34f82c59915eebb80.sample"
 
 [deps]
 
-source_file="res://assets/sfx/focus_buzz.wav"
-dest_files=["res://.godot/imported/focus_buzz.wav-4ec7c0c4e1d04d8fc6f2707589d7930e.sample"]
+source_file="res://assets/sfx/pinpoint_buzz.wav"
+dest_files=["res://.godot/imported/pinpoint_buzz.wav-66b232bfd3c0b1c34f82c59915eebb80.sample"]
 
 [params]
 

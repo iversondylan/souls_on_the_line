@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://wtk5v77fcqvn" path="res://custom_resources/card_action.gd" id="1_6prab"]
 [ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://custom_resources/card_data.gd" id="1_numeo"]
 [ext_resource type="Resource" uid="uid://casfotob5kfol" path="res://cards/FocusFireCard/mark_action.tres" id="2_1owkf"]
-[ext_resource type="AudioStream" uid="uid://idwtyj2act0h" path="res://assets/sfx/focus_buzz.wav" id="3_n8er5"]
+[ext_resource type="AudioStream" uid="uid://idwtyj2act0h" path="res://assets/sfx/pinpoint_buzz.wav" id="3_n8er5"]
 [ext_resource type="Resource" uid="uid://ce1lg5k4uob75" path="res://cards/FocusFireCard/pinpoint_action.tres" id="3_unp7j"]
 [ext_resource type="Texture2D" uid="uid://c0yql2msvjvmi" path="res://assets/sprites/assorted/target_reticule.png" id="4_n8er5"]
 

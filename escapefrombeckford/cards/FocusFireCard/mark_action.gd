@@ -3,6 +3,7 @@ extends CardAction
 const MARKED_STATUS := preload("res://statuses/marked.tres")
 
 @export var duration: int = 2
+@export var sound: Sound = preload("res://audio/mark_zap.tres")
 
 func activate(ctx: CardActionContext) -> bool:
 	var targets := ctx.resolved_target.fighters
@@ -17,6 +18,7 @@ func activate(ctx: CardActionContext) -> bool:
 	marked_status.duration = duration
 
 	status_effect.status = marked_status
+	status_effect.sound = sound
 	status_effect.execute()
 
 	return true

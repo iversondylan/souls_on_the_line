@@ -1,3 +1,4 @@
+# card_dragging_state.gd
 extends CardState
 
 const DRAG_MINIMUM_THRESHOLD := 0.05

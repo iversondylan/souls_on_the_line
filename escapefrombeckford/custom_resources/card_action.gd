@@ -12,7 +12,7 @@ enum ActionType {
 @export var action_type: ActionType
 
 @export var requires_enemy: bool = false
-@export var requires_summon_slot: bool = false
+#@export var requires_summon_slot: bool = false
 @export var requires_target: bool = true
 
 func activate(_ctx: CardActionContext) -> bool:
@@ -38,3 +38,6 @@ func description_arity() -> int:
 func get_description_values(_ctx: CardActionContext) -> Array:
 	# Return exactly description_arity() values
 	return []
+
+func requires_summon_slot() -> bool:
+	return false

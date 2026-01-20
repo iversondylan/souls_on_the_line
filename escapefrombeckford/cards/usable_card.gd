@@ -135,19 +135,30 @@ func activate() -> bool:
 
 	# 3. Spend mana ONCE (not per action)
 	#print("spending mana")
-	player.spend_mana(card_data)
+	
 
 	# 4. Build context
-	#var resolved := resolve_targets(targets)
-	#if resolved_targets.fighters.is_empty() and !resolved_targets.is_battlefield:
-		#return false
-	#print("making context")
+	
+	var needs_replace := false
+	var summon_action: SummonAction = null
+	
+	for action in card_data.actions:
+		if action.requires_summon_slot():
+			summon_action = action
+			needs_replace = battle_scene.get_n_summoned_allies() >= player.combatant_data.max_mana_blue
+	
 	var ctx := CardActionContext.new()
 	ctx.player = player
 	ctx.battle_scene = battle_scene
 	ctx.card_data = card_data
 	ctx.resolved_target = resolved_targets
 	
+	if needs_replace:
+		# DON’T spend mana, DON’T execute actions, DON’T move card.
+		Events.request_summon_replace.emit(self, ctx)
+		return true
+	
+	player.spend_mana(card_data)
 	# 5. Execute actions in order
 	var any_action_executed := false
 	for action: CardAction in card_data.actions:
@@ -285,11 +296,11 @@ func is_playable() -> bool:
 	if !player.can_play_card(card_data):
 		return false
 	
-	for action in card_data.actions:
-		if action.requires_summon_slot:
-			if battle_scene.get_n_summoned_allies() >= player.combatant_data.max_mana_blue:
-				return false
-	
+	#for action in card_data.actions:
+		#if action.requires_summon_slot():
+			#if battle_scene.get_n_summoned_allies() >= player.combatant_data.max_mana_blue:
+				#return false
+	#
 	return true
 
 func get_fighters(new_targets: Array[Node]) -> Array[Fighter]:

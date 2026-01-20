@@ -27,7 +27,6 @@ signal card_drag_started(usable_card: UsableCard)
 signal card_drag_ended(usable_card: UsableCard)
 signal card_played(usable_card: UsableCard)
 signal n_combatants_changed()
-#signal auras_requested(requester: Fighter)
 signal focused_gained(status: Status)
 signal summon_reserve_card_released(summoned_ally: SummonedAlly)
 signal player_combatant_data_changed()
@@ -36,6 +35,13 @@ signal dead_combatant_data(combatant_data: CombatantData)
 signal battle_group_empty(battle_group: BattleGroup)
 signal mouse_entered_card(usable_card: UsableCard)
 signal mouse_exited_card(usable_card: UsableCard)
+
+## summon replace events
+signal combatant_target_clicked(fighter: Fighter)
+signal combatant_target_hovered(fighter: Fighter)
+signal combatant_target_unhovered(fighter: Fighter)
+signal request_summon_replace(card: UsableCard, ctx: CardActionContext, effect: SummonEffect)
+signal summon_replace_cancel_requested()
 
 ## info/menu events
 signal intent_tooltip_show_requested(intent_display: IntentDisplay)

@@ -1,25 +1,43 @@
 # summon_action.gd
-extends CardAction
+class_name SummonAction extends CardAction
 
 @export var summon_data: CombatantData
 @export var sound: Sound
 
-func activate(ctx: CardActionContext) -> bool:
-	if !ctx.battle_scene or !ctx.resolved_target:
-		return false
+#func activate(ctx: CardActionContext) -> bool:
+	#if !ctx.battle_scene or !ctx.resolved_target:
+		#return false
+#
+	#var effect := SummonEffect.new()
+	#effect.battle_scene = ctx.battle_scene
+	#effect.insert_index = ctx.resolved_target.insert_index
+	#effect.summon_data = _build_clone_data(ctx)
+	#effect.sound = sound
+#
+	#if ctx.card_data and not ctx.card_data.deplete:
+		#effect.bound_card_data = ctx.card_data
+#
+	#effect.execute()
+	#effect.apply_to_card_context(ctx)
+#
+	#return true
 
+func build_effect(ctx: CardActionContext) -> SummonEffect:
 	var effect := SummonEffect.new()
 	effect.battle_scene = ctx.battle_scene
 	effect.insert_index = ctx.resolved_target.insert_index
 	effect.summon_data = _build_clone_data(ctx)
 	effect.sound = sound
-
 	if ctx.card_data and not ctx.card_data.deplete:
 		effect.bound_card_data = ctx.card_data
+	return effect
 
+func activate(ctx: CardActionContext) -> bool:
+	if !ctx.battle_scene or !ctx.resolved_target:
+		return false
+	var effect := build_effect(ctx)
 	effect.execute()
 	effect.apply_to_card_context(ctx)
-
 	return true
 
 
@@ -40,3 +58,6 @@ func description_arity() -> int:
 
 func get_description_values(_ctx: CardActionContext) -> Array:
 	return []
+
+func requires_summon_slot() -> bool:
+	return true

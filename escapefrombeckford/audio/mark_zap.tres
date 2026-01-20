@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="Sound" load_steps=3 format=3 uid="uid://bo75oc63x12b6"]
+
+[ext_resource type="Script" uid="uid://bjedhaqsbwou7" path="res://custom_resources/sound.gd" id="1_3ed4m"]
+[ext_resource type="AudioStream" uid="uid://bv724u132ewsj" path="res://assets/sfx/mark_zap.wav" id="2_udiqv"]
+
+[resource]
+script = ExtResource("1_3ed4m")
+stream = ExtResource("2_udiqv")
+metadata/_custom_type_script = "uid://bjedhaqsbwou7"

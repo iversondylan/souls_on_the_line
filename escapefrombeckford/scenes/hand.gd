@@ -1,3 +1,5 @@
+# hand.gd
+
 class_name Hand extends Node2D
 
 signal card_activated(card : UsableCard)

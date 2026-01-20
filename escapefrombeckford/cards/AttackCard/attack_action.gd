@@ -3,7 +3,7 @@ extends CardAction
 
 @export var base_damage: int = 5
 @export var attack_count: int = 1   # kept for future extensibility
-@export var sound: Sound
+@export var sound: Sound = preload("res://audio/fireball_impact.tres")
 
 func activate(ctx: CardActionContext) -> bool:
 	var targets := ctx.resolved_target.fighters
@@ -20,7 +20,7 @@ func activate(ctx: CardActionContext) -> bool:
 	var damage_effect := DamageEffect.new()
 	damage_effect.targets = targets
 	damage_effect.n_damage = damage
-	damage_effect.sound = sound#ctx.card_data.sound
+	damage_effect.sound = sound
 	damage_effect.execute()
 
 	return true

@@ -1,3 +1,4 @@
+# card_clicked_state.gd
 extends CardState
 
 func enter() -> void:

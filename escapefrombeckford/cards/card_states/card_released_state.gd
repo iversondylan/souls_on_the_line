@@ -1,3 +1,4 @@
+# card_released_state.gd
 extends CardState
 
 var played: bool

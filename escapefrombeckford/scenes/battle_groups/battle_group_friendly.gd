@@ -19,6 +19,7 @@ func start_first_friendly_turn() -> void:
 			reached_player = true
 		if reached_player:
 			acting_fighters.append(fighter)
+	_update_pending_turn_glow()
 	_next_turn_taker()
 
 func _traverse_player(ally: Fighter) -> void:

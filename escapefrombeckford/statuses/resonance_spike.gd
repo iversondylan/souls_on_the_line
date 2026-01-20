@@ -28,4 +28,4 @@ func get_modifier_tokens() -> Array[ModifierToken]:
 	return [token]
 
 func get_tooltip() -> String:
-	return "Resonance Spike [Aura]: Allies deal +%s damage until the start of this unit’s next turn." % intensity
+	return "Resonance Spike [Aura]: Allies deal +%s damage. This effect is lost if stability is broken." % intensity

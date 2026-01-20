@@ -8,6 +8,8 @@ signal statuses_applied(proc_type: Status.ProcType)
 @onready var character_sprite: Sprite2D = $CharacterArt
 @onready var target_area: CombatantTargetArea = $TargetArea
 @onready var targeted_arrow: Sprite2D = $TargetedArrow
+@onready var pending_turn_glow: Sprite2D = $PendingTurnGlow
+
 @onready var health_bar: HealthBar = $HealthBar
 @onready var armor_sprite: Sprite2D = $Armor
 @onready var armor_label: Label = $Armor/Label
@@ -22,6 +24,15 @@ var battle_scene: BattleScene : set = _set_battle_scene
 
 func _ready() -> void:
 	status_grid.statuses_applied.connect(_on_status_grid_statuses_applied)
+	
+	if not target_area.input_event.is_connected(_on_target_area_input_event):
+		target_area.input_event.connect(_on_target_area_input_event)
+	
+	if not target_area.mouse_entered.is_connected(_on_target_area_mouse_entered):
+		target_area.mouse_entered.connect(_on_target_area_mouse_entered)
+	
+	if not target_area.mouse_exited.is_connected(_on_target_area_mouse_exited):
+		target_area.mouse_exited.connect(_on_target_area_mouse_exited)
 
 func _set_combatant_data(new_data: CombatantData) -> void:
 	combatant_data = new_data
@@ -88,3 +99,20 @@ func _on_target_area_area_exited(area: Area2D) -> void:
 
 func _on_status_grid_statuses_applied(proc_type: Status.ProcType):
 	statuses_applied.emit(proc_type)
+
+
+func _on_target_area_mouse_entered() -> void:
+	if fighter and fighter.is_alive():
+		Events.combatant_target_hovered.emit(fighter)
+
+
+func _on_target_area_mouse_exited() -> void:
+	if fighter and fighter.is_alive():
+		Events.combatant_target_unhovered.emit(fighter)
+
+
+func _on_target_area_input_event(viewport: Node, event: InputEvent, shape_idx: int) -> void:
+	if event.is_action_pressed("mouse_click"):
+		if fighter and fighter.is_alive():
+			Events.combatant_target_clicked.emit(fighter)
+			get_viewport().set_input_as_handled()

@@ -1,3 +1,6 @@
+# card_base_state.gd
+
+
 class_name BaseState extends CardState
 
 func enter() -> void:

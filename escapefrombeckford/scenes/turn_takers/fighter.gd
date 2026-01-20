@@ -4,11 +4,14 @@ class_name Fighter extends Node2D
 signal action_resolved(turn_taker: Fighter)
 signal statuses_applied(proc_type: Status.ProcType)
 
+enum TurnStatus {TURN_PENDING, TURN_ACTIVE, NONE}
+
 @export var battle_group: BattleGroup
 @onready var combatant: Combatant = $Combatant
 @onready var character_sprite: Sprite2D = combatant.character_sprite
 @onready var target_area: CombatantTargetArea = combatant.target_area
 @onready var targeted_arrow: Sprite2D = combatant.targeted_arrow
+@onready var pending_turn_glow: Sprite2D = combatant.pending_turn_glow
 @onready var health_bar: HealthBar = combatant.health_bar
 @onready var armor_sprite: Sprite2D = combatant.armor_sprite
 @onready var armor_label: Label = combatant.armor_label
@@ -56,6 +59,7 @@ func _set_run(new_run) -> void:
 	modifier_system.run = run
 
 func enter() -> void:
+	set_pending_turn_glow(TurnStatus.TURN_ACTIVE)
 	combatant.status_grid.apply_statuses_by_type(Status.ProcType.START_OF_TURN)
 	for child in get_children():
 		if child is FighterBehavior:
@@ -215,9 +219,21 @@ func show_targeted_arrow() -> void:
 func hide_targeted_arrow() -> void:
 	targeted_arrow.hide()
 
-func set_pending_turn_glow(_on: bool) -> void:
-	# TODO: set shader param / outline / modulate
-	pass
+func set_pending_turn_glow(status: TurnStatus) -> void:
+	match status:
+		TurnStatus.TURN_ACTIVE:
+			pending_turn_glow.show()
+			# Unmodulated
+			pending_turn_glow.modulate = Color(1.0, 0.65, 0.25)
+
+		TurnStatus.TURN_PENDING:
+			pending_turn_glow.show()
+			# Cool it toward blue while preserving intensity
+			pending_turn_glow.modulate = Color(0.45, 0.65, 1.0)
+
+		TurnStatus.NONE:
+			pending_turn_glow.hide()
+
 
 
 func resolve_action() -> void:
