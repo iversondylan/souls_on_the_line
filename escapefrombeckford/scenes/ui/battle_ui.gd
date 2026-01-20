@@ -1,3 +1,5 @@
+# battle_ui.gd
+
 class_name BattleUI extends Node2D
 
 @onready var end_turn: Button = $EndTurn

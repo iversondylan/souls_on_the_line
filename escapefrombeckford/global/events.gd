@@ -1,3 +1,4 @@
+# events.gd (global: Events)
 extends Node
 
 ## battle flow events

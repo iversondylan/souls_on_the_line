@@ -25,6 +25,7 @@ size = Vector2(1200, 200)
 
 [node name="Battle" type="Node2D"]
 script = ExtResource("1_dd63g")
+debug_mode = null
 music = ExtResource("2_3b6xh")
 
 [node name="Battle_Scene" type="Node2D" parent="." groups=["battle_scene"]]
