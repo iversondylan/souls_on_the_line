@@ -21,7 +21,7 @@ func reset_npc_actions() -> void:
 			#child.update_action()
 
 func start_turn() -> void:
-	if get_child_count() == 0:
+	if get_combatants().is_empty():
 		print("battle_group.gd start_turn() ERROR: stuck with no fighters")
 		return
 	_restored_turn_this_group_turn.clear()
@@ -142,35 +142,36 @@ func combatant_is_there(fighter: Fighter) -> bool:
 	else:
 		return false
 
-func _get_layout_params() -> Dictionary:
+func _get_layout_params(layout_count: int) -> Dictionary:
 	var window_dist := get_window_dist()
 	var left_bound := -window_dist
 	var right_bound := window_dist
-	
-	var fighters := get_combatants()
-	var n_fighters := fighters.size()
-	
-	var increment := 0.0
-	if n_fighters > 0:
-		increment = (right_bound - left_bound) / (n_fighters + 1)
-	
-	return {
-		"left": left_bound,
-		"right": right_bound,
-		"increment": increment,
-		"n_fighters": n_fighters
-	}
 
-func _get_x_for_slot(slot: float) -> float:
-	var p := _get_layout_params()
-	
-	if p.n_fighters == 0:
+	var n := layout_count
+	var increment := 0.0
+	if n > 0:
+		increment = (right_bound - left_bound) / (n + 1)
+
+	return {"left": left_bound, "right": right_bound, "increment": increment, "n": n}
+
+func _get_x_for_slot(slot: float, layout_count: int) -> float:
+	var p := _get_layout_params(layout_count)
+	if p.n == 0:
 		return 0.0
-	
-	if faces_right:
-		return p.right - p.increment * slot
-	else:
-		return p.left + p.increment * slot
+	#return faces_right ? p.right - p.increment * slot : p.left + p.increment * slot
+	return p.right - p.increment * slot if faces_right else p.left + p.increment * slot
+
+func update_combatant_position():
+	var nodes := _get_layout_nodes()
+	var slot := 1.0
+	for n in nodes:
+		var x := _get_x_for_slot(slot, nodes.size())
+		if n is Fighter:
+			(n as Fighter).set_anchor_position(Vector2(x, 0), true)
+		else:
+			n.position = Vector2(x, 0)
+		slot += 1.0
+
 
 
 func _get_layout_nodes() -> Array[Node2D]:
@@ -181,16 +182,16 @@ func _get_layout_nodes() -> Array[Node2D]:
 		nodes.insert(clampi(_preview_index, 0, nodes.size()), _preview_node)
 	return nodes
 
-func update_combatant_position():
-	var nodes := _get_layout_nodes()
-	var slot := 1.0
-	for n in nodes:
-		var x := _get_x_for_slot(slot)
-		if n is Fighter:
-			(n as Fighter).set_anchor_position(Vector2(x, 0), true)
-		else:
-			n.position = Vector2(x, 0)
-		slot += 1.0
+#func update_combatant_position():
+	#var nodes := _get_layout_nodes()
+	#var slot := 1.0
+	#for n in nodes:
+		#var x := _get_x_for_slot(slot)
+		#if n is Fighter:
+			#(n as Fighter).set_anchor_position(Vector2(x, 0), true)
+		#else:
+			#n.position = Vector2(x, 0)
+		#slot += 1.0
 
 func execute_move(effect: MoveEffect) -> void:
 	if !effect or !effect.actor:
@@ -365,14 +366,16 @@ func get_window_dist() -> float:
 
 
 func get_summon_slot_position(slot_index: int) -> Vector2:
-	var p := _get_layout_params()
-	
-	if p.n_fighters == 0:
+	var nodes := _get_layout_nodes()
+	var layout_count := nodes.size()
+
+	if layout_count == 0:
 		return global_position
-	
-	var slot := slot_index + 0.5
-	var x := _get_x_for_slot(slot)
+
+	var slot := float(slot_index) + 0.5
+	var x := _get_x_for_slot(slot, layout_count)
 	return global_position + Vector2(x, 0)
+
 
 
 func turn_reset() -> void:

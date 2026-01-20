@@ -260,8 +260,7 @@ func resolve_targets(new_targets: Array[Node]) -> CardResolvedTarget:
 	
 	match card_data.target_type:
 		CardData.TargetType.SELF:
-			result.fighters.clear()
-			result.fighters.append(player)# = [player] as Array[Fighter]
+			result.fighters = [player] as Array[Fighter]
 		
 		CardData.TargetType.BATTLEFIELD:
 			#var correct_targets: Array[Fighter] = []
@@ -275,31 +274,24 @@ func resolve_targets(new_targets: Array[Node]) -> CardResolvedTarget:
 			#var correct_targets: Array[Fighter] = []
 			if new_targets[0] is CombatantTargetArea:
 				if new_targets[0].combatant is Player or new_targets[0].combatant is SummonedAlly:
-					result.fighters.clear()
-					result.fighters.append(new_targets[0].combatant)
-					#result.fighters = [new_targets[0].combatant] as Array[Fighter]
+					result.fighters = [new_targets[0].combatant] as Array[Fighter]
 		
 		CardData.TargetType.ALLY:
 			#var correct_targets: Array[Fighter]  = []
 			if new_targets[0] is CombatantTargetArea:
 				if new_targets[0].combatant is SummonedAlly:
-					result.fighters.clear()
-					result.fighters.append(new_targets[0].combatant)
-					#result.fighters = [new_targets[0].combatant] as Array[Fighter]
+					result.fighters = [new_targets[0].combatant] as Array[Fighter]
 		
 		CardData.TargetType.SINGLE_ENEMY:
 			if new_targets[0] is CombatantTargetArea:
 				if new_targets[0].combatant is Enemy:
-					result.fighters.clear()
-					result.fighters.append(new_targets[0].combatant)
+					result.fighters = [new_targets[0].combatant] as Array[Fighter]
 		
 		CardData.TargetType.ALL_ENEMIES:
-			result.fighters.clear()
-			result.fighters.append(battle_scene.get_combatants_in_group(1))# = battle_scene.get_combatants_in_group(1) as Array[Fighter]
+			result.fighters = battle_scene.get_combatants_in_group(1) as Array[Fighter]
 		
 		CardData.TargetType.EVERYONE:
-			result.fighters.clear()
-			result.fighters.append(battle_scene.get_all_combatants())# = battle_scene.get_all_combatants() as Array[Fighter]
+			result.fighters = battle_scene.get_all_combatants() as Array[Fighter]
 	return result
 
 func is_playable() -> bool:

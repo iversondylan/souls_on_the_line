@@ -53,6 +53,7 @@ var summon_replace_effect: SummonEffect
 var summon_replace_insert_index: int
 var summon_replace_ghost: Node2D
 var summon_replace_candidates: Array[SummonedAlly] = []
+var summon_replace_resolving := false
 
 func _ready() -> void:
 	get_tree().paused = false
@@ -299,9 +300,9 @@ func _make_summon_ghost(effect: SummonEffect) -> Node2D:
 	spr.texture = data.character_art
 
 	# tint + transparency (match combatant style)
-	var c := data.color_tint
-	c.a = 0.55
-	spr.modulate = c
+	var color := data.color_tint
+	color.a = 0.55
+	spr.modulate = color
 
 	# match combatant scaling/offset
 	var scalar: float = float(data.height) / float(spr.texture.get_height())
@@ -315,13 +316,8 @@ func _make_summon_ghost(effect: SummonEffect) -> Node2D:
 
 func _set_candidate_selectable_visuals(a: SummonedAlly, on: bool) -> void:
 	if on:
-		#a.show_targeted_arrow() # or keep arrow only on hover; your call
-		# If you can repurpose pending_turn_glow as “selectable glow”, do it here:
 		a.set_fade_mark(true)
 	else:
-		#a.hide_targeted_arrow()
-		# Restore pending_turn_glow based on turn logic if needed:
-		# safest is hide and let _update_pending_turn_glow() reapply after modal ends
 		a.set_fade_mark(false)
 
 func _on_combatant_target_hovered(f: Fighter) -> void:
@@ -340,6 +336,8 @@ func _on_combatant_target_unhovered(f: Fighter) -> void:
 func _on_combatant_target_clicked(f: Fighter) -> void:
 	if interaction_mode != InteractionMode.SUMMON_REPLACE:
 		return
+	if summon_replace_resolving:
+		return
 
 	if !(f is SummonedAlly):
 		return
@@ -349,7 +347,7 @@ func _on_combatant_target_clicked(f: Fighter) -> void:
 	_confirm_summon_replace(f)
 
 func _confirm_summon_replace(chosen: SummonedAlly) -> void:
-	# Prevent double clicks
+	summon_replace_resolving = true
 	interaction_mode = InteractionMode.SUMMON_REPLACE # already, but you may add a SUBSTATE if needed
 
 	# Turn off candidate clickability visuals now (optional)
@@ -393,6 +391,8 @@ func _commit_escrow_card_play() -> void:
 	ctx.player.spend_mana(ctx.card_data)
 
 	# Execute all actions EXCEPT summon-slot ones (since we already executed effect)
+	# It would feel better if these were performed by the usablecard
+	# and not in battle.gd
 	var any_action := false
 	for action: CardAction in ctx.card_data.actions:
 		if action.requires_summon_slot():
@@ -400,8 +400,6 @@ func _commit_escrow_card_play() -> void:
 		if action.activate(ctx):
 			any_action = true
 
-	# You may decide whether "only summon happened" counts as played.
-	# In this flow, summon already happened, so we treat it as played.
 	Events.card_played.emit(card)
 
 	# Destination logic (same as UsableCard.activate)
@@ -418,6 +416,7 @@ func _on_summon_replace_cancel_requested() -> void:
 	_cancel_summon_replace()
 
 func _cancel_summon_replace() -> void:
+	summon_replace_resolving = false
 	var friendly := battle_scene.groups[0] as BattleGroupFriendly
 
 	friendly.clear_preview()
@@ -430,6 +429,7 @@ func _cancel_summon_replace() -> void:
 	_end_summon_replace_mode()
 
 func _end_summon_replace_mode() -> void:
+	summon_replace_resolving = false
 	battle_ui.show_summon_replace_prompt(false)
 	battle_ui.set_end_turn_enabled(true)
 	wait_for_anims = false
