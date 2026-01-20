@@ -1,3 +1,4 @@
+# flat_damage_model.gd
 class_name FlatDamageModel extends ParamModel
 
 @export var damage: int = 5

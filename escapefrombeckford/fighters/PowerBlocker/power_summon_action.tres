@@ -1,0 +1,37 @@
+[gd_resource type="Resource" script_class="NPCAction" load_steps=16 format=3 uid="uid://is66ocmth6xa"]
+
+[ext_resource type="Script" uid="uid://3jde7uhq2yho" path="res://custom_resources/npc_effect_package.gd" id="1_m4ebu"]
+[ext_resource type="Resource" uid="uid://dcxgjl672yljc" path="res://fighters/PowerBlocker/summon_mite_pkg.tres" id="2_2qtp0"]
+[ext_resource type="Texture2D" uid="uid://dnor2pbb0nhu" path="res://assets/sprites/assorted/egg-eye.png" id="3_rcqqn"]
+[ext_resource type="Script" uid="uid://dtwuyctovqk5r" path="res://custom_resources/intent_lifecycle_model.gd" id="4_4pvic"]
+[ext_resource type="Script" uid="uid://dbd3fjfn7d3ah" path="res://npc_actions/intent_lifecycle/status_from_opp_turn_model.gd" id="5_xd0vb"]
+[ext_resource type="Resource" uid="uid://bfon8dtpvipfp" path="res://statuses/resonance_spike.tres" id="6_n0f2o"]
+[ext_resource type="Script" uid="uid://bjw0tj5rtf8ly" path="res://npc_actions/intent_lifecycle/status_from_opp_turn_until_my_action_model.gd" id="7_fnegv"]
+[ext_resource type="Resource" uid="uid://cyf7n0vefm434" path="res://statuses/stability_status.tres" id="8_0f4b2"]
+[ext_resource type="Script" uid="uid://q408gy2b4q6a" path="res://custom_resources/performable_model.gd" id="9_fr0ta"]
+[ext_resource type="Script" path="res://npc_actions/performable/keep_stability_performable_model.gd" id="10_eh7vo"]
+[ext_resource type="Script" uid="uid://bcih413oy6v73" path="res://custom_resources/npc_action.gd" id="11_owhfw"]
+[ext_resource type="Script" uid="uid://cuj4qvyx6dedj" path="res://custom_resources/state_model.gd" id="12_qrlu3"]
+
+[sub_resource type="Resource" id="Resource_usgkw"]
+script = ExtResource("5_xd0vb")
+status = ExtResource("6_n0f2o")
+metadata/_custom_type_script = "uid://dbd3fjfn7d3ah"
+
+[sub_resource type="Resource" id="Resource_sm8gt"]
+script = ExtResource("7_fnegv")
+status = ExtResource("8_0f4b2")
+metadata/_custom_type_script = "uid://bjw0tj5rtf8ly"
+
+[sub_resource type="Resource" id="Resource_1t84l"]
+script = ExtResource("10_eh7vo")
+metadata/_custom_type_script = "uid://bfkcesydr8xy8"
+
+[resource]
+script = ExtResource("11_owhfw")
+effect_packages = Array[ExtResource("1_m4ebu")]([ExtResource("2_2qtp0")])
+intent_lifecycle_models = Array[ExtResource("4_4pvic")]([SubResource("Resource_usgkw"), SubResource("Resource_sm8gt")])
+choice_type = 0
+performable_models = Array[ExtResource("9_fr0ta")]([SubResource("Resource_1t84l")])
+intent_icon = ExtResource("3_rcqqn")
+metadata/_custom_type_script = "uid://bcih413oy6v73"

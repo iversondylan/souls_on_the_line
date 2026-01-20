@@ -59,6 +59,13 @@ func get_index_of_parent_group(fighter: Fighter) -> int:
 			return i
 	return -1
 
+func get_group_index_for(group: Node) -> int:
+	for i in range(groups.size()):
+		if groups[i] == group:
+			return i
+	return -1
+
+
 func add_combatant(fighter: Fighter, group: int, rank: int):
 	fighter.battle_scene = self
 	groups[group].add_combatant(fighter, rank)

@@ -17,9 +17,9 @@ func _on_die() -> void:
 func bind_card(_new_card_data: CardData) -> void:
 	card_data = _new_card_data
 
-func _on_traverse_player() -> void:
-	var fighter: Fighter = get_parent()
-	fighter.battle_group.ally_traverse_player(fighter)
+#func _on_traverse_player() -> void:
+	#var fighter: Fighter = get_parent()
+	#fighter.battle_group.ally_traverse_player(fighter)
 
 func get_sibling(_name: String) -> Node:
 	return get_parent().get_node_or_null(_name)

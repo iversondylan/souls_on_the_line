@@ -1,3 +1,4 @@
+# npc_keys.gd
 class_name NPCKeys
 
 # Effect params (already correct)
@@ -11,8 +12,13 @@ const PROJECTILE_SCENE := "projectile_scene"
 const STATUS_SCENE := "status_scene"
 const STATUS_INTENSITY := "status_intensity"
 const STATUS_DURATION := "status_duration"
-#const STATUS_STACK_TYPE := "status_stack_type"
-#const STATUS_EXPIRATION_POLICY := "expiration_policy"
+
+const GROUP_INDEX := "group_index"
+const INSERT_INDEX := "insert_index"
+const SUMMON_COUNT := "summon_count"
+const SUMMON_DATA := "summon_data"
+const SUMMON_SOUND := "summon_sound"
+
 
 # AI state
 const ATTACK_SPREE := "attack_spree"

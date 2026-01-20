@@ -105,7 +105,7 @@ func remove_combatant(fighter: Fighter):
 	update_combatant_position()
 	_recompute_intents_for_group()
 	_update_pending_turn_glow()
-	if get_child_count() == 0:
+	if get_combatants().is_empty():
 		Events.battle_group_empty.emit(self)
 	
 	if !dead_fighter_acting:
