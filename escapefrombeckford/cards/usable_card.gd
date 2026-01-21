@@ -156,9 +156,9 @@ func activate() -> bool:
 		if summon_action == null:
 			push_warning("Summon replace requested but card has no SummonAction")
 			return false
-
+	
 		var effect := summon_action.build_effect(ctx)
-
+	
 		Events.request_summon_replace.emit(self, ctx, effect)
 		return true
 	
@@ -169,11 +169,11 @@ func activate() -> bool:
 		#print("about to activate an action")
 		if action.activate(ctx):
 			any_action_executed = true
-
+	
 	# 6. If nothing happened, refund / abort
 	if !any_action_executed:
 		return false
-
+	
 	# 7. Emit event
 	Events.card_played.emit(self)
 
