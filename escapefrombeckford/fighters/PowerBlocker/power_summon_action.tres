@@ -10,7 +10,7 @@
 [ext_resource type="Resource" uid="uid://cyf7n0vefm434" path="res://statuses/stability_status.tres" id="8_0f4b2"]
 [ext_resource type="Resource" uid="uid://ctwocrhb1x5bv" path="res://npc_actions/text/summon_red_intent_text_model.tres" id="9_2qtp0"]
 [ext_resource type="Script" uid="uid://q408gy2b4q6a" path="res://custom_resources/performable_model.gd" id="9_fr0ta"]
-[ext_resource type="Script" path="res://npc_actions/performable/keep_stability_performable_model.gd" id="10_eh7vo"]
+[ext_resource type="Script" uid="uid://bfkcesydr8xy8" path="res://npc_actions/performable/keep_stability_performable_model.gd" id="10_eh7vo"]
 [ext_resource type="Script" uid="uid://bcih413oy6v73" path="res://custom_resources/npc_action.gd" id="11_owhfw"]
 [ext_resource type="Script" uid="uid://cuj4qvyx6dedj" path="res://custom_resources/state_model.gd" id="12_qrlu3"]
 

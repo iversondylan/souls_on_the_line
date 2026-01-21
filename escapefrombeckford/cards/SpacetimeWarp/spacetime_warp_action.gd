@@ -21,10 +21,11 @@ func activate(ctx: CardActionContext) -> bool:
 	move.actor = actor
 	move.move_type = MoveEffect.MoveType.TRAVERSE_PLAYER
 	move.can_restore_turn = true
+	move.battle_scene = ctx.battle_scene
 	# Optional: if you add sound to MoveEffect later, you can pass it here.
 	move.sound = sound
+	move.execute()
 	
-	ctx.battle_scene.execute_move(move)
 	
 	# SFX can be played inside execute_move / BattleGroup.execute_move if desired,
 	# or leave it silent for now.
