@@ -17,6 +17,5 @@ func set_icon_values():
 func _on_mouse_entered() -> void:
 	Events.intent_tooltip_show_requested.emit(self as IntentDisplay)
 
-
 func _on_mouse_exited() -> void:
 	Events.tooltip_hide_requested.emit()

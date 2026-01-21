@@ -39,8 +39,8 @@ func execute(ctx: NPCAIContext, on_done: Callable) -> void:
 		return
 
 	# Resolve summon data (CombatantData resource OR a path string OR null for SummonEffect fallback)
-	var summon_data: CombatantData = _resolve_summon_data(params.get(NPCKeys.SUMMON_DATA, null))
-
+	var summon_data_orig: CombatantData = _resolve_summon_data(params.get(NPCKeys.SUMMON_DATA, SummonEffect.DEFAULT_SUMMON_DATA))
+	var summon_data: CombatantData = summon_data_orig.duplicate()
 	# Optional sound override (Sound/AudioStream-like resource), SummonEffect will fallback if null
 	var summon_sound = params.get(NPCKeys.SUMMON_SOUND, null)
 

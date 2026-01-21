@@ -3,7 +3,7 @@ class_name MaxManaRedDamageModel
 extends ParamModel
 
 @export var base_damage: int = 0
-@export var mana_scaling: float = 0.0   # multiplied by max_mana_red
+@export var mana_scaling: float = 1.0   # multiplied by max_mana_red
 
 func change_params(ctx: NPCAIContext) -> NPCAIContext:
 	var fighter := ctx.combatant
