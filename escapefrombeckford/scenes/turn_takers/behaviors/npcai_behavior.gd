@@ -163,8 +163,8 @@ func _on_planned_intent_changed(prev_idx: int, _new_idx: int, ctx: NPCAIContext)
 func _can_cancel_intent(state: Dictionary) -> bool:
 	if state.get(IS_ACTING, false):
 		return false
-	#if state.get("telegraph_committed", false):
-		#return false
+	if state.get("telegraph_committed", false):
+		return false
 	return true
 
 func _on_opposing_group_turn_start() -> void:
