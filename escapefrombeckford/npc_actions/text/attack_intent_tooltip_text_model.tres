@@ -4,5 +4,4 @@
 
 [resource]
 script = ExtResource("1_vrvvr")
-text_template = "[b]Attack Intent:[/b]{attack_mode} attack: {strikes}{damage} damage."
 metadata/_custom_type_script = "uid://8lp7x60y132v"

@@ -2,6 +2,8 @@
 class_name AttackIntentTooltipTextModel
 extends TextModel
 
+@export_multiline var text_template: String = "[b]Attack Intent[/b] [{attack_mode} attack]: {strikes}{damage} damage."
+
 func get_text(ctx: NPCAIContext) -> String:
 	if !ctx or !ctx.params:
 		return text_template
@@ -14,11 +16,11 @@ func get_text(ctx: NPCAIContext) -> String:
 
 	match mode_raw:
 		NPCAttackSequence.ATTACK_MODE_MELEE:
-			mode_text = " Melee"
+			mode_text = "Melee"
 		NPCAttackSequence.ATTACK_MODE_RANGED:
-			mode_text = " Ranged"
+			mode_text = "Ranged"
 		_:
-			mode_text = " Standard"
+			mode_text = "Standard"
 
 	result = result.replace("{attack_mode}", mode_text)
 

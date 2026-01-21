@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="CombatantData" load_steps=4 format=3 uid="uid://dpfk805icoy7m"]
+
+[ext_resource type="Script" uid="uid://cfatj0ryn8uv3" path="res://custom_resources/combatant_data.gd" id="1_5n7eh"]
+[ext_resource type="Resource" uid="uid://6mwct24ustuh" path="res://fighters/SlabConstruct/slab_construct_ai.tres" id="1_xvhqi"]
+[ext_resource type="Texture2D" uid="uid://dkfg0k5h7fab1" path="res://assets/character_visuals/slab_construct/slab_construct.PNG" id="2_p1pqp"]
+
+[resource]
+script = ExtResource("1_5n7eh")
+name = "Slab Construct"
+character_art = ExtResource("2_p1pqp")
+facing_right = false
+max_health = 35
+max_mana_red = 8
+ai = ExtResource("1_xvhqi")
+metadata/_custom_type_script = "uid://cfatj0ryn8uv3"

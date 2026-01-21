@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://bcih413oy6v73" path="res://custom_resources/npc_action.gd" id="1_42grb"]
 [ext_resource type="Script" uid="uid://bdsvca1cpka5s" path="res://custom_resources/npc_ai_profile.gd" id="2_qgtam"]
-[ext_resource type="Resource" uid="uid://blaif4hjpsppa" path="res://fighters/BasicClone/basic_clone_attack.tres" id="2_yrh52"]
+[ext_resource type="Resource" uid="uid://blaif4hjpsppa" path="res://fighters/BasicClone/basic_clone_attack_action.tres" id="2_yrh52"]
 
 [resource]
 script = ExtResource("2_qgtam")

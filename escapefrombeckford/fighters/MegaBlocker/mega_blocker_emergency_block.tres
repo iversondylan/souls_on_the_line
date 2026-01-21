@@ -1,8 +1,9 @@
-[gd_resource type="Resource" script_class="NPCAction" load_steps=13 format=3 uid="uid://dnkgkdy6leoku"]
+[gd_resource type="Resource" script_class="NPCAction" load_steps=14 format=3 uid="uid://dnkgkdy6leoku"]
 
 [ext_resource type="Texture2D" uid="uid://dob30qtbj3xk5" path="res://assets/sprites/assorted/block.PNG" id="1_2t3ut"]
 [ext_resource type="Script" uid="uid://3jde7uhq2yho" path="res://custom_resources/npc_effect_package.gd" id="1_dwbsa"]
 [ext_resource type="Resource" uid="uid://dcr4tncgc8ubg" path="res://fighters/MegaBlocker/emergency_block_pkg.tres" id="2_3o1dh"]
+[ext_resource type="Script" uid="uid://dtwuyctovqk5r" path="res://custom_resources/intent_lifecycle_model.gd" id="4_lacm8"]
 [ext_resource type="Script" uid="uid://bqd5160umo0sl" path="res://npc_actions/text/block_intent_text_model.gd" id="4_oftyv"]
 [ext_resource type="Script" uid="uid://q408gy2b4q6a" path="res://custom_resources/performable_model.gd" id="4_um3j2"]
 [ext_resource type="Resource" uid="uid://dh7ogdb558g7u" path="res://fighters/MegaBlocker/not_used_1_yet_performable.tres" id="5_wh4cq"]

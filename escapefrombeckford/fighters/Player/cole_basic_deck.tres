@@ -1,16 +1,13 @@
-[gd_resource type="Resource" script_class="CardPile" load_steps=10 format=3 uid="uid://gsb7q5fcn68v"]
+[gd_resource type="Resource" script_class="CardPile" load_steps=7 format=3 uid="uid://gsb7q5fcn68v"]
 
 [ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://custom_resources/card_data.gd" id="1_rilno"]
-[ext_resource type="Resource" uid="uid://ds3np5rpek8ot" path="res://cards/BerserkersFury/berserkers_fury.tres" id="2_e7eac"]
 [ext_resource type="Script" uid="uid://dnybrgm0o6gjj" path="res://custom_resources/card_pile.gd" id="2_nkp8v"]
 [ext_resource type="Resource" uid="uid://b7txf6d8vmjkk" path="res://cards/SpectralCloneCard/spectral_clone.tres" id="3_miprr"]
 [ext_resource type="Resource" uid="uid://iv5lrhm4b60n" path="res://cards/SpacetimeWarp/spacetime_warp_data.tres" id="4_4n306"]
 [ext_resource type="Resource" uid="uid://daxsngijhqe3k" path="res://cards/FocusFireCard/focus_fire.tres" id="5_miprr"]
-[ext_resource type="Resource" uid="uid://dfgkvy2yw1a3e" path="res://cards/AttackCard/attack_card.tres" id="6_4n306"]
-[ext_resource type="Resource" uid="uid://qoedpmaije5m" path="res://cards/CruelDominion/cruel_dominion.tres" id="7_pvg2w"]
 [ext_resource type="Resource" uid="uid://eet5htwsey50" path="res://cards/SuperchargeCard/supercharge.tres" id="7_x43pu"]
 
 [resource]
 script = ExtResource("2_nkp8v")
-cards = Array[ExtResource("1_rilno")]([ExtResource("2_e7eac"), ExtResource("3_miprr"), ExtResource("3_miprr"), ExtResource("3_miprr"), ExtResource("3_miprr"), ExtResource("3_miprr"), ExtResource("4_4n306"), ExtResource("5_miprr"), ExtResource("6_4n306"), ExtResource("7_pvg2w"), ExtResource("7_x43pu")])
+cards = Array[ExtResource("1_rilno")]([ExtResource("3_miprr"), ExtResource("3_miprr"), ExtResource("3_miprr"), ExtResource("3_miprr"), ExtResource("3_miprr"), ExtResource("4_4n306"), ExtResource("5_miprr"), ExtResource("7_x43pu"), ExtResource("4_4n306"), ExtResource("5_miprr"), ExtResource("7_x43pu"), ExtResource("4_4n306")])
 metadata/_custom_type_script = "uid://dnybrgm0o6gjj"
