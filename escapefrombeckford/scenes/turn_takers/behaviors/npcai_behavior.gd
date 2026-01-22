@@ -40,7 +40,7 @@ func _make_context() -> NPCAIContext:
 
 func _on_combatant_data_set(_data: CombatantData) -> void:
 	ai_profile = _data.ai
-
+	
 	# Init persistent AI state + RNG ONCE
 	set_meta("ai_state", {})
 	var state = get_meta("ai_state")
@@ -49,7 +49,7 @@ func _on_combatant_data_set(_data: CombatantData) -> void:
 	var rng := RandomNumberGenerator.new()
 	rng.randomize()
 	set_meta("ai_rng", rng)
-
+	
 	if not _data.combatant_data_changed.is_connected(_on_stats_changed):
 		_data.combatant_data_changed.connect(_on_stats_changed)
 	var grid : StatusGrid = get_parent().combatant.status_grid
@@ -65,14 +65,14 @@ func _on_stats_changed() -> void:
 	var fighter: Fighter = get_parent()
 	if !fighter.is_alive() or !ai_profile:
 		return
-
+	
 	var state : Dictionary = get_meta("ai_state")
 	if state and state.has(HP_AT_TURN_START):
 		var cur_hp := fighter.combatant_data.health
 		var delta : int = state[HP_AT_TURN_START] - cur_hp
 		if delta > 0:
 			state[DMG_SINCE_LAST_TURN] = delta
-
+	
 	plan_next_intent(true)
 	_refresh_intent_display_only()
 
@@ -100,7 +100,7 @@ func _get_first_conditional_idx(ctx: NPCAIContext) -> int:
 func _roll_chance_idx(ctx: NPCAIContext) -> int:
 	var total := 0.0
 	var pool: Array[int] = []
-
+	
 	for i in range(ai_profile.actions.size()):
 		var action := ai_profile.actions[i]
 		if action.choice_type == NPCAction.ChoiceType.CHANCE and _is_action_performable(action, ctx):
@@ -111,48 +111,87 @@ func _roll_chance_idx(ctx: NPCAIContext) -> int:
 
 	if pool.is_empty() or total <= 0.0:
 		return -1
-
+	
 	var roll := ctx.rng.randf() * total
 	var acc := 0.0
 	for i in pool:
 		acc += _get_action_chance_weight(ai_profile.actions[i], ctx)
 		if roll <= acc:
 			return i
-
+	
 	return pool[-1]
 
 func plan_next_intent(allow_hooks: bool = false) -> void:
 	var fighter: Fighter = get_parent()
-	if !fighter.is_alive() or !ai_profile:
+	if !fighter or !fighter.is_alive() or !ai_profile:
 		return
-
+	
 	var ctx := _make_context()
-	var state := ctx.state
-
-	var prev_idx: int = state.get(KEY_PLANNED_IDX, -1)
-	var new_idx: int = -1
-
-	# 1) CONDITIONAL actions first
-	for i in range(ai_profile.actions.size()):
-		var action := ai_profile.actions[i]
-		if action.choice_type == NPCAction.ChoiceType.CONDITIONAL and _is_action_performable(action, ctx):
-			new_idx = i
-			break
-
-	# 2) Otherwise CHANCE
+	var state := ctx.state if ctx and ctx.state else {}
+	
+	var prev_idx: int = int(state.get(KEY_PLANNED_IDX, -1))
+	
+	# ------------------------------------------------------------
+	# 0) Hard lock: if we already have a plan and we are not allowed
+	# to change it right now, bail early (prevents mid-cycle rerolls).
+	# ------------------------------------------------------------
+	if prev_idx != -1 and !_can_cancel_intent(state):
+		return
+	
+	# ------------------------------------------------------------
+	# 1) If a CONDITIONAL action is performable, it always wins.
+	# (This is your intended pipeline for sequences / overrides.)
+	# ------------------------------------------------------------
+	var cond_idx := _get_first_conditional_idx(ctx)
+	if cond_idx != -1:
+		# If nothing changes, do nothing.
+		if prev_idx == cond_idx:
+			return
+	
+		# Interrupt-only cleanup hooks
+		if allow_hooks:
+			_on_planned_intent_changed(prev_idx, cond_idx, ctx)
+	
+		state[KEY_PLANNED_IDX] = cond_idx
+		return
+	
+	# ------------------------------------------------------------
+	# 2) No conditional available.
+	# If previous planned CHANCE action is still performable,
+	# keep it (prevents reroll spam from death / minor state changes).
+	# ------------------------------------------------------------
+	if prev_idx != -1:
+		var prev_action := _get_action_by_idx(prev_idx)
+		if prev_action and prev_action.choice_type == NPCAction.ChoiceType.CHANCE:
+			if _is_action_performable(prev_action, ctx):
+				return
+	
+	# ------------------------------------------------------------
+	# 3) Otherwise roll a new CHANCE action.
+	# ------------------------------------------------------------
+	var new_idx := _roll_chance_idx(ctx)
+	
+	# If no chance actions are available, clear planned index.
+	# (Optional, but makes the state explicit.)
 	if new_idx == -1:
-		new_idx = _roll_chance_idx(ctx)
-
-	# No change → nothing to do
+		if prev_idx == -1:
+			return
+		if allow_hooks:
+			_on_planned_intent_changed(prev_idx, -1, ctx)
+		state[KEY_PLANNED_IDX] = -1
+		return
+	
+	# If unchanged, do nothing.
 	if prev_idx == new_idx:
 		return
-
-	# ---- Interrupt-only cleanup ----
-	if allow_hooks and _can_cancel_intent(state):
+	
+	# Interrupt-only cleanup hooks
+	if allow_hooks:
 		_on_planned_intent_changed(prev_idx, new_idx, ctx)
-
-	# ---- Commit new intent ----
+	
+	# Commit
 	state[KEY_PLANNED_IDX] = new_idx
+
 
 func _on_planned_intent_changed(prev_idx: int, _new_idx: int, ctx: NPCAIContext) -> void:
 	var prev_action := _get_action_by_idx(prev_idx)
@@ -170,27 +209,27 @@ func _can_cancel_intent(state: Dictionary) -> bool:
 func _on_opposing_group_turn_start() -> void:
 	var ctx := _make_context()
 	var state : Dictionary = ctx.state
-
+	
 	# Defensive: no planning data
 	if !state.has(KEY_PLANNED_IDX):
 		return
-
+	
 	# Prevent double-commit in the same cycle
 	if state.get("telegraph_committed", false):
 		return
-
+	
 	var idx : int = int(state.get(KEY_PLANNED_IDX, -1))
 	if idx < 0:
 		return
-
+	
 	var action := _get_action_by_idx(idx)
 	if !action:
 		return
-
+	
 	# Commit intent-time effects (telegraphs, posture, channeling, etc.)
 	for model in action.intent_lifecycle_models:
 		model.on_opposing_group_start(ctx)
-
+	
 	# Mark as committed so it won't reapply mid-cycle
 	state["telegraph_committed"] = true
 
@@ -292,13 +331,13 @@ func _is_action_performable(action: NPCAction, ctx: NPCAIContext) -> bool:
 func _get_action_chance_weight(action: NPCAction, ctx: NPCAIContext) -> float:
 	var weight := action.chance_weight
 	var state := ctx.state if ctx and ctx.state else {}
-
+	
 	if state.get(NPCKeys.CHANCE_DISABLED, false):
 		return 0.0
-
+	
 	weight += float(state.get(NPCKeys.CHANCE_ADD, 0.0))
 	weight *= float(state.get(NPCKeys.CHANCE_MULT, 1.0))
-
+	
 	return maxf(weight, 0.0)
 
 
@@ -336,12 +375,12 @@ func _start_action(action: NPCAction, ctx: NPCAIContext) -> void:
 	
 	action_ctx = ctx
 	remaining_effect_packages = action.effect_packages.duplicate()
-
+	
 	# Action-level state models (once)
 	for m in action.state_models:
 		if m:
 			m.change_state(ctx)
-
+	
 	_next_effect_package()
 
 
@@ -349,22 +388,22 @@ func _next_effect_package() -> void:
 	if remaining_effect_packages.is_empty():
 		_start_impact_delay()#_finish_action()
 		return
-
+	
 	var pkg : NPCEffectPackage = remaining_effect_packages.pop_front()
-
+	
 	# Clear per-effect params
 	action_ctx.params.clear()
-
+	
 	# Package-level state models
 	for m in pkg.state_models:
 		if m:
 			m.change_state(action_ctx)
-
+	
 	# Package-level param models
 	for m in pkg.param_models:
 		if m:
 			m.change_params(action_ctx)
-
+	
 	_execute_effect_sequence(pkg)
 
 
@@ -392,7 +431,7 @@ func _finish_action() -> void:
 	current_action = null
 	action_ctx = null
 	remaining_effect_packages.clear()
-
+	
 	if fighter:
 		fighter.resolve_action()
 
