@@ -2,6 +2,8 @@
 class_name IntentTooltipTextModel
 extends TextModel
 
+@export_multiline var text_template: String
+
 func get_text(ctx: NPCAIContext) -> String:
 	if !ctx or !ctx.params:
 		return text_template
