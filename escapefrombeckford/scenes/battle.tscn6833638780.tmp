@@ -151,7 +151,6 @@ visible = false
 position = Vector2(960, 131)
 
 [node name="TurnOrderSparkController" parent="Battle_UI" instance=ExtResource("17_saiin")]
-position = Vector2(859, 364)
 label_offset = Vector2(0, -140)
 intro_pulse_duration = 0.22
 intro_label_fade = 0.35

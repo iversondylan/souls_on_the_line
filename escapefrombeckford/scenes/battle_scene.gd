@@ -237,6 +237,59 @@ func get_group_for_actor(actor: Fighter) -> BattleGroup:
 			return group
 	return null
 
+# battle_scene.gd
+func get_turn_order_snapshot() -> TurnOrderSnapshot:
+	var snap := TurnOrderSnapshot.new()
+	
+	# Defensive
+	if !groups or groups.size() < 2:
+		push_warning("BattleScene.get_turn_order_snapshot(): groups missing")
+		return snap
+	
+	var friendly_group := groups[0]
+	var enemy_group := groups[1]
+	if !friendly_group or !enemy_group:
+		push_warning("BattleScene.get_turn_order_snapshot(): group null")
+		return snap
+	
+	var friendlies: Array[Fighter] = friendly_group.get_combatants()
+	var enemies: Array[Fighter] = enemy_group.get_combatants()
+	
+	# Friendly lane (front->back in group order)
+	for i in range(friendlies.size()):
+		var f := friendlies[i]
+		if !f:
+			continue
+		if f is Player:
+			snap.player_index = snap.friendly.size() # index in the filtered list
+		snap.friendly.append(_fighter_to_turn_entry(f))
+	
+	# Enemy lane (front->back in *their* group order)
+	for f in enemies:
+		if !f:
+			continue
+		snap.enemy.append(_fighter_to_turn_entry(f))
+	
+	return snap
+
+
+func _fighter_to_turn_entry(f: Fighter) -> Dictionary:
+	# Choose a consistent "spark contact point"
+	var h := 200.0
+	if f.combatant_data:
+		h = float(f.combatant_data.height)
+	
+	var contact := f.global_position + Vector2(0, -h * 0.6)
+	
+	return {
+		"pos": contact,
+		"id": f.get_instance_id(),
+		"is_player": f is Player,
+		"is_summon": f is SummonedAlly,
+		"is_enemy": f is Enemy,
+	}
+
+
 ##attack effect target pipeline
 
 func get_targets_for_attack_sequence(ai_ctx: NPCAIContext) -> Array[Fighter]:
@@ -367,3 +420,85 @@ func _on_modifier_tokens_changed(mod_type: Modifier.Type) -> void:
 		if fighter.is_alive():
 			fighter.modifier_system.mark_dirty(mod_type)
 			#fighter._on_modifier_changed()
+
+
+# battle_scene.gd
+func build_turn_order_path() -> TurnOrderPath:
+	var path := TurnOrderPath.new()
+
+	# Defensive: need 2 groups (0=friendly, 1=enemy)
+	if groups.size() < 2:
+		return path
+
+	var friendly_group: Node = groups[0]
+	var enemy_group: Node = groups[1]
+
+	if !friendly_group or !enemy_group:
+		return path
+	if !friendly_group.has_method("get_combatants") or !enemy_group.has_method("get_combatants"):
+		return path
+
+	var friendlies: Array[Fighter] = friendly_group.get_combatants()
+	var enemies: Array[Fighter] = enemy_group.get_combatants()
+
+	if friendlies.is_empty():
+		return path
+
+	# ----------------------------
+	# Find player + index
+	# ----------------------------
+	var player_fighter: Fighter = null
+	for f in friendlies:
+		if f is Player:
+			player_fighter = f
+			break
+	if player_fighter == null:
+		# Fallback: treat "front friendly" as the anchor
+		player_fighter = friendlies[0]
+
+	var player_idx := friendlies.find(player_fighter)
+	if player_idx < 0:
+		player_idx = 0
+
+	path.player_pos = player_fighter.global_position
+
+	# ----------------------------
+	# Friendlies behind player (moving left): indices player_idx+1..end
+	# ----------------------------
+	path.behind_friendlies = []
+	for i in range(player_idx + 1, friendlies.size()):
+		var f := friendlies[i]
+		if f and f.is_alive():
+			path.behind_friendlies.append(f.global_position)
+
+	# ----------------------------
+	# Enemies front-to-back (moving right): indices 0..end
+	# ----------------------------
+	path.enemies_front_to_back = []
+	for e in enemies:
+		if e and e.is_alive():
+			path.enemies_front_to_back.append(e.global_position)
+
+	# ----------------------------
+	# Friendlies in front of player (moving left back toward player):
+	# indices 0..player_idx-1 (frontmost first)
+	# ----------------------------
+	path.in_front_friendlies = []
+	for i in range(0, player_idx):
+		var f := friendlies[i]
+		if f and f.is_alive():
+			path.in_front_friendlies.append(f.global_position)
+
+	# ----------------------------
+	# Middle position = mean(front friendly, front enemy)
+	# (front is index 0 in each group's combatant order)
+	# ----------------------------
+	var front_friendly_pos := friendlies[0].global_position
+	var front_enemy_pos := front_friendly_pos
+
+	if !enemies.is_empty():
+		front_enemy_pos = enemies[0].global_position
+
+	path.middle_pos = (front_friendly_pos + front_enemy_pos) * 0.5
+
+	return path
