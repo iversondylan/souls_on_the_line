@@ -10,7 +10,7 @@ signal canceled
 
 @export var height_above_feet: float = 100.0
 
-@export var time_between_fighters: float = 0.450
+@export var time_between_fighters: float = 0.40
 
 # Arc settings (replaces "beyond/before + blip" wrap)
 @export var arc_time_mult: float = 2.0
