@@ -17,6 +17,7 @@ enum TurnStatus {TURN_PENDING, TURN_ACTIVE, NONE}
 @onready var armor_sprite: Sprite2D = combatant.armor_sprite
 @onready var armor_label: Label = combatant.armor_label
 @onready var intent_container: IntentContainer = combatant.intent_container
+@onready var camera_focus: Node2D = combatant.camera_focus
 @onready var area_left: CombatantAreaLeft = combatant.area_left
 @onready var damage_number_scn: PackedScene = preload("res://scenes/ui/damage_number.tscn")
 @onready var blocked_message_scn: PackedScene = preload("res://scenes/ui/blocked_message.tscn")

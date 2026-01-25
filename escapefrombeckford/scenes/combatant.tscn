@@ -99,6 +99,8 @@ offset_top = 39.0
 offset_right = 404.0
 offset_bottom = 171.0
 
+[node name="CameraFocus" type="Node2D" parent="."]
+
 [connection signal="area_entered" from="TargetArea" to="." method="_on_target_area_area_entered"]
 [connection signal="area_exited" from="TargetArea" to="." method="_on_target_area_area_exited"]
 [connection signal="input_event" from="TargetArea" to="." method="_on_target_area_input_event"]

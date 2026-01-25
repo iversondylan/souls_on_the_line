@@ -1,4 +1,4 @@
-[gd_scene load_steps=23 format=3 uid="uid://k11cug4p8o3l"]
+[gd_scene load_steps=24 format=3 uid="uid://k11cug4p8o3l"]
 
 [ext_resource type="Script" uid="uid://dixfcu6jmx0kd" path="res://scenes/battle.gd" id="1_dd63g"]
 [ext_resource type="AudioStream" uid="uid://dqm0r66m6ggwt" path="res://assets/music/enchanted tiki 86.mp3" id="2_3b6xh"]
@@ -11,6 +11,7 @@
 [ext_resource type="Texture2D" uid="uid://deopg8hjud5es" path="res://assets/sprites/assorted/arrow_down.png" id="8_h4dll"]
 [ext_resource type="Script" uid="uid://ckq1sgjqlphh3" path="res://scenes/ui/battle_ui.gd" id="9_jujjx"]
 [ext_resource type="Script" uid="uid://b0ws73jyx6b4c" path="res://scenes/battlefield_target_arrow.gd" id="9_p0caf"]
+[ext_resource type="Script" uid="uid://8uvr4kljlbkb" path="res://scenes/battle_camera_rig.gd" id="10_dd63g"]
 [ext_resource type="PackedScene" uid="uid://cy1kfsc2qfglo" path="res://scenes/hand.tscn" id="15_wvgjd"]
 [ext_resource type="PackedScene" uid="uid://chyl400nmwlxo" path="res://scenes/summon_replace_prompt.tscn" id="16_61i1y"]
 [ext_resource type="PackedScene" uid="uid://bxtf6la07t0t5" path="res://scenes/ui/card_pile_opener.tscn" id="17_ariee"]
@@ -64,7 +65,14 @@ scale = Vector2(0.153333, 0.153333)
 texture = ExtResource("8_h4dll")
 script = ExtResource("9_p0caf")
 
-[node name="Debug_UI" type="Node2D" parent="."]
+[node name="CameraRig" type="Node2D" parent="Battle_Scene"]
+position = Vector2(960, 540)
+script = ExtResource("10_dd63g")
+
+[node name="Camera2D" type="Camera2D" parent="Battle_Scene/CameraRig"]
+position_smoothing_enabled = true
+
+[node name="Debug_UI" type="CanvasLayer" parent="."]
 
 [node name="KillEnemiesButton" type="Button" parent="Debug_UI"]
 offset_top = 99.0
@@ -73,7 +81,7 @@ offset_bottom = 130.0
 theme = ExtResource("8_2tyvl")
 text = "kill enemies"
 
-[node name="Battle_UI" type="Node2D" parent="." groups=["ui_layer"]]
+[node name="Battle_UI" type="CanvasLayer" parent="." groups=["ui_layer"]]
 script = ExtResource("9_jujjx")
 
 [node name="EndTurn" type="Button" parent="Battle_UI"]
@@ -82,10 +90,10 @@ anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 1694.0
-offset_top = 994.0
-offset_right = 1873.0
-offset_bottom = 1048.0
+offset_left = -220.0
+offset_top = -100.0
+offset_right = -41.0
+offset_bottom = -46.0
 grow_horizontal = 0
 grow_vertical = 0
 text = "End Turn"
@@ -96,9 +104,9 @@ anchors_preset = 2
 anchor_top = 1.0
 anchor_bottom = 1.0
 offset_left = 22.0
-offset_top = 985.0
+offset_top = -110.0
 offset_right = 86.0
-offset_bottom = 1049.0
+offset_bottom = -46.0
 grow_vertical = 0
 counter = NodePath("Counter")
 
@@ -121,10 +129,10 @@ anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 1611.0
-offset_top = 980.0
-offset_right = 1675.0
-offset_bottom = 1044.0
+offset_left = -303.0
+offset_top = -110.0
+offset_right = -239.0
+offset_bottom = -46.0
 grow_horizontal = 0
 grow_vertical = 0
 counter = NodePath("Counter")
@@ -152,18 +160,10 @@ position = Vector2(960, 131)
 
 [node name="TurnOrderSparkController" parent="Battle_UI" instance=ExtResource("17_saiin")]
 position = Vector2(859, 364)
-label_offset = Vector2(0, -140)
-intro_pulse_duration = 0.22
 intro_label_fade = 0.35
-move_duration = 0.25
-wrap_travel_duration = 0.12
-wrap_pause = 0.02
 pulse_scale_mult = 1.55
-pulse_duration = 0.12
-pulse_pause_after = 0.02
 fade_out_duration = 0.22
 base_blue = Color(0.45, 0.75, 1, 1)
-flash_orange = Color(1, 0.65, 0.25, 1)
 ghost_alpha = 0.95
 
 [node name="Visual_Overlays" type="CanvasLayer" parent="."]

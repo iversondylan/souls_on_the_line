@@ -1,6 +1,6 @@
 # battle_ui.gd
 
-class_name BattleUI extends Node2D
+class_name BattleUI extends CanvasLayer
 
 @onready var end_turn: Button = $EndTurn
 @onready var summon_replace_prompt: Node2D = $SummonReplacePrompt

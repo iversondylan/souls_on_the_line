@@ -65,7 +65,7 @@ var _last_idle_activity_msec: int = 0
 var _next_spark_allowed_msec: int = 0      # << new
 
 func _ready() -> void:
-	
+	#print_tree_pretty()
 	_last_idle_activity_msec = Time.get_ticks_msec()
 	_next_spark_allowed_msec = _last_idle_activity_msec
 	

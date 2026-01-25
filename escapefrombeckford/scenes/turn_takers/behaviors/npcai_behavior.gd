@@ -5,13 +5,17 @@ class_name NPCAIBehavior extends FighterBehavior
 const KEY_PLANNED_IDX := "planned_idx"
 const HP_AT_TURN_START := "hp_at_turn_start"
 const DMG_SINCE_LAST_TURN := "dmg_since_last_turn"
-const BASE_IMPACT_DELAY := 1.2
 const STABILITY_BROKEN := "stability_broken"
 const IS_ACTING := "is_acting"
 
+const BASE_WINDUP_DELAY := 1.6
+const BASE_IMPACT_DELAY := 1.0
+var speed_setting : float = 2.0
+
+
 @export var ai_profile: NPCAIProfile
 
-# ---- Action execution state (MOVED from NPCAction) ----
+# ---- Action execution state ----
 var current_action: NPCAction = null
 var action_ctx: NPCAIContext = null
 var remaining_effect_packages: Array[NPCEffectPackage] = []
@@ -342,7 +346,7 @@ func _get_action_chance_weight(action: NPCAction, ctx: NPCAIContext) -> float:
 
 
 # -------------------------------------------------------------------
-# ACTION EXECUTION (MOVED FROM NPCAction)
+# ACTION EXECUTION
 # -------------------------------------------------------------------
 
 func _on_do_turn() -> void:
@@ -363,7 +367,7 @@ func _on_do_turn() -> void:
 		fighter.resolve_action()
 		return
 	
-	_start_action(action, ctx)
+	_start_windup_delay(action, ctx)
 
 
 func _start_action(action: NPCAction, ctx: NPCAIContext) -> void:
@@ -420,10 +424,13 @@ func _execute_effect_sequence(pkg: NPCEffectPackage) -> void:
 func _on_sequence_done() -> void:
 	_next_effect_package()
 
+func _start_windup_delay(action: NPCAction, ctx: NPCAIContext) -> void:
+	print("windup delay: ", ctx.combatant.name)
+	get_tree().create_timer(BASE_WINDUP_DELAY/speed_setting, false).timeout.connect(_start_action.bind(action, ctx))
+
 func _start_impact_delay() -> void:
-	#var fighter: Fighter = get_parent()
-	#fighter.intent_container.clear_display()
-	get_tree().create_timer(BASE_IMPACT_DELAY/2.0, false).timeout.connect(_finish_action)
+	print("impact delay")
+	get_tree().create_timer(BASE_IMPACT_DELAY/speed_setting, false).timeout.connect(_finish_action)
 	
 
 func _finish_action() -> void:
