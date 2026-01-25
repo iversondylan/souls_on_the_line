@@ -1,14 +1,15 @@
 [gd_scene load_steps=4 format=3 uid="uid://bhps5rw0coka5"]
 
 [ext_resource type="Script" uid="uid://cjcs8c08xkbpf" path="res://VFX/turn_order_spark_controller.gd" id="1_mvl5u"]
-[ext_resource type="Texture2D" uid="uid://b3jac0y1tf60v" path="res://assets/sprites/assorted/energy_ball.png" id="2_3ivoo"]
+[ext_resource type="Texture2D" uid="uid://dwv4i12y4lmr0" path="res://assets/sprites/assorted/circle.png" id="2_3ivoo"]
 [ext_resource type="Theme" uid="uid://1dr1eewpv0jd" path="res://themes/ui_theme.tres" id="3_qc7xi"]
 
 [node name="TurnOrderSparkController" type="Node2D"]
 script = ExtResource("1_mvl5u")
 
 [node name="Spark" type="Sprite2D" parent="."]
-scale = Vector2(0.2, 0.2)
+modulate = Color(1, 1, 1, 0.5568628)
+scale = Vector2(0.07, 0.07)
 texture = ExtResource("2_3ivoo")
 
 [node name="SparkLabel" type="RichTextLabel" parent="."]
@@ -18,16 +19,18 @@ anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
 offset_left = -147.0
-offset_top = -32.5
+offset_top = -58.25
 offset_right = 147.0
-offset_bottom = 32.5
+offset_bottom = 58.25
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 theme = ExtResource("3_qc7xi")
-theme_override_colors/default_color = Color(0, 0.63449997, 0.81, 1)
 theme_override_font_sizes/normal_font_size = 30
-text = "Turn Order"
+text = "Turn Flow
+Preview"
 scroll_active = false
 horizontal_alignment = 1
 vertical_alignment = 1
+
+[node name="OrdinalsParent" type="Node2D" parent="."]

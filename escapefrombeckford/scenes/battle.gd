@@ -72,10 +72,13 @@ func _ready() -> void:
 	set_process(true)
 	
 	Events.hand_drawn.connect(func(): _enable_turn_order_idle_timer()) 
-	Events.card_aim_ended.connect(func(_card : UsableCard = null): _enable_turn_order_idle_timer())
+	
 	Events.card_drag_ended.connect(func(_card : UsableCard = null): _enable_turn_order_idle_timer())
 	Events.card_drag_started.connect(func(_card : UsableCard = null): _disable_turn_order_idle_timer())
 	Events.card_aim_started.connect(func(_card: UsableCard = null): _disable_turn_order_idle_timer())
+	Events.card_aim_ended.connect(func(_card : UsableCard = null): _enable_turn_order_idle_timer())
+	Events.battlefield_aim_started.connect(func(_card: UsableCard = null): _disable_turn_order_idle_timer())
+	Events.battlefield_aim_ended.connect(func(_card : UsableCard = null): _enable_turn_order_idle_timer())
 	Events.end_turn_button_pressed.connect(func(): _disable_turn_order_idle_timer())
 	if _spark:
 		_spark.finished.connect(_on_turn_order_spark_finished)
@@ -536,7 +539,6 @@ func _try_start_turn_order_spark() -> void:
 
 
 func _cancel_turn_order_spark() -> void:
-	print("_cancel_turn_order_spark")
 	if _spark and _spark.is_active():
 		_spark.cancel()
 
