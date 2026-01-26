@@ -62,6 +62,7 @@ func _set_run(new_run) -> void:
 
 func enter() -> void:
 	set_pending_turn_glow(TurnStatus.TURN_ACTIVE)
+	Events.fighter_entered_turn.emit(self)
 	combatant.status_grid.apply_statuses_by_type(Status.ProcType.START_OF_TURN)
 	for child in get_children():
 		if child is FighterBehavior:

@@ -6,6 +6,7 @@ signal battle_reset() #1-way signal to fighters, immediately followed by arcanum
 signal first_friendly_turn_started() #called after start of battle arcana in battle.gd
 signal request_activate_arcana_by_type(type: Arcanum.Type)
 signal arcana_activated(type: Arcanum.Type)
+signal fighter_entered_turn(fighter: Fighter)
 signal request_draw_hand()
 signal hand_drawn()
 signal end_turn_button_pressed()
