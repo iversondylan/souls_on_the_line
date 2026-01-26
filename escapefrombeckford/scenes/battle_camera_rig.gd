@@ -4,23 +4,25 @@ extends Node2D
 
 @onready var cam: Camera2D = $Camera2D
 
-# Godot 4: > 1.0 zooms IN (subtle)
-@export var zoom_in: Vector2 = Vector2(1.02, 1.02)
+# Godot 4: > 1.0 zooms IN (objects appear larger)
+@export var zoom_in: Vector2 = Vector2(1.07, 1.07)
 
-# "Joystick" feel: maximum camera offset when focus is at the edge of the viewport.
-# This is in SCREEN PIXELS, then converted to world-space using zoom.
+# Max camera offset when focus is at the edge of the viewport (SCREEN PX),
+# converted to world via zoom.
 @export var max_offset_px: Vector2 = Vector2(90.0, 55.0)
 
-@export var zoom_in_duration: float = 0.18
-#@export var zoom_out_duration: float = 0.22
+@export var zoom_in_duration: float = 0.35
+
+# Reset feel
+@export var reset_duration: float = 0.34
+@export var reset_zoom_delay: float = 0.01  # small, keeps edges safer but still feels synced
+
+# Joystick shaping: bigger -> smaller movement near center, more reserved for far targets
+@export var offset_deadzone: float = 0.06       # 0..1 (normalized). 0 disables.
+@export var offset_response_power: float = 1.7  # >1 compresses near center, expands near edges
+
 @export var world_bounds: Rect2 = Rect2(Vector2.ZERO, Vector2(1920, 1080))
 
-# Add these exports near your other timings
-@export var pan_out_duration: float = 0.16      # how fast the center recenters
-@export var zoom_out_delay: float = 0.10        # wait before starting zoom-out
-@export var zoom_out_duration: float = 0.28     # (you already have this; consider a tad slower)
-
-# If your background is exactly 1920x1080 world units and starts at (0,0), this is correct.
 var home_pos: Vector2
 var home_zoom: Vector2
 
@@ -51,8 +53,6 @@ func _viewport_size() -> Vector2:
 
 
 func _half_extents_world(at_zoom: Vector2) -> Vector2:
-	# Approx: 1 world unit == 1 pixel in your 2D setup; camera zoom scales world->screen.
-	# Half of viewport in pixels, converted into world units by dividing by zoom.
 	var half_px := _viewport_size() * 0.5
 	return Vector2(
 		half_px.x / maxf(at_zoom.x, 0.0001),
@@ -66,76 +66,12 @@ func _kill() -> void:
 	_tween = null
 
 
-func _tween_to(pos: Vector2, zoom: Vector2, duration: float) -> void:
-	_kill()
-	_tween = create_tween()
-	_tween.set_trans(Tween.TRANS_SINE)
-	_tween.set_ease(Tween.EASE_IN_OUT)
-	_tween.tween_property(self, "global_position", pos, duration)
-	_tween.parallel().tween_property(cam, "zoom", zoom, duration)
-
-
-func reset(_duration_unused: float = 0.25) -> void:
-	_tween_reset_lagged()
-
-
-
-func _focus_joystick(focus_world: Vector2, duration: float) -> void:
-	# Use a fixed zoom (zoom_in), and only bias position from home based on focus distance.
-	var half_world := _half_extents_world(home_zoom)
-
-	# Vector from home center to focus, expressed as a fraction of the view half-extents.
-	var delta := focus_world - home_pos
-	var nx := 0.0 if half_world.x <= 0.0001 else (delta.x / half_world.x)
-	var ny := 0.0 if half_world.y <= 0.0001 else (delta.y / half_world.y)
-
-	# Clamp so "edge of viewport" => magnitude 1.0 on that axis.
-	var n := Vector2(clampf(nx, -1.0, 1.0), clampf(ny, -1.0, 1.0))
-
-	# Convert max_offset_px (screen) to world offset at current zoom.
-	var max_offset_world := Vector2(
-		max_offset_px.x / maxf(home_zoom.x, 0.0001),
-		max_offset_px.y / maxf(home_zoom.y, 0.0001)
-	)
-
-	var target_pos := home_pos + (n * max_offset_world)
-
-	# Clamp so the camera view never goes past the background
-	target_pos = _clamp_center_to_bounds(target_pos, zoom_in)
-
-	_tween_to(target_pos, zoom_in, duration)
-
-
-func _on_fighter_entered_turn(fighter: Fighter) -> void:
-	if !fighter or !is_instance_valid(fighter):
-		return
-	if !fighter.is_alive():
-		return
-
-	# Player turn: your choice to "neutralize" camera feel.
-	if fighter is Player:
-		reset(zoom_out_duration)
-		return
-
-	var focus_node: Node2D = fighter.camera_focus
-	if !focus_node or !is_instance_valid(focus_node):
-		return
-
-	_focus_joystick(focus_node.global_position, zoom_in_duration)
-
-
-func _on_hand_drawn() -> void:
-	# Your "player turn visual reset"
-	reset(zoom_out_duration)
-
 func _clamp_center_to_bounds(center: Vector2, at_zoom: Vector2) -> Vector2:
 	var half := _half_extents_world(at_zoom)
 
-	# Camera center must stay within [min+half, max-half]
 	var min_c := world_bounds.position + half
 	var max_c := world_bounds.position + world_bounds.size - half
 
-	# If bounds are too small for the zoom (half bigger than rect), avoid flipping min/max
 	if max_c.x < min_c.x:
 		center.x = (min_c.x + max_c.x) * 0.5
 	else:
@@ -148,25 +84,132 @@ func _clamp_center_to_bounds(center: Vector2, at_zoom: Vector2) -> Vector2:
 
 	return center
 
-func _tween_reset_lagged() -> void:
+
+# ------------------------------------------------------------
+# Joystick math (small near center, big near edges)
+# ------------------------------------------------------------
+
+func _shape_axis(x: float) -> float:
+	# x in [-1,1]
+	var a := absf(x)
+	if offset_deadzone > 0.0 and a < offset_deadzone:
+		return 0.0
+
+	# Remove deadzone then re-normalize to [0,1]
+	if offset_deadzone > 0.0:
+		a = (a - offset_deadzone) / maxf(1.0 - offset_deadzone, 0.0001)
+
+	# Power curve: >1 compresses small inputs near center
+	a = pow(a, maxf(offset_response_power, 0.0001))
+
+	return signf(x) * a
+
+
+func _joystick_target_pos(focus_world: Vector2) -> Vector2:
+	# Normalize focus vector in terms of "how close to the edge of the viewport"
+	# using the HOME zoom's view extents.
+	var half_world := _half_extents_world(home_zoom)
+	var delta := focus_world - home_pos
+
+	var nx := 0.0 if half_world.x <= 0.0001 else (delta.x / half_world.x)
+	var ny := 0.0 if half_world.y <= 0.0001 else (delta.y / half_world.y)
+
+	# Clamp to [-1,1] then shape it so near-center moves are smaller.
+	var n := Vector2(
+		_shape_axis(clampf(nx, -1.0, 1.0)),
+		_shape_axis(clampf(ny, -1.0, 1.0))
+	)
+
+	# Convert max_offset from screen px to world units using HOME zoom.
+	var max_offset_world := Vector2(
+		max_offset_px.x / maxf(home_zoom.x, 0.0001),
+		max_offset_px.y / maxf(home_zoom.y, 0.0001)
+	)
+
+	var target := home_pos + (n * max_offset_world)
+	return _clamp_center_to_bounds(target, zoom_in)
+
+
+# ------------------------------------------------------------
+# Tween helpers
+# ------------------------------------------------------------
+
+func _tween_focus(target_pos: Vector2, target_zoom: Vector2, duration: float) -> void:
 	_kill()
-
-	# Important: clamp using the SMALLER view (zoom_in) for the pan phase,
-	# so we don't reveal edges while sliding back home.
-	var pan_target := _clamp_center_to_bounds(home_pos, zoom_in)
-
 	_tween = create_tween()
-	_tween.set_trans(Tween.TRANS_SINE)
-	_tween.set_ease(Tween.EASE_IN_OUT)
 
-	# 1) Pan first (or mostly first)
-	_tween.tween_property(self, "global_position", pan_target, maxf(pan_out_duration, 0.001))
+	# Pan + zoom together for focus
+	var pos_tw := _tween.tween_property(cam, "global_position", target_pos, maxf(duration, 0.001))
+	pos_tw.set_trans(Tween.TRANS_SINE)
+	pos_tw.set_ease(Tween.EASE_OUT)
 
-	# 2) Then zoom out AFTER a delay (lag)
-	_tween.tween_interval(maxf(zoom_out_delay, 0.0))
+	var zoom_tw := _tween.parallel().tween_property(cam, "zoom", target_zoom, maxf(duration, 0.001))
+	zoom_tw.set_trans(Tween.TRANS_SINE)
+	zoom_tw.set_ease(Tween.EASE_OUT)
 
-	# Clamp again for the final zoom-out state (view gets larger)
+
+func _tween_reset_synced() -> void:
+	_kill()
+	_tween = create_tween()
+
+	# We want the reset to feel like one motion.
+	# To avoid edge-peeking, we "favor" the smaller view while beginning the pan:
+	# - pan target is clamped at zoom_in (safe while view is tight)
+	# - zoom-out starts shortly after pan begins (tiny delay)
+	var pan_target := _clamp_center_to_bounds(home_pos, zoom_in)
 	var final_pos := _clamp_center_to_bounds(pan_target, home_zoom)
 
-	_tween.tween_property(cam, "zoom", home_zoom, maxf(zoom_out_duration, 0.001))
-	_tween.parallel().tween_property(self, "global_position", final_pos, maxf(zoom_out_duration, 0.001))
+	#var pos_tw := _tween.tween_property(self, "global_position", pan_target, maxf(reset_duration, 0.001))
+	#pos_tw.set_trans(Tween.TRANS_QUAD)
+	#pos_tw.set_ease(Tween.EASE_IN)
+
+	# Zoom-out starts slightly after pan begins, but overlaps heavily -> feels synchronized
+	var zoom_tw := _tween.parallel().tween_property(cam, "zoom", home_zoom, maxf(reset_duration*1.5, 0.001))
+	#zoom_tw.set_delay(maxf(reset_zoom_delay, 0.0))
+	zoom_tw.set_trans(Tween.TRANS_SINE)
+	zoom_tw.set_ease(Tween.EASE_OUT)
+
+	# While zooming out, ease position from pan_target toward final_pos (clamped for larger view)
+	var final_pos_tw := _tween.parallel().tween_property(cam, "global_position", final_pos, maxf(reset_duration, 0.001))
+	#final_pos_tw.set_delay(maxf(reset_zoom_delay, 0.0))
+	final_pos_tw.set_trans(Tween.TRANS_SINE)
+	final_pos_tw.set_ease(Tween.EASE_OUT)
+
+
+# ------------------------------------------------------------
+# Public-ish API
+# ------------------------------------------------------------
+
+func reset() -> void:
+	_tween_reset_synced()
+
+
+func _focus_joystick(focus_world: Vector2, duration: float) -> void:
+	var target_pos := _joystick_target_pos(focus_world)
+	_tween_focus(target_pos, zoom_in, duration)
+
+
+# ------------------------------------------------------------
+# Event hooks
+# ------------------------------------------------------------
+
+func _on_fighter_entered_turn(fighter: Fighter) -> void:
+	if !fighter or !is_instance_valid(fighter):
+		return
+	if !fighter.is_alive():
+		return
+
+	# Player turn: neutralize
+	if fighter is Player:
+		reset()
+		return
+
+	var focus_node: Node2D = fighter.camera_focus
+	if !focus_node or !is_instance_valid(focus_node):
+		return
+
+	_focus_joystick(focus_node.global_position, zoom_in_duration)
+
+
+func _on_hand_drawn() -> void:
+	reset()

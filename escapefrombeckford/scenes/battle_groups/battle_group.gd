@@ -362,7 +362,7 @@ func clear_preview() -> void:
 
 
 func get_window_dist() -> float:
-	return get_viewport_rect().size.x * 3.0 / 16.0
+	return get_viewport_rect().size.x * 0.26875
 
 
 func get_summon_slot_position(slot_index: int) -> Vector2:
