@@ -67,9 +67,14 @@ script = ExtResource("9_p0caf")
 [node name="CameraRig" type="Node2D" parent="Battle_Scene"]
 position = Vector2(960, 540)
 script = ExtResource("10_dd63g")
+zoom_in = null
+max_offset_px = null
+movement_duration = null
+offset_deadzone = null
+offset_response_power = null
+world_bounds = null
 
 [node name="Camera2D" type="Camera2D" parent="Battle_Scene/CameraRig"]
-position_smoothing_enabled = true
 
 [node name="Debug_UI" type="CanvasLayer" parent="."]
 
