@@ -33,6 +33,8 @@ class_name Battle extends Node2D
 
 @onready var draw_pile_view: CardPileView = %DrawPileView
 @onready var discard_pile_view: CardPileView = %DiscardPileView
+@onready var _spark: TurnOrderSparkController = $Battle_UI/TurnOrderSparkController
+@onready var turn_phase_title: TurnPhaseTitle = $Battle_UI/TurnPhaseTitle
 
 #enum Turn {FRIENDLY_TURN, ENEMY_TURN}
 #
@@ -57,32 +59,29 @@ var summon_replace_ghost: Node2D
 var summon_replace_candidates: Array[SummonedAlly] = []
 var summon_replace_resolving := false
 
-@onready var _spark: TurnOrderSparkController = $Battle_UI/TurnOrderSparkController
+
 
 #var _last_input_msec: int = 0
-var _idle_enabled: bool = false
-var _last_idle_activity_msec: int = 0
-var _next_spark_allowed_msec: int = 0      # << new
+#var _idle_enabled: bool = false
+#var _last_idle_activity_msec: int = 0
+#var _next_spark_allowed_msec: int = 0      # << new
 
 func _ready() -> void:
 	#print_tree_pretty()
-	_last_idle_activity_msec = Time.get_ticks_msec()
-	_next_spark_allowed_msec = _last_idle_activity_msec
+	#_last_idle_activity_msec = Time.get_ticks_msec()
+	#_next_spark_allowed_msec = _last_idle_activity_msec
 	
 	set_process(true)
 	
-	Events.hand_drawn.connect(func(): _enable_turn_order_idle_timer()) 
 	
-	Events.card_drag_ended.connect(func(_card : UsableCard = null): _enable_turn_order_idle_timer())
-	Events.card_drag_started.connect(func(_card : UsableCard = null): _disable_turn_order_idle_timer())
-	Events.card_aim_started.connect(func(_card: UsableCard = null): _disable_turn_order_idle_timer())
-	Events.card_aim_ended.connect(func(_card : UsableCard = null): _enable_turn_order_idle_timer())
-	Events.battlefield_aim_started.connect(func(_card: UsableCard = null): _disable_turn_order_idle_timer())
-	Events.battlefield_aim_ended.connect(func(_card : UsableCard = null): _enable_turn_order_idle_timer())
-	Events.end_turn_button_pressed.connect(func(): _disable_turn_order_idle_timer())
-	if _spark:
-		_spark.finished.connect(_on_turn_order_spark_finished)
-		_spark.canceled.connect(_on_turn_order_spark_canceled)
+	#Events.card_drag_started.connect(func(): _cancel_turn_order_spark())
+	Events.hand_drawn.connect(_enable_preview_turn_flow_button) 
+	Events.player_turn_completed.connect(_cancel_turn_order_spark)
+	Events.player_turn_completed.connect(_disable_preview_turn_flow_button)
+	Events.end_turn_button_pressed.connect(_cancel_turn_order_spark)
+	Events.end_turn_button_pressed.connect(_disable_preview_turn_flow_button)
+	turn_phase_title.preview_button_pressed.connect(_try_start_turn_order_spark)
+	Events.fighter_entered_turn.connect(_on_fighter_entered_turn)
 	
 	get_tree().paused = false
 	BattleController.current_state = BattleController.BattleState.PRE_GAME
@@ -99,7 +98,7 @@ func _ready() -> void:
 	Events.request_friendly_turn.connect(_on_request_friendly_turn)
 	Events.arcana_activated.connect(_on_arcana_activated)
 	
-	Events.player_turn_completed.connect(_disable_turn_order_idle_timer)
+	
 	
 	Events.request_summon_replace.connect(_on_request_summon_replace)
 
@@ -113,46 +112,6 @@ func _ready() -> void:
 	discard_pile_button.pressed.connect(discard_pile_view.show_current_discard_view.bind("Discard Pile"))
 	
 	hand.battle_scene = battle_scene
-
-
-
-#func _input(event: InputEvent) -> void:
-	## Any input counts as activity and cancels
-	#if event is InputEventMouseMotion:
-		#_mark_activity()
-		#return
-	#if event is InputEventMouseButton:
-		#_mark_activity()
-		#return
-	#if event is InputEventKey and event.is_pressed():
-		#_mark_activity()
-		#return
-
-
-func _process(_delta: float) -> void:
-	if !_spark:
-		return
-	if !_idle_enabled:
-		return
-	if interaction_mode != InteractionMode.NORMAL:
-		return
-	if wait_for_anims:
-		return
-	if _spark.is_active():
-		return
-	
-	var now := Time.get_ticks_msec()
-	
-	# NEW: cooldown gate
-	if now < _next_spark_allowed_msec:
-		return
-	
-	var elapsed := (now - _last_idle_activity_msec) / 1000.0
-	if elapsed >= idle_delay_sec:
-		_try_start_turn_order_spark()
-		_last_idle_activity_msec = now
-
-
 
 func _set_run(new_run: Run) -> void:
 	run = new_run
@@ -279,7 +238,6 @@ func _on_player_data_changed() -> void:
 
 func _on_hand_drawn() -> void:
 	wait_for_anims = false
-	_enable_turn_order_idle_timer()
 
 func _on_dead_combatant_data(combatant_data: CombatantData):
 	if combatant_data == player.combatant_data:
@@ -524,43 +482,28 @@ func _try_start_turn_order_spark() -> void:
 	if !_spark:
 		return
 	
-	var now := Time.get_ticks_msec()
-	if now < _next_spark_allowed_msec:
-		return
+	#var now := Time.get_ticks_msec()
+	#if now < _next_spark_allowed_msec:
+		#return
 	
 	var path := battle_scene.build_turn_order_path()
 	if !path or !path.is_valid():
 		return
 	
 	# Immediately block retrigger until it finishes/cancels
-	_next_spark_allowed_msec = now + int(idle_cooldown_sec * 1000.0)
+	#_next_spark_allowed_msec = now + int(idle_cooldown_sec * 1000.0)
 	
 	_spark.play(path)
 
+func _on_fighter_entered_turn(fighter: Fighter) -> void:
+	turn_phase_title.update_turn_text(fighter)
 
 func _cancel_turn_order_spark() -> void:
 	if _spark and _spark.is_active():
 		_spark.cancel()
 
-func _enable_turn_order_idle_timer() -> void:
-	_idle_enabled = true
-	_last_idle_activity_msec = Time.get_ticks_msec()
+func _enable_preview_turn_flow_button() -> void:
+	turn_phase_title.enable_button(true)
 
-func _disable_turn_order_idle_timer() -> void:
-	_idle_enabled = false
-	_cancel_turn_order_spark()
-
-func _note_idle_activity() -> void:
-	# Just resets the timer; does NOT cancel spark.
-	_last_idle_activity_msec = Time.get_ticks_msec()
-
-func _on_turn_order_spark_finished() -> void:
-	# After it plays, wait longer before allowing another
-	_next_spark_allowed_msec = Time.get_ticks_msec() + int(idle_cooldown_sec * 1000.0)
-	# Optional: re-arm idle detection so it can play again later
-	_last_idle_activity_msec = Time.get_ticks_msec()
-
-func _on_turn_order_spark_canceled() -> void:
-	# If you cancel it, you still probably want a short-ish cooldown
-	_next_spark_allowed_msec = Time.get_ticks_msec() + int(idle_cooldown_sec * 1000.0)
-	_last_idle_activity_msec = Time.get_ticks_msec()
+func _disable_preview_turn_flow_button() -> void:
+	turn_phase_title.enable_button(false)

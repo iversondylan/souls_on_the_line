@@ -1,0 +1,8 @@
+[gd_resource type="Theme" load_steps=2 format=3 uid="uid://dl6p57fwlwexm"]
+
+[ext_resource type="FontFile" uid="uid://cecr67shktu2j" path="res://assets/fonts/Bonheur_Royale/BonheurRoyale-Regular.ttf" id="1_f1cro"]
+
+[resource]
+default_font_size = 0
+RichTextLabel/font_sizes/normal_font_size = 50
+RichTextLabel/fonts/normal_font = ExtResource("1_f1cro")

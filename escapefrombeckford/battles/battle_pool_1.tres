@@ -7,5 +7,5 @@
 
 [resource]
 script = ExtResource("2_coyo0")
-pool = Array[ExtResource("1_c5yi3")]([ExtResource("2_5mnow"), ExtResource("3_gu42u")])
+pool = Array[ExtResource("1_c5yi3")]([ExtResource("3_gu42u"), ExtResource("2_5mnow")])
 metadata/_custom_type_script = "uid://b203gsihy5ttn"

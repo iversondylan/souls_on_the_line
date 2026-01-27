@@ -50,6 +50,7 @@ func _break_posture() -> void:
 	# (You can add this later without changing the core logic)
 
 	# Remove this status
+	print("stability_status.gd broken posture")
 	var grid := status_parent.combatant.status_grid
 	if grid:
 		grid.remove_status_by_id(id)
