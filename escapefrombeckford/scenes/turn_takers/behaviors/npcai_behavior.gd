@@ -90,6 +90,7 @@ func update_action_intent() -> void:
 	_refresh_intent_display_only()
 
 func _get_action_by_idx(idx: int) -> NPCAction:
+	print("_get_action_by_idx: ", idx)
 	if !ai_profile or idx < 0 or idx >= ai_profile.actions.size():
 		return null
 	return ai_profile.actions[idx]
@@ -233,7 +234,7 @@ func _refresh_intent_display_only() -> void:
 		return
 
 	var ctx := _make_context()
-
+	#print(fighter.name, " IS_ACTING: ", ctx.state.get(IS_ACTING))
 	if ctx.state.get(IS_ACTING, false):
 		print("refresh: blocked because IS_ACTING")
 		return
@@ -244,8 +245,15 @@ func _refresh_intent_display_only() -> void:
 
 	var idx := int(ctx.state[KEY_PLANNED_IDX])
 	var action := _get_action_by_idx(idx)
+	if action and !_is_action_performable(action, ctx):
+		print(fighter.name, " action is not performable ", idx)
+		var state : Dictionary = get_meta("ai_state")
+		state[KEY_PLANNED_IDX] = -1
+		fighter.intent_container.clear_display()
+		plan_next_intent()
+		return
 	if !action:
-		print("refresh: action null at idx ", idx)
+		print(fighter.name, " refresh: action null at idx ", idx)
 		fighter.intent_container.clear_display()
 		return
 	var intent := _build_intent_from_action(action, ctx)
@@ -412,11 +420,11 @@ func _on_sequence_done() -> void:
 	_next_effect_package()
 
 func _start_windup_delay(action: NPCAction, ctx: NPCAIContext) -> void:
-	print("windup delay: ", ctx.combatant.name)
+	#print("windup delay: ", ctx.combatant.name)
 	get_tree().create_timer(BASE_WINDUP_DELAY/speed_setting, false).timeout.connect(_start_action.bind(action, ctx))
 
 func _start_impact_delay() -> void:
-	print("impact delay")
+	#print("impact delay")
 	get_tree().create_timer(BASE_IMPACT_DELAY/speed_setting, false).timeout.connect(_finish_action)
 	
 
