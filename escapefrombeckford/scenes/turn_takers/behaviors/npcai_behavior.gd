@@ -206,8 +206,8 @@ func _on_planned_intent_changed(prev_idx: int, _new_idx: int, ctx: NPCAIContext)
 func _can_cancel_intent(state: Dictionary) -> bool:
 	if state.get(IS_ACTING, false):
 		return false
-	if state.get("telegraph_committed", false):
-		return false
+	#if state.get("telegraph_committed", false):
+		#return false
 	return true
 
 func _on_opposing_group_turn_start() -> void:
@@ -249,16 +249,24 @@ func _on_group_turn_end() -> void:
 func _refresh_intent_display_only() -> void:
 	var fighter: Fighter = get_parent()
 	if !fighter.is_alive() or !ai_profile:
+		print("refresh: dead/no profile")
 		fighter.intent_container.clear_display()
 		return
+
 	var ctx := _make_context()
-	# Do not show intent while acting
+
 	if ctx.state.get(IS_ACTING, false):
+		print("refresh: blocked because IS_ACTING")
 		return
-	if not ctx.state.has(KEY_PLANNED_IDX):
+
+	if !ctx.state.has(KEY_PLANNED_IDX):
+		print("refresh: no planned idx")
 		return
-	var action := _get_action_by_idx(int(ctx.state[KEY_PLANNED_IDX]))
+
+	var idx := int(ctx.state[KEY_PLANNED_IDX])
+	var action := _get_action_by_idx(idx)
 	if !action:
+		print("refresh: action null at idx ", idx)
 		fighter.intent_container.clear_display()
 		return
 	var intent := _build_intent_from_action(action, ctx)
