@@ -129,54 +129,35 @@ func plan_next_intent(allow_hooks: bool = false) -> void:
 	var fighter: Fighter = get_parent()
 	if !fighter or !fighter.is_alive() or !ai_profile:
 		return
-	
+
 	var ctx := _make_context()
 	var state := ctx.state if ctx and ctx.state else {}
-	
+
 	var prev_idx: int = int(state.get(KEY_PLANNED_IDX, -1))
-	
-	# ------------------------------------------------------------
-	# 0) Hard lock: if we already have a plan and we are not allowed
-	# to change it right now, bail early (prevents mid-cycle rerolls).
-	# ------------------------------------------------------------
-	if prev_idx != -1 and !_can_cancel_intent(state):
-		return
-	
-	# ------------------------------------------------------------
-	# 1) If a CONDITIONAL action is performable, it always wins.
-	# (This is your intended pipeline for sequences / overrides.)
-	# ------------------------------------------------------------
+
+	# 1) CONDITIONAL always wins and is never blocked
 	var cond_idx := _get_first_conditional_idx(ctx)
 	if cond_idx != -1:
-		# If nothing changes, do nothing.
 		if prev_idx == cond_idx:
 			return
-	
-		# Interrupt-only cleanup hooks
 		if allow_hooks:
 			_on_planned_intent_changed(prev_idx, cond_idx, ctx)
-	
 		state[KEY_PLANNED_IDX] = cond_idx
 		return
-	
-	# ------------------------------------------------------------
-	# 2) No conditional available.
-	# If previous planned CHANCE action is still performable,
-	# keep it (prevents reroll spam from death / minor state changes).
-	# ------------------------------------------------------------
+
+	# 2) Only now apply "cannot change plan" rule (non-conditional only)
+	if prev_idx != -1 and !_can_cancel_intent(state):
+		return
+
+	# 3) Preserve prior CHANCE if still performable
 	if prev_idx != -1:
 		var prev_action := _get_action_by_idx(prev_idx)
 		if prev_action and prev_action.choice_type == NPCAction.ChoiceType.CHANCE:
 			if _is_action_performable(prev_action, ctx):
 				return
-	
-	# ------------------------------------------------------------
-	# 3) Otherwise roll a new CHANCE action.
-	# ------------------------------------------------------------
+
+	# 4) Roll chance
 	var new_idx := _roll_chance_idx(ctx)
-	
-	# If no chance actions are available, clear planned index.
-	# (Optional, but makes the state explicit.)
 	if new_idx == -1:
 		if prev_idx == -1:
 			return
@@ -184,17 +165,15 @@ func plan_next_intent(allow_hooks: bool = false) -> void:
 			_on_planned_intent_changed(prev_idx, -1, ctx)
 		state[KEY_PLANNED_IDX] = -1
 		return
-	
-	# If unchanged, do nothing.
+
 	if prev_idx == new_idx:
 		return
-	
-	# Interrupt-only cleanup hooks
+
 	if allow_hooks:
 		_on_planned_intent_changed(prev_idx, new_idx, ctx)
-	
-	# Commit
+
 	state[KEY_PLANNED_IDX] = new_idx
+
 
 
 func _on_planned_intent_changed(prev_idx: int, _new_idx: int, ctx: NPCAIContext) -> void:
