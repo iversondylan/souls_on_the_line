@@ -1,10 +1,10 @@
-[gd_scene load_steps=2 format=3 uid="uid://gmxev02ltcly"]
+[gd_scene format=3 uid="uid://gmxev02ltcly"]
 
 [ext_resource type="Script" uid="uid://dy5sjt7v7ir2f" path="res://scenes/battle_groups/battle_group_friendly.gd" id="1_3vrbj"]
 
-[node name="BattleGroupFriendly" type="Node2D"]
+[node name="BattleGroupFriendly" type="Node2D" unique_id=1031129904]
 script = ExtResource("1_3vrbj")
 
-[node name="PreviewLayer" type="Node2D" parent="."]
+[node name="PreviewLayer" type="Node2D" parent="." unique_id=1478804061]
 
 [connection signal="child_order_changed" from="." to="." method="_on_child_order_changed"]

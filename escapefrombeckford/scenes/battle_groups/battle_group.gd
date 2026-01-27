@@ -409,4 +409,4 @@ func _recompute_intents_for_group() -> void:
 		if has_ai_behavior(fighter):
 			for child in fighter.get_children():
 				if child is NPCAIBehavior:
-					child.refresh_intent_display_only()
+					child.sync_intent()

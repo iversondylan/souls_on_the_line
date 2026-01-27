@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="NPCEffectPackage" load_steps=9 format=3 uid="uid://b0ok4okpaa5c4"]
+[gd_resource type="Resource" script_class="NPCEffectPackage" format=3 uid="uid://b0ok4okpaa5c4"]
 
 [ext_resource type="Resource" uid="uid://bnqqhpu1itcb3" path="res://npc_actions/npc_attack_sequence.tres" id="1_21dr8"]
 [ext_resource type="Script" uid="uid://b8d5j6ne4mt88" path="res://custom_resources/param_model.gd" id="1_pvn4l"]

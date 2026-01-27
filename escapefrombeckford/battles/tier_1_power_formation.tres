@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="BattleData" load_steps=5 format=3 uid="uid://ctj5c5ppm322o"]
+[gd_resource type="Resource" script_class="BattleData" format=3 uid="uid://ctj5c5ppm322o"]
 
 [ext_resource type="Script" uid="uid://cfatj0ryn8uv3" path="res://custom_resources/combatant_data.gd" id="1_0e465"]
 [ext_resource type="Resource" uid="uid://cyoj8vcxd7rxl" path="res://fighters/PowerBlocker/power_blocker_data.tres" id="2_hwcts"]
@@ -7,5 +7,6 @@
 
 [resource]
 script = ExtResource("4_gjwee")
+battle_tier = 1
 enemies = Array[ExtResource("1_0e465")]([ExtResource("2_hwcts"), ExtResource("3_2bj8l"), ExtResource("3_2bj8l")])
 metadata/_custom_type_script = "uid://be1v8qevmc2xw"

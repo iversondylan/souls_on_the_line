@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="NPCEffectPackage" load_steps=14 format=3 uid="uid://clsg7idcvlho1"]
+[gd_resource type="Resource" script_class="NPCEffectPackage" format=3 uid="uid://clsg7idcvlho1"]
 
 [ext_resource type="Resource" uid="uid://ddrxex8lotgxn" path="res://audio/melee_impact.tres" id="1_30ryo"]
 [ext_resource type="Script" uid="uid://b8d5j6ne4mt88" path="res://custom_resources/param_model.gd" id="1_v6pk5"]

@@ -78,16 +78,16 @@ func _on_stats_changed() -> void:
 			state[DMG_SINCE_LAST_TURN] = delta
 	
 	plan_next_intent(true)
-	_refresh_intent_display_only()
+	refresh_intent_display()
 
 func _on_intent_conditions_changed() -> void:
 	# Mid-cycle replanning allowed
 	plan_next_intent(true)
-	_refresh_intent_display_only()
+	refresh_intent_display()
 
 func update_action_intent() -> void:
-	# Cooper was here
-	_refresh_intent_display_only()
+	
+	refresh_intent_display()
 
 func _get_action_by_idx(idx: int) -> NPCAction:
 	print("_get_action_by_idx: ", idx)
@@ -226,41 +226,94 @@ func _on_group_turn_end() -> void:
 # Intent display
 # -------------------------------------------------------------------
 
-func _refresh_intent_display_only() -> void:
+#func _refresh_intent_display_only() -> void:
+	#var fighter: Fighter = get_parent()
+	#if !fighter.is_alive() or !ai_profile:
+		#print("refresh: dead/no profile")
+		#fighter.intent_container.clear_display()
+		#return
+#
+	#var ctx := _make_context()
+	##print(fighter.name, " IS_ACTING: ", ctx.state.get(IS_ACTING))
+	#if ctx.state.get(IS_ACTING, false):
+		#print("refresh: blocked because IS_ACTING")
+		#return
+#
+	#if !ctx.state.has(KEY_PLANNED_IDX):
+		#print("refresh: no planned idx")
+		#return
+#
+	#var idx := int(ctx.state[KEY_PLANNED_IDX])
+	#var action := _get_action_by_idx(idx)
+	#if action and !_is_action_performable(action, ctx):
+		#print(fighter.name, " action is not performable ", idx)
+		#var state : Dictionary = get_meta("ai_state")
+		#state[KEY_PLANNED_IDX] = -1
+		#fighter.intent_container.clear_display()
+		#plan_next_intent()
+		#return
+	#if !action:
+		#print(fighter.name, " refresh: action null at idx ", idx)
+		#fighter.intent_container.clear_display()
+		#return
+	#var intent := _build_intent_from_action(action, ctx)
+	#fighter.intent_container.display_icons([intent])
+#
+#func refresh_intent_display_only() -> void:
+	#_refresh_intent_display_only()
+
+func ensure_valid_plan(allow_hooks: bool = true) -> void:
 	var fighter: Fighter = get_parent()
-	if !fighter.is_alive() or !ai_profile:
-		print("refresh: dead/no profile")
-		fighter.intent_container.clear_display()
+	if !fighter or !fighter.is_alive() or !ai_profile:
 		return
 
 	var ctx := _make_context()
-	#print(fighter.name, " IS_ACTING: ", ctx.state.get(IS_ACTING))
 	if ctx.state.get(IS_ACTING, false):
-		print("refresh: blocked because IS_ACTING")
 		return
 
+	# If no plan, make one.
 	if !ctx.state.has(KEY_PLANNED_IDX):
-		print("refresh: no planned idx")
+		plan_next_intent(allow_hooks)
 		return
 
 	var idx := int(ctx.state[KEY_PLANNED_IDX])
 	var action := _get_action_by_idx(idx)
-	if action and !_is_action_performable(action, ctx):
-		print(fighter.name, " action is not performable ", idx)
-		var state : Dictionary = get_meta("ai_state")
-		state[KEY_PLANNED_IDX] = -1
+
+	# If plan points to nothing or is no longer performable, replan.
+	if !action or !_is_action_performable(action, ctx):
+		# Optional: if you want cancellation hooks to run when invalidated:
+		if allow_hooks:
+			_on_planned_intent_changed(idx, -1, ctx)
+		ctx.state[KEY_PLANNED_IDX] = -1
+		plan_next_intent(allow_hooks)
+
+func refresh_intent_display() -> void:
+	var fighter: Fighter = get_parent()
+	if !fighter or !fighter.is_alive() or !ai_profile:
 		fighter.intent_container.clear_display()
-		plan_next_intent()
 		return
+
+	var ctx := _make_context()
+	if ctx.state.get(IS_ACTING, false):
+		return
+
+	if !ctx.state.has(KEY_PLANNED_IDX):
+		fighter.intent_container.clear_display()
+		return
+
+	var idx := int(ctx.state[KEY_PLANNED_IDX])
+	var action := _get_action_by_idx(idx)
 	if !action:
-		print(fighter.name, " refresh: action null at idx ", idx)
 		fighter.intent_container.clear_display()
 		return
+
 	var intent := _build_intent_from_action(action, ctx)
 	fighter.intent_container.display_icons([intent])
 
-func refresh_intent_display_only() -> void:
-	_refresh_intent_display_only()
+func sync_intent(allow_hooks: bool = true) -> void:
+	# Cooper was here
+	ensure_valid_plan(allow_hooks)
+	refresh_intent_display()
 
 
 func _build_intent_from_action(action: NPCAction, ctx: NPCAIContext) -> IntentData:
@@ -306,7 +359,7 @@ func _on_enter() -> void:
 	var state : Dictionary = get_meta("ai_state")
 	state[HP_AT_TURN_START] = fighter.combatant_data.health
 	state[DMG_SINCE_LAST_TURN] = 0
-	_refresh_intent_display_only()
+	refresh_intent_display()
 
 
 func _on_exit() -> void:
@@ -314,7 +367,7 @@ func _on_exit() -> void:
 	ctx.state[IS_ACTING] = false
 	ctx.state[STABILITY_BROKEN] = false
 	plan_next_intent(false)
-	_refresh_intent_display_only()
+	refresh_intent_display()
 
 
 # -------------------------------------------------------------------
