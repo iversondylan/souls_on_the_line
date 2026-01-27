@@ -153,11 +153,6 @@ func do_turn() -> void:
 		if child is FighterBehavior:
 			child._on_do_turn()
 
-#func traverse_player() -> void:
-	#for child in get_children():
-		#if child is FighterBehavior:
-			#child._on_traverse_player()
-
 func can_play_card(card_data: CardData) -> bool:
 	return combatant_data.can_play_card(card_data)
 

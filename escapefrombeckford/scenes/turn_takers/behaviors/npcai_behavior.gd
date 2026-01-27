@@ -226,41 +226,6 @@ func _on_group_turn_end() -> void:
 # Intent display
 # -------------------------------------------------------------------
 
-#func _refresh_intent_display_only() -> void:
-	#var fighter: Fighter = get_parent()
-	#if !fighter.is_alive() or !ai_profile:
-		#print("refresh: dead/no profile")
-		#fighter.intent_container.clear_display()
-		#return
-#
-	#var ctx := _make_context()
-	##print(fighter.name, " IS_ACTING: ", ctx.state.get(IS_ACTING))
-	#if ctx.state.get(IS_ACTING, false):
-		#print("refresh: blocked because IS_ACTING")
-		#return
-#
-	#if !ctx.state.has(KEY_PLANNED_IDX):
-		#print("refresh: no planned idx")
-		#return
-#
-	#var idx := int(ctx.state[KEY_PLANNED_IDX])
-	#var action := _get_action_by_idx(idx)
-	#if action and !_is_action_performable(action, ctx):
-		#print(fighter.name, " action is not performable ", idx)
-		#var state : Dictionary = get_meta("ai_state")
-		#state[KEY_PLANNED_IDX] = -1
-		#fighter.intent_container.clear_display()
-		#plan_next_intent()
-		#return
-	#if !action:
-		#print(fighter.name, " refresh: action null at idx ", idx)
-		#fighter.intent_container.clear_display()
-		#return
-	#var intent := _build_intent_from_action(action, ctx)
-	#fighter.intent_container.display_icons([intent])
-#
-#func refresh_intent_display_only() -> void:
-	#_refresh_intent_display_only()
 
 func ensure_valid_plan(allow_hooks: bool = true) -> void:
 	var fighter: Fighter = get_parent()

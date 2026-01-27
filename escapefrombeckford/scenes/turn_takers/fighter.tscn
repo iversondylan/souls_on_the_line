@@ -1,12 +1,12 @@
-[gd_scene load_steps=4 format=3 uid="uid://hmlq44lm1hhy"]
+[gd_scene format=3 uid="uid://hmlq44lm1hhy"]
 
 [ext_resource type="Script" uid="uid://cvnmw8uy8jnjp" path="res://scenes/turn_takers/fighter.gd" id="1_uuo64"]
 [ext_resource type="PackedScene" uid="uid://dghmlrg1poqs7" path="res://scenes/combatant.tscn" id="3_1ndhb"]
 [ext_resource type="PackedScene" uid="uid://dyge25hnclouq" path="res://scenes/modifier_system/modifier_system.tscn" id="3_3jkxi"]
 
-[node name="Fighter" type="Node2D"]
+[node name="Fighter" type="Node2D" unique_id=1587314141]
 script = ExtResource("1_uuo64")
 
-[node name="Combatant" parent="." instance=ExtResource("3_1ndhb")]
+[node name="Combatant" parent="." unique_id=1303874170 instance=ExtResource("3_1ndhb")]
 
-[node name="ModifierSystem" parent="." instance=ExtResource("3_3jkxi")]
+[node name="ModifierSystem" parent="." unique_id=1313296749 instance=ExtResource("3_3jkxi")]
