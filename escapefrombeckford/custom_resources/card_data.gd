@@ -48,9 +48,6 @@ const RARITY_COLORS := {
 @export var cost_blue: int
 @export var texture: Texture2D
 @export var actions: Array[CardAction] = []
-#@export var sound: Sound
-
-var card_status: CardStatus
 
 func is_single_targeted() -> bool:
 	return target_type == TargetType.SINGLE_ENEMY or target_type == TargetType.ALLY_OR_SELF or target_type == TargetType.ALLY or target_type == TargetType.BATTLEFIELD

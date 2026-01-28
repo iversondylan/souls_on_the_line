@@ -13,7 +13,6 @@ var first_hand_drawn: bool = false
 var first_hand_summon_guarantee: bool = true # TODO: later wire to settings
 
 func add_card(card_data: CardData):
-	card_data.card_status = CardData.CardStatus.PRE_GAME
 	card_data.id = id_counter
 	card_collection.add_back(card_data)
 	card_data.id = id_counter
