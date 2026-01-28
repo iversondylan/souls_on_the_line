@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="NPCEffectPackage" load_steps=11 format=3 uid="uid://cc04i46wsvhqo"]
+[gd_resource type="Resource" script_class="NPCEffectPackage" format=3 uid="uid://cc04i46wsvhqo"]
 
 [ext_resource type="AudioStream" uid="uid://c0peefiowda5m" path="res://assets/sfx/explodemini.wav" id="1_byb7d"]
 [ext_resource type="Resource" uid="uid://ddrxex8lotgxn" path="res://audio/melee_impact.tres" id="1_q8mnf"]

@@ -1,4 +1,4 @@
-[gd_resource type="Resource" load_steps=5 format=3 uid="uid://b5mp41k8gdkfs"]
+[gd_resource type="Resource" format=3 uid="uid://b5mp41k8gdkfs"]
 
 [ext_resource type="Script" uid="uid://b8d5j6ne4mt88" path="res://custom_resources/param_model.gd" id="1_27ycu"]
 [ext_resource type="Script" uid="uid://cjhkjl5mr4nbw" path="res://cards/SuperchargeCard/attack_now_action.gd" id="1_ng5tw"]
