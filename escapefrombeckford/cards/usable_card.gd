@@ -1,4 +1,5 @@
 # usable_card.gd
+
 class_name UsableCard extends Node2D
 
 signal reparent_requested(which_usable_card: UsableCard)
@@ -178,7 +179,7 @@ func activate() -> bool:
 	Events.card_played.emit(self)
 
 	# 8. Handle card destination
-	if card_data.deplete or card_data.card_type == CardData.CardType.POWER:
+	if card_data.deplete:
 		hand.deplete_card(hand.remove_card_by_entity(self))
 	elif card_data.card_type == CardData.CardType.SUMMON:
 		hand.reserve_summon_card(hand.remove_card_by_entity(self))

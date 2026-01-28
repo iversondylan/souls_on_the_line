@@ -1,4 +1,5 @@
 # combatant_data.gd
+
 class_name CombatantData extends Resource
 
 signal combatant_data_changed()

@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=3 uid="uid://ceemxcslkt31b"]
+[gd_scene format=3 uid="uid://ceemxcslkt31b"]
 
 [ext_resource type="Script" uid="uid://c0e8h833ypklr" path="res://scenes/run/run.gd" id="1_l7o68"]
 [ext_resource type="Resource" uid="uid://ck8qxvs3me11h" path="res://scenes/run/run_startup.tres" id="2_o4jfg"]
@@ -13,17 +13,17 @@
 [ext_resource type="PackedScene" uid="uid://b32tn7y6k3shn" path="res://scenes/ui/arcanum_tooltip_popup.tscn" id="11_cnkn7"]
 [ext_resource type="PackedScene" uid="uid://3hsvnd70wteq" path="res://scenes/ui/tooltip.tscn" id="11_g42ja"]
 
-[node name="Run" type="Node"]
+[node name="Run" type="Node" unique_id=13304911]
 script = ExtResource("1_l7o68")
 run_startup = ExtResource("2_o4jfg")
 
-[node name="Map" parent="." instance=ExtResource("2_wdonh")]
+[node name="Map" parent="." unique_id=1135074360 instance=ExtResource("2_wdonh")]
 
-[node name="CurrentView" type="Node" parent="."]
+[node name="CurrentView" type="Node" parent="." unique_id=790162914]
 
-[node name="DebugUI" type="CanvasLayer" parent="."]
+[node name="DebugUI" type="CanvasLayer" parent="." unique_id=1462900324]
 
-[node name="DebugButtons" type="VBoxContainer" parent="DebugUI"]
+[node name="DebugButtons" type="VBoxContainer" parent="DebugUI" unique_id=736364947]
 anchors_preset = 6
 anchor_left = 1.0
 anchor_top = 0.5
@@ -37,76 +37,76 @@ grow_vertical = 2
 mouse_filter = 2
 alignment = 1
 
-[node name="MapButton" type="Button" parent="DebugUI/DebugButtons"]
+[node name="MapButton" type="Button" parent="DebugUI/DebugButtons" unique_id=23717238]
 unique_name_in_owner = true
 layout_mode = 2
 theme = ExtResource("4_o4jfg")
 text = "Map"
 
-[node name="BattleButton" type="Button" parent="DebugUI/DebugButtons"]
+[node name="BattleButton" type="Button" parent="DebugUI/DebugButtons" unique_id=1178515211]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Battle"
 
-[node name="ShopButton" type="Button" parent="DebugUI/DebugButtons"]
+[node name="ShopButton" type="Button" parent="DebugUI/DebugButtons" unique_id=1485065996]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Shop"
 
-[node name="TreasureButton" type="Button" parent="DebugUI/DebugButtons"]
+[node name="TreasureButton" type="Button" parent="DebugUI/DebugButtons" unique_id=362696819]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Treasure"
 
-[node name="RewardsButton" type="Button" parent="DebugUI/DebugButtons"]
+[node name="RewardsButton" type="Button" parent="DebugUI/DebugButtons" unique_id=686536888]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Rewards"
 
-[node name="CampfireButton" type="Button" parent="DebugUI/DebugButtons"]
+[node name="CampfireButton" type="Button" parent="DebugUI/DebugButtons" unique_id=503109449]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Campfire"
 
-[node name="TopBar" type="CanvasLayer" parent="."]
+[node name="TopBar" type="CanvasLayer" parent="." unique_id=40224624]
 layer = 3
 
-[node name="Background" type="ColorRect" parent="TopBar"]
+[node name="Background" type="ColorRect" parent="TopBar" unique_id=2076293937]
 custom_minimum_size = Vector2(0, 64)
 anchors_preset = 10
 anchor_right = 1.0
 grow_horizontal = 2
 color = Color(0.0990533, 0.0897, 0.23, 0.690196)
 
-[node name="Items" type="HBoxContainer" parent="TopBar"]
+[node name="Items" type="HBoxContainer" parent="TopBar" unique_id=1631769811]
 custom_minimum_size = Vector2(0, 64)
 anchors_preset = 10
 anchor_right = 1.0
 grow_horizontal = 2
 
-[node name="HealthPanel" parent="TopBar/Items" instance=ExtResource("5_ux63y")]
+[node name="HealthPanel" parent="TopBar/Items" unique_id=132000857 instance=ExtResource("5_ux63y")]
 layout_mode = 2
 inside_control = true
 font_size = 36
 
-[node name="GoldDisplay" parent="TopBar/Items" instance=ExtResource("5_wo0nw")]
+[node name="GoldDisplay" parent="TopBar/Items" unique_id=1342691864 instance=ExtResource("5_wo0nw")]
 unique_name_in_owner = true
 layout_mode = 2
 
-[node name="ArcanaSystemContainer" type="CenterContainer" parent="TopBar/Items"]
+[node name="ArcanaSystemContainer" type="CenterContainer" parent="TopBar/Items" unique_id=2083010515]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="ArcanaSystem" parent="TopBar/Items/ArcanaSystemContainer" instance=ExtResource("7_yeia0")]
+[node name="ArcanaSystem" parent="TopBar/Items/ArcanaSystemContainer" unique_id=776093882 instance=ExtResource("7_yeia0")]
 unique_name_in_owner = true
 layout_mode = 2
 
-[node name="CollectionButton" parent="TopBar/Items" node_paths=PackedStringArray("counter") instance=ExtResource("5_0tt4g")]
+[node name="CollectionButton" parent="TopBar/Items" unique_id=539564306 node_paths=PackedStringArray("counter") instance=ExtResource("5_0tt4g")]
 unique_name_in_owner = true
 layout_mode = 2
 counter = NodePath("Label")
 
-[node name="Label" type="Label" parent="TopBar/Items/CollectionButton"]
+[node name="Label" type="Label" parent="TopBar/Items/CollectionButton" unique_id=983631839]
 layout_mode = 0
 offset_left = 12.0
 offset_top = 22.0
@@ -117,12 +117,12 @@ theme_override_colors/font_color = Color(0.450155, 0.160414, 0.275357, 1)
 text = "99"
 horizontal_alignment = 1
 
-[node name="CollectionPileView" parent="TopBar" instance=ExtResource("7_0tt4g")]
+[node name="CollectionPileView" parent="TopBar" unique_id=343482384 instance=ExtResource("7_0tt4g")]
 unique_name_in_owner = true
 visible = false
 
-[node name="ArcanumTooltipPopup" parent="TopBar" instance=ExtResource("11_cnkn7")]
+[node name="ArcanumTooltipPopup" parent="TopBar" unique_id=1631975796 instance=ExtResource("11_cnkn7")]
 unique_name_in_owner = true
 visible = false
 
-[node name="Tooltip" parent="." instance=ExtResource("11_g42ja")]
+[node name="Tooltip" parent="." unique_id=2137160839 instance=ExtResource("11_g42ja")]

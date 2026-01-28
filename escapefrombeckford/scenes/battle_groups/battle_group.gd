@@ -404,7 +404,7 @@ func has_ai_behavior(node: Node) -> bool:
 	return false
 
 func _recompute_intents_for_group() -> void:
-	print("battle_group.gd _recompute_intents_for_group()")
+	#print("battle_group.gd _recompute_intents_for_group()")
 	for fighter: Fighter in get_combatants():
 		if has_ai_behavior(fighter):
 			for child in fighter.get_children():

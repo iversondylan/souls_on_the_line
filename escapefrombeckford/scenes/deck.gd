@@ -1,3 +1,5 @@
+# deck.gd
+
 class_name Deck extends Node
 
 signal draw_pile_size_changed(cards_amount)
@@ -7,7 +9,8 @@ var draw_pile : CardPile = CardPile.new()
 var discard_pile : CardPile = CardPile.new()
 var id_counter : int# = 0
 var first_shuffle: bool = true
-
+var first_hand_drawn: bool = false
+var first_hand_summon_guarantee: bool = true # TODO: later wire to settings
 
 func add_card(card_data: CardData):
 	card_data.card_status = CardData.CardStatus.PRE_GAME
@@ -37,9 +40,11 @@ func reset():
 	discard_pile.clear()
 	id_counter = 0
 	first_shuffle = true
+	first_hand_drawn = false
+	# leave first_hand_summon_guarantee as-is (so Run/settings can set it once)
 
 func clear_discard():
-	discard_pile = null
+	discard_pile.clear()
 
 func remove_card(card_id: int):
 	card_collection.erase(card_id)
@@ -51,9 +56,14 @@ func get_draw_cards() -> CardPile:
 	return draw_pile.duplicate()
 
 func take_discards() -> void:
+	if discard_pile == null:
+		return
+	if discard_pile.cards.is_empty():
+		return
 	for card: CardData in discard_pile.cards:
 		draw_pile.add_back(card)
 	discard_pile.clear()
+
 
 func make_draw_pile():
 	if first_shuffle:

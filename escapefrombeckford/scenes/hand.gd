@@ -25,7 +25,7 @@ var currently_touched_cards_arr: Array[UsableCard] = []
 var currently_selected_card_index: int = -1
 var mouse_in_hand_area: bool = false
 var selected_card: UsableCard
-#var held_card: UsableCard = null
+
 
 func _ready() -> void:
 	Events.card_played.connect(_on_card_played)
@@ -91,6 +91,58 @@ func draw_hand(n_cards: int) -> void:
 		func():
 			Events.hand_drawn.emit()
 	)
+
+func _draw_first_hand_with_summon_guarantee(n_cards: int) -> void:
+	# Mark immediately so we can't re-enter and do it twice.
+	deck.first_hand_drawn = true
+
+	# Draw exactly like normal (uses deck.draw_card(), including reshuffles + size signals).
+	var drawn: Array[CardData] = []
+	for i in range(n_cards):
+		var c := deck.draw_card()
+		if c != null:
+			drawn.append(c)
+
+	# If we already have a summon, proceed normally.
+	var has_summon := false
+	for c in drawn:
+		if c != null and c.card_type == CardData.CardType.SUMMON:
+			has_summon = true
+			break
+
+	# If not, swap in a random summon from the REMAINING draw pile (no extra draws, no extra animations).
+	if !has_summon and drawn.size() > 0:
+		print("hand.gd hand does not have a summon. Swapping...")
+		var summon_indices: Array[int] = []
+		for idx in range(deck.draw_pile.cards.size()):
+			var c: CardData = deck.draw_pile.cards[idx]
+			if c != null and c.card_type == CardData.CardType.SUMMON:
+				summon_indices.append(idx)
+
+		if summon_indices.size() > 0:
+			var rng := RandomNumberGenerator.new()
+			rng.randomize()
+
+			var draw_pile_idx := summon_indices[rng.randi_range(0, summon_indices.size() - 1)]
+			var hand_idx := rng.randi_range(0, drawn.size() - 1)
+
+			# Swap the CardData references: visually indistinguishable from a "normal" draw.
+			var summon_card: CardData = deck.draw_pile.cards[draw_pile_idx]
+			deck.draw_pile.cards[draw_pile_idx] = drawn[hand_idx]
+			drawn[hand_idx] = summon_card
+		# If no summon exists in draw pile, do nothing.
+
+	# Animate the exact same way as draw_hand()
+	var tween := create_tween()
+	for c in drawn:
+		tween.tween_callback(add_card.bind(c))
+		tween.tween_interval(CARD_DRAW_INTERVAL)
+
+	tween.finished.connect(func():
+		Events.hand_drawn.emit()
+	)
+
+
 
 func get_hand_cards() -> Array[UsableCard]:
 	var cards_in_hand = hand_cards_arr.duplicate(false)
@@ -200,7 +252,13 @@ func _on_hand_area_mouse_exited() -> void:
 	mouse_in_hand_area = false
 
 func _on_request_draw_hand() -> void:
-	draw_hand(5)
+	var n := 5
+
+	# Only apply on the FIRST hand of the battle (per deck.reset()).
+	if deck and !deck.first_hand_drawn and deck.first_hand_summon_guarantee:
+		_draw_first_hand_with_summon_guarantee(n)
+	else:
+		draw_hand(n)
 
 func _on_card_drag_or_aim_started(_usable_card: UsableCard) -> void:
 	_usable_card.set_usable_card_z_index(2)

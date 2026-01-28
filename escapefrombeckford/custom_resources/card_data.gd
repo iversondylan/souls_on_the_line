@@ -2,13 +2,10 @@
 class_name CardData extends Resource
 
 enum CardType {
-	ATTACK,
-	DEFEND,
+	CONVOCATION,
 	SUMMON,
-	POWER,
-	BUFF,
-	DEBUFF,
-	MOVEMENT
+	ENCHANTMENT,
+	EFFUSION
 }
 
 enum TargetType {

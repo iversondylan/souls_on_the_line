@@ -90,7 +90,7 @@ func update_action_intent() -> void:
 	refresh_intent_display()
 
 func _get_action_by_idx(idx: int) -> NPCAction:
-	print("_get_action_by_idx: ", idx)
+	#print("_get_action_by_idx: ", idx)
 	if !ai_profile or idx < 0 or idx >= ai_profile.actions.size():
 		return null
 	return ai_profile.actions[idx]
@@ -372,7 +372,7 @@ func _on_do_turn() -> void:
 	ctx.state[IS_ACTING] = true
 	
 	if not ctx.state.has(KEY_PLANNED_IDX):
-		print("_on_do_turn() there's no KEY_PLANNED_IDX")
+		#print("_on_do_turn() there's no KEY_PLANNED_IDX")
 		plan_next_intent()
 	
 	var action := _get_action_by_idx(int(ctx.state.get(KEY_PLANNED_IDX, -1)))

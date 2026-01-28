@@ -21,7 +21,6 @@ class_name Battle extends Node2D
 @onready var draw_view_overlay: CardsViewWindow = $Visual_Overlays/DrawViewWindow
 @onready var discard_view_overlay: CardsViewWindow = $Visual_Overlays/DiscardViewWindow
 @onready var collection_view_overlay: CardsViewWindow = $Visual_Overlays/CollectionViewWindow
-#@onready var deck_ui: UsableDeckUI = $Battle_UI/UsableDeckUi
 @onready var battle_scene: BattleScene = $Battle_Scene
 @onready var mana_panel: ManaPanel = $Battle_UI/ManaPanel
 
@@ -60,21 +59,12 @@ var summon_replace_candidates: Array[SummonedAlly] = []
 var summon_replace_resolving := false
 
 
-
-#var _last_input_msec: int = 0
-#var _idle_enabled: bool = false
-#var _last_idle_activity_msec: int = 0
-#var _next_spark_allowed_msec: int = 0      # << new
-
 func _ready() -> void:
 	#print_tree_pretty()
-	#_last_idle_activity_msec = Time.get_ticks_msec()
-	#_next_spark_allowed_msec = _last_idle_activity_msec
 	
 	set_process(true)
 	
 	
-	#Events.card_drag_started.connect(func(): _cancel_turn_order_spark())
 	Events.hand_drawn.connect(_enable_preview_turn_flow_button) 
 	Events.player_turn_completed.connect(_cancel_turn_order_spark)
 	Events.player_turn_completed.connect(_disable_preview_turn_flow_button)
@@ -85,7 +75,6 @@ func _ready() -> void:
 	
 	get_tree().paused = false
 	BattleController.current_state = BattleController.BattleState.PRE_GAME
-	#Events.pre_game_ended.connect(_on_pre_game_ended)
 	Events.dead_combatant_data.connect(_on_dead_combatant_data)
 	Events.battle_group_empty.connect(_on_battle_group_empty)
 	Events.player_combatant_data_changed.connect(_on_player_data_changed)
@@ -412,6 +401,9 @@ func _finish_confirm_after_fade(chosen: SummonedAlly) -> void:
 	# 5) Exit modal
 	_end_summon_replace_mode()
 
+
+## SOME OF THE CODE BELOW IS REPEATED FROM usable_card.gd
+## WHICH IS STUPID AND I HATE IT ):<
 func _commit_escrow_card_play() -> void:
 	var card := summon_replace_card
 	var ctx := summon_replace_ctx
@@ -432,7 +424,7 @@ func _commit_escrow_card_play() -> void:
 	Events.card_played.emit(card)
 
 	# Destination logic (same as UsableCard.activate)
-	if ctx.card_data.deplete or ctx.card_data.card_type == CardData.CardType.POWER:
+	if ctx.card_data.deplete:
 		card.hand.deplete_card(card.hand.remove_card_by_entity(card))
 	elif ctx.card_data.card_type == CardData.CardType.SUMMON:
 		card.hand.reserve_summon_card(card.hand.remove_card_by_entity(card))
@@ -482,16 +474,9 @@ func _try_start_turn_order_spark() -> void:
 	if !_spark:
 		return
 	
-	#var now := Time.get_ticks_msec()
-	#if now < _next_spark_allowed_msec:
-		#return
-	
 	var path := battle_scene.build_turn_order_path()
 	if !path or !path.is_valid():
 		return
-	
-	# Immediately block retrigger until it finishes/cancels
-	#_next_spark_allowed_msec = now + int(idle_cooldown_sec * 1000.0)
 	
 	_spark.play(path)
 

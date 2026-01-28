@@ -14,14 +14,17 @@ func is_empty() -> bool:
 
 
 func draw_front() -> CardData:
-	var card = cards.pop_front()
+	if cards.is_empty():
+		return null
+	var card: CardData = cards.pop_front()
 	card_pile_size_changed.emit(cards.size())
 	return card
 
 func draw_back() -> CardData:
-	var card = cards.pop_back()
+	if cards.is_empty():
+		return null
+	var card: CardData = cards.pop_back()
 	card_pile_size_changed.emit(cards.size())
-	#print("card_pile.gd draw_back() card_data: %s" % card)
 	return card
 
 func add_back(card: CardData) -> void:

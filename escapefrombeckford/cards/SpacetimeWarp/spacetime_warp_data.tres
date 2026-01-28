@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="CardData" load_steps=5 format=3 uid="uid://iv5lrhm4b60n"]
+[gd_resource type="Resource" script_class="CardData" format=3 uid="uid://iv5lrhm4b60n"]
 
 [ext_resource type="Script" uid="uid://wtk5v77fcqvn" path="res://custom_resources/card_action.gd" id="1_a1nap"]
 [ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://custom_resources/card_data.gd" id="2_uiy48"]
@@ -7,7 +7,6 @@
 
 [resource]
 script = ExtResource("2_uiy48")
-card_type = 6
 target_type = 3
 name = "Spacetime Warp"
 description = "Teleport an ally to appear in front of group or behind you. This may grant an extra action."

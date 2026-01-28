@@ -1,6 +1,7 @@
-[gd_resource type="Resource" load_steps=2 format=3 uid="uid://dqpfr84hqn454"]
+[gd_resource type="Resource" format=3 uid="uid://dqpfr84hqn454"]
 
 [ext_resource type="Script" uid="uid://vpt8dytf1ycc" path="res://cards/CruelDominion/cruel_dominion_action.gd" id="1_6rwdf"]
+[ext_resource type="Resource" uid="uid://bpcpnxremq4xv" path="res://audio/haunting_gloom.tres" id="2_4kqeb"]
 
 [resource]
 script = ExtResource("1_6rwdf")

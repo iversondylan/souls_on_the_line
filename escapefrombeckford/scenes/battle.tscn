@@ -1,4 +1,4 @@
-[gd_scene load_steps=25 format=3 uid="uid://k11cug4p8o3l"]
+[gd_scene format=3 uid="uid://k11cug4p8o3l"]
 
 [ext_resource type="Script" uid="uid://dixfcu6jmx0kd" path="res://scenes/battle.gd" id="1_dd63g"]
 [ext_resource type="AudioStream" uid="uid://dqm0r66m6ggwt" path="res://assets/music/enchanted tiki 86.mp3" id="2_3b6xh"]
@@ -27,14 +27,14 @@
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_eb6dy"]
 size = Vector2(1200, 200)
 
-[node name="Battle" type="Node2D"]
+[node name="Battle" type="Node2D" unique_id=707689584]
 script = ExtResource("1_dd63g")
 music = ExtResource("2_3b6xh")
 
-[node name="Battle_Scene" type="Node2D" parent="." groups=["battle_scene"]]
+[node name="Battle_Scene" type="Node2D" parent="." unique_id=862417419 groups=["battle_scene"]]
 script = ExtResource("3_lcn8m")
 
-[node name="Background" type="TextureRect" parent="Battle_Scene"]
+[node name="Background" type="TextureRect" parent="Battle_Scene" unique_id=1487696658]
 offset_left = -92.0
 offset_top = -94.0
 offset_right = 1828.0
@@ -42,30 +42,30 @@ offset_bottom = 986.0
 scale = Vector2(1.1, 1.1)
 texture = ExtResource("4_yhk5m")
 
-[node name="BattleGroupFriendly" parent="Battle_Scene" instance=ExtResource("5_n2clt")]
+[node name="BattleGroupFriendly" parent="Battle_Scene" unique_id=1183869742 instance=ExtResource("5_n2clt")]
 position = Vector2(480, 748)
 
-[node name="BattleGroupEnemy" parent="Battle_Scene" instance=ExtResource("6_xn15y")]
+[node name="BattleGroupEnemy" parent="Battle_Scene" unique_id=2120926567 instance=ExtResource("6_xn15y")]
 position = Vector2(1440, 748)
 faces_right = false
 
-[node name="BattleSceneAreaLeft" type="Area2D" parent="Battle_Scene"]
+[node name="BattleSceneAreaLeft" type="Area2D" parent="Battle_Scene" unique_id=366013195]
 position = Vector2(969, 698)
 collision_layer = 8
 script = ExtResource("7_rgwlw")
 
-[node name="CollisionShapeLeft" type="CollisionShape2D" parent="Battle_Scene/BattleSceneAreaLeft"]
+[node name="CollisionShapeLeft" type="CollisionShape2D" parent="Battle_Scene/BattleSceneAreaLeft" unique_id=1587785464]
 position = Vector2(-600, -50)
 shape = SubResource("RectangleShape2D_eb6dy")
 
-[node name="TargetArrow" type="Sprite2D" parent="Battle_Scene"]
+[node name="TargetArrow" type="Sprite2D" parent="Battle_Scene" unique_id=1896918255]
 visible = false
 position = Vector2(0, -18)
 scale = Vector2(0.153333, 0.153333)
 texture = ExtResource("8_h4dll")
 script = ExtResource("9_p0caf")
 
-[node name="CameraRig" type="Node2D" parent="Battle_Scene"]
+[node name="CameraRig" type="Node2D" parent="Battle_Scene" unique_id=1612841384]
 position = Vector2(960, 540)
 script = ExtResource("10_dd63g")
 zoom_in = null
@@ -74,21 +74,21 @@ movement_duration = null
 offset_deadzone = null
 world_bounds = null
 
-[node name="Camera2D" type="Camera2D" parent="Battle_Scene/CameraRig"]
+[node name="Camera2D" type="Camera2D" parent="Battle_Scene/CameraRig" unique_id=1968275134]
 
-[node name="Debug_UI" type="CanvasLayer" parent="."]
+[node name="Debug_UI" type="CanvasLayer" parent="." unique_id=1870619922]
 
-[node name="KillEnemiesButton" type="Button" parent="Debug_UI"]
+[node name="KillEnemiesButton" type="Button" parent="Debug_UI" unique_id=1437914900]
 offset_top = 99.0
 offset_right = 126.0
 offset_bottom = 130.0
 theme = ExtResource("8_2tyvl")
 text = "kill enemies"
 
-[node name="Battle_UI" type="CanvasLayer" parent="." groups=["ui_layer"]]
+[node name="Battle_UI" type="CanvasLayer" parent="." unique_id=82108263 groups=["ui_layer"]]
 script = ExtResource("9_jujjx")
 
-[node name="EndTurn" type="Button" parent="Battle_UI"]
+[node name="EndTurn" type="Button" parent="Battle_UI" unique_id=200877520]
 anchors_preset = 3
 anchor_left = 1.0
 anchor_top = 1.0
@@ -102,7 +102,7 @@ grow_horizontal = 0
 grow_vertical = 0
 text = "End Turn"
 
-[node name="DrawPileButton" parent="Battle_UI" node_paths=PackedStringArray("counter") instance=ExtResource("17_ariee")]
+[node name="DrawPileButton" parent="Battle_UI" unique_id=175258487 node_paths=PackedStringArray("counter") instance=ExtResource("17_ariee")]
 unique_name_in_owner = true
 anchors_preset = 2
 anchor_top = 1.0
@@ -114,7 +114,7 @@ offset_bottom = -46.0
 grow_vertical = 0
 counter = NodePath("Counter")
 
-[node name="Counter" type="Label" parent="Battle_UI/DrawPileButton"]
+[node name="Counter" type="Label" parent="Battle_UI/DrawPileButton" unique_id=1277727095]
 layout_mode = 0
 offset_left = 12.0
 offset_top = 22.0
@@ -126,7 +126,7 @@ theme_override_font_sizes/font_size = 26
 text = "99"
 horizontal_alignment = 1
 
-[node name="DiscardPileButton" parent="Battle_UI" node_paths=PackedStringArray("counter") instance=ExtResource("17_ariee")]
+[node name="DiscardPileButton" parent="Battle_UI" unique_id=836578458 node_paths=PackedStringArray("counter") instance=ExtResource("17_ariee")]
 unique_name_in_owner = true
 anchors_preset = 3
 anchor_left = 1.0
@@ -141,7 +141,7 @@ grow_horizontal = 0
 grow_vertical = 0
 counter = NodePath("Counter")
 
-[node name="Counter" type="Label" parent="Battle_UI/DiscardPileButton"]
+[node name="Counter" type="Label" parent="Battle_UI/DiscardPileButton" unique_id=610420263]
 layout_mode = 0
 offset_left = 13.0
 offset_top = 22.0
@@ -153,16 +153,16 @@ theme_override_font_sizes/font_size = 26
 text = "99"
 horizontal_alignment = 1
 
-[node name="ManaPanel" parent="Battle_UI" instance=ExtResource("19_tgt58")]
+[node name="ManaPanel" parent="Battle_UI" unique_id=561465951 instance=ExtResource("19_tgt58")]
 position = Vector2(190, 953)
 
-[node name="Hand" parent="Battle_UI" instance=ExtResource("15_wvgjd")]
+[node name="Hand" parent="Battle_UI" unique_id=1775012993 instance=ExtResource("15_wvgjd")]
 
-[node name="SummonReplacePrompt" parent="Battle_UI" instance=ExtResource("16_61i1y")]
+[node name="SummonReplacePrompt" parent="Battle_UI" unique_id=1859690242 instance=ExtResource("16_61i1y")]
 visible = false
 position = Vector2(960, 131)
 
-[node name="TurnOrderSparkController" parent="Battle_UI" instance=ExtResource("17_saiin")]
+[node name="TurnOrderSparkController" parent="Battle_UI" unique_id=1883551906 instance=ExtResource("17_saiin")]
 position = Vector2(859, 364)
 intro_label_fade = 0.35
 pulse_scale_mult = 1.55
@@ -170,40 +170,40 @@ fade_out_duration = 0.22
 base_blue = Color(0.45, 0.75, 1, 1)
 ghost_alpha = 0.95
 
-[node name="TurnPhaseTitle" parent="Battle_UI" instance=ExtResource("19_fpf3k")]
+[node name="TurnPhaseTitle" parent="Battle_UI" unique_id=1916446982 instance=ExtResource("19_fpf3k")]
 position = Vector2(960, 86)
 
-[node name="Visual_Overlays" type="CanvasLayer" parent="."]
+[node name="Visual_Overlays" type="CanvasLayer" parent="." unique_id=1155891591]
 
-[node name="DrawViewWindow" parent="Visual_Overlays" instance=ExtResource("20_3q5c2")]
+[node name="DrawViewWindow" parent="Visual_Overlays" unique_id=1838225771 instance=ExtResource("20_3q5c2")]
 visible = false
 position = Vector2(576, 324)
 
-[node name="DiscardViewWindow" parent="Visual_Overlays" instance=ExtResource("20_3q5c2")]
+[node name="DiscardViewWindow" parent="Visual_Overlays" unique_id=1437595028 instance=ExtResource("20_3q5c2")]
 visible = false
 position = Vector2(576, 324)
 
-[node name="CollectionViewWindow" parent="Visual_Overlays" instance=ExtResource("20_3q5c2")]
+[node name="CollectionViewWindow" parent="Visual_Overlays" unique_id=1429078153 instance=ExtResource("20_3q5c2")]
 visible = false
 position = Vector2(576, 324)
 
-[node name="BattleOverPanel" parent="Visual_Overlays" instance=ExtResource("21_p2d7x")]
+[node name="BattleOverPanel" parent="Visual_Overlays" unique_id=1894133634 instance=ExtResource("21_p2d7x")]
 visible = false
 
-[node name="CardPileViews" type="CanvasLayer" parent="."]
+[node name="CardPileViews" type="CanvasLayer" parent="." unique_id=1250335853]
 layer = 4
 
-[node name="DrawPileView" parent="CardPileViews" instance=ExtResource("22_wyn7e")]
+[node name="DrawPileView" parent="CardPileViews" unique_id=2085647040 instance=ExtResource("22_wyn7e")]
 unique_name_in_owner = true
 visible = false
 
-[node name="DiscardPileView" parent="CardPileViews" instance=ExtResource("22_wyn7e")]
+[node name="DiscardPileView" parent="CardPileViews" unique_id=506262802 instance=ExtResource("22_wyn7e")]
 unique_name_in_owner = true
 visible = false
 
-[node name="StatusView" type="CanvasLayer" parent="."]
+[node name="StatusView" type="CanvasLayer" parent="." unique_id=2094819986]
 
-[node name="StatusView" parent="StatusView" instance=ExtResource("18_h4dll")]
+[node name="StatusView" parent="StatusView" unique_id=1932521555 instance=ExtResource("18_h4dll")]
 visible = false
 
 [connection signal="pressed" from="Debug_UI/KillEnemiesButton" to="." method="_on_kill_enemies_button_pressed"]
