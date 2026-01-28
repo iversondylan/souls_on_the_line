@@ -16,19 +16,12 @@ signal combatant_data_changed()
 
 @export_group("Gameplay Data")
 @export var max_health: int = 10
-
 @export var max_mana_red: int = 3
 @export var max_mana_green: int = 3
 @export var max_mana_blue: int = 3
-@export var starting_armor: int = 0
-@export var team: int = 1
 @export var ai: NPCAIProfile
 
 @export_group("Audio")
-#@export var melee_impact_sound: Sound# = load("res://assets/sfx/thrall_hit.wav")
-#@export var ranged_impact_sound: Sound
-
-#var fighter: Fighter
 var alive: bool = true
 var health: int = -1# : set = set_health
 var armor: int# : set = set_armor
@@ -58,7 +51,7 @@ func reset_health() -> void:
 	stats_changed()
 
 func reset_armor() -> void:
-	set_armor(starting_armor)
+	set_armor(0)
 
 func set_armor(value : int) -> void:
 	armor = clampi(value, 0, 999)
@@ -116,18 +109,6 @@ func spend_mana(card_data: CardData) -> bool:
 		return true
 	else:
 		return false
-
-#func set_mana_red(value: int) -> void:
-	#mana_red = value
-	#stats_changed()
-#
-#func set_mana_green(value: int) -> void:
-	#mana_green = value
-	#stats_changed()
-#
-#func set_mana_blue(value: int) -> void:
-	#mana_blue = value
-	#stats_changed()
 
 func add_mana(n_red: int, n_green: int, n_blue: int) -> void:
 	mana_red += n_red

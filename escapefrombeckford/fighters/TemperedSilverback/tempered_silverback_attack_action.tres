@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="NPCAction" format=3 uid="uid://baewakdljaq8t"]
+
+[ext_resource type="Script" uid="uid://3jde7uhq2yho" path="res://custom_resources/npc_effect_package.gd" id="1_v3kac"]
+[ext_resource type="Resource" uid="uid://c6xt32oed2dqt" path="res://fighters/TemperedSilverback/tempered_silverback_attack_pkg.tres" id="2_fxcnc"]
+[ext_resource type="Texture2D" uid="uid://c54dbo8n7r3g" path="res://assets/sprites/assorted/attack.PNG" id="3_wskau"]
+[ext_resource type="Texture2D" uid="uid://dp3uhdoaut1lx" path="res://assets/sprites/assorted/fireball.png" id="4_qy2kn"]
+[ext_resource type="Script" uid="uid://dtwuyctovqk5r" path="res://custom_resources/intent_lifecycle_model.gd" id="5_8r5el"]
+[ext_resource type="Script" uid="uid://cgyx5yvchgfsk" path="res://npc_actions/text/attack_intent_text_model.gd" id="6_ududf"]
+[ext_resource type="Script" uid="uid://q408gy2b4q6a" path="res://custom_resources/performable_model.gd" id="7_pqcvu"]
+[ext_resource type="Script" uid="uid://bcih413oy6v73" path="res://custom_resources/npc_action.gd" id="8_dh5ov"]
+[ext_resource type="Script" uid="uid://cuj4qvyx6dedj" path="res://custom_resources/state_model.gd" id="9_ng8y8"]
+[ext_resource type="Resource" uid="uid://ivsvxo0vj72x" path="res://npc_actions/text/attack_intent_tooltip_text_model.tres" id="10_wps17"]
+
+[sub_resource type="Resource" id="Resource_bvno3"]
+script = ExtResource("6_ududf")
+metadata/_custom_type_script = "uid://cgyx5yvchgfsk"
+
+[resource]
+script = ExtResource("8_dh5ov")
+effect_packages = Array[ExtResource("1_v3kac")]([ExtResource("2_fxcnc")])
+intent_icon = ExtResource("3_wskau")
+intent_icon_ranged = ExtResource("4_qy2kn")
+intent_text_model = SubResource("Resource_bvno3")
+tooltip_model = ExtResource("10_wps17")

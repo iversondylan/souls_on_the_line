@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="CombatantData" format=3 uid="uid://ut67k4rbn403"]
+
+[ext_resource type="Resource" uid="uid://0trwuwfa433m" path="res://fighters/TemperedSilverback/tempered_silverback_ai_profile.tres" id="1_6nul6"]
+[ext_resource type="Script" uid="uid://cfatj0ryn8uv3" path="res://custom_resources/combatant_data.gd" id="1_h8tpf"]
+[ext_resource type="Texture2D" uid="uid://dfqya1jagaknn" path="res://assets/sprites/assorted/gorilla.png" id="1_vid76"]
+
+[resource]
+script = ExtResource("1_h8tpf")
+name = "Tempered Silverback"
+character_art = ExtResource("1_vid76")
+portrait = ExtResource("1_vid76")
+ai = ExtResource("1_6nul6")
+metadata/_custom_type_script = "uid://cfatj0ryn8uv3"
