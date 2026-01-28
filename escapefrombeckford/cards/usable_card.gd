@@ -18,7 +18,6 @@ var cost_blue: int = 1
 var card_data: CardData : set = _set_card_data
 var original_index := 0
 
-@onready var state: Label = $State
 @onready var card_visuals: CardVisuals = $CardVisuals
 
 @onready var click_area_area2d: Area2D = $ClickArea

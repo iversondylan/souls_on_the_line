@@ -4,10 +4,7 @@ extends CardState
 const MOUSE_Y_SNAPBACK_THRESHOLD := 1060
 
 func enter() -> void:
-	#usable_card.state.text = "AIMING"
 	usable_card.targets.clear()
-	#var offset := Vector2(usable_card.parent.size.x / 2, -usable_card.size.y / 2)
-	#offset.x -= card_ui.size.x / 2
 	var pos := get_viewport().get_visible_rect().size
 	pos.x = pos.x * 0.5
 	pos.y = pos.y * 0.75

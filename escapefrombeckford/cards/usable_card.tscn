@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=3 uid="uid://cd6j7t8hq3we3"]
+[gd_scene format=3 uid="uid://cd6j7t8hq3we3"]
 
 [ext_resource type="Script" uid="uid://dw6oso8sytggf" path="res://cards/usable_card.gd" id="1_f88n7"]
 [ext_resource type="PackedScene" uid="uid://dlpbxdm81neil" path="res://cards/card_visuals.tscn" id="2_f727x"]
@@ -8,7 +8,6 @@
 [ext_resource type="Script" uid="uid://c105frfq73ho0" path="res://cards/card_states/card_dragging_state.gd" id="6_xk81s"]
 [ext_resource type="Script" uid="uid://bikh7yv8s3kjv" path="res://cards/card_states/card_released_state.gd" id="7_a1aea"]
 [ext_resource type="Script" uid="uid://cq15qwif2sf5u" path="res://cards/card_states/card_aiming_state.gd" id="8_oqtgk"]
-[ext_resource type="Theme" uid="uid://clb4br0iiyw86" path="res://themes/pixel_theme.tres" id="9_bk70k"]
 [ext_resource type="Texture2D" uid="uid://c2cpjnsgjdd1x" path="res://assets/sprites/assorted/card_back_1.PNG" id="10_5usk7"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_g488w"]
@@ -17,69 +16,57 @@ size = Vector2(225, 315)
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_horhy"]
 size = Vector2(225, 315)
 
-[node name="usable_card" type="Node2D"]
+[node name="usable_card" type="Node2D" unique_id=1853250094]
 script = ExtResource("1_f88n7")
 
-[node name="CardVisuals" parent="." instance=ExtResource("2_f727x")]
+[node name="CardVisuals" parent="." unique_id=300915990 instance=ExtResource("2_f727x")]
 offset_left = -112.5
 offset_top = -157.5
 offset_right = 112.5
 offset_bottom = 157.5
 mouse_filter = 2
 
-[node name="ClickArea" type="Area2D" parent="."]
+[node name="ClickArea" type="Area2D" parent="." unique_id=326823207]
 collision_layer = 32
 collision_mask = 32
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="ClickArea"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ClickArea" unique_id=44425646]
 position = Vector2(0.5, 0.5)
 shape = SubResource("RectangleShape2D_g488w")
 
-[node name="DropPointDetector" type="Area2D" parent="."]
+[node name="DropPointDetector" type="Area2D" parent="." unique_id=1465267651]
 position = Vector2(-60, -84)
 collision_mask = 2
 monitorable = false
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="DropPointDetector"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="DropPointDetector" unique_id=590341573]
 position = Vector2(60.5, 84.5)
 shape = SubResource("RectangleShape2D_horhy")
 
-[node name="CardStateMachine" type="Node" parent="." node_paths=PackedStringArray("initial_state")]
+[node name="CardStateMachine" type="Node" parent="." unique_id=1554702334 node_paths=PackedStringArray("initial_state")]
 script = ExtResource("3_32cfh")
 initial_state = NodePath("CardBaseState")
 
-[node name="CardBaseState" type="Node" parent="CardStateMachine"]
+[node name="CardBaseState" type="Node" parent="CardStateMachine" unique_id=1904034263]
 script = ExtResource("4_juwkc")
 
-[node name="CardClickedState" type="Node" parent="CardStateMachine"]
+[node name="CardClickedState" type="Node" parent="CardStateMachine" unique_id=491802013]
 script = ExtResource("5_pefwv")
 state = 1
 
-[node name="CardDraggingState" type="Node" parent="CardStateMachine"]
+[node name="CardDraggingState" type="Node" parent="CardStateMachine" unique_id=675971500]
 script = ExtResource("6_xk81s")
 state = 2
 
-[node name="CardReleasedState" type="Node" parent="CardStateMachine"]
+[node name="CardReleasedState" type="Node" parent="CardStateMachine" unique_id=1970469704]
 script = ExtResource("7_a1aea")
 state = 4
 
-[node name="CardAimingState" type="Node" parent="CardStateMachine"]
+[node name="CardAimingState" type="Node" parent="CardStateMachine" unique_id=1037205823]
 script = ExtResource("8_oqtgk")
 state = 3
 
-[node name="State" type="Label" parent="."]
-visible = false
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-theme = ExtResource("9_bk70k")
-text = "State"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="CardBack" type="Sprite2D" parent="."]
+[node name="CardBack" type="Sprite2D" parent="." unique_id=789359508]
 visible = false
 texture = ExtResource("10_5usk7")
 
