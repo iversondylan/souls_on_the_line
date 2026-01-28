@@ -102,6 +102,20 @@ func set_anchor_position(_position: Vector2, animate: bool) -> void:
 		position = anchor_position
 	has_anchor_position = true
 
+# TO-DO: For implementation with DamageContexts
+func apply_damage(ctx: DamageContext) -> void:
+	# 1) Target-side modifiers (scene logic)
+	ctx.final_amount = modifier_system.get_modified_value(ctx.base_amount, ctx.modifier_type)
+
+	# 2) Pure stat application (data logic)
+	combatant_data.apply_damage_event(ctx)
+
+	# 3) Reactions (scene logic)
+	combatant.status_grid.on_damage_taken(ctx)
+
+	if combatant_data.health <= 0:
+		die()
+
 func take_damage(n_damage: int, modifier_type: Modifier.Type):
 	var modified_damage := modifier_system.get_modified_value(n_damage, modifier_type)
 	if combatant_data.check_lethal(modified_damage):

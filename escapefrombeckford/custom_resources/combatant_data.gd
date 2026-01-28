@@ -38,9 +38,20 @@ func is_alive() -> bool:
 	return health > 0 and alive
 
 func stats_changed() -> void:
+	# This check is smelly. 
+	# Should not emit global events or do class checks here
 	if self is PlayerData:
 		Events.player_combatant_data_changed.emit()
 	combatant_data_changed.emit()
+
+# TODO: implement this
+func apply_damage(ctx: DamageContext) -> void:
+	# Only numeric work here. No Fighter references required.
+	var health_loss := take_damage(ctx.final_amount)
+	ctx.health_loss = health_loss
+	ctx.blocked = (health_loss <= 0)
+	ctx.lethal = (health <= 0 or !alive) # or compute before/after as you prefer
+
 
 func set_health(value : int) -> void:
 	health = clampi(value, 0, max_health)

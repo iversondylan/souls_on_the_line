@@ -1,3 +1,5 @@
+# status_grid.gd
+
 class_name StatusGrid extends GridContainer
 
 signal statuses_applied(proc_type: Status.ProcType)
