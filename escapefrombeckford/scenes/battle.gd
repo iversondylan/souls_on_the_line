@@ -166,7 +166,7 @@ func _plan_initial_enemy_intents() -> void:
 		for child in enemy.get_children():
 			if child is NPCAIBehavior:
 				child.plan_next_intent()
-				child.refresh_intent_display_only()
+				child.refresh_intent_display()
 
 func _on_request_activate_arcana_by_type(type: Arcanum.Type):
 	match type:

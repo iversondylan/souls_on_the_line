@@ -59,7 +59,7 @@ func execute() -> void:
 	for child in fighter.get_children():
 		if child is NPCAIBehavior:
 			child.plan_next_intent()
-			child.refresh_intent_display_only()
+			child.refresh_intent_display()
 	
 	# --- Optional card binding (only makes sense for SummonedAlly) ---
 	if bound_card_data:

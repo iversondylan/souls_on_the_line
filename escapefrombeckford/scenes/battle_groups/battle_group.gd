@@ -404,8 +404,9 @@ func has_ai_behavior(node: Node) -> bool:
 	return false
 
 func _recompute_intents_for_group() -> void:
+	print("battle_group.gd _recompute_intents_for_group()")
 	for fighter: Fighter in get_combatants():
 		if has_ai_behavior(fighter):
 			for child in fighter.get_children():
 				if child is NPCAIBehavior:
-					child.refresh_intent_display_only()
+					child.sync_intent()

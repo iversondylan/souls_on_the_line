@@ -16,12 +16,10 @@ signal canceled
 @export var arc_time_mult: float = 2.0
 @export var arc_raise_px: float = 140.0
 
-@export var default_spacing: float = 240.0 # kept but unused now (safe to delete later)
 
 # --- INTRO / FEEL ---
-@export var intro_grow_mult: float = 1.25 # unused now (safe to delete later)
 @export var intro_grow_duration: float = 0.55
-@export var intro_linger: float = 0.90
+@export var intro_linger: float = 0.35
 
 @export var intro_label_fade: float = 0.90
 
