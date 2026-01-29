@@ -51,9 +51,6 @@ func execute() -> void:
 	data.init()
 	fighter.combatant_data = data
 	
-	# Safety: keep CombatantData.team consistent with group_index if you rely on it
-	# (You appear to use battle_group/team elsewhere; this avoids subtle mismatches.)
-	fighter.combatant_data.team = group_index
 	
 	# --- AI bootstrap ---
 	for child in fighter.get_children():
