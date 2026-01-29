@@ -157,6 +157,8 @@ horizontal_alignment = 1
 position = Vector2(190, 953)
 
 [node name="Hand" parent="Battle_UI" unique_id=1775012993 instance=ExtResource("15_wvgjd")]
+discard_anchor_path = NodePath("../DiscardPileButton")
+draw_anchor_path = NodePath("../DrawPileButton")
 
 [node name="SummonReplacePrompt" parent="Battle_UI" unique_id=1859690242 instance=ExtResource("16_61i1y")]
 visible = false
