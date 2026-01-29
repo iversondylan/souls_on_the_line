@@ -240,6 +240,9 @@ func deplete_card(usable_card: UsableCard) -> void:
 
 func discard_hand(usable_cards: Array[UsableCard]) -> void:
 	# Filter to valid
+	if _is_discarding:
+		return
+	_is_discarding = true
 	var cards: Array[UsableCard] = []
 	for c in usable_cards:
 		if c != null and is_instance_valid(c):
@@ -256,8 +259,6 @@ func discard_hand(usable_cards: Array[UsableCard]) -> void:
 			c.queue_free()
 		Events.hand_discarded.emit()
 		return
-	
-	_is_discarding = true
 	
 	# Use global positions so parenting doesn't matter
 	var target_global := discard_anchor.global_position
@@ -280,7 +281,7 @@ func discard_hand(usable_cards: Array[UsableCard]) -> void:
 		var card_for_lambda :  UsableCard = cards[i]
 		card_for_lambda.animate_to_position(target_global, 0.0, 0.5, MINI_CARD_SCALE,
 			func():
-			var p: Node2D
+			var p: Node
 			if is_instance_valid(card_for_lambda):
 				p = card_for_lambda.get_parent()
 				deck.add_card_to_discard(card_for_lambda.card_data)
@@ -299,7 +300,7 @@ func _count_cards_in(node: Node) -> int:
 	return n
 
 func _on_one_discard_complete() -> void:
-	var remaining := _count_cards_in(hand_cards_node) + _count_cards_in(disabled_cards_node)
+	var remaining := _count_cards_in(disabled_cards_node)
 	print(remaining)
 	if remaining != 0:
 		return

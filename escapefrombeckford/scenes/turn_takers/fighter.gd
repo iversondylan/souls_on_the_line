@@ -3,6 +3,7 @@ class_name Fighter extends Node2D
 
 signal action_resolved(turn_taker: Fighter)
 signal statuses_applied(proc_type: Status.ProcType)
+signal damage_taken(ctx: DamageContext)
 
 enum TurnStatus {TURN_PENDING, TURN_ACTIVE, NONE}
 
@@ -104,16 +105,39 @@ func set_anchor_position(_position: Vector2, animate: bool) -> void:
 
 # TO-DO: For implementation with DamageContexts
 func apply_damage(ctx: DamageContext) -> void:
-	# 1) Target-side modifiers (scene logic)
-	ctx.final_amount = modifier_system.get_modified_value(ctx.base_amount, ctx.modifier_type)
+	if !ctx or !is_instance_valid(self) or !is_alive():
+		return
 
-	# 2) Pure stat application (data logic)
-	combatant_data.apply_damage_event(ctx)
+	# Ensure target is set correctly
+	ctx.target = self
+	ctx.phase = DamageContext.Phase.PRE_MODIFIERS
 
-	# 3) Reactions (scene logic)
-	combatant.status_grid.on_damage_taken(ctx)
+	# Target-side modifiers (and source-side if you want it here)
+	# If you already computed DMG_DEALT earlier, you can skip source-side.
+	if modifier_system:
+		ctx.amount = modifier_system.get_modified_value(ctx.amount, ctx.take_modifier_type)
 
-	if combatant_data.health <= 0:
+	ctx.amount = maxi(ctx.amount, 0)
+	ctx.phase = DamageContext.Phase.POST_MODIFIERS
+
+	# Apply to stats (this returns health_loss currently)
+	var pre_armor := combatant_data.armor
+	var health_loss := combatant_data.take_damage(ctx.amount)
+
+	ctx.health_damage = health_loss
+	ctx.armor_damage = maxi(mini(ctx.amount, pre_armor), 0)
+	ctx.was_lethal = (combatant_data.health <= 0)
+
+	ctx.phase = DamageContext.Phase.APPLIED
+
+	# Immediate reactions (synchronous)
+	damage_taken.emit(ctx)
+	combatant.status_grid.on_damage_taken(ctx) # optional direct call, see below
+
+	# visuals MUST RESTORE
+	#_spawn_damage_number_or_block(ctx)
+
+	if ctx.was_lethal:
 		die()
 
 func take_damage(n_damage: int, modifier_type: Modifier.Type):

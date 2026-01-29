@@ -1,18 +1,37 @@
 # damage_context.gd
-
 class_name DamageContext
 extends RefCounted
 
-var source: Fighter
-var target: Fighter
+enum Phase {
+	PRE_MODIFIERS,
+	POST_MODIFIERS,
+	APPLIED
+}
 
-# Inputs (set before resolution)
-var base_amount: int = 0                  # from attacker-side calc (already includes DMG_DEALT if you do it there)
-var modifier_type: Modifier.Type          # usually DMG_TAKEN on the target
-var tags: int = 0                         # optional bitflags later (SPELL, MELEE, AOE, TRUE_DAMAGE...)
+var source: Fighter = null
+var target: Fighter = null
 
-# Working / resolved values (filled during resolution)
-var final_amount: int = 0                 # after target modifiers, before armor
-var health_loss: int = 0                  # after armor
-var blocked: bool = false                 # health_loss == 0
-var lethal: bool = false
+# What we *intend* to do
+var base_amount: int = 0
+
+# What we're *currently* going to do (statuses/mods can change this)
+var amount: int = 0
+
+# Type tags for modifier lookups, logging, conditional statuses, etc.
+var deal_modifier_type: int = Modifier.Type.DMG_DEALT
+var take_modifier_type: int = Modifier.Type.DMG_TAKEN
+
+# Results (filled in when applied)
+var armor_damage: int = 0
+var health_damage: int = 0
+var was_lethal: bool = false
+
+# Optional flags / tags (handy later)
+var tags: Array[StringName] = []
+var phase: Phase = Phase.PRE_MODIFIERS
+
+func _init(_source: Fighter, _target: Fighter, _base: int) -> void:
+	source = _source
+	target = _target
+	base_amount = _base
+	amount = _base

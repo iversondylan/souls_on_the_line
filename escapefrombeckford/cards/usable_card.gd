@@ -45,13 +45,17 @@ func _input(event: InputEvent) -> void:
 	card_state_machine.on_input(event)
 
 func animate_to_position(new_position: Vector2, new_rotation: float, duration: float, scale: Vector2 = Vector2.ONE, on_finish: Callable = Callable()) -> void:
+	if tween and is_instance_valid(tween):
+		tween.kill()
+		tween = null
 	tween = create_tween().set_trans(Tween.TRANS_CIRC).set_ease(Tween.EASE_OUT)
 	tween.set_parallel()
+	duration = maxf(duration, 0.001)
 	tween.tween_property(self, "global_position", new_position,  duration)
 	tween.tween_property(self, "rotation_degrees", new_rotation,  duration)
 	tween.tween_property(self, "scale", scale,  duration)
-	if on_finish:
-		tween.finished.connect(on_finish)
+	if on_finish.is_valid():
+		tween.finished.connect(on_finish, CONNECT_ONE_SHOT | CONNECT_DEFERRED)
 
 func animate_to_rotation(new_rotation: float, duration: float) -> void:
 	tween = create_tween().set_trans(Tween.TRANS_CIRC).set_ease(Tween.EASE_OUT)
