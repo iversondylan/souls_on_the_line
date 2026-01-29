@@ -22,6 +22,7 @@ signal card_activated(card: UsableCard)
 
 const CARD_DRAW_INTERVAL: float = 0.1
 const CARD_DISCARD_INTERVAL: float = 0.1
+const MINI_CARD_SCALE := Vector2(0.2, 0.2)
 
 var battle_scene: BattleScene
 var player: Player
@@ -33,7 +34,7 @@ var currently_selected_card_index: int = -1
 var mouse_in_hand_area: bool = false
 var selected_card: UsableCard
 
-var _active_tween: Tween = null
+#var _active_tween: Tween = null
 var _is_drawing: bool = false
 var _is_discarding: bool = false
 
@@ -104,13 +105,14 @@ func add_card(card: CardData) -> void:
 	usable_card.hand = self
 	usable_card.player = player
 	usable_card.battle_scene = battle_scene
-
+	
 	hand_cards_node.add_child(usable_card)
-
-	usable_card.position = Vector2(30, 540)
+	var target_global := draw_anchor.global_position
+	usable_card.global_position = target_global
+	usable_card.scale = MINI_CARD_SCALE
 	usable_card.reparent_requested.connect(_on_usable_card_reparent_requested)
 
-	update_original_index()
+	#update_original_index()
 	reposition_hand_cards()
 
 func draw_card() -> bool:
@@ -121,26 +123,28 @@ func draw_card() -> bool:
 	return true
 
 func draw_hand(n_cards: int) -> void:
-	_cancel_active_tween()
+	#_cancel_active_tween()
 	_is_drawing = true
 
-	var tween := create_tween()
-	_active_tween = tween
+	#var tween := create_tween()
+	#_active_tween = tween
 
 	for i in range(n_cards):
-		tween.tween_callback(func():
-			draw_card()
-		)
-		tween.tween_interval(CARD_DRAW_INTERVAL)
+		#tween.tween_callback(func():
+		draw_card()
+		#)
+		await get_tree().create_timer(CARD_DRAW_INTERVAL).timeout
 
-	tween.finished.connect(func():
-		_is_drawing = false
-		_active_tween = null
-		Events.hand_drawn.emit()
-	)
+		#tween.tween_interval(CARD_DRAW_INTERVAL)
+
+	#tween.finished.connect(func():
+	_is_drawing = false
+	#_active_tween = null
+	Events.hand_drawn.emit()
+	#)
 
 func _draw_first_hand_with_summon_guarantee(n_cards: int) -> void:
-	_cancel_active_tween()
+	#_cancel_active_tween()
 	_is_drawing = true
 	
 	# Mark immediately so we can't re-enter and do it twice.
@@ -160,7 +164,7 @@ func _draw_first_hand_with_summon_guarantee(n_cards: int) -> void:
 			has_summon = true
 			break
 	
-	# If not, swap in a random summon from the REMAINING draw pile (no prints, invisible).
+	# If not, swap in a random summon from the REMAINING draw pile.
 	if !has_summon and drawn.size() > 0:
 		var summon_indices: Array[int] = []
 		for idx in range(deck.draw_pile.cards.size()):
@@ -179,19 +183,32 @@ func _draw_first_hand_with_summon_guarantee(n_cards: int) -> void:
 			deck.draw_pile.cards[draw_pile_idx] = drawn[hand_idx]
 			drawn[hand_idx] = summon_card
 	
-	# Animate the exact same way as draw_hand()
-	var tween := create_tween()
-	_active_tween = tween
-	
 	for c in drawn:
-		tween.tween_callback(add_card.bind(c))
-		tween.tween_interval(CARD_DRAW_INTERVAL)
-	
-	tween.finished.connect(func():
-		_is_drawing = false
-		_active_tween = null
-		Events.hand_drawn.emit()
-	)
+		#tween.tween_callback(func():
+		add_card(c)
+		#)
+		await get_tree().create_timer(CARD_DRAW_INTERVAL).timeout
+
+		#tween.tween_interval(CARD_DRAW_INTERVAL)
+
+	#tween.finished.connect(func():
+	_is_drawing = false
+	#_active_tween = null
+	Events.hand_drawn.emit()
+	#)
+	# Animate the exact same way as draw_hand()
+	#var tween := create_tween()
+	#_active_tween = tween
+	#
+	#for c in drawn:
+		#tween.tween_callback(add_card.bind(c))
+		#tween.tween_interval(CARD_DRAW_INTERVAL)
+	#
+	#tween.finished.connect(func():
+		#_is_drawing = false
+		#_active_tween = null
+		#Events.hand_drawn.emit()
+	#)
 
 
 # ------------------------------------------------------------------------------
@@ -203,7 +220,7 @@ func reserve_summon_card(usable_card: UsableCard) -> void:
 		return
 	usable_card.queue_free()
 	# no discard addition for reserve
-	update_original_index()
+	#update_original_index()
 	reposition_hand_cards()
 
 func discard_card(usable_card: UsableCard) -> void:
@@ -211,14 +228,14 @@ func discard_card(usable_card: UsableCard) -> void:
 		return
 	deck.add_card_to_discard(usable_card.card_data)
 	usable_card.queue_free()
-	update_original_index()
+	#update_original_index()
 	reposition_hand_cards()
 
 func deplete_card(usable_card: UsableCard) -> void:
 	if usable_card == null or !is_instance_valid(usable_card):
 		return
 	usable_card.queue_free()
-	update_original_index()
+	#update_original_index()
 	reposition_hand_cards()
 
 func discard_hand(usable_cards: Array[UsableCard]) -> void:
@@ -247,53 +264,48 @@ func discard_hand(usable_cards: Array[UsableCard]) -> void:
 	
 	#for c in cards:
 	for i in range(cards.size() - 1, -1, -1):
-		var c = cards[i]
+		#var c: UsableCard = cards[i]
+		var card : UsableCard = cards[i]
 		# Optional: stop hand repositioning from yanking them mid-flight
-		c.disabled = true
-		c.unhighlight()
-		c.selected = false
-		hand_cards_node.remove_child(c)
-		disabled_cards_node.add_child(c)
-
-		#tween.tween_callback(func():
-			#if !is_instance_valid(c):
-				#return
-			## Animate the card flying to discard pile.
-			## If your UsableCard has animate_to_position(local_pos...), use global tween instead:
-			#var t := create_tween()
-			#t.tween_property(c, "global_position", target_global, 0.15)
-			#t.tween_property(c, "rotation", 0.0, 0.15) # optional
-			## When that small tween finishes, do the discard + free
-			#t.finished.connect(func():
-				#if !is_instance_valid(c):
-					#return
-				#deck.add_card_to_discard(c.card_data)
-				#c.queue_free()
-			#)
-		#)
-		var card := cards[i]
-		if i > 0:
-			c.animate_to_position(target_global, 0.0, 0.5,
-				func():
-				if !is_instance_valid(card):
-					return
-				deck.add_card_to_discard(card.card_data)
-				card.queue_free()
-				, Vector2(0.2, 0.2))
-		else:
-			c.animate_to_position(target_global, 0.0, 0.5, 
-				func():
-				if !is_instance_valid(card):
-					return
-				deck.add_card_to_discard(card.card_data)
-				card.queue_free()
-				_is_discarding = false
-				_active_tween = null
-				update_original_index()
-				reposition_hand_cards()
-				Events.hand_discarded.emit()
-				, Vector2(0.2, 0.2))
+		card.disabled = true
+		card.unhighlight()
+		card.selected = false
+		var g := card.global_position
+		hand_cards_node.remove_child(card)
+		disabled_cards_node.add_child(card)
+		card.global_position = g
+		
+		
+		
+		var card_for_lambda :  UsableCard = cards[i]
+		card_for_lambda.animate_to_position(target_global, 0.0, 0.5, MINI_CARD_SCALE,
+			func():
+			var p: Node2D
+			if is_instance_valid(card_for_lambda):
+				p = card_for_lambda.get_parent()
+				deck.add_card_to_discard(card_for_lambda.card_data)
+			if p:
+				p.remove_child(card_for_lambda)
+			card_for_lambda.queue_free()
+			_on_one_discard_complete()
+			)
 		await get_tree().create_timer(CARD_DISCARD_INTERVAL).timeout
+
+func _count_cards_in(node: Node) -> int:
+	var n := 0
+	for ch in node.get_children():
+		if ch is UsableCard and is_instance_valid(ch):
+			n += 1
+	return n
+
+func _on_one_discard_complete() -> void:
+	var remaining := _count_cards_in(hand_cards_node) + _count_cards_in(disabled_cards_node)
+	print(remaining)
+	if remaining != 0:
+		return
+	_is_discarding = false
+	reposition_hand_cards()
+	Events.hand_discarded.emit()
 
 
 func remove_card(index: int) -> UsableCard:
@@ -306,7 +318,7 @@ func remove_card(index: int) -> UsableCard:
 	# Detach from node tree so it disappears from the hand immediately.
 	removing.get_parent().remove_child(removing)
 
-	update_original_index()
+	#update_original_index()
 	reposition_hand_cards()
 	currently_selected_card_index = -1
 	return removing # caller must queue_free / reparent / etc.
@@ -365,12 +377,12 @@ func reposition_hand_cards() -> void:
 		_update_card_transform(card, current_card_angle_flt)
 		current_card_angle_flt += card_angle_increment_flt
 
-func update_original_index() -> void:
-	var index := 0
-	for child in hand_cards_node.get_children():
-		if child is UsableCard and is_instance_valid(child):
-			(child as UsableCard).original_index = index
-			index += 1
+#func update_original_index() -> void:
+	#var index := 0
+	#for child in hand_cards_node.get_children():
+		#if child is UsableCard and is_instance_valid(child):
+			#(child as UsableCard).original_index = index
+			#index += 1
 
 func get_card_position(angle_deg_flt: float) -> Vector2:
 	var x: float = hand_radius_flt * cos(deg_to_rad(angle_deg_flt + 270))
@@ -382,7 +394,7 @@ func _update_card_transform(usable_card: UsableCard, angle_in_drag: float) -> vo
 	usable_card.animate_to_position(pos, angle_in_drag, 0.5)
 
 func _on_usable_card_reparent_requested(_child: UsableCard) -> void:
-	update_original_index()
+	#update_original_index()
 	reposition_hand_cards()
 
 
@@ -390,12 +402,12 @@ func _on_usable_card_reparent_requested(_child: UsableCard) -> void:
 # Tween + event handlers
 # ------------------------------------------------------------------------------
 
-func _cancel_active_tween() -> void:
-	if _active_tween and is_instance_valid(_active_tween):
-		_active_tween.kill()
-	_active_tween = null
-	_is_drawing = false
-	_is_discarding = false
+#func _cancel_active_tween() -> void:
+	#if _active_tween and is_instance_valid(_active_tween):
+		#_active_tween.kill()
+	#_active_tween = null
+	#_is_drawing = false
+	#_is_discarding = false
 
 func _on_card_played(usable_card: UsableCard) -> void:
 	currently_touched_cards_arr.erase(usable_card)

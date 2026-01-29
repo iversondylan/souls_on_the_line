@@ -16,7 +16,7 @@ var cost_red: int = 1
 var cost_green: int = 1
 var cost_blue: int = 1
 var card_data: CardData : set = _set_card_data
-var original_index := 0
+#var original_index := 0
 
 @onready var card_visuals: CardVisuals = $CardVisuals
 
@@ -44,13 +44,12 @@ func _ready() -> void:
 func _input(event: InputEvent) -> void:
 	card_state_machine.on_input(event)
 
-func animate_to_position(new_position: Vector2, new_rotation: float, duration: float, on_finish: Callable = Callable(), scale: Vector2 = Vector2.ONE) -> void:
+func animate_to_position(new_position: Vector2, new_rotation: float, duration: float, scale: Vector2 = Vector2.ONE, on_finish: Callable = Callable()) -> void:
 	tween = create_tween().set_trans(Tween.TRANS_CIRC).set_ease(Tween.EASE_OUT)
 	tween.set_parallel()
 	tween.tween_property(self, "global_position", new_position,  duration)
 	tween.tween_property(self, "rotation_degrees", new_rotation,  duration)
-	if scale != Vector2.ONE:
-		tween.tween_property(self, "scale", scale,  duration)
+	tween.tween_property(self, "scale", scale,  duration)
 	if on_finish:
 		tween.finished.connect(on_finish)
 
