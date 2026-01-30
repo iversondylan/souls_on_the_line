@@ -239,10 +239,17 @@ func deplete_card(usable_card: UsableCard) -> void:
 	reposition_hand_cards()
 
 func discard_hand(usable_cards: Array[UsableCard]) -> void:
-	# Filter to valid
+	print("hand.gd discard_hand() cards: ", usable_cards.size())
+
+	# If we're already discarding, don't start another batch.
+	# (Optional recovery: if somehow stuck, auto-unstick when disabled node is empty)
 	if _is_discarding:
-		return
-	_is_discarding = true
+		if _count_cards_in(disabled_cards_node) == 0:
+			_is_discarding = false
+		else:
+			return
+
+	# Filter to valid
 	var cards: Array[UsableCard] = []
 	for c in usable_cards:
 		if c != null and is_instance_valid(c):
@@ -259,38 +266,49 @@ func discard_hand(usable_cards: Array[UsableCard]) -> void:
 			c.queue_free()
 		Events.hand_discarded.emit()
 		return
-	
-	# Use global positions so parenting doesn't matter
+
+	_is_discarding = true
+
 	var target_global := discard_anchor.global_position
-	
-	#for c in cards:
+
 	for i in range(cards.size() - 1, -1, -1):
-		#var c: UsableCard = cards[i]
-		var card : UsableCard = cards[i]
-		# Optional: stop hand repositioning from yanking them mid-flight
+		var card: UsableCard = cards[i]
+		if !is_instance_valid(card):
+			continue
+
+		# Freeze it
 		card.disabled = true
 		card.unhighlight()
 		card.selected = false
+
+		# Reparent but preserve global position
 		var g := card.global_position
-		hand_cards_node.remove_child(card)
+		if card.get_parent():
+			card.get_parent().remove_child(card)
 		disabled_cards_node.add_child(card)
 		card.global_position = g
-		
-		
-		
-		var card_for_lambda :  UsableCard = cards[i]
-		card_for_lambda.animate_to_position(target_global, 0.0, 0.5, MINI_CARD_SCALE,
+
+		var card_ref := card
+		card_ref.animate_to_position(
+			target_global,
+			0.0,
+			0.5,
+			MINI_CARD_SCALE,
 			func():
-			var p: Node
-			if is_instance_valid(card_for_lambda):
-				p = card_for_lambda.get_parent()
-				deck.add_card_to_discard(card_for_lambda.card_data)
-			if p:
-				p.remove_child(card_for_lambda)
-			card_for_lambda.queue_free()
-			_on_one_discard_complete()
-			)
+				# Important: remove from tree regardless, then free.
+				if is_instance_valid(card_ref):
+					deck.add_card_to_discard(card_ref.card_data)
+					var parent := card_ref.get_parent()
+					if parent:
+						parent.remove_child(card_ref)
+					card_ref.queue_free()
+
+				# Defer the completion check so queued frees / tree updates settle.
+				call_deferred("_on_one_discard_complete")
+		)
+		reposition_hand_cards()
 		await get_tree().create_timer(CARD_DISCARD_INTERVAL).timeout
+
 
 func _count_cards_in(node: Node) -> int:
 	var n := 0
@@ -301,12 +319,15 @@ func _count_cards_in(node: Node) -> int:
 
 func _on_one_discard_complete() -> void:
 	var remaining := _count_cards_in(disabled_cards_node)
-	print(remaining)
+	print("discard remaining:", remaining)
+
 	if remaining != 0:
 		return
+
 	_is_discarding = false
 	reposition_hand_cards()
 	Events.hand_discarded.emit()
+
 
 
 func remove_card(index: int) -> UsableCard:
@@ -433,5 +454,6 @@ func _card_drag_or_aim_ended(_usable_card: UsableCard) -> void:
 	_usable_card.set_usable_card_z_index(0)
 
 func _on_player_turn_completed() -> void:
+	print("hand.gd _on_player_turn_completed()")
 	disable_hand_cards()
 	discard_hand(get_hand_cards())

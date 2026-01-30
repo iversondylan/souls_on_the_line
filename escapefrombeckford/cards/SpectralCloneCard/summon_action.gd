@@ -2,7 +2,7 @@
 class_name SummonAction extends CardAction
 
 @export var summon_data: CombatantData
-@export var sound: Sound
+@export var sound: Sound = load("res://audio/summon_zap.tres")
 
 #func activate(ctx: CardActionContext) -> bool:
 	#if !ctx.battle_scene or !ctx.resolved_target:

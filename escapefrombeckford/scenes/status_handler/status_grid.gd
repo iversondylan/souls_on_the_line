@@ -169,7 +169,6 @@ func _update_visuals() -> void:
 	reset_size()
 	position.x = -0.5 * size.x
 
-
 func _on_gui_input(event: InputEvent) -> void:
 	if event.is_action_pressed("mouse_click"):
 		Events.status_tooltip_requested.emit(_get_all_statuses())
@@ -184,6 +183,11 @@ func _on_status_changed(status: Status) -> void:
 		status_parent.modifier_system.mark_dirty(mod_type)
 		if status.affects_others():
 			modifier_tokens_changed.emit(mod_type)
+
+func on_damage_taken(ctx: DamageContext) -> void:
+	for status in _get_all_statuses():
+		if status and status.proc_type == Status.ProcType.EVENT_BASED:
+			status.on_damage_taken(ctx)
 
 func _remove_expired_statuses() -> void:
 	#print("status_grid.gd _remove_expired_statuses")

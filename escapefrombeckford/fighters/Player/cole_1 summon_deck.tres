@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="CardPile" format=3 uid="uid://dbh3fq2qm7n7u"]
 
 [ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://custom_resources/card_data.gd" id="1_0fq71"]
-[ext_resource type="Resource" uid="uid://b7txf6d8vmjkk" path="res://cards/SpectralCloneCard/spectral_clone.tres" id="2_opehh"]
+[ext_resource type="Resource" uid="uid://dqmjfqr0ijgwh" path="res://cards/TemperedSilverbackCard/tempered_silverback_card.tres" id="2_opehh"]
 [ext_resource type="Resource" uid="uid://iv5lrhm4b60n" path="res://cards/SpacetimeWarp/spacetime_warp_data.tres" id="3_f5l7f"]
 [ext_resource type="Resource" uid="uid://dfgkvy2yw1a3e" path="res://cards/AttackCard/attack_card.tres" id="3_opehh"]
 [ext_resource type="Resource" uid="uid://daxsngijhqe3k" path="res://cards/FocusFireCard/focus_fire.tres" id="4_17en4"]

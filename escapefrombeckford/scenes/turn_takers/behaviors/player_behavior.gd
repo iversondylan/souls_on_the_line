@@ -21,6 +21,7 @@ func _on_hand_discarded() -> void:
 	fighter.resolve_action()
 
 func _on_end_turn_button_pressed() -> void:
+	print("player_behavior.gd _on_end_turn_button_pressed()")
 	Events.request_activate_arcana_by_type.emit(Arcanum.Type.END_OF_TURN)
 	Events.end_turn_button_pressed.disconnect(_on_end_turn_button_pressed)
 
@@ -32,6 +33,7 @@ func _on_arcana_activated(type: Arcanum.Type) -> void:
 		Arcanum.Type.START_OF_TURN:
 			Events.request_draw_hand.emit()
 		Arcanum.Type.END_OF_TURN:
+			print("player_behavior.gd _on_arcana_activated(END_OF_TURN)")
 			Events.player_turn_completed.emit()
 
 func _on_battle_reset() -> void:

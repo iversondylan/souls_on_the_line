@@ -65,6 +65,9 @@ func affects_others() -> bool:
 func on_removed() -> void:
 	pass
 
+func on_damage_taken(_ctx: DamageContext) -> void:
+	pass
+
 func affects_intent_legality() -> bool:
 	return false
 #func _on_status_changed(target: Node) -> void:

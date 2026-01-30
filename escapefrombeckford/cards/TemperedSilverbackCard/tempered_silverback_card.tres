@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="CardData" format=3 uid="uid://dqmjfqr0ijgwh"]
+
+[ext_resource type="Script" uid="uid://wtk5v77fcqvn" path="res://custom_resources/card_action.gd" id="1_5wcfe"]
+[ext_resource type="Resource" uid="uid://cp1kw70nocgmd" path="res://cards/TemperedSilverbackCard/summon_tempered_silverback.tres" id="2_m052w"]
+[ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://custom_resources/card_data.gd" id="2_pah8j"]
+[ext_resource type="Resource" uid="uid://cf1ebos2aikvf" path="res://cards/TemperedSilverbackCard/tempered_on_summoned_action.tres" id="3_afa75"]
+[ext_resource type="Texture2D" uid="uid://dfqya1jagaknn" path="res://assets/sprites/assorted/gorilla.png" id="3_pah8j"]
+
+[resource]
+script = ExtResource("2_pah8j")
+card_type = 1
+target_type = 1
+rarity = 1
+name = "Tempered Silverback"
+cost_red = 1
+cost_green = 1
+cost_blue = 1
+texture = ExtResource("3_pah8j")
+actions = Array[ExtResource("1_5wcfe")]([ExtResource("2_m052w"), ExtResource("3_afa75")])
+metadata/_custom_type_script = "uid://d2f0qepe047dc"

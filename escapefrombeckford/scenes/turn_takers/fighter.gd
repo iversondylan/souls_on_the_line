@@ -105,6 +105,7 @@ func set_anchor_position(_position: Vector2, animate: bool) -> void:
 
 # TO-DO: For implementation with DamageContexts
 func apply_damage(ctx: DamageContext) -> void:
+	#print("fighter.gd !N!E!W! apply_damage")
 	if !ctx or !is_instance_valid(self) or !is_alive():
 		return
 
@@ -132,36 +133,47 @@ func apply_damage(ctx: DamageContext) -> void:
 
 	# Immediate reactions (synchronous)
 	damage_taken.emit(ctx)
-	combatant.status_grid.on_damage_taken(ctx) # optional direct call, see below
+	combatant.status_grid.on_damage_taken(ctx)
 
-	# visuals MUST RESTORE
-	#_spawn_damage_number_or_block(ctx)
+	# visuals
+	Shaker.shake(self, 16, 0.15)
+	_spawn_damage_number_or_block(ctx)
 
 	if ctx.was_lethal:
 		die()
 
-func take_damage(n_damage: int, modifier_type: Modifier.Type):
-	var modified_damage := modifier_system.get_modified_value(n_damage, modifier_type)
-	if combatant_data.check_lethal(modified_damage):
-		combatant_data.alive = false
-		battle_group.update_combatant_position()
-	var tween: Tween = create_tween()
-	tween.tween_callback(Shaker.shake.bind(self, 16, 0.15))
-	tween.tween_interval(0.2)
-	tween.tween_callback(take_damage_part_2.bind(modified_damage))
-
-func take_damage_part_2(n_damage: int) -> void:
-	var health_damage := combatant_data.take_damage(n_damage)
-	if health_damage > 0:
+func _spawn_damage_number_or_block(ctx: DamageContext) -> void:
+	if ctx.health_damage > 0:
 		var damage_number: DamageNumber = damage_number_scn.instantiate()
 		add_child(damage_number)
-		damage_number.animate_and_vanish(health_damage, combatant_data.height)
+		damage_number.animate_and_vanish(ctx.health_damage, combatant_data.height)
 	else:
 		var blocked_message: BlockedMessage = blocked_message_scn.instantiate()
 		add_child(blocked_message)
 		blocked_message.animate_and_vanish(combatant_data.height)
-	if combatant_data.health <= 0:
-		die()
+
+#func take_damage(n_damage: int, modifier_type: Modifier.Type):
+	#var modified_damage := modifier_system.get_modified_value(n_damage, modifier_type)
+	#if combatant_data.check_lethal(modified_damage):
+		#combatant_data.alive = false
+		#battle_group.update_combatant_position()
+	#var tween: Tween = create_tween()
+	#tween.tween_callback(Shaker.shake.bind(self, 16, 0.15))
+	#tween.tween_interval(0.2)
+	#tween.tween_callback(take_damage_part_2.bind(modified_damage))
+#
+#func take_damage_part_2(n_damage: int) -> void:
+	#var health_damage := combatant_data.take_damage(n_damage)
+	#if health_damage > 0:
+		#var damage_number: DamageNumber = damage_number_scn.instantiate()
+		#add_child(damage_number)
+		#damage_number.animate_and_vanish(health_damage, combatant_data.height)
+	#else:
+		#var blocked_message: BlockedMessage = blocked_message_scn.instantiate()
+		#add_child(blocked_message)
+		#blocked_message.animate_and_vanish(combatant_data.height)
+	#if combatant_data.health <= 0:
+		#die()
 
 func heal(n_heal: int) -> void:
 	combatant_data.heal(n_heal)

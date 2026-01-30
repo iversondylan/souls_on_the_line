@@ -1,12 +1,13 @@
-#damage_effect.gd
+# damage_effect.gd
 class_name DamageEffect extends Effect
 
 var n_damage: int = 0
-var modifier_type := Modifier.Type.DMG_TAKEN
+var source: Fighter = null
 
 func execute() -> void:
 	for target in targets:
 		if !target:
 			continue
-		target.take_damage(n_damage, modifier_type)
+		var ctx := DamageContext.new(source, target, n_damage)
+		target.apply_damage(ctx)
 	SFXPlayer.play(sound)

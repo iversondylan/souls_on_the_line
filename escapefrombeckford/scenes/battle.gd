@@ -164,7 +164,7 @@ func _on_request_activate_arcana_by_type(type: Arcanum.Type):
 		Arcanum.Type.START_OF_TURN:
 			arcana.activate_arcana_by_type(Arcanum.Type.START_OF_TURN)
 		Arcanum.Type.END_OF_TURN:
-			#print("battle.gd _on_request_activate_arcana_by_type() END_OF_TURN")
+			print("battle.gd _on_request_activate_arcana_by_type() END_OF_TURN")
 			arcana.activate_arcana_by_type(Arcanum.Type.END_OF_TURN)
 		Arcanum.Type.END_OF_COMBAT:
 			arcana.activate_arcana_by_type(Arcanum.Type.END_OF_COMBAT)
