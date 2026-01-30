@@ -12,6 +12,7 @@ card_type = 1
 target_type = 1
 rarity = 1
 name = "Tempered Silverback"
+description = "Summon a %s/%s %s."
 cost_red = 1
 cost_green = 1
 cost_blue = 1

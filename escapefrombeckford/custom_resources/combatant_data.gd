@@ -102,6 +102,13 @@ func heal(amount : int) -> void:
 	health = clampi(health + amount, 0, max_health)
 	stats_changed()
 
+func increase_max_health(amount: int, heal_same := true) -> void:
+	max_health += amount
+	if heal_same:
+		health = clampi(health + amount, 0, max_health)
+	stats_changed()
+		
+
 func create_instance() -> CombatantData:
 	var instance: CombatantData = duplicate()
 	instance.health = max_health

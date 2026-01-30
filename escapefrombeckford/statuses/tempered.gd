@@ -1,13 +1,14 @@
+# tempered.gd
+
 class_name TemperedStatus extends Status
 
 const AMPLIFY_ID := "tempered"
 var max_health_per_strike := 2
 
 func on_damage_taken(ctx: DamageContext) -> void:
-	if ctx.health_damage > 0 and !ctx.was_lethal:
+	if ctx.health_damage > 0 and !ctx.was_lethal and ctx.target.combatant_data.is_alive():
 		intensity += max_health_per_strike
-		status_parent.combatant_data.max_health += max_health_per_strike
-		status_parent.combatant_data.heal(max_health_per_strike)
+		status_parent.combatant_data.increase_max_health(max_health_per_strike)
 		
 
 func get_tooltip() -> String:

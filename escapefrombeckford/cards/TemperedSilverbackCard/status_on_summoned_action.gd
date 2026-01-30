@@ -1,3 +1,5 @@
+# status_on_summoned_action.gd
+
 class_name StatusOnSummonedAction extends CardAction
 
 @export var status: Status
@@ -14,5 +16,5 @@ func activate(ctx: CardActionContext) -> bool:
 	
 	status_effect.status = new_status
 	status_effect.execute()
-
+	
 	return true
