@@ -6,7 +6,8 @@ enum ActionType {
 	BLOCK,
 	MOVE,
 	STATUS,
-	SUMMON
+	SUMMON,
+	HEAL
 }
 
 @export var action_type: ActionType

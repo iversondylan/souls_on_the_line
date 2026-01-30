@@ -103,6 +103,13 @@ func set_anchor_position(_position: Vector2, animate: bool) -> void:
 		position = anchor_position
 	has_anchor_position = true
 
+func apply_heal(ctx: HealContext) -> void:
+	if !ctx or !is_instance_valid(self) or !is_alive():
+		return
+	
+	ctx.target = self
+	var restored_health := combatant_data.heal(ctx)
+
 func apply_damage(ctx: DamageContext) -> void:
 	#print("fighter.gd !N!E!W! apply_damage")
 	if !ctx or !is_instance_valid(self) or !is_alive():
@@ -173,8 +180,6 @@ func _spawn_damage_number_or_block(ctx: DamageContext) -> void:
 	#if combatant_data.health <= 0:
 		#die()
 
-func heal(n_heal: int) -> void:
-	combatant_data.heal(n_heal)
 
 func add_armor(amount: int):
 	combatant_data.add_armor(amount)

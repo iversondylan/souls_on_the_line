@@ -1,27 +1,19 @@
 class_name HealAction extends CardAction
 
-@export var heal_amount : int
+@export var flat_amount : int = 0
+@export var of_total : float = 0.0
+@export var of_missing : float = 0.0
 
 func activate(ctx: CardActionContext) -> bool:
 	var targets := ctx.resolved_target.fighters
 	if targets.is_empty():
 		return false
-
-	var status_effect := StatusEffect.new()
-	status_effect.targets = targets
-
-	var amplify_status := AMPLIFY_STATUS.duplicate()
-	#amplify_status.stack_type = Status.StackType.DURATION
-	amplify_status.duration = amplify_duration
-	#amplify_status.expiration_policy = Status.ExpirationPolicy.DURATION
-	status_effect.sound = amplify_sound
-	status_effect.status = amplify_status
-	status_effect.execute()
+#
+	var heal_effect := HealEffect.new()
+	heal_effect.targets = targets
+	heal_effect.flat_amount = flat_amount
+	heal_effect.of_total = of_total
+	heal_effect.of_missing = of_missing
+	heal_effect.execute()
 
 	return true
-
-func description_arity() -> int:
-	return 2
-
-func get_description_values(_ctx: CardActionContext) -> Array:
-	return [floori(AmplifyStatus.MULT_VALUE*100), amplify_duration]

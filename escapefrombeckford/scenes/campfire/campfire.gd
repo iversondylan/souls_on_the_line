@@ -6,7 +6,8 @@ class_name Campfire extends Control
 
 
 func _on_rest_button_pressed() -> void:
-	player_data.heal(ceili(player_data.max_health * 0.3))
+	var ctx := HealContext.new(null, null, 0, 0.3, 0)
+	player_data.heal(ctx)
 	animation_player.play("fade_out")
 
 func _on_fade_out_finished() -> void:

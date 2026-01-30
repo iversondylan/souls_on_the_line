@@ -1,0 +1,8 @@
+[gd_resource type="Resource" format=3 uid="uid://cyc74p2bcq452"]
+
+[ext_resource type="Script" uid="uid://dnqihptx7npch" path="res://cards/HealingSurge/healing_surge_action.gd" id="1_cfeqk"]
+
+[resource]
+script = ExtResource("1_cfeqk")
+of_missing = 1.0
+metadata/_custom_type_script = "uid://bhrr2hl5y314o"

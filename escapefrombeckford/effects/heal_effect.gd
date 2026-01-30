@@ -1,13 +1,16 @@
 # heal_effect.gd
 class_name HealEffect extends Effect
 
-var heal_amount: int = 0
+var flat_amount: int = 0
+var of_total: float = 0.0
+var of_missing: float = 0.0
+
 var source: Fighter = null
 
 func execute() -> void:
-	for target in targets:
+	for target: Fighter in targets:
 		if !target:
 			continue
-		var ctx := DamageContext.new(source, target, n_damage)
-		target.apply_damage(ctx)
+		var ctx := HealContext.new(source, target, flat_amount, of_total, of_missing)
+		target.apply_heal(ctx)
 	SFXPlayer.play(sound)
