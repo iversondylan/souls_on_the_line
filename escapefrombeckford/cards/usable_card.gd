@@ -25,13 +25,27 @@ var card_data: CardData : set = _set_card_data
 @onready var card_state_machine: CardStateMachine = $CardStateMachine as CardStateMachine
 @onready var targets: Array[Node] = []
 
+@onready var strictly_visuals: Node2D = card_visuals.card_strictly_visuals
+
+var _pop_tween: Tween
+var _home_pos: Vector2
+var _home_scale: Vector2
+var _home_rot: float
+var _home_cached := false
+var _is_popped := false
+var _home_z := 0
+
+const POP_OFFSET := Vector2(0, -220)
+const POP_SCALE := Vector2(1.35, 1.35)
+const POP_DUR := 0.12
+
 var tween: Tween
 var playable := true : set = _set_playable
 var disabled := false
 var selected = false
 
 func _ready() -> void:
-	print_tree_pretty()
+	_cache_home()
 	Events.card_aim_started.connect(_on_card_drag_or_aiming_started)
 	Events.card_drag_started.connect(_on_card_drag_or_aiming_started)
 	Events.card_aim_ended.connect(_on_card_drag_or_aiming_ended)
@@ -43,6 +57,10 @@ func _ready() -> void:
 
 func _input(event: InputEvent) -> void:
 	card_state_machine.on_input(event)
+
+func _process(_delta):
+	if _is_popped and is_instance_valid(strictly_visuals):
+		strictly_visuals.rotation = -rotation
 
 func animate_to_position(new_position: Vector2, new_rotation: float, duration: float, scale: Vector2 = Vector2.ONE, on_finish: Callable = Callable()) -> void:
 	if tween and is_instance_valid(tween):
@@ -320,3 +338,48 @@ func get_fighters(new_targets: Array[Node]) -> Array[Fighter]:
 			if target.combatant is Fighter:
 				attack_targets.push_back(target.combatant)
 	return attack_targets
+
+func _cache_home() -> void:
+	if _home_cached or strictly_visuals == null:
+		return
+	_home_z = z_index
+	_home_pos = strictly_visuals.position
+	_home_scale = strictly_visuals.scale
+	_home_rot = strictly_visuals.rotation
+	_home_cached = true
+
+func enlarge_visuals() -> void:
+	if disabled:
+		return
+	_cache_home()
+	if strictly_visuals == null or _is_popped:
+		return
+	_is_popped = true
+	_kill_pop_tween()
+
+	var target_pos := _home_pos + POP_OFFSET
+	var target_rot := -rotation # counter parent (radians)
+	z_index = 10
+	_pop_tween = create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	_pop_tween.set_parallel()
+	_pop_tween.tween_property(strictly_visuals, "global_position:y", 850, POP_DUR)
+	_pop_tween.tween_property(strictly_visuals, "scale", POP_SCALE, POP_DUR)
+	_pop_tween.tween_property(strictly_visuals, "rotation", target_rot, POP_DUR)
+
+func reset_visuals() -> void:
+	if !_home_cached or strictly_visuals == null or !_is_popped:
+		return
+	_is_popped = false
+	_kill_pop_tween()
+	
+	z_index = _home_z
+	_pop_tween = create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	_pop_tween.set_parallel()
+	_pop_tween.tween_property(strictly_visuals, "position", _home_pos, POP_DUR)
+	_pop_tween.tween_property(strictly_visuals, "scale", _home_scale, POP_DUR)
+	_pop_tween.tween_property(strictly_visuals, "rotation", _home_rot, POP_DUR)
+
+func _kill_pop_tween() -> void:
+	if _pop_tween and is_instance_valid(_pop_tween):
+		_pop_tween.kill()
+	_pop_tween = null

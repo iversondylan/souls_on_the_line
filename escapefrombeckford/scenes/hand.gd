@@ -64,12 +64,14 @@ func _process(_delta: float) -> void:
 	for card in _get_hand_cards():
 		card.unhighlight()
 		card.selected = false
+		card.reset_visuals()
 
 	if hovered_cards.size() > 0:
 		hovered_cards.sort_custom(func(a, b): return a.z_index < b.z_index)
 		var top_card: UsableCard = hovered_cards.back()
 		top_card.highlight()
 		top_card.selected = true
+		top_card.enlarge_visuals()
 		currently_selected_card_index = _get_hand_cards().find(top_card)
 	else:
 		currently_selected_card_index = -1

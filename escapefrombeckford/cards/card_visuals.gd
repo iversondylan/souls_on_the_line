@@ -1,3 +1,5 @@
+# card_visuals.gd
+
 class_name CardVisuals extends Control
 
 @onready var glow: Sprite2D = %Glow
@@ -8,9 +10,11 @@ class_name CardVisuals extends Control
 @onready var cost_container: Sprite2D = %CostContainer
 @onready var name_label: RichTextLabel = %NameLabel
 @onready var card_art_rect: TextureRect = %CardArtRect
-@onready var card_name_box: TextureRect = %CardNameBox
+@onready var card_name_box: Sprite2D = %CardNameBox
 @onready var description: RichTextLabel = %Description
 @onready var rarity: TextureRect = %Rarity
+@onready var card_strictly_visuals: Node2D = $CardStrictlyVisuals
+
 
 @export var card_data: CardData : set = _set_card_data
 var cost_red: int = 0 : set = set_cost_red
