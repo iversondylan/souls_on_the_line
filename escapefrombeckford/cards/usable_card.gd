@@ -90,14 +90,14 @@ func update_description() -> void:
 func get_description() -> String:
 	var text := card_data.description
 	var resolved := resolve_targets(targets)
-
+	
 	var ctx := CardActionContext.new()
 	ctx.player = player
 	ctx.player_data = player.combatant_data
 	ctx.battle_scene = battle_scene
 	ctx.card_data = card_data
 	ctx.resolved_target = resolved
-
+	
 	for action: CardAction in card_data.actions:
 		var total_slots := TextUtils.count_placeholders(text)
 		var consume := action.description_arity()
@@ -122,6 +122,7 @@ func get_description() -> String:
 		
 		text = text % args
 	text = TextUtils.percent_to_symbol(text)
+	text = TextUtils.end_with_period(text)
 	return text
 
 func set_usable_card_z_index(index: int):

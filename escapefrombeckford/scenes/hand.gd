@@ -239,7 +239,7 @@ func deplete_card(usable_card: UsableCard) -> void:
 	reposition_hand_cards()
 
 func discard_hand(usable_cards: Array[UsableCard]) -> void:
-	print("hand.gd discard_hand() cards: ", usable_cards.size())
+	#print("hand.gd discard_hand() cards: ", usable_cards.size())
 
 	# If we're already discarding, don't start another batch.
 	# (Optional recovery: if somehow stuck, auto-unstick when disabled node is empty)
@@ -319,7 +319,7 @@ func _count_cards_in(node: Node) -> int:
 
 func _on_one_discard_complete() -> void:
 	var remaining := _count_cards_in(disabled_cards_node)
-	print("discard remaining:", remaining)
+	#print("discard remaining:", remaining)
 
 	if remaining != 0:
 		return

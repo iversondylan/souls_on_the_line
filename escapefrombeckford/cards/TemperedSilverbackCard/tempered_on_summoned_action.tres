@@ -1,11 +1,11 @@
-[gd_resource type="Resource" script_class="StatusOnSummonedAction" format=3 uid="uid://cf1ebos2aikvf"]
+[gd_resource type="Resource" format=3 uid="uid://cf1ebos2aikvf"]
 
-[ext_resource type="Script" uid="uid://cpalremmeq4o" path="res://cards/TemperedSilverbackCard/status_on_summoned_action.gd" id="1_pvsjd"]
+[ext_resource type="Script" uid="uid://b587bwwi2y5br" path="res://cards/TemperedSilverbackCard/tempered_on_summoned_action.gd" id="1_we4pk"]
 [ext_resource type="Resource" uid="uid://tioo1cbmio6m" path="res://statuses/tempered.tres" id="2_we4pk"]
 
 [resource]
-script = ExtResource("1_pvsjd")
+script = ExtResource("1_we4pk")
 status = ExtResource("2_we4pk")
-action_type = 4
+action_type = 5
 requires_target = false
 metadata/_custom_type_script = "uid://cpalremmeq4o"

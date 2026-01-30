@@ -9,3 +9,8 @@ static func has_placeholders(text: String) -> bool:
 
 static func percent_to_symbol(text: String) -> String:
 	return text.replace("percent", "%")
+
+static func end_with_period(text: String) -> String:
+	if !text.ends_with("."):
+		text += "."
+	return text

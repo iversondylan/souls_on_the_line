@@ -2,7 +2,6 @@
 class_name CombatForecast
 
 static func preview_action_params(combatant_data: CombatantData) -> Dictionary:
-	print("combat_forecast.gd preview_action_params()")
 	var action: NPCAction = combatant_data.ai.actions[0]
 	var ctx := NPCAIContext.new()
 	#ctx.combatant = _make_preview_fighter(combatant_data, modifier_system) # see note below
@@ -15,9 +14,7 @@ static func preview_action_params(combatant_data: CombatantData) -> Dictionary:
 	
 	# run ONLY param models (same as your intent path)
 	for pkg in action.effect_packages:
-		print("combat_forecast.gd a pkg...")
 		for m in pkg.param_models:
-			print("combat_forecast.gd a param_model...")
 			if m:
 				m.change_params(ctx)
 	#ctx.combatant.queue_free()

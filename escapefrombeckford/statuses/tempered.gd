@@ -3,7 +3,7 @@
 class_name TemperedStatus extends Status
 
 const AMPLIFY_ID := "tempered"
-var max_health_per_strike := 2
+var max_health_per_strike := 1
 
 func on_damage_taken(ctx: DamageContext) -> void:
 	if ctx.health_damage > 0 and !ctx.was_lethal and ctx.target.combatant_data.is_alive():

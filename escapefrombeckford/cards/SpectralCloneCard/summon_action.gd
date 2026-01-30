@@ -26,13 +26,13 @@ func activate(ctx: CardActionContext) -> bool:
 func _build_clone_data(ctx: CardActionContext) -> CombatantData:
 	var data := summon_data.duplicate()
 	data.init()
-
+	
 	# Spectral clones inherit mana caps from player
 	if ctx.player and ctx.player.combatant_data:
 		data.max_mana_red = ctx.player.combatant_data.max_mana_red
 		data.max_mana_green = ctx.player.combatant_data.max_mana_green
 		data.max_mana_blue = ctx.player.combatant_data.max_mana_blue
-
+	
 	return data
 
 func description_arity() -> int:
