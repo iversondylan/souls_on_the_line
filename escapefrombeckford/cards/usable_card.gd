@@ -16,7 +16,6 @@ var cost_red: int = 1
 var cost_green: int = 1
 var cost_blue: int = 1
 var card_data: CardData : set = _set_card_data
-#var original_index := 0
 
 @onready var card_visuals: CardVisuals = $CardVisuals
 
@@ -32,6 +31,7 @@ var disabled := false
 var selected = false
 
 func _ready() -> void:
+	print_tree_pretty()
 	Events.card_aim_started.connect(_on_card_drag_or_aiming_started)
 	Events.card_drag_started.connect(_on_card_drag_or_aiming_started)
 	Events.card_aim_ended.connect(_on_card_drag_or_aiming_ended)

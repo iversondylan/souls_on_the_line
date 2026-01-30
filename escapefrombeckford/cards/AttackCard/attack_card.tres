@@ -9,7 +9,7 @@
 script = ExtResource("2_ajhol")
 card_type = 3
 target_type = 4
-rarity = 2
+rarity = 1
 name = "Attack"
 description = "Deal [color=\"ff0000\"]%s[/color] damage to target enemy."
 cost_red = 1

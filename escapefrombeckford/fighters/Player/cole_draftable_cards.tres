@@ -2,17 +2,10 @@
 
 [ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://custom_resources/card_data.gd" id="1_fen0u"]
 [ext_resource type="Script" uid="uid://dnybrgm0o6gjj" path="res://custom_resources/card_pile.gd" id="2_a8mjb"]
-[ext_resource type="Resource" uid="uid://qoedpmaije5m" path="res://cards/CruelDominion/cruel_dominion.tres" id="3_1xu4j"]
 [ext_resource type="Resource" uid="uid://ds3np5rpek8ot" path="res://cards/BerserkersFury/berserkers_fury.tres" id="3_8eqlo"]
-[ext_resource type="Resource" uid="uid://daxsngijhqe3k" path="res://cards/FocusFireCard/focus_fire.tres" id="4_4xfwm"]
-[ext_resource type="Resource" uid="uid://dfgkvy2yw1a3e" path="res://cards/AttackCard/attack_card.tres" id="5_4xfwm"]
-[ext_resource type="Resource" uid="uid://iv5lrhm4b60n" path="res://cards/SpacetimeWarp/spacetime_warp_data.tres" id="5_ltswl"]
-[ext_resource type="Resource" uid="uid://eet5htwsey50" path="res://cards/SuperchargeCard/supercharge.tres" id="6_fv5yh"]
 [ext_resource type="Resource" uid="uid://b7txf6d8vmjkk" path="res://cards/SpectralCloneCard/spectral_clone.tres" id="6_ltswl"]
-[ext_resource type="Resource" uid="uid://dqmjfqr0ijgwh" path="res://cards/TemperedSilverbackCard/tempered_silverback_card.tres" id="7_22mo8"]
-[ext_resource type="Resource" uid="uid://u3qjjn0pwawp" path="res://cards/DefendCard/defend_card.tres" id="9_ltswl"]
 
 [resource]
 script = ExtResource("2_a8mjb")
-cards = Array[ExtResource("1_fen0u")]([ExtResource("3_8eqlo"), ExtResource("3_1xu4j"), ExtResource("4_4xfwm"), ExtResource("5_ltswl"), ExtResource("6_fv5yh"), ExtResource("7_22mo8"), ExtResource("5_4xfwm"), ExtResource("9_ltswl"), ExtResource("6_ltswl")])
+cards = Array[ExtResource("1_fen0u")]([ExtResource("6_ltswl"), ExtResource("6_ltswl"), ExtResource("6_ltswl"), ExtResource("3_8eqlo"), ExtResource("3_8eqlo"), ExtResource("3_8eqlo"), null, null, null, null, null, null, null, null, null])
 metadata/_custom_type_script = "uid://dnybrgm0o6gjj"
