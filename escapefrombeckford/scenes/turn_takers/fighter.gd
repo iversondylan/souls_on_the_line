@@ -103,42 +103,40 @@ func set_anchor_position(_position: Vector2, animate: bool) -> void:
 		position = anchor_position
 	has_anchor_position = true
 
-# TO-DO: For implementation with DamageContexts
 func apply_damage(ctx: DamageContext) -> void:
 	#print("fighter.gd !N!E!W! apply_damage")
 	if !ctx or !is_instance_valid(self) or !is_alive():
 		return
-
+	
 	# Ensure target is set correctly
 	ctx.target = self
 	ctx.phase = DamageContext.Phase.PRE_MODIFIERS
-
-	# Target-side modifiers (and source-side if you want it here)
-	# If you already computed DMG_DEALT earlier, you can skip source-side.
+	
+	# Target-side modifiers
 	if modifier_system:
 		ctx.amount = modifier_system.get_modified_value(ctx.amount, ctx.take_modifier_type)
-
+	
 	ctx.amount = maxi(ctx.amount, 0)
 	ctx.phase = DamageContext.Phase.POST_MODIFIERS
-
+	
 	# Apply to stats (this returns health_loss currently)
 	var pre_armor := combatant_data.armor
 	var health_loss := combatant_data.take_damage(ctx.amount)
-
+	
 	ctx.health_damage = health_loss
 	ctx.armor_damage = maxi(mini(ctx.amount, pre_armor), 0)
 	ctx.was_lethal = (combatant_data.health <= 0)
-
+	
 	ctx.phase = DamageContext.Phase.APPLIED
-
+	
 	# Immediate reactions (synchronous)
 	damage_taken.emit(ctx)
 	combatant.status_grid.on_damage_taken(ctx)
-
+	
 	# visuals
 	Shaker.shake(self, 16, 0.15)
 	_spawn_damage_number_or_block(ctx)
-
+	
 	if ctx.was_lethal:
 		die()
 

@@ -1,3 +1,5 @@
+# battle_rewards.gd
+
 class_name BattleRewardsScreen extends Control
 
 #enum Type {GOLD, NEW_CARD, RELIC}
@@ -63,8 +65,8 @@ func _show_card_reward() -> void:
 	card_reward.card_reward_selected.connect(_on_card_reward_taken)
 	
 	var card_choices: Array[CardData] = []
-	var possible_cards: Array[CardData] = run_account.draftable_cards.cards
-	
+	var possible_cards: Array[CardData] = run_account.draftable_cards.cards.duplicate()
+	#print("battle_rewards.gd _show_card_reward() possible cards: ", possible_cards.size())
 	for i in run_account.card_reward_choices:
 		_calculate_card_chances()
 		var roll := randf_range(0.0, card_reward_total_weight)
@@ -73,6 +75,7 @@ func _show_card_reward() -> void:
 			if card_rarity_weights[rarity] > roll:
 				_modify_weights(rarity)
 				var rolled_card := _get_random_possible_card(possible_cards, rarity)
+				possible_cards.erase(rolled_card)
 				card_choices.append(rolled_card)
 				#THIS NEEDS TO BE REVISITED BECAUSE CARDS SHOULD POSSIBLY BE REMOVED FROM THE POOL
 				#BUT IT WAS CAUSING AN ERROR WHEN NO CARDS OF A CERTAIN RARITY WERE LEFT

@@ -8,6 +8,7 @@
 [resource]
 script = ExtResource("1_sxbgo")
 card_type = 3
+rarity = 2
 name = "Defend"
 description = "Gain [color=\"008000\"]%s[/color] armor."
 cost_green = 1

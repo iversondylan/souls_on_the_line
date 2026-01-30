@@ -1,3 +1,5 @@
+# run_account.gd
+
 class_name RunAccount extends Resource
 
 signal gold_changed

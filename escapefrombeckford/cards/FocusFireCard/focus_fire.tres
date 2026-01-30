@@ -9,7 +9,6 @@
 [resource]
 script = ExtResource("1_numeo")
 target_type = 4
-rarity = 1
 name = "Focus Fire"
 description = "Focus allies' attacks on target enemy for %s turns and it takes %spercent increased damage for [color=\"008000\"]%s[/color] turns."
 cost_blue = 1

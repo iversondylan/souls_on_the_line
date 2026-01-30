@@ -1,3 +1,5 @@
+# card_reward.gd
+
 class_name CardReward extends ColorRect
 
 signal card_reward_selected(card_data: CardData)
