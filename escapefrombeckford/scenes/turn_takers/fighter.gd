@@ -1,4 +1,5 @@
 # fighter.gd
+
 class_name Fighter extends Node2D
 
 signal action_resolved(turn_taker: Fighter)
@@ -156,30 +157,6 @@ func _spawn_damage_number_or_block(ctx: DamageContext) -> void:
 		var blocked_message: BlockedMessage = blocked_message_scn.instantiate()
 		add_child(blocked_message)
 		blocked_message.animate_and_vanish(combatant_data.height)
-
-#func take_damage(n_damage: int, modifier_type: Modifier.Type):
-	#var modified_damage := modifier_system.get_modified_value(n_damage, modifier_type)
-	#if combatant_data.check_lethal(modified_damage):
-		#combatant_data.alive = false
-		#battle_group.update_combatant_position()
-	#var tween: Tween = create_tween()
-	#tween.tween_callback(Shaker.shake.bind(self, 16, 0.15))
-	#tween.tween_interval(0.2)
-	#tween.tween_callback(take_damage_part_2.bind(modified_damage))
-#
-#func take_damage_part_2(n_damage: int) -> void:
-	#var health_damage := combatant_data.take_damage(n_damage)
-	#if health_damage > 0:
-		#var damage_number: DamageNumber = damage_number_scn.instantiate()
-		#add_child(damage_number)
-		#damage_number.animate_and_vanish(health_damage, combatant_data.height)
-	#else:
-		#var blocked_message: BlockedMessage = blocked_message_scn.instantiate()
-		#add_child(blocked_message)
-		#blocked_message.animate_and_vanish(combatant_data.height)
-	#if combatant_data.health <= 0:
-		#die()
-
 
 func add_armor(amount: int):
 	combatant_data.add_armor(amount)

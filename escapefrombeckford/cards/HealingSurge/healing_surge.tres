@@ -3,6 +3,7 @@
 [ext_resource type="Script" uid="uid://wtk5v77fcqvn" path="res://custom_resources/card_action.gd" id="1_ajqbq"]
 [ext_resource type="Resource" uid="uid://cyc74p2bcq452" path="res://cards/HealingSurge/healing_surge_action.tres" id="2_xdxl7"]
 [ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://custom_resources/card_data.gd" id="3_1aoj2"]
+[ext_resource type="Resource" uid="uid://cwsantdi8vmes" path="res://cards/HealingSurge/draw_action.tres" id="3_xdxl7"]
 [ext_resource type="Texture2D" uid="uid://ceu3xktqlv8ib" path="res://assets/sprites/assorted/heal-sky-2.png" id="4_r11ur"]
 
 [resource]
@@ -10,7 +11,7 @@ script = ExtResource("3_1aoj2")
 target_type = 3
 name = "Healing Surge"
 deplete = true
-description = "Heal %s%% of an ally's missing health and draw a card. Deplete."
+description = "Heal %s{percent} of an ally's missing health and draw %s. Deplete."
 texture = ExtResource("4_r11ur")
-actions = Array[ExtResource("1_ajqbq")]([ExtResource("2_xdxl7")])
+actions = Array[ExtResource("1_ajqbq")]([ExtResource("2_xdxl7"), ExtResource("3_xdxl7")])
 metadata/_custom_type_script = "uid://d2f0qepe047dc"

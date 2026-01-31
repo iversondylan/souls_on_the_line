@@ -137,8 +137,10 @@ func get_description() -> String:
 		
 		for i in range(total_slots - consume):
 			args.append("%s")
-		
+		print("text: ", text)
+		print("args: ", args)
 		text = text % args
+	text = text.replace("{percent}", "%")
 	text = TextUtils.percent_to_symbol(text)
 	text = TextUtils.end_with_period(text)
 	return text

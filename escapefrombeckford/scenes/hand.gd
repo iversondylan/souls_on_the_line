@@ -3,6 +3,7 @@
 class_name Hand extends Node2D
 
 signal card_activated(card: UsableCard)
+signal done_drawing()
 
 @export var discard_anchor_path: NodePath
 @export var draw_anchor_path: NodePath
@@ -124,26 +125,17 @@ func draw_card() -> bool:
 	add_card(c)
 	return true
 
-func draw_hand(n_cards: int) -> void:
-	#_cancel_active_tween()
+func draw_cards(n_cards: int) -> void:
 	_is_drawing = true
-
-	#var tween := create_tween()
-	#_active_tween = tween
-
 	for i in range(n_cards):
-		#tween.tween_callback(func():
 		draw_card()
-		#)
 		await get_tree().create_timer(CARD_DRAW_INTERVAL).timeout
-
-		#tween.tween_interval(CARD_DRAW_INTERVAL)
-
-	#tween.finished.connect(func():
 	_is_drawing = false
-	#_active_tween = null
+	done_drawing.emit()
+
+func draw_hand(n_cards: int) -> void:
+	draw_cards(n_cards)
 	Events.hand_drawn.emit()
-	#)
 
 func _draw_first_hand_with_summon_guarantee(n_cards: int) -> void:
 	#_cancel_active_tween()

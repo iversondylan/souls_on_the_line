@@ -37,6 +37,8 @@ signal dead_combatant_data(combatant_data: CombatantData)
 signal battle_group_empty(battle_group: BattleGroup)
 signal mouse_entered_card(usable_card: UsableCard)
 signal mouse_exited_card(usable_card: UsableCard)
+signal request_draw_cards(ctx: DrawContext)
+signal cards_drawn(ctx: DrawContext)
 
 ## summon replace events
 signal combatant_target_clicked(fighter: Fighter)

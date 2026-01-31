@@ -86,7 +86,7 @@ func _ready() -> void:
 	Events.request_enemy_turn.connect(_on_request_enemy_turn)
 	Events.request_friendly_turn.connect(_on_request_friendly_turn)
 	Events.arcana_activated.connect(_on_arcana_activated)
-	
+	Events.request_draw_cards.connect(_on_request_draw_cards)
 	
 	
 	Events.request_summon_replace.connect(_on_request_summon_replace)
@@ -492,3 +492,12 @@ func _enable_preview_turn_flow_button() -> void:
 
 func _disable_preview_turn_flow_button() -> void:
 	turn_phase_title.enable_button(false)
+
+func _on_request_draw_cards(ctx: DrawContext) -> void:
+	ctx.hand = hand
+	ctx.deck = deck
+	wait_for_anims = true
+	hand.draw_cards(ctx.amount)
+	await hand.done_drawing
+	wait_for_anims = false
+	Events.cards_drawn.emit(ctx)

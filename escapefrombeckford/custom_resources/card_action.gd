@@ -1,3 +1,5 @@
+# card_action.gd
+
 class_name CardAction extends Resource
 
 enum ActionType {
@@ -7,7 +9,8 @@ enum ActionType {
 	MOVE,
 	STATUS,
 	SUMMON,
-	HEAL
+	HEAL,
+	DRAW
 }
 
 @export var action_type: ActionType

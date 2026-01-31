@@ -1,3 +1,5 @@
+# player_behavior.gd
+
 class_name PlayerBehavior extends FighterBehavior
 
 func _ready() -> void:
