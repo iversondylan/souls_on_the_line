@@ -24,13 +24,18 @@ signal done_drawing()
 const CARD_DRAW_INTERVAL: float = 0.1
 const CARD_DISCARD_INTERVAL: float = 0.1
 const MINI_CARD_SCALE := Vector2(0.2, 0.2)
+const Z_BASE := 0
+const Z_TOP := 10
+
+var _top_locked_card: UsableCard = null # drag/aim wins
+var _top_hover_card: UsableCard = null # hover wins if no lock
+var _hand_globally_disabled := false
 
 var battle_scene: BattleScene
 var player: Player
 var deck: Deck
 
 var highlighted_card_index_int: int = -1
-var currently_touched_cards_arr: Array[UsableCard] = [] # leaving as-is; you can remove later if unused
 var currently_selected_card_index: int = -1
 var mouse_in_hand_area: bool = false
 var selected_card: UsableCard
@@ -41,46 +46,46 @@ var _is_discarding: bool = false
 
 
 func _ready() -> void:
-	Events.card_played.connect(_on_card_played)
 	Events.request_draw_hand.connect(_on_request_draw_hand)
-
-	Events.card_drag_started.connect(_on_card_drag_or_aim_started)
-	Events.card_aim_started.connect(_on_card_drag_or_aim_started)
-	Events.battlefield_aim_started.connect(_on_card_drag_or_aim_started)
-
+	
 	Events.card_drag_ended.connect(_card_drag_or_aim_ended)
+	Events.card_drag_started.connect(_on_card_drag_or_aim_started)
+	
+	Events.card_aim_started.connect(_on_card_drag_or_aim_started)
 	Events.card_aim_ended.connect(_card_drag_or_aim_ended)
-
+	
+	Events.battlefield_aim_started.connect(_on_card_drag_or_aim_started)
+	Events.battlefield_aim_ended.connect(_card_drag_or_aim_ended)
+	
 	Events.player_turn_completed.connect(_on_player_turn_completed)
 
 
 func _process(_delta: float) -> void:
-	var hovered_cards: Array[UsableCard] = []
+	if _is_discarding:
+		return
 
+	# Always keep z order correct
+	_apply_z_order()
+
+	# If a card is being dragged/aimed, suppress hover visuals entirely
+	if is_instance_valid(_top_locked_card):
+		_clear_hover_visuals()
+		_top_hover_card = null
+		return
+
+	# Normal hover logic
+	var hovered_cards: Array[UsableCard] = []
 	for card in _get_hand_cards():
 		if card.is_mouse_over():
 			hovered_cards.append(card)
 
-	# reset selection visuals
-	for card in _get_hand_cards():
-		card.unhighlight()
-		card.selected = false
-		card.reset_visuals()
-
+	var top_card: UsableCard = null
 	if hovered_cards.size() > 0:
-		hovered_cards.sort_custom(func(a, b): return a.z_index < b.z_index)
-		var top_card: UsableCard = hovered_cards.back()
-		top_card.highlight()
-		top_card.selected = true
-		top_card.enlarge_visuals()
-		currently_selected_card_index = _get_hand_cards().find(top_card)
-	else:
-		currently_selected_card_index = -1
+		top_card = _pick_top_by_tree_order(hovered_cards)
 
-
-# ------------------------------------------------------------------------------
-# Core hand list access (no hand_cards_arr)
-# ------------------------------------------------------------------------------
+	_top_hover_card = top_card
+	_apply_z_order()
+	_apply_hover_visuals(top_card)
 
 func _get_hand_cards() -> Array[UsableCard]:
 	var out: Array[UsableCard] = []
@@ -92,11 +97,6 @@ func _get_hand_cards() -> Array[UsableCard]:
 func get_hand_cards() -> Array[UsableCard]:
 	# public alias (kept name for compatibility)
 	return _get_hand_cards()
-
-
-# ------------------------------------------------------------------------------
-# Adding / drawing
-# ------------------------------------------------------------------------------
 
 func add_card(card: CardData) -> void:
 	if card == null:
@@ -114,8 +114,6 @@ func add_card(card: CardData) -> void:
 	usable_card.global_position = target_global
 	usable_card.scale = MINI_CARD_SCALE
 	usable_card.reparent_requested.connect(_on_usable_card_reparent_requested)
-
-	#update_original_index()
 	reposition_hand_cards()
 
 func draw_card() -> bool:
@@ -138,7 +136,6 @@ func draw_hand(n_cards: int) -> void:
 	Events.hand_drawn.emit()
 
 func _draw_first_hand_with_summon_guarantee(n_cards: int) -> void:
-	#_cancel_active_tween()
 	_is_drawing = true
 	
 	# Mark immediately so we can't re-enter and do it twice.
@@ -178,43 +175,16 @@ func _draw_first_hand_with_summon_guarantee(n_cards: int) -> void:
 			drawn[hand_idx] = summon_card
 	
 	for c in drawn:
-		#tween.tween_callback(func():
 		add_card(c)
-		#)
 		await get_tree().create_timer(CARD_DRAW_INTERVAL).timeout
-
-		#tween.tween_interval(CARD_DRAW_INTERVAL)
-
-	#tween.finished.connect(func():
 	_is_drawing = false
-	#_active_tween = null
 	Events.hand_drawn.emit()
-	#)
-	# Animate the exact same way as draw_hand()
-	#var tween := create_tween()
-	#_active_tween = tween
-	#
-	#for c in drawn:
-		#tween.tween_callback(add_card.bind(c))
-		#tween.tween_interval(CARD_DRAW_INTERVAL)
-	#
-	#tween.finished.connect(func():
-		#_is_drawing = false
-		#_active_tween = null
-		#Events.hand_drawn.emit()
-	#)
-
-
-# ------------------------------------------------------------------------------
-# Removing / discarding
-# ------------------------------------------------------------------------------
 
 func reserve_summon_card(usable_card: UsableCard) -> void:
 	if usable_card == null or !is_instance_valid(usable_card):
 		return
 	usable_card.queue_free()
 	# no discard addition for reserve
-	#update_original_index()
 	reposition_hand_cards()
 
 func discard_card(usable_card: UsableCard) -> void:
@@ -222,20 +192,16 @@ func discard_card(usable_card: UsableCard) -> void:
 		return
 	deck.add_card_to_discard(usable_card.card_data)
 	usable_card.queue_free()
-	#update_original_index()
 	reposition_hand_cards()
 
 func deplete_card(usable_card: UsableCard) -> void:
 	if usable_card == null or !is_instance_valid(usable_card):
 		return
 	usable_card.queue_free()
-	#update_original_index()
 	reposition_hand_cards()
 
 func discard_hand(usable_cards: Array[UsableCard]) -> void:
-	#print("hand.gd discard_hand() cards: ", usable_cards.size())
-
-	# If we're already discarding, don't start another batch.
+	# If already discarding, don't start another batch.
 	# (Optional recovery: if somehow stuck, auto-unstick when disabled node is empty)
 	if _is_discarding:
 		if _count_cards_in(disabled_cards_node) == 0:
@@ -280,8 +246,9 @@ func discard_hand(usable_cards: Array[UsableCard]) -> void:
 		if card.get_parent():
 			card.get_parent().remove_child(card)
 		disabled_cards_node.add_child(card)
+		reposition_hand_cards()
 		card.global_position = g
-
+		card.z_index = Z_TOP
 		var card_ref := card
 		card_ref.animate_to_position(
 			target_global,
@@ -362,12 +329,6 @@ func empty_hand() -> void:
 	currently_selected_card_index = -1
 	for card in _get_hand_cards():
 		card.queue_free()
-	currently_touched_cards_arr.clear()
-
-
-# ------------------------------------------------------------------------------
-# Enable/disable and visuals
-# ------------------------------------------------------------------------------
 
 func disable_hand_cards() -> void:
 	for usable_card in _get_hand_cards():
@@ -393,13 +354,6 @@ func reposition_hand_cards() -> void:
 		_update_card_transform(card, current_card_angle_flt)
 		current_card_angle_flt += card_angle_increment_flt
 
-#func update_original_index() -> void:
-	#var index := 0
-	#for child in hand_cards_node.get_children():
-		#if child is UsableCard and is_instance_valid(child):
-			#(child as UsableCard).original_index = index
-			#index += 1
-
 func get_card_position(angle_deg_flt: float) -> Vector2:
 	var x: float = hand_radius_flt * cos(deg_to_rad(angle_deg_flt + 270))
 	var y: float = hand_radius_flt * sin(deg_to_rad(angle_deg_flt + 270))
@@ -410,23 +364,7 @@ func _update_card_transform(usable_card: UsableCard, angle_in_drag: float) -> vo
 	usable_card.animate_to_position(pos, angle_in_drag, 0.5)
 
 func _on_usable_card_reparent_requested(_child: UsableCard) -> void:
-	#update_original_index()
 	reposition_hand_cards()
-
-
-# ------------------------------------------------------------------------------
-# Tween + event handlers
-# ------------------------------------------------------------------------------
-
-#func _cancel_active_tween() -> void:
-	#if _active_tween and is_instance_valid(_active_tween):
-		#_active_tween.kill()
-	#_active_tween = null
-	#_is_drawing = false
-	#_is_discarding = false
-
-func _on_card_played(usable_card: UsableCard) -> void:
-	currently_touched_cards_arr.erase(usable_card)
 
 func _on_hand_area_mouse_entered() -> void:
 	mouse_in_hand_area = true
@@ -441,13 +379,73 @@ func _on_request_draw_hand() -> void:
 	else:
 		draw_hand(n)
 
-func _on_card_drag_or_aim_started(_usable_card: UsableCard) -> void:
-	_usable_card.set_usable_card_z_index(2)
+func _on_card_drag_or_aim_started(card: UsableCard) -> void:
+	_top_locked_card = card
+	_top_hover_card = null
+	_clear_hover_visuals()
+	_apply_z_order()
 
-func _card_drag_or_aim_ended(_usable_card: UsableCard) -> void:
-	_usable_card.set_usable_card_z_index(0)
+
+func _card_drag_or_aim_ended(card: UsableCard) -> void:
+	if _top_locked_card == card:
+		_top_locked_card = null
+	_clear_hover_visuals()
+	_apply_z_order()
 
 func _on_player_turn_completed() -> void:
 	print("hand.gd _on_player_turn_completed()")
 	disable_hand_cards()
 	discard_hand(get_hand_cards())
+
+func _pick_top_by_tree_order(cards: Array[UsableCard]) -> UsableCard:
+	var best: UsableCard = null
+	var best_idx := -999999
+	for c in cards:
+		if !is_instance_valid(c):
+			continue
+		# child order within its parent: higher index draws later (on top) when z_index ties
+		var idx := c.get_index()
+		if idx > best_idx:
+			best_idx = idx
+			best = c
+	return best
+
+func _apply_hover_visuals(top_card: UsableCard) -> void:
+	# reset selection visuals
+	for card in _get_hand_cards():
+		card.unhighlight()
+		card.selected = false
+		card.reset_visuals()
+
+	if is_instance_valid(top_card):
+		top_card.highlight()
+		top_card.selected = true
+		top_card.enlarge_visuals()
+		currently_selected_card_index = _get_hand_cards().find(top_card)
+	else:
+		currently_selected_card_index = -1
+
+func _apply_z_order() -> void:
+	var cards := _get_hand_cards()
+
+	# Baseline: let child order decide (all z = 0)
+	for c in cards:
+		if is_instance_valid(c):
+			c.z_index = Z_BASE
+
+	# Decide who should be on top
+	var top: UsableCard = null
+	if is_instance_valid(_top_locked_card):
+		top = _top_locked_card
+	elif is_instance_valid(_top_hover_card):
+		top = _top_hover_card
+
+	if is_instance_valid(top):
+		top.z_index = Z_TOP
+
+func _clear_hover_visuals() -> void:
+	for card in _get_hand_cards():
+		card.unhighlight()
+		card.selected = false
+		card.reset_visuals()
+	currently_selected_card_index = -1

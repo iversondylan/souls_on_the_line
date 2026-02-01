@@ -1,7 +1,6 @@
 [gd_resource type="Resource" script_class="CardPile" format=3 uid="uid://gsb7q5fcn68v"]
 
 [ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://custom_resources/card_data.gd" id="1_rilno"]
-[ext_resource type="Resource" uid="uid://dqmjfqr0ijgwh" path="res://cards/TemperedSilverbackCard/tempered_silverback_card.tres" id="2_4n306"]
 [ext_resource type="Script" uid="uid://dnybrgm0o6gjj" path="res://custom_resources/card_pile.gd" id="2_nkp8v"]
 [ext_resource type="Resource" uid="uid://b7txf6d8vmjkk" path="res://cards/SpectralCloneCard/spectral_clone.tres" id="3_miprr"]
 [ext_resource type="Resource" uid="uid://iv5lrhm4b60n" path="res://cards/SpacetimeWarp/spacetime_warp_data.tres" id="4_4n306"]
@@ -11,5 +10,5 @@
 
 [resource]
 script = ExtResource("2_nkp8v")
-cards = Array[ExtResource("1_rilno")]([ExtResource("2_4n306"), ExtResource("3_miprr"), ExtResource("3_miprr"), ExtResource("3_miprr"), ExtResource("3_miprr"), ExtResource("4_4n306"), ExtResource("5_miprr"), ExtResource("7_x43pu"), ExtResource("7_pvg2w"), ExtResource("5_miprr"), ExtResource("7_x43pu"), ExtResource("7_pvg2w")])
+cards = Array[ExtResource("1_rilno")]([ExtResource("3_miprr"), ExtResource("3_miprr"), ExtResource("3_miprr"), ExtResource("3_miprr"), ExtResource("3_miprr"), ExtResource("4_4n306"), ExtResource("5_miprr"), ExtResource("7_x43pu"), ExtResource("7_pvg2w"), ExtResource("5_miprr"), ExtResource("7_x43pu"), ExtResource("7_pvg2w")])
 metadata/_custom_type_script = "uid://dnybrgm0o6gjj"

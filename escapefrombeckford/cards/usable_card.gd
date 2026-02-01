@@ -33,7 +33,6 @@ var _home_scale: Vector2
 var _home_rot: float
 var _home_cached := false
 var _is_popped := false
-var _home_z := 0
 
 const POP_OFFSET := Vector2(0, -220)
 const POP_SCALE := Vector2(1.35, 1.35)
@@ -145,8 +144,6 @@ func get_description() -> String:
 	text = TextUtils.end_with_period(text)
 	return text
 
-func set_usable_card_z_index(index: int):
-	z_index = index
 
 func get_cost() -> Array[int]:
 	return [card_data.cost_red, card_data.cost_green, card_data.cost_blue]
@@ -344,7 +341,6 @@ func get_fighters(new_targets: Array[Node]) -> Array[Fighter]:
 func _cache_home() -> void:
 	if _home_cached or strictly_visuals == null:
 		return
-	_home_z = z_index
 	_home_pos = strictly_visuals.position
 	_home_scale = strictly_visuals.scale
 	_home_rot = strictly_visuals.rotation
@@ -361,7 +357,6 @@ func enlarge_visuals() -> void:
 
 	var target_pos := _home_pos + POP_OFFSET
 	var target_rot := -rotation # counter parent (radians)
-	z_index = 10
 	_pop_tween = create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	_pop_tween.set_parallel()
 	_pop_tween.tween_property(strictly_visuals, "global_position:y", 850, POP_DUR)
@@ -374,7 +369,6 @@ func reset_visuals() -> void:
 	_is_popped = false
 	_kill_pop_tween()
 	
-	z_index = _home_z
 	_pop_tween = create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	_pop_tween.set_parallel()
 	_pop_tween.tween_property(strictly_visuals, "position", _home_pos, POP_DUR)
