@@ -7,5 +7,7 @@
 
 [resource]
 script = ExtResource("2_5knbl")
+gold_reward_min = 40
+gold_reward_max = 50
 enemies = Array[ExtResource("1_v3a3k")]([ExtResource("2_sq0eh"), ExtResource("3_np0ia")])
 metadata/_custom_type_script = "uid://be1v8qevmc2xw"

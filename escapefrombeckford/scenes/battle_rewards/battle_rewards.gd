@@ -100,6 +100,8 @@ func _modify_weights(rarity_rolled: CardData.Rarity) -> void:
 func _get_random_possible_card(possible_cards: Array[CardData], rarity: CardData.Rarity) -> CardData:
 	var all_possible_cards := possible_cards.filter(
 		func(card: CardData):
+			if !card:
+				return false
 			return card.rarity == rarity
 	)
 	return all_possible_cards.pick_random()

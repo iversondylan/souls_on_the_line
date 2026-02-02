@@ -2,10 +2,18 @@
 
 [ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://custom_resources/card_data.gd" id="1_fen0u"]
 [ext_resource type="Script" uid="uid://dnybrgm0o6gjj" path="res://custom_resources/card_pile.gd" id="2_a8mjb"]
+[ext_resource type="Resource" uid="uid://dfgkvy2yw1a3e" path="res://cards/AttackCard/attack_card.tres" id="2_fv5yh"]
 [ext_resource type="Resource" uid="uid://ds3np5rpek8ot" path="res://cards/BerserkersFury/berserkers_fury.tres" id="3_8eqlo"]
+[ext_resource type="Resource" uid="uid://qoedpmaije5m" path="res://cards/CruelDominion/cruel_dominion.tres" id="4_22mo8"]
+[ext_resource type="Resource" uid="uid://u3qjjn0pwawp" path="res://cards/DefendCard/defend_card.tres" id="5_bnr1j"]
+[ext_resource type="Resource" uid="uid://daxsngijhqe3k" path="res://cards/FocusFireCard/focus_fire.tres" id="6_lex8d"]
 [ext_resource type="Resource" uid="uid://b7txf6d8vmjkk" path="res://cards/SpectralCloneCard/spectral_clone.tres" id="6_ltswl"]
+[ext_resource type="Resource" uid="uid://cblwy6nabti7c" path="res://cards/HealingSurge/healing_surge.tres" id="7_o6avm"]
+[ext_resource type="Resource" uid="uid://iv5lrhm4b60n" path="res://cards/SpacetimeWarp/spacetime_warp_data.tres" id="8_twox4"]
+[ext_resource type="Resource" uid="uid://eet5htwsey50" path="res://cards/SuperchargeCard/supercharge.tres" id="10_ph4sk"]
+[ext_resource type="Resource" uid="uid://dqmjfqr0ijgwh" path="res://cards/TemperedSilverbackCard/tempered_silverback_card.tres" id="11_os4ej"]
 
 [resource]
 script = ExtResource("2_a8mjb")
-cards = Array[ExtResource("1_fen0u")]([ExtResource("6_ltswl"), ExtResource("6_ltswl"), ExtResource("6_ltswl"), ExtResource("3_8eqlo"), ExtResource("3_8eqlo"), ExtResource("3_8eqlo"), null, null, null, null, null, null, null, null, null])
+cards = Array[ExtResource("1_fen0u")]([ExtResource("2_fv5yh"), ExtResource("3_8eqlo"), ExtResource("4_22mo8"), ExtResource("5_bnr1j"), ExtResource("6_lex8d"), ExtResource("7_o6avm"), ExtResource("8_twox4"), ExtResource("6_ltswl"), ExtResource("10_ph4sk"), ExtResource("11_os4ej")])
 metadata/_custom_type_script = "uid://dnybrgm0o6gjj"

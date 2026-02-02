@@ -22,6 +22,7 @@ run_startup = ExtResource("2_o4jfg")
 [node name="CurrentView" type="Node" parent="." unique_id=790162914]
 
 [node name="DebugUI" type="CanvasLayer" parent="." unique_id=1462900324]
+visible = false
 
 [node name="DebugButtons" type="VBoxContainer" parent="DebugUI" unique_id=736364947]
 anchors_preset = 6

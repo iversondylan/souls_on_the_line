@@ -35,6 +35,9 @@ class_name Battle extends Node2D
 @onready var _spark: TurnOrderSparkController = $Battle_UI/TurnOrderSparkController
 @onready var turn_phase_title: TurnPhaseTitle = $Battle_UI/TurnPhaseTitle
 
+@onready var thank_you_box: Node2D = $Battle_UI/ThankYouBox
+
+
 #enum Turn {FRIENDLY_TURN, ENEMY_TURN}
 #
 #var current_turn := Turn.FRIENDLY_TURN
@@ -202,7 +205,8 @@ func make_player_combatant() -> void:
 
 func make_enemies() -> void:
 	if !battle_data:
-		push_error("battle.gd make_enemies() Error: no battle_data")
+		thank_you_box.show()
+		#push_error("battle.gd make_enemies() Error: no battle_data")
 		return
 	for enemy_data: CombatantData in battle_data.enemies:
 		var new_enemy: Enemy = enemy_scn.instantiate()

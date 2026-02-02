@@ -8,5 +8,7 @@
 [resource]
 script = ExtResource("4_gjwee")
 battle_tier = 1
+gold_reward_min = 50
+gold_reward_max = 60
 enemies = Array[ExtResource("1_0e465")]([ExtResource("2_hwcts"), ExtResource("3_2bj8l"), ExtResource("3_2bj8l")])
 metadata/_custom_type_script = "uid://be1v8qevmc2xw"

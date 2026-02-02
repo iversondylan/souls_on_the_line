@@ -58,7 +58,14 @@ func _generate_shop_cards() -> void:
 	var shop_cards: Array[CardData] = []
 	var available_cards := player_data.draftable_cards.cards.duplicate(true)
 	available_cards.shuffle()
-	shop_cards = available_cards.slice(0, 3)
+	var cards_added: int = 0
+	for card: CardData in available_cards:
+		if card:
+			cards_added += 1
+			shop_cards.append(card)
+		if cards_added >= 3:
+			break
+	#shop_cards = available_cards.slice(0, 3)
 	
 	for card_data: CardData in shop_cards:
 		var new_shop_card := SHOP_CARD_SCN.instantiate() as ShopCard
