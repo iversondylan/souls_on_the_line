@@ -5,15 +5,13 @@ extends CardAction
 @export var param_models: Array[ParamModel]
 
 func activate(ctx: CardActionContext) -> bool:
-	# Keep the same guard you had: require at least one resolved fighter.
+	# require at least one resolved fighter.
 	# (Even though the sequence itself doesn't use resolved targets directly.)
 	var resolved_fighters := ctx.resolved_target.fighters
 	if resolved_fighters.is_empty():
 		return false
 	
-	# PRESERVE your prior semantics: "attacker" is the first resolved fighter.
-	# If you later decide this should always be the player, change to:
-	# var attacker: Fighter = ctx.player
+	# "attacker" is the first resolved fighter.
 	var attacker: Fighter = resolved_fighters[0]
 	if !attacker:
 		return false

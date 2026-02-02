@@ -246,7 +246,7 @@ func ensure_valid_plan(allow_hooks: bool = true) -> void:
 
 	# If plan points to nothing or is no longer performable, replan.
 	if !action or !_is_action_performable(action, ctx):
-		# Optional: if you want cancellation hooks to run when invalidated:
+		# cancellation hooks to run when invalidated:
 		if allow_hooks:
 			_on_planned_intent_changed(idx, -1, ctx)
 		ctx.state[KEY_PLANNED_IDX] = -1

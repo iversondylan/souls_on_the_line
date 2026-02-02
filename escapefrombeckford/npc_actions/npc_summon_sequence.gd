@@ -31,7 +31,7 @@ func execute(ctx: NPCAIContext, on_done: Callable) -> void:
 	var insert_index := int(params.get(NPCKeys.INSERT_INDEX, 0))
 	var count := int(params.get(NPCKeys.SUMMON_COUNT, 1))
 
-	# Clamp group index to your known groups (0/1). If you later add more groups, loosen this.
+	# Clamp group index to known groups (0/1).
 	group_index = clampi(group_index, 0, 1)
 
 	if count <= 0:

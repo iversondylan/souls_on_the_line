@@ -50,7 +50,7 @@ func apply_damage(ctx: DamageContext) -> void:
 	var health_loss := take_damage(ctx.final_amount)
 	ctx.health_loss = health_loss
 	ctx.blocked = (health_loss <= 0)
-	ctx.lethal = (health <= 0 or !alive) # or compute before/after as you prefer
+	ctx.lethal = (health <= 0 or !alive)
 
 
 func set_health(value : int) -> void:

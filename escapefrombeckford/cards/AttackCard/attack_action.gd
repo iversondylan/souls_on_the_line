@@ -35,9 +35,7 @@ func get_description_values(ctx: CardActionContext) -> Array:
 	if ctx.player:
 		base = ctx.player.modifier_system.get_modified_value(base, Modifier.Type.DMG_DEALT)
 	elif ctx.player_data:
-		# Optional: preview using PlayerData if you want
-		base = base_damage  # or derived from player_data later
-	# Apply target-side preview if present
+		base = base_damage
 	if ctx.resolved_target and !ctx.resolved_target.fighters.is_empty():
 		var target := ctx.resolved_target.fighters[0]
 		if target and target.modifier_system:

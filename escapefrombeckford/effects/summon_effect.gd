@@ -10,7 +10,7 @@ const DEFAULT_SUMMON_SOUND := preload("res://audio/summon_zap.tres")
 
 # Required
 var battle_scene: BattleScene
-var group_index: int = 0   # 0 = friendly, 1 = enemy (by your current convention)
+var group_index: int = 0   # 0 = friendly, 1 = enemy
 var insert_index: int = 0
 
 # Optional inputs

@@ -16,7 +16,7 @@ func activate(ctx: CardActionContext) -> bool:
 	if targets.is_empty():
 		return false
 
-	# Example effect (replace with your real logic)
+	# Example effect (replace with real logic)
 	var effect := DamageEffect.new()
 	effect.targets = targets
 	effect.n_damage = base_value

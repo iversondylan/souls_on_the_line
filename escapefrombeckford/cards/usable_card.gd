@@ -267,7 +267,6 @@ func is_mouse_over() -> bool:
 	# Get the global mouse position
 	var mouse_pos = get_global_mouse_position()
 	# Get the Area2D and its CollisionShape2D
-	#var area = $ClickArea   # adjust path if your Area2D has a different name
 	var shape = click_area_area2d.get_node("CollisionShape2D").shape
 	if shape == null:
 		return false

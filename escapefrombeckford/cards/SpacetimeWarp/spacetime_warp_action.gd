@@ -22,7 +22,7 @@ func activate(ctx: CardActionContext) -> bool:
 	move.move_type = MoveEffect.MoveType.TRAVERSE_PLAYER
 	move.can_restore_turn = true
 	move.battle_scene = ctx.battle_scene
-	# Optional: if you add sound to MoveEffect later, you can pass it here.
+	# Optional: sound
 	move.sound = sound
 	move.execute()
 	

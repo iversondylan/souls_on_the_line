@@ -284,7 +284,7 @@ func clear_group_turn_start_statuses() -> void:
 		var status := status_display.status
 		if !status:
 			continue
-		# If you later add GROUP_TURN_START, this is where it goes
+		# If later I add GROUP_TURN_START, this is where it goes
 		if status.expiration_policy == Status.ExpirationPolicy.GROUP_TURN_START:
 			to_remove.append(status_display)
 	

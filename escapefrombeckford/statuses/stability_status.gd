@@ -46,17 +46,15 @@ func _on_combatant_data_changed() -> void:
 		_break_posture()
 
 func _break_posture() -> void:
-	# Signal posture break via state or event if needed
-	# (You can add this later without changing the core logic)
+	# Signal posture break via state or event?
 
 	# Remove this status
-	#print("stability_status.gd broken posture")
 	var grid := status_parent.combatant.status_grid
 	if grid:
 		grid.remove_status_by_id(id)
 
 func on_removed() -> void:
-	# Defensive cleanup if you later add explicit removal hooks
+	# Defensive cleanup for any explicit removal hooks
 	var fighter := status_parent
 	if fighter:
 		var data := fighter.combatant_data

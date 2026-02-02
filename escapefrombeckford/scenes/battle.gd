@@ -370,13 +370,13 @@ func _on_combatant_target_clicked(f: Fighter) -> void:
 
 func _confirm_summon_replace(chosen: SummonedAlly) -> void:
 	summon_replace_resolving = true
-	interaction_mode = InteractionMode.SUMMON_REPLACE # already, but you may add a SUBSTATE if needed
+	interaction_mode = InteractionMode.SUMMON_REPLACE
 
 	# Turn off candidate clickability visuals now (optional)
 	for a in summon_replace_candidates:
 		_set_candidate_selectable_visuals(a, false)
 
-	# Start fade animation (you can do it on chosen.character_sprite or whole fighter)
+	# Start fade animation
 	var tween := create_tween()
 	tween.tween_property(chosen.combatant.character_sprite, "modulate:a", 0.0, 0.18)
 	tween.finished.connect(func():
@@ -386,7 +386,7 @@ func _confirm_summon_replace(chosen: SummonedAlly) -> void:
 func _finish_confirm_after_fade(chosen: SummonedAlly) -> void:
 	# 1) Remove chosen (FADE PATH, not die())
 	var friendly := battle_scene.groups[0] as BattleGroupFriendly
-	friendly.combatant_faded(chosen) # your step-7 method
+	friendly.combatant_faded(chosen) # step-7 method
 
 	# 2) Remove preview ghost (so layout count stays correct)
 	friendly.clear_preview()
@@ -468,7 +468,7 @@ func _end_summon_replace_mode() -> void:
 
 	interaction_mode = InteractionMode.NORMAL
 
-	# IMPORTANT: restore pending turn glow after you messed with it
+	# IMPORTANT: restore pending turn glow after messing with it
 	(battle_scene.groups[0] as BattleGroupFriendly)._update_pending_turn_glow()
 	hand.enable_hand_cards()
 

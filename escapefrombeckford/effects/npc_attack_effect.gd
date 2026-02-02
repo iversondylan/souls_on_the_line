@@ -1,6 +1,5 @@
 # npc_attack_effect.gd
 class_name NPCAttackEffect extends Effect
-## or extends Effect if you need it in your pipeline
 
 enum TargetType {STANDARD, ALL_OPPONENTS, ALL}
 

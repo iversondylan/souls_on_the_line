@@ -386,7 +386,7 @@ func get_modifier_tokens_for(fighter: Fighter) -> Array[ModifierToken]:
 					if token.tags.has(Aura.AURA_SECONDARY_FLAG):
 						# Aura-style routing
 						if token.tags.has(Aura.AURA_ALLIES):
-							# Applies to source + allies (you can exclude self if you want)
+							# Applies to source + allies (exclude self if wanted)
 							if same_group:
 								tokens.append(token)
 						elif token.tags.has(Aura.AURA_ENEMIES):
