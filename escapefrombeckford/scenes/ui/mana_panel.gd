@@ -10,12 +10,16 @@ class_name ManaPanel extends Node2D
 @export var green_mana: int = 3 : set = set_green_mana
 @export var blue_mana: int = 3 : set = set_blue_mana
 
+@export var color_red : Color
+@export var color_green : Color
+@export var color_blue : Color
+
 func _ready() -> void:
-	red_radial_bar.modulate = Color(0.572, 0.188, 0.282)
+	red_radial_bar.modulate = color_red
 	red_mana = red_mana
-	green_radial_bar.modulate = Color(0.410, 0.530, 0.188)
+	green_radial_bar.modulate = color_green
 	green_mana = green_mana
-	blue_radial_bar.modulate = Color(0.236, 0.215, 0.503)
+	blue_radial_bar.modulate = color_blue
 	blue_mana = blue_mana
 
 func set_green_mana(new_green_mana: int) -> void:

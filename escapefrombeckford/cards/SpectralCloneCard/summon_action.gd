@@ -41,10 +41,10 @@ func description_arity() -> int:
 func get_description_values(ctx: CardActionContext) -> Array:
 	var data := summon_data.duplicate()
 	data.init()
-	if ctx.player and ctx.player.combatant_data:
-		data.max_mana_red = ctx.player.combatant_data.max_mana_red
-		data.max_mana_green = ctx.player.combatant_data.max_mana_green
-		data.max_mana_blue = ctx.player.combatant_data.max_mana_blue
+	#if ctx.player and ctx.player.combatant_data:
+		#data.max_mana_red = ctx.player.combatant_data.max_mana_red
+		#data.max_mana_green = ctx.player.combatant_data.max_mana_green
+		#data.max_mana_blue = ctx.player.combatant_data.max_mana_blue
 	var params := CombatForecast.preview_action_params(summon_data)
 	var dmg := int(params.get(NPCKeys.DAMAGE, 0))
 	return [dmg, summon_data.max_health, summon_data.name]

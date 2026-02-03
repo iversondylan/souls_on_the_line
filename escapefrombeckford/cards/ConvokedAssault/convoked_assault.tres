@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="CardData" format=3 uid="uid://sdnvejwfmf81"]
+
+[ext_resource type="Script" uid="uid://wtk5v77fcqvn" path="res://custom_resources/card_action.gd" id="1_bf701"]
+[ext_resource type="Resource" uid="uid://bfi3wwg2o0gl0" path="res://cards/ConvokedAssault/attack_now_action.tres" id="2_3lp02"]
+[ext_resource type="Texture2D" uid="uid://q5wjyuq1lc78" path="res://assets/sprites/assorted/body-swapping.png" id="4_bkwn2"]
+[ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://custom_resources/card_data.gd" id="4_quthi"]
+
+[resource]
+script = ExtResource("4_quthi")
+target_type = 3
+name = "Convoked Assault"
+description = "Target ally performs an extra attack immediately."
+cost_blue = 1
+texture = ExtResource("4_bkwn2")
+actions = Array[ExtResource("1_bf701")]([ExtResource("2_3lp02")])
+metadata/_custom_type_script = "uid://d2f0qepe047dc"

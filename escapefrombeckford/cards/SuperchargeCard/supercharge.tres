@@ -3,7 +3,6 @@
 [ext_resource type="Script" uid="uid://wtk5v77fcqvn" path="res://custom_resources/card_action.gd" id="1_ua1rg"]
 [ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://custom_resources/card_data.gd" id="2_nfj5x"]
 [ext_resource type="Resource" uid="uid://pogo8alg2nkw" path="res://cards/SuperchargeCard/amplify_action.tres" id="2_tainj"]
-[ext_resource type="Resource" uid="uid://b5mp41k8gdkfs" path="res://cards/SuperchargeCard/attack_now_action.tres" id="3_som6n"]
 [ext_resource type="Texture2D" uid="uid://dhtbmqc74eaby" path="res://assets/sprites/assorted/lightning-bolt-set-neon-signs-600nw-2303216923.webp" id="4_tainj"]
 
 [resource]
@@ -14,5 +13,5 @@ name = "Supercharge"
 description = "Increase an ally's damage by %s%% for [color=\"008000\"]%s[/color] turns and they attack immediately."
 cost_red = 1
 texture = ExtResource("4_tainj")
-actions = Array[ExtResource("1_ua1rg")]([ExtResource("2_tainj"), ExtResource("3_som6n")])
+actions = Array[ExtResource("1_ua1rg")]([ExtResource("2_tainj")])
 metadata/_custom_type_script = "uid://d2f0qepe047dc"
