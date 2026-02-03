@@ -1,3 +1,5 @@
+# mana_panel.gd
+
 class_name ManaPanel extends Node2D
 
 @onready var red_radial_bar: AnimatedSprite2D = %RedRadialBar

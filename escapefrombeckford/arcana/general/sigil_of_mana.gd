@@ -4,8 +4,8 @@ extends Arcanum
 
 var member_var := 0
 
-func activate_arcanum(arcanum_display: ArcanumDisplay) -> void:
-	_add_mana(arcanum_display)
+func activate_arcanum(ctx: ArcanumContext) -> void:
+	_add_mana(ctx.arcanum_display)
 
 func _add_mana(arcanum_display: ArcanumDisplay) -> void:
 	arcanum_display.flash()

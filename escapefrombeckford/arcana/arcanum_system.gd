@@ -51,7 +51,9 @@ func activate_arcana_by_type(type: Arcanum.Type) -> void:
 	
 	var tween := create_tween()
 	for arcanum_display: ArcanumDisplay in arcanum_queue:
-		tween.tween_callback(arcanum_display.arcanum.activate_arcanum.bind(arcanum_display))
+		var ctx := ArcanumContext.new()
+		ctx.arcanum_display = arcanum_display
+		tween.tween_callback(arcanum_display.arcanum.activate_arcanum.bind(ctx))
 		tween.tween_interval(ARCANUM_APPLY_INTERVAL)
 	
 	tween.finished.connect(func(): Events.arcana_activated.emit(type))
