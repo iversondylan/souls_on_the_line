@@ -166,7 +166,7 @@ func activate() -> bool:
 	
 	for action in card_data.actions:
 		if action.requires_summon_slot():
-			needs_replace = battle_scene.get_n_summoned_allies() >= player.combatant_data.max_mana_blue
+			needs_replace = battle_scene.get_n_summoned_allies() >= BattleGroupFriendly.MAX_SOULBOUND
 	
 	var ctx := CardActionContext.new()
 	ctx.player = player

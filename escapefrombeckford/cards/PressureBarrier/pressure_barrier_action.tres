@@ -1,0 +1,8 @@
+[gd_resource type="Resource" format=3 uid="uid://c71a7e78wqfvy"]
+
+[ext_resource type="Script" uid="uid://du2x4kr4jby85" path="res://cards/PressureBarrier/pressure_barrier_action.gd" id="1_cpls2"]
+
+[resource]
+script = ExtResource("1_cpls2")
+action_type = 4
+metadata/_custom_type_script = "uid://wtk5v77fcqvn"

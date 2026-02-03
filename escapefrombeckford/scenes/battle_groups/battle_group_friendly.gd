@@ -1,6 +1,8 @@
 # battle_group_friendly.gd
 class_name BattleGroupFriendly extends BattleGroup
 
+const MAX_SOULBOUND := 3
+
 var player: Player
 
 func _ready() -> void:

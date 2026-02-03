@@ -125,6 +125,13 @@ func create_instance() -> CombatantData:
 	return instance
 	
 
+func can_play_card(card_data: CardData) -> bool:
+	if card_data == null:
+		return false
+	var cost := card_data.cost_red + card_data.cost_green + card_data.cost_blue
+	return (mana_red + mana_green + mana_blue) >= cost
+
+
 func spend_mana(card_data: CardData) -> bool:
 	if !can_play_card(card_data):
 		return false
@@ -133,61 +140,69 @@ func spend_mana(card_data: CardData) -> bool:
 	if remaining <= 0:
 		return true
 
-	# Normal RR cursor always starts at red.
-	var cursor := 0 # 0=R, 1=G, 2=B
+	# RR cursor: 0=R, 1=G, 2=B. Normal starts at red.
+	var cursor := 0
 
 	while remaining > 0:
 		# ------------------------------------------------------------
-		# 1) REPAIR STEP (fix "unexpectedly high" / broken ordering)
-		# Maintain R <= G <= B by spending from the pool that's too high.
-		# IMPORTANT: repair does NOT advance cursor; RR resumes at red.
+		# 1) REPAIR: enforce R <= G <= B if it's currently violated.
+		# Repair spend does NOT advance cursor; it resets to red.
 		# ------------------------------------------------------------
-		if (mana_red > mana_green or mana_red > mana_blue) and mana_red > 0:
-			mana_red -= 1
-			remaining -= 1
-			cursor = 0
-			continue
+		if mana_red > mana_green or mana_red > mana_blue:
+			# Red is "unexpectedly high" compared to others
+			if mana_red > 0:
+				mana_red -= 1
+				remaining -= 1
+				cursor = 0
+				continue
 
-		if (mana_green > mana_blue) and mana_green > 0:
-			mana_green -= 1
-			remaining -= 1
-			cursor = 0
-			continue
+		if mana_green > mana_blue:
+			# Green is unexpectedly high compared to blue
+			if mana_green > 0:
+				mana_green -= 1
+				remaining -= 1
+				cursor = 0
+				continue
 
 		# ------------------------------------------------------------
-		# 2) NORMAL ROUND ROBIN (R -> G -> B), but only if the spend
-		# would keep R <= G <= B. Skip invalid/empty options.
+		# 2) NORMAL RR: try R -> G -> B, but only if it preserves
+		# the invariant R <= G <= B after the spend. Skip otherwise.
 		# ------------------------------------------------------------
 		var spent := false
-
 		for i in range(3):
 			var idx := (cursor + i) % 3
 
 			match idx:
 				0:
-					# Spending red always preserves R <= G and R <= B.
+					# Spending red always helps (can't violate R <= ...)
 					if mana_red > 0:
 						mana_red -= 1
 						spent = true
+
 				1:
-					# Can only spend green if it stays >= red after spend.
-					if mana_green > 0 and (mana_green - 1) >= mana_red:
-						mana_green -= 1
-						spent = true
+					# After spending green: require G' >= R and G' <= B
+					if mana_green > 0:
+						var g2 := mana_green - 1
+						if g2 >= mana_red and g2 <= mana_blue:
+							mana_green = g2
+							spent = true
+
 				2:
-					# Can only spend blue if it stays >= green after spend.
-					if mana_blue > 0 and (mana_blue - 1) >= mana_green:
-						mana_blue -= 1
-						spent = true
+					# After spending blue: require B' >= G (R <= G already holds)
+					if mana_blue > 0:
+						var b2 := mana_blue - 1
+						if b2 >= mana_green:
+							mana_blue = b2
+							spent = true
 
 			if spent:
 				cursor = (idx + 1) % 3
 				remaining -= 1
 				break
 
-		# Should be unreachable if total mana >= total cost, but keep safety.
+		# With total-mana check, this *shouldn't* happen, but safety is good.
 		if !spent:
-			push_error("spend_mana(): unable to spend while can_play_card() was true (ordering constraint deadlock)")
+			push_error("spend_mana(): deadlock spending mana despite can_play_card() true")
 			return false
 
 	stats_changed()
@@ -205,10 +220,3 @@ func reset_mana() -> void:
 	mana_green = max_mana_green
 	mana_blue = max_mana_blue
 	stats_changed()
-
-func can_play_card(card_data: CardData) -> bool:
-	if card_data == null:
-		return false
-	var total_cost := card_data.cost_red + card_data.cost_green + card_data.cost_blue
-	var total_mana := mana_red + mana_green + mana_blue
-	return total_mana >= total_cost

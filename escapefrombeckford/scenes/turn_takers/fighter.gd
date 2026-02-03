@@ -187,6 +187,7 @@ func can_play_card(card_data: CardData) -> bool:
 	return combatant_data.can_play_card(card_data)
 
 func spend_mana(card_data: CardData) -> bool:
+	print("fighter.gd spend_mana()")
 	if combatant_data.spend_mana(card_data):
 		return true
 	else:

@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="PressureBarrier" format=3 uid="uid://dsl60qwx3ugb"]
+
+[ext_resource type="Script" uid="uid://cmlewd8t3t7rc" path="res://statuses/pressure_barrier.gd" id="1_vs2ft"]
+[ext_resource type="Texture2D" uid="uid://jblyb3q37s5g" path="res://assets/sprites/assorted/bell-shield.png" id="1_vv6tp"]
+
+[resource]
+script = ExtResource("1_vs2ft")
+id = "pressure_barrier"
+proc_type = 2
+expiration_policy = 1
+intensity = 2
+icon = ExtResource("1_vv6tp")
+metadata/_custom_type_script = "uid://cmlewd8t3t7rc"
