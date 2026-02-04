@@ -412,6 +412,7 @@ func build_action_context(resolved_targets: CardResolvedTarget) -> CardActionCon
 
 func commit_play(ctx: CardActionContext, skip_action: CardAction = null, spend_mana: bool = true) -> bool:
 	# Spend mana once
+	#print("1")
 	if spend_mana:
 		ctx.player.spend_mana(ctx.card_data)
 
@@ -422,16 +423,17 @@ func commit_play(ctx: CardActionContext, skip_action: CardAction = null, spend_m
 			continue
 		if action.activate(ctx):
 			any_action_executed = true
-
-	if !any_action_executed:
-		return false
-
+	#print("2")
+	#if !any_action_executed:
+		#return false
+	#print("3")
 	Events.card_played.emit(self)
 	_move_to_destination()
 	return true
 
 
 func _move_to_destination() -> void:
+	#print("usable_card.gd _move_to_destination()")
 	if card_data.deplete:
 		hand.deplete_card(hand.remove_card_by_entity(self))
 	elif card_data.card_type == CardData.CardType.SUMMON:

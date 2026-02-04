@@ -310,12 +310,36 @@ func remove_card_by_entity(card: UsableCard) -> UsableCard:
 	if card == null or !is_instance_valid(card):
 		push_error("Hand.remove_card_by_entity(): invalid card")
 		return null
+
+	# Normal path: card is a child of hand_cards_node
 	var cards := _get_hand_cards()
 	var idx := cards.find(card)
-	if idx < 0:
-		push_error("Hand.remove_card_by_entity(): card not found")
-		return null
-	return remove_card(idx)
+	if idx >= 0:
+		return remove_card(idx)
+
+	# Fallback: card might be reparented during drag/aim/state transitions.
+	# Remove it from its current parent anyway, so destination functions can queue_free it.
+	if card.get_parent() != null:
+		push_warning("Hand.remove_card_by_entity(): card not found in hand_cards_node; removing from current parent instead")
+		card.get_parent().remove_child(card)
+		reposition_hand_cards()
+		currently_selected_card_index = -1
+		return card
+
+	push_error("Hand.remove_card_by_entity(): card has no parent; cannot remove")
+	return null
+
+
+#func remove_card_by_entity(card: UsableCard) -> UsableCard:
+	#if card == null or !is_instance_valid(card):
+		#push_error("Hand.remove_card_by_entity(): invalid card")
+		#return null
+	#var cards := _get_hand_cards()
+	#var idx := cards.find(card)
+	#if idx < 0:
+		#push_error("Hand.remove_card_by_entity(): card not found")
+		#return null
+	#return remove_card(idx)
 
 func remove_cards_by_entities(usable_cards: Array[UsableCard]) -> Array[UsableCard]:
 	var removing_cards: Array[UsableCard] = []

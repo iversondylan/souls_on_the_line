@@ -1,6 +1,6 @@
-[gd_scene load_steps=2 format=3 uid="uid://lwyeupi6ld8k"]
+[gd_scene format=3 uid="uid://lwyeupi6ld8k"]
 
 [ext_resource type="Script" uid="uid://scekanx56uiy" path="res://scenes/turn_takers/behaviors/summoned_ally_behavior.gd" id="1_tojml"]
 
-[node name="SummonedAllyBehavior" type="Node"]
+[node name="SummonedAllyBehavior" type="Node" unique_id=2094472364]
 script = ExtResource("1_tojml")

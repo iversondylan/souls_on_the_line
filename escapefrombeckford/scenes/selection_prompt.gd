@@ -1,4 +1,4 @@
-# SelectionPrompt.gd
+# selection_prompt.gd
 
 class_name SelectionPrompt extends Node2D
 
@@ -9,8 +9,9 @@ func _ready() -> void:
 	visible = false
 	button.pressed.connect(_on_button_pressed)
 
-func show_prompt(text: String) -> void:
-	label.text = text
+func show_prompt(dialogue_text: String, button_text: String) -> void:
+	label.text = dialogue_text
+	button.text = button_text
 	visible = true
 
 func hide_prompt() -> void:
