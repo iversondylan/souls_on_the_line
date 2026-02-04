@@ -147,68 +147,91 @@ func get_cost() -> Array[int]:
 	return [card_data.cost_red, card_data.cost_green, card_data.cost_blue]
 
 func activate() -> bool:
-	# 1. Resolve targets ONCE
-	var resolved_targets: CardResolvedTarget = resolve_targets(targets)
+	var resolved_targets := resolve_targets(targets)
 	if resolved_targets.fighters.is_empty() and resolved_targets.areas.is_empty():
 		return false
 
-	# 2. Check playability (safety guard)
 	if !player.can_play_card(card_data):
 		return false
 
-	# 3. Spend mana ONCE (not per action)
-	#print("spending mana")
-	
+	var ctx := build_action_context(resolved_targets)
 
-	# 4. Build context
-	
-	var needs_replace := false
-	
-	for action in card_data.actions:
-		if action.requires_summon_slot():
-			needs_replace = battle_scene.get_n_summoned_allies() >= BattleGroupFriendly.MAX_SOULBOUND
-	
-	var ctx := CardActionContext.new()
-	ctx.player = player
-	ctx.battle_scene = battle_scene
-	ctx.card_data = card_data
-	ctx.resolved_target = resolved_targets
-	
-	if needs_replace:
-		var summon_action := _get_first_summon_action()
-		if summon_action == null:
-			push_warning("Summon replace requested but card has no SummonAction")
-			return false
-	
-		var effect := summon_action.build_effect(ctx)
-	
-		Events.request_summon_replace.emit(self, ctx, effect)
-		return true
-	
-	player.spend_mana(card_data)
-	# 5. Execute actions in order
-	var any_action_executed := false
-	for action: CardAction in card_data.actions:
-		#print("about to activate an action")
-		if action.activate(ctx):
-			any_action_executed = true
-	
-	# 6. If nothing happened, refund / abort
-	if !any_action_executed:
-		return false
-	
-	# 7. Emit event
-	Events.card_played.emit(self)
+	# detect summon replace need
+	var summon_action := _get_first_summon_action()
+	if summon_action != null and summon_action.requires_summon_slot():
+		var needs_replace := battle_scene.get_n_summoned_allies() >= BattleGroupFriendly.MAX_SOULBOUND
+		if needs_replace:
+			var effect := summon_action.build_effect(ctx)
+			Events.request_summon_replace.emit(self, ctx, effect, summon_action)
+			return true
 
-	# 8. Handle card destination
-	if card_data.deplete:
-		hand.deplete_card(hand.remove_card_by_entity(self))
-	elif card_data.card_type == CardData.CardType.SUMMON:
-		hand.reserve_summon_card(hand.remove_card_by_entity(self))
-	else:
-		hand.discard_card(hand.remove_card_by_entity(self))
+	# normal commit path
+	return commit_play(ctx, null, true)
 
-	return true
+
+#func activate() -> bool:
+	## 1. Resolve targets ONCE
+	#var resolved_targets: CardResolvedTarget = resolve_targets(targets)
+	#if resolved_targets.fighters.is_empty() and resolved_targets.areas.is_empty():
+		#return false
+#
+	## 2. Check playability (safety guard)
+	#if !player.can_play_card(card_data):
+		#return false
+#
+	## 3. Spend mana ONCE (not per action)
+	##print("spending mana")
+	#
+#
+	## 4. Build context
+	#
+	#var needs_replace := false
+	#
+	#for action in card_data.actions:
+		#if action.requires_summon_slot():
+			#needs_replace = battle_scene.get_n_summoned_allies() >= BattleGroupFriendly.MAX_SOULBOUND
+	#
+	#var ctx := CardActionContext.new()
+	#ctx.player = player
+	#ctx.battle_scene = battle_scene
+	#ctx.card_data = card_data
+	#ctx.resolved_target = resolved_targets
+	#
+	#if needs_replace:
+		#var summon_action := _get_first_summon_action()
+		#if summon_action == null:
+			#push_warning("Summon replace requested but card has no SummonAction")
+			#return false
+	#
+		#var effect := summon_action.build_effect(ctx)
+	#
+		#Events.request_summon_replace.emit(self, ctx, effect)
+		#return true
+	#
+	#player.spend_mana(card_data)
+	## 5. Execute actions in order
+	#var any_action_executed := false
+	#for action: CardAction in card_data.actions:
+		##print("about to activate an action")
+		#if action.activate(ctx):
+			#any_action_executed = true
+	#
+	## 6. If nothing happened, refund / abort
+	#if !any_action_executed:
+		#return false
+	#
+	## 7. Emit event
+	#Events.card_played.emit(self)
+#
+	## 8. Handle card destination
+	#if card_data.deplete:
+		#hand.deplete_card(hand.remove_card_by_entity(self))
+	#elif card_data.card_type == CardData.CardType.SUMMON:
+		#hand.reserve_summon_card(hand.remove_card_by_entity(self))
+	#else:
+		#hand.discard_card(hand.remove_card_by_entity(self))
+#
+	#return true
 
 func _get_first_summon_action() -> SummonAction:
 	for action in card_data.actions:
@@ -376,3 +399,42 @@ func _kill_pop_tween() -> void:
 	if _pop_tween and is_instance_valid(_pop_tween):
 		_pop_tween.kill()
 	_pop_tween = null
+
+
+func build_action_context(resolved_targets: CardResolvedTarget) -> CardActionContext:
+	var ctx := CardActionContext.new()
+	ctx.player = player
+	ctx.battle_scene = battle_scene
+	ctx.card_data = card_data
+	ctx.resolved_target = resolved_targets
+	return ctx
+
+
+func commit_play(ctx: CardActionContext, skip_action: CardAction = null, spend_mana: bool = true) -> bool:
+	# Spend mana once
+	if spend_mana:
+		ctx.player.spend_mana(ctx.card_data)
+
+	# Execute actions (skipping one if requested)
+	var any_action_executed := false
+	for action: CardAction in ctx.card_data.actions:
+		if skip_action != null and action == skip_action:
+			continue
+		if action.activate(ctx):
+			any_action_executed = true
+
+	if !any_action_executed:
+		return false
+
+	Events.card_played.emit(self)
+	_move_to_destination()
+	return true
+
+
+func _move_to_destination() -> void:
+	if card_data.deplete:
+		hand.deplete_card(hand.remove_card_by_entity(self))
+	elif card_data.card_type == CardData.CardType.SUMMON:
+		hand.reserve_summon_card(hand.remove_card_by_entity(self))
+	else:
+		hand.discard_card(hand.remove_card_by_entity(self))

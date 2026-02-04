@@ -44,8 +44,11 @@ signal cards_drawn(ctx: DrawContext)
 signal combatant_target_clicked(fighter: Fighter)
 signal combatant_target_hovered(fighter: Fighter)
 signal combatant_target_unhovered(fighter: Fighter)
-signal request_summon_replace(card: UsableCard, ctx: CardActionContext, effect: SummonEffect)
-signal summon_replace_cancel_requested()
+signal request_summon_replace(card: UsableCard, ctx: CardActionContext, effect: SummonEffect, skip_action: CardAction)
+#signal request_summon_replace
+#signal combatant_target_clicked
+#signal summon_replace_cancel_requested
+signal selection_prompt_button_pressed()
 
 ## info/menu events
 signal intent_tooltip_show_requested(intent_display: IntentDisplay)

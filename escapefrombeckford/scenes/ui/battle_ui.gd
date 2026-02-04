@@ -3,7 +3,7 @@
 class_name BattleUI extends CanvasLayer
 
 @onready var end_turn: Button = $EndTurn
-@onready var summon_replace_prompt: Node2D = $SummonReplacePrompt
+@onready var summon_replace_prompt: Node2D = $SelectionPrompt
 
 func set_end_turn_enabled(enabled: bool) -> void:
 	if enabled:
