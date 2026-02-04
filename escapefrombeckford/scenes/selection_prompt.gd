@@ -17,5 +17,9 @@ func show_prompt(dialogue_text: String, button_text: String) -> void:
 func hide_prompt() -> void:
 	visible = false
 
+
+func set_button_enabled(on: bool) -> void:
+	button.disabled = !on
+
 func _on_button_pressed() -> void:
 	Events.selection_prompt_button_pressed.emit()

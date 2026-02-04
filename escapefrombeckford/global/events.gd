@@ -45,6 +45,8 @@ signal combatant_target_clicked(fighter: Fighter)
 signal combatant_target_hovered(fighter: Fighter)
 signal combatant_target_unhovered(fighter: Fighter)
 signal request_summon_replace(card: UsableCard, ctx: CardActionContext, effect: SummonEffect, skip_action: CardAction)
+signal request_discard_cards(ctx: DiscardContext)
+signal discard_finished(ctx: DiscardContext)
 #signal request_summon_replace
 #signal combatant_target_clicked
 #signal summon_replace_cancel_requested

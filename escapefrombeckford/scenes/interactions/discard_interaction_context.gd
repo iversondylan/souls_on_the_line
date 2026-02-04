@@ -1,3 +1,5 @@
+# discard_interaction_context.gd
+
 class_name DiscardInteractionContext extends InteractionContext
 
 var hand: Hand

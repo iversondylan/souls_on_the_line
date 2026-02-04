@@ -15,15 +15,13 @@ var prompt: SelectionPrompt
 
 
 func _ready() -> void:
-	# Requests
 	Events.request_summon_replace.connect(on_request_summon_replace)
+	Events.request_discard_cards.connect(on_request_discard_cards)
 
-	# Targeting input (modal-capable)
 	Events.combatant_target_clicked.connect(on_combatant_target_clicked)
 	Events.combatant_target_hovered.connect(on_combatant_target_hovered)
 	Events.combatant_target_unhovered.connect(on_combatant_target_unhovered)
 
-	# Single-button prompt
 	Events.selection_prompt_button_pressed.connect(on_prompt_button_pressed)
 
 
@@ -42,24 +40,42 @@ func setup(_battle: Battle) -> void:
 func begin(ctx: InteractionContext, new_mode: int) -> void:
 	if ctx == null:
 		return
-
 	if active != null:
 		end_active_context()
-
 	mode = new_mode
 	active = ctx
 	active.handler = self
 	active.enter()
 
-
 func end_active_context() -> void:
 	if active == null:
 		return
-
 	active.exit()
 	active = null
 	mode = Mode.NORMAL
 	prompt_hide()
+
+#func begin(ctx: InteractionContext, new_mode: int) -> void:
+	#if ctx == null:
+		#return
+#
+	#if active != null:
+		#end_active_context()
+#
+	#mode = new_mode
+	#active = ctx
+	#active.handler = self
+	#active.enter()
+#
+#
+#func end_active_context() -> void:
+	#if active == null:
+		#return
+#
+	#active.exit()
+	#active = null
+	#mode = Mode.NORMAL
+	#prompt_hide()
 
 
 # ------------------------------------------------------------
@@ -82,15 +98,26 @@ func unlock_from_modal() -> void:
 # Prompt helpers (single button)
 # ------------------------------------------------------------
 
-func prompt_show(text: String, button_text: String) -> void:
-	# Convention you stated:
-	# - SUMMON_REPLACE / SWAP_PARTNER: button is "Cancel"
-	# - DISCARD: button is "OK"
-	prompt.show_prompt(text, button_text)
 
+func prompt_show(text: String, button_text: String) -> void:
+	prompt.show_prompt(text, button_text)
 
 func prompt_hide() -> void:
 	prompt.hide_prompt()
+
+func prompt_set_enabled(on: bool) -> void:
+	prompt.set_button_enabled(on)
+
+
+#func prompt_show(text: String, button_text: String) -> void:
+	## Convention you stated:
+	## - SUMMON_REPLACE / SWAP_PARTNER: button is "Cancel"
+	## - DISCARD: button is "OK"
+	#prompt.show_prompt(text, button_text)
+#
+#
+#func prompt_hide() -> void:
+	#prompt.hide_prompt()
 
 
 # ------------------------------------------------------------
@@ -145,6 +172,21 @@ func on_request_summon_replace(card: UsableCard, ctx: CardActionContext, effect:
 	begin(c, Mode.SUMMON_REPLACE)
 
 
+func on_request_discard_cards(ctx: DiscardContext) -> void:
+	if mode != Mode.NORMAL:
+		return
+	if ctx == null:
+		return
+
+	# Fill in shared refs here (keeps DiscardEffect generic)
+	ctx.battle = battle
+	ctx.hand = hand
+	ctx.deck = battle.deck
+
+	var c := DiscardInteractionContext.new()
+	c.discard_ctx = ctx
+	begin(c, Mode.DISCARD)
+
 func on_combatant_target_hovered(f: Fighter) -> void:
 	if active == null:
 		return
@@ -169,26 +211,38 @@ func on_combatant_target_clicked(f: Fighter) -> void:
 func on_prompt_button_pressed() -> void:
 	if active == null:
 		return
-
-	# One button; meaning depends on mode.
+	# One button.
 	match mode:
 		Mode.DISCARD:
-			# "OK"
-			if active.has_method("on_ok"):
-				active.on_ok()
-			elif active.has_method("on_primary"):
-				active.on_primary()
-			else:
-				# If discard context didn't implement an OK handler, do nothing.
-				pass
-
+			active.on_primary() # OK
 		Mode.SUMMON_REPLACE, Mode.SWAP_PARTNER:
-			# "Cancel"
-			_cancel_active()
-
+			active.on_primary() # Cancel for those modes
 		_:
-			# NORMAL: ignore
 			pass
+
+#func on_prompt_button_pressed() -> void:
+	#if active == null:
+		#return
+#
+	## One button; meaning depends on mode.
+	#match mode:
+		#Mode.DISCARD:
+			## "OK"
+			#if active.has_method("on_ok"):
+				#active.on_ok()
+			#elif active.has_method("on_primary"):
+				#active.on_primary()
+			#else:
+				## If discard context didn't implement an OK handler, do nothing.
+				#pass
+#
+		#Mode.SUMMON_REPLACE, Mode.SWAP_PARTNER:
+			## "Cancel"
+			#_cancel_active()
+#
+		#_:
+			## NORMAL: ignore
+			#pass
 
 
 func _cancel_active() -> void:
