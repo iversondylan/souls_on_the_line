@@ -22,4 +22,5 @@ func set_button_enabled(on: bool) -> void:
 	button.disabled = !on
 
 func _on_button_pressed() -> void:
+	print("selection_prompt.gd _on_button_pressed()")
 	Events.selection_prompt_button_pressed.emit()

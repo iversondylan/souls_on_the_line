@@ -127,6 +127,7 @@ func combatant_died(fighter: Fighter) -> void:
 
 func combatant_faded(fighter: Fighter) -> void:
 	if fighter is SummonedAlly:
+		fighter.fade()
 		fighter.discard_summon_reserve_card(deck)
 	remove_combatant(fighter)
 

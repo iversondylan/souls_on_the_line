@@ -178,6 +178,12 @@ func die():
 		if child is FighterBehavior:
 			child._on_die()
 
+func fade():
+	for child in get_children():
+		if child is FighterBehavior:
+			child._on_fade()
+	
+
 func do_turn() -> void:
 	for child in get_children():
 		if child is FighterBehavior:
@@ -187,7 +193,6 @@ func can_play_card(card_data: CardData) -> bool:
 	return combatant_data.can_play_card(card_data)
 
 func spend_mana(card_data: CardData) -> bool:
-	print("fighter.gd spend_mana()")
 	if combatant_data.spend_mana(card_data):
 		return true
 	else:

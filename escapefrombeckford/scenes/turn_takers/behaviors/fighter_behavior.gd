@@ -55,6 +55,9 @@ func _on_modifier_changed() -> void:
 func _on_die() -> void:
 	pass
 
+func _on_fade() -> void:
+	pass
+
 func bind_card(_new_card_data: CardData) -> void:
 	pass
 

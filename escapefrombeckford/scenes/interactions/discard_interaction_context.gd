@@ -9,6 +9,7 @@ var _hand_cards_cache: Array[UsableCard] = []
 var _resolving := false
 
 func enter() -> void:
+	print("discard_interaction_context.gd enter()")
 	_resolving = false
 	_selected.clear()
 

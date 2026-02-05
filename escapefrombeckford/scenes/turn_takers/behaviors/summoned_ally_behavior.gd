@@ -14,6 +14,10 @@ func _on_die() -> void:
 	var summoned_ally: SummonedAlly = get_parent()
 	Events.summon_reserve_card_released.emit(summoned_ally)
 
+func _on_fade() -> void:
+	var summoned_ally: SummonedAlly = get_parent()
+	Events.summon_reserve_card_released.emit(summoned_ally)
+
 func bind_card(_new_card_data: CardData) -> void:
 	card_data = _new_card_data
 
@@ -25,4 +29,6 @@ func get_sibling(_name: String) -> Node:
 	return get_parent().get_node_or_null(_name)
 
 func _on_discard_summon_reserve_card(_deck: Deck) -> void:
-	_deck.discard_summon_reserve_card(card_data)
+	#print("summoned_ally_behavior.gd _on_discard_summon_reserve_card() card_data: ", card_data)
+	if card_data:
+		_deck.discard_summon_reserve_card(card_data)

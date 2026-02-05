@@ -67,7 +67,7 @@ func exit() -> void:
 
 
 # Called by BattleInteractionHandler when the single prompt button is pressed in this mode.
-func on_cancel() -> void:
+func on_primary() -> void:
 	# If we're already resolving, ignore cancel.
 	# (Handler will still end the context if active != null; we prevent that by leaving active intact.)
 	if resolving:
@@ -119,12 +119,12 @@ func _finish_confirm(chosen: SummonedAlly) -> void:
 		# Something removed it mid-animation; just bail out cleanly.
 		handler.end_active_context()
 		return
-
+	
 	var friendly := handler.battle_scene.groups[0] as BattleGroupFriendly
-
+	
 	# Remove chosen via fade-path (not die())
 	friendly.combatant_faded(chosen)
-
+	
 	# Clear preview ghost so layout count stays correct
 	friendly.clear_preview()
 	if ghost != null and is_instance_valid(ghost):
