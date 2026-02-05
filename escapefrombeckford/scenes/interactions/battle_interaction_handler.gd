@@ -16,6 +16,7 @@ var prompt: SelectionPrompt
 
 func _ready() -> void:
 	Events.request_summon_replace.connect(on_request_summon_replace)
+	Events.request_swap_partner.connect(on_request_swap_partner)
 	Events.request_discard_cards.connect(on_request_discard_cards)
 
 	Events.combatant_target_clicked.connect(on_combatant_target_clicked)
@@ -208,3 +209,25 @@ func _cancel_active() -> void:
 	if active != null:
 		print("...4")
 		end_active_context()
+
+func on_request_swap_partner(card: UsableCard, ctx: CardActionContext, actor: Fighter, skip_action: CardAction) -> void:
+	if mode != Mode.NORMAL:
+		return
+
+	var c := SwapPartnerInteractionContext.new()
+	c.card = card
+	c.card_ctx = ctx
+	c.actor = actor
+	c.skip_action = skip_action
+
+	begin(c, Mode.SWAP_PARTNER)
+
+func set_swap_candidate_visuals(f: Fighter, on: bool) -> void:
+	if f == null or !is_instance_valid(f):
+		return
+	# simplest: reuse targeted arrow or pending glow
+	# better: add a dedicated “selectable” mark method on Fighter.
+	if on:
+		f.set_fade_mark(true) # if Fighter has it; otherwise implement set_selectable_mark on Fighter
+	else:
+		f.set_fade_mark(false)

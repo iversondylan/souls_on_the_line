@@ -175,78 +175,25 @@ func activate() -> bool:
 			var effect := summon_action.build_effect(ctx)
 			Events.request_summon_replace.emit(self, ctx, effect, summon_action)
 			return true
-
+	
+	var swap_action := _get_first_swap_action()
+	if swap_action != null:
+		# We require an initial target (actor) via your targeting rules.
+		Events.request_swap_partner.emit(self, ctx, resolved_targets.fighters[0], swap_action)
+		return true
+	
 	# normal commit path
 	return commit_play(ctx, null, true)
-
-
-#func activate() -> bool:
-	## 1. Resolve targets ONCE
-	#var resolved_targets: CardResolvedTarget = resolve_targets(targets)
-	#if resolved_targets.fighters.is_empty() and resolved_targets.areas.is_empty():
-		#return false
-#
-	## 2. Check playability (safety guard)
-	#if !player.can_play_card(card_data):
-		#return false
-#
-	## 3. Spend mana ONCE (not per action)
-	##print("spending mana")
-	#
-#
-	## 4. Build context
-	#
-	#var needs_replace := false
-	#
-	#for action in card_data.actions:
-		#if action.requires_summon_slot():
-			#needs_replace = battle_scene.get_n_summoned_allies() >= BattleGroupFriendly.MAX_SOULBOUND
-	#
-	#var ctx := CardActionContext.new()
-	#ctx.player = player
-	#ctx.battle_scene = battle_scene
-	#ctx.card_data = card_data
-	#ctx.resolved_target = resolved_targets
-	#
-	#if needs_replace:
-		#var summon_action := _get_first_summon_action()
-		#if summon_action == null:
-			#push_warning("Summon replace requested but card has no SummonAction")
-			#return false
-	#
-		#var effect := summon_action.build_effect(ctx)
-	#
-		#Events.request_summon_replace.emit(self, ctx, effect)
-		#return true
-	#
-	#player.spend_mana(card_data)
-	## 5. Execute actions in order
-	#var any_action_executed := false
-	#for action: CardAction in card_data.actions:
-		##print("about to activate an action")
-		#if action.activate(ctx):
-			#any_action_executed = true
-	#
-	## 6. If nothing happened, refund / abort
-	#if !any_action_executed:
-		#return false
-	#
-	## 7. Emit event
-	#Events.card_played.emit(self)
-#
-	## 8. Handle card destination
-	#if card_data.deplete:
-		#hand.deplete_card(hand.remove_card_by_entity(self))
-	#elif card_data.card_type == CardData.CardType.SUMMON:
-		#hand.reserve_summon_card(hand.remove_card_by_entity(self))
-	#else:
-		#hand.discard_card(hand.remove_card_by_entity(self))
-#
-	#return true
 
 func _get_first_summon_action() -> SummonAction:
 	for action in card_data.actions:
 		if action is SummonAction:
+			return action
+	return null
+
+func _get_first_swap_action() -> CardAction:
+	for action in card_data.actions:
+		if action is SwapWithTargetAction:
 			return action
 	return null
 

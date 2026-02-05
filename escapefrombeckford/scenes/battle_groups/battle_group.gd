@@ -228,8 +228,31 @@ func execute_move(effect: MoveEffect) -> void:
 
 
 func _swap(actor: Fighter, target: Fighter) -> void:
-	push_warning("BattleGroup._swap() not yet implemented")
-	pass
+	if actor == null or target == null:
+		return
+	if !is_instance_valid(actor) or !is_instance_valid(target):
+		return
+	if actor == target:
+		return
+	if actor.get_parent() != self or target.get_parent() != self:
+		return
+
+	var a_idx := actor.get_index()
+	var t_idx := target.get_index()
+	if a_idx == t_idx:
+		return
+
+	# Swap child indices safely.
+	# After first move, the other index may shift, so adjust.
+	move_child(actor, t_idx)
+
+	if a_idx < t_idx:
+		# actor moved forward in the list, target shifted left by 1
+		move_child(target, a_idx)
+	else:
+		# actor moved backward, target index unchanged
+		move_child(target, a_idx)
+
 
 func _reconcile_acting_list(
 	before_order: Array[Fighter],
