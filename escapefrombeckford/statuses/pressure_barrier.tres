@@ -7,6 +7,7 @@
 script = ExtResource("1_vs2ft")
 id = "pressure_barrier"
 proc_type = 2
+number_display_type = 1
 expiration_policy = 1
 intensity = 2
 icon = ExtResource("1_vv6tp")

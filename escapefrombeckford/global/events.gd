@@ -39,6 +39,7 @@ signal mouse_entered_card(usable_card: UsableCard)
 signal mouse_exited_card(usable_card: UsableCard)
 signal request_draw_cards(ctx: DrawContext)
 signal cards_drawn(ctx: DrawContext)
+signal card_selection_toggled(card: UsableCard, is_selected: bool)
 
 ## summon replace events
 signal combatant_target_clicked(fighter: Fighter)

@@ -55,3 +55,18 @@ func _on_transition_requested(from: CardState, to: CardState.State) -> void:
 	new_state.enter()
 	current_state = new_state
 	current_state.dwell()
+
+func request_state(to: CardState.State) -> void:
+	_force_transition(to)
+
+func _force_transition(to: CardState.State) -> void:
+	var new_state: CardState = states.get(to)
+	if new_state == null:
+		return
+
+	if current_state:
+		current_state.exit()
+
+	new_state.enter()
+	current_state = new_state
+	current_state.dwell()

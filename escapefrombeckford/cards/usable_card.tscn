@@ -8,7 +8,9 @@
 [ext_resource type="Script" uid="uid://c105frfq73ho0" path="res://cards/card_states/card_dragging_state.gd" id="6_xk81s"]
 [ext_resource type="Script" uid="uid://bikh7yv8s3kjv" path="res://cards/card_states/card_released_state.gd" id="7_a1aea"]
 [ext_resource type="Script" uid="uid://cq15qwif2sf5u" path="res://cards/card_states/card_aiming_state.gd" id="8_oqtgk"]
+[ext_resource type="Script" uid="uid://btx2y7yj6fm0h" path="res://cards/card_states/card_selection_state.gd" id="9_f727x"]
 [ext_resource type="Texture2D" uid="uid://c2cpjnsgjdd1x" path="res://assets/sprites/assorted/card_back_1.PNG" id="10_5usk7"]
+[ext_resource type="Script" uid="uid://bupfxdfg6dd0k" path="res://cards/card_states/card_selected_state.gd" id="10_32cfh"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_g488w"]
 size = Vector2(225, 315)
@@ -65,6 +67,14 @@ state = 4
 [node name="CardAimingState" type="Node" parent="CardStateMachine" unique_id=1037205823]
 script = ExtResource("8_oqtgk")
 state = 3
+
+[node name="CardSelectionState" type="Node" parent="CardStateMachine" unique_id=881379409]
+script = ExtResource("9_f727x")
+state = 5
+
+[node name="CardSelectedState" type="Node" parent="CardStateMachine" unique_id=1232879768]
+script = ExtResource("10_32cfh")
+state = 6
 
 [node name="CardBack" type="Sprite2D" parent="." unique_id=789359508]
 visible = false

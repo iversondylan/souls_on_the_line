@@ -2,7 +2,7 @@
 
 class_name UsableCard extends Node2D
 
-signal reparent_requested(which_usable_card: UsableCard)
+signal card_fan_requested(which_usable_card: UsableCard)
 signal mouse_entered(usablecard: UsableCard)
 signal mouse_exited(usablecard: UsableCard)
 
@@ -44,6 +44,7 @@ var disabled := false
 var selected = false
 
 func _ready() -> void:
+	#print_tree_pretty()
 	_cache_home()
 	Events.card_aim_started.connect(_on_card_drag_or_aiming_started)
 	Events.card_drag_started.connect(_on_card_drag_or_aiming_started)
@@ -68,6 +69,7 @@ func _process(_delta):
 		strictly_visuals.rotation = -rotation
 
 func animate_to_position(new_position: Vector2, new_rotation: float, duration: float, scale: Vector2 = Vector2.ONE, on_finish: Callable = Callable()) -> void:
+	#print("usable_card.gd animate_to_position()")
 	if tween and is_instance_valid(tween):
 		tween.kill()
 		tween = null

@@ -4,6 +4,7 @@ extends CardState
 var played: bool
 
 func enter() -> void:
+	#print(usable_card.name, " entering ReleasedState")
 	played = false
 
 	if !usable_card.targets.is_empty():

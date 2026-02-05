@@ -7,7 +7,9 @@ enum State {
 	CLICKED,
 	DRAGGING,
 	AIMING,
-	RELEASED
+	RELEASED,
+	SELECTION,
+	SELECTED
 }
 
 signal transition_requested(from: CardState, to: State)

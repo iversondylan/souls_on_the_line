@@ -89,6 +89,7 @@ func _process(_delta: float) -> void:
 	_apply_z_order()
 	_apply_hover_visuals(top_card)
 
+
 func _get_hand_cards() -> Array[UsableCard]:
 	var out: Array[UsableCard] = []
 	for child in hand_cards_node.get_children():
@@ -115,7 +116,7 @@ func add_card(card: CardData) -> void:
 	var target_global := draw_anchor.global_position
 	usable_card.global_position = target_global
 	usable_card.scale = MINI_CARD_SCALE
-	usable_card.reparent_requested.connect(_on_usable_card_reparent_requested)
+	usable_card.card_fan_requested.connect(_on_usable_card_card_fan_requested)
 	reposition_hand_cards()
 
 func draw_card() -> bool:
@@ -204,6 +205,10 @@ func deplete_card(usable_card: UsableCard) -> void:
 
 func set_modal_selecting(on: bool) -> void:
 	_modal_selecting = on
+	# also clear hover/top state so nothing is "stuck on top"
+	_top_locked_card = null
+	_top_hover_card = null
+	_clear_hover_visuals()
 
 func discard_hand(usable_cards: Array[UsableCard]) -> void:
 	# If already discarding, don't start another batch.
@@ -364,6 +369,10 @@ func disable_hand_cards() -> void:
 		usable_card.unhighlight()
 		usable_card.disabled = true
 
+func lock_cards_for_selection() -> void:
+	for usable_card in _get_hand_cards():
+		usable_card.unhighlight()
+
 func enable_hand_cards() -> void:
 	for usable_card in _get_hand_cards():
 		usable_card.disabled = false
@@ -392,7 +401,7 @@ func _update_card_transform(usable_card: UsableCard, angle_in_drag: float) -> vo
 	var pos: Vector2 = get_card_position(angle_in_drag)
 	usable_card.animate_to_position(pos, angle_in_drag, 0.5)
 
-func _on_usable_card_reparent_requested(_child: UsableCard) -> void:
+func _on_usable_card_card_fan_requested(_child: UsableCard) -> void:
 	reposition_hand_cards()
 
 func _on_hand_area_mouse_entered() -> void:

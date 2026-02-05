@@ -6,6 +6,7 @@ const DRAG_MINIMUM_THRESHOLD := 0.05
 var minimum_drag_time_elapsed := false
 
 func enter() -> void:
+	#print(usable_card.name, " entering DraggingState")
 	usable_card.card_visuals.glow.hide()
 	Events.card_drag_started.emit(usable_card)
 	
@@ -35,6 +36,7 @@ func on_input(event: InputEvent) -> void:
 		player.hide_targeted_arrow()
 	
 	if mouse_motion:
+		#print("card_dragging_state.gd updating position")
 		usable_card.global_position = usable_card.get_global_mouse_position()
 	
 	if cancel:

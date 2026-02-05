@@ -4,6 +4,7 @@ extends CardState
 const MOUSE_Y_SNAPBACK_THRESHOLD := 1060
 
 func enter() -> void:
+	#print(usable_card.name, " entering AimingState")
 	usable_card.targets.clear()
 	var pos := get_viewport().get_visible_rect().size
 	pos.x = pos.x * 0.5
