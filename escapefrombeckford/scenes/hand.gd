@@ -43,6 +43,7 @@ var selected_card: UsableCard
 #var _active_tween: Tween = null
 var _is_drawing: bool = false
 var _is_discarding: bool = false
+var _emit_hand_discarded_on_complete := false
 var _modal_selecting : bool = false
 
 
@@ -210,7 +211,18 @@ func set_modal_selecting(on: bool) -> void:
 	_top_hover_card = null
 	_clear_hover_visuals()
 
+func discard_cards(usable_cards: Array[UsableCard]) -> void:
+	# “discard some cards” is the general-purpose version.
+	# It should NOT emit Events.hand_discarded.
+	_discard_cards_internal(usable_cards, false)
+
+
 func discard_hand(usable_cards: Array[UsableCard]) -> void:
+	# “discard the hand” is just a special case that DOES emit Events.hand_discarded.
+	_discard_cards_internal(usable_cards, true)
+
+
+func _discard_cards_internal(usable_cards: Array[UsableCard], emit_hand_discarded: bool) -> void:
 	# If already discarding, don't start another batch.
 	# (Optional recovery: if somehow stuck, auto-unstick when disabled node is empty)
 	if _is_discarding:
@@ -225,19 +237,25 @@ func discard_hand(usable_cards: Array[UsableCard]) -> void:
 		if c != null and is_instance_valid(c):
 			cards.append(c)
 
+	# Nothing to do
 	if cards.is_empty():
-		Events.hand_discarded.emit()
+		if emit_hand_discarded:
+			Events.hand_discarded.emit()
 		return
 
+	# No anchor => instant discard
 	if discard_anchor == null:
-		push_warning("Hand.discard_hand(): discard_anchor not set; falling back to instant discard")
+		push_warning("Hand._discard_cards_internal(): discard_anchor not set; falling back to instant discard")
 		for c in cards:
 			deck.add_card_to_discard(c.card_data)
 			c.queue_free()
-		Events.hand_discarded.emit()
+		reposition_hand_cards()
+		if emit_hand_discarded:
+			Events.hand_discarded.emit()
 		return
 
 	_is_discarding = true
+	_emit_hand_discarded_on_complete = emit_hand_discarded
 
 	var target_global := discard_anchor.global_position
 
@@ -256,9 +274,11 @@ func discard_hand(usable_cards: Array[UsableCard]) -> void:
 		if card.get_parent():
 			card.get_parent().remove_child(card)
 		disabled_cards_node.add_child(card)
+
 		reposition_hand_cards()
 		card.global_position = g
 		card.z_index = Z_TOP
+
 		var card_ref := card
 		card_ref.animate_to_position(
 			target_global,
@@ -277,8 +297,25 @@ func discard_hand(usable_cards: Array[UsableCard]) -> void:
 				# Defer the completion check so queued frees / tree updates settle.
 				call_deferred("_on_one_discard_complete")
 		)
+
 		reposition_hand_cards()
 		await get_tree().create_timer(CARD_DISCARD_INTERVAL).timeout
+
+
+func _on_one_discard_complete() -> void:
+	var remaining := _count_cards_in(disabled_cards_node)
+	if remaining != 0:
+		return
+
+	_is_discarding = false
+	reposition_hand_cards()
+
+	if _emit_hand_discarded_on_complete:
+		_emit_hand_discarded_on_complete = false
+		Events.hand_discarded.emit()
+	else:
+		_emit_hand_discarded_on_complete = false
+		Events.hand_discard_animation_finished.emit()
 
 
 func _count_cards_in(node: Node) -> int:
@@ -288,16 +325,7 @@ func _count_cards_in(node: Node) -> int:
 			n += 1
 	return n
 
-func _on_one_discard_complete() -> void:
-	var remaining := _count_cards_in(disabled_cards_node)
-	#print("discard remaining:", remaining)
 
-	if remaining != 0:
-		return
-
-	_is_discarding = false
-	reposition_hand_cards()
-	Events.hand_discarded.emit()
 
 
 
