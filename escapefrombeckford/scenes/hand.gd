@@ -43,6 +43,7 @@ var selected_card: UsableCard
 #var _active_tween: Tween = null
 var _is_drawing: bool = false
 var _is_discarding: bool = false
+var _modal_selecting : bool = false
 
 
 func _ready() -> void:
@@ -63,7 +64,8 @@ func _ready() -> void:
 func _process(_delta: float) -> void:
 	if _is_discarding:
 		return
-
+	if _modal_selecting:
+		return
 	# Always keep z order correct
 	_apply_z_order()
 
@@ -199,6 +201,9 @@ func deplete_card(usable_card: UsableCard) -> void:
 		return
 	usable_card.queue_free()
 	reposition_hand_cards()
+
+func set_modal_selecting(on: bool) -> void:
+	_modal_selecting = on
 
 func discard_hand(usable_cards: Array[UsableCard]) -> void:
 	# If already discarding, don't start another batch.

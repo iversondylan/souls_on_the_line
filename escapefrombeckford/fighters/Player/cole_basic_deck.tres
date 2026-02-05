@@ -8,8 +8,9 @@
 [ext_resource type="Resource" uid="uid://btlvkb0pdixka" path="res://cards/PressureBarrier/pressure_barrier_data.tres" id="6_x43pu"]
 [ext_resource type="Resource" uid="uid://sdnvejwfmf81" path="res://cards/ConvokedAssault/convoked_assault.tres" id="7_j0bpe"]
 [ext_resource type="Resource" uid="uid://eet5htwsey50" path="res://cards/SuperchargeCard/supercharge.tres" id="7_x43pu"]
+[ext_resource type="Resource" uid="uid://bbmoxyo3717yg" path="res://cards/DecisiveChoice/decisive_choice_data.tres" id="8_pvg2w"]
 
 [resource]
 script = ExtResource("2_nkp8v")
-cards = Array[ExtResource("1_rilno")]([ExtResource("3_miprr"), ExtResource("3_miprr"), ExtResource("3_miprr"), ExtResource("3_miprr"), ExtResource("3_miprr"), ExtResource("4_4n306"), ExtResource("5_miprr"), ExtResource("7_x43pu"), ExtResource("6_x43pu"), ExtResource("5_miprr"), ExtResource("6_x43pu"), ExtResource("7_j0bpe")])
+cards = Array[ExtResource("1_rilno")]([ExtResource("3_miprr"), ExtResource("3_miprr"), ExtResource("3_miprr"), ExtResource("3_miprr"), ExtResource("3_miprr"), ExtResource("4_4n306"), ExtResource("5_miprr"), ExtResource("7_x43pu"), ExtResource("6_x43pu"), ExtResource("7_j0bpe"), ExtResource("8_pvg2w"), ExtResource("8_pvg2w")])
 metadata/_custom_type_script = "uid://dnybrgm0o6gjj"

@@ -57,6 +57,12 @@ func _ready() -> void:
 func _input(event: InputEvent) -> void:
 	card_state_machine.on_input(event)
 
+	if disabled:
+		return
+	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+		if is_mouse_over():
+			Events.hand_card_clicked.emit(self)
+
 func _process(_delta):
 	if _is_popped and is_instance_valid(strictly_visuals):
 		strictly_visuals.rotation = -rotation
@@ -100,6 +106,9 @@ func highlight():
 
 func unhighlight():
 	card_visuals.glow.hide()
+
+func set_selected_visual(on: bool) -> void:
+	card_visuals.glow.visible = on
 
 func update_description() -> void:
 	card_visuals.description.set_text(get_description())

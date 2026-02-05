@@ -50,6 +50,7 @@ signal discard_finished(ctx: DiscardContext)
 #signal request_summon_replace
 #signal combatant_target_clicked
 #signal summon_replace_cancel_requested
+signal hand_card_clicked(card: UsableCard)
 signal selection_prompt_button_pressed()
 
 ## info/menu events
