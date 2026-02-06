@@ -15,3 +15,7 @@ func description_arity() -> int:
 
 func get_description_values(_ctx: CardActionContext) -> Array:
 	return [base_draw]
+
+func get_modular_description(_ctx: CardActionContext) -> String:
+	var base_text: String = "Draw %s."
+	return base_text % base_draw

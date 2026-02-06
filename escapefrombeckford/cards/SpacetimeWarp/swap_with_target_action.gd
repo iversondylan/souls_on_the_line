@@ -17,8 +17,6 @@ func activate(ctx: CardActionContext) -> bool:
 	
 	# Enter SWAP_PARTNER mode and escrow this card.
 	Events.request_swap_partner.emit(ctx.card_data_source_card, ctx, actor, self)
-	# ^ If you don't have ctx.card_data_source_card, just emit the UsableCard from caller
-	#   (Most of your pipeline emits Events from UsableCard.activate(), so you can pass `self` there instead.)
 	
 	return true
 

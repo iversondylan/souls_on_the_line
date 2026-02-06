@@ -43,5 +43,8 @@ func get_description_values(_ctx: CardActionContext) -> Array:
 	# Return exactly description_arity() values
 	return []
 
+func get_modular_description(_ctx: CardActionContext) -> String:
+	return ""
+
 func requires_summon_slot() -> bool:
 	return false

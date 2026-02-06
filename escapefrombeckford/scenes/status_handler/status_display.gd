@@ -48,6 +48,6 @@ func _on_status_changed() -> void:
 	duration.text = str(status.duration)
 	intensity.text = str(status.intensity)
 
-func _on_focused_gained(focused_status: Status):
-	if focused_status.status_parent != status_parent and status.id == MarkedStatus.MARKED_ID:
+func _on_focused_gained(marked_status: Status):
+	if marked_status.status_parent != status_parent and status.id == MarkedStatus.ID:
 		queue_free()

@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="CardData" format=3 uid="uid://ccevotl6l5gil"]
+
+[ext_resource type="Script" uid="uid://wtk5v77fcqvn" path="res://custom_resources/card_action.gd" id="1_ssb7r"]
+[ext_resource type="Resource" uid="uid://ce1lg5k4uob75" path="res://cards/FocusFireCard/pinpoint_action.tres" id="2_ddikp"]
+[ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://custom_resources/card_data.gd" id="2_xv8nt"]
+[ext_resource type="Resource" uid="uid://cwsantdi8vmes" path="res://cards/HealingSurge/draw_action.tres" id="3_aeyd7"]
+[ext_resource type="Texture2D" uid="uid://dm3sd42a0p6ao" path="res://assets/sprites/assorted/pinpoint.PNG" id="5_5gxor"]
+
+[resource]
+script = ExtResource("2_xv8nt")
+target_type = 4
+name = "Pinpoint"
+description = "Target takes %s{percent} more damage for %s turns."
+cost_blue = 1
+texture = ExtResource("5_5gxor")
+actions = Array[ExtResource("1_ssb7r")]([ExtResource("2_ddikp"), ExtResource("3_aeyd7")])
+metadata/_custom_type_script = "uid://d2f0qepe047dc"

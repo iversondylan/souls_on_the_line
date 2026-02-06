@@ -311,4 +311,4 @@ func _is_attack_targeting_us(ctx: AttackTargetContext) -> bool:
 	return ctx.source.get_parent() != get_parent()
 
 func is_marked() -> bool:
-	return combatant.status_grid._has_status(PinpointStatus.ID)
+	return combatant.status_grid._has_status(MarkedStatus.ID)

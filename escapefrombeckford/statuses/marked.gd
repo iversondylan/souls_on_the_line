@@ -1,6 +1,6 @@
 class_name MarkedStatus extends Status
 
-const MARKED_ID := "marked"
+const ID := "marked"
 
 #func init_status(_target: Node) -> void:
 	#print("%s gets focused for %s turns." % [_target, duration])
