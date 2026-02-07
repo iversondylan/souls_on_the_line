@@ -9,7 +9,7 @@
 script = ExtResource("2_uiy48")
 target_type = 3
 name = "Spacetime Warp"
-description = "Teleport an ally to appear in front of group or behind you. This may grant an extra action."
+description = "Select a friendly. Select a swap partner. They swap positions. [i]This may grant an extra action.[/]"
 cost_blue = 1
 texture = ExtResource("4_ymuve")
 actions = Array[ExtResource("1_a1nap")]([ExtResource("2_xbmjm")])

@@ -14,6 +14,7 @@ class_name CardVisuals extends Control
 @onready var description: RichTextLabel = %Description
 @onready var rarity: TextureRect = %Rarity
 @onready var card_strictly_visuals: Node2D = $CardStrictlyVisuals
+@onready var cost_label: Label = $CardStrictlyVisuals/CornerMan/CostDisplay/CostLabel
 
 
 @export var card_data: CardData : set = _set_card_data
@@ -28,14 +29,19 @@ func _set_card_data(value: CardData) -> void:
 		await ready
 	_card_data_internal = value
 	name_label.text = value.name
-	cost_red = value.cost_red
-	cost_green = value.cost_green
-	cost_blue = value.cost_blue
+	#cost_red = value.cost_red
+	#cost_green = value.cost_green
+	#cost_blue = value.cost_blue
+	set_total_cost()
 	card_art_rect.texture = value.texture
 	rarity.modulate = CardData.RARITY_COLORS[value.rarity]
 
 func set_description(new_description: String) -> void:
 	description.set_text(new_description)
+
+func set_total_cost() -> void:
+	cost_label.text = str(_card_data_internal.get_total_cost())
+	
 
 func set_cost_red(cost: int) -> void:
 	cost_red = cost

@@ -51,3 +51,6 @@ const RARITY_COLORS := {
 
 func is_single_targeted() -> bool:
 	return target_type == TargetType.SINGLE_ENEMY or target_type == TargetType.ALLY_OR_SELF or target_type == TargetType.ALLY or target_type == TargetType.BATTLEFIELD
+
+func get_total_cost() -> int:
+	return cost_red + cost_green + cost_blue

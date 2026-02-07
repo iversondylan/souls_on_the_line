@@ -5,10 +5,10 @@
 [ext_resource type="Resource" uid="uid://b7txf6d8vmjkk" path="res://cards/SpectralCloneCard/spectral_clone.tres" id="2_e5rkb"]
 [ext_resource type="Theme" uid="uid://1dr1eewpv0jd" path="res://themes/ui_theme.tres" id="3_2ndsp"]
 [ext_resource type="Texture2D" uid="uid://cvvxggb32iq5y" path="res://assets/sprites/assorted/warp_weasel.png" id="4_e5rkb"]
-[ext_resource type="Texture2D" uid="uid://crcanxld64u52" path="res://assets/sprites/card_elements/brass_instrument_card_front_main.png" id="5_d6xg4"]
+[ext_resource type="Texture2D" uid="uid://b7vtyi61om1lo" path="res://assets/sprites/card_elements/brass_instrument_card_front_vectors_main.png" id="5_d6xg4"]
 [ext_resource type="Texture2D" uid="uid://c2cpjnsgjdd1x" path="res://assets/sprites/assorted/card_back_1.PNG" id="6_spa0x"]
 [ext_resource type="Texture2D" uid="uid://cdap6hv4e5qcw" path="res://assets/sprites/assorted/tri_white.png" id="7_fq4np"]
-[ext_resource type="Texture2D" uid="uid://bymbmwpoj87pb" path="res://assets/sprites/card_elements/brass_instrument_card_front_mana.png" id="8_kvkof"]
+[ext_resource type="Texture2D" uid="uid://cgmxs30plg14d" path="res://assets/sprites/card_elements/brass_instrument_card_front_vectors_mana.png" id="8_kvkof"]
 [ext_resource type="Texture2D" uid="uid://bsuuga4ljrlnd" path="res://assets/sprites/card_elements/card_name_box.png" id="8_q02fp"]
 [ext_resource type="Texture2D" uid="uid://cjb0lvcy0m405" path="res://assets/sprites/card_elements/cost_circle_T_gray.png" id="9_da2py"]
 [ext_resource type="Texture2D" uid="uid://b7smcstu031ke" path="res://assets/sprites/card_elements/cost_circle_T_blue1.png" id="10_ytu8h"]
@@ -127,6 +127,8 @@ offset_bottom = 183.0
 mouse_filter = 2
 theme = ExtResource("3_2ndsp")
 theme_override_font_sizes/normal_font_size = 16
+theme_override_font_sizes/bold_font_size = 16
+theme_override_font_sizes/italics_font_size = 16
 bbcode_enabled = true
 text = "Card Description"
 scroll_active = false
@@ -141,11 +143,11 @@ scale = Vector2(0.39, 0.39)
 texture = ExtResource("8_q02fp")
 
 [node name="CostDisplay" type="Node2D" parent="CardStrictlyVisuals/CornerMan" unique_id=764598444]
-position = Vector2(11, 12)
+position = Vector2(13, 14)
 
 [node name="CostContainer" type="Sprite2D" parent="CardStrictlyVisuals/CornerMan/CostDisplay" unique_id=1730762884]
 unique_name_in_owner = true
-scale = Vector2(0.255, 0.255)
+scale = Vector2(0.24, 0.24)
 texture = ExtResource("8_kvkof")
 
 [node name="CostBlue" type="AnimatedSprite2D" parent="CardStrictlyVisuals/CornerMan/CostDisplay" unique_id=619611917]
@@ -166,6 +168,24 @@ visible = false
 scale = Vector2(0.4, 0.4)
 sprite_frames = SubResource("SpriteFrames_kt7gq")
 
+[node name="CostLabel" type="Label" parent="CardStrictlyVisuals/CornerMan/CostDisplay" unique_id=1696505696]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -19.0
+offset_top = -29.0
+offset_right = 21.0
+offset_bottom = 30.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("3_2ndsp")
+theme_override_font_sizes/font_size = 34
+text = "1"
+horizontal_alignment = 1
+vertical_alignment = 1
+
 [node name="CardBack" type="Sprite2D" parent="CardStrictlyVisuals/CornerMan" unique_id=732866215]
 visible = false
 position = Vector2(-20, -20)
@@ -173,6 +193,7 @@ texture = ExtResource("6_spa0x")
 
 [node name="Rarity" type="TextureRect" parent="CardStrictlyVisuals/CornerMan" unique_id=308798412]
 unique_name_in_owner = true
+visible = false
 anchors_preset = 6
 anchor_left = 1.0
 anchor_top = 0.5
@@ -191,9 +212,9 @@ stretch_mode = 5
 
 [node name="NameLabel" type="RichTextLabel" parent="CardStrictlyVisuals/CornerMan" unique_id=1888106854]
 unique_name_in_owner = true
-offset_left = 14.0
+offset_left = 40.0
 offset_top = 3.0
-offset_right = 211.0
+offset_right = 194.0
 offset_bottom = 33.0
 mouse_filter = 2
 theme = ExtResource("3_2ndsp")
@@ -201,5 +222,7 @@ theme_override_font_sizes/normal_font_size = 18
 theme_override_font_sizes/italics_font_size = 18
 bbcode_enabled = true
 text = "[i]Card Name[/i]"
+scroll_active = false
+autowrap_mode = 0
 horizontal_alignment = 1
 vertical_alignment = 1
