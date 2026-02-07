@@ -29,6 +29,7 @@ offset_bottom = 157.5
 mouse_filter = 2
 
 [node name="ClickArea" type="Area2D" parent="." unique_id=326823207]
+visible = false
 collision_layer = 32
 collision_mask = 32
 
@@ -37,6 +38,7 @@ position = Vector2(0.5, 0.5)
 shape = SubResource("RectangleShape2D_g488w")
 
 [node name="DropPointDetector" type="Area2D" parent="." unique_id=1465267651]
+visible = false
 position = Vector2(-60, -84)
 collision_mask = 2
 monitorable = false
