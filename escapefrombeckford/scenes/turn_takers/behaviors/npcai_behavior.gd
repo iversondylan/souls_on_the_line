@@ -7,6 +7,7 @@ const HP_AT_TURN_START := "hp_at_turn_start"
 const DMG_SINCE_LAST_TURN := "dmg_since_last_turn"
 const STABILITY_BROKEN := "stability_broken"
 const IS_ACTING := "is_acting"
+const ACTIONS_TAKEN := "actions_taken"
 
 const BASE_WINDUP_DELAY := 1.6
 const BASE_IMPACT_DELAY := 1.0
@@ -402,8 +403,12 @@ func _start_action(action: NPCAction, ctx: NPCAIContext) -> void:
 
 
 func _next_effect_package() -> void:
+	
 	if remaining_effect_packages.is_empty():
-		_start_impact_delay()#_finish_action()
+		var state: Dictionary = get_meta("ai_state")
+		var taken: int = state.get(ACTIONS_TAKEN, 0)
+		state[ACTIONS_TAKEN] = taken + 1
+		_start_impact_delay()
 		return
 	
 	var pkg : NPCEffectPackage = remaining_effect_packages.pop_front()

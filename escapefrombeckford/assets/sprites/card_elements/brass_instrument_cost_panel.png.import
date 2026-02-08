@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cgmxs30plg14d"
-path="res://.godot/imported/brass_instrument_card_front_vectors_mana.png-7595ee8b1784965dbf7490898cf72053.ctex"
+uid="uid://bmcmfx1vvvaeg"
+path="res://.godot/imported/brass_instrument_cost_panel.png-9a0cf21c34b5889509dc6bfde992f00d.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/card_elements/brass_instrument_card_front_vectors_mana.png"
-dest_files=["res://.godot/imported/brass_instrument_card_front_vectors_mana.png-7595ee8b1784965dbf7490898cf72053.ctex"]
+source_file="res://assets/sprites/card_elements/brass_instrument_cost_panel.png"
+dest_files=["res://.godot/imported/brass_instrument_cost_panel.png-9a0cf21c34b5889509dc6bfde992f00d.ctex"]
 
 [params]
 

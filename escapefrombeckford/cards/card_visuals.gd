@@ -26,14 +26,21 @@ const OVERLOAD_PIP := preload("res://cards/overload_pip.tscn")
 var cost_red: int = 0 : set = set_cost_red
 var cost_green: int = 0 : set = set_cost_green
 var cost_blue: int = 0 : set = set_cost_blue
+var overload: int = 0
 var _card_data_internal: CardData
 var mana_panel_radius: float
 
 func _ready() -> void:
-	mana_panel_radius = cost_container.texture.get_size().y * cost_container.scale.y * 0.5 + 2.0
-	cost_display.add_child(OVERLOAD_PIP.instantiate())
-	cost_display.add_child(OVERLOAD_PIP.instantiate())
-	cost_display.add_child(OVERLOAD_PIP.instantiate())
+	mana_panel_radius = cost_container.texture.get_size().y * cost_container.scale.y * 0.5-0.75
+	var demo_overload := randi() % 4
+	set_overload(demo_overload)
+
+func set_overload(amount: int) -> void:
+	overload = amount
+	for pip in _get_overload_pips():
+		pip.queue_free()
+	for i in overload:
+		cost_display.add_child(OVERLOAD_PIP.instantiate())
 	reposition_overload_pips()
 
 func _set_card_data(value: CardData) -> void:
@@ -105,6 +112,7 @@ func reposition_overload_pips() -> void:
 func get_pip_position(angle_deg_flt: float) -> Vector2:
 	var x: float = mana_panel_radius * cos(deg_to_rad(angle_deg_flt + 270))
 	var y: float = mana_panel_radius * sin(deg_to_rad(angle_deg_flt + 270))
+	#print("overload: ", overload, " angle: ", angle_deg_flt, " x: ", x, " y: ", y)
 	return Vector2(x, y)#cost_display.position + Vector2(x, y)
 
 func _update_pip_transform(pip: OverloadPip, angle_in_drag: float) -> void:
