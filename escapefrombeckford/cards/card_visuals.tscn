@@ -16,6 +16,7 @@
 [ext_resource type="Texture2D" uid="uid://cdv0klth22vog" path="res://assets/sprites/card_elements/cost_circle_L_red1.png" id="12_gqdbl"]
 [ext_resource type="Texture2D" uid="uid://csxfvex0guwsl" path="res://assets/sprites/card_elements/cost_circle_R_gray.png" id="13_s0hpw"]
 [ext_resource type="Texture2D" uid="uid://bie3ywpj1wrhn" path="res://assets/sprites/card_elements/cost_circle_R_green1.png" id="14_x7t2n"]
+[ext_resource type="PackedScene" uid="uid://pe4lgl2dwu32" path="res://cards/overload_pip.tscn" id="15_q02fp"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_g488w"]
 size = Vector2(225, 315)
@@ -143,6 +144,7 @@ scale = Vector2(0.39, 0.39)
 texture = ExtResource("8_q02fp")
 
 [node name="CostDisplay" type="Node2D" parent="CardStrictlyVisuals/CornerMan" unique_id=764598444]
+unique_name_in_owner = true
 position = Vector2(13, 14)
 
 [node name="CostContainer" type="Sprite2D" parent="CardStrictlyVisuals/CornerMan/CostDisplay" unique_id=1730762884]
@@ -185,6 +187,9 @@ theme_override_font_sizes/font_size = 34
 text = "1"
 horizontal_alignment = 1
 vertical_alignment = 1
+
+[node name="OverloadPip" parent="CardStrictlyVisuals/CornerMan/CostDisplay" unique_id=2085599901 instance=ExtResource("15_q02fp")]
+position = Vector2(1, -28)
 
 [node name="CardBack" type="Sprite2D" parent="CardStrictlyVisuals/CornerMan" unique_id=732866215]
 visible = false
