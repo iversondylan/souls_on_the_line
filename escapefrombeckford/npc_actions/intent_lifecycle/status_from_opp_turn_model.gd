@@ -19,7 +19,7 @@ func on_opposing_group_start(ctx: NPCAIContext) -> void:
 	grid.add_status(status.duplicate())
 
 ## NOTE:
-## StatusGrid enforces uniqueness by (status.id, status_parent).
+## StatusGrid enforces uniqueness by (status.ID (status.get_id()), status_parent).
 ## Multiple fighters may emit the same aura, but a single fighter
 ## must not apply the same primary status to itself more than once.
 ## Intent-lifecycle statuses rely on this contract.
@@ -34,4 +34,4 @@ func on_intent_canceled(ctx: NPCAIContext) -> void:
 	if !grid:
 		return
 
-	grid.remove_status_by_id(status.id)
+	grid.remove_status_by_id(status.get_id())

@@ -185,7 +185,6 @@ func update_action_intent() -> void:
 	refresh_intent_display()
 
 func _get_action_by_idx(idx: int) -> NPCAction:
-	#print("_get_action_by_idx: ", idx)
 	if !ai_profile or idx < 0 or idx >= ai_profile.actions.size():
 		return null
 	return ai_profile.actions[idx]
@@ -213,7 +212,6 @@ func _roll_chance_idx(ctx: NPCAIContext) -> int:
 		return -1
 	
 	var roll := ctx.rng.randf() * total
-	print("npcai_behavior.gd fighter:", ctx.combatant.name, " chance action roll: ", roll)
 	var acc := 0.0
 	for i in pool:
 		acc += _get_action_chance_weight(ai_profile.actions[i], ctx)
@@ -223,7 +221,6 @@ func _roll_chance_idx(ctx: NPCAIContext) -> int:
 	return pool[-1]
 
 func plan_next_intent(allow_hooks: bool = false) -> void:
-	print("npcai_behavior.gd plan_next_intent() fighter: ", get_parent().name)
 	
 	var fighter: Fighter = get_parent()
 	if !fighter or !fighter.is_alive() or !ai_profile:
@@ -263,10 +260,8 @@ func plan_next_intent(allow_hooks: bool = false) -> void:
 			_on_planned_intent_changed(prev_idx, -1, ctx)
 		state[KEY_PLANNED_IDX] = -1
 		return
-	#print("rolled chance index is not -1")
 	if prev_idx == new_idx:
 		return
-	#print("rolled chance index is not the same as previous")
 	if allow_hooks:
 		_on_planned_intent_changed(prev_idx, new_idx, ctx)
 	
@@ -556,11 +551,9 @@ func _on_sequence_done() -> void:
 	_next_effect_package()
 
 func _start_windup_delay(action: NPCAction, ctx: NPCAIContext) -> void:
-	#print("windup delay: ", ctx.combatant.name)
 	get_tree().create_timer(BASE_WINDUP_DELAY/speed_setting, false).timeout.connect(_start_action.bind(action, ctx))
 
 func _start_impact_delay() -> void:
-	#print("impact delay")
 	get_tree().create_timer(BASE_IMPACT_DELAY/speed_setting, false).timeout.connect(_finish_action)
 	
 

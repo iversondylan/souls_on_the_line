@@ -2,8 +2,8 @@ class_name MarkedStatus extends Status
 
 const ID := "marked"
 
-func _init() -> void:
-	id = ID
+func get_id() -> String:
+	return ID
 
 func get_tooltip() -> String:
 	if duration == 1:

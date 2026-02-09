@@ -8,8 +8,8 @@ const ID := "stability"
 
 var _last_known_hp: int = -1
 
-func _init() -> void:
-	id = ID
+func get_id() -> String:
+	return ID
 
 func init_status(target: Node) -> void:
 	if !(target is Fighter):
@@ -54,7 +54,7 @@ func _break_posture() -> void:
 	# Remove this status
 	var grid := status_parent.combatant.status_grid
 	if grid:
-		grid.remove_status_by_id(id)
+		grid.remove_status_by_id(get_id())
 
 func on_removed() -> void:
 	# Defensive cleanup for any explicit removal hooks

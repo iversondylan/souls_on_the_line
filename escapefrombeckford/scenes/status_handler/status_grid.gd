@@ -54,18 +54,18 @@ func add_status(status: Status) -> void:
 	if status.affects_intent_legality():
 		intent_conditions_changed.emit()
 	# If status does not exist yet → just add it
-	if !_has_status(status.id):
+	if !_has_status(status.get_id()):
 		_add_new_status(status)
 		return
 	
-	var existing := _get_status(status.id)
+	var existing := _get_status(status.get_id())
 	if !existing:
 		return
 	
 	match status.reapply_type:
 		Status.ReapplyType.REPLACE:
 			# Explicit replacement semantics
-			remove_status_by_id(status.id)
+			remove_status_by_id(status.get_id())
 			_add_new_status(status)
 			return
 		
@@ -112,13 +112,13 @@ func mark_dirty_for_status(status: Status) -> void:
 
 func _has_status(id: String) -> bool:
 	for status_display: StatusDisplay in get_children():
-		if status_display.status.id == id:
+		if status_display.status.get_id() == id:
 			return true
 	return false
 
 func _get_status(id: String) -> Status:
 	for status_display: StatusDisplay in get_children():
-		if status_display.status.id == id:
+		if status_display.status.get_id() == id:
 			return status_display.status
 	return null
 
@@ -189,7 +189,7 @@ func _remove_status_display(status_display: StatusDisplay) -> void:
 
 
 ## NOTE:
-## StatusGrid enforces uniqueness by (status.id, status_parent).
+## StatusGrid enforces uniqueness by (status.get_id(), status_parent).
 ## Multiple fighters may emit the same aura, but a single fighter
 ## must not apply the same primary status to itself more than once.
 ## Intent-lifecycle statuses rely on this contract.
@@ -198,7 +198,7 @@ func remove_status_by_id(id: String) -> void:
 		return
 	
 	for status_display: StatusDisplay in get_children():
-		if status_display.status and status_display.status.id == id:
+		if status_display.status and status_display.status.get_id() == id:
 			_remove_status_display(status_display)
 			_update_visuals()
 			return

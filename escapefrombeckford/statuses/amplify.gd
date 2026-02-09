@@ -5,24 +5,45 @@ class_name AmplifyStatus extends Status
 const ID := "amplify"
 const MULT_VALUE := 0.5
 
-func _init() -> void:
-	id = ID
+func get_id() -> String:
+	return ID
 
 func get_modifier_tokens() -> Array[ModifierToken]:
-	# If expired, contribute nothing
+	# Live path uses this instance's runtime fields
 	if duration <= 0:
 		return []
+	return [_make_token_node_owner(status_parent)]
+
+func get_modifier_tokens_from_state(state: StatusState, owner_id: int) -> Array[ModifierToken]:
+	# Sim path uses data-only state
+	if !state or state.duration <= 0:
+		return []
+	return [_make_token_owner_id(owner_id)]
+
+func _make_token_node_owner(owner: Fighter) -> ModifierToken:
 	var token := ModifierToken.new()
 	token.type = Modifier.Type.DMG_DEALT
 	token.mult_value = MULT_VALUE
 	token.flat_value = 0
 	token.source_id = ID
-	token.owner = status_parent
+	token.owner = owner
 	token.scope = ModifierToken.Scope.SELF
 	token.priority = 0
 	token.tags = [ID]
-	
-	return [token]
+	return token
+
+func _make_token_owner_id(owner_id: int) -> ModifierToken:
+	var token := ModifierToken.new()
+	token.type = Modifier.Type.DMG_DEALT
+	token.mult_value = MULT_VALUE
+	token.flat_value = 0
+	token.source_id = ID
+	token.owner_id = owner_id
+	token.scope = ModifierToken.Scope.SELF
+	token.priority = 0
+	token.tags = [ID]
+	return token
+
 
 ##Must return true if this status contributes a numerical modifier.
 func contributes_modifier() -> bool:

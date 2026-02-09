@@ -27,7 +27,7 @@ func on_ability_started(ctx: NPCAIContext) -> void:
 	if !grid:
 		return
 	
-	grid.remove_status_by_id(status.id)
+	grid.remove_status_by_id(status.get_id())
 
 func on_intent_canceled(ctx: NPCAIContext) -> void:
 	if !ctx or !ctx.combatant or !status:
@@ -37,4 +37,4 @@ func on_intent_canceled(ctx: NPCAIContext) -> void:
 	if !grid:
 		return
 	
-	grid.remove_status_by_id(status.id)
+	grid.remove_status_by_id(status.get_id())

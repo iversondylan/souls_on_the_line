@@ -26,9 +26,14 @@ enum ExpirationPolicy {
 @export_group("Status Visuals")
 @export var icon: Texture
 @export_multiline var tooltip: String
-var id: String
+
+
+#var id: String = ""
 var status_parent: Fighter
 #var battle_scene: BattleScene
+
+func get_id() -> String:
+	return ""
 
 func init_status(_target: Node) -> void:
 	pass
@@ -37,6 +42,9 @@ func apply_status(_target: Node) -> void:
 	status_applied.emit(self)
 
 func get_modifier_tokens() -> Array[ModifierToken]:
+	return []
+
+func get_modifier_tokens_from_state(_state: StatusState, _owner_id: int) -> Array[ModifierToken]:
 	return []
 
 func contributes_modifier() -> bool:
