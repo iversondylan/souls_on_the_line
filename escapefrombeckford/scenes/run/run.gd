@@ -13,7 +13,7 @@ const TREASURE_SCN := preload("res://scenes/treasure/treasure_room.tscn")
 
 
 @export var run_startup: RunStartup
-
+@export var status_catalog: StatusCatalog
 ##Main menu startup will need to populate 
 ##this variable before changing scenes.
 #@export var arcana_catalog: Arcana
@@ -45,6 +45,7 @@ var draftable_cards: CardPile
 var deck: Deck
 
 func _ready() -> void:
+	status_catalog.build_index()
 	arcana_system.modifier_tokens_changed.connect(_on_modifier_tokens_changed)
 	if !run_startup:
 		return

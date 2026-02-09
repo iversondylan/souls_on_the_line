@@ -13,6 +13,11 @@ func _base_rng() -> RandomNumberGenerator:
 	r.seed = seed
 	return r
 
+# later: store an internal RandomNumberGenerator 
+# and advance it incrementally, but still make it 
+# snapshotable by storing {seed, rolls} and rehydrating 
+# when needed. For now, this is correct and very “debuggable.”
+
 func randf() -> float:
 	var r := _base_rng()
 	for i in range(rolls):

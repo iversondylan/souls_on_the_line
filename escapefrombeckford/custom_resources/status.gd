@@ -15,7 +15,7 @@ enum ExpirationPolicy {
 }
 
 @export_group("Status Data")
-@export var id: String
+
 @export var proc_type: ProcType
 @export var number_display_type: NumberDisplayType
 @export var reapply_type: ReapplyType
@@ -26,7 +26,7 @@ enum ExpirationPolicy {
 @export_group("Status Visuals")
 @export var icon: Texture
 @export_multiline var tooltip: String
-
+var id: String
 var status_parent: Fighter
 #var battle_scene: BattleScene
 

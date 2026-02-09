@@ -3,10 +3,13 @@ class_name StabilityStatus extends Status
 
 ## Remaining stability is represented by `intensity`
 ## When intensity reaches 0, stability is broken
-
+const ID := "stability"
 @export var max_stability: int = 10
 
 var _last_known_hp: int = -1
+
+func _init() -> void:
+	id = ID
 
 func init_status(target: Node) -> void:
 	if !(target is Fighter):

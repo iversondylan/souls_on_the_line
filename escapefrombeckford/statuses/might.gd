@@ -1,7 +1,9 @@
 class_name Might extends Status
 
-#var member_var := 0
 const ID = "might"
+
+func _init() -> void:
+	id = ID
 
 func contributes_modifier() -> bool:
 	return true

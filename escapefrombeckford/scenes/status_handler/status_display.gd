@@ -1,3 +1,5 @@
+# status_display.gd
+
 class_name StatusDisplay extends Control
 
 @export var status: Status : set = _set_status

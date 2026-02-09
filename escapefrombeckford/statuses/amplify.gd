@@ -1,7 +1,12 @@
+# amplify.gd
+
 class_name AmplifyStatus extends Status
 
-const AMPLIFY_ID := "amplify"
+const ID := "amplify"
 const MULT_VALUE := 0.5
+
+func _init() -> void:
+	id = ID
 
 func get_modifier_tokens() -> Array[ModifierToken]:
 	# If expired, contribute nothing
@@ -11,11 +16,11 @@ func get_modifier_tokens() -> Array[ModifierToken]:
 	token.type = Modifier.Type.DMG_DEALT
 	token.mult_value = MULT_VALUE
 	token.flat_value = 0
-	token.source_id = AMPLIFY_ID
+	token.source_id = ID
 	token.owner = status_parent
 	token.scope = ModifierToken.Scope.SELF
 	token.priority = 0
-	token.tags = [AMPLIFY_ID]
+	token.tags = [ID]
 	
 	return [token]
 
@@ -29,7 +34,7 @@ func get_contributed_modifier_types() -> Array[Modifier.Type]:
 
 func _on_status_changed(dmg_dealt_modifier: Modifier) -> void:
 	if duration <= 0 and dmg_dealt_modifier:
-		dmg_dealt_modifier.remove_value(AMPLIFY_ID)
+		dmg_dealt_modifier.remove_value(ID)
 
 func get_tooltip() -> String:
 	var base_tooltip: String

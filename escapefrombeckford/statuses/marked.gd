@@ -2,13 +2,8 @@ class_name MarkedStatus extends Status
 
 const ID := "marked"
 
-#func init_status(_target: Node) -> void:
-	#print("%s gets focused for %s turns." % [_target, duration])
-	#Events.focused_gained.emit(self)
-
-#func apply_status(_target: Node) -> void:
-	#status_applied.emit(self)
-	#print("%s gets focused for %s turns." % [_target, duration])
+func _init() -> void:
+	id = ID
 
 func get_tooltip() -> String:
 	if duration == 1:

@@ -3,6 +3,9 @@ class_name PinpointStatus extends Status
 const ID := "pinpoint"
 const MULT_VALUE := 0.5
 
+func _init() -> void:
+	id = ID
+
 func get_modifier_tokens() -> Array[ModifierToken]:
 	# If expired, contribute nothing
 	#print("pinpoint.gd get_modifier_tokens()")

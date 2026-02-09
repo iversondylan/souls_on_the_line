@@ -2,6 +2,9 @@ class_name EchoedCrueltyStatus extends Aura
 
 const ID := "echoed_cruelty"
 
+func _init() -> void:
+	id = ID
+
 func contributes_modifier() -> bool:
 	return true
 

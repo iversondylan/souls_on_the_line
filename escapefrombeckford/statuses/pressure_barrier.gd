@@ -1,7 +1,9 @@
 class_name PressureBarrier extends Status
 
-#var member_var := 0
 const ID = "pressure_barrier"
+
+func _init() -> void:
+	id = ID
 
 func contributes_modifier() -> bool:
 	return true
