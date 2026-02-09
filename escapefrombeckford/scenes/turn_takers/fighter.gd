@@ -68,6 +68,7 @@ func _set_run(new_run) -> void:
 	modifier_system.run = run
 
 func enter() -> void:
+	#print("fight.gd combat_id on Fighter: %s, CombatantData: %s", [combat_id, combatant_data.combat_id])
 	set_pending_turn_glow(TurnStatus.TURN_ACTIVE)
 	Events.fighter_entered_turn.emit(self)
 	combatant.status_grid.apply_statuses_by_type(Status.ProcType.START_OF_TURN)

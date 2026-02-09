@@ -34,7 +34,7 @@ func _make_context() -> NPCAIContext:
 	ctx.combatant = fighter
 	ctx.battle_scene = fighter.battle_scene
 	ctx.state = fighter.state.ai_state
-	ctx.rng = get_meta("ai_rng")# fighter.state.ai_rng
+	ctx.rng =  fighter.state.rng
 	ctx.params = {}
 	ctx.forecast = false
 	return ctx
@@ -60,18 +60,20 @@ func _on_combatant_data_set(_data: CombatantData) -> void:
 	var fighter: Fighter = get_parent()
 	if not fighter.state:
 		fighter.state = FighterState.new()
+		fighter.state.rng = RNG.new()
 
 	fighter.state.ai_state = {}
 	var state = fighter.state.ai_state
 	state[HP_AT_TURN_START] = _data.health
 	state[DMG_SINCE_LAST_TURN] = 0
 	
-	var battle_seed := 0
-	if fighter and fighter.battle_scene:
-		battle_seed = fighter.battle_scene.battle_seed
-
-	var seed := RNGUtil.mix_seed(battle_seed, fighter.combat_id)
-	set_meta("ai_rng", AIRNG.new(seed))
+	#var battle_seed := 0
+	#if fighter and fighter.battle_scene:
+		#battle_seed = fighter.battle_scene.battle_seed
+	
+	
+	#var seed := RNGUtil.mix_seed(battle_seed, fighter.combat_id)
+	#set_meta("ai_rng", RNG.new(seed))
 	
 	#var rng := RandomNumberGenerator.new()
 	#rng.randomize()
@@ -139,10 +141,11 @@ func _roll_chance_idx(ctx: NPCAIContext) -> int:
 				total += weight
 				pool.append(i)
 
-	if pool.is_empty() or total <= 0.0:
+	if pool.is_empty() or total <= 0.0: 
 		return -1
 	
 	var roll := ctx.rng.randf() * total
+	print("npcai_behavior.gd fighter:", ctx.combatant.name, " chance action roll: ", roll)
 	var acc := 0.0
 	for i in pool:
 		acc += _get_action_chance_weight(ai_profile.actions[i], ctx)

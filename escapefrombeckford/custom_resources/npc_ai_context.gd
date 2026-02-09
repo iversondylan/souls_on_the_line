@@ -5,7 +5,7 @@ class_name NPCAIContext extends RefCounted
 var combatant: Fighter
 var combatant_data: CombatantData
 var battle_scene: BattleScene
-var rng: AIRNG
+var rng: RNG
 var state: Dictionary      # persistent AI state
 
 # per-effect

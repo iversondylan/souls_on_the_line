@@ -1,5 +1,5 @@
-# ai_rng.gd
-class_name AIRNG
+# rng.gd
+class_name RNG
 extends RefCounted
 
 var seed: int
@@ -27,7 +27,7 @@ func randi() -> int:
 	rolls += 1
 	return r.randi()
 
-func clone() -> AIRNG:
-	var c := AIRNG.new(seed)
+func clone() -> RNG:
+	var c := RNG.new(seed)
 	c.rolls = rolls
 	return c
