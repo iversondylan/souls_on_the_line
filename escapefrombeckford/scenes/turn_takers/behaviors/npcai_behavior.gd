@@ -9,6 +9,8 @@ const DMG_SINCE_LAST_TURN := "dmg_since_last_turn"
 const STABILITY_BROKEN := "stability_broken"
 const IS_ACTING := "is_acting"
 const ACTIONS_TAKEN := "actions_taken"
+const FIRST_INTENTS_READY := "first_intents_ready"
+
 
 const BASE_WINDUP_DELAY := 1.6
 const BASE_IMPACT_DELAY := 1.0
@@ -45,47 +47,102 @@ func _make_context() -> NPCAIContext:
 # -------------------------------------------------------------------
 
 func _on_combatant_data_set(_data: CombatantData) -> void:
-	#ai_profile = _data.ai
-	#
-	## Init persistent AI state + RNG ONCE
-	#set_meta("ai_state", {})
-	#var state = get_meta("ai_state")
-	#state[HP_AT_TURN_START] = _data.health
-	#state[DMG_SINCE_LAST_TURN] = 0
-	#var rng := RandomNumberGenerator.new()
-	#rng.randomize()
-	#set_meta("ai_rng", rng)
 	ai_profile = _data.ai
 
 	var fighter: Fighter = get_parent()
+	if not fighter:
+		return
+
 	if not fighter.state:
 		fighter.state = FighterState.new()
-		fighter.state.rng = RNG.new()
 
 	fighter.state.ai_state = {}
-	var state = fighter.state.ai_state
+	var state := fighter.state.ai_state
 	state[HP_AT_TURN_START] = _data.health
 	state[DMG_SINCE_LAST_TURN] = 0
-	
-	#var battle_seed := 0
-	#if fighter and fighter.battle_scene:
-		#battle_seed = fighter.battle_scene.battle_seed
-	
-	
-	#var seed := RNGUtil.mix_seed(battle_seed, fighter.combat_id)
-	#set_meta("ai_rng", RNG.new(seed))
-	
-	#var rng := RandomNumberGenerator.new()
-	#rng.randomize()
-	#set_meta("ai_rng", rng)
-	#fighter.state.ai_rng = RandomNumberGenerator.new()
-	#fighter.state.ai_rng.randomize()
-	
+	state[KEY_PLANNED_IDX] = -1
+	state["telegraph_committed"] = false
+	state[IS_ACTING] = false
+	state[FIRST_INTENTS_READY] = false
+
+	var battle_seed := 0
+	if fighter.battle_scene:
+		battle_seed = int(fighter.battle_scene.battle_seed)
+
+	var seed := RNGUtil.mix_seed(battle_seed, fighter.combat_id)
+	fighter.state.rng = RNG.new(seed)
+
 	if not _data.combatant_data_changed.is_connected(_on_stats_changed):
 		_data.combatant_data_changed.connect(_on_stats_changed)
-	var grid : StatusGrid = get_parent().combatant.status_grid
+
+	var grid: StatusGrid = fighter.combatant.status_grid
 	if grid and not grid.intent_conditions_changed.is_connected(_on_intent_conditions_changed):
 		grid.intent_conditions_changed.connect(_on_intent_conditions_changed)
+
+	# Wait for Battle to explicitly initiate first intents
+	if not Events.initiate_first_intents.is_connected(_on_initiate_first_intents):
+		Events.initiate_first_intents.connect(_on_initiate_first_intents, CONNECT_ONE_SHOT)
+
+func _on_initiate_first_intents() -> void:
+	if Events.initiate_first_intents.is_connected(_on_initiate_first_intents):
+		Events.initiate_first_intents.disconnect(_on_initiate_first_intents)
+	
+	var fighter: Fighter = get_parent()
+	if not fighter or not fighter.is_alive() or not ai_profile:
+		return
+	
+	if not fighter.state or not fighter.state.ai_state:
+		return
+	
+	fighter.state.ai_state[FIRST_INTENTS_READY] = true
+	
+	# One-time plan + display
+	sync_intent(false)
+
+
+
+#func _on_combatant_data_set(_data: CombatantData) -> void:
+	##ai_profile = _data.ai
+	##
+	### Init persistent AI state + RNG ONCE
+	##set_meta("ai_state", {})
+	##var state = get_meta("ai_state")
+	##state[HP_AT_TURN_START] = _data.health
+	##state[DMG_SINCE_LAST_TURN] = 0
+	##var rng := RandomNumberGenerator.new()
+	##rng.randomize()
+	##set_meta("ai_rng", rng)
+	#ai_profile = _data.ai
+#
+	#var fighter: Fighter = get_parent()
+	#if not fighter.state:
+		#fighter.state = FighterState.new()
+		#fighter.state.rng = RNG.new()
+#
+	#fighter.state.ai_state = {}
+	#var state = fighter.state.ai_state
+	#state[HP_AT_TURN_START] = _data.health
+	#state[DMG_SINCE_LAST_TURN] = 0
+	#
+	##var battle_seed := 0
+	##if fighter and fighter.battle_scene:
+		##battle_seed = fighter.battle_scene.battle_seed
+	#
+	#
+	##var seed := RNGUtil.mix_seed(battle_seed, fighter.combat_id)
+	##set_meta("ai_rng", RNG.new(seed))
+	#
+	##var rng := RandomNumberGenerator.new()
+	##rng.randomize()
+	##set_meta("ai_rng", rng)
+	##fighter.state.ai_rng = RandomNumberGenerator.new()
+	##fighter.state.ai_rng.randomize()
+	#
+	#if not _data.combatant_data_changed.is_connected(_on_stats_changed):
+		#_data.combatant_data_changed.connect(_on_stats_changed)
+	#var grid : StatusGrid = get_parent().combatant.status_grid
+	#if grid and not grid.intent_conditions_changed.is_connected(_on_intent_conditions_changed):
+		#grid.intent_conditions_changed.connect(_on_intent_conditions_changed)
 
 
 # -------------------------------------------------------------------
@@ -94,10 +151,13 @@ func _on_combatant_data_set(_data: CombatantData) -> void:
 
 func _on_stats_changed() -> void:
 	var fighter: Fighter = get_parent()
-	if !fighter.is_alive() or !ai_profile:
+	if !fighter or !fighter.is_alive() or !ai_profile:
 		return
 	
-	var state := fighter.state.ai_state #Dictionary = get_meta("ai_state")
+	if not fighter.state or not fighter.state.ai_state.get(FIRST_INTENTS_READY, false):
+		return
+	
+	var state := fighter.state.ai_state
 	if state and state.has(HP_AT_TURN_START):
 		var cur_hp := fighter.combatant_data.health
 		var delta : int = state[HP_AT_TURN_START] - cur_hp
@@ -107,10 +167,18 @@ func _on_stats_changed() -> void:
 	plan_next_intent(true)
 	refresh_intent_display()
 
+
 func _on_intent_conditions_changed() -> void:
-	# Mid-cycle replanning allowed
+	var fighter: Fighter = get_parent()
+	if !fighter or !fighter.is_alive() or !ai_profile:
+		return
+	
+	if not fighter.state or not fighter.state.ai_state.get(FIRST_INTENTS_READY, false):
+		return
+	
 	plan_next_intent(true)
 	refresh_intent_display()
+
 
 func update_action_intent() -> void:
 	
@@ -140,7 +208,7 @@ func _roll_chance_idx(ctx: NPCAIContext) -> int:
 			if weight > 0.0:
 				total += weight
 				pool.append(i)
-
+	
 	if pool.is_empty() or total <= 0.0: 
 		return -1
 	
@@ -155,15 +223,16 @@ func _roll_chance_idx(ctx: NPCAIContext) -> int:
 	return pool[-1]
 
 func plan_next_intent(allow_hooks: bool = false) -> void:
+	print("npcai_behavior.gd plan_next_intent() fighter: ", get_parent().name)
+	
 	var fighter: Fighter = get_parent()
 	if !fighter or !fighter.is_alive() or !ai_profile:
 		return
-
+	
 	var ctx := _make_context()
 	var state := ctx.state if ctx and ctx.state else {}
-
 	var prev_idx: int = int(state.get(KEY_PLANNED_IDX, -1))
-
+	
 	# 1) CONDITIONAL always wins and is never blocked
 	var cond_idx := _get_first_conditional_idx(ctx)
 	if cond_idx != -1:
@@ -173,18 +242,18 @@ func plan_next_intent(allow_hooks: bool = false) -> void:
 			_on_planned_intent_changed(prev_idx, cond_idx, ctx)
 		state[KEY_PLANNED_IDX] = cond_idx
 		return
-
+	
 	# 2) Only now apply "cannot change plan" rule (non-conditional only)
 	if prev_idx != -1 and !_can_cancel_intent(state):
 		return
-
-	# 3) Preserve prior CHANCE if still performable
-	if prev_idx != -1:
+	
+	# 3) Preserve prior CHANCE only during mid-cycle replans
+	if allow_hooks and prev_idx != -1:
 		var prev_action := _get_action_by_idx(prev_idx)
 		if prev_action and prev_action.choice_type == NPCAction.ChoiceType.CHANCE:
 			if _is_action_performable(prev_action, ctx):
 				return
-
+	
 	# 4) Roll chance
 	var new_idx := _roll_chance_idx(ctx)
 	if new_idx == -1:
@@ -194,13 +263,13 @@ func plan_next_intent(allow_hooks: bool = false) -> void:
 			_on_planned_intent_changed(prev_idx, -1, ctx)
 		state[KEY_PLANNED_IDX] = -1
 		return
-
+	#print("rolled chance index is not -1")
 	if prev_idx == new_idx:
 		return
-
+	#print("rolled chance index is not the same as previous")
 	if allow_hooks:
 		_on_planned_intent_changed(prev_idx, new_idx, ctx)
-
+	
 	state[KEY_PLANNED_IDX] = new_idx
 
 
@@ -284,25 +353,32 @@ func ensure_valid_plan(allow_hooks: bool = true) -> void:
 func refresh_intent_display() -> void:
 	var fighter: Fighter = get_parent()
 	if !fighter or !fighter.is_alive() or !ai_profile:
+		if fighter:
+			fighter.intent_container.clear_display()
+		return
+	
+	# Before init, don't plan and don't spam. Just show nothing.
+	if !fighter.state or !fighter.state.ai_state.get(FIRST_INTENTS_READY, false):
 		fighter.intent_container.clear_display()
 		return
-
+	
 	var ctx := _make_context()
 	if ctx.state.get(IS_ACTING, false):
 		return
-
-	if !ctx.state.has(KEY_PLANNED_IDX):
+	
+	var idx := int(ctx.state.get(KEY_PLANNED_IDX, -1))
+	if idx < 0:
 		fighter.intent_container.clear_display()
 		return
-
-	var idx := int(ctx.state[KEY_PLANNED_IDX])
+	
 	var action := _get_action_by_idx(idx)
 	if !action:
 		fighter.intent_container.clear_display()
 		return
-
+	
 	var intent := _build_intent_from_action(action, ctx)
 	fighter.intent_container.display_icons([intent])
+
 
 func sync_intent(allow_hooks: bool = true) -> void:
 	# Cooper was here
@@ -350,10 +426,13 @@ func _change_params_only(action: NPCAction, ctx: NPCAIContext) -> void:
 
 func _on_enter() -> void:
 	var fighter: Fighter = get_parent()
-	var state := fighter.state.ai_state # Dictionary = get_meta("ai_state")
+	var state := fighter.state.ai_state
 	state[HP_AT_TURN_START] = fighter.combatant_data.health
 	state[DMG_SINCE_LAST_TURN] = 0
-	refresh_intent_display()
+
+	if state.get(FIRST_INTENTS_READY, false):
+		refresh_intent_display()
+
 
 
 func _on_exit() -> void:
@@ -400,8 +479,12 @@ func _on_do_turn() -> void:
 	var ctx := _make_context()
 	ctx.state[IS_ACTING] = true
 	
+	# Safety: if first intents weren't initiated, do it now rather than acting with no plan
+	if not ctx.state.get(FIRST_INTENTS_READY, false):
+		ctx.state[FIRST_INTENTS_READY] = true
+		sync_intent(false)
+	
 	if not ctx.state.has(KEY_PLANNED_IDX):
-		#print("_on_do_turn() there's no KEY_PLANNED_IDX")
 		plan_next_intent()
 	
 	var action := _get_action_by_idx(int(ctx.state.get(KEY_PLANNED_IDX, -1)))
@@ -410,6 +493,7 @@ func _on_do_turn() -> void:
 		return
 	
 	_start_windup_delay(action, ctx)
+
 
 
 func _start_action(action: NPCAction, ctx: NPCAIContext) -> void:
@@ -482,6 +566,8 @@ func _start_impact_delay() -> void:
 
 func _finish_action() -> void:
 	var fighter := action_ctx.combatant
+	if fighter and fighter.state and fighter.state.ai_state:
+		fighter.state.ai_state[KEY_PLANNED_IDX] = -1
 	current_action = null
 	action_ctx = null
 	remaining_effect_packages.clear()

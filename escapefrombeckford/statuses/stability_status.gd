@@ -67,9 +67,9 @@ func on_removed() -> void:
 	if !ai:
 		return
 
-	var state : Dictionary = ai.get_meta("ai_state")
+	var state := fighter.state# : Dictionary = ai.get_meta("ai_state")
 	if state:
-		state[NPCAIBehavior.STABILITY_BROKEN] = true
+		state.ai_state[NPCAIBehavior.STABILITY_BROKEN] = true
 
 func get_tooltip() -> String:
 	return "Stability: %s remaining. Breaking stability will interrupt this unit’s action." % intensity

@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="BattlePool" load_steps=5 format=3 uid="uid://hkw3l5xa63gq"]
+[gd_resource type="Resource" script_class="BattlePool" format=3 uid="uid://hkw3l5xa63gq"]
 
 [ext_resource type="Script" uid="uid://be1v8qevmc2xw" path="res://custom_resources/battle_data.gd" id="1_c5yi3"]
 [ext_resource type="Resource" uid="uid://ctj5c5ppm322o" path="res://battles/tier_1_power_formation.tres" id="2_5mnow"]

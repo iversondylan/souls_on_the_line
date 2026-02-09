@@ -4,6 +4,7 @@ extends Node
 
 ## battle flow events
 signal battle_reset() #1-way signal to fighters, immediately followed by arcanum call
+signal initiate_first_intents()
 signal first_friendly_turn_started() #called after start of battle arcana in battle.gd
 signal request_activate_arcana_by_type(type: Arcanum.Type)
 signal arcana_activated(type: Arcanum.Type)

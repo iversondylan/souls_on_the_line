@@ -125,8 +125,7 @@ func start_battle():
 	make_enemies()
 	
 	Events.battle_reset.emit()
-	
-	_plan_initial_enemy_intents()
+	Events.initiate_first_intents.emit()
 	_on_player_data_changed()
 	hand.empty_hand()
 	deck.reset()
@@ -137,13 +136,6 @@ func start_battle():
 	
 	
 	Events.request_activate_arcana_by_type.emit(Arcanum.Type.START_OF_COMBAT)
-
-func _plan_initial_enemy_intents() -> void:
-	for enemy: Fighter in battle_scene.get_combatants_in_group(1):
-		for child in enemy.get_children():
-			if child is NPCAIBehavior:
-				child.plan_next_intent()
-				child.refresh_intent_display()
 
 func _on_request_activate_arcana_by_type(type: Arcanum.Type):
 	match type:
