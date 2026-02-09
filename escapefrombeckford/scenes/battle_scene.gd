@@ -77,7 +77,10 @@ func get_group_index_for(group: Node) -> int:
 
 func add_combatant(fighter: Fighter, group: int, rank: int):
 	fighter.battle_scene = self
-	fighter.combat_id = alloc_combat_id()
+	var combat_id := alloc_combat_id()
+	fighter.combat_id = combat_id
+	if fighter.combatant_data:
+		fighter.combatant_data.combat_id = combat_id
 	groups[group].add_combatant(fighter, rank)
 
 func remove_combatant(fighter: Fighter):
