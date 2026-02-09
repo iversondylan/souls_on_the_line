@@ -36,11 +36,15 @@ func enter() -> void:
 	# Force all cards into SELECTION mode
 	for c in _cards:
 		if c != null and is_instance_valid(c):
+			c.interaction = self
 			c.card_state_machine.request_state(CardState.State.SELECTION)
 	
 	# Connect BEFORE any chance of emitting results
 	if !Events.card_selection_toggled.is_connected(_on_card_selection_toggled):
 		Events.card_selection_toggled.connect(_on_card_selection_toggled)
+	
+	if !Events.hand_card_added.is_connected(_on_hand_card_added):
+		Events.hand_card_added.connect(_on_hand_card_added)
 	
 	_update_prompt()
 
@@ -53,9 +57,13 @@ func exit() -> void:
 	if Events.card_selection_toggled.is_connected(_on_card_selection_toggled):
 		Events.card_selection_toggled.disconnect(_on_card_selection_toggled)
 	
+	if Events.hand_card_added.is_connected(_on_hand_card_added):
+		Events.hand_card_added.disconnect(_on_hand_card_added)
+	
 	# Restore cards back to BASE
 	for c in _cards:
 		if c != null and is_instance_valid(c):
+			c.interaction = null
 			c.card_state_machine.request_state(CardState.State.BASE)
 	
 	_cards.clear()
@@ -79,6 +87,12 @@ func _update_prompt() -> void:
 	remaining = maxi(remaining, 0)
 	handler.prompt_show("Choose %s card(s) to discard." % remaining, "OK")
 	handler.prompt_set_enabled(remaining == 0)
+
+func needs_more_selections() -> bool:
+	var remaining := discard_ctx.amount - _selected.size()
+	if maxi(remaining, 0) > 0:
+		return true
+	return false
 
 func _on_card_selection_toggled(card: UsableCard, is_selected: bool) -> void:
 	if _resolving:
@@ -105,6 +119,10 @@ func _commit_selected() -> void:
 	_resolving = true
 	handler.prompt_set_enabled(false)
 	
+	# stop enrolling added cards mid-resolution
+	if Events.hand_card_added.is_connected(_on_hand_card_added):
+		Events.hand_card_added.disconnect(_on_hand_card_added)
+	
 	# Remove + discard
 	var removed := discard_ctx.hand.remove_cards_by_entities(_selected)
 	discard_ctx.actually_discarded = removed.size()
@@ -127,3 +145,33 @@ func _auto_discard_all() -> void:
 	discard_ctx.hand.discard_cards(removed)
 	
 	Events.hand_discard_animation_finished.connect(_on_discard_done, CONNECT_ONE_SHOT)
+
+func _on_hand_card_added(card: UsableCard) -> void:
+	if _resolving:
+		return
+	if card == null or !is_instance_valid(card):
+		return
+	# Only care about the hand we’re selecting from
+	if card.hand != discard_ctx.hand:
+		return
+	# If we already have it, ignore
+	if _cards.has(card):
+		return
+
+	_cards.append(card)
+	_enroll_card(card)
+
+	# Optional: if a draw pushes us to <= amount, you could auto-discard-all,
+	# but for Decisive Choice you want selection, so just update prompt.
+	_update_prompt()
+
+
+func _enroll_card(card: UsableCard) -> void:
+	if card == null or !is_instance_valid(card):
+		return
+	# Ensure it’s interactable under modal rules
+	card.interaction = self
+	card.disabled = false
+	card.unhighlight()
+	card.selected = false
+	card.card_state_machine.request_state(CardState.State.SELECTION)

@@ -1,3 +1,5 @@
+# friendly_behavior.gd
+
 class_name FriendlyBehavior extends FighterBehavior
 
 func _ready() -> void:

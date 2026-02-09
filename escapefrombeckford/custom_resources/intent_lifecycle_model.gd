@@ -1,8 +1,9 @@
 # intent_lifecycle_model.gd
-class_name IntentLifecycleModel
-extends Resource
+
+class_name IntentLifecycleModel extends Resource
+
 ## Models that react to an NPCAction becoming or ceasing to be the planned intent.
-## These are for "intent-time" effects (telegraphed buffs, channeling, posture, etc.)
+## These are for "intent-time" effects (buffs active during telegraph, channeling, posture, etc.)
 
 ## Called when this action becomes the planned intent
 ## every time!

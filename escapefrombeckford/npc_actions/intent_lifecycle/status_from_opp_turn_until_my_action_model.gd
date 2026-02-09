@@ -1,4 +1,5 @@
 # status_from_opp_turn_to_my_action_model.gd
+
 class_name StatusFromOppTurnUntilMyActionModel
 extends IntentLifecycleModel
 

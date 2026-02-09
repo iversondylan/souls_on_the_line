@@ -1,4 +1,5 @@
 # battle_group.gd
+
 class_name BattleGroup extends Node2D
 
 @export var faces_right: bool = true
@@ -182,17 +183,6 @@ func _get_layout_nodes() -> Array[Node2D]:
 	if _preview_node:
 		nodes.insert(clampi(_preview_index, 0, nodes.size()), _preview_node)
 	return nodes
-
-#func update_combatant_position():
-	#var nodes := _get_layout_nodes()
-	#var slot := 1.0
-	#for n in nodes:
-		#var x := _get_x_for_slot(slot)
-		#if n is Fighter:
-			#(n as Fighter).set_anchor_position(Vector2(x, 0), true)
-		#else:
-			#n.position = Vector2(x, 0)
-		#slot += 1.0
 
 func execute_move(effect: MoveEffect) -> void:
 	if !effect or !effect.actor:

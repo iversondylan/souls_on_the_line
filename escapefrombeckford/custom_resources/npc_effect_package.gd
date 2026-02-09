@@ -1,3 +1,5 @@
+# npc_effect_package.gd
+
 class_name NPCEffectPackage extends Resource
 
 @export var effect: NPCEffectSequence

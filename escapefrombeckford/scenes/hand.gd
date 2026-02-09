@@ -119,6 +119,7 @@ func add_card(card: CardData) -> void:
 	usable_card.scale = MINI_CARD_SCALE
 	usable_card.card_fan_requested.connect(_on_usable_card_card_fan_requested)
 	reposition_hand_cards()
+	Events.hand_card_added.emit(usable_card)
 
 func draw_card() -> bool:
 	var c := deck.draw_card()

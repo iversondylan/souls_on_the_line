@@ -42,6 +42,7 @@ func exit() -> void:
 	# Clear visuals
 	for f in candidates:
 		handler.set_swap_candidate_visuals(f, false)
+		f.hide_targeted_arrow()
 	candidates.clear()
 
 	resolving = false

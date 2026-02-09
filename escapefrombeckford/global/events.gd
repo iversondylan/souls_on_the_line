@@ -1,4 +1,5 @@
 # events.gd (global: Events)
+
 extends Node
 
 ## battle flow events
@@ -39,6 +40,7 @@ signal mouse_entered_card(usable_card: UsableCard)
 signal mouse_exited_card(usable_card: UsableCard)
 signal request_draw_cards(ctx: DrawContext)
 signal cards_drawn(ctx: DrawContext)
+signal hand_card_added(usable_card: UsableCard)
 signal card_selection_toggled(card: UsableCard, is_selected: bool)
 
 ## summon replace events

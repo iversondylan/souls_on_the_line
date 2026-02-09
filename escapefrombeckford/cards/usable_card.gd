@@ -43,6 +43,8 @@ var playable := true : set = _set_playable
 var disabled := false
 var selected = false
 
+var interaction: InteractionContext
+
 func _ready() -> void:
 	#print_tree_pretty()
 	_cache_home()

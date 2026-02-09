@@ -14,3 +14,6 @@ func on_primary() -> void: pass
 func on_hover(_f: Fighter) -> void: pass
 func on_unhover(_f: Fighter) -> void: pass
 func on_click(_f: Fighter) -> void: pass
+
+func needs_more_selections() -> bool:
+	return true

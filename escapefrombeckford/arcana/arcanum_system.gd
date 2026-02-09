@@ -1,3 +1,5 @@
+# arcanum_system.gd
+
 class_name ArcanaSystem extends HBoxContainer
 
 #signal arcana_activated(type: Arcanum.Type)

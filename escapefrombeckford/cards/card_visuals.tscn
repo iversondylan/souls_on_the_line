@@ -96,6 +96,7 @@ offset_left = 10.0
 offset_top = 22.0
 offset_right = 216.0
 offset_bottom = 157.0
+mouse_filter = 2
 color = Color(0.1612, 0.19907331, 0.26, 1)
 
 [node name="CardArtRect" type="TextureRect" parent="CardStrictlyVisuals/CornerMan" unique_id=1389538820]

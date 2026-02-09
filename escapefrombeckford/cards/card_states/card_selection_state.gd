@@ -2,8 +2,8 @@
 extends CardState
 #class_name CardSelectionState
 
+
 func enter() -> void:
-	#print(usable_card.name, " entering SelectionState")
 	if not usable_card.is_node_ready():
 		await usable_card.ready
 
@@ -17,7 +17,7 @@ func enter() -> void:
 
 func on_input(event: InputEvent) -> void:
 	# Only care about left click while mouse is over card
-	if event.is_action_pressed("mouse_click") and usable_card.is_mouse_over():
+	if event.is_action_pressed("mouse_click") and usable_card.is_mouse_over() and usable_card.interaction.needs_more_selections():
 		get_viewport().set_input_as_handled()
 		Events.card_selection_toggled.emit(usable_card, true)
 		transition_requested.emit(self, CardState.State.SELECTED)

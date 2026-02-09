@@ -26,6 +26,7 @@ enum TurnStatus {TURN_PENDING, TURN_ACTIVE, NONE}
 @onready var modifier_system: ModifierSystem = $ModifierSystem
 
 var combatant_data: CombatantData : set = _set_combatant_data
+var state: FighterState
 var battle_scene: BattleScene : set = _set_battle_scene
 var run: Run : set = _set_run
 var fighter_tween: Tween
@@ -43,6 +44,8 @@ func _ready() -> void:
 
 func _set_combatant_data(new_data: CombatantData) -> void:
 	combatant_data = new_data
+	if state:
+		state.data = combatant_data
 	name = combatant_data.name
 	combatant.combatant_data = combatant_data
 	
@@ -312,3 +315,10 @@ func _is_attack_targeting_us(ctx: AttackTargetContext) -> bool:
 
 func is_marked() -> bool:
 	return combatant.status_grid._has_status(MarkedStatus.ID)
+
+
+func get_combat_id() -> int:
+	return state.combat_id
+
+func get_data() -> CombatantData:
+	return state.data

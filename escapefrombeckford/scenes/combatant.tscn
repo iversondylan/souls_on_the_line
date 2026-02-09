@@ -1,4 +1,4 @@
-[gd_scene load_steps=17 format=3 uid="uid://dghmlrg1poqs7"]
+[gd_scene format=3 uid="uid://dghmlrg1poqs7"]
 
 [ext_resource type="Script" uid="uid://c7eaxdgts512j" path="res://scenes/combatant.gd" id="1_srv24"]
 [ext_resource type="Texture2D" uid="uid://dob30qtbj3xk5" path="res://assets/sprites/assorted/block.PNG" id="2_8cehy"]
@@ -25,63 +25,63 @@ size = Vector2(1200, 270)
 font_size = 25
 font_color = Color(0.47967, 0.346496, 0.233082, 1)
 
-[node name="Combatant" type="Node2D"]
+[node name="Combatant" type="Node2D" unique_id=859325072]
 script = ExtResource("1_srv24")
 
-[node name="PendingTurnGlow" type="Sprite2D" parent="."]
+[node name="PendingTurnGlow" type="Sprite2D" parent="." unique_id=511405662]
 visible = false
 material = SubResource("CanvasItemMaterial_y8vuy")
 position = Vector2(0, -20)
 scale = Vector2(0.5222222, 0.31111112)
 texture = ExtResource("2_ue35o")
 
-[node name="CharacterArt" type="Sprite2D" parent="."]
+[node name="CharacterArt" type="Sprite2D" parent="." unique_id=1924670836]
 modulate = Color(0.38, 0.64866674, 1, 1)
 position = Vector2(0, -135)
 scale = Vector2(2.69, 2.69)
 texture = ExtResource("3_8636n")
 
-[node name="TargetArea" type="Area2D" parent="."]
+[node name="TargetArea" type="Area2D" parent="." unique_id=710243701]
 collision_layer = 4
 script = ExtResource("6_srv24")
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="TargetArea"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="TargetArea" unique_id=1588736948]
 position = Vector2(0, -135)
 shape = SubResource("RectangleShape2D_2bsiw")
 
-[node name="TargetedArrow" type="Sprite2D" parent="."]
+[node name="TargetedArrow" type="Sprite2D" parent="." unique_id=1014123603]
 visible = false
 position = Vector2(0, -18)
 scale = Vector2(0.153333, 0.153333)
 texture = ExtResource("6_8636n")
 
-[node name="FadeMark" type="Sprite2D" parent="."]
+[node name="FadeMark" type="Sprite2D" parent="." unique_id=1977925415]
 visible = false
 position = Vector2(0, -151.99998)
 scale = Vector2(0.1, 0.1)
 texture = ExtResource("6_y8vuy")
 
-[node name="IntentContainer" parent="." instance=ExtResource("3_ecchv")]
+[node name="IntentContainer" parent="." unique_id=868900121 instance=ExtResource("3_ecchv")]
 position = Vector2(0, -270)
 
-[node name="AreaLeft" type="Area2D" parent="."]
+[node name="AreaLeft" type="Area2D" parent="." unique_id=350830414]
 collision_layer = 8
 monitoring = false
 monitorable = false
 script = ExtResource("8_ng0uf")
 
-[node name="CollisionShapeLeft" type="CollisionShape2D" parent="AreaLeft"]
+[node name="CollisionShapeLeft" type="CollisionShape2D" parent="AreaLeft" unique_id=137619259]
 position = Vector2(-600, -135)
 shape = SubResource("RectangleShape2D_uacnx")
 
-[node name="HealthBar" parent="." instance=ExtResource("4_uacnx")]
+[node name="HealthBar" parent="." unique_id=86196866 instance=ExtResource("4_uacnx")]
 
-[node name="Armor" type="Sprite2D" parent="."]
+[node name="Armor" type="Sprite2D" parent="." unique_id=1274047711]
 visible = false
 position = Vector2(-83, 16)
 texture = ExtResource("2_8cehy")
 
-[node name="Label" type="Label" parent="Armor"]
+[node name="Label" type="Label" parent="Armor" unique_id=311342980]
 visible = false
 z_index = 1
 offset_left = -19.4444
@@ -94,12 +94,12 @@ label_settings = SubResource("LabelSettings_wjd66")
 horizontal_alignment = 1
 metadata/_edit_use_anchors_ = true
 
-[node name="StatusGrid" parent="." instance=ExtResource("10_ue35o")]
+[node name="StatusGrid" parent="." unique_id=762944576 instance=ExtResource("10_ue35o")]
 offset_top = 39.0
 offset_right = 404.0
 offset_bottom = 171.0
 
-[node name="CameraFocus" type="Node2D" parent="."]
+[node name="CameraFocus" type="Node2D" parent="." unique_id=1148131427]
 
 [connection signal="area_entered" from="TargetArea" to="." method="_on_target_area_area_entered"]
 [connection signal="area_exited" from="TargetArea" to="." method="_on_target_area_area_exited"]

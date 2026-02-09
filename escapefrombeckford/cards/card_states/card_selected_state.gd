@@ -3,7 +3,6 @@ extends CardState
 #class_name CardSelectedState
 
 func enter() -> void:
-	#print(usable_card.name, " entering SelectedState")
 	if not usable_card.is_node_ready():
 		await usable_card.ready
 

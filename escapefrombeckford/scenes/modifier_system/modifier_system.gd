@@ -20,15 +20,6 @@ func _build_resolved_modifier(type: Modifier.Type) -> ResolvedModifier:
 	var result := ResolvedModifier.new()
 	var tokens := get_modifier_tokens_for(type)
 
-	#if type == Modifier.Type.DMG_DEALT:
-		#print("\n--- BUILD DMG_DEALT for:", owner.name)
-		#for t in tokens:
-			#print(" token:", t.source_id,
-				#" owner:", t.owner.name if t.owner else "null",
-				#" scope:", t.scope,
-				#" flat:", t.flat_value,
-				#" tags:", t.tags)
-
 	for token in tokens:
 		result.flat += token.flat_value
 		result.mult *= (1.0 + token.mult_value)

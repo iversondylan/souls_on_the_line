@@ -1,4 +1,5 @@
 # npcai_behavior.gd
+
 class_name NPCAIBehavior extends FighterBehavior
 
 #const KEY_PLANNED_CHANCE_IDX := "planned_chance_idx"

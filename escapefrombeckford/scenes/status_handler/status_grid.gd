@@ -48,37 +48,6 @@ func get_modifier_tokens() -> Array[ModifierToken]:
 			tokens.append_array(status.get_modifier_tokens())
 	return tokens
 
-
-#func add_status(status: Status) -> void:
-	#
-	#var stackable := status.stack_type != Status.StackType.NONE
-	#
-	#if !_has_status(status.id):
-		#var new_status_display := STATUS_DISPLAY_SCN.instantiate() as StatusDisplay
-		#add_child(new_status_display)
-		#new_status_display.status = status
-		#new_status_display.status.status_changed.connect(_on_status_changed.bind(new_status_display.status))
-		#new_status_display.status_parent = status_parent
-		#new_status_display.status.status_applied.connect(_on_status_applied)
-		#new_status_display.status.init_status(status_parent)
-		#mark_dirty_for_status(status)
-		#_update_visuals()
-		#return
-	#if status.expiration_policy != Status.ExpirationPolicy.DURATION and !stackable:
-		#return
-	#
-	#if status.expiration_policy == Status.ExpirationPolicy.DURATION and status.stack_type == Status.StackType.DURATION:
-		#_get_status(status.id).duration += status.duration
-		#mark_dirty_for_status(status)
-		#_update_visuals()
-		#return
-	#
-	## If it's intensity-stackable, intensify it
-	#if status.stack_type == Status.StackType.INTENSITY:
-		#_get_status(status.id).intensity += status.intensity
-		#mark_dirty_for_status(status)
-		#_update_visuals()
-
 func add_status(status: Status) -> void:
 	if !status:
 		return

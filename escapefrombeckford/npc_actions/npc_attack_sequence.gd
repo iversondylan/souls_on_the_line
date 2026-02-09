@@ -1,4 +1,5 @@
 # npc_attack_sequence.gd
+
 class_name NPCAttackSequence
 extends NPCEffectSequence
 

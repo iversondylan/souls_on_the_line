@@ -194,10 +194,6 @@ func get_modifier_tokens_for(target: Node) -> Array[ModifierToken]:
 	if battle_scene and target is Fighter:
 		tokens.append_array(battle_scene.get_modifier_tokens_for(target))
 	
-	#for token: ModifierToken in tokens:
-		#print("run.gd get_modifier_tokens() token owner: %s" % token.owner)
-	# 3. Future: map effects, curses, difficulty scaling, etc.
-	
 	return tokens
 
 func _get_active_battle_scene() -> BattleScene:
