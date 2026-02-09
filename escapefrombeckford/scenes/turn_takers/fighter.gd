@@ -32,6 +32,7 @@ var run: Run : set = _set_run
 var fighter_tween: Tween
 var anchor_position: Vector2# = Vector2(0, 0)
 var has_anchor_position: bool = false
+var combat_id: int
 
 func _ready() -> void:
 	combatant.target_area_area_entered.connect(_on_target_area_area_entered)
@@ -44,6 +45,7 @@ func _ready() -> void:
 
 func _set_combatant_data(new_data: CombatantData) -> void:
 	combatant_data = new_data
+	combatant_data.combat_id = combat_id
 	if state:
 		state.data = combatant_data
 	name = combatant_data.name

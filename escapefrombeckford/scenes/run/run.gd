@@ -38,6 +38,7 @@ const TREASURE_SCN := preload("res://scenes/treasure/treasure_room.tscn")
 
 var account: RunAccount
 var player_data: PlayerData
+var run_seed: int = 0
 var arcana_catalog: Arcana
 var starting_deck: CardPile
 var draftable_cards: CardPile
@@ -49,6 +50,15 @@ func _ready() -> void:
 		return
 	match run_startup.startup_type:
 		RunStartup.StartupType.NEW_RUN:
+			
+			run_seed = run_startup.run_seed
+			if run_seed == 0:
+				# Create a seed once for this run
+				var rng := RandomNumberGenerator.new()
+				rng.randomize()
+				run_seed = int(rng.randi())  # store it
+				run_startup.run_seed = run_seed
+			
 			player_data = run_startup.player_data.create_instance()
 			player_data.set_health(player_data.max_health)
 			starting_deck = run_startup.player_data.starting_deck.duplicate()
@@ -123,6 +133,9 @@ func _init_top_bar() -> void:
 
 func _on_battle_entered(room: Room) -> void:
 	var battle_scn: Battle = _change_view(BATTLE_SCN) as Battle
+	var battle_seed := RNGUtil.mix_seed(run_seed, rc_hash(room.row, room.column))
+	battle_scn.run_seed = run_seed
+	battle_scn.battle_seed = battle_seed
 	battle_scn.run = self
 	battle_scn.player_data = player_data
 	battle_scn.deck = deck
@@ -210,3 +223,11 @@ func _on_modifier_tokens_changed(mod_type: Modifier.Type) -> void:
 	
 	if view.has_method("on_modifier_tokens_changed"):
 		view.on_modifier_tokens_changed(mod_type)
+
+func make_rng(label: String) -> RandomNumberGenerator:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = RNGUtil.seed_from_strings(run_seed, label)
+	return rng
+
+static func rc_hash(row: int, col: int) -> int:
+	return ("%d,%d" % [row, col]).hash()

@@ -28,7 +28,8 @@ var armor: int# : set = set_armor
 var mana_red: int# : set = set_mana_red
 var mana_green: int# : set = set_mana_green
 var mana_blue: int# : set = set_mana_blue
-var rank: int
+var combat_id: int
+#var rank: int
 
 func init():
 	if health < 0:

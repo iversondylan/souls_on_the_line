@@ -33,8 +33,8 @@ func _make_context() -> NPCAIContext:
 	var ctx := NPCAIContext.new()
 	ctx.combatant = fighter
 	ctx.battle_scene = fighter.battle_scene
-	ctx.state = get_meta("ai_state")
-	ctx.rng = get_meta("ai_rng")
+	ctx.state = fighter.state.ai_state
+	ctx.rng = get_meta("ai_rng")# fighter.state.ai_rng
 	ctx.params = {}
 	ctx.forecast = false
 	return ctx
@@ -45,16 +45,39 @@ func _make_context() -> NPCAIContext:
 # -------------------------------------------------------------------
 
 func _on_combatant_data_set(_data: CombatantData) -> void:
+	#ai_profile = _data.ai
+	#
+	## Init persistent AI state + RNG ONCE
+	#set_meta("ai_state", {})
+	#var state = get_meta("ai_state")
+	#state[HP_AT_TURN_START] = _data.health
+	#state[DMG_SINCE_LAST_TURN] = 0
+	#var rng := RandomNumberGenerator.new()
+	#rng.randomize()
+	#set_meta("ai_rng", rng)
 	ai_profile = _data.ai
-	
-	# Init persistent AI state + RNG ONCE
-	set_meta("ai_state", {})
-	var state = get_meta("ai_state")
+
+	var fighter: Fighter = get_parent()
+	if not fighter.state:
+		fighter.state = FighterState.new()
+
+	fighter.state.ai_state = {}
+	var state = fighter.state.ai_state
 	state[HP_AT_TURN_START] = _data.health
 	state[DMG_SINCE_LAST_TURN] = 0
-	var rng := RandomNumberGenerator.new()
-	rng.randomize()
-	set_meta("ai_rng", rng)
+	
+	var battle_seed := 0
+	if fighter and fighter.battle_scene:
+		battle_seed = fighter.battle_scene.battle_seed
+
+	var seed := RNGUtil.mix_seed(battle_seed, fighter.combat_id)
+	set_meta("ai_rng", AIRNG.new(seed))
+	
+	#var rng := RandomNumberGenerator.new()
+	#rng.randomize()
+	#set_meta("ai_rng", rng)
+	#fighter.state.ai_rng = RandomNumberGenerator.new()
+	#fighter.state.ai_rng.randomize()
 	
 	if not _data.combatant_data_changed.is_connected(_on_stats_changed):
 		_data.combatant_data_changed.connect(_on_stats_changed)
@@ -72,7 +95,7 @@ func _on_stats_changed() -> void:
 	if !fighter.is_alive() or !ai_profile:
 		return
 	
-	var state : Dictionary = get_meta("ai_state")
+	var state := fighter.state.ai_state #Dictionary = get_meta("ai_state")
 	if state and state.has(HP_AT_TURN_START):
 		var cur_hp := fighter.combatant_data.health
 		var delta : int = state[HP_AT_TURN_START] - cur_hp
@@ -220,7 +243,8 @@ func _on_opposing_group_turn_start() -> void:
 	state["telegraph_committed"] = true
 
 func _on_group_turn_end() -> void:
-	var state : Dictionary = get_meta("ai_state")
+	var fighter: Fighter = get_parent()
+	var state := fighter.state.ai_state # Dictionary = get_meta("ai_state")
 	if state:
 		state["telegraph_committed"] = false
 
@@ -323,7 +347,7 @@ func _change_params_only(action: NPCAction, ctx: NPCAIContext) -> void:
 
 func _on_enter() -> void:
 	var fighter: Fighter = get_parent()
-	var state : Dictionary = get_meta("ai_state")
+	var state := fighter.state.ai_state # Dictionary = get_meta("ai_state")
 	state[HP_AT_TURN_START] = fighter.combatant_data.health
 	state[DMG_SINCE_LAST_TURN] = 0
 	refresh_intent_display()
@@ -406,7 +430,8 @@ func _start_action(action: NPCAction, ctx: NPCAIContext) -> void:
 func _next_effect_package() -> void:
 	
 	if remaining_effect_packages.is_empty():
-		var state: Dictionary = get_meta("ai_state")
+		var fighter: Fighter = get_parent()
+		var state := fighter.state.ai_state # Dictionary = get_meta("ai_state")
 		var taken: int = state.get(ACTIONS_TAKEN, 0)
 		state[ACTIONS_TAKEN] = taken + 1
 		_start_impact_delay()

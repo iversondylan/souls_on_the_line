@@ -49,6 +49,10 @@ var mouse_pressed: bool = false
 var enemy_character_state: int = 0
 var wait_for_anims: bool = false
 
+var run_seed: int
+var battle_seed: int
+
+
 func _ready() -> void:
 	#print_tree_pretty()
 	
@@ -77,7 +81,7 @@ func _ready() -> void:
 	Events.request_friendly_turn.connect(_on_request_friendly_turn)
 	Events.arcana_activated.connect(_on_arcana_activated)
 	Events.request_draw_cards.connect(_on_request_draw_cards)
-
+	
 	draw_pile_button.pressed.connect(draw_pile_view.show_current_draw_view.bind("Draw Pile", true))
 	discard_pile_button.pressed.connect(discard_pile_view.show_current_discard_view.bind("Discard Pile"))
 	
@@ -107,6 +111,8 @@ func initialize_card_pile_ui() -> void:
 	discard_pile_view.deck = deck
 
 func start_battle():
+	battle_scene.run_seed = run_seed
+	battle_scene.battle_seed = battle_seed
 	if wait_for_anims:
 		return
 	BattleController.current_state = BattleController.BattleState.PRE_GAME

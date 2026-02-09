@@ -7,6 +7,10 @@ class_name BattleScene extends Node2D
 
 var deck: Deck : set = _set_deck
 var run: Run : set = _set_run
+var _next_combat_id: int = 1
+
+var battle_seed: int
+var run_seed: int
 
 func _ready() -> void:
 	for group : BattleGroup in groups:
@@ -23,6 +27,11 @@ func _set_deck(_deck: Deck) -> void:
 	deck = _deck
 	for group: BattleGroup in groups:
 		group.deck = deck
+
+func alloc_combat_id() -> int:
+	var id := _next_combat_id
+	_next_combat_id += 1
+	return id
 
 func friendly_group_turn_start() -> void:
 	for group: BattleGroup in groups:
@@ -68,6 +77,7 @@ func get_group_index_for(group: Node) -> int:
 
 func add_combatant(fighter: Fighter, group: int, rank: int):
 	fighter.battle_scene = self
+	fighter.combat_id = alloc_combat_id()
 	groups[group].add_combatant(fighter, rank)
 
 func remove_combatant(fighter: Fighter):
