@@ -45,7 +45,6 @@ func stats_changed() -> void:
 		Events.player_combatant_data_changed.emit()
 	combatant_data_changed.emit()
 
-# TODO: implement this
 func apply_damage(ctx: DamageContext) -> void:
 	# Only numeric work here. No Fighter references required.
 	var health_loss := take_damage(ctx.final_amount)
@@ -53,6 +52,17 @@ func apply_damage(ctx: DamageContext) -> void:
 	ctx.blocked = (health_loss <= 0)
 	ctx.lethal = (health <= 0 or !alive)
 
+func apply_damage_amount(amount: int) -> Dictionary:
+	# returns { "armor_damage": int, "health_damage": int, "was_lethal": bool }
+	var pre_armor := armor
+	var health_loss := take_damage(amount)
+	var armor_damage := maxi(mini(amount, pre_armor), 0)
+	var was_lethal := (health <= 0) or (not alive)
+	return {
+		"armor_damage": armor_damage,
+		"health_damage": health_loss,
+		"was_lethal": was_lethal,
+	}
 
 func set_health(value : int) -> void:
 	health = clampi(value, 0, max_health)

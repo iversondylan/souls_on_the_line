@@ -29,6 +29,12 @@ func _set_deck(_deck: Deck) -> void:
 	for group: BattleGroup in groups:
 		group.deck = deck
 
+#func get_combatant_by_id(combat_id: int) -> Fighter:
+	#for group: BattleGroup in groups:
+		#for fighter in child_group.get_combatants():
+			#fighters.push_back(fighter)
+	#return fighters
+
 func alloc_combat_id() -> int:
 	var id := _next_combat_id
 	_next_combat_id += 1

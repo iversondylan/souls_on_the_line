@@ -1,4 +1,5 @@
 # ranged_behind_player_model.gd
+
 class_name RangedBehindPlayerModel extends ParamModel
 
 func change_params(ctx: NPCAIContext) -> NPCAIContext:
