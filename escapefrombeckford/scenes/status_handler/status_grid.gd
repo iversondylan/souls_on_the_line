@@ -36,17 +36,18 @@ func apply_statuses_by_type(proc_type: Status.ProcType) -> void:
 
 func get_modifier_tokens() -> Array[ModifierToken]:
 	var tokens: Array[ModifierToken] = []
-	
+
 	for status in _get_all_statuses():
 		if !status:
-			print("status_grid.gd a nonexistent status is being skipped")
 			continue
 		if status.is_expired():
-			print("status_grid.gd an expired status is being skipped")
 			continue
-		if status and status.contributes_modifier():
-			tokens.append_array(status.get_modifier_tokens())
+		if status.contributes_modifier():
+			var ctx := status.make_token_ctx_node(status_parent)
+			tokens.append_array(status.get_modifier_tokens(ctx))
+
 	return tokens
+
 
 func add_status(status: Status) -> void:
 	if !status:

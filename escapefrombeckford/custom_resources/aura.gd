@@ -20,7 +20,7 @@ enum AuraType {ALLIES, ENEMIES}
 # Aura (enemies)	TARGET				AURA_SECONDARY_FLAG, AURA_ENEMIES
 # Explicit target	TARGET				none
 
-func get_modifier_tokens() -> Array[ModifierToken]:
+func get_modifier_tokens(_ctx: StatusTokenContext) -> Array[ModifierToken]:
 	return []
 
 func contributes_modifier() -> bool:

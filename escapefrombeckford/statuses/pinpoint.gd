@@ -1,3 +1,5 @@
+# pinpoint.gd
+
 class_name PinpointStatus extends Status
 
 const ID := "pinpoint"
@@ -6,21 +8,20 @@ const MULT_VALUE := 0.5
 func get_id() -> String:
 	return ID
 
-func get_modifier_tokens() -> Array[ModifierToken]:
-	# If expired, contribute nothing
-	#print("pinpoint.gd get_modifier_tokens()")
-	if duration <= 0:
+func get_modifier_tokens(ctx: StatusTokenContext) -> Array[ModifierToken]:
+	if !ctx or duration <= 0:
 		return []
+
 	var token := ModifierToken.new()
 	token.type = Modifier.Type.DMG_TAKEN
 	token.mult_value = MULT_VALUE
 	token.flat_value = 0
 	token.source_id = ID
-	token.owner = status_parent
 	token.scope = ModifierToken.Scope.SELF
 	token.priority = 0
 	token.tags = [ID]
-	
+
+	Status.set_token_owner(token, ctx)
 	return [token]
 
 ##Must return true if this status contributes a numerical modifier.

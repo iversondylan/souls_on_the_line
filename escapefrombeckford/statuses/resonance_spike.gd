@@ -13,23 +13,22 @@ func contributes_modifier() -> bool:
 func get_contributed_modifier_types() -> Array[Modifier.Type]:
 	return [Modifier.Type.DMG_DEALT]
 
-func get_modifier_tokens() -> Array[ModifierToken]:
-	if is_expired():
-		print("resonance_spike_status.gd is expired but tokens requested")
+func get_modifier_tokens(ctx: StatusTokenContext) -> Array[ModifierToken]:
+	if !ctx or (expiration_policy == ExpirationPolicy.DURATION and duration <= 0):
 		return []
+
 	var token := ModifierToken.new()
 	token.type = Modifier.Type.DMG_DEALT
-	token.flat_value = intensity
+	token.flat_value = ctx.intensity
 	token.mult_value = 0.0
 	token.source_id = ID
-	token.owner = status_parent
-	
 	token.scope = ModifierToken.Scope.TARGET
 	token.tags = [
 		Aura.AURA_SECONDARY_FLAG,
 		Aura.AURA_ALLIES
 	]
-	
+
+	Status.set_token_owner(token, ctx)
 	return [token]
 
 func get_tooltip() -> String:

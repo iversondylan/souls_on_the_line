@@ -41,10 +41,7 @@ func init_status(_target: Node) -> void:
 func apply_status(_target: Node) -> void:
 	status_applied.emit(self)
 
-func get_modifier_tokens() -> Array[ModifierToken]:
-	return []
-
-func get_modifier_tokens_from_state(_state: StatusState, _owner_id: int) -> Array[ModifierToken]:
+func get_modifier_tokens(ctx: StatusTokenContext) -> Array[ModifierToken]:
 	return []
 
 func contributes_modifier() -> bool:
@@ -80,3 +77,41 @@ func affects_intent_legality() -> bool:
 	return false
 #func _on_status_changed(target: Node) -> void:
 	#print("status.gd _on_status_changed(): virtual function called")
+
+# -------------------------------------------------------------------
+# Helpers so callers don't need separate functions for live vs sim
+# -------------------------------------------------------------------
+
+func make_token_ctx_node(owner_node: Node) -> StatusTokenContext:
+	var ctx := StatusTokenContext.new()
+	ctx.id = get_id()
+	ctx.duration = duration
+	ctx.intensity = intensity
+	ctx.owner = owner_node
+	ctx.owner_id = -1
+	return ctx
+
+func make_token_ctx_state(state, _owner_id: int) -> StatusTokenContext:
+	# `state` can be a StatusState or Dictionary; keep it flexible.
+	var ctx := StatusTokenContext.new()
+	if state is Dictionary:
+		ctx.id = str(state.get("id", ""))
+		ctx.duration = int(state.get("duration", 0))
+		ctx.intensity = int(state.get("intensity", 0))
+	else:
+		# assumes StatusState-like
+		ctx.id = state.id
+		ctx.duration = state.duration
+		ctx.intensity = state.intensity
+	ctx.owner = null
+	ctx.owner_id = _owner_id
+	return ctx
+
+static func set_token_owner(token: ModifierToken, ctx: StatusTokenContext) -> void:
+	# Prefer node if present; otherwise use id.
+	if ctx.owner:
+		token.owner = ctx.owner
+		token.owner_id = -1
+	else:
+		token.owner = null
+		token.owner_id = ctx.owner_id
