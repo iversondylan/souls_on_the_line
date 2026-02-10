@@ -38,7 +38,8 @@ func get_modifier_tokens_for(type: Modifier.Type) -> Array[ModifierToken]:
 	if !run:
 		return []
 	
-	var all_tokens: Array[ModifierToken] = run.get_modifier_tokens_for(owner)
+	var all_tokens: Array[ModifierToken] = run.get_modifier_tokens_for(get_parent())
+
 	var relevant: Array[ModifierToken] = []
 	for token in all_tokens:
 		if token.type == type:

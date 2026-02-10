@@ -84,9 +84,9 @@ func affects_intent_legality() -> bool:
 
 func make_token_ctx_node(owner_node: Node) -> StatusTokenContext:
 	var ctx := StatusTokenContext.new()
-	ctx.id = get_id()
-	ctx.duration = duration
-	ctx.intensity = intensity
+	#ctx.id = get_id()
+	#ctx.duration = duration
+	#ctx.intensity = intensity
 	ctx.owner = owner_node
 	ctx.owner_id = -1
 	return ctx
@@ -108,10 +108,18 @@ func make_token_ctx_state(state, _owner_id: int) -> StatusTokenContext:
 	return ctx
 
 static func set_token_owner(token: ModifierToken, ctx: StatusTokenContext) -> void:
-	# Prefer node if present; otherwise use id.
-	if ctx.owner:
-		token.owner = ctx.owner
-		token.owner_id = -1
-	else:
-		token.owner = null
-		token.owner_id = ctx.owner_id
+	if !token or !ctx:
+		return
+	token.owner = ctx.owner
+	token.owner_id = ctx.owner_id
+
+
+#static func set_token_owner(token: ModifierToken, ctx: StatusTokenContext) -> void:
+	## Prefer node if present; otherwise use id.
+	#if ctx.owner:
+		#token.owner = ctx.owner
+		#token.owner_id = -1
+	#else:
+		#token.owner = null
+		#token.owner_id = ctx.owner_id
+		

@@ -4,44 +4,43 @@ class_name StatusSim extends RefCounted
 
 static func get_modifier_tokens_for_owner(
 	status_grid: StatusGridData,
-	status_catalog: Dictionary,
+	catalog: StatusCatalog,
 	owner_combat_id: int
 ) -> Array[ModifierToken]:
-	var tokens: Array[ModifierToken] = []
-	for s in status_grid.get_all():
-		var proto: Status = status_catalog.get(s.id, null)
+	var out: Array[ModifierToken] = []
+
+	for s: StatusState in status_grid.get_all():
+		var proto := catalog.get_proto(s.id)
 		if !proto:
 			continue
 		if proto.expiration_policy == Status.ExpirationPolicy.DURATION and s.duration <= 0:
 			continue
 		if !proto.contributes_modifier():
 			continue
-		
-		# Special-case: if you want to keep logic in Status subclasses,
-		# you can add a virtual "get_modifier_tokens_from_state(state, owner_id)" later.
-		# For now: handle the common ones directly by id.
-		match s.id:
-			AmplifyStatus.ID:
-				var token := ModifierToken.new()
-				token.type = Modifier.Type.DMG_DEALT
-				token.mult_value = AmplifyStatus.MULT_VALUE
-				token.flat_value = 0
-				token.source_id = s.id
-				token.owner_id = owner_combat_id # add this field
-				token.scope = ModifierToken.Scope.SELF
-				tokens.append(token)
 
-			ResonanceSpikeStatus.ID:
-				var token := ModifierToken.new()
-				token.type = Modifier.Type.DMG_DEALT
-				token.flat_value = s.intensity
-				token.mult_value = 0
-				token.source_id = s.id
-				token.owner_id = owner_combat_id
-				token.scope = ModifierToken.Scope.TARGET
-				tokens.append(token)
+		var inst: Status = proto.duplicate()
+		inst.duration = s.duration
+		inst.intensity = s.intensity
 
-			_:
-				pass
+		var ctx := StatusTokenContext.new()
+		ctx.owner_id = owner_combat_id
 
-	return tokens
+		var tokens := inst.get_modifier_tokens(ctx)
+		for t in tokens:
+			# make sure sim tokens use owner_id (not node owner)
+			if t and t.owner_id == 0:
+				t.owner_id = owner_combat_id
+		out.append_array(tokens)
+
+	return out
+
+
+static func gather_sim_tokens(owner_state: FighterState, statuses: Array, proto_by_id: Dictionary) -> Array[ModifierToken]:
+	var out: Array[ModifierToken] = []
+	for s in statuses:
+		var proto: Status = proto_by_id.get(s.id, null)
+		if !proto or !proto.contributes_modifier():
+			continue
+		var ctx := proto.make_token_ctx_state(s, owner_state.combat_id)
+		out.append_array(proto.get_modifier_tokens(ctx))
+	return out

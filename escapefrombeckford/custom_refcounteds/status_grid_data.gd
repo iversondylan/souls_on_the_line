@@ -69,14 +69,3 @@ func remove_expired(status_catalog: Dictionary) -> void:
 				to_remove.append(id)
 	for id in to_remove:
 		by_id.erase(id)
-
-# is this supposed to go here?
-func gather_sim_tokens(owner_state: FighterState, statuses: Array, proto_by_id: Dictionary) -> Array[ModifierToken]:
-	var out: Array[ModifierToken] = []
-	for s in statuses:
-		var proto: Status = proto_by_id.get(s.id, null)
-		if !proto or !proto.contributes_modifier():
-			continue
-		var ctx := proto.make_token_ctx_state(s, owner_state.combat_id)
-		out.append_array(proto.get_modifier_tokens(ctx))
-	return out

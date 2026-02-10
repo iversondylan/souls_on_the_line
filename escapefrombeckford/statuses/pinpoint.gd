@@ -9,7 +9,7 @@ func get_id() -> String:
 	return ID
 
 func get_modifier_tokens(ctx: StatusTokenContext) -> Array[ModifierToken]:
-	if !ctx or duration <= 0:
+	if !ctx or is_expired():
 		return []
 
 	var token := ModifierToken.new()

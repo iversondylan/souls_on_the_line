@@ -125,6 +125,7 @@ func start_battle():
 	make_enemies()
 	
 	Events.battle_reset.emit()
+	battle_scene.build_static_modifiers_from_arcana()
 	Events.initiate_first_intents.emit()
 	_on_player_data_changed()
 	hand.empty_hand()

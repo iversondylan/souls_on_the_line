@@ -1,3 +1,5 @@
+# amplify_action.gd
+
 extends CardAction
 
 const AMPLIFY_STATUS := preload("res://statuses/amplify.tres")
@@ -14,9 +16,7 @@ func activate(ctx: CardActionContext) -> bool:
 	status_effect.targets = targets
 
 	var amplify_status := AMPLIFY_STATUS.duplicate()
-	#amplify_status.stack_type = Status.StackType.DURATION
 	amplify_status.duration = amplify_duration
-	#amplify_status.expiration_policy = Status.ExpirationPolicy.DURATION
 	status_effect.sound = amplify_sound
 	status_effect.status = amplify_status
 	status_effect.execute()

@@ -11,6 +11,7 @@ var _next_combat_id: int = 1
 
 var battle_seed: int
 var run_seed: int
+var static_mods: BattleStaticModifiers
 
 func _ready() -> void:
 	for group : BattleGroup in groups:
@@ -410,8 +411,9 @@ func get_modifier_tokens_for(fighter: Fighter) -> Array[ModifierToken]:
 						# Non-aura TARGET token: only for its explicit owner
 						if token.owner == fighter:
 							tokens.append(token)
-	# Arcana / run-wide
-	#tokens.append_array(run_account.get_modifier_tokens())
+	# Arcana / run-wide: this is stopping me up on 2/9/26 but I am too tired and commenting out to see if run works again
+	#if static_mods:
+		#tokens.append_array(static_mods.get_tokens_for_target(fighter.combat_id))
 	return tokens
 
 func _passes_aura_rules(source: Fighter, target: Fighter, aura: Aura) -> bool:
@@ -515,3 +517,19 @@ func build_turn_order_path() -> TurnOrderPath:
 	path.middle_pos = (front_friendly_pos + front_enemy_pos) * 0.5
 
 	return path
+
+
+func build_static_modifiers_from_arcana() -> void:
+	static_mods = BattleStaticModifiers.new()
+
+	for f: Fighter in get_all_combatants():
+		if !f:
+			continue
+
+		# Ask arcana layer only
+		var arcana_tokens := run.arcana_system.get_modifier_tokens_for(f)
+		var id_tokens: Array[ModifierToken] = []
+		for t in arcana_tokens:
+			id_tokens.append(ModifierTokenUtil.to_id_token(t))
+
+		static_mods.set_tokens_for_target(f.combat_id, id_tokens)

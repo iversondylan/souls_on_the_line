@@ -262,3 +262,36 @@ func clear_group_turn_start_statuses() -> void:
 		_remove_status_display(status_display)
 	
 	_update_visuals()
+
+func export_to_data() -> StatusGridData:
+	var data := StatusGridData.new()
+	for status: Status in _get_all_statuses():
+		if !status:
+			continue
+		var s := StatusState.new(status.id, status.duration, status.intensity)
+		data.by_id[s.id] = s
+	return data
+
+
+func sync_from_data(data: StatusGridData, catalog: StatusCatalog) -> void:
+	if !data or !catalog:
+		return
+
+	# Clear visuals + statuses
+	for child in get_children():
+		child.queue_free()
+	await get_tree().process_frame
+
+	for s: StatusState in data.get_all():
+		var proto := catalog.get_proto(s.id)
+		if !proto:
+			continue
+
+		# Make an instance (resource copy) that holds runtime numbers
+		var inst: Status = proto.duplicate()
+		inst.duration = s.duration
+		inst.intensity = s.intensity
+
+		# Add using existing pipeline (creates StatusDisplay, connects signals,
+		# calls init_status, marks dirty, updates visuals)
+		add_status(inst)
