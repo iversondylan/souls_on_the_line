@@ -14,7 +14,10 @@ func get_contributed_modifier_types() -> Array[Modifier.Type]:
 	return [Modifier.Type.DMG_DEALT]
 
 func get_modifier_tokens(ctx: StatusTokenContext) -> Array[ModifierToken]:
-	if !ctx or is_expired():
+	if !ctx:
+		return []
+
+	if expiration_policy == Status.ExpirationPolicy.DURATION and ctx.duration <= 0:
 		return []
 
 	var token := ModifierToken.new()

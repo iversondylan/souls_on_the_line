@@ -84,9 +84,9 @@ func affects_intent_legality() -> bool:
 
 func make_token_ctx_node(owner_node: Node) -> StatusTokenContext:
 	var ctx := StatusTokenContext.new()
-	#ctx.id = get_id()
-	#ctx.duration = duration
-	#ctx.intensity = intensity
+	ctx.id = get_id()
+	ctx.duration = duration
+	ctx.intensity = intensity
 	ctx.owner = owner_node
 	ctx.owner_id = -1
 	return ctx

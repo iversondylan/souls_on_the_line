@@ -25,7 +25,7 @@ func get_modifier_tokens(ctx: StatusTokenContext) -> Array[ModifierToken]:
 	token.scope = ModifierToken.Scope.TARGET
 	token.tags = [
 		Aura.AURA_SECONDARY_FLAG,
-		"aura_allies"
+		Aura.AURA_ALLIES
 	]
 
 	Status.set_token_owner(token, ctx)

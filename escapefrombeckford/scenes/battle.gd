@@ -52,7 +52,6 @@ var wait_for_anims: bool = false
 var run_seed: int
 var battle_seed: int
 
-
 func _ready() -> void:
 	#print_tree_pretty()
 	
@@ -73,6 +72,11 @@ func _ready() -> void:
 	Events.battle_group_empty.connect(_on_battle_group_empty)
 	Events.player_combatant_data_changed.connect(_on_player_data_changed)
 	Events.hand_drawn.connect(_on_hand_drawn)
+	
+	# Temporary v
+	Events.hand_drawn.connect(simulate_battle)
+	# Temporary ^
+	
 	Events.summon_reserve_card_released.connect(_on_summon_reserve_card_released)
 	Events.request_defeat.connect(_on_request_defeat)
 	Events.request_victory.connect(_on_request_victory)
@@ -267,3 +271,7 @@ func _on_request_draw_cards(ctx: DrawContext) -> void:
 	await hand.done_drawing
 	wait_for_anims = false
 	Events.cards_drawn.emit(ctx)
+
+func simulate_battle() -> void:
+	var sim_battle := SimBattle.from_battle_scene(battle_scene, run.status_catalog)
+	sim_battle.print_sim_snapshot()

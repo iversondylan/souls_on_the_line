@@ -82,6 +82,7 @@ func add_combatant(fighter: Fighter, group: int, rank: int):
 	fighter.combat_id = combat_id
 	if fighter.combatant_data:
 		fighter.combatant_data.combat_id = combat_id
+	print("alloc combat_id=", combat_id, " for ", fighter.name)
 	groups[group].add_combatant(fighter, rank)
 
 func remove_combatant(fighter: Fighter):
