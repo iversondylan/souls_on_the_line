@@ -1,6 +1,6 @@
-extends Arcanum
+# adamant_ally.gd
 
-#const ID := "sigil_of_mana"
+extends Arcanum
 
 @export var summon_data: CombatantData
 

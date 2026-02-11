@@ -17,10 +17,22 @@ func build_effect(ctx: CardActionContext) -> SummonEffect:
 func activate(ctx: CardActionContext) -> bool:
 	if !ctx.battle_scene or !ctx.resolved_target:
 		return false
+
 	var effect := build_effect(ctx)
 	effect.execute(ctx.battle_scene.api)
-	effect.apply_to_card_context(ctx)
+
+	# NEW: defer application until later (after runner processes)
+	ctx.pending_summon_effects.append(effect)
+
 	return true
+
+#func activate(ctx: CardActionContext) -> bool:
+	#if !ctx.battle_scene or !ctx.resolved_target:
+		#return false
+	#var effect := build_effect(ctx)
+	#effect.execute(ctx.battle_scene.api)
+	#effect.apply_to_card_context(ctx)
+	#return true
 
 
 func _build_clone_data(ctx: CardActionContext) -> CombatantData:

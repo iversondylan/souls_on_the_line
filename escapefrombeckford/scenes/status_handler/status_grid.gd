@@ -194,16 +194,35 @@ func _remove_status_display(status_display: StatusDisplay) -> void:
 ## Multiple fighters may emit the same aura, but a single fighter
 ## must not apply the same primary status to itself more than once.
 ## Intent-lifecycle statuses rely on this contract.
-func remove_status_by_id(id: String) -> void:
+func remove_status_by_id(id: String) -> int:
 	if id == "":
-		return
+		return 0
 	
 	for status_display: StatusDisplay in get_children():
 		if status_display.status and status_display.status.get_id() == id:
 			_remove_status_display(status_display)
 			_update_visuals()
-			return
+			return 1
+	return 0
 
+#func remove_status(status_id: StringName, remove_all_stacks: bool = false) -> int:
+	#var removed := 0
+#
+	## however you store statuses:
+	## - if you store by id -> easy
+	## - if you store list -> scan and remove
+	#var _statuses := _get_all_statuses()
+	#for i in range(_statuses.size() - 1, -1, -1):
+		#var s: Status = _statuses[i]
+		#if s and s.id == status_id:
+			#_statuses.remove_at(i)
+			#removed += 1
+			#if !remove_all_stacks:
+				#break
+#
+	#if removed > 0:
+		#_emit_status_changed_signals_for_id(status_id) # if you have this concept
+	#return removed
 
 func end_non_self_statuses() -> void:
 	var to_end: Array[StatusDisplay] = []

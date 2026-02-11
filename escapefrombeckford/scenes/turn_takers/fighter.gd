@@ -33,6 +33,7 @@ var fighter_tween: Tween
 var anchor_position: Vector2# = Vector2(0, 0)
 var has_anchor_position: bool = false
 var combat_id: int
+#var dying: bool = false
 
 func _ready() -> void:
 	combatant.target_area_area_entered.connect(_on_target_area_area_entered)
@@ -50,10 +51,13 @@ func _set_combatant_data(new_data: CombatantData) -> void:
 		state.data = combatant_data
 	name = combatant_data.name
 	combatant.combatant_data = combatant_data
-	
+	if battle_scene and battle_scene.api and combatant_data:
+		if not combatant_data.combatant_data_changed.is_connected(_on_data_changed):
+			combatant_data.combatant_data_changed.connect(_on_data_changed)
 	for child in get_children():
 		if child is FighterBehavior:
 			child._on_combatant_data_set(new_data)
+	
 
 func _set_battle_scene(new_battle_scene: BattleScene) -> void:
 	battle_scene = new_battle_scene
@@ -118,41 +122,59 @@ func apply_heal(ctx: HealContext) -> void:
 	var restored_health := combatant_data.heal(ctx)
 
 func apply_damage(ctx: DamageContext) -> void:
-	#print("fighter.gd !N!E!W! apply_damage")
-	if !ctx or !is_instance_valid(self) or !is_alive():
+	if !ctx:
 		return
-	
-	# Ensure target is set correctly
+
+	# Always ensure ids
 	ctx.target = self
-	ctx.phase = DamageContext.Phase.PRE_MODIFIERS
-	
-	# Target-side modifiers
-	if modifier_system:
-		ctx.amount = modifier_system.get_modified_value(ctx.amount, ctx.take_modifier_type)
-	
-	ctx.amount = maxi(ctx.amount, 0)
-	ctx.phase = DamageContext.Phase.POST_MODIFIERS
-	
-	# Apply to stats (this returns health_loss currently)
-	var pre_armor := combatant_data.armor
-	var health_loss := combatant_data.take_damage(ctx.amount)
-	
-	ctx.health_damage = health_loss
-	ctx.armor_damage = maxi(mini(ctx.amount, pre_armor), 0)
-	ctx.was_lethal = (combatant_data.health <= 0)
-	
-	ctx.phase = DamageContext.Phase.APPLIED
-	
-	# Immediate reactions (synchronous)
-	damage_taken.emit(ctx)
-	combatant.status_grid.on_damage_taken(ctx)
-	
-	# visuals
-	Shaker.shake(self, 16, 0.15)
-	_spawn_damage_number_or_block(ctx)
-	
-	if ctx.was_lethal:
-		die()
+	ctx.target_id = combat_id
+	if ctx.source and ctx.source_id == 0:
+		ctx.source_id = ctx.source.combat_id
+
+	# Preferred path: API owns damage + death + visuals
+	if battle_scene and battle_scene.api:
+		battle_scene.api.resolve_damage(ctx)
+		return
+
+	# Fallback: do nothing (or keep a private legacy impl if you want)
+	push_warning("Fighter.apply_damage called without battle_scene.api")
+
+#func apply_damage(ctx: DamageContext) -> void:
+	##print("fighter.gd !N!E!W! apply_damage")
+	#if !ctx or !is_instance_valid(self) or !is_alive():
+		#return
+	#
+	## Ensure target is set correctly
+	#ctx.target = self
+	#ctx.phase = DamageContext.Phase.PRE_MODIFIERS
+	#
+	## Target-side modifiers
+	#if modifier_system:
+		#ctx.amount = modifier_system.get_modified_value(ctx.amount, ctx.take_modifier_type)
+	#
+	#ctx.amount = maxi(ctx.amount, 0)
+	#ctx.phase = DamageContext.Phase.POST_MODIFIERS
+	#
+	## Apply to stats (this returns health_loss currently)
+	#var pre_armor := combatant_data.armor
+	#var health_loss := combatant_data.take_damage(ctx.amount)
+	#
+	#ctx.health_damage = health_loss
+	#ctx.armor_damage = maxi(mini(ctx.amount, pre_armor), 0)
+	#ctx.was_lethal = (combatant_data.health <= 0)
+	#
+	#ctx.phase = DamageContext.Phase.APPLIED
+	#
+	## Immediate reactions (synchronous)
+	#damage_taken.emit(ctx)
+	#combatant.status_grid.on_damage_taken(ctx)
+	#
+	## visuals
+	#Shaker.shake(self, 16, 0.15)
+	#_spawn_damage_number_or_block(ctx)
+	#
+	#if ctx.was_lethal:
+		#die()
 
 func _spawn_damage_number_or_block(ctx: DamageContext) -> void:
 	if ctx.health_damage > 0:
@@ -167,22 +189,30 @@ func _spawn_damage_number_or_block(ctx: DamageContext) -> void:
 func add_armor(amount: int):
 	combatant_data.add_armor(amount)
 
-##for future: death must cancel pending action resolution
-func die():
+func die() -> void:
+	if battle_scene and battle_scene.api:
+		battle_scene.api.resolve_death(combat_id, "legacy_die")
+		return
+	# (optional) emergency fallback if called outside battle
 	combatant_data.alive = false
-	print(name, " died")
-	combatant.status_grid.end_non_self_statuses()
-	
-	battle_group.update_combatant_position()
-	var death_tween: Tween = create_tween()
-	death_tween.tween_property(character_sprite, "modulate", Color.BLACK, 0.3)
-	death_tween.tween_callback(
-		func():
-			battle_group.combatant_died(self)
-				)
-	for child in get_children():
-		if child is FighterBehavior:
-			child._on_die()
+
+
+###for future: death must cancel pending action resolution
+#func die():
+	#combatant_data.alive = false
+	#print(name, " died")
+	#combatant.status_grid.end_non_self_statuses()
+	#
+	#battle_group.update_combatant_position()
+	#var death_tween: Tween = create_tween()
+	#death_tween.tween_property(character_sprite, "modulate", Color.BLACK, 0.3)
+	#death_tween.tween_callback(
+		#func():
+			#battle_group.combatant_died(self)
+				#)
+	#for child in get_children():
+		#if child is FighterBehavior:
+			#child._on_die()
 
 func fade():
 	for child in get_children():
@@ -282,6 +312,11 @@ func set_fade_mark(show_it: bool) -> void:
 
 func resolve_action() -> void:
 	action_resolved.emit(self)
+
+func _on_data_changed() -> void:
+	if battle_scene and battle_scene.api:
+		# cast if you want, or just call a method on BattleAPI base
+		battle_scene.api.observe_stats_changed(self)
 
 func _on_combatant_statuses_applied(proc_type: Status.ProcType) -> void:
 	statuses_applied.emit(proc_type)

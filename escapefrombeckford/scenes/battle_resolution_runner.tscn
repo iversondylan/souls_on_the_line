@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://co7q6uigpt8n4"]
+
+[ext_resource type="Script" uid="uid://dnvrur37hyqq2" path="res://scenes/battle_resolution_runner.gd" id="1_a7tjp"]
+
+[node name="BattleResolutionRunner" type="Node" unique_id=615590965]
+script = ExtResource("1_a7tjp")

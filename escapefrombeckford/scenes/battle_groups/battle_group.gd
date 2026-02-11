@@ -61,11 +61,12 @@ func opposing_turn_end() -> void:
 	for fighter: Fighter in get_combatants():
 		fighter.opposing_group_turn_end()
 
-func get_combatants() -> Array[Fighter]:
+func get_combatants(allow_dead: bool = false) -> Array[Fighter]:
 	var combatants: Array[Fighter] = []
 	for child in get_children():
-		if child is Fighter and child.is_alive():
-			combatants.push_back(child)
+		if child is Fighter and is_instance_valid(child):
+			if child.is_alive() or allow_dead:
+				combatants.push_back(child)
 	return combatants
 
 func connect_combatant(fighter: Fighter):
@@ -101,6 +102,8 @@ func remove_combatant(fighter: Fighter):
 	if !acting_fighters.is_empty():
 		dead_fighter_acting = fighter == acting_fighters[0]
 	acting_fighters.erase(fighter)
+	if battle_scene and battle_scene.runner:
+		battle_scene.runner.mark_removed(fighter.combat_id)
 	fighter.queue_free()
 	Events.n_combatants_changed.emit()
 	update_combatant_position()
@@ -120,11 +123,16 @@ func remove_combatant(fighter: Fighter):
 		if BattleController.current_state == BattleController.BattleState.FRIENDLY_TURN:
 			_next_turn_taker()
 
-func combatant_died(fighter: Fighter) -> void:
+#func combatant_died(fighter: Fighter) -> void:
+	#if fighter is SummonedAlly:
+		#fighter.discard_summon_reserve_card(deck)
+	#Events.dead_combatant_data.emit(fighter.combatant_data)
+	#remove_combatant(fighter)
+
+func on_combatant_death_side_effects(fighter: Fighter) -> void:
 	if fighter is SummonedAlly:
 		fighter.discard_summon_reserve_card(deck)
 	Events.dead_combatant_data.emit(fighter.combatant_data)
-	remove_combatant(fighter)
 
 func combatant_faded(fighter: Fighter) -> void:
 	if fighter is SummonedAlly:

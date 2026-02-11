@@ -1,5 +1,8 @@
 # status_runtime.gd
 
+#THIS SCRIPT IS DEAD WEIGHT AND SHOULD BE DELETED
+
+
 class_name StatusRuntime extends RefCounted
 
 static func apply_status_to_fighter(fighter: Fighter, status: Status) -> void:

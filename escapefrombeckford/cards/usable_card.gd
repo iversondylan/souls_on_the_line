@@ -407,6 +407,7 @@ func commit_play(ctx: CardActionContext, skip_action: CardAction = null, spend_m
 		#return false
 	#print("3")
 	Events.card_played.emit(self)
+	flush_pending_summons.call_deferred(ctx)
 	_move_to_destination()
 	return true
 
@@ -419,3 +420,11 @@ func _move_to_destination() -> void:
 		hand.reserve_summon_card(hand.remove_card_by_entity(self))
 	else:
 		hand.discard_card(hand.remove_card_by_entity(self))
+
+func flush_pending_summons(ctx: CardActionContext) -> void:
+	if !ctx:
+		return
+	for e in ctx.pending_summon_effects:
+		if e:
+			e.apply_to_card_context(ctx)
+	ctx.pending_summon_effects.clear()

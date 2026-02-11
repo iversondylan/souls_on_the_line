@@ -4,6 +4,7 @@ class_name BattleScene extends Node2D
 
 @onready var groups: Array[BattleGroup] = [$BattleGroupFriendly, $BattleGroupEnemy]
 @onready var target_arrow: Sprite2D = $TargetArrow
+@onready var runner: BattleResolutionRunner = $BattleResolutionRunner
 
 var deck: Deck : set = _set_deck
 var run: Run : set = _set_run
@@ -31,10 +32,10 @@ func _set_deck(_deck: Deck) -> void:
 	for group: BattleGroup in groups:
 		group.deck = deck
 
-func get_combatant_by_id(combat_id: int) -> Fighter:
+func get_combatant_by_id(combat_id: int, allow_dead: bool = false) -> Fighter:
 	for group: BattleGroup in groups:
-		for fighter in group.get_combatants():
-			if fighter.combat_id == combat_id and is_instance_valid(fighter) and fighter.is_alive():
+		for fighter: Fighter in group.get_combatants(allow_dead):
+			if fighter.combat_id == combat_id and is_instance_valid(fighter):
 				return fighter
 	return null
 
@@ -99,9 +100,21 @@ func remove_combatant(fighter: Fighter):
 		group.remove_combatant(fighter)
 
 func kill_enemies() -> void:
-	var fighters := get_enemies()
-	for fighter: Fighter in fighters:
-		groups[1].combatant_died(fighter)
+	if !api:
+		push_warning("BattleScene.kill_enemies(): no api")
+		return
+
+	# Snapshot combat_ids first (runner will handle dedupe + ordering)
+	var ids: Array[int] = []
+	for f: Fighter in groups[1].get_combatants(true): # allow_dead=true
+		if f and is_instance_valid(f):
+			# Skip already-dead data if you want; optional:
+			# if !f.is_alive(): continue
+			if f.combat_id > 0:
+				ids.append(f.combat_id)
+
+	for cid in ids:
+		api.resolve_death(cid, "debug_kill_enemies")
 
 
 func clear_combatants():

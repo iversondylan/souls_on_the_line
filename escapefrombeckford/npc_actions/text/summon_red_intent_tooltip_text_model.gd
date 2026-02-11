@@ -16,7 +16,7 @@ func get_text(ctx: NPCAIContext) -> String:
 	
 	
 	# NOTE: requires NPCKeys.SUMMON_DATA to be set by a ParamModel, but defaults safely.
-	var fallback: CombatantData = SummonEffect.DEFAULT_SUMMON_DATA
+	var fallback: CombatantData = load(SummonEffect.DEFAULT_SUMMON_DATA)
 	var data: CombatantData = ctx.params.get(NPCKeys.SUMMON_DATA, fallback)
 	
 	if !data:

@@ -39,8 +39,9 @@ func execute(ctx: NPCAIContext, on_done: Callable) -> void:
 		return
 
 	# Resolve summon data (CombatantData resource OR a path string OR null for SummonEffect fallback)
-	var summon_data_orig: CombatantData = _resolve_summon_data(params.get(NPCKeys.SUMMON_DATA, SummonEffect.DEFAULT_SUMMON_DATA))
-	var summon_data: CombatantData = summon_data_orig.duplicate()
+	var summon_data_orig: CombatantData = _resolve_summon_data(params.get(NPCKeys.SUMMON_DATA, load(SummonEffect.DEFAULT_SUMMON_DATA)))
+	#var summon_data_template: CombatantData = summon_data_orig # no duplicate
+	var summon_data: CombatantData# = summon_data_orig.duplicate()
 	# Optional sound override (Sound/AudioStream-like resource), SummonEffect will fallback if null
 	var summon_sound = params.get(NPCKeys.SUMMON_SOUND, null)
 
@@ -60,6 +61,7 @@ func execute(ctx: NPCAIContext, on_done: Callable) -> void:
 	# Summon N units
 	# ------------------------------------------------------------
 	for i in range(count):
+		summon_data = summon_data_orig.duplicate()
 		# Re-check current size each iteration so insert clamping is correct
 		var cur_n := int(battle_scene.get_n_combatants_in_group(group_index))
 
