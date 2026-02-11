@@ -12,6 +12,9 @@ func get_targets_for_attack_sequence(ctx) -> Array:
 	return []
 
 # --- Core resolution verbs ---
+func apply_damage_amount(ctx: DamageContext, amount: int) -> Dictionary:
+	return {}
+
 func resolve_damage(ctx: DamageContext) -> void:
 	pass
 
