@@ -134,7 +134,7 @@ func _finish_confirm(chosen: SummonedAlly) -> void:
 	# Execute summon effect + apply to card context
 	var summon_effect := effect as SummonEffect
 	if summon_effect != null:
-		summon_effect.execute(BattleAPI.new())
+		summon_effect.execute(handler.battle_scene.api)
 		summon_effect.apply_to_card_context(card_ctx)
 	else:
 		push_warning("SummonReplaceInteractionContext._finish_confirm(): effect lost SummonEffect type")

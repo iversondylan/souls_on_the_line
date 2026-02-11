@@ -22,7 +22,7 @@ func activate(ctx: CardActionContext) -> bool:
 	pressure_barrier_status.intensity = pressure_barrier_intensity
 	status_effect.sound = amplify_sound
 	status_effect.status = pressure_barrier_status
-	status_effect.execute(BattleAPI.new())
+	status_effect.execute(ctx.battle_scene.api)
 
 	return true
 

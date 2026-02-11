@@ -3,6 +3,7 @@
 extends Node
 
 ## battle flow events
+signal live_battle_api_created(api: LiveBattleAPI)
 signal battle_reset() #1-way signal to fighters, immediately followed by arcanum call
 signal initiate_first_intents()
 signal first_friendly_turn_started() #called after start of battle arcana in battle.gd

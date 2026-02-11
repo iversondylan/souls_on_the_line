@@ -2,6 +2,7 @@
 class_name NPCAIContext extends RefCounted
 
 # stable
+var api: BattleAPI
 var combatant: Fighter
 var combatant_data: CombatantData
 var battle_scene: BattleScene

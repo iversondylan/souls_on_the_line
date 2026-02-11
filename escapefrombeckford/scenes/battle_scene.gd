@@ -13,6 +13,8 @@ var battle_seed: int
 var run_seed: int
 var static_mods: BattleStaticModifiers
 
+var api: BattleAPI
+
 func _ready() -> void:
 	for group : BattleGroup in groups:
 		group.battle_scene = self

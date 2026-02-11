@@ -15,6 +15,6 @@ func activate(ctx: CardActionContext) -> bool:
 	var new_status := status.duplicate()
 	
 	status_effect.status = new_status
-	status_effect.execute(BattleAPI.new())
+	status_effect.execute(ctx.battle_scene.api)
 	
 	return true

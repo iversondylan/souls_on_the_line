@@ -11,7 +11,7 @@ func activate(ctx: CardActionContext) -> bool:
 	block_effect.targets = targets
 	block_effect.n_armor = n_armor
 	block_effect.sound = ctx.card_data.sound
-	block_effect.execute(BattleAPI.new())
+	block_effect.execute(ctx.battle_scene.api)
 
 	return true
 

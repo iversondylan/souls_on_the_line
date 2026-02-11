@@ -1,4 +1,5 @@
 # live_battle_api.gd
+
 class_name LiveBattleAPI extends BattleAPI
 
 var battle_scene: BattleScene

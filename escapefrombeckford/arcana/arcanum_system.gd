@@ -12,9 +12,11 @@ signal modifier_tokens_changed(mod_type: Modifier.Type)
 @onready var arcana_control: ArcanaControl = $ArcanaControl
 @onready var arcana_container: HBoxContainer = %ArcanaContainer
 
+var api: LiveBattleAPI
+
 func _ready() -> void:
 	arcana_container.child_exiting_tree.connect(_on_arcanum_display_exiting_tree)
-	
+	Events.live_battle_api_created.connect(_on_live_battle_api_created)
 	#add_arcanum(preload("res://arcana/general/unruly_pyric_wraps.tres"))
 	#await get_tree().create_timer(1.0).timeout
 	#add_arcanum(preload("res://arcana/general/sigil_of_mana.tres"))
@@ -22,6 +24,11 @@ func _ready() -> void:
 	#add_arcanum(preload("res://arcana/general/thales_flask.tres"))
 	#await get_tree().create_timer(1.0).timeout
 	#add_arcanum(preload("res://arcana/general/vennards_vauxite.tres"))
+
+func _on_live_battle_api_created(new_api: LiveBattleAPI) -> void:
+	if new_api:
+		api = new_api
+		
 
 func get_modifier_tokens_for(target: Node) -> Array[ModifierToken]:
 	var tokens: Array[ModifierToken] = []
@@ -55,6 +62,7 @@ func activate_arcana_by_type(type: Arcanum.Type) -> void:
 	for arcanum_display: ArcanumDisplay in arcanum_queue:
 		var ctx := ArcanumContext.new()
 		ctx.arcanum_display = arcanum_display
+		ctx.api = api
 		tween.tween_callback(arcanum_display.arcanum.activate_arcanum.bind(ctx))
 		tween.tween_interval(ARCANUM_APPLY_INTERVAL)
 	

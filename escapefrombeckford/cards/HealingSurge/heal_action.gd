@@ -14,6 +14,6 @@ func activate(ctx: CardActionContext) -> bool:
 	heal_effect.flat_amount = flat_amount
 	heal_effect.of_total = of_total
 	heal_effect.of_missing = of_missing
-	heal_effect.execute(BattleAPI.new())
+	heal_effect.execute(ctx.battle_scene.api)
 
 	return true

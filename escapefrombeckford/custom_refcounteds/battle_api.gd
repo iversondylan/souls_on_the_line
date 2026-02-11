@@ -16,7 +16,11 @@ func apply_damage_amount(ctx: DamageContext, amount: int) -> Dictionary:
 	return {}
 
 func resolve_damage(ctx: DamageContext) -> void:
-	pass
+	# TEMP SHIM: keep the game working while you refactor.
+	if !ctx or !ctx.target:
+		return
+	# Calls your existing Fighter.apply_damage (which does mods + stats + visuals today)
+	ctx.target.apply_damage(ctx)
 
 func resolve_death(combat_id: int, reason := "") -> void:
 	pass
@@ -26,3 +30,8 @@ func apply_status(target_id: int, status_state_or_id, duration := 0, intensity :
 
 func remove_status(target_id: int, status_id: String) -> void:
 	pass
+
+func play_sfx(sound: Sound) -> void:
+	# TEMP SHIM
+	if sound:
+		SFXPlayer.play(sound)

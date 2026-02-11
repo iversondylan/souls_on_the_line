@@ -167,12 +167,12 @@ func _play_ranged(
 # DAMAGE + FINISH
 # -------------------------------------------------------------------
 
-func _apply_damage(_ctx: NPCAIContext, targets: Array[Fighter], base_dmg: int, impact_sound: Resource) -> void:
+func _apply_damage(ctx: NPCAIContext, targets: Array[Fighter], base_dmg: int, impact_sound: Resource) -> void:
 	var dmg_effect := DamageEffect.new()
 	dmg_effect.targets = targets
 	dmg_effect.n_damage = base_dmg
 	dmg_effect.sound = impact_sound
-	dmg_effect.execute(BattleAPI.new())
+	dmg_effect.execute(ctx.battle_scene.api)
 
 
 func _finish_attack(ctx: NPCAIContext, on_done: Callable) -> void:

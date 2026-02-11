@@ -19,7 +19,7 @@ func activate(ctx: CardActionContext) -> bool:
 	amplify_status.duration = amplify_duration
 	status_effect.sound = amplify_sound
 	status_effect.status = amplify_status
-	status_effect.execute(BattleAPI.new())
+	status_effect.execute(ctx.battle_scene.api)
 
 	return true
 

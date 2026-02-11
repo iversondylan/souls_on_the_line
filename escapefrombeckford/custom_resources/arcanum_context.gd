@@ -2,7 +2,7 @@
 class_name ArcanumContext extends RefCounted
 
 var arcanum_display: ArcanumDisplay
-
+var api: BattleAPI
 var player: Player
 #var player_data: PlayerData
 var battle_scene: BattleScene

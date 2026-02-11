@@ -14,7 +14,7 @@ func activate_arcanum(ctx: ArcanumContext) -> void:
 		push_warning("adamant_ally.gd error: no battle_scene or player")
 		return
 	var effect := build_effect(ctx)
-	effect.execute(BattleAPI.new())
+	effect.execute(ctx.api)
 
 func build_effect(ctx: ArcanumContext) -> SummonEffect:
 	var effect := SummonEffect.new()

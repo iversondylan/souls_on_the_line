@@ -1,6 +1,6 @@
 # attack_target_context.gd
 class_name AttackTargetContext extends RefCounted
-
+var api: BattleAPI
 var source: Fighter        # who is acting
 #var effect: AttackEffect
 #var attack_effect: NPCAttackEffect #<---- NEW

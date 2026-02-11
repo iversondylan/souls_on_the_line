@@ -34,6 +34,7 @@ func _make_context() -> NPCAIContext:
 	
 	var ctx := NPCAIContext.new()
 	ctx.combatant = fighter
+	ctx.api = fighter.battle_scene.api
 	ctx.battle_scene = fighter.battle_scene
 	ctx.state = fighter.state.ai_state
 	ctx.rng =  fighter.state.rng
@@ -82,6 +83,9 @@ func _on_combatant_data_set(_data: CombatantData) -> void:
 	# Wait for Battle to explicitly initiate first intents
 	if not Events.initiate_first_intents.is_connected(_on_initiate_first_intents):
 		Events.initiate_first_intents.connect(_on_initiate_first_intents, CONNECT_ONE_SHOT)
+
+func initiate_first_intents() -> void:
+	_on_initiate_first_intents()
 
 func _on_initiate_first_intents() -> void:
 	if Events.initiate_first_intents.is_connected(_on_initiate_first_intents):

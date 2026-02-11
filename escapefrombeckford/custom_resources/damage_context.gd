@@ -7,7 +7,7 @@ enum Phase {
 	POST_MODIFIERS,
 	APPLIED
 }
-
+var api: BattleAPI
 var source: Fighter = null
 var source_id: int = 0
 

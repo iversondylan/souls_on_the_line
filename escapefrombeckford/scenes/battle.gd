@@ -52,9 +52,13 @@ var wait_for_anims: bool = false
 var run_seed: int
 var battle_seed: int
 
+var api: BattleAPI
+
 func _ready() -> void:
 	#print_tree_pretty()
-	
+	api = LiveBattleAPI.new(battle_scene)
+	battle_scene.api = api
+	Events.live_battle_api_created.emit(api)
 	set_process(true)
 	
 	

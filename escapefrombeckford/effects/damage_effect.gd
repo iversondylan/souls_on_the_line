@@ -7,10 +7,14 @@ var modifier_type: Modifier.Type #CURRENTLY UNUSED, but function should
 # be restored so that there can be damage that does not get modified
 # or perhaps damage types with particular weakness/resistance
 
-func execute(_api: BattleAPI) -> void:
+func execute(api: BattleAPI) -> void:
+	if !api:
+		return
+
 	for target in targets:
 		if !target:
 			continue
 		var ctx := DamageContext.new(source, target, n_damage)
-		target.apply_damage(ctx)
-	SFXPlayer.play(sound)
+		api.resolve_damage(ctx)
+
+	api.play_sfx(sound)

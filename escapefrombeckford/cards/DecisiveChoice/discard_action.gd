@@ -4,10 +4,10 @@ class_name DiscardAction extends CardAction
 @export var base_discard: int = 1
 
 func activate(ctx: CardActionContext) -> bool:
-	var e := DiscardEffect.new()
-	e.amount = base_discard
-	e.source = ctx.player
-	e.execute(BattleAPI.new())
+	var discard_effect := DiscardEffect.new()
+	discard_effect.amount = base_discard
+	discard_effect.source = ctx.player
+	discard_effect.execute(ctx.battle_scene.api)
 	return true
 
 func description_arity() -> int:

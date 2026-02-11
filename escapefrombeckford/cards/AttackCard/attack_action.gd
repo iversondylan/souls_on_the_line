@@ -22,7 +22,7 @@ func activate(ctx: CardActionContext) -> bool:
 	damage_effect.targets = targets
 	damage_effect.n_damage = damage
 	damage_effect.sound = sound
-	damage_effect.execute(BattleAPI.new())
+	damage_effect.execute(ctx.battle_scene.api)
 
 	return true
 

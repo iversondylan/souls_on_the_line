@@ -55,10 +55,9 @@ func execute(_api: BattleAPI) -> void:
 	# --- AI bootstrap ---
 	for child in fighter.get_children():
 		if child is NPCAIBehavior:
-			child.plan_next_intent()
-			child.refresh_intent_display()
+			child.initiate_first_intents()
 	
-	# --- Optional card binding (only makes sense for SummonedAlly) ---
+	# --- Optional card binding (only for SummonedAlly) ---
 	if bound_card_data:
 		if fighter is SummonedAlly:
 			var summon_behavior := fighter.get_node_or_null("SummonedAllyBehavior")

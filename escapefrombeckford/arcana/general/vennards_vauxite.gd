@@ -7,6 +7,6 @@ func activate_arcanum(ctx: ArcanumContext) -> void:
 	var block_effect := BlockEffect.new()
 	block_effect.targets = [player]
 	block_effect.n_armor = block
-	block_effect.execute(BattleAPI.new())
+	block_effect.execute(ctx.api)
 	
 	arcanum_display.flash()
