@@ -19,7 +19,7 @@ func activate(ctx: CardActionContext) -> bool:
 
 	status_effect.status = cruel_dominion
 	status_effect.sound = sound
-	status_effect.execute()
+	status_effect.execute(BattleAPI.new())
 
 	return true
 

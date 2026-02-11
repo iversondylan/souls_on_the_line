@@ -18,7 +18,7 @@ func activate(ctx: CardActionContext) -> bool:
 	if !ctx.battle_scene or !ctx.resolved_target:
 		return false
 	var effect := build_effect(ctx)
-	effect.execute()
+	effect.execute(BattleAPI.new())
 	effect.apply_to_card_context(ctx)
 	return true
 

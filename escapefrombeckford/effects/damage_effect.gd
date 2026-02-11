@@ -7,7 +7,7 @@ var modifier_type: Modifier.Type #CURRENTLY UNUSED, but function should
 # be restored so that there can be damage that does not get modified
 # or perhaps damage types with particular weakness/resistance
 
-func execute() -> void:
+func execute(_api: BattleAPI) -> void:
 	for target in targets:
 		if !target:
 			continue

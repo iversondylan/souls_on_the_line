@@ -97,7 +97,7 @@ func _confirm(target: Fighter) -> void:
 	# If you want the sound from the action, you can pass it in via handler/context.
 	# move.sound = ...
 
-	move.execute()
+	move.execute(BattleAPI.new())
 
 	# Commit the card play, skipping the swap action (since we already executed it).
 	if card != null and is_instance_valid(card):

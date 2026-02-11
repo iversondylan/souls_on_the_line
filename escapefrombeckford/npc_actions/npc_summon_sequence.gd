@@ -77,7 +77,7 @@ func execute(ctx: NPCAIContext, on_done: Callable) -> void:
 		if summon_sound:
 			effect.sound = summon_sound
 
-		effect.execute()
+		effect.execute(BattleAPI.new())
 
 	on_done.call()
 

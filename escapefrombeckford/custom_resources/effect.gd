@@ -1,8 +1,9 @@
 # effect.gd
-class_name Effect extends Resource
+
+class_name Effect extends RefCounted
 
 var targets: Array[Fighter]
 var sound: Sound
 
-func execute() -> void:
+func execute(_api: BattleAPI) -> void:
 	pass

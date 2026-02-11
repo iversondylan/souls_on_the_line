@@ -13,5 +13,5 @@ func activate_arcanum(ctx: ArcanumContext) -> void:
 	damage_effect.targets = enemies
 	damage_effect.n_damage = damage
 	damage_effect.modifier_type = Modifier.Type.NO_MODIFIER
-	damage_effect.execute()
+	damage_effect.execute(BattleAPI.new())
 	arcanum_display.flash()

@@ -5,7 +5,7 @@ extends Effect
 
 var status: Status
 
-func execute() -> void:
+func execute(_api: BattleAPI) -> void:
 	SFXPlayer.play(sound)
 	for target in targets:
 		if !target:

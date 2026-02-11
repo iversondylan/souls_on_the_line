@@ -6,7 +6,7 @@ var amount: int = 1
 var source: Fighter
 var reason: String = ""
 
-func execute() -> void:
+func execute(_api: BattleAPI) -> void:
 	var ctx := DiscardContext.new()
 	ctx.source = source
 	ctx.amount = amount

@@ -7,7 +7,7 @@ func activate(ctx: CardActionContext) -> bool:
 	var e := CardDrawEffect.new()
 	e.amount = base_draw
 	e.source = ctx.player
-	e.execute()
+	e.execute(BattleAPI.new())
 	return true
 
 func description_arity() -> int:

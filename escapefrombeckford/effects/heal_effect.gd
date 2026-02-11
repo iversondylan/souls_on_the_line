@@ -7,7 +7,7 @@ var of_missing: float = 0.0
 
 var source: Fighter = null
 
-func execute() -> void:
+func execute(_api: BattleAPI) -> void:
 	for target: Fighter in targets:
 		if !target:
 			continue

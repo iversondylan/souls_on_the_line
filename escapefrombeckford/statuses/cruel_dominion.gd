@@ -17,7 +17,7 @@ func apply_status(target: Node) -> void:
 	var effect := StatusEffect.new()
 	effect.targets = [target]
 	effect.status = echoed
-	effect.execute()
+	effect.execute(BattleAPI.new())
 
 	status_applied.emit(self)
 

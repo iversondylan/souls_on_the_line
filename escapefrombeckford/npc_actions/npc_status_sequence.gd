@@ -33,6 +33,6 @@ func execute(ctx: NPCAIContext, on_done: Callable) -> void:
 	var effect := StatusEffect.new()
 	effect.targets = [fighter]
 	effect.status = status
-	effect.execute()
+	effect.execute(BattleAPI.new())
 	
 	on_done.call()

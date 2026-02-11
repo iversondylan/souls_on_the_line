@@ -23,7 +23,7 @@ func execute(ctx: NPCAIContext, on_done: Callable) -> void:
 	block_effect.targets = [fighter]
 	block_effect.n_armor = armor
 	block_effect.sound = sound
-	block_effect.execute()
+	block_effect.execute(BattleAPI.new())
 
 	# Restore info visibility just in case (mirrors attack end semantics)
 	fighter.info_visible(true)

@@ -172,7 +172,7 @@ func _apply_damage(_ctx: NPCAIContext, targets: Array[Fighter], base_dmg: int, i
 	dmg_effect.targets = targets
 	dmg_effect.n_damage = base_dmg
 	dmg_effect.sound = impact_sound
-	dmg_effect.execute()
+	dmg_effect.execute(BattleAPI.new())
 
 
 func _finish_attack(ctx: NPCAIContext, on_done: Callable) -> void:

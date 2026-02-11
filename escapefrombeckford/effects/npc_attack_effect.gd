@@ -14,7 +14,7 @@ func _init(_ctx: NPCAIContext) -> void:
 	ctx = _ctx
 
 
-func execute() -> void:
+func execute(_api: BattleAPI) -> void:
 	_execute_step()
 
 

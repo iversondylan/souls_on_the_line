@@ -20,7 +20,7 @@ var bound_card_data: CardData   # null means no binding (deplete-style)
 # Output (set during execute)
 var summoned_fighter: Fighter = null
 
-func execute() -> void:
+func execute(_api: BattleAPI) -> void:
 	if !battle_scene:
 		push_warning("SummonEffect.execute() called without battle_scene")
 		return

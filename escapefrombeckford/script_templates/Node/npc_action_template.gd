@@ -49,17 +49,17 @@ func perform(ctx: NPCAIContext) -> void:
 	# Update AI state
 	ctx.state["spree"] = int(ctx.state.get("spree", 0)) + 1
 
-	var effect := BasicMeleeAttackEffect.new()
-	effect.attacker = fighter
-	effect.n_damage = base_damage
-	effect.n_attacks = n_attacks
-	effect.battle_scene = ctx.battle_scene
-	effect.sound = sound
-
-	effect.execute()
-
-	# IMPORTANT: always resolve
-	fighter.resolve_action()
+	#var effect := BasicMeleeAttackEffect.new()
+	#effect.attacker = fighter
+	#effect.n_damage = base_damage
+	#effect.n_attacks = n_attacks
+	#effect.battle_scene = ctx.battle_scene
+	##effect.sound = sound
+#
+	#effect.execute(BattleAPI.new())
+#
+	## IMPORTANT: always resolve
+	#fighter.resolve_action()
 
 
 func save_state(ctx: NPCAIContext) -> Dictionary:

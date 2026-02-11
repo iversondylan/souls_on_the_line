@@ -19,7 +19,7 @@ func activate(ctx: CardActionContext) -> bool:
 	
 	status_effect.status = marked_status
 	status_effect.sound = sound
-	status_effect.execute()
+	status_effect.execute(BattleAPI.new())
 	
 	return true
 
