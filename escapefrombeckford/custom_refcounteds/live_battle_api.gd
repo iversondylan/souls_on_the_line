@@ -429,6 +429,7 @@ func _run_move_op(ctx: MoveContext) -> void:
 # moving strike timing into _run_attack_now_op (runner-controlled),
 # and applying damage inline at each strike moment (so it doesn’t need to enqueue to itself).
 func _run_attack_now_op(ctx: AttackNowContext) -> void:
+	print("attack_now waiting... ")
 	if !ctx:
 		return
 

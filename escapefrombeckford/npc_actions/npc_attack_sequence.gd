@@ -148,6 +148,9 @@ func _play_ranged(
 	tween.tween_property(projectile, "global_position", end_pos, 0.35)
 	
 	tween.tween_callback(func():
+		if !fighter or !is_instance_valid(fighter) or !fighter.is_alive():
+			on_done.call()
+			return
 		_apply_damage(ctx, targets, base_dmg, ranged_impact_sound)
 	)
 	
@@ -159,6 +162,9 @@ func _play_ranged(
 	tween.tween_interval(0.2)
 	
 	tween.tween_callback(func():
+		if !fighter or !is_instance_valid(fighter) or !fighter.is_alive():
+			on_done.call()
+			return
 		_execute_strike(ctx, base_dmg, remaining - 1, on_done)
 	)
 

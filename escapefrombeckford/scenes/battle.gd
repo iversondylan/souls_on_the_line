@@ -278,4 +278,4 @@ func _on_request_draw_cards(ctx: DrawContext) -> void:
 
 func simulate_battle() -> void:
 	var sim_battle := SimBattle.from_battle_scene(battle_scene, run.status_catalog)
-	#sim_battle.print_sim_snapshot()
+	sim_battle.print_sim_snapshot()

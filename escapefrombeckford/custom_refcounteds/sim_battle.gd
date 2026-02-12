@@ -160,8 +160,6 @@ static func _extract_statuses_as_data(f: Fighter) -> StatusGridData:
 	return data
 
 
-# sim_battle.gd
-
 func to_array_int(arr: Array) -> Array[int]:
 	var arrint: Array[int] = []
 	for element in arr:

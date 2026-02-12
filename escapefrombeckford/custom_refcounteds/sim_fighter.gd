@@ -15,5 +15,8 @@ var modifier_system: SimModifierSystem
 var debug_name: String = ""
 var role: String = "" # "player", "enemy", "summon", "fighter"
 
+var combatant_data: CombatantData = null
+var rank_in_group: int = 0 # lower = more front
+
 func is_alive() -> bool:
 	return alive
