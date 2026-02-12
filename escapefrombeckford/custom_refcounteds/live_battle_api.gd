@@ -77,7 +77,7 @@ func resolve_attack_now(ctx: AttackNowContext) -> void:
 # Damage pipeline (LIVE)
 # --------------------------
 
-func _modify_damage_amount(ctx: DamageContext, base: int) -> int:
+func modify_damage_amount(ctx: DamageContext, base: int) -> int:
 	var amount := base
 
 	# Deal-side
@@ -90,7 +90,7 @@ func _modify_damage_amount(ctx: DamageContext, base: int) -> int:
 
 	return amount
 
-func _apply_damage_amount(ctx: DamageContext, amount: int) -> void:
+func apply_damage_amount(ctx: DamageContext, amount: int) -> void:
 	# Numeric only, fill ctx results
 	if !ctx.target or !ctx.target.combatant_data:
 		return
@@ -102,7 +102,7 @@ func _apply_damage_amount(ctx: DamageContext, amount: int) -> void:
 	ctx.armor_damage = maxi(mini(amount, pre_armor), 0)
 	ctx.was_lethal = !ctx.target.combatant_data.is_alive()
 
-func _on_damage_applied(ctx: DamageContext) -> void:
+func on_damage_applied(ctx: DamageContext) -> void:
 	# Reactions first (gameplay)
 	if ctx.target:
 		ctx.target.damage_taken.emit(ctx)
@@ -116,11 +116,10 @@ func _on_damage_applied(ctx: DamageContext) -> void:
 
 # This is what the runner awaits.
 func _run_damage_op(ctx: DamageContext) -> void:
-	# coroutine body
 	if !ctx:
 		return
 
-	# Hydrate target/source if ids exist but nodes are missing
+	# hydrate
 	if !ctx.target and ctx.target_id != 0:
 		ctx.target = battle_scene.get_combatant_by_id(ctx.target_id, true)
 	if !ctx.source and ctx.source_id != 0:
@@ -128,30 +127,54 @@ func _run_damage_op(ctx: DamageContext) -> void:
 
 	if !ctx.target:
 		return
-
-	# If dead already, do not apply numeric damage.
 	if !ctx.target.is_alive():
 		return
 
-	ctx.phase = DamageContext.Phase.PRE_MODIFIERS
-	ctx.amount = ctx.base_amount
+	# central resolver
+	DamageResolver.resolve(self, ctx)
 
-	var amount := _modify_damage_amount(ctx, ctx.amount)
-	amount = maxi(amount, 0)
-
-	ctx.amount = amount
-	ctx.phase = DamageContext.Phase.POST_MODIFIERS
-
-	_apply_damage_amount(ctx, ctx.amount)
-
-	ctx.phase = DamageContext.Phase.APPLIED
-	_on_damage_applied(ctx)
-
+	# lethal followup timing (if you still want the tiny beat)
 	if ctx.was_lethal and ctx.target_id != 0:
-		# Queue death immediately AFTER showing the hit.
-		# If you want a tiny “impact beat”, do it here.
 		await battle_scene.get_tree().create_timer(0.05).timeout
 		runner.enqueue_death(ctx.target_id, "damage")
+
+#func _run_damage_op(ctx: DamageContext) -> void:
+	## coroutine body
+	#if !ctx:
+		#return
+#
+	## Hydrate target/source if ids exist but nodes are missing
+	#if !ctx.target and ctx.target_id != 0:
+		#ctx.target = battle_scene.get_combatant_by_id(ctx.target_id, true)
+	#if !ctx.source and ctx.source_id != 0:
+		#ctx.source = battle_scene.get_combatant_by_id(ctx.source_id, true)
+#
+	#if !ctx.target:
+		#return
+#
+	## If dead already, do not apply numeric damage.
+	#if !ctx.target.is_alive():
+		#return
+#
+	#ctx.phase = DamageContext.Phase.PRE_MODIFIERS
+	#ctx.amount = ctx.base_amount
+#
+	#var amount := _modify_damage_amount(ctx, ctx.amount)
+	#amount = maxi(amount, 0)
+#
+	#ctx.amount = amount
+	#ctx.phase = DamageContext.Phase.POST_MODIFIERS
+#
+	#_apply_damage_amount(ctx, ctx.amount)
+#
+	#ctx.phase = DamageContext.Phase.APPLIED
+	#_on_damage_applied(ctx)
+#
+	#if ctx.was_lethal and ctx.target_id != 0:
+		## Queue death immediately AFTER showing the hit.
+		## If you want a tiny “impact beat”, do it here.
+		#await battle_scene.get_tree().create_timer(0.05).timeout
+		#runner.enqueue_death(ctx.target_id, "damage")
 
 # --------------------------
 # Death pipeline (LIVE)
@@ -429,26 +452,19 @@ func _run_move_op(ctx: MoveContext) -> void:
 # moving strike timing into _run_attack_now_op (runner-controlled),
 # and applying damage inline at each strike moment (so it doesn’t need to enqueue to itself).
 func _run_attack_now_op(ctx: AttackNowContext) -> void:
-	print("attack_now waiting... ")
 	if !ctx:
 		return
 
-	# Hydrate attacker
 	if !ctx.attacker and ctx.attacker_id != 0:
 		ctx.attacker = battle_scene.get_combatant_by_id(ctx.attacker_id, true)
 
 	var attacker := ctx.attacker
-	if !attacker:
-		return
-	if runner and runner.is_removed(attacker.combat_id):
-		return
-	if !attacker.is_alive():
+	if !attacker or !is_instance_valid(attacker) or !attacker.is_alive():
 		return
 
 	if ctx.sound:
 		play_sfx(ctx.sound)
 
-	# Build transient NPCAIContext
 	var ai_ctx := NPCAIContext.new()
 	ai_ctx.api = self
 	ai_ctx.combatant = attacker
@@ -458,11 +474,9 @@ func _run_attack_now_op(ctx: AttackNowContext) -> void:
 	ai_ctx.params = {}
 	ai_ctx.forecast = false
 
-	# Params
 	var strikes := maxi(ctx.strikes, 0)
 	if strikes <= 0:
 		return
-
 	ai_ctx.params[NPCKeys.STRIKES] = strikes
 	ai_ctx.params[NPCKeys.TARGET_TYPE] = NPCAttackSequence.TARGET_STANDARD
 
@@ -470,19 +484,112 @@ func _run_attack_now_op(ctx: AttackNowContext) -> void:
 	if ctx.use_base_damage_override:
 		base_damage = maxi(ctx.base_damage, 0)
 	else:
-		base_damage = (attacker.combatant_data.max_mana_red + 1) if attacker.combatant_data else 0
+		if attacker.combatant_data:
+			base_damage = attacker.combatant_data.max_mana_red + 1
+	ai_ctx.params[NPCKeys.DAMAGE] = maxi(base_damage, 0) # raw only
+	#if attacker.modifier_system:
+		#base_damage = attacker.modifier_system.get_modified_value(base_damage, Modifier.Type.DMG_DEALT)
+#
+	#ai_ctx.params[NPCKeys.DAMAGE] = maxi(base_damage, 0)
 
-	if attacker.modifier_system:
-		base_damage = attacker.modifier_system.get_modified_value(base_damage, Modifier.Type.DMG_DEALT)
-
-	ai_ctx.params[NPCKeys.DAMAGE] = maxi(base_damage, 0)
-
-	# Apply param models
 	if ctx.param_models:
 		for model in ctx.param_models:
 			if model:
 				model.change_params(ai_ctx)
 
-	# Run sequence WITHOUT awaiting completion
 	var seq := NPCAttackSequence.new()
-	seq.execute(ai_ctx, func(): pass)
+	await seq.run_async(ai_ctx)
+
+
+# Helpers
+
+func is_alive(combat_id: int) -> bool:
+	var f := battle_scene.get_combatant_by_id(combat_id, true)
+	return f != null and is_instance_valid(f) and f.is_alive()
+
+func get_group(combat_id: int) -> int:
+	var f := battle_scene.get_combatant_by_id(combat_id, true)
+	if !f or !is_instance_valid(f):
+		return -1
+	return battle_scene.get_index_of_parent_group(f)
+
+func get_team(combat_id: int) -> int:
+	# if team==group, this is identical; keep for semantic clarity
+	return get_group(combat_id)
+
+func get_opposing_group(group_index: int) -> int:
+	return 1 - clampi(group_index, 0, 1)
+
+func get_combatants_in_group(group_index: int, allow_dead := false) -> Array[int]:
+	group_index = clampi(group_index, 0, 1)
+	var ids: Array[int] = []
+	for f: Fighter in battle_scene.groups[group_index].get_combatants(allow_dead):
+		if f and is_instance_valid(f) and f.combat_id > 0:
+			if allow_dead or f.is_alive():
+				ids.append(f.combat_id)
+	return ids
+
+func get_front_combatant_id(group_index: int) -> int:
+	group_index = clampi(group_index, 0, 1)
+	for f: Fighter in battle_scene.groups[group_index].get_combatants(false):
+		if f and is_instance_valid(f) and f.is_alive():
+			return f.combat_id
+	return 0
+
+func get_enemies_of(combat_id: int) -> Array[int]:
+	var g := get_group(combat_id)
+	if g == -1:
+		return []
+	return get_combatants_in_group(get_opposing_group(g), false)
+
+func get_allies_of(combat_id: int) -> Array[int]:
+	var g := get_group(combat_id)
+	if g == -1:
+		return []
+	var ids := get_combatants_in_group(g, false)
+	ids.erase(combat_id)
+	return ids
+
+func get_rank_in_group(combat_id: int) -> int:
+	var f := battle_scene.get_combatant_by_id(combat_id, true)
+	if !f or !is_instance_valid(f):
+		return -1
+	return f.get_index()
+
+func has_status(combat_id: int, status_id: StringName) -> bool:
+	var f := battle_scene.get_combatant_by_id(combat_id, true)
+	if !f or !is_instance_valid(f):
+		return false
+	if !f.combatant or !f.combatant.status_grid:
+		return false
+	return f.combatant.status_grid.has_status(status_id)
+
+func find_marked_ranged_redirect_target(attacker_id: int) -> int:
+	var enemies := get_enemies_of(attacker_id) # ids front->back
+	for id in enemies:
+		if is_alive(id) and has_status(id, &"marked"):
+			return id
+	return 0
+
+
+func get_targets_for_attack_sequence(ai_ctx) -> Array:
+	var attacker_id := 0
+	if ai_ctx.combatant:
+		attacker_id = ai_ctx.combatant.combat_id
+	elif ai_ctx.combatant_data:
+		attacker_id = ai_ctx.combatant_data.combat_id
+	if attacker_id <= 0:
+		return []
+
+	var ids := AttackTargeting.get_target_ids(self, attacker_id, ai_ctx.params)
+	var out: Array[Fighter] = []
+	for id in ids:
+		var f := battle_scene.get_combatant_by_id(id, true)
+		if f and is_instance_valid(f) and f.is_alive():
+			out.append(f)
+	return out
+
+func get_player_pos_delta(combat_id: int) -> int:
+	# live: use battle_scene.get_player_pos_delta(fighter)
+	var fighter := battle_scene.get_combatant_by_id(combat_id)
+	return battle_scene.get_player_pos_delta(fighter)

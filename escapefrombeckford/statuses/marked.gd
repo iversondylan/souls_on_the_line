@@ -1,5 +1,13 @@
 class_name MarkedStatus extends Status
 
+# export settings:
+# proc_type: Start of Turn
+# number_display_type: Duration
+# reapply_type: Duration
+# expiration_policy: Duration
+# duration: 2
+# intensity: 0
+
 const ID := "marked"
 
 func get_id() -> String:

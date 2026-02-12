@@ -123,12 +123,6 @@ func remove_combatant(fighter: Fighter):
 		if BattleController.current_state == BattleController.BattleState.FRIENDLY_TURN:
 			_next_turn_taker()
 
-#func combatant_died(fighter: Fighter) -> void:
-	#if fighter is SummonedAlly:
-		#fighter.discard_summon_reserve_card(deck)
-	#Events.dead_combatant_data.emit(fighter.combatant_data)
-	#remove_combatant(fighter)
-
 func on_combatant_death_side_effects(fighter: Fighter) -> void:
 	if fighter is SummonedAlly:
 		fighter.discard_summon_reserve_card(deck)

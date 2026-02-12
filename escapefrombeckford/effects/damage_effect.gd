@@ -9,22 +9,46 @@ func execute(api: BattleAPI) -> void:
 	if !api:
 		return
 
-	for target in targets:
-		if !target:
+	for t: Fighter in targets:
+		if !t:
 			continue
 
-		var ctx := DamageContext.new(source, target, n_damage)
-		ctx.api = api
-
-		# Populate ids so sim can work later, and live can survive freed nodes.
+		var ctx := DamageContext.new()
+		ctx.source = source
 		if source:
 			ctx.source_id = source.combat_id
-		if target:
-			ctx.target_id = target.combat_id
+
+		ctx.target = t
+		ctx.target_id = t.combat_id
+
+		ctx.base_amount = n_damage
+
+		# IMPORTANT: these are what enable DMG_DEALT / DMG_TAKEN
+		ctx.deal_modifier_type = Modifier.Type.DMG_DEALT
+		ctx.take_modifier_type = Modifier.Type.DMG_TAKEN
 
 		api.resolve_damage(ctx)
 
-	api.play_sfx(sound)
+#func execute(api: BattleAPI) -> void:
+	#if !api:
+		#return
+#
+	#for target in targets:
+		#if !target:
+			#continue
+#
+		#var ctx := DamageContext.new(source, target, n_damage)
+		#ctx.api = api
+#
+		## Populate ids so sim can work later, and live can survive freed nodes.
+		#if source:
+			#ctx.source_id = source.combat_id
+		#if target:
+			#ctx.target_id = target.combat_id
+#
+		#api.resolve_damage(ctx)
+#
+	#api.play_sfx(sound)
 
 
 

@@ -112,14 +112,3 @@ static func set_token_owner(token: ModifierToken, ctx: StatusTokenContext) -> vo
 		return
 	token.owner = ctx.owner
 	token.owner_id = ctx.owner_id
-
-
-#static func set_token_owner(token: ModifierToken, ctx: StatusTokenContext) -> void:
-	## Prefer node if present; otherwise use id.
-	#if ctx.owner:
-		#token.owner = ctx.owner
-		#token.owner_id = -1
-	#else:
-		#token.owner = null
-		#token.owner_id = ctx.owner_id
-		

@@ -1,3 +1,6 @@
+# keep_stability_performable_model
+
+
 class_name KeepStabilityPerformableModel extends PerformableModel
 
 func is_performable(ctx: NPCAIContext) -> bool:

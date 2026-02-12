@@ -33,8 +33,8 @@ var was_lethal: bool = false
 var tags: Array[StringName] = []
 var phase: Phase = Phase.PRE_MODIFIERS
 
-func _init(_source: Fighter, _target: Fighter, _base: int) -> void:
-	source = _source
-	target = _target
-	base_amount = _base
-	amount = _base
+#func _init(_source: Fighter, _target: Fighter, _base: int) -> void:
+	#source = _source
+	#target = _target
+	#base_amount = _base
+	#amount = _base

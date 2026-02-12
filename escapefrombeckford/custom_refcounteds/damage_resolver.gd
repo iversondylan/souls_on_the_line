@@ -1,4 +1,5 @@
 # damage_resolver.gd
+
 class_name DamageResolver extends RefCounted
 
 static func resolve(api: BattleAPI, ctx: DamageContext) -> void:
@@ -17,15 +18,15 @@ static func resolve(api: BattleAPI, ctx: DamageContext) -> void:
 	ctx.phase = DamageContext.Phase.POST_MODIFIERS
 
 	# Apply to stats (numeric only)
-	var result := api.apply_damage_amount(ctx, ctx.amount)
-	ctx.armor_damage = int(result.get("armor_damage", 0))
-	ctx.health_damage = int(result.get("health_damage", 0))
-	ctx.was_lethal = bool(result.get("was_lethal", false))
+	api.apply_damage_amount(ctx, ctx.amount)
+	ctx.armor_damage = int(ctx.armor_damage)
+	ctx.health_damage = int(ctx.health_damage)
+	ctx.was_lethal = bool(ctx.was_lethal)
 
 	ctx.phase = DamageContext.Phase.APPLIED
 
 	# Reactions (signals / status hooks) live here too (but via API)
 	api.on_damage_applied(ctx)
 
-	if ctx.was_lethal:
-		api.resolve_death(ctx.target.combat_id, "damage")
+	#if ctx.was_lethal:
+		#api.resolve_death(ctx.target.combat_id, "damage")

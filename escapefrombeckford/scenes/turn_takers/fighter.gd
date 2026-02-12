@@ -342,27 +342,27 @@ func get_modifier_tokens() -> Array[ModifierToken]:
 		return []
 	return battle_scene.get_modifier_tokens_for(self)
 
-func modify_target(ctx: AttackTargetContext) -> void:
-	## Only apply if this fighter is marked.
-	if !is_marked():
-		return
-	if !is_alive():
-		return
-	## Check that the attack is targeting this fighter's side.
-	if !_is_attack_targeting_us(ctx):
-		return
-	if ctx.params.get(NPCKeys.ATTACK_MODE) != NPCAttackSequence.ATTACK_MODE_RANGED:
-		return
-	## Redirect final target to this fighter if it's not multi-target.
-	if !ctx.final_targets.has(self) and ctx.is_single_target_intent:
-		ctx.final_targets = [self]
+#func modify_target(ctx: AttackTargetContext) -> void:
+	### Only apply if this fighter is marked.
+	#if !is_marked():
+		#return
+	#if !is_alive():
+		#return
+	### Check that the attack is targeting this fighter's side.
+	#if !_is_attack_targeting_us(ctx):
+		#return
+	#if ctx.params.get(NPCKeys.ATTACK_MODE) != NPCAttackSequence.ATTACK_MODE_RANGED:
+		#return
+	### Redirect final target to this fighter if it's not multi-target.
+	#if !ctx.final_targets.has(self) and ctx.is_single_target_intent:
+		#ctx.final_targets = [self]
 
 func _is_attack_targeting_us(ctx: AttackTargetContext) -> bool:
 	# Source and self must be on opposite sides.
 	return ctx.source.get_parent() != get_parent()
 
-func is_marked() -> bool:
-	return combatant.status_grid._has_status(MarkedStatus.ID)
+#func is_marked() -> bool:
+	#return combatant.status_grid._has_status(MarkedStatus.ID)
 
 
 func get_combat_id() -> int:

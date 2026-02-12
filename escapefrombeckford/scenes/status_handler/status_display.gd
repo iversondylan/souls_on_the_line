@@ -41,12 +41,6 @@ func _on_status_changed() -> void:
 	if !status:
 		return
 	
-	#if status.can_expire and status.duration <= 0:
-		#queue_free()
-	#
-	#if status.stack_type == Status.StackType.INTENSITY and status.intensity == 0:
-		#queue_free()
-	
 	duration.text = str(status.duration)
 	intensity.text = str(status.intensity)
 

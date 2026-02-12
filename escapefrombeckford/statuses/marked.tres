@@ -1,11 +1,10 @@
-[gd_resource type="Resource" script_class="MarkedStatus" load_steps=3 format=3 uid="uid://blu8qhnwmlstx"]
+[gd_resource type="Resource" script_class="MarkedStatus" format=3 uid="uid://blu8qhnwmlstx"]
 
 [ext_resource type="Script" uid="uid://bwenw8naqqwor" path="res://statuses/marked.gd" id="1_7p861"]
 [ext_resource type="Texture2D" uid="uid://c0yql2msvjvmi" path="res://assets/sprites/assorted/target_reticule.png" id="1_o5s2w"]
 
 [resource]
 script = ExtResource("1_7p861")
-id = "marked"
 number_display_type = 2
 reapply_type = 1
 expiration_policy = 0

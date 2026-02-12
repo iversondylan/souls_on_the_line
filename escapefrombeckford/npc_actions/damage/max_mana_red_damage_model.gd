@@ -7,20 +7,16 @@ extends ParamModel
 
 func change_params(ctx: NPCAIContext) -> NPCAIContext:
 	var max_red: int = 0
-	if ctx.combatant:
+	if ctx.combatant and ctx.combatant.combatant_data:
 		max_red = ctx.combatant.combatant_data.max_mana_red
 	elif ctx.combatant_data:
 		max_red = ctx.combatant_data.max_mana_red
+
 	var scaled := floori(mana_scaling * max_red)
 	var total := base_damage + scaled
-		#print("max_mana_red_damage_model.gd total damage: ", total, " fighter: ", fighter.name)
-		# Clamp negative results to zero
 	if total < 0:
 		total = 0
-	
-	if ctx.combatant:
-		ctx.params[NPCKeys.DAMAGE] = ctx.combatant.modifier_system.get_modified_value(total, Modifier.Type.DMG_DEALT)
-	elif ctx.combatant_data:
-		ctx.params[NPCKeys.DAMAGE] = total
-	
+
+	# IMPORTANT: base damage only (no DMG_DEALT here)
+	ctx.params[NPCKeys.DAMAGE] = total
 	return ctx
