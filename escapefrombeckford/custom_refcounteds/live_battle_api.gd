@@ -67,6 +67,11 @@ func resolve_move(ctx: MoveContext) -> void:
 	if runner:
 		runner.enqueue_move(ctx)
 
+func resolve_attack_now(ctx: AttackNowContext) -> void:
+	if !ctx:
+		return
+	if runner:
+		runner.enqueue_attack_now(ctx)
 
 # --------------------------
 # Damage pipeline (LIVE)
@@ -417,3 +422,66 @@ func _run_move_op(ctx: MoveContext) -> void:
 
 	# tiny yield keeps ordering consistent (optional)
 	await battle_scene.get_tree().process_frame
+
+
+
+# If later I want “strict runner ordering” for AttackNow, I can do it cleanly by:
+# moving strike timing into _run_attack_now_op (runner-controlled),
+# and applying damage inline at each strike moment (so it doesn’t need to enqueue to itself).
+func _run_attack_now_op(ctx: AttackNowContext) -> void:
+	if !ctx:
+		return
+
+	# Hydrate attacker
+	if !ctx.attacker and ctx.attacker_id != 0:
+		ctx.attacker = battle_scene.get_combatant_by_id(ctx.attacker_id, true)
+
+	var attacker := ctx.attacker
+	if !attacker:
+		return
+	if runner and runner.is_removed(attacker.combat_id):
+		return
+	if !attacker.is_alive():
+		return
+
+	if ctx.sound:
+		play_sfx(ctx.sound)
+
+	# Build transient NPCAIContext
+	var ai_ctx := NPCAIContext.new()
+	ai_ctx.api = self
+	ai_ctx.combatant = attacker
+	ai_ctx.combatant_data = attacker.combatant_data
+	ai_ctx.battle_scene = battle_scene
+	ai_ctx.state = {}
+	ai_ctx.params = {}
+	ai_ctx.forecast = false
+
+	# Params
+	var strikes := maxi(ctx.strikes, 0)
+	if strikes <= 0:
+		return
+
+	ai_ctx.params[NPCKeys.STRIKES] = strikes
+	ai_ctx.params[NPCKeys.TARGET_TYPE] = NPCAttackSequence.TARGET_STANDARD
+
+	var base_damage := 0
+	if ctx.use_base_damage_override:
+		base_damage = maxi(ctx.base_damage, 0)
+	else:
+		base_damage = (attacker.combatant_data.max_mana_red + 1) if attacker.combatant_data else 0
+
+	if attacker.modifier_system:
+		base_damage = attacker.modifier_system.get_modified_value(base_damage, Modifier.Type.DMG_DEALT)
+
+	ai_ctx.params[NPCKeys.DAMAGE] = maxi(base_damage, 0)
+
+	# Apply param models
+	if ctx.param_models:
+		for model in ctx.param_models:
+			if model:
+				model.change_params(ai_ctx)
+
+	# Run sequence WITHOUT awaiting completion
+	var seq := NPCAttackSequence.new()
+	seq.execute(ai_ctx, func(): pass)

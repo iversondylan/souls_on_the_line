@@ -177,29 +177,40 @@ func _apply_damage(ctx: NPCAIContext, targets: Array[Fighter], base_dmg: int, im
 
 func _finish_attack(ctx: NPCAIContext, on_done: Callable) -> void:
 	var fighter := ctx.combatant
-	if !fighter:
+	var battle_scene := ctx.battle_scene
+	if !battle_scene:
+		on_done.call()
+		return
+
+	# Even if fighter got removed mid-attack, we *must* finish.
+	if !fighter or !is_instance_valid(fighter) or !fighter.is_alive():
 		on_done.call()
 		return
 
 	var explode_on_finish := bool(ctx.params.get(NPCKeys.EXPLODE_ON_FINISH, false))
-	var tween := fighter.create_tween().set_trans(Tween.TRANS_QUINT)
+
+	# IMPORTANT: SceneTree tween survives fighter removal.
+	var tween := battle_scene.get_tree().create_tween().set_trans(Tween.TRANS_QUINT)
 
 	if explode_on_finish:
 		tween.tween_callback(func():
-			fighter.die()
+			if fighter and is_instance_valid(fighter):
+				# Prefer API death so it respects runner lifecycle
+				if battle_scene.api:
+					battle_scene.api.resolve_death(fighter.combat_id, "explode_on_finish")
+				else:
+					fighter.die() # fallback only
 		)
 	else:
-		tween.tween_property(
-			fighter,
-			"position",
-			fighter.anchor_position,
-			0.4
-		)
+		# Guarded tween property (still safe if fighter survives)
+		tween.tween_property(fighter, "position", fighter.anchor_position, 0.4)
 
 	tween.tween_callback(func():
-		fighter.info_visible(true)
+		if fighter and is_instance_valid(fighter):
+			fighter.info_visible(true)
 		on_done.call()
 	)
+
 
 
 func _get_mean_position(targets: Array[Fighter], fallback: Fighter) -> Vector2:

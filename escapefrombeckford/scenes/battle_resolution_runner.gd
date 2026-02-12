@@ -68,7 +68,9 @@ func enqueue_heal(ctx: HealContext) -> void:
 	_queue.push_back({"op":"heal","ctx":ctx})
 	_kick()
 
-
+func enqueue_attack_now(ctx: AttackNowContext) -> void:
+	_queue.push_back({"op":"attack_now","ctx":ctx})
+	_kick()
 
 func _kick() -> void:
 	if _busy:
@@ -114,6 +116,10 @@ func _run() -> void:
 				var ctx: MoveContext = item.get("ctx", null)
 				if api and ctx:
 					await api._run_move_op(ctx)
+			"attack_now":
+				var ctx: AttackNowContext = item.get("ctx", null)
+				if api and ctx:
+					await api._run_attack_now_op(ctx)
 			_:
 				push_warning("BattleResolutionRunner: unknown op: %s" % op)
 

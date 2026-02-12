@@ -34,6 +34,8 @@ func resolve_heal(ctx: HealContext) -> void:
 func resolve_move(ctx: MoveContext) -> void:
 	pass
 
+func resolve_attack_now(ctx: AttackNowContext) -> void:
+	pass
 
 func play_sfx(sound: Sound) -> void:
 	if sound:
