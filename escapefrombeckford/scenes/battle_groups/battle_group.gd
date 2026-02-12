@@ -192,6 +192,109 @@ func _get_layout_nodes() -> Array[Node2D]:
 		nodes.insert(clampi(_preview_index, 0, nodes.size()), _preview_node)
 	return nodes
 
+func execute_move_ctx(ctx: MoveContext) -> void:
+	if !ctx or !ctx.actor:
+		return
+
+	var before_order: Array[Fighter] = get_combatants()
+	var before_acting: Array[Fighter] = acting_fighters.duplicate()
+
+	match ctx.move_type:
+		MoveContext.MoveType.TRAVERSE_PLAYER:
+			if self is BattleGroupFriendly:
+				(self as BattleGroupFriendly)._traverse_player(ctx.actor)
+			else:
+				push_warning("BattleGroup.execute_move_ctx(): traverse on non-friendly group")
+
+		MoveContext.MoveType.MOVE_TO_FRONT:
+			move_child(ctx.actor, 0)
+
+		MoveContext.MoveType.MOVE_TO_BACK:
+			move_child(ctx.actor, get_child_count() - 1)
+
+		MoveContext.MoveType.SWAP_WITH_TARGET:
+			if ctx.target:
+				_swap(ctx.actor, ctx.target)
+
+		MoveContext.MoveType.INSERT_AT_INDEX:
+			if ctx.index >= 0:
+				move_child(ctx.actor, ctx.index)
+
+		_:
+			push_warning("BattleGroup.execute_move_ctx(): unsupported move_type=%s" % str(ctx.move_type))
+
+	# reuse your reconciliation logic, but it expects a MoveEffect right now
+	# easiest: add an overload that takes (can_restore_turn) instead of the whole effect
+	_reconcile_acting_list_ctx(before_order, before_acting, ctx)
+
+	update_combatant_position()
+	_recompute_intents_for_group()
+
+func _reconcile_acting_list_ctx(
+	before_order: Array[Fighter],
+	before_acting: Array[Fighter],
+	ctx: MoveContext
+) -> void:
+	var after_order := get_combatants()
+
+	if _should_rebuild_from_scratch(before_acting, after_order):
+		acting_fighters = after_order.duplicate()
+		_update_pending_turn_glow()
+		return
+
+	var current_actor := before_acting[0]
+	var before_acted_set := _build_before_acted_set(before_order, before_acting)
+
+	acting_fighters = _build_reconciled_queue_ctx(
+		current_actor,
+		after_order,
+		before_acted_set,
+		ctx
+	)
+
+	_update_pending_turn_glow()
+
+
+func _build_reconciled_queue_ctx(
+	current_actor: Fighter,
+	after_order: Array[Fighter],
+	before_acted_set: Dictionary,
+	ctx: MoveContext
+) -> Array[Fighter]:
+	var queue: Array[Fighter] = [current_actor]
+	var cur_idx := after_order.find(current_actor)
+
+	for i in range(cur_idx + 1, after_order.size()):
+		var f := after_order[i]
+		if !f:
+			continue
+
+		var id := f.get_instance_id()
+		var already_acted := before_acted_set.has(id)
+
+		if already_acted:
+			if _can_restore_turn_ctx(f, ctx):
+				queue.append(f)
+		else:
+			queue.append(f)
+
+	return queue
+
+
+func _can_restore_turn_ctx(fighter: Fighter, ctx: MoveContext) -> bool:
+	if !ctx:
+		return false
+	if !ctx.can_restore_turn:
+		return false
+
+	var id := fighter.get_instance_id()
+	if _restored_turn_this_group_turn.has(id):
+		return false
+
+	_restored_turn_this_group_turn[id] = true
+	return true
+
+
 func execute_move(effect: MoveEffect) -> void:
 	if !effect or !effect.actor:
 		return

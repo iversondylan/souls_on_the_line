@@ -49,26 +49,9 @@ func enqueue_remove_status(ctx: RemoveStatusContext) -> void:
 	})
 	_kick()
 
-#func get_life_state(combat_id: int) -> int:
-	#return int(_life.get(combat_id, LifeState.ALIVE))
-
-#func is_dying(combat_id: int) -> bool:
-	#return get_life_state(combat_id) == LifeState.DYING
-
-#func is_removed(combat_id: int) -> bool:
-	#return get_life_state(combat_id) == LifeState.REMOVED
-
-#func mark_dying(combat_id: int) -> void:
-	#if combat_id <= 0:
-		#return
-	#if is_removed(combat_id):
-		#return
-	#_life[combat_id] = LifeState.DYING
-
-#func mark_removed(combat_id: int) -> void:
-	#if combat_id <= 0:
-		#return
-	#_life[combat_id] = LifeState.REMOVED
+func enqueue_move(ctx: MoveContext) -> void:
+	_queue.push_back({"op":"move","ctx":ctx})
+	_kick()
 
 func enqueue_damage(ctx: DamageContext) -> void:
 	_queue.push_back({
@@ -80,19 +63,11 @@ func enqueue_damage(ctx: DamageContext) -> void:
 func enqueue_summon(ctx: SummonContext) -> void:
 	_queue.push_back({"op":"summon","ctx": ctx})
 	_kick()
-#func enqueue_death(combat_id: int, reason: String = "") -> void:
-	#if combat_id <= 0:
-		#return
-	## Don’t enqueue death repeatedly
-	#if is_dying(combat_id) or is_removed(combat_id):
-		#return
-	#mark_dying(combat_id)
-	#_queue.push_back({
-		#"op": "death",
-		#"combat_id": combat_id,
-		#"reason": reason,
-	#})
-	#_kick()
+
+func enqueue_heal(ctx: HealContext) -> void:
+	_queue.push_back({"op":"heal","ctx":ctx})
+	_kick()
+
 
 
 func _kick() -> void:
@@ -131,6 +106,14 @@ func _run() -> void:
 				var ctx: SummonContext = item.get("ctx", null)
 				if api and ctx:
 					await api._run_summon_op(ctx)
+			"heal":
+				var ctx: HealContext = item.get("ctx", null)
+				if api and ctx:
+					await api._run_heal_op(ctx)
+			"move":
+				var ctx: MoveContext = item.get("ctx", null)
+				if api and ctx:
+					await api._run_move_op(ctx)
 			_:
 				push_warning("BattleResolutionRunner: unknown op: %s" % op)
 

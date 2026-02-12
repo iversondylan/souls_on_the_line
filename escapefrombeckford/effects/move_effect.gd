@@ -6,6 +6,7 @@ enum MoveType {
 	MOVE_TO_FRONT,
 	MOVE_TO_BACK,
 	SWAP_WITH_TARGET,
+	SWAP_WITH_ADJACENT,
 	INSERT_AT_INDEX
 }
 
@@ -23,11 +24,21 @@ var index: int = -1
 # may be re-added to acting_fighters if moved to a "future" slot.
 var can_restore_turn: bool = false
 
-func execute(_api: BattleAPI) -> void:
-	if not battle_scene or not actor:
+func execute(api: BattleAPI) -> void:
+	if !api or !actor:
 		return
 
-	battle_scene.execute_move(self)
+	var ctx := MoveContext.new()
+	ctx.move_type = int(move_type)
+	ctx.actor = actor
+	ctx.actor_id = actor.combat_id
 
-	if sound:
-		SFXPlayer.play(sound)
+	if target:
+		ctx.target = target
+		ctx.target_id = target.combat_id
+
+	ctx.index = index
+	ctx.can_restore_turn = can_restore_turn
+	ctx.sound = sound
+
+	api.resolve_move(ctx)

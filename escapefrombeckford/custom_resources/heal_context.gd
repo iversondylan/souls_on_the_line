@@ -1,5 +1,5 @@
 # heal_context.gd
-class_name HealContext
+class_name HealthContext
 extends RefCounted
 
 #enum Phase {

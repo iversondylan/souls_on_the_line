@@ -115,11 +115,21 @@ func set_anchor_position(_position: Vector2, animate: bool) -> void:
 	has_anchor_position = true
 
 func apply_heal(ctx: HealContext) -> void:
-	if !ctx or !is_instance_valid(self) or !is_alive():
+	if !ctx:
 		return
-	
+
+	# Always ensure ids
 	ctx.target = self
-	var restored_health := combatant_data.heal(ctx)
+	ctx.target_id = combat_id
+	if ctx.source and ctx.source_id == 0:
+		ctx.source_id = ctx.source.combat_id
+
+	if battle_scene and battle_scene.api:
+		battle_scene.api.resolve_heal(ctx)
+		return
+
+	push_warning("Fighter.apply_heal called without battle_scene.api")
+
 
 func apply_damage(ctx: DamageContext) -> void:
 	if !ctx:

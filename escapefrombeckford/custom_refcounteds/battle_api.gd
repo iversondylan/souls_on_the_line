@@ -27,6 +27,14 @@ func remove_status(ctx: RemoveStatusContext) -> void:
 func summon(ctx: SummonContext) -> void:
 	pass
 
+func resolve_heal(ctx: HealContext) -> void:
+	# base class no-op (sim/live override via runner)
+	pass
+
+func resolve_move(ctx: MoveContext) -> void:
+	pass
+
+
 func play_sfx(sound: Sound) -> void:
 	if sound:
 		SFXPlayer.play(sound)

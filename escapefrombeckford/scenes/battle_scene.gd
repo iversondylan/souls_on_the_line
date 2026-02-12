@@ -254,6 +254,18 @@ func get_other_battle_group(idx: int) -> BattleGroup:
 func get_summon_slot_position(battle_group_index: int, slot_index: int) -> Vector2:
 		return groups[battle_group_index].get_summon_slot_position(slot_index)
 
+func execute_move_ctx(ctx: MoveContext) -> void:
+	if !ctx or !ctx.actor:
+		return
+
+	var group := get_group_for_actor(ctx.actor)
+	if !group:
+		push_warning("BattleScene.execute_move_ctx(): actor not found in any BattleGroup")
+		return
+
+	group.execute_move_ctx(ctx)
+
+
 func execute_move(effect: MoveEffect) -> void:
 	var group := get_group_for_actor(effect.actor)
 	if not group:

@@ -18,6 +18,7 @@ func _init(_battle_scene: BattleScene) -> void:
 		runner.api = self
 
 func observe_stats_changed(fighter: Fighter) -> void:
+	#print("SO MANY STATS CHANGED")
 	# Optional: runner can log this later
 	# For now, do nothing.
 	pass
@@ -53,6 +54,19 @@ func remove_status(ctx: RemoveStatusContext) -> void:
 func summon(ctx: SummonContext) -> void:
 	if runner and ctx:
 		runner.enqueue_summon(ctx)
+
+func resolve_heal(ctx: HealContext) -> void:
+	if !ctx:
+		return
+	if runner:
+		runner.enqueue_heal(ctx)
+
+func resolve_move(ctx: MoveContext) -> void:
+	if !ctx:
+		return
+	if runner:
+		runner.enqueue_move(ctx)
+
 
 # --------------------------
 # Damage pipeline (LIVE)
@@ -334,4 +348,72 @@ func _run_summon_op(ctx: SummonContext) -> void:
 	play_sfx(ctx.sfx if ctx.sfx else load(DEFAULT_SUMMON_SOUND))
 
 	# small yield so “summon then immediately damage” is ordered nicely (optional)
+	await battle_scene.get_tree().process_frame
+
+func _run_heal_op(ctx: HealContext) -> void:
+	if !ctx:
+		return
+
+	# Hydrate nodes from ids if needed (helps ordering / robustness)
+	if !ctx.target and ctx.target_id != 0:
+		ctx.target = battle_scene.get_combatant_by_id(ctx.target_id, true)
+	if !ctx.source and ctx.source_id != 0:
+		ctx.source = battle_scene.get_combatant_by_id(ctx.source_id, true)
+
+	if !ctx.target:
+		return
+
+	# For heals, you usually *don’t* heal dead units.
+	# If you later want revive mechanics, that becomes a different op.
+	if !ctx.target.is_alive():
+		return
+
+	ctx.phase = HealContext.Phase.PRE_MODIFIERS
+
+	# --- (Optional) modifiers later ---
+	# If you eventually want "healing done" / "healing taken":
+	# amount = ctx.target.modifier_system.get_modified_value(amount, Modifier.Type.HEAL_TAKEN), etc.
+	# For now: apply as-is.
+
+	ctx.phase = HealContext.Phase.POST_MODIFIERS
+
+	# Numeric only
+	var healed := 0
+	if ctx.target.combatant_data:
+		healed = ctx.target.combatant_data.heal(ctx)
+	ctx.healed_amount = healed
+
+	ctx.phase = HealContext.Phase.APPLIED
+
+	# Presentation / reactions (simple version)
+	# If you have a signal like healed_taken, emit it here.
+	# You can also spawn a green number, glow, etc.
+	# await battle_scene.get_tree().process_frame  # optional ordering beat
+
+func _run_move_op(ctx: MoveContext) -> void:
+	if !ctx:
+		return
+
+	# hydrate actor/target if needed
+	if !ctx.actor and ctx.actor_id != 0:
+		ctx.actor = battle_scene.get_combatant_by_id(ctx.actor_id, true)
+	if !ctx.target and ctx.target_id != 0:
+		ctx.target = battle_scene.get_combatant_by_id(ctx.target_id, true)
+
+	if !ctx.actor:
+		return
+	if runner and runner.is_removed(ctx.actor_id):
+		return
+
+	# Don’t move dead units (unless you later want “corpse shove” mechanics)
+	if !ctx.actor.is_alive():
+		return
+
+	# Delegate to BattleScene/BattleGroup (authoritative structure)
+	battle_scene.execute_move_ctx(ctx)
+
+	if ctx.sound:
+		play_sfx(ctx.sound)
+
+	# tiny yield keeps ordering consistent (optional)
 	await battle_scene.get_tree().process_frame
