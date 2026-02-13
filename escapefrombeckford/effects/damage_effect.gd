@@ -1,9 +1,12 @@
 # damage_effect.gd
 class_name DamageEffect extends Effect
 
+
+
 var n_damage: int = 0
 var source: Fighter = null
 var modifier_type: Modifier.Type
+var params := {}
 
 func execute(api: BattleAPI) -> void:
 	if !api:
@@ -26,7 +29,7 @@ func execute(api: BattleAPI) -> void:
 		# IMPORTANT: these are what enable DMG_DEALT / DMG_TAKEN
 		ctx.deal_modifier_type = Modifier.Type.DMG_DEALT
 		ctx.take_modifier_type = Modifier.Type.DMG_TAKEN
-
+		ctx.sound = sound
 		api.resolve_damage(ctx)
 
 #func execute(api: BattleAPI) -> void:

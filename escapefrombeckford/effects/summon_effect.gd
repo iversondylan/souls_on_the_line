@@ -2,7 +2,6 @@
 class_name SummonEffect extends Effect
 
 const DEFAULT_SUMMON_DATA := "res://fighters/BasicClone/basic_clone_data.tres"
-const DEFAULT_SUMMON_SOUND := "res://audio/summon_zap.tres"
 
 var group_index: int = 0
 var insert_index: int = 0

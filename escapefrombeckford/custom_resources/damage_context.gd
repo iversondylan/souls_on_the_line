@@ -29,10 +29,11 @@ var armor_damage: int = 0
 var health_damage: int = 0
 var was_lethal: bool = false
 
-# Optional flags / tags (handy later)
+# Optional flags / tags
 var tags: Array[StringName] = []
 var phase: Phase = Phase.PRE_MODIFIERS
-
+var params := {}
+var sound: Sound
 #func _init(_source: Fighter, _target: Fighter, _base: int) -> void:
 	#source = _source
 	#target = _target

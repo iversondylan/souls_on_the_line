@@ -163,6 +163,8 @@ func _apply_damage(ctx: NPCAIContext, targets: Array[Fighter], base_dmg: int, im
 	dmg_effect.targets = targets
 	dmg_effect.n_damage = base_dmg
 	dmg_effect.source = ctx.combatant # NEW: attacker becomes the source
+	# I added params to DamageEffect so that LiveBattleAPI._run_damage_op() could know if it's a ranged attack and choose the right sound to play.
+	dmg_effect.params = ctx.params.duplicate() # <- NEW: params from the context are transferred to the effect and then transferred to the DamageContext
 	dmg_effect.sound = impact_sound
 	dmg_effect.execute(ctx.battle_scene.api)
 

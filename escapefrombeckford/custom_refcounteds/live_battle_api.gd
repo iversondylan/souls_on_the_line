@@ -8,6 +8,9 @@ const ENEMY_SCN := "res://scenes/turn_takers/enemy.tscn"
 const DEFAULT_SUMMON_DATA := "res://fighters/BasicClone/basic_clone_data.tres"
 const DEFAULT_SUMMON_SOUND := "res://audio/summon_zap.tres"
 
+const DEFAULT_MELEE_SOUND := "res://audio/melee_impact.tres"
+const DEFAULT_RANGED_SOUND := "res://audio/fireball_impact.tres"
+
 var battle_scene: BattleScene
 var runner: BattleResolutionRunner
 
@@ -129,10 +132,10 @@ func _run_damage_op(ctx: DamageContext) -> void:
 		return
 	if !ctx.target.is_alive():
 		return
-
+	play_sfx(ctx.sound if ctx.sound else load(DEFAULT_SUMMON_SOUND))
 	# central resolver
 	DamageResolver.resolve(self, ctx)
-
+	
 	# lethal followup timing (if you still want the tiny beat)
 	if ctx.was_lethal and ctx.target_id != 0:
 		await battle_scene.get_tree().create_timer(0.05).timeout
