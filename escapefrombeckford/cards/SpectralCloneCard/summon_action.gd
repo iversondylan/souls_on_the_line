@@ -6,7 +6,7 @@ class_name SummonAction extends CardAction
 
 func build_effect(ctx: CardActionContext) -> SummonEffect:
 	var effect := SummonEffect.new()
-	effect.battle_scene = ctx.battle_scene
+	#effect.battle_scene = ctx.battle_scene
 	effect.insert_index = ctx.resolved_target.insert_index
 	effect.summon_data = _build_clone_data(ctx)
 	effect.sound = sound

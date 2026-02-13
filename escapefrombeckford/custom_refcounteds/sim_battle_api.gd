@@ -53,8 +53,28 @@ func get_enemies_of(combat_id: int) -> Array[int]:
 func get_rank_in_group(combat_id: int) -> int:
 	return battle.get_rank_in_group(combat_id) # index in group_order
 
-func get_targets_for_attack_sequence(ai_ctx) -> Array:
-	return AttackTargeting.get_targets_for_attack_sequence(self, ai_ctx) # returns ids
+func get_targets_for_attack_sequence(ai_ctx) -> Array[int]:
+	var attacker_id := 0
+	if ai_ctx.combatant_data:
+		attacker_id = ai_ctx.combatant_data.combat_id
+	elif ai_ctx.combatant:
+		attacker_id = ai_ctx.combatant.combat_id
+	if attacker_id <= 0:
+		return []
+	return AttackTargeting.get_target_ids(self, attacker_id, ai_ctx.params)
+
+func resolve_damage(ctx: DamageContext) -> void:
+	# No runner; resolve immediately
+	if !ctx:
+		return
+	# ensure ids exist
+	if ctx.target_id == 0 and ctx.target:
+		ctx.target_id = ctx.target.combat_id
+	if ctx.source_id == 0 and ctx.source:
+		ctx.source_id = ctx.source.combat_id
+
+	# SimDamageResolver path
+	DamageResolver.resolve(self, ctx)
 
 
 func modify_damage_amount(ctx: DamageContext, base: int) -> int:
@@ -66,11 +86,22 @@ func modify_damage_amount(ctx: DamageContext, base: int) -> int:
 	amount = battle.get_modified_value(tgt_id, amount, ctx.take_modifier_type)
 	return amount
 
-func apply_damage_amount(ctx: DamageContext, amount: int) -> Dictionary:
-	# Sim fighter must own numeric data (armor/health). Right now SimFighter doesn’t.
-	# So step 1 is: give SimFighter a CombatantData-like stats struct or copied fields.
+func apply_damage_amount(ctx: DamageContext, amount: int) -> void:
 	var f := battle.get_fighter(ctx.target_id)
-	return f.stats.apply_damage_amount(amount)
+	if !f or !f.is_alive():
+		return
+
+	# Whatever your sim stats object is, it should mirror:
+	# - pre_armor
+	# - actual health loss
+	# - lethal
+	var pre_armor : int = f.stats.armor
+	var health_loss : int = f.stats.take_damage(amount) # or apply_damage_amount(amount) but return only numbers
+
+	ctx.health_damage = health_loss
+	ctx.armor_damage = maxi(mini(amount, pre_armor), 0)
+	ctx.was_lethal = !f.stats.is_alive() # or f.is_alive after stats update
+
 
 func on_damage_applied(ctx: DamageContext) -> void:
 	# Sim hooks: statuses that react to damage, AI state updates, etc.

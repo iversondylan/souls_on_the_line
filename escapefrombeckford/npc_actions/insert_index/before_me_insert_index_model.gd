@@ -3,18 +3,18 @@ class_name BeforeMeInsertIndexModel
 extends ParamModel
 
 func change_params(ctx: NPCAIContext) -> NPCAIContext:
-	if !ctx or !ctx.combatant:
+	if !ctx or !ctx.api:
 		return ctx
-	
-	var fighter := ctx.combatant
-	var group := fighter.get_parent()
-	if !group or !group.has_method("get_combatants"):
+
+	var cid := 0
+	if ctx.combatant and is_instance_valid(ctx.combatant):
+		cid = ctx.combatant.combat_id
+	elif ctx.combatant_data:
+		cid = ctx.combatant_data.combat_id
+
+	if cid <= 0:
 		return ctx
-	
-	# Index of this combatant within its group
-	var my_index := fighter.get_index()
-	
-	# Insert directly in front of me
-	ctx.params[NPCKeys.INSERT_INDEX] = max(my_index, 0)
-	
+
+	var my_rank := ctx.api.get_rank_in_group(cid)
+	ctx.params[NPCKeys.INSERT_INDEX] = maxi(my_rank, 0)
 	return ctx

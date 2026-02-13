@@ -12,6 +12,7 @@ const PROJECTILE_SCENE := "projectile_scene"
 const STATUS_SCENE := "status_scene"
 const STATUS_INTENSITY := "status_intensity"
 const STATUS_DURATION := "status_duration"
+const STATUS_ID := "status_id"
 
 const GROUP_INDEX := "group_index"
 const INSERT_INDEX := "insert_index"

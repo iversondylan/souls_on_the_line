@@ -5,6 +5,13 @@ extends PerformableModel
 @export var hp_threshold: int = 5
 
 func is_performable(ctx: NPCAIContext) -> bool:
-	if not ctx.combatant:
+	if !ctx:
 		return false
-	return ctx.combatant.combatant_data.health <= hp_threshold
+
+	if ctx.combatant_data:
+		return ctx.combatant_data.health <= hp_threshold
+
+	if ctx.combatant and is_instance_valid(ctx.combatant) and ctx.combatant.combatant_data:
+		return ctx.combatant.combatant_data.health <= hp_threshold
+
+	return false

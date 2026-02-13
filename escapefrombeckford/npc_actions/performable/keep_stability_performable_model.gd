@@ -1,10 +1,8 @@
-# keep_stability_performable_model
-
-
-class_name KeepStabilityPerformableModel extends PerformableModel
+# keep_stability_performable_model.gd
+class_name KeepStabilityPerformableModel
+extends PerformableModel
 
 func is_performable(ctx: NPCAIContext) -> bool:
-	return !ctx.state.get(
-		NPCAIBehavior.STABILITY_BROKEN,
-		false
-	)
+	if !ctx or !ctx.state:
+		return true
+	return !bool(ctx.state.get(NPCAIBehavior.STABILITY_BROKEN, false))

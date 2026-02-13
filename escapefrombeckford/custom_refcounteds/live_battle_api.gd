@@ -529,6 +529,9 @@ func get_combatants_in_group(group_index: int, allow_dead := false) -> Array[int
 				ids.append(f.combat_id)
 	return ids
 
+func get_n_combatants_in_group(group_index: int, allow_dead := false) -> int:
+	return get_combatants_in_group(group_index, allow_dead).size()
+
 func get_front_combatant_id(group_index: int) -> int:
 	group_index = clampi(group_index, 0, 1)
 	for f: Fighter in battle_scene.groups[group_index].get_combatants(false):

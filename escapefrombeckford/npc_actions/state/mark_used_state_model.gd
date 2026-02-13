@@ -6,5 +6,9 @@ extends StateModel
 @export var value: bool = true
 
 func change_state(ctx: NPCAIContext) -> NPCAIContext:
+	if !ctx:
+		return ctx
+	if !ctx.state:
+		ctx.state = {}
 	ctx.state[key] = value
 	return ctx

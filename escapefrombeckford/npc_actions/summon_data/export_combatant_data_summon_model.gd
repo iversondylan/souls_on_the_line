@@ -7,8 +7,6 @@ extends ParamModel
 func change_params(ctx: NPCAIContext) -> NPCAIContext:
 	if !ctx:
 		return ctx
-
 	if combatant_data:
 		ctx.params[NPCKeys.SUMMON_DATA] = combatant_data
-
 	return ctx

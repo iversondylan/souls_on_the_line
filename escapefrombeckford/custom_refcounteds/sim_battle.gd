@@ -8,27 +8,67 @@ var fighters_by_id: Dictionary = {} # int -> SimFighter
 var fighters: Array[SimFighter] = []
 var status_catalog_by_id: Dictionary # String -> Status (proto)
 
+var group_order := {
+	0: PackedInt32Array(),
+	1: PackedInt32Array(),
+}
+
+
 func _init(_status_catalog_by_id: Dictionary) -> void:
 	status_catalog_by_id = _status_catalog_by_id
+
+#func add_fighter(f: SimFighter) -> void:
+	#fighters_by_id[f.combat_id] = f
+	#fighters.append(f)
+	#f.modifier_system = SimModifierSystem.new(self, f.combat_id)
+
+func get_fighter(id: int) -> SimFighter:
+	return fighters_by_id.get(id, null)
+
+func get_group_order(group_index: int) -> PackedInt32Array:
+	group_index = clampi(group_index, 0, 1)
+	return group_order[group_index]
+
+func set_group_order(group_index: int, ids: Array[int]) -> void:
+	group_index = clampi(group_index, 0, 1)
+	var arr := PackedInt32Array()
+	for id in ids:
+		arr.append(id)
+	group_order[group_index] = arr
+
+func get_rank_in_group(combat_id: int) -> int:
+	var f := get_fighter(combat_id)
+	if !f:
+		return -1
+	var arr: PackedInt32Array = get_group_order(f.group)
+	for i in range(arr.size()):
+		if arr[i] == combat_id:
+			return i
+	return -1
 
 func add_fighter(f: SimFighter) -> void:
 	fighters_by_id[f.combat_id] = f
 	fighters.append(f)
 	f.modifier_system = SimModifierSystem.new(self, f.combat_id)
 
-func get_fighter(id: int) -> SimFighter:
-	return fighters_by_id.get(id, null)
+	# Insert into ordering at the back by default (front->back list)
+	var arr: PackedInt32Array = get_group_order(f.group)
+	arr.append(f.combat_id)
+	group_order[f.group] = arr
 
-#
-#
-#func _get_fighter(id: int) -> SimFighter:
-	#for f in fighters:
-		#if f and f.combat_id == id:
-			#return f
-	#return null
+func remove_fighter(combat_id: int) -> void:
+	var f := get_fighter(combat_id)
+	if !f:
+		return
+	fighters_by_id.erase(combat_id)
+	fighters.erase(f)
 
-# Sim equivalent of BattleScene.get_modifier_tokens_for(fighter)
-# Sim tokens must have owner_id set and owner = null
+	var arr: PackedInt32Array = get_group_order(f.group)
+	var out := PackedInt32Array()
+	for id in arr:
+		if id != combat_id:
+			out.append(id)
+	group_order[f.group] = out
 
 func get_modifier_tokens_for_target(target_id: int, mod_type: Modifier.Type = Modifier.Type.NO_MODIFIER) -> Array[ModifierToken]:
 	var target := get_fighter(target_id)
@@ -95,54 +135,88 @@ func get_modified_value(target_id: int, base: int, mod_type: Modifier.Type) -> i
 	var mod := f.modifier_system.get_resolved_modifier(mod_type)
 	return floori((base + mod.flat) * mod.mult)
 
-
-static func from_battle_scene(
-	battle_scene: BattleScene,
-	status_catalog: StatusCatalog
-) -> SimBattle:
-	# IMPORTANT: status_catalog.build_index() should already have run.
+static func from_battle_scene(battle_scene: BattleScene, status_catalog: StatusCatalog) -> SimBattle:
 	var sim := SimBattle.new(status_catalog.by_id)
 
-	# Stable order for determinism
-	var fighters := battle_scene.get_all_combatants()
-	fighters.sort_custom(func(a: Fighter, b: Fighter) -> bool:
-		return a.combat_id < b.combat_id
-	)
-
-	for f: Fighter in fighters:
+	# 1) build fighters + add them
+	var all_live := battle_scene.get_all_combatants()
+	for f: Fighter in all_live:
 		if !f:
 			continue
-
 		var sf := SimFighter.new()
 		sf.combat_id = f.combat_id
-		
-		sf.debug_name = f.name
-
-		if f is Player:
-			sf.role = "player"
-		elif f is Enemy:
-			sf.role = "enemy"
-		elif f is SummonedAlly:
-			sf.role = "summon"
-		else:
-			sf.role = "fighter"
-		# “team” should match whatever your routing expects.
-		# If you use group index (0 friendly / 1 enemy), do that:
 		sf.group = battle_scene.get_index_of_parent_group(f)
 		sf.team = sf.group
-
 		sf.alive = f.is_alive()
-
-		# Pull from your data-side statuses (preferred), or convert node grid -> data
-		# If you already store StatusGridData on FighterState, use that:
-		#	sf.statuses = f.state.statuses.clone()
-		#
-		# If you DON'T yet: make a helper that converts node status_grid to StatusGridData.
 		sf.statuses = _extract_statuses_as_data(f)
-
+		# also clone stats here (health/armor/max mana etc.)
+		# sf.stats = SimStats.from_combatant_data(f.combatant_data)
 		sim.add_fighter(sf)
 
+	# 2) capture formation order (front->back) directly from the live groups
+	var friendly_ids: Array[int] = []
+	for f: Fighter in battle_scene.groups[0].get_combatants(true):
+		if f and is_instance_valid(f):
+			friendly_ids.append(f.combat_id)
+
+	var enemy_ids: Array[int] = []
+	for f: Fighter in battle_scene.groups[1].get_combatants(true):
+		if f and is_instance_valid(f):
+			enemy_ids.append(f.combat_id)
+
+	sim.set_group_order(0, friendly_ids)
+	sim.set_group_order(1, enemy_ids)
+
 	return sim
+
+
+#static func from_battle_scene(
+	#battle_scene: BattleScene,
+	#status_catalog: StatusCatalog
+#) -> SimBattle:
+	## IMPORTANT: status_catalog.build_index() should already have run.
+	#var sim := SimBattle.new(status_catalog.by_id)
+#
+	## Stable order for determinism
+	#var fighters := battle_scene.get_all_combatants()
+	#fighters.sort_custom(func(a: Fighter, b: Fighter) -> bool:
+		#return a.combat_id < b.combat_id
+	#)
+#
+	#for f: Fighter in fighters:
+		#if !f:
+			#continue
+#
+		#var sf := SimFighter.new()
+		#sf.combat_id = f.combat_id
+		#
+		#sf.debug_name = f.name
+#
+		#if f is Player:
+			#sf.role = "player"
+		#elif f is Enemy:
+			#sf.role = "enemy"
+		#elif f is SummonedAlly:
+			#sf.role = "summon"
+		#else:
+			#sf.role = "fighter"
+		## “team” should match whatever your routing expects.
+		## If you use group index (0 friendly / 1 enemy), do that:
+		#sf.group = battle_scene.get_index_of_parent_group(f)
+		#sf.team = sf.group
+#
+		#sf.alive = f.is_alive()
+#
+		## Pull from your data-side statuses (preferred), or convert node grid -> data
+		## If you already store StatusGridData on FighterState, use that:
+		##	sf.statuses = f.state.statuses.clone()
+		##
+		## If you DON'T yet: make a helper that converts node status_grid to StatusGridData.
+		#sf.statuses = _extract_statuses_as_data(f)
+#
+		#sim.add_fighter(sf)
+#
+	#return sim
 
 # Later, I’ll delete _extract_statuses_as_data once FighterState 
 # owns StatusGridData and live StatusGrid becomes just a view/sync.
@@ -166,6 +240,11 @@ func to_array_int(arr: Array) -> Array[int]:
 		if element is int:
 			arrint.push_back(element)
 	return arrint
+
+
+
+
+
 
 func print_sim_snapshot(print_tokens: bool = true, print_resolved_mods: bool = true) -> void:
 	print("")

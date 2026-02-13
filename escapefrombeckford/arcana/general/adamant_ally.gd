@@ -18,7 +18,7 @@ func activate_arcanum(ctx: ArcanumContext) -> void:
 
 func build_effect(ctx: ArcanumContext) -> SummonEffect:
 	var effect := SummonEffect.new()
-	effect.battle_scene = ctx.battle_scene
+	#effect.battle_scene = ctx.battle_scene
 	effect.insert_index = ctx.player.get_index()
 	effect.summon_data = _build_summon_data()
 	return effect

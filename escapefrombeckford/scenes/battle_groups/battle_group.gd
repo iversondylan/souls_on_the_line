@@ -331,16 +331,16 @@ func _swap(actor: Fighter, target: Fighter) -> void:
 		return
 	if actor.get_parent() != self or target.get_parent() != self:
 		return
-
+	
 	var a_idx := actor.get_index()
 	var t_idx := target.get_index()
 	if a_idx == t_idx:
 		return
-
+	
 	# Swap child indices safely.
 	# After first move, the other index may shift, so adjust.
 	move_child(actor, t_idx)
-
+	
 	if a_idx < t_idx:
 		# actor moved forward in the list, target shifted left by 1
 		move_child(target, a_idx)
@@ -355,26 +355,26 @@ func _reconcile_acting_list(
 	effect: MoveEffect
 ) -> void:
 	var after_order := get_combatants()
-
+	
 	if _should_rebuild_from_scratch(before_acting, after_order):
 		acting_fighters = after_order.duplicate()
 		_update_pending_turn_glow()
 		return
-
+	
 	var current_actor := before_acting[0]
 
 	var before_acted_set := _build_before_acted_set(
 		before_order,
 		before_acting
 	)
-
+	
 	acting_fighters = _build_reconciled_queue(
 		current_actor,
 		after_order,
 		before_acted_set,
 		effect
 	)
-
+	
 	_update_pending_turn_glow()
 
 
@@ -442,11 +442,11 @@ func _can_restore_turn(fighter: Fighter, effect: MoveEffect) -> bool:
 		return false
 	if !effect.can_restore_turn:
 		return false
-
+	
 	var id := fighter.get_instance_id()
 	if _restored_turn_this_group_turn.has(id):
 		return false
-
+	
 	_restored_turn_this_group_turn[id] = true
 	return true
 
@@ -462,19 +462,19 @@ func set_preview(node: Node2D, insert_index: int) -> void:
 	# remove old preview
 	if _preview_node and is_instance_valid(_preview_node):
 		_preview_node.queue_free()
-
+	
 	_preview_node = node
 	_preview_index = insert_index
-
+	
 	# IMPORTANT: actually add it to the tree
 	preview_layer.add_child(_preview_node)
-
+	
 	update_combatant_position()
 
 func clear_preview() -> void:
 	if _preview_node and is_instance_valid(_preview_node):
 		_preview_node.queue_free()
-
+	
 	_preview_node = null
 	_preview_index = -1
 	update_combatant_position()
@@ -487,10 +487,10 @@ func get_window_dist() -> float:
 func get_summon_slot_position(slot_index: int) -> Vector2:
 	var nodes := _get_layout_nodes()
 	var layout_count := nodes.size()
-
+	
 	if layout_count == 0:
 		return global_position
-
+	
 	var slot := float(slot_index) + 0.5
 	var x := _get_x_for_slot(slot, layout_count)
 	return global_position + Vector2(x, 0)
