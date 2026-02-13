@@ -6,11 +6,11 @@ var status_id: StringName
 var source: Fighter = null
 var remove_all_stacks: bool = false
 
-func execute(_api: BattleAPI) -> void:
-	if !_api:
+func execute(api: BattleAPI) -> void:
+	if !api:
 		return
 
-	_api.play_sfx(sound)
+	api.play_sfx(sound)
 
 	if status_id == &"":
 		push_warning("RemoveStatusEffect.execute(): status_id empty")
@@ -27,4 +27,4 @@ func execute(_api: BattleAPI) -> void:
 		ctx.remove_all_stacks = remove_all_stacks
 		ctx.hydrate_ids()
 
-		_api.remove_status(ctx)
+		api.remove_status(ctx)

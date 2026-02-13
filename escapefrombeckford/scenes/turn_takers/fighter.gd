@@ -149,43 +149,6 @@ func apply_damage(ctx: DamageContext) -> void:
 	# Fallback: do nothing (or keep a private legacy impl if you want)
 	push_warning("Fighter.apply_damage called without battle_scene.api")
 
-#func apply_damage(ctx: DamageContext) -> void:
-	##print("fighter.gd !N!E!W! apply_damage")
-	#if !ctx or !is_instance_valid(self) or !is_alive():
-		#return
-	#
-	## Ensure target is set correctly
-	#ctx.target = self
-	#ctx.phase = DamageContext.Phase.PRE_MODIFIERS
-	#
-	## Target-side modifiers
-	#if modifier_system:
-		#ctx.amount = modifier_system.get_modified_value(ctx.amount, ctx.take_modifier_type)
-	#
-	#ctx.amount = maxi(ctx.amount, 0)
-	#ctx.phase = DamageContext.Phase.POST_MODIFIERS
-	#
-	## Apply to stats (this returns health_loss currently)
-	#var pre_armor := combatant_data.armor
-	#var health_loss := combatant_data.take_damage(ctx.amount)
-	#
-	#ctx.health_damage = health_loss
-	#ctx.armor_damage = maxi(mini(ctx.amount, pre_armor), 0)
-	#ctx.was_lethal = (combatant_data.health <= 0)
-	#
-	#ctx.phase = DamageContext.Phase.APPLIED
-	#
-	## Immediate reactions (synchronous)
-	#damage_taken.emit(ctx)
-	#combatant.status_grid.on_damage_taken(ctx)
-	#
-	## visuals
-	#Shaker.shake(self, 16, 0.15)
-	#_spawn_damage_number_or_block(ctx)
-	#
-	#if ctx.was_lethal:
-		#die()
-
 func _spawn_damage_number_or_block(ctx: DamageContext) -> void:
 	if ctx.health_damage > 0:
 		var damage_number: DamageNumber = damage_number_scn.instantiate()
@@ -205,24 +168,6 @@ func die() -> void:
 		return
 	# (optional) emergency fallback if called outside battle
 	combatant_data.alive = false
-
-
-###for future: death must cancel pending action resolution
-#func die():
-	#combatant_data.alive = false
-	#print(name, " died")
-	#combatant.status_grid.end_non_self_statuses()
-	#
-	#battle_group.update_combatant_position()
-	#var death_tween: Tween = create_tween()
-	#death_tween.tween_property(character_sprite, "modulate", Color.BLACK, 0.3)
-	#death_tween.tween_callback(
-		#func():
-			#battle_group.combatant_died(self)
-				#)
-	#for child in get_children():
-		#if child is FighterBehavior:
-			#child._on_die()
 
 func fade():
 	for child in get_children():
@@ -342,28 +287,9 @@ func get_modifier_tokens() -> Array[ModifierToken]:
 		return []
 	return battle_scene.get_modifier_tokens_for(self)
 
-#func modify_target(ctx: AttackTargetContext) -> void:
-	### Only apply if this fighter is marked.
-	#if !is_marked():
-		#return
-	#if !is_alive():
-		#return
-	### Check that the attack is targeting this fighter's side.
-	#if !_is_attack_targeting_us(ctx):
-		#return
-	#if ctx.params.get(NPCKeys.ATTACK_MODE) != NPCAttackSequence.ATTACK_MODE_RANGED:
-		#return
-	### Redirect final target to this fighter if it's not multi-target.
-	#if !ctx.final_targets.has(self) and ctx.is_single_target_intent:
-		#ctx.final_targets = [self]
-
 func _is_attack_targeting_us(ctx: AttackTargetContext) -> bool:
 	# Source and self must be on opposite sides.
 	return ctx.source.get_parent() != get_parent()
-
-#func is_marked() -> bool:
-	#return combatant.status_grid._has_status(MarkedStatus.ID)
-
 
 func get_combat_id() -> int:
 	return state.combat_id

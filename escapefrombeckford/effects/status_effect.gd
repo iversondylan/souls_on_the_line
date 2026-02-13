@@ -7,11 +7,11 @@ var source: Fighter = null # optional, but nice for procs/logging
 var duration: int = 0
 var intensity: int = 0
 
-func execute(_api: BattleAPI) -> void:
-	if !_api:
+func execute(api: BattleAPI) -> void:
+	if !api:
 		return
 
-	_api.play_sfx(sound)
+	api.play_sfx(sound)
 
 	if !status:
 		push_warning("StatusEffect.execute(): status is null")
@@ -29,7 +29,7 @@ func execute(_api: BattleAPI) -> void:
 		ctx.intensity = intensity
 		ctx.hydrate_ids()
 
-		_api.apply_status(ctx)
+		api.apply_status(ctx)
 
 
 ## status_effect.gd

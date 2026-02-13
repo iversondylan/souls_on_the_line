@@ -14,7 +14,7 @@ var summon_ctx: SummonContext = null
 func execute(api: BattleAPI) -> void:
 	if !api:
 		return
-
+	
 	summon_ctx = SummonContext.new()
 	summon_ctx.group_index = group_index
 	summon_ctx.insert_index = insert_index

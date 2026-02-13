@@ -2,7 +2,6 @@
 
 class_name NPCAIBehavior extends FighterBehavior
 
-#const KEY_PLANNED_CHANCE_IDX := "planned_chance_idx"
 const KEY_PLANNED_IDX := "planned_idx"
 const HP_AT_TURN_START := "hp_at_turn_start"
 const DMG_SINCE_LAST_TURN := "dmg_since_last_turn"
@@ -102,51 +101,6 @@ func _on_initiate_first_intents() -> void:
 	
 	# One-time plan + display
 	sync_intent(false)
-
-
-
-#func _on_combatant_data_set(_data: CombatantData) -> void:
-	##ai_profile = _data.ai
-	##
-	### Init persistent AI state + RNG ONCE
-	##set_meta("ai_state", {})
-	##var state = get_meta("ai_state")
-	##state[HP_AT_TURN_START] = _data.health
-	##state[DMG_SINCE_LAST_TURN] = 0
-	##var rng := RandomNumberGenerator.new()
-	##rng.randomize()
-	##set_meta("ai_rng", rng)
-	#ai_profile = _data.ai
-#
-	#var fighter: Fighter = get_parent()
-	#if not fighter.state:
-		#fighter.state = FighterState.new()
-		#fighter.state.rng = RNG.new()
-#
-	#fighter.state.ai_state = {}
-	#var state = fighter.state.ai_state
-	#state[HP_AT_TURN_START] = _data.health
-	#state[DMG_SINCE_LAST_TURN] = 0
-	#
-	##var battle_seed := 0
-	##if fighter and fighter.battle_scene:
-		##battle_seed = fighter.battle_scene.battle_seed
-	#
-	#
-	##var seed := RNGUtil.mix_seed(battle_seed, fighter.combat_id)
-	##set_meta("ai_rng", RNG.new(seed))
-	#
-	##var rng := RandomNumberGenerator.new()
-	##rng.randomize()
-	##set_meta("ai_rng", rng)
-	##fighter.state.ai_rng = RandomNumberGenerator.new()
-	##fighter.state.ai_rng.randomize()
-	#
-	#if not _data.combatant_data_changed.is_connected(_on_stats_changed):
-		#_data.combatant_data_changed.connect(_on_stats_changed)
-	#var grid : StatusGrid = get_parent().combatant.status_grid
-	#if grid and not grid.intent_conditions_changed.is_connected(_on_intent_conditions_changed):
-		#grid.intent_conditions_changed.connect(_on_intent_conditions_changed)
 
 
 # -------------------------------------------------------------------

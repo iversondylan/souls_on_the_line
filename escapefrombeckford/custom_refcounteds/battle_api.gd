@@ -104,3 +104,11 @@ func get_player_pos_delta(combat_id: int) -> int:
 	# live: use battle_scene.get_player_pos_delta(fighter)
 	# sim: compute based on rank relative to player id
 	return 0
+
+# ----------------
+# Turn Flow Events
+# ----------------
+
+#func run_status_procs(ctx: StatusProcContext) -> void:
+	## default: enqueue on runner / sim runs inline
+	#pass
