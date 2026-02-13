@@ -7,6 +7,7 @@ func get_text(ctx: NPCAIContext) -> String:
 		return "error"
 
 	var damage := int(ctx.params.get(NPCKeys.DAMAGE, 0))
+	damage = ctx.combatant.modifier_system.get_modified_value(damage, Modifier.Type.DMG_DEALT)
 	var strikes := int(ctx.params.get(NPCKeys.STRIKES, 1))
 
 	if damage < 0 or strikes < 0:

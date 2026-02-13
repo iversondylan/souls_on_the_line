@@ -52,6 +52,7 @@ signal combatant_target_unhovered(fighter: Fighter)
 signal request_summon_replace(card: UsableCard, ctx: CardActionContext, effect: SummonEffect, skip_action: CardAction)
 signal request_swap_partner(card: UsableCard, ctx: CardActionContext, actor: Fighter, skip_action: CardAction)
 signal request_discard_cards(ctx: DiscardContext)
+signal discard_selection_started(ctx: DiscardContext)
 signal discard_finished(ctx: DiscardContext)
 signal hand_discard_animation_finished()
 #signal request_summon_replace

@@ -54,6 +54,7 @@ func enqueue_move(ctx: MoveContext) -> void:
 	_kick()
 
 func enqueue_damage(ctx: DamageContext) -> void:
+	print("battle_resolution_runner.gd enqueue-damage()")
 	_queue.push_back({
 		"op": "damage",
 		"ctx": ctx,

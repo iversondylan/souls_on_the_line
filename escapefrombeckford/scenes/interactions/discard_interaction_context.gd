@@ -1,6 +1,5 @@
 # discard_interaction_context.gd
-class_name DiscardInteractionContext
-extends InteractionContext
+class_name DiscardInteractionContext extends InteractionContext
 
 var discard_ctx: DiscardContext
 
@@ -9,6 +8,7 @@ var _cards: Array[UsableCard] = []
 var _resolving := false
 
 func enter() -> void:
+	
 	_resolving = false
 	_selected.clear()
 	
@@ -32,7 +32,7 @@ func enter() -> void:
 	if _cards.size() <= discard_ctx.amount:
 		_auto_discard_all()
 		return
-	
+	Events.discard_selection_started.emit(discard_ctx)
 	# Force all cards into SELECTION mode
 	for c in _cards:
 		if c != null and is_instance_valid(c):
@@ -124,14 +124,17 @@ func _commit_selected() -> void:
 		Events.hand_card_added.disconnect(_on_hand_card_added)
 	
 	# Remove + discard
+	Events.hand_discard_animation_finished.connect(_on_discard_done, CONNECT_ONE_SHOT)
 	var removed := discard_ctx.hand.remove_cards_by_entities(_selected)
 	discard_ctx.actually_discarded = removed.size()
 	
 	discard_ctx.hand.discard_cards(removed)
 	
-	Events.hand_discard_animation_finished.connect(_on_discard_done, CONNECT_ONE_SHOT)
+	
 
 func _on_discard_done() -> void:
+	print("discard_interaction_context.gd _on_discard_done()")
+	#Events.hand_discard_animation_finished.disconnect(_on_discard_done)
 	Events.discard_finished.emit(discard_ctx)
 	handler.end_active_context()
 
@@ -141,10 +144,11 @@ func _auto_discard_all() -> void:
 	handler.prompt_set_enabled(false)
 	
 	var removed := discard_ctx.hand.remove_cards_by_entities(_cards)
+	Events.hand_discard_animation_finished.connect(_on_discard_done, CONNECT_ONE_SHOT)
 	discard_ctx.actually_discarded = removed.size()
 	discard_ctx.hand.discard_cards(removed)
 	
-	Events.hand_discard_animation_finished.connect(_on_discard_done, CONNECT_ONE_SHOT)
+	
 
 func _on_hand_card_added(card: UsableCard) -> void:
 	if _resolving:

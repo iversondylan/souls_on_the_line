@@ -1,5 +1,6 @@
-class_name Sound
-extends Resource
+# sound.gd
+
+class_name Sound extends Resource
 
 @export var stream: AudioStream
 

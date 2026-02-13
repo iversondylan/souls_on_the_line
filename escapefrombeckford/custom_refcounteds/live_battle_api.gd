@@ -1,7 +1,6 @@
 # live_battle_api.gd
 class_name LiveBattleAPI extends BattleAPI
 
-
 const SUMMONED_ALLY_SCN := "res://scenes/turn_takers/summoned_ally.tscn"
 const ENEMY_SCN := "res://scenes/turn_takers/enemy.tscn"
 
@@ -35,6 +34,29 @@ func resolve_damage(ctx: DamageContext) -> void:
 		return
 	if runner:
 		runner.enqueue_damage(ctx)
+	if ctx.sound:
+		play_sfx(ctx.sound)
+	else:
+		var attack_mode: String = ctx.params.get(NPCKeys.ATTACK_MODE, NPCAttackSequence.ATTACK_MODE_MELEE)
+		if attack_mode == NPCAttackSequence.ATTACK_MODE_RANGED:
+			play_sfx(load(DEFAULT_RANGED_SOUND))
+		else:
+			play_sfx(load(DEFAULT_MELEE_SOUND))
+
+
+func resolve_damage_immediate(ctx: DamageContext) -> void:
+	# hydrate (optional), then
+	DamageResolver.resolve(self, ctx)
+	if ctx.sound:
+		play_sfx(ctx.sound)
+	else:
+		var attack_mode: String = ctx.params.get(NPCKeys.ATTACK_MODE, NPCAttackSequence.ATTACK_MODE_MELEE)
+		if attack_mode == NPCAttackSequence.ATTACK_MODE_RANGED:
+			play_sfx(load(DEFAULT_RANGED_SOUND))
+		else:
+			play_sfx(load(DEFAULT_MELEE_SOUND))
+	if ctx.was_lethal:
+		runner.enqueue_death(ctx.target_id, "damage")
 
 func resolve_death(combat_id: int, reason := "") -> void:
 	if combat_id <= 0:
@@ -117,8 +139,11 @@ func on_damage_applied(ctx: DamageContext) -> void:
 		Shaker.shake(ctx.target, 16, 0.15)
 		ctx.target._spawn_damage_number_or_block(ctx) # if private, wrap it
 
+
+
 # This is what the runner awaits.
 func _run_damage_op(ctx: DamageContext) -> void:
+	print("live_battle_api.gd _run_damage_op()")
 	if !ctx:
 		return
 
@@ -132,7 +157,9 @@ func _run_damage_op(ctx: DamageContext) -> void:
 		return
 	if !ctx.target.is_alive():
 		return
-	play_sfx(ctx.sound if ctx.sound else load(DEFAULT_SUMMON_SOUND))
+		
+
+	
 	# central resolver
 	DamageResolver.resolve(self, ctx)
 	
@@ -183,7 +210,7 @@ func _run_damage_op(ctx: DamageContext) -> void:
 # Death pipeline (LIVE)
 # --------------------------
 
-func _run_death_op(combat_id: int, reason: String = "") -> void:
+func _run_death_op(combat_id: int, _reason: String = "") -> void:
 	if combat_id <= 0:
 		return
 

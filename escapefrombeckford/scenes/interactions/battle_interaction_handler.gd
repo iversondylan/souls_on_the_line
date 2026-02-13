@@ -177,22 +177,17 @@ func on_combatant_target_clicked(f: Fighter) -> void:
 func on_prompt_button_pressed() -> void:
 	if active == null:
 		return
-	#print("...")
-	# One button.
+
 	active.on_primary()
-	#match mode:
-		#Mode.DISCARD:
-			#print("Mode.DISCARD")
-			#active.on_primary() # OK
-		#Mode.SUMMON_REPLACE, Mode.SWAP_PARTNER:
-			#print("Mode.SWAP_PARTNER")
-			#active.on_primary() # Cancel for those modes
-		#_:
-			#print("_")
-			#pass
+
+	# DISCARD is async; it will call handler.end_active_context() in _on_discard_done().
+	if mode == Mode.DISCARD:
+		return
+
 	if active != null:
-		#print("...4")
 		end_active_context()
+
+
 
 
 func _cancel_active() -> void:

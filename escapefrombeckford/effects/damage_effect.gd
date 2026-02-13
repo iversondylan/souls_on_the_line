@@ -1,7 +1,10 @@
 # damage_effect.gd
+
 class_name DamageEffect extends Effect
 
-
+@export var deal_modifier_type := Modifier.Type.DMG_DEALT
+@export var take_modifier_type := Modifier.Type.DMG_TAKEN
+@export var use_modifiers := true
 
 var n_damage: int = 0
 var source: Fighter = null
@@ -27,10 +30,15 @@ func execute(api: BattleAPI) -> void:
 		ctx.base_amount = n_damage
 
 		# IMPORTANT: these are what enable DMG_DEALT / DMG_TAKEN
-		ctx.deal_modifier_type = Modifier.Type.DMG_DEALT
-		ctx.take_modifier_type = Modifier.Type.DMG_TAKEN
+		if use_modifiers:
+			ctx.deal_modifier_type = deal_modifier_type
+			ctx.take_modifier_type = take_modifier_type
+		else:
+			ctx.deal_modifier_type = Modifier.Type.NO_MODIFIER
+			ctx.take_modifier_type = Modifier.Type.NO_MODIFIER
 		ctx.sound = sound
-		api.resolve_damage(ctx)
+		
+		api.resolve_damage_immediate(ctx)
 
 #func execute(api: BattleAPI) -> void:
 	#if !api:
