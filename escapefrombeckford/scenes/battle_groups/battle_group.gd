@@ -21,6 +21,34 @@ func reset_npc_actions() -> void:
 			child.current_action = null
 			#child.update_action()
 
+func build_acting_queue(start_at_player := false) -> void:
+	_restored_turn_this_group_turn.clear()
+	acting_fighters.clear()
+
+	if start_at_player and self is BattleGroupFriendly:
+		var reached_player := false
+		for fighter: Fighter in get_combatants():
+			if fighter is Player and !reached_player:
+				reached_player = true
+			if reached_player:
+				acting_fighters.append(fighter)
+	else:
+		for fighter: Fighter in get_combatants():
+			acting_fighters.append(fighter)
+
+	_update_pending_turn_glow()
+
+
+func pop_current_actor(actor: Fighter) -> void:
+	# Only pop if it’s actually current
+	if acting_fighters.is_empty():
+		return
+	if actor != acting_fighters[0]:
+		return
+
+	acting_fighters.pop_front()
+	_update_pending_turn_glow()
+
 func start_turn() -> void:
 	if get_combatants().is_empty():
 		print("battle_group.gd start_turn() ERROR: stuck with no fighters")
@@ -72,8 +100,8 @@ func get_combatants(allow_dead: bool = false) -> Array[Fighter]:
 func connect_combatant(fighter: Fighter):
 	fighter.battle_group = self
 	fighter.run = run
-	fighter.statuses_applied.connect(_on_combatant_statuses_applied.bind(fighter))
-	fighter.action_resolved.connect(_on_turn_taker_action_resolved)
+	#fighter.statuses_applied.connect(_on_combatant_statuses_applied.bind(fighter))
+	#fighter.action_resolved.connect(_on_turn_taker_action_resolved)
 	fighter.combatant.status_grid.modifier_tokens_changed.connect(battle_scene._on_modifier_tokens_changed)
 
 func add_combatant(fighter: Fighter, rank: int):
@@ -98,30 +126,58 @@ func add_combatant(fighter: Fighter, rank: int):
 
 func remove_combatant(fighter: Fighter):
 	remove_child(fighter)
-	var dead_fighter_acting: bool = false
+
+	var was_acting := false
 	if !acting_fighters.is_empty():
-		dead_fighter_acting = fighter == acting_fighters[0]
+		was_acting = fighter == acting_fighters[0]
+
 	acting_fighters.erase(fighter)
+
 	if battle_scene and battle_scene.runner:
 		battle_scene.runner.mark_removed(fighter.combat_id)
+
 	fighter.queue_free()
+
 	Events.n_combatants_changed.emit()
 	update_combatant_position()
 	_recompute_intents_for_group()
 	_update_pending_turn_glow()
+
 	if get_combatants().is_empty():
 		Events.battle_group_empty.emit(self)
-	
-	if !dead_fighter_acting:
-		return
-	
-	
-	if self is BattleGroupEnemy:
-		if BattleController.current_state == BattleController.BattleState.ENEMY_TURN:
-			_next_turn_taker()
-	elif self is BattleGroupFriendly:
-		if BattleController.current_state == BattleController.BattleState.FRIENDLY_TURN:
-			_next_turn_taker()
+
+	if was_acting:
+		if battle_scene and battle_scene.api and battle_scene.api is LiveBattleAPI:
+			var api := battle_scene.api as LiveBattleAPI
+			api.turn_engine.on_actor_removed(fighter)
+
+
+#func remove_combatant(fighter: Fighter):
+	#remove_child(fighter)
+	#var dead_fighter_acting: bool = false
+	#if !acting_fighters.is_empty():
+		#dead_fighter_acting = fighter == acting_fighters[0]
+	#acting_fighters.erase(fighter)
+	#if battle_scene and battle_scene.runner:
+		#battle_scene.runner.mark_removed(fighter.combat_id)
+	#fighter.queue_free()
+	#Events.n_combatants_changed.emit()
+	#update_combatant_position()
+	#_recompute_intents_for_group()
+	#_update_pending_turn_glow()
+	#if get_combatants().is_empty():
+		#Events.battle_group_empty.emit(self)
+	#
+	#if !dead_fighter_acting:
+		#return
+	#
+	#
+	#if self is BattleGroupEnemy:
+		#if BattleController.current_state == BattleController.BattleState.ENEMY_TURN:
+			#_next_turn_taker()
+	#elif self is BattleGroupFriendly:
+		#if BattleController.current_state == BattleController.BattleState.FRIENDLY_TURN:
+			#_next_turn_taker()
 
 func on_combatant_death_side_effects(fighter: Fighter) -> void:
 	if fighter is SummonedAlly:

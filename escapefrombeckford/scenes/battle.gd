@@ -65,6 +65,7 @@ func _ready() -> void:
 	Events.hand_drawn.connect(_enable_preview_turn_flow_button) 
 	Events.player_turn_completed.connect(_cancel_turn_order_spark)
 	Events.player_turn_completed.connect(_disable_preview_turn_flow_button)
+	Events.player_turn_completed.connect(_on_player_turn_completed)
 	Events.end_turn_button_pressed.connect(_cancel_turn_order_spark)
 	Events.end_turn_button_pressed.connect(_disable_preview_turn_flow_button)
 	turn_phase_title.preview_button_pressed.connect(_try_start_turn_order_spark)
@@ -145,6 +146,9 @@ func start_battle():
 	
 	
 	Events.request_activate_arcana_by_type.emit(Arcanum.Type.START_OF_COMBAT)
+	initialize_card_pile_ui()
+	BattleController.current_state = BattleController.BattleState.FRIENDLY_TURN
+	Events.first_friendly_turn_started.emit()
 
 func _on_request_activate_arcana_by_type(type: Arcanum.Type):
 	match type:
@@ -266,6 +270,14 @@ func _enable_preview_turn_flow_button() -> void:
 
 func _disable_preview_turn_flow_button() -> void:
 	turn_phase_title.enable_button(false)
+
+func _on_player_turn_completed() -> void:
+	if api and api is LiveBattleAPI:
+		var live := api as LiveBattleAPI
+		live.turn_engine.resume_after_player_done()
+
+	# Then whatever you already do that triggers enemy turn:
+	# (your existing Events/request_enemy_turn pipeline can remain)
 
 func _on_request_draw_cards(ctx: DrawContext) -> void:
 	ctx.hand = hand
