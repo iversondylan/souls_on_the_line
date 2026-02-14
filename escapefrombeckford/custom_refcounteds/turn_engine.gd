@@ -154,12 +154,6 @@ func _run_actor(actor: Fighter) -> void:
 	phase = Phase.WAITING_FOR_ACTION
 	actor.do_turn()
 
-	# If it’s the player, stop here (Pattern B) and let UI drive completion.
-	if actor is Player:
-		waiting_for_player = true
-		phase = Phase.IDLE
-		return
-
 	# Otherwise NPC: wait for action completion
 	var ok := await _await_action_or_removal(actor)
 	if !ok:

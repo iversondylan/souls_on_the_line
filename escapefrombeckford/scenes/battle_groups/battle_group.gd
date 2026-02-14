@@ -38,7 +38,6 @@ func build_acting_queue(start_at_player := false) -> void:
 
 	_update_pending_turn_glow()
 
-
 func pop_current_actor(actor: Fighter) -> void:
 	# Only pop if it’s actually current
 	if acting_fighters.is_empty():
@@ -150,34 +149,6 @@ func remove_combatant(fighter: Fighter):
 		if battle_scene and battle_scene.api and battle_scene.api is LiveBattleAPI:
 			var api := battle_scene.api as LiveBattleAPI
 			api.turn_engine.on_actor_removed(fighter)
-
-
-#func remove_combatant(fighter: Fighter):
-	#remove_child(fighter)
-	#var dead_fighter_acting: bool = false
-	#if !acting_fighters.is_empty():
-		#dead_fighter_acting = fighter == acting_fighters[0]
-	#acting_fighters.erase(fighter)
-	#if battle_scene and battle_scene.runner:
-		#battle_scene.runner.mark_removed(fighter.combat_id)
-	#fighter.queue_free()
-	#Events.n_combatants_changed.emit()
-	#update_combatant_position()
-	#_recompute_intents_for_group()
-	#_update_pending_turn_glow()
-	#if get_combatants().is_empty():
-		#Events.battle_group_empty.emit(self)
-	#
-	#if !dead_fighter_acting:
-		#return
-	#
-	#
-	#if self is BattleGroupEnemy:
-		#if BattleController.current_state == BattleController.BattleState.ENEMY_TURN:
-			#_next_turn_taker()
-	#elif self is BattleGroupFriendly:
-		#if BattleController.current_state == BattleController.BattleState.FRIENDLY_TURN:
-			#_next_turn_taker()
 
 func on_combatant_death_side_effects(fighter: Fighter) -> void:
 	if fighter is SummonedAlly:
@@ -558,19 +529,21 @@ func turn_reset() -> void:
 		fighter.turn_reset()
 
 func _on_turn_taker_action_resolved(turn_taker_who_finished: Fighter) -> void:
-	if turn_taker_who_finished != acting_fighters[0]:
-		#print("battle_group.gd _on_turn_taker_turn_complete() turn_taker_who_finished is not the acting fighter.")
-		return
-	turn_taker_who_finished.exit()
+	pass
+	#if turn_taker_who_finished != acting_fighters[0]:
+		##print("battle_group.gd _on_turn_taker_turn_complete() turn_taker_who_finished is not the acting fighter.")
+		#return
+	#turn_taker_who_finished.exit()
 
 func _on_combatant_statuses_applied(proc_type: Status.ProcType, fighter: Fighter) -> void:
 	match proc_type:
 		Status.ProcType.START_OF_TURN:
-			fighter.do_turn()
+			pass
+			#fighter.do_turn()
 		Status.ProcType.END_OF_TURN:
-			acting_fighters.erase(fighter)
+			#acting_fighters.erase(fighter)
 			_update_pending_turn_glow()
-			_next_turn_taker()
+			#_next_turn_taker()
 
 func has_ai_behavior(node: Node) -> bool:
 	for child in node.get_children():
