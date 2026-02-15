@@ -24,6 +24,8 @@ var index: int = -1
 
 # turn-queue rule
 var can_restore_turn: bool = false
+var before_order_ids: Array[int] = []
+var after_order_ids: Array[int] = []
 
 # optional
 var sound: Sound = null

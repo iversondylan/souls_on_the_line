@@ -205,7 +205,7 @@ func _run_death_op(combat_id: int, _reason: String = "") -> void:
 	# Gameplay cleanup (used to live in Fighter.die)
 	# ---------------------------------------------------------
 	if f.combatant and f.combatant.status_grid:
-		f.combatant.status_grid.end_non_self_statuses()
+		f.status_system.end_non_self_statuses()
 
 	for child in f.get_children():
 		if child is FighterBehavior:
@@ -313,11 +313,11 @@ func _run_remove_status_op(ctx: RemoveStatusContext) -> void:
 	# Call ONE canonical StatusGrid API (see note below)
 	# Example:
 	var removed_count := 0
-	if f.combatant.status_grid.has_method("remove_status"):
-		removed_count = f.combatant.status_grid.remove_status(ctx.status_id, ctx.remove_all_stacks)
-	elif f.combatant.status_grid.has_method("remove_status_by_id"):
+	if f.status_system.has_method("remove_status"):
+		removed_count = f.status_system.remove_status(ctx.status_id, ctx.remove_all_stacks)
+	elif f.status_system.has_method("remove_status_by_id"):
 		# fallback for your older name
-		removed_count = f.combatant.status_grid.remove_status_by_id(String(ctx.status_id))
+		removed_count = f.status_system.remove_status_by_id(String(ctx.status_id))
 	else:
 		push_warning("StatusGrid has no remove method")
 		return
@@ -360,7 +360,7 @@ func _run_status_proc_op(target_id: int, proc_type: Status.ProcType) -> void:
 	# Decrement durations / expire *in the system* (not in view)
 	#sys.on_proc_applied(proc_type) # you implement this: duration--, remove expired, emit signals
 	print("live_battle_api.gd _run_status_proc_op(): emitting f.status_proc_finished.emit(proc_type)")
-	f.status_proc_finished.emit(proc_type)
+	f._emit_status_proc_finished(proc_type)
 
 
 func _run_summon_op(ctx: SummonContext) -> void:
@@ -394,7 +394,8 @@ func _run_summon_op(ctx: SummonContext) -> void:
 	# record outputs
 	ctx.summoned_fighter = fighter
 	ctx.summoned_id = fighter.combat_id
-
+	if turn_engine:
+		turn_engine.on_summon_added(fighter)
 	# ---- CombatantData ----
 	var data: CombatantData = (ctx.summon_data if ctx.summon_data else load(DEFAULT_SUMMON_DATA)).duplicate()
 	data.init()
@@ -480,7 +481,10 @@ func _run_move_op(ctx: MoveContext) -> void:
 
 	# Delegate to BattleScene/BattleGroup (authoritative structure)
 	battle_scene.execute_move_ctx(ctx)
-
+	
+	if turn_engine:
+		turn_engine.on_move_executed(ctx)
+	
 	if ctx.sound:
 		play_sfx(ctx.sound)
 
@@ -601,12 +605,13 @@ func get_rank_in_group(combat_id: int) -> int:
 	return f.get_index()
 
 func has_status(combat_id: int, status_id: StringName) -> bool:
+	print("live_battle_api.gd has_status(combat_id: %s, status_id: %s)" % [combat_id, status_id])
 	var f := battle_scene.get_combatant_by_id(combat_id, true)
 	if !f or !is_instance_valid(f):
 		return false
-	if !f.combatant or !f.combatant.status_grid:
+	if !f.combatant or !f.combatant.status_grid or !f.status_system:
 		return false
-	return f.combatant.status_grid.has_status(status_id)
+	return f.status_system.has_status(status_id)
 
 func find_marked_ranged_redirect_target(attacker_id: int) -> int:
 	var enemies := get_enemies_of(attacker_id) # ids front->back

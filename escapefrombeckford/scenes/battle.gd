@@ -134,7 +134,6 @@ func start_battle():
 	
 	make_player_combatant()
 	make_enemies()
-	
 	Events.battle_reset.emit()
 	battle_scene.build_static_modifiers_from_arcana()
 	Events.initiate_first_intents.emit()
@@ -142,15 +141,10 @@ func start_battle():
 	hand.empty_hand()
 	deck.reset()
 	deck.make_draw_pile()
-	battle_scene.friendly_group_turn_start()
-	
 	MusicPlayer.play(music, true)
-	
-	
-	Events.request_activate_arcana_by_type.emit(Arcanum.Type.START_OF_COMBAT)
 	initialize_card_pile_ui()
 	BattleController.current_state = BattleController.BattleState.FRIENDLY_TURN
-	Events.first_friendly_turn_started.emit()
+	Events.request_activate_arcana_by_type.emit(Arcanum.Type.START_OF_COMBAT)
 
 func _on_request_activate_arcana_by_type(type: Arcanum.Type):
 	match type:
@@ -178,7 +172,7 @@ func _on_request_friendly_turn() -> void:
 func _on_arcana_activated(type: Arcanum.Type) -> void:
 	match type:
 		Arcanum.Type.START_OF_COMBAT:
-			initialize_card_pile_ui()
+			#initialize_card_pile_ui()
 			BattleController.current_state = BattleController.BattleState.FRIENDLY_TURN
 			Events.first_friendly_turn_started.emit()
 		Arcanum.Type.END_OF_COMBAT:

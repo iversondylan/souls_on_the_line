@@ -103,7 +103,7 @@ func connect_combatant(fighter: Fighter):
 	fighter.run = run
 	#fighter.statuses_applied.connect(_on_combatant_statuses_applied.bind(fighter))
 	#fighter.action_resolved.connect(_on_turn_taker_action_resolved)
-	fighter.combatant.status_grid.modifier_tokens_changed.connect(battle_scene._on_modifier_tokens_changed)
+	fighter.status_system.modifier_tokens_changed.connect(battle_scene._on_modifier_tokens_changed)
 
 func add_combatant(fighter: Fighter, rank: int):
 	add_child(fighter)
@@ -113,17 +113,19 @@ func add_combatant(fighter: Fighter, rank: int):
 	update_combatant_position()
 	_recompute_intents_for_group()
 	
-	
-	if acting_fighters.is_empty():
-		return
-	
-	var acted: int = -1
-	for combatant in get_combatants():
-		if !acting_fighters.has(combatant):
-			acted += 1
-	if rank - acted > 0:
-		acting_fighters.insert(rank - acted, fighter)
+	# TurnEngine owns turn order / queue. Group should not mutate acting_fighters here.
 	_update_pending_turn_glow()
+
+	#if acting_fighters.is_empty():
+		#return
+	#
+	#var acted: int = -1
+	#for combatant in get_combatants():
+		#if !acting_fighters.has(combatant):
+			#acted += 1
+	#if rank - acted > 0:
+		#acting_fighters.insert(rank - acted, fighter)
+	#_update_pending_turn_glow()
 
 func remove_combatant(fighter: Fighter):
 	remove_child(fighter)
@@ -219,8 +221,12 @@ func execute_move_ctx(ctx: MoveContext) -> void:
 	if !ctx or !ctx.actor:
 		return
 
+	# Snapshot BEFORE
 	var before_order: Array[Fighter] = get_combatants()
-	var before_acting: Array[Fighter] = acting_fighters.duplicate()
+	ctx.before_order_ids.clear()
+	for f in before_order:
+		if f and is_instance_valid(f):
+			ctx.before_order_ids.append(int(f.combat_id))
 
 	match ctx.move_type:
 		MoveContext.MoveType.TRAVERSE_PLAYER:
@@ -246,12 +252,20 @@ func execute_move_ctx(ctx: MoveContext) -> void:
 		_:
 			push_warning("BattleGroup.execute_move_ctx(): unsupported move_type=%s" % str(ctx.move_type))
 
-	# reuse your reconciliation logic, but it expects a MoveEffect right now
-	# easiest: add an overload that takes (can_restore_turn) instead of the whole effect
-	_reconcile_acting_list_ctx(before_order, before_acting, ctx)
+	# Snapshot AFTER
+	var after_order: Array[Fighter] = get_combatants()
+	ctx.after_order_ids.clear()
+	for f in after_order:
+		if f and is_instance_valid(f):
+			ctx.after_order_ids.append(int(f.combat_id))
+
+	# IMPORTANT:
+	# Do NOT reconcile acting_fighters here anymore (TurnEngine owns eligibility + restores).
+	# If you still want glow updates, TurnEngine will push acting_fighters as a view.
 
 	update_combatant_position()
 	_recompute_intents_for_group()
+
 
 func _reconcile_acting_list_ctx(
 	before_order: Array[Fighter],

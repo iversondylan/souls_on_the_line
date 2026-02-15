@@ -3,25 +3,64 @@ class_name StatusFromOppTurnModel
 extends IntentLifecycleModel
 
 ## The status to apply while this intent is active.
-## NOTE: Intent-lifecycle statuses must be unique by id.
-## ->don't apply the same status to the same fighter more than once
+## NOTE: intent-lifecycle statuses must be unique by id per fighter.
 @export var status: Status
 
+# Optional: if you want audio for this lifecycle status, add:
+# @export var apply_sound: Sound
+# @export var remove_sound: Sound
+
 func on_opposing_group_start(ctx: NPCAIContext) -> void:
-	if !ctx or !ctx.combatant or !status:
+	if !_can_run(ctx):
 		return
-	StatusRuntime.apply_status_to_fighter(ctx.combatant, status)
-
-## NOTE:
-## StatusGrid enforces uniqueness by (status.ID (status.get_id()), status_parent).
-## Multiple fighters may emit the same aura, but a single fighter
-## must not apply the same primary status to itself more than once.
-## Intent-lifecycle statuses rely on this contract.
-
-## Called when this action stops being the planned intent
-## due to reprioritization or interruption
+	_apply_to_self(ctx)
 
 func on_intent_canceled(ctx: NPCAIContext) -> void:
-	if !ctx or !ctx.combatant or !status:
+	if !_can_run(ctx):
 		return
-	StatusRuntime.remove_status_from_fighter(ctx.combatant, status.get_id())
+	_remove_from_self(ctx)
+
+func _can_run(ctx: NPCAIContext) -> bool:
+	if !ctx or bool(ctx.forecast):
+		return false
+	if !ctx.combatant or !is_instance_valid(ctx.combatant):
+		return false
+	if !status:
+		return false
+	return true
+
+func _resolve_api(ctx: NPCAIContext) -> BattleAPI:
+	var api: BattleAPI = ctx.api
+	if !api and ctx.battle_scene:
+		api = ctx.battle_scene.api
+	return api
+
+func _status_id() -> StringName:
+	return StringName(status.get_id())
+
+func _apply_to_self(ctx: NPCAIContext) -> void:
+	var api := _resolve_api(ctx)
+	if !api:
+		return
+
+	var e := StatusEffect.new()
+	e.targets = [ctx.combatant]
+	e.source = ctx.combatant
+	e.status_id = _status_id()
+	e.duration = status.duration
+	e.intensity = status.intensity
+	# e.sound = apply_sound
+	e.execute(api)
+
+func _remove_from_self(ctx: NPCAIContext) -> void:
+	var api := _resolve_api(ctx)
+	if !api:
+		return
+
+	var e := RemoveStatusEffect.new()
+	e.targets = [ctx.combatant]
+	e.source = ctx.combatant
+	e.status_id = _status_id()
+	e.remove_all_stacks = true
+	# e.sound = remove_sound
+	e.execute(api)

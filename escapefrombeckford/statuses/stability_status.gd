@@ -52,9 +52,9 @@ func _break_posture() -> void:
 	# Signal posture break via state or event?
 
 	# Remove this status
-	var grid := status_parent.combatant.status_grid
-	if grid:
-		grid.remove_status_by_id(get_id())
+	var status_system := status_parent.status_system
+	if status_system:
+		status_system.remove_status_by_id(get_id())
 
 func on_removed() -> void:
 	# Defensive cleanup for any explicit removal hooks

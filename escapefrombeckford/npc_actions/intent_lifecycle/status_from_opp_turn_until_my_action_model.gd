@@ -1,24 +1,63 @@
 # status_from_opp_turn_to_my_action_model.gd
-
 class_name StatusFromOppTurnUntilMyActionModel
 extends IntentLifecycleModel
 
-## The status to apply while this intent is active.
-## NOTE: Intent-lifecycle statuses must be unique by id.
-## ->don't apply the same status to the same fighter more than once
 @export var status: Status
 
 func on_opposing_group_start(ctx: NPCAIContext) -> void:
-	if !ctx or !ctx.combatant or !status:
+	if !_can_run(ctx):
 		return
-	StatusRuntime.apply_status_to_fighter(ctx.combatant, status)
+	_apply_to_self(ctx)
 
 func on_ability_started(ctx: NPCAIContext) -> void:
-	if !ctx or !ctx.combatant or !status:
+	if !_can_run(ctx):
 		return
-	StatusRuntime.remove_status_from_fighter(ctx.combatant, status.get_id())
+	_remove_from_self(ctx)
 
 func on_intent_canceled(ctx: NPCAIContext) -> void:
-	if !ctx or !ctx.combatant or !status:
+	if !_can_run(ctx):
 		return
-	StatusRuntime.remove_status_from_fighter(ctx.combatant, status.get_id())
+	_remove_from_self(ctx)
+
+func _can_run(ctx: NPCAIContext) -> bool:
+	if !ctx or bool(ctx.forecast):
+		return false
+	if !ctx.combatant or !is_instance_valid(ctx.combatant):
+		return false
+	if !status:
+		return false
+	return true
+
+func _resolve_api(ctx: NPCAIContext) -> BattleAPI:
+	var api: BattleAPI = ctx.api
+	if !api and ctx.battle_scene:
+		api = ctx.battle_scene.api
+	return api
+
+func _status_id() -> StringName:
+	return StringName(status.get_id())
+
+func _apply_to_self(ctx: NPCAIContext) -> void:
+	var api := _resolve_api(ctx)
+	if !api:
+		return
+
+	var e := StatusEffect.new()
+	e.targets = [ctx.combatant]
+	e.source = ctx.combatant
+	e.status_id = _status_id()
+	e.duration = status.duration
+	e.intensity = status.intensity
+	e.execute(api)
+
+func _remove_from_self(ctx: NPCAIContext) -> void:
+	var api := _resolve_api(ctx)
+	if !api:
+		return
+
+	var e := RemoveStatusEffect.new()
+	e.targets = [ctx.combatant]
+	e.source = ctx.combatant
+	e.status_id = _status_id()
+	e.remove_all_stacks = true
+	e.execute(api)

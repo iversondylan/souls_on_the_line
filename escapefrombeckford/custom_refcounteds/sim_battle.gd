@@ -222,10 +222,10 @@ static func from_battle_scene(battle_scene: BattleScene, status_catalog: StatusC
 # owns StatusGridData and live StatusGrid becomes just a view/sync.
 static func _extract_statuses_as_data(f: Fighter) -> StatusGridData:
 	var data := StatusGridData.new()
-	if !f or !f.combatant or !f.combatant.status_grid:
+	if !f or !f.status_system:
 		return data
 
-	for s: Status in f.combatant.status_grid._get_all_statuses():
+	for s: Status in f.status_system._get_all_statuses():
 		if !s:
 			continue
 		var st := StatusState.new(s.get_id(), s.duration, s.intensity)

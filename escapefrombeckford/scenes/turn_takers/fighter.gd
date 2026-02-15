@@ -5,6 +5,9 @@ class_name Fighter extends Node2D
 signal action_resolved(turn_taker: Fighter)
 signal status_proc_finished(proc_type: Status.ProcType)
 
+var last_status_proc_finished: int = -1
+var last_status_proc_tick: int = 0
+
 signal statuses_applied(proc_type: Status.ProcType)
 signal damage_taken(ctx: DamageContext)
 
@@ -107,6 +110,11 @@ func exit() -> void:
 	#for child in get_children():
 		#if child is FighterBehavior:
 			#child._on_exit()
+
+func _emit_status_proc_finished(proc_type: int) -> void:
+	last_status_proc_finished = proc_type
+	last_status_proc_tick += 1
+	status_proc_finished.emit(proc_type)
 
 func my_group_turn_start() -> void:
 	pass

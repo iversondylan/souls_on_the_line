@@ -75,7 +75,7 @@ func _on_combatant_data_set(_data: CombatantData) -> void:
 	if not _data.combatant_data_changed.is_connected(_on_stats_changed):
 		_data.combatant_data_changed.connect(_on_stats_changed)
 
-	var grid: StatusGrid = fighter.combatant.status_grid
+	var grid: StatusSystem = fighter.status_system
 	if grid and not grid.intent_conditions_changed.is_connected(_on_intent_conditions_changed):
 		grid.intent_conditions_changed.connect(_on_intent_conditions_changed)
 
