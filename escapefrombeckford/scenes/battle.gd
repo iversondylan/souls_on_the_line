@@ -57,6 +57,7 @@ var api: LiveBattleAPI
 func _ready() -> void:
 	#print_tree_pretty()
 	api = LiveBattleAPI.new(battle_scene)
+	
 	battle_scene.api = api
 	Events.live_battle_api_created.emit(api)
 	set_process(true)
@@ -99,6 +100,7 @@ func _ready() -> void:
 
 func _set_run(new_run: Run) -> void:
 	run = new_run
+	api.status_catalog = run.status_catalog
 	if !is_node_ready():
 		await ready
 	battle_scene.run = run
@@ -289,5 +291,6 @@ func _on_request_draw_cards(ctx: DrawContext) -> void:
 	Events.cards_drawn.emit(ctx)
 
 func simulate_battle() -> void:
-	var sim_battle := SimBattle.from_battle_scene(battle_scene, run.status_catalog)
+	pass
+	#var sim_battle := SimBattle.from_battle_scene(battle_scene, run.status_catalog)
 	#sim_battle.print_sim_snapshot()

@@ -9,7 +9,7 @@ var target: Fighter = null
 var target_id: int = 0
 
 # "what to apply"
-var status: Status = null # template (will be duplicated in Live)
+var status_id: StringName = &""
 var duration: int = 0
 var intensity: int = 0
 

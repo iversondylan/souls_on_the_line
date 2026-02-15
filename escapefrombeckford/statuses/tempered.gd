@@ -2,7 +2,7 @@
 
 class_name TemperedStatus extends Status
 
-const ID := "tempered"
+const ID := &"tempered"
 var max_health_per_strike := 1
 
 func get_id() -> String:

@@ -2,7 +2,7 @@
 
 extends CardAction
 
-const PRESSURE_BARRIER_STATUS := preload("res://statuses/pressure_barrier.tres")
+#const PRESSURE_BARRIER_STATUS := preload("res://statuses/pressure_barrier.tres")
 
 @export var pressure_barrier_intensity: int = 2
 @export var amplify_sound: Sound# = preload("res://audio/supercharge_application.tres")
@@ -15,13 +15,13 @@ func activate(ctx: CardActionContext) -> bool:
 	var status_effect := StatusEffect.new()
 	status_effect.targets = targets
 
-	var pressure_barrier_status := PRESSURE_BARRIER_STATUS.duplicate()
+	#var pressure_barrier_status := PRESSURE_BARRIER_STATUS.duplicate()
 	#amplify_status.stack_type = Status.StackType.DURATION
 	#amplify_status.duration = amplify_duration
 	#amplify_status.expiration_policy = Status.ExpirationPolicy.DURATION
-	pressure_barrier_status.intensity = pressure_barrier_intensity
+	status_effect.intensity = pressure_barrier_intensity
 	status_effect.sound = amplify_sound
-	status_effect.status = pressure_barrier_status
+	status_effect.status_id = PressureBarrier.ID
 	status_effect.execute(ctx.battle_scene.api)
 
 	return true

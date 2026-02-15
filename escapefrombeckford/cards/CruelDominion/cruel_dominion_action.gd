@@ -1,6 +1,6 @@
 extends CardAction
 
-const CRUEL_DOMINION_STATUS := preload("res://statuses/cruel_dominion.tres")
+#const CRUEL_DOMINION_STATUS := preload("res://statuses/cruel_dominion.tres")
 
 @export var cruel_dominion_intensity: int = 2
 @export var sound: Sound = preload("res://audio/haunting_gloom.tres")
@@ -14,10 +14,10 @@ func activate(ctx: CardActionContext) -> bool:
 	var status_effect := StatusEffect.new()
 	status_effect.targets = targets
 
-	var cruel_dominion := CRUEL_DOMINION_STATUS.duplicate()
-	cruel_dominion.intensity = cruel_dominion_intensity
+	#var cruel_dominion := CRUEL_DOMINION_STATUS.duplicate()
+	status_effect.intensity = cruel_dominion_intensity
 
-	status_effect.status = cruel_dominion
+	status_effect.status_id = CruelDominionStatus.ID
 	status_effect.sound = sound
 	status_effect.execute(ctx.battle_scene.api)
 

@@ -8,7 +8,7 @@ class_name MarkedStatus extends Status
 # duration: 2
 # intensity: 0
 
-const ID := "marked"
+const ID := &"marked"
 
 func get_id() -> String:
 	return ID

@@ -22,6 +22,7 @@ func reset_npc_actions() -> void:
 			#child.update_action()
 
 func build_acting_queue(start_at_player := false) -> void:
+	print("battle_group.gd build_acting_queue()")
 	_restored_turn_this_group_turn.clear()
 	acting_fighters.clear()
 

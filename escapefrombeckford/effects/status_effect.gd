@@ -1,8 +1,8 @@
 # status_effect.gd
-class_name StatusEffect
-extends Effect
 
-var status: Status
+class_name StatusEffect extends Effect
+
+var status_id: StringName = &""
 var source: Fighter = null # optional, but nice for procs/logging
 var duration: int = 0
 var intensity: int = 0
@@ -13,8 +13,8 @@ func execute(api: BattleAPI) -> void:
 
 	api.play_sfx(sound)
 
-	if !status:
-		push_warning("StatusEffect.execute(): status is null")
+	if status_id == &"":
+		push_warning("StatusEffect.execute(): status_id is empty")
 		return
 
 	for target in targets:
@@ -24,12 +24,48 @@ func execute(api: BattleAPI) -> void:
 		var ctx := StatusContext.new()
 		ctx.source = source
 		ctx.target = target
-		ctx.status = status
+
+		# ID-based
+		ctx.status_id = status_id
 		ctx.duration = duration
 		ctx.intensity = intensity
-		ctx.hydrate_ids()
 
+		ctx.hydrate_ids()
 		api.apply_status(ctx)
+
+
+## status_effect.gd
+#class_name StatusEffect
+#extends Effect
+#
+#var status: Status
+#var source: Fighter = null # optional, but nice for procs/logging
+#var duration: int = 0
+#var intensity: int = 0
+#
+#func execute(api: BattleAPI) -> void:
+	#if !api:
+		#return
+#
+	#api.play_sfx(sound)
+#
+	#if !status:
+		#push_warning("StatusEffect.execute(): status is null")
+		#return
+#
+	#for target in targets:
+		#if !target:
+			#continue
+#
+		#var ctx := StatusContext.new()
+		#ctx.source = source
+		#ctx.target = target
+		#ctx.status = status
+		#ctx.duration = duration
+		#ctx.intensity = intensity
+		#ctx.hydrate_ids()
+#
+		#api.apply_status(ctx)
 
 
 ## status_effect.gd

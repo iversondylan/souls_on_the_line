@@ -1,6 +1,7 @@
 # battle_api.gd
 class_name BattleAPI extends RefCounted
 
+var status_catalog: StatusCatalog
 
 # Lookup / targeting support
 func is_alive(_combat_id: int) -> bool:

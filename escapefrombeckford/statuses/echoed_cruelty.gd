@@ -2,7 +2,7 @@
 
 class_name EchoedCrueltyStatus extends Aura
 
-const ID := "echoed_cruelty"
+const ID := &"echoed_cruelty"
 
 func get_id() -> String:
 	return ID

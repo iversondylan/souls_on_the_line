@@ -2,7 +2,7 @@
 
 class_name PinpointStatus extends Status
 
-const ID := "pinpoint"
+const ID := &"pinpoint"
 const MULT_VALUE := 0.5
 
 func get_id() -> String:

@@ -1,6 +1,6 @@
 extends CardAction
 
-const PINPOINT_STATUS := preload("res://statuses/pinpoint.tres")
+#const PINPOINT_STATUS := preload("res://statuses/pinpoint.tres")
 
 @export var duration: int = 2
 @export var sound: Sound = preload("res://audio/pinpoint_buzz.tres")
@@ -13,12 +13,12 @@ func activate(ctx: CardActionContext) -> bool:
 	var status_effect := StatusEffect.new()
 	status_effect.targets = targets
 
-	var pinpoint_status := PINPOINT_STATUS.duplicate()
+	#var pinpoint_status := PINPOINT_STATUS.duplicate()
 	#pinpoint_status.expiration_policy = Status.ExpirationPolicy.DURATION
-	pinpoint_status.duration = duration
+	status_effect.duration = duration
 	
 	status_effect.sound = sound
-	status_effect.status = pinpoint_status
+	status_effect.status_id = PinpointStatus.ID
 	status_effect.execute(ctx.battle_scene.api)
 
 	return true

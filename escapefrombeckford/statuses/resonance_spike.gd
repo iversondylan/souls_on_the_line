@@ -2,7 +2,7 @@
 
 class_name ResonanceSpikeStatus extends Aura
 
-const ID := "resonance_spike"
+const ID := &"resonance_spike"
 
 func get_id() -> String:
 	return ID

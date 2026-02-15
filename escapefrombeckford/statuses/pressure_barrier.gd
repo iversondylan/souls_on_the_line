@@ -2,7 +2,7 @@
 
 class_name PressureBarrier extends Status
 
-const ID = "pressure_barrier"
+const ID = &"pressure_barrier"
 
 func get_id() -> String:
 	return ID

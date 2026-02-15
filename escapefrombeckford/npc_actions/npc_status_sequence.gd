@@ -1,6 +1,6 @@
 # npc_status_sequence.gd
-class_name NPCStatusSequence
-extends NPCEffectSequence
+
+class_name NPCStatusSequence extends NPCEffectSequence
 
 func execute(ctx: NPCAIContext, on_done: Callable) -> void:
 	# Always finish
@@ -32,28 +32,50 @@ func execute(ctx: NPCAIContext, on_done: Callable) -> void:
 		on_done.call()
 		return
 
-	# Resolve status prototype
-	var status_res : Status = ctx.params.get(NPCKeys.STATUS_SCENE, null)
-	if !status_res or !(status_res is Status):
+	# -------------------------
+	# Resolve status identifier
+	# -------------------------
+	# Preferred: callers set NPCKeys.STATUS_ID to a StringName like &"amplify"
+	var status_id: StringName = &""
+
+	if ctx.params.has(NPCKeys.STATUS_ID):
+		var v = ctx.params[NPCKeys.STATUS_ID]
+		if v is StringName:
+			status_id = v
+		elif v is String:
+			status_id = StringName(v)
+
+	# Back-compat: old callers pass a Status resource in NPCKeys.STATUS_SCENE
+	if status_id == &"":
+		var status_res = ctx.params.get(NPCKeys.STATUS_SCENE, null)
+		if status_res and status_res is Status:
+			status_id = StringName((status_res as Status).get_id())
+
+	if status_id == &"":
 		on_done.call()
 		return
 
-	# Duplicate so we never mutate the authored resource
-	var status: Status = (status_res as Status).duplicate()
-
+	# -------------------------
 	# Optional numeric overrides
+	# -------------------------
+	var intensity := 0
+	var duration := 0
+
 	if ctx.params.has(NPCKeys.STATUS_INTENSITY):
-		status.intensity = int(ctx.params[NPCKeys.STATUS_INTENSITY])
+		intensity = int(ctx.params[NPCKeys.STATUS_INTENSITY])
 
 	if ctx.params.has(NPCKeys.STATUS_DURATION):
-		status.duration = int(ctx.params[NPCKeys.STATUS_DURATION])
+		duration = int(ctx.params[NPCKeys.STATUS_DURATION])
 
+	# -------------------------
 	# Build context + apply via API
+	# -------------------------
 	var sc := StatusContext.new()
 	sc.target_id = target_id
-	# Optional: source_id (self) if you want ownership semantics later
-	sc.source_id = target_id
-	sc.status = status
+	sc.source_id = target_id # optional (self as source)
+	sc.status_id = status_id
+	sc.duration = duration
+	sc.intensity = intensity
 
 	api.apply_status(sc)
 

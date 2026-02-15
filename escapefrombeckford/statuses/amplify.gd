@@ -2,7 +2,7 @@
 
 class_name AmplifyStatus extends Status
 
-const ID := "amplify"
+const ID := &"amplify"
 const MULT_VALUE := 0.5
 
 func get_id() -> String:

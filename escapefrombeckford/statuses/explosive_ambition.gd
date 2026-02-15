@@ -1,6 +1,6 @@
 class_name ExplosiveAmbition extends Status
 
-const ID := "explosive_ambition"
+const ID := &"explosive_ambition"
 var member_var := 0
 
 func get_id() -> String:

@@ -16,6 +16,7 @@ var active_group: BattleGroup = null
 var active_group_index: int = -1
 
 var current_actor: Fighter = null
+var _running_actor: bool = false
 var phase: int = Phase.IDLE
 
 # Pattern B: if we hit the player, we pause until someone calls resume_after_player_done()
@@ -28,6 +29,7 @@ func _init(_api: BattleAPI, _battle_scene: BattleScene) -> void:
 
 
 func start_group_turn(group: BattleGroup, group_index: int, start_at_player := false) -> void:
+	print("turn_engine.gd start_group_turn()")
 	if !group or !is_instance_valid(group):
 		return
 
@@ -35,10 +37,13 @@ func start_group_turn(group: BattleGroup, group_index: int, start_at_player := f
 	active_group_index = group_index
 	#waiting_for_player = false
 	phase = Phase.IDLE
-
+	print("turn_engine.gd start_group_turn(): phase is IDLE")
 	# Build acting queue (but do NOT enter anyone here)
 	group.build_acting_queue(start_at_player)
-
+	print("turn_engine.gd start_group_turn(): acting queue is built. the queue is:")
+	for f: Fighter in group.acting_fighters:
+		print("turn_engine.gd start_group_turn()     ", f.name)
+	print("turn_engine.gd start_group_turn()     [end of list]")
 	_advance_to_next_actor()
 
 
@@ -59,6 +64,7 @@ func resume_after_player_done() -> void:
 
 
 func on_actor_removed(fighter: Fighter) -> void:
+	print("turn_engine.gd on_actor_removed()")
 	# If current actor got removed mid-turn, push forward.
 	if fighter and fighter == current_actor:
 		current_actor = null
@@ -69,6 +75,9 @@ func on_actor_removed(fighter: Fighter) -> void:
 
 func _advance_to_next_actor() -> void:
 	print("turn_engine.gd _advance_to_next_actor()")
+	if _running_actor:
+		print("turn_engine.gd _advance_to_next_actor(): ignored (actor running)")
+		return
 	if !active_group or !is_instance_valid(active_group):
 		_reset()
 		return
@@ -89,6 +98,7 @@ func _advance_to_next_actor() -> void:
 		return
 
 	current_actor = actor
+	_running_actor = true
 	_run_actor_async(actor)
 
 
@@ -111,6 +121,7 @@ func _run_actor_coroutine(actor: Fighter) -> void:
 	print("turn_engine.gd _run_actor_coroutine(): awaiting _run_actor(actor)...")
 	await _run_actor(actor)
 	print("turn_engine.gd _run_actor_coroutine(): _run_actor(actor) complete.")
+	_running_actor = false
 
 
 #func _await_status_proc(actor: Fighter, want_proc: Status.ProcType) -> void:

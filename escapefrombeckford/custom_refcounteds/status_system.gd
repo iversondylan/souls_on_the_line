@@ -37,6 +37,15 @@ func get_all() -> Array[Status]:
 # Mutation / Reapply
 # ----------------------------
 
+func add_or_reapply(proto: Status, duration: int, intensity: int) -> void:
+	if !proto:
+		return
+
+	var inst: Status = proto.duplicate()
+	inst.duration = duration
+	inst.intensity = intensity
+	add_status(inst)
+
 func add_status(incoming: Status) -> void:
 	if !incoming:
 		return
@@ -94,19 +103,14 @@ func remove_status_by_id(id: String) -> int:
 	return 1
 
 func _add_new_status(status: Status) -> void:
-	# StatusGrid used to duplicate elsewhere; here we assume caller
-	# passes a runtime instance (or a proto). If it is a proto, you can duplicate here.
 	var s := status
 	if owner:
 		s.status_parent = owner
 
-	# Connect
-	if !s.status_changed.is_connected(_on_status_changed.bind(StringName(s.get_id()))):
-		s.status_changed.connect(_on_status_changed.bind(StringName(s.get_id())))
-	if !s.status_applied.is_connected(_on_status_applied.bind(StringName(s.get_id()))):
-		s.status_applied.connect(_on_status_applied.bind(StringName(s.get_id())))
+	# Connect (no is_connected/bind checks)
+	s.status_changed.connect(_on_status_changed.bind(StringName(s.get_id())))
+	s.status_applied.connect(_on_status_applied.bind(StringName(s.get_id())))
 
-	# init
 	s.init_status(owner)
 
 	var id := StringName(s.get_id())
@@ -115,6 +119,30 @@ func _add_new_status(status: Status) -> void:
 	_mark_dirty_for_status(s)
 	status_added.emit(id)
 	changed.emit()
+
+
+#func _add_new_status(status: Status) -> void:
+	## StatusGrid used to duplicate elsewhere; here we assume caller
+	## passes a runtime instance (or a proto). If it is a proto, you can duplicate here.
+	#var s := status
+	#if owner:
+		#s.status_parent = owner
+#
+	## Connect
+	#if !s.status_changed.is_connected(_on_status_changed.bind(StringName(s.get_id()))):
+		#s.status_changed.connect(_on_status_changed.bind(StringName(s.get_id())))
+	#if !s.status_applied.is_connected(_on_status_applied.bind(StringName(s.get_id()))):
+		#s.status_applied.connect(_on_status_applied.bind(StringName(s.get_id())))
+#
+	## init
+	#s.init_status(owner)
+#
+	#var id := StringName(s.get_id())
+	#by_id[id] = s
+#
+	#_mark_dirty_for_status(s)
+	#status_added.emit(id)
+	#changed.emit()
 
 func _remove_status_instance(status: Status) -> void:
 	if !status:
@@ -165,7 +193,6 @@ func _tick_duration_after_proc(_proc_type: Status.ProcType) -> void:
 	pass
 
 func _on_status_applied(_status: Status, id: StringName) -> void:
-	# Mirror old: duration-- on each status application if DURATION policy.
 	var s: Status = by_id.get(id, null)
 	if !s:
 		return
@@ -173,6 +200,7 @@ func _on_status_applied(_status: Status, id: StringName) -> void:
 		s.duration -= 1
 	_emit_status_changed(s)
 	_remove_expired()
+
 
 func _remove_expired() -> void:
 	var to_remove: Array[StringName] = []
@@ -271,9 +299,9 @@ func _on_status_changed(id: StringName) -> void:
 	status_changed.emit(id)
 	changed.emit()
 
-func on_proc_applied(proc_type: Status.ProcType) -> void:
-	print("status_system.gd on_proc_applied(): this method is not implemented and does nothing.")
-	pass
+#func on_proc_applied(proc_type: Status.ProcType) -> void:
+	#print("status_system.gd on_proc_applied(): this method is not implemented and does nothing.")
+	#pass
 # ----------------------------
 # Serialization (replace StatusGridData/StatusState)
 # ----------------------------

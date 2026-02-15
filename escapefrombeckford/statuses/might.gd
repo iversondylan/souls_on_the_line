@@ -2,7 +2,7 @@
 
 class_name Might extends Status
 
-const ID = "might"
+const ID = &"might"
 
 func get_id() -> String:
 	return ID

@@ -1,7 +1,7 @@
 class_name TerminalGlory extends Status
 
 
-const ID := "terminal_glory"
+const ID := &"terminal_glory"
 var member_var := 0
 
 func get_id() -> String:

@@ -78,11 +78,18 @@ func enqueue_attack_now(ctx: AttackNowContext) -> void:
 	_queue.push_back({"op":"attack_now","ctx":ctx})
 	_kick()
 
+
 func _kick() -> void:
 	if _busy:
 		return
 	_busy = true
-	_process_queue()
+	call_deferred("_process_queue")
+
+#func _kick() -> void:
+	#if _busy:
+		#return
+	#_busy = true
+	#_process_queue()
 
 func _process_queue() -> void:
 	# coroutine

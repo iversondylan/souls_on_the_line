@@ -139,7 +139,7 @@ func on_damage_applied(ctx: DamageContext) -> void:
 	if ctx.target:
 		ctx.target.damage_taken.emit(ctx)
 		if ctx.target.combatant and ctx.target.combatant.status_grid:
-			ctx.target.combatant.status_grid.on_damage_taken(ctx)
+			ctx.target.status_system.on_damage_taken(ctx)
 
 	# Presentation (live-only)
 	if ctx.target:
@@ -242,11 +242,12 @@ func _run_death_op(combat_id: int, _reason: String = "") -> void:
 	if runner:
 		runner.mark_removed(combat_id)
 
+# live_battle_api.gd
+
 func _run_apply_status_op(ctx: StatusContext) -> void:
 	if !ctx:
 		return
 
-	# hydrate node references if only ids exist
 	if !ctx.target and ctx.target_id != 0:
 		ctx.target = battle_scene.get_combatant_by_id(ctx.target_id, true)
 	if !ctx.source and ctx.source_id != 0:
@@ -257,25 +258,31 @@ func _run_apply_status_op(ctx: StatusContext) -> void:
 		return
 	if runner and runner.is_removed(f.combat_id):
 		return
-
-	# If you don't want statuses on dead units, enforce here:
 	if !f.is_alive():
 		return
 
-	if !f.combatant or !f.combatant.status_grid:
+	if ctx.status_id == &"":
 		return
 
-	if !ctx.status:
+	if !status_catalog:
+		push_warning("LiveBattleAPI._run_apply_status_op: status_catalog is null")
 		return
 
-	# Duplicate here (live insertion rule)
-	var status_inst: Status = ctx.status.duplicate()
-	f.combatant.status_grid.add_status(status_inst)
+	var proto := status_catalog.get_proto(String(ctx.status_id))
+	if !proto:
+		push_warning("LiveBattleAPI._run_apply_status_op: unknown status id: %s" % String(ctx.status_id))
+		return
+
+	if !f.status_system:
+		push_warning("LiveBattleAPI._run_apply_status_op: target has no status_system")
+		return
+
+	# Prefer: system duplicates internally OR you duplicate here, but be consistent.
+	f.status_system.add_or_reapply(proto, ctx.duration, ctx.intensity)
 
 	ctx.applied = true
-
-	# Optional: one-frame yield for ordering
 	await battle_scene.get_tree().process_frame
+
 
 
 
@@ -351,7 +358,7 @@ func _run_status_proc_op(target_id: int, proc_type: Status.ProcType) -> void:
 	await tween.finished
 	print("live_battle_api.gd _run_status_proc_op(): tween.finished done.")
 	# Decrement durations / expire *in the system* (not in view)
-	sys.on_proc_applied(proc_type) # you implement this: duration--, remove expired, emit signals
+	#sys.on_proc_applied(proc_type) # you implement this: duration--, remove expired, emit signals
 	print("live_battle_api.gd _run_status_proc_op(): emitting f.status_proc_finished.emit(proc_type)")
 	f.status_proc_finished.emit(proc_type)
 
