@@ -78,6 +78,11 @@ func remove_status(ctx: RemoveStatusContext) -> void:
 	if runner:
 		runner.enqueue_remove_status(ctx)
 
+func run_status_proc(target_id: int, proc_type: Status.ProcType) -> void:
+	print("live_battle_api.gd run_status_proc()")
+	if runner:
+		runner.enqueue_status_proc(target_id, proc_type)
+
 func summon(ctx: SummonContext) -> void:
 	if runner and ctx:
 		runner.enqueue_summon(ctx)
@@ -169,44 +174,6 @@ func _run_damage_op(ctx: DamageContext) -> void:
 	if ctx.was_lethal and ctx.target_id != 0:
 		await battle_scene.get_tree().create_timer(0.05).timeout
 		runner.enqueue_death(ctx.target_id, "damage")
-
-#func _run_damage_op(ctx: DamageContext) -> void:
-	## coroutine body
-	#if !ctx:
-		#return
-#
-	## Hydrate target/source if ids exist but nodes are missing
-	#if !ctx.target and ctx.target_id != 0:
-		#ctx.target = battle_scene.get_combatant_by_id(ctx.target_id, true)
-	#if !ctx.source and ctx.source_id != 0:
-		#ctx.source = battle_scene.get_combatant_by_id(ctx.source_id, true)
-#
-	#if !ctx.target:
-		#return
-#
-	## If dead already, do not apply numeric damage.
-	#if !ctx.target.is_alive():
-		#return
-#
-	#ctx.phase = DamageContext.Phase.PRE_MODIFIERS
-	#ctx.amount = ctx.base_amount
-#
-	#var amount := _modify_damage_amount(ctx, ctx.amount)
-	#amount = maxi(amount, 0)
-#
-	#ctx.amount = amount
-	#ctx.phase = DamageContext.Phase.POST_MODIFIERS
-#
-	#_apply_damage_amount(ctx, ctx.amount)
-#
-	#ctx.phase = DamageContext.Phase.APPLIED
-	#_on_damage_applied(ctx)
-#
-	#if ctx.was_lethal and ctx.target_id != 0:
-		## Queue death immediately AFTER showing the hit.
-		## If you want a tiny “impact beat”, do it here.
-		#await battle_scene.get_tree().create_timer(0.05).timeout
-		#runner.enqueue_death(ctx.target_id, "damage")
 
 # --------------------------
 # Death pipeline (LIVE)
@@ -353,6 +320,41 @@ func _run_remove_status_op(ctx: RemoveStatusContext) -> void:
 
 	# optional ordering yield
 	await battle_scene.get_tree().process_frame
+
+func _run_status_proc_op(target_id: int, proc_type: Status.ProcType) -> void:
+	print("live_battle_api.gd _run_status_proc_op()")
+	var f := battle_scene.get_combatant_by_id(target_id, true)
+	if !f or !is_instance_valid(f):
+		return
+	
+	# Data source of truth
+	var sys := f.status_system
+	if !sys:
+		print("live_battle_api.gd _run_status_proc_op(): no status system")
+		f.status_proc_finished.emit(proc_type)
+		return
+	
+	# Build queue of statuses that match proc_type
+	var queue := sys.get_all().filter(func(s: Status): return s and s.proc_type == proc_type)
+	
+	if queue.is_empty():
+		print("live_battle_api.gd _run_status_proc_op(): queue is empty. emitting f.status_proc_finished.emit(proc_type)")
+		f.status_proc_finished.emit(proc_type)
+		return
+	
+	var tween := f.create_tween()
+	for s in queue:
+		print("live_battle_api.gd _run_status_proc_op(): tweening a queued apply_status.bind(f)")
+		tween.tween_callback(s.apply_status.bind(f))
+		tween.tween_interval(StatusGrid.STATUS_APPLY_INTERVAL) # keep your constant somewhere shared
+	print("live_battle_api.gd _run_status_proc_op(): awaiting tween.finished...")
+	await tween.finished
+	print("live_battle_api.gd _run_status_proc_op(): tween.finished done.")
+	# Decrement durations / expire *in the system* (not in view)
+	sys.on_proc_applied(proc_type) # you implement this: duration--, remove expired, emit signals
+	print("live_battle_api.gd _run_status_proc_op(): emitting f.status_proc_finished.emit(proc_type)")
+	f.status_proc_finished.emit(proc_type)
+
 
 func _run_summon_op(ctx: SummonContext) -> void:
 	if !ctx:

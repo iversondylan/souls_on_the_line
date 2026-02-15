@@ -18,7 +18,8 @@ func _on_hand_drawn() -> void:
 
 func _on_hand_discarded() -> void:
 	var fighter: Fighter = get_parent()
-	#fighter.resolve_action()
+	#fighter.battle_scene.api.turn_engine.resume_after_player_done()
+	fighter.resolve_action()
 
 func _on_end_turn_button_pressed() -> void:
 	#print("player_behavior.gd _on_end_turn_button_pressed()")

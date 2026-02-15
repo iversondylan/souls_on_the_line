@@ -52,7 +52,7 @@ var wait_for_anims: bool = false
 var run_seed: int
 var battle_seed: int
 
-var api: BattleAPI
+var api: LiveBattleAPI
 
 func _ready() -> void:
 	#print_tree_pretty()

@@ -24,6 +24,9 @@ func get_rank_in_group(_combat_id: int) -> int:
 func has_status(_combat_id: int, _status_id: StringName) -> bool:
 	return false
 
+func run_status_proc(_target_id: int, _proc_type: Status.ProcType) -> void:
+	pass
+
 func find_marked_ranged_redirect_target(_attacker_id: int) -> int:
 	return 0
 

@@ -14,7 +14,7 @@ var battle_seed: int
 var run_seed: int
 var static_mods: BattleStaticModifiers
 
-var api: BattleAPI
+var api: LiveBattleAPI
 
 func _ready() -> void:
 	for group : BattleGroup in groups:
@@ -415,7 +415,7 @@ func get_modifier_tokens_for(fighter: Fighter) -> Array[ModifierToken]:
 		var source: Fighter = combatant
 		var same_group := source.battle_group == fighter.battle_group
 
-		for token in source.combatant.status_grid.get_modifier_tokens():
+		for token in source.status_system.get_modifier_tokens():
 			if token.scope == ModifierToken.Scope.GLOBAL and token.tags.has(Aura.AURA_SECONDARY_FLAG):
 				push_error("Aura token must not be GLOBAL: %s" % token.source_id)
 			match token.scope:

@@ -50,15 +50,27 @@ func get_n_summoned_allies() -> int:
 func _on_friendly_turn_started() -> void:
 	for fighter: Fighter in get_combatants():
 		fighter.turn_reset()
+	battle_scene.api.turn_engine.start_group_turn(self, 0, false) # or start_at_player true for first turn
 
-	if battle_scene and battle_scene.api and battle_scene.api is LiveBattleAPI:
-		var api := battle_scene.api as LiveBattleAPI
-		api.turn_engine.start_group_turn(self, 0, false)
+
+#func _on_friendly_turn_started() -> void:
+	#for fighter: Fighter in get_combatants():
+		#fighter.turn_reset()
+#
+	#if battle_scene and battle_scene.api and battle_scene.api is LiveBattleAPI:
+		#var api := battle_scene.api as LiveBattleAPI
+		#api.turn_engine.start_group_turn(self, 0, false)
 
 func _on_first_friendly_turn_started() -> void:
-	if battle_scene and battle_scene.api and battle_scene.api is LiveBattleAPI:
-		var api := battle_scene.api as LiveBattleAPI
-		api.turn_engine.start_group_turn(self, 0, true)
+	for fighter: Fighter in get_combatants():
+		fighter.turn_reset()
+	battle_scene.api.turn_engine.start_group_turn(self, 0, true) # or start_at_player true for first turn
+
+
+#func _on_first_friendly_turn_started() -> void:
+	#if battle_scene and battle_scene.api and battle_scene.api is LiveBattleAPI:
+		#var api := battle_scene.api as LiveBattleAPI
+		#api.turn_engine.start_group_turn(self, 0, true)
 
 #func _on_friendly_turn_started() -> void:
 	#for fighter: Fighter in get_combatants():

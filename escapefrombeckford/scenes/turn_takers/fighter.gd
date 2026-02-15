@@ -3,6 +3,8 @@
 class_name Fighter extends Node2D
 
 signal action_resolved(turn_taker: Fighter)
+signal status_proc_finished(proc_type: Status.ProcType)
+
 signal statuses_applied(proc_type: Status.ProcType)
 signal damage_taken(ctx: DamageContext)
 
@@ -26,6 +28,7 @@ enum TurnStatus {TURN_PENDING, TURN_ACTIVE, NONE}
 @onready var modifier_system: ModifierSystem = $ModifierSystem
 
 var combatant_data: CombatantData : set = _set_combatant_data
+var status_system: StatusSystem
 var state: FighterState
 var battle_scene: BattleScene : set = _set_battle_scene
 var run: Run : set = _set_run
@@ -36,6 +39,10 @@ var combat_id: int
 #var dying: bool = false
 
 func _ready() -> void:
+	if !status_system:
+		status_system = StatusSystem.new()
+	if combatant and combatant.status_grid:
+		combatant.status_grid.bind_system(status_system, self)
 	combatant.target_area_area_entered.connect(_on_target_area_area_entered)
 	combatant.target_area_area_exited.connect(_on_target_area_area_exited)
 	Events.battle_reset.connect(_battle_reset)
@@ -72,22 +79,38 @@ func _set_run(new_run) -> void:
 	modifier_system.run = run
 
 func enter() -> void:
-	#print("fight.gd combat_id on Fighter: %s, CombatantData: %s", [combat_id, combatant_data.combat_id])
+	print("fighter.gd enter() name: ", name)
 	set_pending_turn_glow(TurnStatus.TURN_ACTIVE)
 	Events.fighter_entered_turn.emit(self)
-	combatant.status_grid.apply_statuses_by_type(Status.ProcType.START_OF_TURN)
 	for child in get_children():
 		if child is FighterBehavior:
 			child._on_enter()
 
 func exit() -> void:
-	combatant.status_grid.apply_statuses_by_type(Status.ProcType.END_OF_TURN)
+	print("fighter.gd exit() name: ", name)
 	for child in get_children():
 		if child is FighterBehavior:
 			child._on_exit()
 
+#func enter() -> void:
+	##print("fight.gd combat_id on Fighter: %s, CombatantData: %s", [combat_id, combatant_data.combat_id])
+	#set_pending_turn_glow(TurnStatus.TURN_ACTIVE)
+	#Events.fighter_entered_turn.emit(self)
+	#combatant.status_grid.apply_statuses_by_type(Status.ProcType.START_OF_TURN)
+	#for child in get_children():
+		#if child is FighterBehavior:
+			#child._on_enter()
+#
+#func exit() -> void:
+	#print("fighter.gd exit()")
+	#combatant.status_grid.apply_statuses_by_type(Status.ProcType.END_OF_TURN)
+	#for child in get_children():
+		#if child is FighterBehavior:
+			#child._on_exit()
+
 func my_group_turn_start() -> void:
-	combatant.status_grid.clear_group_turn_start_statuses()
+	pass
+	#combatant.status_grid.clear_group_turn_start_statuses()
 
 func opposing_group_turn_start() -> void:
 	for child in get_children():
@@ -98,7 +121,7 @@ func my_group_turn_end() -> void:
 	for child in get_children():
 		if child is FighterBehavior:
 			child._on_group_turn_end()
-	combatant.status_grid.clear_group_turn_end_statuses()
+	#combatant.status_grid.clear_group_turn_end_statuses()
 
 func opposing_group_turn_end() -> void:
 	for child in get_children():
@@ -176,6 +199,7 @@ func fade():
 	
 
 func do_turn() -> void:
+	print("fighter.gd do_turn() name: ", name)
 	for child in get_children():
 		if child is FighterBehavior:
 			child._on_do_turn()
@@ -227,7 +251,7 @@ func _on_target_area_area_exited(_area: Area2D) -> void:
 	hide_targeted_arrow()
 
 func has_status(status_id: String) -> bool:
-	return combatant.status_grid._has_status(status_id)
+	return status_system._has_status(status_id)
 
 func info_visible(visibility: bool) -> void:
 	combatant.info_visible(visibility)
@@ -266,6 +290,7 @@ func set_fade_mark(show_it: bool) -> void:
 		fade_mark.hide()
 
 func resolve_action() -> void:
+	
 	action_resolved.emit(self)
 
 func _on_data_changed() -> void:

@@ -49,6 +49,11 @@ func enqueue_remove_status(ctx: RemoveStatusContext) -> void:
 	})
 	_kick()
 
+func enqueue_status_proc(target_id: int, proc_type: int) -> void:
+	print("battle_resolution_runner.gd enqueue_status_proc()")
+	_queue.push_back({"op":"status_proc","id":target_id,"proc":proc_type})
+	_kick()
+
 func enqueue_move(ctx: MoveContext) -> void:
 	_queue.push_back({"op":"move","ctx":ctx})
 	_kick()
@@ -105,6 +110,11 @@ func _run() -> void:
 				var ctx: RemoveStatusContext = item.get("ctx", null)
 				if api and ctx:
 					await api._run_remove_status_op(ctx)
+			"status_proc":
+				var cid := int(item.get("id", -1))
+				var proc := int(item.get("proc", -1))
+				if api and cid != -1 and proc != -1:
+					await api._run_status_proc_op(cid, proc)
 			"summon":
 				var ctx: SummonContext = item.get("ctx", null)
 				if api and ctx:

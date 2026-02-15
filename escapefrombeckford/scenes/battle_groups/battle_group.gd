@@ -67,6 +67,7 @@ func _next_turn_taker() -> void:
 	acting_fighters[0].enter()
 
 func end_turn() -> void:
+	print("battle_group.gd end_turn()")
 	if self is BattleGroupEnemy:
 		Events.request_friendly_turn.emit()
 	elif self is BattleGroupFriendly:
