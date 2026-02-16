@@ -497,9 +497,9 @@ func _can_restore_turn(fighter: Fighter, effect: MoveEffect) -> bool:
 
 
 func _update_pending_turn_glow() -> void:
-	print("_update_pending_turn_glow()")
-	for fighter: Fighter in pending_turn_queue_view:
-		print("name: %s, id: %s" % [fighter.name, fighter.combat_id])
+	#print("_update_pending_turn_glow()")
+	#for fighter: Fighter in pending_turn_queue_view:
+		#print("name: %s, id: %s" % [fighter.name, fighter.combat_id])
 	var q := pending_turn_queue_view
 	for f: Fighter in get_combatants():
 		if q.size() > 0 and f == q[0]:

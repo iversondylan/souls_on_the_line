@@ -446,9 +446,6 @@ func get_modifier_tokens_for(fighter: Fighter) -> Array[ModifierToken]:
 						# Non-aura TARGET token: only for its explicit owner
 						if token.owner == fighter:
 							tokens.append(token)
-	# Arcana / run-wide: this is stopping me up on 2/9/26 but I am too tired and commenting out to see if run works again
-	#if static_mods:
-		#tokens.append_array(static_mods.get_tokens_for_target(fighter.combat_id))
 	return tokens
 
 func _passes_aura_rules(source: Fighter, target: Fighter, aura: Aura) -> bool:

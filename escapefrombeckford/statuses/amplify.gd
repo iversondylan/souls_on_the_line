@@ -9,6 +9,7 @@ func get_id() -> String:
 	return ID
 
 func get_modifier_tokens(ctx: StatusTokenContext) -> Array[ModifierToken]:
+	print("amplify.gd get_modifier_tokens()")
 	if !ctx:
 		return []
 	

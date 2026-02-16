@@ -14,7 +14,9 @@ func _ready() -> void:
 
 func get_modified_value(base: int, type: Modifier.Type) -> int:
 	var mod := get_resolved_modifier(type)
-	return floori((base + mod.flat) * mod.mult)
+	var modified := floori((base + mod.flat) * mod.mult)
+	print("modifier_system.gd get_modified_value() base: %s, type: %s, modified: %s" % [base, Modifier.Type.keys()[type], modified])
+	return modified
 
 func _build_resolved_modifier(type: Modifier.Type) -> ResolvedModifier:
 	var result := ResolvedModifier.new()
@@ -39,12 +41,14 @@ func get_modifier_tokens_for(type: Modifier.Type) -> Array[ModifierToken]:
 		return []
 	
 	var all_tokens: Array[ModifierToken] = run.get_modifier_tokens_for(get_parent())
-
+	
 	var relevant: Array[ModifierToken] = []
 	for token in all_tokens:
+		print("modifier_system.gd get_modifier_tokens_for() [all] source id: %s, modifier type: %s" % [token.source_id, Modifier.Type.keys()[token.type]])
 		if token.type == type:
 			relevant.append(token)
-	
+	for token in relevant:
+		print("modifier_system.gd get_modifier_tokens_for() [relevant] source id: %s, modifier type: %s" % [token.source_id, Modifier.Type.keys()[token.type]])
 	return relevant
 
 func _modifier_changed() -> void:

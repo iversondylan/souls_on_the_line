@@ -79,7 +79,7 @@ func remove_status(ctx: RemoveStatusContext) -> void:
 		runner.enqueue_remove_status(ctx)
 
 func run_status_proc(target_id: int, proc_type: Status.ProcType) -> void:
-	print("live_battle_api.gd run_status_proc()")
+	#print("live_battle_api.gd run_status_proc()")
 	if runner:
 		runner.enqueue_status_proc(target_id, proc_type)
 
@@ -110,16 +110,17 @@ func resolve_attack_now(ctx: AttackNowContext) -> void:
 # --------------------------
 
 func modify_damage_amount(ctx: DamageContext, base: int) -> int:
+	
 	var amount := base
-
+	#print("live_battle_api.gd modify_damage_amount() base amount: ", amount)
 	# Deal-side
 	if ctx.source and ctx.source.modifier_system:
 		amount = ctx.source.modifier_system.get_modified_value(amount, ctx.deal_modifier_type)
-
+	#print("live_battle_api.gd modify_damage_amount() deal amount: ", amount)
 	# Take-side
 	if ctx.target and ctx.target.modifier_system:
 		amount = ctx.target.modifier_system.get_modified_value(amount, ctx.take_modifier_type)
-
+	#print("live_battle_api.gd modify_damage_amount() take amount: ", amount)
 	return amount
 
 func apply_damage_amount(ctx: DamageContext, amount: int) -> void:
@@ -150,7 +151,7 @@ func on_damage_applied(ctx: DamageContext) -> void:
 
 # This is what the runner awaits.
 func _run_damage_op(ctx: DamageContext) -> void:
-	print("live_battle_api.gd _run_damage_op()")
+	#print("live_battle_api.gd _run_damage_op()")
 	if !ctx:
 		return
 
@@ -329,7 +330,7 @@ func _run_remove_status_op(ctx: RemoveStatusContext) -> void:
 	await battle_scene.get_tree().process_frame
 
 func _run_status_proc_op(target_id: int, proc_type: Status.ProcType) -> void:
-	print("live_battle_api.gd _run_status_proc_op()")
+	#print("live_battle_api.gd _run_status_proc_op()")
 	var f := battle_scene.get_combatant_by_id(target_id, true)
 	if !f or !is_instance_valid(f):
 		return
@@ -337,7 +338,7 @@ func _run_status_proc_op(target_id: int, proc_type: Status.ProcType) -> void:
 	# Data source of truth
 	var sys := f.status_system
 	if !sys:
-		print("live_battle_api.gd _run_status_proc_op(): no status system")
+		#print("live_battle_api.gd _run_status_proc_op(): no status system")
 		f.status_proc_finished.emit(proc_type)
 		return
 	
@@ -345,21 +346,21 @@ func _run_status_proc_op(target_id: int, proc_type: Status.ProcType) -> void:
 	var queue := sys.get_all().filter(func(s: Status): return s and s.proc_type == proc_type)
 	
 	if queue.is_empty():
-		print("live_battle_api.gd _run_status_proc_op(): queue is empty. emitting f.status_proc_finished.emit(proc_type)")
+		#print("live_battle_api.gd _run_status_proc_op(): queue is empty. emitting f.status_proc_finished.emit(proc_type)")
 		f.status_proc_finished.emit(proc_type)
 		return
 	
 	var tween := f.create_tween()
 	for s in queue:
-		print("live_battle_api.gd _run_status_proc_op(): tweening a queued apply_status.bind(f)")
+		#print("live_battle_api.gd _run_status_proc_op(): tweening a queued apply_status.bind(f)")
 		tween.tween_callback(s.apply_status.bind(f))
 		tween.tween_interval(StatusGrid.STATUS_APPLY_INTERVAL) # keep your constant somewhere shared
-	print("live_battle_api.gd _run_status_proc_op(): awaiting tween.finished...")
+	#print("live_battle_api.gd _run_status_proc_op(): awaiting tween.finished...")
 	await tween.finished
-	print("live_battle_api.gd _run_status_proc_op(): tween.finished done.")
+	#print("live_battle_api.gd _run_status_proc_op(): tween.finished done.")
 	# Decrement durations / expire *in the system* (not in view)
 	#sys.on_proc_applied(proc_type) # you implement this: duration--, remove expired, emit signals
-	print("live_battle_api.gd _run_status_proc_op(): emitting f.status_proc_finished.emit(proc_type)")
+	#print("live_battle_api.gd _run_status_proc_op(): emitting f.status_proc_finished.emit(proc_type)")
 	f._emit_status_proc_finished(proc_type)
 
 
@@ -461,7 +462,7 @@ func _run_heal_op(ctx: HealContext) -> void:
 	# await battle_scene.get_tree().process_frame  # optional ordering beat
 
 func _run_move_op(ctx: MoveContext) -> void:
-	print("live_battle_api.gd _run_move_op()")
+	#print("live_battle_api.gd _run_move_op()")
 	if !ctx:
 		return
 
@@ -606,7 +607,7 @@ func get_rank_in_group(combat_id: int) -> int:
 	return f.get_index()
 
 func has_status(combat_id: int, status_id: StringName) -> bool:
-	print("live_battle_api.gd has_status(combat_id: %s, status_id: %s)" % [combat_id, status_id])
+	#print("live_battle_api.gd has_status(combat_id: %s, status_id: %s)" % [combat_id, status_id])
 	var f := battle_scene.get_combatant_by_id(combat_id, true)
 	if !f or !is_instance_valid(f):
 		return false

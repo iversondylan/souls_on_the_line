@@ -50,7 +50,7 @@ func enqueue_remove_status(ctx: RemoveStatusContext) -> void:
 	_kick()
 
 func enqueue_status_proc(target_id: int, proc_type: int) -> void:
-	print("battle_resolution_runner.gd enqueue_status_proc()")
+	#print("battle_resolution_runner.gd enqueue_status_proc()")
 	_queue.push_back({"op":"status_proc","id":target_id,"proc":proc_type})
 	_kick()
 
@@ -59,7 +59,7 @@ func enqueue_move(ctx: MoveContext) -> void:
 	_kick()
 
 func enqueue_damage(ctx: DamageContext) -> void:
-	print("battle_resolution_runner.gd enqueue-damage()")
+	#print("battle_resolution_runner.gd enqueue-damage()")
 	_queue.push_back({
 		"op": "damage",
 		"ctx": ctx,

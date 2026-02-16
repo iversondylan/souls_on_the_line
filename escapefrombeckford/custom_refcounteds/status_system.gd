@@ -26,7 +26,7 @@ func get_status(id: StringName) -> Status:
 	return by_id.get(id, null)
 
 func get_all() -> Array[Status]:
-	print("status_system.gd get_all()")
+	#print("status_system.gd get_all()")
 	var out: Array[Status] = []
 	for s in by_id.values():
 		if s:
@@ -119,30 +119,6 @@ func _add_new_status(status: Status) -> void:
 	_mark_dirty_for_status(s)
 	status_added.emit(id)
 	changed.emit()
-
-
-#func _add_new_status(status: Status) -> void:
-	## StatusGrid used to duplicate elsewhere; here we assume caller
-	## passes a runtime instance (or a proto). If it is a proto, you can duplicate here.
-	#var s := status
-	#if owner:
-		#s.status_parent = owner
-#
-	## Connect
-	#if !s.status_changed.is_connected(_on_status_changed.bind(StringName(s.get_id()))):
-		#s.status_changed.connect(_on_status_changed.bind(StringName(s.get_id())))
-	#if !s.status_applied.is_connected(_on_status_applied.bind(StringName(s.get_id()))):
-		#s.status_applied.connect(_on_status_applied.bind(StringName(s.get_id())))
-#
-	## init
-	#s.init_status(owner)
-#
-	#var id := StringName(s.get_id())
-	#by_id[id] = s
-#
-	#_mark_dirty_for_status(s)
-	#status_added.emit(id)
-	#changed.emit()
 
 func _remove_status_instance(status: Status) -> void:
 	if !status:
@@ -261,14 +237,18 @@ func on_damage_taken(ctx: DamageContext) -> void:
 # ----------------------------
 
 func get_modifier_tokens() -> Array[ModifierToken]:
+	if owner and owner.combat_id:
+		print("status_system.gd get_modifier_tokens() owner id: %s, name: %s" % [owner.combat_id, owner.name])
 	var tokens: Array[ModifierToken] = []
 	for s in get_all():
+		print("status_system.gd get_modifier_tokens() has status: ", s.get_id())
 		if !s:
 			continue
 		if s.is_expired():
 			continue
 		if s.contributes_modifier():
 			var ctx := s.make_token_ctx_node(owner)
+			ctx.owner_id = owner.combat_id
 			tokens.append_array(s.get_modifier_tokens(ctx))
 	return tokens
 

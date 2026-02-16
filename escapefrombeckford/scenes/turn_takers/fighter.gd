@@ -43,7 +43,9 @@ var combat_id: int
 
 func _ready() -> void:
 	if !status_system:
-		status_system = StatusSystem.new()
+		status_system = StatusSystem.new(self)
+		if run and run.status_catalog:
+			status_system.catalog = run.status_catalog
 	if combatant and combatant.status_grid:
 		combatant.status_grid.bind_system(status_system, self)
 	combatant.target_area_area_entered.connect(_on_target_area_area_entered)
@@ -80,9 +82,11 @@ func _set_run(new_run) -> void:
 	if !is_node_ready():
 		await ready
 	modifier_system.run = run
+	if run.status_catalog and status_system:
+		status_system.catalog = run.status_catalog
 
 func enter() -> void:
-	print("fighter.gd enter() name: ", name)
+	#print("fighter.gd enter() name: ", name)
 	set_pending_turn_glow(TurnStatus.TURN_ACTIVE)
 	Events.fighter_entered_turn.emit(self)
 	for child in get_children():
@@ -90,26 +94,10 @@ func enter() -> void:
 			child._on_enter()
 
 func exit() -> void:
-	print("fighter.gd exit() name: ", name)
+	#print("fighter.gd exit() name: ", name)
 	for child in get_children():
 		if child is FighterBehavior:
 			child._on_exit()
-
-#func enter() -> void:
-	##print("fight.gd combat_id on Fighter: %s, CombatantData: %s", [combat_id, combatant_data.combat_id])
-	#set_pending_turn_glow(TurnStatus.TURN_ACTIVE)
-	#Events.fighter_entered_turn.emit(self)
-	#combatant.status_grid.apply_statuses_by_type(Status.ProcType.START_OF_TURN)
-	#for child in get_children():
-		#if child is FighterBehavior:
-			#child._on_enter()
-#
-#func exit() -> void:
-	#print("fighter.gd exit()")
-	#combatant.status_grid.apply_statuses_by_type(Status.ProcType.END_OF_TURN)
-	#for child in get_children():
-		#if child is FighterBehavior:
-			#child._on_exit()
 
 func _emit_status_proc_finished(proc_type: int) -> void:
 	last_status_proc_finished = proc_type
