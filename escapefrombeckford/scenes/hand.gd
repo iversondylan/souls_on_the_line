@@ -396,7 +396,7 @@ func empty_hand() -> void:
 		card.queue_free()
 
 func disable_hand_cards() -> void:
-	for usable_card in _get_hand_cards():
+	for usable_card in _get_hand_cards(): #<- Stack overflow (stack size: 1024). Check for infinite recursion in your script.
 		usable_card.unhighlight()
 		usable_card.disabled = true
 
