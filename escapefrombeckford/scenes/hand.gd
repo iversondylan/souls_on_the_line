@@ -310,13 +310,13 @@ func _on_one_discard_complete() -> void:
 
 	_is_discarding = false
 	reposition_hand_cards()
-	print("_on_one_discard_complete no more to discard...")
+	#print("_on_one_discard_complete no more to discard...")
 	if _emit_hand_discarded_on_complete:
-		print("hand discard complete")
+		#print("hand discard complete")
 		_emit_hand_discarded_on_complete = false
 		Events.hand_discarded.emit()
 	else:
-		print("effect discard complete")
+		#print("effect discard complete")
 		_emit_hand_discarded_on_complete = false
 		Events.hand_discard_animation_finished.emit()
 

@@ -367,6 +367,8 @@ func execute_move(effect: MoveEffect) -> void:
 
 
 func _swap(actor: Fighter, target: Fighter) -> void:
+	print("SWAP request: actor=", actor.name, "(", actor.combat_id, ") idx=", actor.get_index(),
+		" target=", target.name, "(", target.combat_id, ") idx=", target.get_index())
 	if actor == null or target == null:
 		return
 	if !is_instance_valid(actor) or !is_instance_valid(target):
@@ -391,6 +393,13 @@ func _swap(actor: Fighter, target: Fighter) -> void:
 	else:
 		# actor moved backward, target index unchanged
 		move_child(target, a_idx)
+	print("SWAP result: actor idx=", actor.get_index(),
+		" target idx=", target.get_index())
+	
+	print("ORDER AFTER SWAP:")
+	for f in get_combatants(false):
+		print("\tidx=", f.get_index(), " name=", f.name, " id=", f.combat_id, " x=", snappedf(f.global_position.x, 0.1))
+	
 
 
 #func _reconcile_acting_list(

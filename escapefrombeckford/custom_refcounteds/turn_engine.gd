@@ -27,7 +27,9 @@ var _turns_taken: Dictionary = {}			# int combat_id -> int
 var _restore_allowed: Dictionary = {}		# int combat_id -> bool
 var _queue_dirty: bool = false
 var _start_at_player: bool = false
-var _cursor_rank: int = -1	# formation index of the most recently STARTED actor (snapshot)
+#var _cursor_rank: int = -1	# formation index of the most recently STARTED actor (snapshot)
+var _player_id: int = 0
+var _cursor_cid: int = 0
 
 
 
@@ -38,13 +40,24 @@ func _init(_api: BattleAPI, _battle_scene: BattleScene) -> void:
 func _is_player(f: Fighter) -> bool:
 	return f != null and is_instance_valid(f) and (f is Player)
 
+func _cache_player_id_if_needed() -> void:
+	if _player_id != 0:
+		return
+	if !active_group or !is_instance_valid(active_group):
+		return
+	if active_group_index != 0:
+		return
+	for f: Fighter in active_group.get_combatants(false):
+		if f and is_instance_valid(f) and _is_player(f):
+			_player_id = int(f.combat_id)
+			return
 
 func start_group_turn(group: BattleGroup, group_index: int, start_at_player := false) -> void:
-	#print("turn_engine.gd start_group_turn()")
 	if !group or !is_instance_valid(group):
 		return
+	if group_index == 0:
+		_cache_player_id_if_needed()
 	
-	_cursor_rank = -1
 	_turn_token += 1
 	active_group = group
 	active_group_index = group_index
@@ -59,25 +72,18 @@ func start_group_turn(group: BattleGroup, group_index: int, start_at_player := f
 	_queue_dirty = true
 	
 	# If something is still running, let it finish; the coroutine token guard will prevent stale advancement.
-	if _running_actor:
-		#print("turn_engine.gd start_group_turn(): actor already running; will continue on completion")
-		return
-
+	#_dump_group("start_group_turn (before advance)")
 	_advance_to_next_actor()
 
 
 func resume_after_player_done() -> void:
 	# Called by Battle when player turn is complete (Pattern B)
-	#print("turn_engine.gd resume_after_player_done()")
 	if phase == Phase.IDLE:
-		#print("turn_engine.gd resume_after_player_done(): phase is IDLE")
 		_advance_to_next_actor()
-	#print("turn_engine.gd resume_after_player_done(): end of resume_after_player_done()")
 
 
 
 func on_actor_removed(fighter: Fighter) -> void:
-	#print("turn_engine.gd on_actor_removed()")
 	# If current actor got removed mid-turn, push forward.
 	if fighter and fighter == current_actor:
 		current_actor = null
@@ -87,7 +93,6 @@ func on_actor_removed(fighter: Fighter) -> void:
 			_advance_to_next_actor()
 
 func on_move_executed(ctx: MoveContext) -> void:
-	#print("turn_engine.gd on_move_executed()")
 	if !ctx or !ctx.can_restore_turn:
 		return
 	if !active_group or !is_instance_valid(active_group):
@@ -118,12 +123,13 @@ func on_move_executed(ctx: MoveContext) -> void:
 		granted = true
 
 	if granted:
+		#_dump_group("on_move_executed (granted)", ctx)
 		_queue_dirty = true
 		
 		if !_running_actor:
 			_rebuild_queue()
 	_apply_pending_turn_glow_view()
-		
+	#_dump_behind_player()
 
 	# helper local
 func crossed_behind(cid: int, ctx: MoveContext, before_anchor: int, after_anchor: int) -> bool:
@@ -137,13 +143,9 @@ func crossed_behind(cid: int, ctx: MoveContext, before_anchor: int, after_anchor
 	return (b <= before_anchor) and (a > after_anchor)
 
 func _advance_to_next_actor() -> void:
-	#print("turn_engine.gd _advance_to_next_actor()")
 	
 	if _running_actor:
-		#print("turn_engine.gd _advance_to_next_actor(): ignored (actor running)")
 		return
-	
-	#print("turn_engine.gd _advance_to_next_actor(): no _running_actor. Proceeding...")
 	if !active_group or !is_instance_valid(active_group):
 		_reset()
 		return
@@ -168,7 +170,8 @@ func _advance_to_next_actor() -> void:
 	# Snapshot the actor's formation position at start-of-turn.
 	# This is the "cursor" we use to decide who is still eligible later.
 	var order_now := active_group.get_combatants(false)
-	_cursor_rank = order_now.find(actor)
+	_cursor_cid = int(actor.combat_id)
+
 	_run_actor_async(actor)
 
 
@@ -185,7 +188,6 @@ func _reset() -> void:
 func _end_group_turn() -> void:
 	# IMPORTANT: copy index before reset
 	var idx := active_group_index
-	#print("turn_engine.gd _end_group_turn(): ending group ", idx)
 
 	_reset()
 
@@ -200,7 +202,6 @@ func _end_group_turn() -> void:
 		push_warning("turn_engine.gd _end_group_turn(): unknown group index")
 
 func _run_actor_async(actor: Fighter) -> void:
-	#print("turn_engine.gd _run_actor_async()")
 	# Fire-and-forget coroutine
 	var my_token := _turn_token
 	_run_actor_coroutine(actor, my_token)
@@ -211,7 +212,6 @@ func _run_actor_coroutine(actor: Fighter, my_token: int) -> void:
 
 	# stale token guard
 	if my_token != _turn_token:
-		#print("turn_engine.gd _run_actor_coroutine(): stale token; not advancing")
 		return
 
 	# Consume the actor from the queue (if still at front)
@@ -244,7 +244,7 @@ func _turns_left_for_fighter(f: Fighter) -> int:
 	return MAX_TURNS_PER_FIGHTER_PER_GROUP_TURN - int(_turns_taken.get(int(f.combat_id), 0))
 
 func _rebuild_queue() -> void:
-	#print("turn_engine.gd _rebuild_queue()")
+	#_dump_group("_rebuild_queue (entry)")
 	_queue_dirty = false
 	_queue.clear()
 
@@ -289,54 +289,65 @@ func _rebuild_queue() -> void:
 			continue
 		if !_queue.has(f):
 			_queue.append(f)
-	
+	#if !_queue.is_empty():
+		#print("QUEUE HEAD AFTER REBUILD:", _queue[0].name, "(", _queue[0].combat_id, ")")
+
 	# publish queue view to group for UI only
 	_apply_pending_turn_glow_view()
 
 func _get_desired_order(group: BattleGroup, group_index: int, start_at_player: bool) -> Array[Fighter]:
-	# formation order front->back
 	var combatants: Array[Fighter] = group.get_combatants(false)
-
 	if combatants.is_empty():
 		return []
 
-	# Figure out "hard floor" start for this group
-	var start_idx := 0
-
+	# ----------------------------
+	# FRIENDLY: player then everyone behind player (current formation order)
+	# ----------------------------
 	if group_index == 0:
-		# Friendly: nothing in front of player is ever eligible.
 		var player_idx := _find_player_index(combatants)
 		if player_idx < 0:
-			player_idx = 0
+			return []
 
-		# Cursor says "we already passed through <= cursor"
-		# So for friendly, start is max(player_idx, cursor+1) once cursor reaches player.
-		var cursor_start := _cursor_rank + 1
-		start_idx = maxi(player_idx, cursor_start)
+		var out: Array[Fighter] = []
+		out.append(combatants[player_idx])
+		for i in range(player_idx + 1, combatants.size()):
+			out.append(combatants[i])
+		return out
 
-	else:
-		# Enemy: normal front->back, but respect cursor
-		start_idx = maxi(0, _cursor_rank + 1)
+	# ----------------------------
+	# ENEMY: optionally respect cursor (ID-based; recompute index each time)
+	# ----------------------------
+	var start_idx := 0
+	if _cursor_cid != 0:
+		for i in range(combatants.size()):
+			var f := combatants[i]
+			if f and is_instance_valid(f) and int(f.combat_id) == _cursor_cid:
+				start_idx = i + 1
+				break
 
-	# Slice from start_idx to end
 	var out: Array[Fighter] = []
 	for i in range(start_idx, combatants.size()):
 		out.append(combatants[i])
-
 	return out
 
+
 func _find_player_index(combatants: Array[Fighter]) -> int:
-	# Prefer a robust check: class type or a behavior node.
+	# Preferred: match cached id (doesn't depend on node readiness/type checks)
+	if _player_id != 0:
+		for i in range(combatants.size()):
+			var f := combatants[i]
+			if f and is_instance_valid(f) and int(f.combat_id) == _player_id:
+				return i
+
+	# Fallback: discover & cache via _is_player()
 	for i in range(combatants.size()):
 		var f := combatants[i]
-		if !f or !is_instance_valid(f):
-			continue
-		if f is Player:
+		if f and is_instance_valid(f) and _is_player(f):
+			_player_id = int(f.combat_id)
 			return i
-		# fallback heuristic: has PlayerBehavior child
-		if f.get_node_or_null("PlayerBehavior") != null:
-			return i
+
 	return -1
+
 
 
 func _await_action_or_removal(actor: Fighter) -> bool:
@@ -467,3 +478,73 @@ func _apply_pending_turn_glow_view() -> void:
 			f.set_pending_turn_glow(Fighter.TurnStatus.TURN_PENDING)
 		else:
 			f.set_pending_turn_glow(Fighter.TurnStatus.NONE)
+
+func _dump_group(label: String, ctx: MoveContext = null) -> void:
+	print("\n=== TURN_ENGINE DUMP: ", label, " ===")
+	print("active_group_index=", active_group_index,
+		" token=", _turn_token,
+		" running=", _running_actor,
+		" current_actor=", (current_actor.name + "(" + str(current_actor.combat_id) + ")") if current_actor else "null")
+
+	if !active_group or !is_instance_valid(active_group):
+		print("NO ACTIVE GROUP")
+		return
+
+	print("group faces_right=", active_group.faces_right)
+
+	var combatants := active_group.get_combatants(false)
+	print("GROUP ORDER (child index order):")
+	for i in range(combatants.size()):
+		var f: Fighter = combatants[i]
+		if !f or !is_instance_valid(f):
+			continue
+		print("\tidx=", i,
+			" name=", f.name,
+			" id=", f.combat_id,
+			" x=", snappedf(f.global_position.x, 0.1),
+			" is_player=", _is_player(f),
+			" taken=", int(_turns_taken.get(int(f.combat_id), 0)),
+			" left=", _turns_left_for_fighter(f),
+			" restore=", bool(_restore_allowed.get(int(f.combat_id), false)))
+
+	print("DESIRED ORDER:")
+	var desired := _get_desired_order(active_group, active_group_index, _start_at_player)
+	for i in range(desired.size()):
+		var f: Fighter = desired[i]
+		if !f or !is_instance_valid(f):
+			continue
+		print("\tdes=", i,
+			" name=", f.name,
+			" id=", f.combat_id,
+			" x=", snappedf(f.global_position.x, 0.1),
+			" is_player=", _is_player(f))
+
+	print("QUEUE NOW:")
+	for i in range(_queue.size()):
+		var f: Fighter = _queue[i]
+		if !f or !is_instance_valid(f):
+			continue
+		print("\tq=", i, " name=", f.name, " id=", f.combat_id)
+
+	if ctx:
+		print("MOVE CTX:")
+		print("\tmove_type=", str(ctx.move_type),
+			" can_restore_turn=", ctx.can_restore_turn)
+		print("\tactor=", (ctx.actor.name + "(" + str(ctx.actor.combat_id) + ")") if ctx.actor else "null",
+			" actor_id=", ctx.actor_id)
+		print("\ttarget=", (ctx.target.name + "(" + str(ctx.target.combat_id) + ")") if ctx.target else "null",
+			" target_id=", ctx.target_id)
+		print("\tbefore_order_ids=", ctx.before_order_ids)
+		print("\tafter_order_ids=", ctx.after_order_ids)
+
+	print("=== END DUMP ===\n")
+
+func _dump_behind_player() -> void:
+	if active_group_index != 0:
+		return
+	var combatants := active_group.get_combatants(false)
+	var p := _find_player_index(combatants)
+	print("BEHIND PLAYER:")
+	for i in range(p + 1, combatants.size()):
+		var f := combatants[i]
+		print("\t", i, " ", f.name, "(", f.combat_id, ")")

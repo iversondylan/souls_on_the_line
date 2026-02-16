@@ -237,11 +237,11 @@ func on_damage_taken(ctx: DamageContext) -> void:
 # ----------------------------
 
 func get_modifier_tokens() -> Array[ModifierToken]:
-	if owner and owner.combat_id:
-		print("status_system.gd get_modifier_tokens() owner id: %s, name: %s" % [owner.combat_id, owner.name])
+	#if owner and owner.combat_id:
+		#print("status_system.gd get_modifier_tokens() owner id: %s, name: %s" % [owner.combat_id, owner.name])
 	var tokens: Array[ModifierToken] = []
 	for s in get_all():
-		print("status_system.gd get_modifier_tokens() has status: ", s.get_id())
+		#print("status_system.gd get_modifier_tokens() has status: ", s.get_id())
 		if !s:
 			continue
 		if s.is_expired():
