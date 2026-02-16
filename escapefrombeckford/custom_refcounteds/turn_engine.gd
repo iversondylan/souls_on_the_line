@@ -27,6 +27,8 @@ var _turns_taken: Dictionary = {}			# int combat_id -> int
 var _restore_allowed: Dictionary = {}		# int combat_id -> bool
 var _queue_dirty: bool = false
 var _start_at_player: bool = false
+var _cursor_rank: int = -1	# formation index of the most recently STARTED actor (snapshot)
+
 
 
 func _init(_api: BattleAPI, _battle_scene: BattleScene) -> void:
@@ -34,9 +36,7 @@ func _init(_api: BattleAPI, _battle_scene: BattleScene) -> void:
 	battle_scene = _battle_scene
 
 func _is_player(f: Fighter) -> bool:
-	if !f or !is_instance_valid(f):
-		return false
-	return (f is Player) or (f.get_node_or_null("PlayerBehavior") != null)
+	return f != null and is_instance_valid(f) and (f is Player)
 
 
 func start_group_turn(group: BattleGroup, group_index: int, start_at_player := false) -> void:
@@ -44,6 +44,7 @@ func start_group_turn(group: BattleGroup, group_index: int, start_at_player := f
 	if !group or !is_instance_valid(group):
 		return
 	
+	_cursor_rank = -1
 	_turn_token += 1
 	active_group = group
 	active_group_index = group_index
@@ -86,28 +87,29 @@ func on_actor_removed(fighter: Fighter) -> void:
 			_advance_to_next_actor()
 
 func on_move_executed(ctx: MoveContext) -> void:
+	print("turn_engine.gd on_move_executed()")
 	if !ctx or !ctx.can_restore_turn:
 		return
 	if !active_group or !is_instance_valid(active_group):
 		return
 	if !current_actor or !is_instance_valid(current_actor):
 		return
-
+	print("1")
 	# Only consider moves affecting the currently active group.
 	if current_actor.battle_group != active_group:
 		return
-
+	
 	# Need snapshots
 	if ctx.before_order_ids.is_empty() or ctx.after_order_ids.is_empty():
 		return
-
+	print("2")
 	var anchor_id := int(current_actor.combat_id)
 
 	var before_anchor := ctx.before_order_ids.find(anchor_id)
 	var after_anchor := ctx.after_order_ids.find(anchor_id)
 	if before_anchor == -1 or after_anchor == -1:
 		return
-
+	print("3")
 
 
 	# Only the units that actually crossed behind get restore eligibility.
@@ -115,15 +117,23 @@ func on_move_executed(ctx: MoveContext) -> void:
 	if crossed_behind(int(ctx.actor_id), ctx, before_anchor, after_anchor):
 		_restore_allowed[int(ctx.actor_id)] = true
 		granted = true
-
+	
 	if crossed_behind(int(ctx.target_id), ctx, before_anchor, after_anchor):
 		_restore_allowed[int(ctx.target_id)] = true
 		granted = true
 
 	if granted:
+		print("4")
 		_queue_dirty = true
+		
+		#var view := _compute_queue_view(current_actor, true)
+		#_publish_pending_turn_view(view)
+		
 		if !_running_actor:
+			print("5")
 			_rebuild_queue()
+	_apply_pending_turn_glow_view()
+		
 
 	# helper local
 func crossed_behind(cid: int, ctx: MoveContext, before_anchor: int, after_anchor: int) -> bool:
@@ -165,6 +175,10 @@ func _advance_to_next_actor() -> void:
 	
 	current_actor = actor
 	_running_actor = true
+	# Snapshot the actor's formation position at start-of-turn.
+	# This is the "cursor" we use to decide who is still eligible later.
+	var order_now := active_group.get_combatants(false)
+	_cursor_rank = order_now.find(actor)
 	_run_actor_async(actor)
 
 
@@ -239,73 +253,167 @@ func _turns_left_for_fighter(f: Fighter) -> int:
 		return 1 - int(_turns_taken.get(int(f.combat_id), 0))
 	return MAX_TURNS_PER_FIGHTER_PER_GROUP_TURN - int(_turns_taken.get(int(f.combat_id), 0))
 
-
 func _rebuild_queue() -> void:
+	print("turn_engine.gd _rebuild_queue()")
 	_queue_dirty = false
 	_queue.clear()
 
 	if !active_group or !is_instance_valid(active_group):
 		return
 
-	# Desired order depends on group type and formation
 	var desired := _get_desired_order(active_group, active_group_index, _start_at_player)
 
-	# Filter by: alive, within turn cap, and (already acted) only if restore is allowed
+	# Normal pass (cursor-based)
 	for f in desired:
 		if !f or !is_instance_valid(f) or !f.is_alive():
 			continue
 
-		var cid := int(f.combat_id)
 		var left := _turns_left_for_fighter(f)
 		if left <= 0:
 			continue
 
-
+		var cid := int(f.combat_id)
 		var taken := int(_turns_taken.get(cid, 0))
+
 		if taken == 0:
 			_queue.append(f)
 		else:
-			# already took >=1 turn this group turn
 			if active_group_index == 0 and _is_player(f):
-				# Never restore player turn
 				continue
 			if bool(_restore_allowed.get(cid, false)):
 				_queue.append(f)
-				_restore_allowed.erase(cid) # <-- consume here
+				_restore_allowed.erase(cid)
+
+	# Restore pass: if a fighter is marked restore_allowed but got excluded by cursor slicing,
+	# allow them in anyway (they *should* be behind now if your crossed_behind test is correct).
+	for cid in _restore_allowed.keys():
+		var id := int(cid)
+		var f := battle_scene.get_combatant_by_id(id, true)
+		if !f or !is_instance_valid(f) or !f.is_alive():
+			continue
+		if f.battle_group != active_group:
+			continue
+		if active_group_index == 0 and _is_player(f):
+			continue
+		if _turns_left_for_fighter(f) <= 0:
+			continue
+		if !_queue.has(f):
+			_queue.append(f)
+	
+	# publish queue view to group for UI only
+	_apply_pending_turn_glow_view()
+	#if active_group and is_instance_valid(active_group):
+		#active_group.pending_turn_queue_view = _queue.duplicate()
+		#if active_group.has_method("_update_pending_turn_glow"):
+			#active_group._update_pending_turn_glow()
+	
+	#if active_group.has_method("_update_pending_turn_glow"):
+		#active_group.acting_fighters = _queue.duplicate()
+		#active_group._update_pending_turn_glow()
 
 
-	# Optional: update glow using group’s own visuals if you want
-	if active_group.has_method("_update_pending_turn_glow"):
-		active_group.acting_fighters = _queue.duplicate()
-		active_group._update_pending_turn_glow()
+#func _rebuild_queue() -> void:
+	#print("turn_engine.gd _rebuild_queue()")
+	#_queue_dirty = false
+	#_queue.clear()
+#
+	#if !active_group or !is_instance_valid(active_group):
+		#return
+#
+	## Desired order depends on group type and formation
+	#var desired := _get_desired_order(active_group, active_group_index, _start_at_player)
+#
+	## Filter by: alive, within turn cap, and (already acted) only if restore is allowed
+	#for f in desired:
+		#if !f or !is_instance_valid(f) or !f.is_alive():
+			#continue
+#
+		#var cid := int(f.combat_id)
+		#var left := _turns_left_for_fighter(f)
+		#if left <= 0:
+			#continue
+#
+#
+		#var taken := int(_turns_taken.get(cid, 0))
+		#if taken == 0:
+			#_queue.append(f)
+		#else:
+			## already took >=1 turn this group turn
+			#if active_group_index == 0 and _is_player(f):
+				## Never restore player turn
+				#continue
+			#if bool(_restore_allowed.get(cid, false)):
+				#_queue.append(f)
+				#_restore_allowed.erase(cid) # <-- consume here
+#
+#
+	## Optional: update glow using group’s own visuals if you want
+	#if active_group.has_method("_update_pending_turn_glow"):
+		#active_group.acting_fighters = _queue.duplicate()
+		#active_group._update_pending_turn_glow()
 
 func _get_desired_order(group: BattleGroup, group_index: int, start_at_player: bool) -> Array[Fighter]:
-	# Base list: formation order from the group
-	var combatants: Array[Fighter] = group.get_combatants(false) # assumed front->back
+	# formation order front->back
+	var combatants: Array[Fighter] = group.get_combatants(false)
 
-	if group_index != 0:
-		# Enemy group: everyone in formation order
-		return combatants
+	if combatants.is_empty():
+		return []
 
-	# Friendly group: player + behind-player only
-	var player_idx := _find_player_index(combatants)
-	if player_idx < 0:
-		player_idx = 0
+	# Figure out "hard floor" start for this group
+	var start_idx := 0
 
+	if group_index == 0:
+		# Friendly: nothing in front of player is ever eligible.
+		var player_idx := _find_player_index(combatants)
+		if player_idx < 0:
+			player_idx = 0
+
+		# Cursor says "we already passed through <= cursor"
+		# So for friendly, start is max(player_idx, cursor+1) once cursor reaches player.
+		var cursor_start := _cursor_rank + 1
+		start_idx = maxi(player_idx, cursor_start)
+
+	else:
+		# Enemy: normal front->back, but respect cursor
+		start_idx = maxi(0, _cursor_rank + 1)
+
+	# Slice from start_idx to end
 	var out: Array[Fighter] = []
-
-	# player always included first (for your first-turn flow)
-	if player_idx >= 0 and player_idx < combatants.size():
-		out.append(combatants[player_idx])
-
-	# then everyone behind the player
-	for i in range(player_idx + 1, combatants.size()):
+	for i in range(start_idx, combatants.size()):
 		out.append(combatants[i])
 
-	# NOTE: start_at_player is currently naturally satisfied by putting player first.
-	# If you later want “start at whoever is next after player,” that’s where you’d rotate.
-
 	return out
+
+
+#func _get_desired_order(group: BattleGroup, group_index: int, start_at_player: bool) -> Array[Fighter]:
+	#print("turn_engine.gd _get_desired_order()")
+	## Base list: formation order from the group
+	#var combatants: Array[Fighter] = group.get_combatants(false) # assumed front->back
+#
+	#if group_index != 0:
+		#print("turn_engine.gd _get_desired_order() group index is not 0, returning all of get_combatants()")
+		## Enemy group: everyone in formation order
+		#return combatants
+#
+	## Friendly group: player + behind-player only
+	#var player_idx := _find_player_index(combatants)
+	#if player_idx < 0:
+		#player_idx = 0
+#
+	#var out: Array[Fighter] = []
+#
+	## player always included first (for your first-turn flow)
+	#if player_idx >= 0 and player_idx < combatants.size():
+		#out.append(combatants[player_idx])
+#
+	## then everyone behind the player
+	#for i in range(player_idx + 1, combatants.size()):
+		#out.append(combatants[i])
+#
+	## NOTE: start_at_player is currently naturally satisfied by putting player first.
+	## If you later want “start at whoever is next after player,” that’s where you’d rotate.
+#
+	#return out
 
 func _find_player_index(combatants: Array[Fighter]) -> int:
 	# Prefer a robust check: class type or a behavior node.
@@ -364,29 +472,122 @@ func on_summon_added(fighter: Fighter) -> void:
 		return
 	if !active_group or !is_instance_valid(active_group):
 		return
-
-	# Only matter if summoned into the currently active group turn
 	if fighter.battle_group != active_group:
 		return
 
-	# If no current actor (between turns), safest default: don't grant a surprise turn.
-	if !current_actor or !is_instance_valid(current_actor):
+	# Just mark dirty. Cursor-aware desired order will do the right thing.
+	_queue_dirty = true
+	_apply_pending_turn_glow_view()
+
+
+#func on_summon_added(fighter: Fighter) -> void:
+	#if !fighter or !is_instance_valid(fighter):
+		#return
+	#if !active_group or !is_instance_valid(active_group):
+		#return
+#
+	## Only matter if summoned into the currently active group turn
+	#if fighter.battle_group != active_group:
+		#return
+#
+	## If no current actor (between turns), safest default: don't grant a surprise turn.
+	#if !current_actor or !is_instance_valid(current_actor):
+		#return
+#
+	## Decide "behind current actor" by formation indices
+	#var order := active_group.get_combatants(false)
+	#var cur_i := order.find(current_actor)
+	#var new_i := order.find(fighter)
+	#print("turn_enginer.gd on_summon_added() added name: %s, id: %s, cur_i: %s, new_i: %s" % [fighter.name, fighter.combat_id, cur_i, new_i])
+	#if cur_i == -1 or new_i == -1:
+		#return
+#
+	## If inserted strictly behind current actor, it may act this group turn.
+	#if new_i > cur_i:
+		## Ensure it hasn't hit cap
+		#var cid := int(fighter.combat_id)
+		#if !_turns_taken.has(cid):
+			#_turns_taken[cid] = 0
+		#_queue_dirty = true
+		## If we're idle, rebuild immediately; otherwise rebuild after actor finishes.
+		#if !_running_actor:
+			#_rebuild_queue()
+
+func _publish_pending_turn_view(queue_view: Array[Fighter]) -> void:
+	if !active_group or !is_instance_valid(active_group):
+		return
+	active_group.pending_turn_queue_view = queue_view
+	if active_group.has_method("_update_pending_turn_glow"):
+		active_group._update_pending_turn_glow()
+
+func _apply_pending_turn_glow_view() -> void:
+	if !active_group or !is_instance_valid(active_group):
 		return
 
-	# Decide "behind current actor" by formation indices
-	var order := active_group.get_combatants(false)
-	var cur_i := order.find(current_actor)
-	var new_i := order.find(fighter)
-	if cur_i == -1 or new_i == -1:
-		return
+	# ----------------------------
+	# Pick the active actor for glow
+	# ----------------------------
+	var active: Fighter = null
+	if _running_actor and current_actor and is_instance_valid(current_actor):
+		active = current_actor
+	elif !_queue.is_empty() and _queue[0] and is_instance_valid(_queue[0]):
+		active = _queue[0]
 
-	# If inserted strictly behind current actor, it may act this group turn.
-	if new_i > cur_i:
-		# Ensure it hasn't hit cap
-		var cid := int(fighter.combat_id)
-		if !_turns_taken.has(cid):
-			_turns_taken[cid] = 0
-		_queue_dirty = true
-		# If we're idle, rebuild immediately; otherwise rebuild after actor finishes.
-		if !_running_actor:
-			_rebuild_queue()
+	# ----------------------------
+	# Build pending list (view-only)
+	# Pending = eligible fighters strictly behind active in desired order.
+	# If no active, pending = _queue (best-effort).
+	# ----------------------------
+	var pending: Array[Fighter] = []
+	if active == null:
+		pending = _queue.duplicate()
+	else:
+		var desired := _get_desired_order(active_group, active_group_index, _start_at_player)
+
+		# Find anchor index robustly (don’t trust object identity if you’ve had weirdness)
+		var start_i := 0
+		var anchor_id := int(active.combat_id)
+		var idx := -1
+		for j in range(desired.size()):
+			var d := desired[j]
+			if d and is_instance_valid(d) and int(d.combat_id) == anchor_id:
+				idx = j
+				break
+		if idx != -1:
+			start_i = idx + 1 # strictly behind
+
+		for i in range(start_i, desired.size()):
+			var f := desired[i]
+			if !f or !is_instance_valid(f) or !f.is_alive():
+				continue
+
+			var left := _turns_left_for_fighter(f)
+			if left <= 0:
+				continue
+
+			var cid := int(f.combat_id)
+			var taken := int(_turns_taken.get(cid, 0))
+
+			if taken == 0:
+				pending.append(f)
+			else:
+				# already acted once this group turn
+				if active_group_index == 0 and _is_player(f):
+					continue
+				if bool(_restore_allowed.get(cid, false)):
+					pending.append(f)
+					# NOTE: do NOT erase restore flags here (view-only)
+
+	# ----------------------------
+	# Apply glow
+	# ----------------------------
+	for f: Fighter in active_group.get_combatants(false):
+		if !f or !is_instance_valid(f):
+			continue
+
+		if active and f == active:
+			f.set_pending_turn_glow(Fighter.TurnStatus.TURN_ACTIVE)
+		elif pending.has(f):
+			f.set_pending_turn_glow(Fighter.TurnStatus.TURN_PENDING)
+		else:
+			f.set_pending_turn_glow(Fighter.TurnStatus.NONE)

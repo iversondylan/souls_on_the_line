@@ -12,3 +12,5 @@ var sfx: Sound = null
 # outputs (filled by LiveBattleAPI; sim can fill only ids if you want)
 var summoned_id: int = 0
 var summoned_fighter: Fighter = null
+#var before_order_ids: Array[int] = []
+#var after_order_ids: Array[int] = []

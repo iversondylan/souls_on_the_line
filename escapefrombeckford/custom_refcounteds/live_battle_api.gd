@@ -461,6 +461,7 @@ func _run_heal_op(ctx: HealContext) -> void:
 	# await battle_scene.get_tree().process_frame  # optional ordering beat
 
 func _run_move_op(ctx: MoveContext) -> void:
+	print("live_battle_api.gd _run_move_op()")
 	if !ctx:
 		return
 

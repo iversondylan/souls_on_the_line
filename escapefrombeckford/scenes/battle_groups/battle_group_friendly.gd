@@ -15,15 +15,15 @@ func start_first_friendly_turn() -> void:
 		print("battle_group.gd start_turn() ERROR: stuck with no fighters")
 		return
 	_restored_turn_this_group_turn.clear()
-	acting_fighters.clear()
+	#acting_fighters.clear()
 	var reached_player: bool = false
 	for fighter: Fighter in get_combatants():
 		if fighter is Player and !reached_player:
 			reached_player = true
-		if reached_player:
-			acting_fighters.append(fighter)
+		#if reached_player:
+			#acting_fighters.append(fighter)
 	_update_pending_turn_glow()
-	_next_turn_taker()
+	#_next_turn_taker()
 
 func _traverse_player(ally: Fighter) -> void:
 	if !player or !ally:

@@ -32,8 +32,8 @@ var mana_panel_radius: float
 
 func _ready() -> void:
 	mana_panel_radius = cost_container.texture.get_size().y * cost_container.scale.y * 0.5-0.75
-	var demo_overload := randi() % 4
-	set_overload(demo_overload)
+	#var demo_overload := randi() % 4
+	#set_overload(demo_overload)
 
 func set_overload(amount: int) -> void:
 	overload = amount

@@ -9,7 +9,8 @@ var battle_scene: BattleScene
 var deck: Deck
 var run: Run
 
-var acting_fighters: Array[Fighter] = []
+#var acting_fighters: Array[Fighter] = []
+var pending_turn_queue_view: Array[Fighter] = []
 var _restored_turn_this_group_turn: Dictionary = {} # int instance_id -> true
 
 var _preview_node: Node2D = null
@@ -21,51 +22,51 @@ func reset_npc_actions() -> void:
 			child.current_action = null
 			#child.update_action()
 
-func build_acting_queue(start_at_player := false) -> void:
-	print("battle_group.gd build_acting_queue()")
-	_restored_turn_this_group_turn.clear()
-	acting_fighters.clear()
+#func build_acting_queue(start_at_player := false) -> void:
+	#print("battle_group.gd build_acting_queue()")
+	#_restored_turn_this_group_turn.clear()
+	#acting_fighters.clear()
+#
+	#if start_at_player and self is BattleGroupFriendly:
+		#var reached_player := false
+		#for fighter: Fighter in get_combatants():
+			#if fighter is Player and !reached_player:
+				#reached_player = true
+			#if reached_player:
+				#acting_fighters.append(fighter)
+	#else:
+		#for fighter: Fighter in get_combatants():
+			#acting_fighters.append(fighter)
+#
+	#_update_pending_turn_glow()
 
-	if start_at_player and self is BattleGroupFriendly:
-		var reached_player := false
-		for fighter: Fighter in get_combatants():
-			if fighter is Player and !reached_player:
-				reached_player = true
-			if reached_player:
-				acting_fighters.append(fighter)
-	else:
-		for fighter: Fighter in get_combatants():
-			acting_fighters.append(fighter)
+#func pop_current_actor(actor: Fighter) -> void:
+	## Only pop if it’s actually current
+	#if acting_fighters.is_empty():
+		#return
+	#if actor != acting_fighters[0]:
+		#return
+#
+	#acting_fighters.pop_front()
+	#_update_pending_turn_glow()
 
-	_update_pending_turn_glow()
+#func start_turn() -> void:
+	#if get_combatants().is_empty():
+		#print("battle_group.gd start_turn() ERROR: stuck with no fighters")
+		#return
+	#_restored_turn_this_group_turn.clear()
+	#acting_fighters.clear()
+	#
+	#for fighter: Fighter in get_combatants():
+		#acting_fighters.append(fighter)
+	#_update_pending_turn_glow()
+	#_next_turn_taker()
 
-func pop_current_actor(actor: Fighter) -> void:
-	# Only pop if it’s actually current
-	if acting_fighters.is_empty():
-		return
-	if actor != acting_fighters[0]:
-		return
-
-	acting_fighters.pop_front()
-	_update_pending_turn_glow()
-
-func start_turn() -> void:
-	if get_combatants().is_empty():
-		print("battle_group.gd start_turn() ERROR: stuck with no fighters")
-		return
-	_restored_turn_this_group_turn.clear()
-	acting_fighters.clear()
-	
-	for fighter: Fighter in get_combatants():
-		acting_fighters.append(fighter)
-	_update_pending_turn_glow()
-	_next_turn_taker()
-
-func _next_turn_taker() -> void:
-	if acting_fighters.is_empty():
-		end_turn()
-		return
-	acting_fighters[0].enter()
+#func _next_turn_taker() -> void:
+	#if acting_fighters.is_empty():
+		#end_turn()
+		#return
+	#acting_fighters[0].enter()
 
 func end_turn() -> void:
 	print("battle_group.gd end_turn()")
@@ -131,10 +132,10 @@ func remove_combatant(fighter: Fighter):
 	remove_child(fighter)
 
 	var was_acting := false
-	if !acting_fighters.is_empty():
-		was_acting = fighter == acting_fighters[0]
-
-	acting_fighters.erase(fighter)
+	#if !acting_fighters.is_empty():
+		#was_acting = fighter == acting_fighters[0]
+#
+	#acting_fighters.erase(fighter)
 
 	if battle_scene and battle_scene.runner:
 		battle_scene.runner.mark_removed(fighter.combat_id)
@@ -267,29 +268,29 @@ func execute_move_ctx(ctx: MoveContext) -> void:
 	_recompute_intents_for_group()
 
 
-func _reconcile_acting_list_ctx(
-	before_order: Array[Fighter],
-	before_acting: Array[Fighter],
-	ctx: MoveContext
-) -> void:
-	var after_order := get_combatants()
-
-	if _should_rebuild_from_scratch(before_acting, after_order):
-		acting_fighters = after_order.duplicate()
-		_update_pending_turn_glow()
-		return
-
-	var current_actor := before_acting[0]
-	var before_acted_set := _build_before_acted_set(before_order, before_acting)
-
-	acting_fighters = _build_reconciled_queue_ctx(
-		current_actor,
-		after_order,
-		before_acted_set,
-		ctx
-	)
-
-	_update_pending_turn_glow()
+#func _reconcile_acting_list_ctx(
+	#before_order: Array[Fighter],
+	#before_acting: Array[Fighter],
+	#ctx: MoveContext
+#) -> void:
+	#var after_order := get_combatants()
+#
+	#if _should_rebuild_from_scratch(before_acting, after_order):
+		#acting_fighters = after_order.duplicate()
+		#_update_pending_turn_glow()
+		#return
+#
+	#var current_actor := before_acting[0]
+	#var before_acted_set := _build_before_acted_set(before_order, before_acting)
+#
+	#acting_fighters = _build_reconciled_queue_ctx(
+		#current_actor,
+		#after_order,
+		#before_acted_set,
+		#ctx
+	#)
+#
+	#_update_pending_turn_glow()
 
 
 func _build_reconciled_queue_ctx(
@@ -337,7 +338,7 @@ func execute_move(effect: MoveEffect) -> void:
 		return
 	
 	var before_order: Array[Fighter] = get_combatants()
-	var before_acting: Array[Fighter] = acting_fighters.duplicate()
+	#var before_acting: Array[Fighter] = acting_fighters.duplicate()
 	
 	match effect.move_type:
 		MoveEffect.MoveType.TRAVERSE_PLAYER:
@@ -360,7 +361,7 @@ func execute_move(effect: MoveEffect) -> void:
 			if effect.index >= 0:
 				move_child(effect.actor, effect.index)
 	
-	_reconcile_acting_list(before_order, before_acting, effect)
+	#_reconcile_acting_list(before_order, before_acting, effect)
 	update_combatant_position()
 	_recompute_intents_for_group()
 
@@ -392,33 +393,33 @@ func _swap(actor: Fighter, target: Fighter) -> void:
 		move_child(target, a_idx)
 
 
-func _reconcile_acting_list(
-	before_order: Array[Fighter],
-	before_acting: Array[Fighter],
-	effect: MoveEffect
-) -> void:
-	var after_order := get_combatants()
-	
-	if _should_rebuild_from_scratch(before_acting, after_order):
-		acting_fighters = after_order.duplicate()
-		_update_pending_turn_glow()
-		return
-	
-	var current_actor := before_acting[0]
-
-	var before_acted_set := _build_before_acted_set(
-		before_order,
-		before_acting
-	)
-	
-	acting_fighters = _build_reconciled_queue(
-		current_actor,
-		after_order,
-		before_acted_set,
-		effect
-	)
-	
-	_update_pending_turn_glow()
+#func _reconcile_acting_list(
+	#before_order: Array[Fighter],
+	#before_acting: Array[Fighter],
+	#effect: MoveEffect
+#) -> void:
+	#var after_order := get_combatants()
+	#
+	#if _should_rebuild_from_scratch(before_acting, after_order):
+		#acting_fighters = after_order.duplicate()
+		#_update_pending_turn_glow()
+		#return
+	#
+	#var current_actor := before_acting[0]
+#
+	#var before_acted_set := _build_before_acted_set(
+		#before_order,
+		#before_acting
+	#)
+	#
+	#acting_fighters = _build_reconciled_queue(
+		#current_actor,
+		#after_order,
+		#before_acted_set,
+		#effect
+	#)
+	#
+	#_update_pending_turn_glow()
 
 
 func _should_rebuild_from_scratch(
@@ -494,12 +495,18 @@ func _can_restore_turn(fighter: Fighter, effect: MoveEffect) -> bool:
 	return true
 
 
+
 func _update_pending_turn_glow() -> void:
+	print("_update_pending_turn_glow()")
+	for fighter: Fighter in pending_turn_queue_view:
+		print("name: %s, id: %s" % [fighter.name, fighter.combat_id])
+	var q := pending_turn_queue_view
 	for f: Fighter in get_combatants():
-		if acting_fighters and f == acting_fighters[0]:
+		if q.size() > 0 and f == q[0]:
 			f.set_pending_turn_glow(Fighter.TurnStatus.TURN_ACTIVE)
 		else:
-			f.set_pending_turn_glow(Fighter.TurnStatus.TURN_PENDING if acting_fighters.has(f) else Fighter.TurnStatus.NONE)
+			f.set_pending_turn_glow(Fighter.TurnStatus.TURN_PENDING if q.has(f) else Fighter.TurnStatus.NONE)
+
 
 func set_preview(node: Node2D, insert_index: int) -> void:
 	# remove old preview
