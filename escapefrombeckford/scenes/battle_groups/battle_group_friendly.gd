@@ -7,8 +7,9 @@ const MAX_SOULBOUND := 3
 var player: Player
 
 func _ready() -> void:
-	Events.first_friendly_turn_started.connect(_on_first_friendly_turn_started)
-	Events.friendly_turn_started.connect(_on_friendly_turn_started)
+	pass
+	#Events.first_friendly_turn_started.connect(_on_first_friendly_turn_started)
+	#Events.friendly_turn_started.connect(_on_friendly_turn_started)
 
 func start_first_friendly_turn() -> void:
 	if get_child_count() == 0:
@@ -48,9 +49,10 @@ func get_n_summoned_allies() -> int:
 	return n_allies
 
 func _on_friendly_turn_started() -> void:
-	for fighter: Fighter in get_combatants():
-		fighter.turn_reset()
-	battle_scene.api.turn_engine.start_group_turn(self, 0, false) # or start_at_player true for first turn
+	pass
+	#for fighter: Fighter in get_combatants():
+		#fighter.turn_reset()
+	#battle_scene.api.turn_engine.start_group_turn(self, 0, false) # or start_at_player true for first turn
 
 
 #func _on_friendly_turn_started() -> void:
@@ -62,9 +64,10 @@ func _on_friendly_turn_started() -> void:
 		#api.turn_engine.start_group_turn(self, 0, false)
 
 func _on_first_friendly_turn_started() -> void:
-	for fighter: Fighter in get_combatants():
-		fighter.turn_reset()
-	battle_scene.api.turn_engine.start_group_turn(self, 0, true) # or start_at_player true for first turn
+	pass
+	#for fighter: Fighter in get_combatants():
+		#fighter.turn_reset()
+	#battle_scene.api.turn_engine.start_group_turn(self, 0, true) # or start_at_player true for first turn
 
 
 #func _on_first_friendly_turn_started() -> void:

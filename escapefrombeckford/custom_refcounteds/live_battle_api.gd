@@ -11,7 +11,7 @@ const DEFAULT_MELEE_SOUND := "res://audio/melee_impact.tres"
 const DEFAULT_RANGED_SOUND := "res://audio/fireball_impact.tres"
 
 var battle_scene: BattleScene
-var turn_engine: TurnEngine
+var turn_engine: TurnEngineCore
 var runner: BattleResolutionRunner
 
 func _init(_battle_scene: BattleScene) -> void:
@@ -19,7 +19,7 @@ func _init(_battle_scene: BattleScene) -> void:
 	runner = battle_scene.runner
 	if runner:
 		runner.api = self
-	turn_engine = TurnEngine.new(self, battle_scene)
+	#turn_engine = TurnEngine.new(self, battle_scene)
 
 func observe_stats_changed(fighter: Fighter) -> void:
 	#print("SO MANY STATS CHANGED")

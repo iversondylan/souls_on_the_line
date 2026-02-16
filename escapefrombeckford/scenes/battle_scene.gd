@@ -9,7 +9,7 @@ class_name BattleScene extends Node2D
 var deck: Deck : set = _set_deck
 var run: Run : set = _set_run
 var _next_combat_id: int = 1
-
+var player: Player
 var battle_seed: int
 var run_seed: int
 var static_mods: BattleStaticModifiers
@@ -31,6 +31,9 @@ func _set_deck(_deck: Deck) -> void:
 	deck = _deck
 	for group: BattleGroup in groups:
 		group.deck = deck
+
+func get_group_by_index(index: int) -> BattleGroup:
+	return groups[index]
 
 func get_combatant_by_id(combat_id: int, allow_dead: bool = false) -> Fighter:
 	for group: BattleGroup in groups:
@@ -188,6 +191,7 @@ func get_player() -> Player:
 
 func set_player(new_player: Player) -> void:
 	groups[0].player = new_player
+	player = new_player
 
 ## Returns positional displacement of `fighter` relative to the Player.
 ##  0  = the player
