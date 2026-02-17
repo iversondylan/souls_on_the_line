@@ -285,7 +285,8 @@ func set_fade_mark(show_it: bool) -> void:
 		fade_mark.hide()
 
 func resolve_action() -> void:
-	print("FIGHTER resolve_action name=", name, " cid=", combat_id)
+	print("fighter.gd resolve_action() name=", name, " cid=", combat_id)
+	#print("[should do nothing]")
 	action_resolved.emit(self)
 
 func _on_data_changed() -> void:

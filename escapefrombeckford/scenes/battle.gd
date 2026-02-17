@@ -91,6 +91,7 @@ func _ready() -> void:
 	Events.hand_drawn.connect(_on_hand_drawn)
 	
 	# Temporary v
+	battle_scene.runner.scope_drained.connect(_on_runner_scope_drained)
 	Events.hand_drawn.connect(simulate_battle)
 	# Temporary ^
 	
@@ -161,6 +162,9 @@ func start_battle():
 	initialize_card_pile_ui()
 	BattleController.current_state = BattleController.BattleState.FRIENDLY_TURN
 	Events.request_activate_arcana_by_type.emit(Arcanum.Type.START_OF_COMBAT)
+
+func _on_runner_scope_drained(scope: int) -> void:
+	print("battle.gd _on_runner_scope_drained() scope: ", scope)
 
 func _on_request_activate_arcana_by_type(type: Arcanum.Type):
 	
