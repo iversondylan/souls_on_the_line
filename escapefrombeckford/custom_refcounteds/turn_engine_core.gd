@@ -30,6 +30,7 @@ func _init(_host: TurnEngineHost) -> void:
 	host = _host
 
 func start_group_turn(group_index: int, start_at_player := false) -> void:
+	#print("turn_engine_core.gd start_group_turn()")
 	active_group_index = group_index
 	_start_at_player = start_at_player
 	_turn_token += 1
@@ -50,10 +51,12 @@ func start_group_turn(group_index: int, start_at_player := false) -> void:
 	_advance_to_next_actor()
 
 func resume_after_player_done() -> void:
+	#print("turn_engine_core.gd resume_after_player_done()")
 	if phase == Phase.IDLE:
 		_advance_to_next_actor()
 
 func notify_actor_done(combat_id: int) -> void:
+	#print("turn_engine_core.gd notify_actor_done()")
 	# Called by host after it finishes running the actor.
 	if combat_id != current_actor_id:
 		# stale / ignored
@@ -67,6 +70,7 @@ func notify_actor_done(combat_id: int) -> void:
 	_advance_to_next_actor()
 
 func notify_actor_removed(combat_id: int) -> void:
+	#print("turn_engine_core.gd notify_actor_removed()")
 	if combat_id == current_actor_id:
 		current_actor_id = 0
 		phase = Phase.IDLE
@@ -77,12 +81,14 @@ func notify_actor_removed(combat_id: int) -> void:
 		_queue_dirty = true
 
 func notify_summon_added(combat_id: int, group_index: int) -> void:
+	#print("turn_engine_core.gd notify_summon_added()")
 	if group_index != active_group_index:
 		return
 	_queue_dirty = true
 	_publish_pending_view()
 
 func notify_move_executed(ctx) -> void:
+	#print("turn_engine_core.gd notify_move_executed()")
 	# ctx should be "data only": actor_id, target_id, can_restore_turn, before_order_ids, after_order_ids
 	if ctx == null or !ctx.can_restore_turn:
 		return
@@ -117,6 +123,7 @@ func notify_move_executed(ctx) -> void:
 	_publish_pending_view()
 
 func _crossed_behind(cid: int, ctx, before_anchor: int, after_anchor: int) -> bool:
+	#print("turn_engine_core.gd _crossed_behind()")
 	if cid <= 0:
 		return false
 	var b : int = ctx.before_order_ids.find(cid)
@@ -126,6 +133,7 @@ func _crossed_behind(cid: int, ctx, before_anchor: int, after_anchor: int) -> bo
 	return (b <= before_anchor) and (a > after_anchor)
 
 func _advance_to_next_actor() -> void:
+	#print("turn_engine_core.gd _advance_to_next_actor()")
 	if _running_actor:
 		return
 	if active_group_index < 0:
@@ -154,6 +162,7 @@ func _advance_to_next_actor() -> void:
 	actor_requested.emit(actor_id)
 
 func _reset() -> void:
+	#print("turn_engine_core.gd _reset()")
 	active_group_index = -1
 	current_actor_id = 0
 	phase = Phase.IDLE
@@ -164,15 +173,18 @@ func _reset() -> void:
 	_cursor_cid = 0
 
 func _end_group_turn() -> void:
+	#print("turn_engine_core.gd _end_group_turn()")
 	var idx := active_group_index
 	_reset()
 	group_turn_ended.emit(idx)
 
 func _mark_turn_taken(combat_id: int) -> void:
+	#print("turn_engine_core.gd _mark_turn_taken()")
 	var n := int(_turns_taken.get(combat_id, 0))
 	_turns_taken[combat_id] = n + 1
 
 func _turns_left(combat_id: int) -> int:
+	#print("turn_engine_core.gd _turns_left()")
 	if !host.is_alive(combat_id):
 		return 0
 	if active_group_index == 0 and host.is_player(combat_id):
@@ -180,6 +192,7 @@ func _turns_left(combat_id: int) -> int:
 	return MAX_TURNS_PER_FIGHTER_PER_GROUP_TURN - int(_turns_taken.get(combat_id, 0))
 
 func _rebuild_queue() -> void:
+	#print("turn_engine_core.gd _rebuild_queue()")
 	_queue_dirty = false
 	_queue = PackedInt32Array()
 
@@ -219,6 +232,7 @@ func _rebuild_queue() -> void:
 			_queue.append(id)
 
 func _get_desired_order_ids(group_index: int) -> PackedInt32Array:
+	#print("turn_engine_core.gd _get_desired_order_ids()")
 	var order := host.get_group_order_ids(group_index)
 	if order.is_empty():
 		return PackedInt32Array()
@@ -252,6 +266,7 @@ func _get_desired_order_ids(group_index: int) -> PackedInt32Array:
 	return out
 
 func _publish_pending_view() -> void:
+	#print("turn_engine_core.gd _publish_pending_view")
 	var active_id := 0
 	if _running_actor and current_actor_id > 0:
 		active_id = current_actor_id
@@ -283,5 +298,5 @@ func _publish_pending_view() -> void:
 					continue
 				if bool(_restore_allowed.get(id, false)):
 					pending.append(id)
-
+	#print("turn_engine_core.gd _publish_pending_view about to emit pending_view_changed")
 	pending_view_changed.emit(active_id, pending)

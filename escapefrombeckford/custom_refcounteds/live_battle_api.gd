@@ -94,6 +94,7 @@ func resolve_heal(ctx: HealContext) -> void:
 		runner.enqueue_heal(ctx)
 
 func resolve_move(ctx: MoveContext) -> void:
+	print("live_battle_api.gd resolve_move()")
 	if !ctx:
 		return
 	if runner:
@@ -239,7 +240,10 @@ func _run_death_op(combat_id: int, _reason: String = "") -> void:
 	else:
 		# Fallback (should be rare)
 		f.queue_free()
-
+	
+	if turn_engine:
+		turn_engine.notify_actor_removed(combat_id)
+	
 	if runner:
 		runner.mark_removed(combat_id)
 
@@ -396,7 +400,7 @@ func _run_summon_op(ctx: SummonContext) -> void:
 	ctx.summoned_fighter = fighter
 	ctx.summoned_id = fighter.combat_id
 	if turn_engine:
-		turn_engine.on_summon_added(fighter)
+		turn_engine.notify_summon_added(int(ctx.summoned_id), int(ctx.group_index))
 	# ---- CombatantData ----
 	var data: CombatantData = (ctx.summon_data if ctx.summon_data else load(DEFAULT_SUMMON_DATA)).duplicate()
 	data.init()
@@ -462,7 +466,7 @@ func _run_heal_op(ctx: HealContext) -> void:
 	# await battle_scene.get_tree().process_frame  # optional ordering beat
 
 func _run_move_op(ctx: MoveContext) -> void:
-	#print("live_battle_api.gd _run_move_op()")
+	print("live_battle_api.gd _run_move_op()")
 	if !ctx:
 		return
 
@@ -485,8 +489,7 @@ func _run_move_op(ctx: MoveContext) -> void:
 	battle_scene.execute_move_ctx(ctx)
 	
 	if turn_engine:
-		turn_engine.on_move_executed(ctx)
-	
+		turn_engine.notify_move_executed(ctx)
 	if ctx.sound:
 		play_sfx(ctx.sound)
 

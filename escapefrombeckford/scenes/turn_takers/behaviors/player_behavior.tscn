@@ -1,6 +1,6 @@
-[gd_scene load_steps=2 format=3 uid="uid://pqwbdekjih3e"]
+[gd_scene format=3 uid="uid://pqwbdekjih3e"]
 
 [ext_resource type="Script" uid="uid://b7vj7h3c87uu7" path="res://scenes/turn_takers/behaviors/player_behavior.gd" id="1_44y6i"]
 
-[node name="PlayerBehavior" type="Node"]
+[node name="PlayerBehavior" type="Node" unique_id=1914292470]
 script = ExtResource("1_44y6i")

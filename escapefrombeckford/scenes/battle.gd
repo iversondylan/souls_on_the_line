@@ -65,6 +65,7 @@ func _ready() -> void:
 	api = LiveBattleAPI.new(battle_scene)
 	host = TurnEngineHostLive.new(battle_scene)
 	turn_engine = TurnEngineCore.new(host)
+	api.turn_engine = turn_engine
 	battle_scene.api = api
 	turn_engine.actor_requested.connect(_on_actor_requested)
 	turn_engine.group_turn_ended.connect(_on_group_turn_ended)
@@ -100,7 +101,7 @@ func _ready() -> void:
 	#Events.request_enemy_turn.connect(_on_request_enemy_turn)
 	#Events.request_friendly_turn.connect(_on_request_friendly_turn)
 	Events.arcana_activated.connect(_on_arcana_activated)
-	Events.request_draw_cards.connect(_request_player_hand_draw)
+	#Events.request_draw_hand.connect(_on_request_hand_draw)
 	
 	draw_pile_button.pressed.connect(draw_pile_view.show_current_draw_view.bind("Draw Pile", true))
 	discard_pile_button.pressed.connect(discard_pile_view.show_current_discard_view.bind("Discard Pile"))
@@ -109,8 +110,7 @@ func _ready() -> void:
 	battle_interaction_handler.setup(self)
 	
 	Events.end_turn_button_pressed.connect(_on_end_turn_button_pressed_live)
-	Events.hand_discarded.connect(_on_hand_discarded_live)
-	hand.done_drawing.connect(_on_hand_done_drawing)
+	Events.hand_drawn.connect(_on_hand_done_drawing)
 	# Optional: start with End Turn disabled until we draw
 	battle_ui.set_end_turn_enabled(false)
 
@@ -175,18 +175,6 @@ func _on_request_activate_arcana_by_type(type: Arcanum.Type):
 		Arcanum.Type.END_OF_COMBAT:
 			arcana.activate_arcana_by_type(Arcanum.Type.END_OF_COMBAT)
 
-#func _on_request_enemy_turn() -> void:
-	#battle_scene.friendly_group_turn_end()
-	#BattleController.current_state = BattleController.BattleState.ENEMY_TURN
-	#battle_scene.enemy_group_turn_start()
-	#Events.enemy_turn_started.emit()
-#
-#func _on_request_friendly_turn() -> void:
-	#battle_scene.enemy_group_turn_end()
-	#BattleController.current_state = BattleController.BattleState.FRIENDLY_TURN
-	#battle_scene.friendly_group_turn_start()
-	#Events.friendly_turn_started.emit()
-
 func _on_arcana_activated(type: Arcanum.Type) -> void:
 	match type:
 		Arcanum.Type.START_OF_COMBAT:
@@ -215,29 +203,9 @@ func _on_arcana_activated(type: Arcanum.Type) -> void:
 		Arcanum.Type.END_OF_COMBAT:
 			Events.request_victory.emit()
 
-#func _draw_hand_for_player_turn() -> void:
-	#const DRAW_AMOUNT := 5 # TODO: replace with your actual per-turn draw value
-#
-	#var ctx := DrawContext.new()
-	#ctx.amount = DRAW_AMOUNT
-	#ctx.hand = hand
-	#ctx.deck = deck
-#
-	## Reuse your existing draw handler so all signals are consistent.
-	#await _on_request_draw_cards(ctx)
-
-
-#func _on_arcana_activated(type: Arcanum.Type) -> void:
-	#match type:
-		#Arcanum.Type.START_OF_COMBAT:
-			##initialize_card_pile_ui()
-			#BattleController.current_state = BattleController.BattleState.FRIENDLY_TURN
-			#Events.first_friendly_turn_started.emit()
-		#Arcanum.Type.END_OF_COMBAT:
-			#Events.request_victory.emit()
-
 func _apply_glow_live(active_id: int, pending_ids: PackedInt32Array) -> void:
 	# If nothing active, clear glow (or keep last — but clearing is safer)
+	print("battle.gd _apply_glow_live() active_id: %s, pending_ids: %s" % [active_id, pending_ids])
 	if active_id <= 0:
 		_clear_all_pending_glow()
 		return
@@ -280,6 +248,7 @@ func _clear_all_pending_glow() -> void:
 				f.set_pending_turn_glow(Fighter.TurnStatus.NONE)
 
 func _on_pending_view_changed(active_id: int, pending_ids: PackedInt32Array) -> void:
+	print("battle.gd _on_pending_view_changed()")
 	_apply_glow_live(active_id, pending_ids)
 
 func _on_actor_requested(combat_id: int) -> void:
@@ -363,9 +332,6 @@ func _on_group_turn_ended(ended_group_index: int) -> void:
 	_pending_start_engine_start_at_player = true
 	Events.request_activate_arcana_by_type.emit(Arcanum.Type.START_OF_TURN)
 
-
-
-
 func _get_next_group_index(ended_group_index: int) -> int:
 	match ended_group_index:
 		0:
@@ -374,7 +340,6 @@ func _get_next_group_index(ended_group_index: int) -> int:
 			return 0
 		_:
 			return -1
-
 
 func _apply_group_turn_start_hooks(active_group_index: int) -> void:
 	# Group starting: members get my_group_turn_start; opposing gets opposing_group_turn_start
@@ -399,7 +364,6 @@ func _apply_group_turn_start_hooks(active_group_index: int) -> void:
 	# - reset per-group UI
 	# - clear intent previews
 	# - arcana “start of friendly/enemy group turn” proc hooks, etc.
-
 
 func _apply_group_turn_end_hooks(ended_group_index: int) -> void:
 	# Group ending: members get my_group_turn_end; opposing gets opposing_group_turn_end
@@ -457,8 +421,11 @@ func _on_player_data_changed() -> void:
 		mana_panel.blue_mana = player.combatant_data.mana_blue
 
 func _on_hand_drawn() -> void:
-	_arm_end_turn_button(true)
-	wait_for_anims = false
+	print_tree_pretty()
+	#run._print_tree()
+	pass
+	#_arm_end_turn_button(true)
+	#wait_for_anims = false
 
 func _on_dead_combatant_data(combatant_data: CombatantData):
 	if combatant_data == player.combatant_data:
@@ -513,19 +480,10 @@ func _enable_preview_turn_flow_button() -> void:
 func _disable_preview_turn_flow_button() -> void:
 	turn_phase_title.enable_button(false)
 
-#func _on_request_draw_cards(ctx: DrawContext) -> void:
-	#ctx.hand = hand
-	#ctx.deck = deck
-	#wait_for_anims = true
-	#hand.draw_cards(ctx.amount)
-	#await hand.done_drawing
-	#wait_for_anims = false
-	#Events.cards_drawn.emit(ctx)
-
-func _request_player_hand_draw() -> void:
+func _on_request_hand_draw() -> void:
 	wait_for_anims = true
 	_arm_end_turn_button(false)
-	Events.request_draw_hand.emit()
+	#Events.request_draw_hand.emit()
 
 
 func simulate_battle() -> void:
@@ -534,6 +492,7 @@ func simulate_battle() -> void:
 	#sim_battle.print_sim_snapshot()
 
 func _on_hand_done_drawing() -> void:
+	print("battle.gd _on_hand_done_drawing()")
 	wait_for_anims = false
 	_arm_end_turn_button(true)
 
@@ -555,8 +514,4 @@ func _on_end_turn_button_pressed_live() -> void:
 
 	# This is the ONE thing End Turn does:
 	# it tells the Player to finish their action, which Hand turns into discard->hand_discarded->resolve_action.
-	Events.player_turn_completed.emit()
-
-func _on_hand_discarded_live() -> void:
-	# This is “player action is done” (NOT end of friendly group).
 	Events.player_turn_completed.emit()

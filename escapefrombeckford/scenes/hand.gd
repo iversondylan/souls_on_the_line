@@ -49,7 +49,7 @@ var _modal_selecting : bool = false
 
 func _ready() -> void:
 	Events.request_draw_hand.connect(_on_request_draw_hand)
-	
+	Events.request_draw_cards.connect(draw_cards_from_ctx)
 	Events.card_drag_ended.connect(_card_drag_or_aim_ended)
 	Events.card_drag_started.connect(_on_card_drag_or_aim_started)
 	
@@ -135,6 +135,9 @@ func draw_cards(n_cards: int) -> void:
 		await get_tree().create_timer(CARD_DRAW_INTERVAL).timeout
 	_is_drawing = false
 	done_drawing.emit()
+
+func draw_cards_from_ctx(ctx: DrawContext) -> void:
+	draw_cards(ctx.amount)
 
 func draw_hand(n_cards: int) -> void:
 	draw_cards(n_cards)
@@ -442,6 +445,7 @@ func _on_hand_area_mouse_exited() -> void:
 	mouse_in_hand_area = false
 
 func _on_request_draw_hand() -> void:
+	print("hand.gd _on_request_draw_hand()")
 	var n := 5
 	if deck and !deck.first_hand_drawn and deck.first_hand_summon_guarantee:
 		_draw_first_hand_with_summon_guarantee(n)

@@ -232,3 +232,6 @@ func make_rng(label: String) -> RandomNumberGenerator:
 
 static func rc_hash(row: int, col: int) -> int:
 	return ("%d,%d" % [row, col]).hash()
+
+func _print_tree() -> void:
+	print_tree_pretty()
