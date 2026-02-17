@@ -2,6 +2,8 @@
 
 class_name BattleResolutionRunner extends Node
 
+signal scope_drained(scope_id:int)
+
 enum LifeState { ALIVE, DYING, REMOVED }
 
 # combat_id -> LifeState
@@ -16,6 +18,51 @@ var api: LiveBattleAPI
 
 var _queue: Array[Dictionary] = []
 var _busy: bool = false
+
+var _scope_stack: Array[int] = []
+var _scope_next: int = 1
+var _closed_scopes := {} # scope_id -> true
+var _scope_pending_counts := {} # scope_id -> int
+#var _scope_waiters := {} # scope_id -> Array[Callable] or Signal
+var _scope_actor := {} # scope_id -> actor_id
+
+func begin_scope(actor_id:int) -> int:
+	var s := _scope_next
+	_scope_next += 1
+	_scope_stack.push_back(s)
+	_scope_actor[s] = actor_id
+	_closed_scopes.erase(s)
+	_scope_pending_counts[s] = 0
+	return s
+
+func end_scope(scope_id:int) -> void:
+	if _scope_stack.size() > 0 and _scope_stack.back() == scope_id:
+		_scope_stack.pop_back()
+	_scope_actor.erase(scope_id)
+	_closed_scopes.erase(scope_id)
+	_scope_pending_counts.erase(scope_id)
+
+func current_scope() -> int:
+	return _scope_stack.back() if _scope_stack.size() > 0 else 0
+
+func close_scope(scope_id:int) -> void:
+	_closed_scopes[scope_id] = true
+
+func await_scope_drained(scope_id:int) -> void:
+	while true:
+		var n := int(_scope_pending_counts.get(scope_id, 0))
+		# IMPORTANT: if closed + no pending + not busy, done.
+		if n <= 0 and _closed_scopes.has(scope_id) and !_busy:
+			return
+		# Wait for *any* drain/busy transition; loop re-checks.
+		await scope_drained
+
+func _maybe_release_scope(scope_id:int) -> void:
+	var n := int(_scope_pending_counts.get(scope_id, 0))
+	# Emit whenever the scope is "count-drained" and closed.
+	# We don't require !_busy here; the waiter will loop until !_busy too.
+	if n <= 0 and _closed_scopes.has(scope_id):
+		scope_drained.emit(scope_id)
 
 func is_removed(combat_id: int) -> bool:
 	return _removed.has(combat_id)
@@ -32,50 +79,57 @@ func enqueue_death(combat_id: int, reason: String = "") -> void:
 	if _pending_deaths.has(combat_id):
 		return
 	_pending_deaths[combat_id] = true
-	_queue.push_back({"op":"death","combat_id":combat_id,"reason":reason})
+	var s := current_scope()
+	_queue.push_back({"op":"death","combat_id":combat_id,"reason":reason,"scope":s})
+	_scope_pending_counts[s] = int(_scope_pending_counts.get(s,0)) + 1
 	_kick()
 
 func enqueue_apply_status(ctx: StatusContext) -> void:
-	_queue.push_back({
-		"op": "apply_status",
-		"ctx": ctx,
-	})
+	var s := current_scope()
+	_queue.push_back({"op":"apply_status","ctx":ctx,"scope":s})
+	_scope_pending_counts[s] = int(_scope_pending_counts.get(s,0)) + 1
 	_kick()
 
 func enqueue_remove_status(ctx: RemoveStatusContext) -> void:
-	_queue.push_back({
-		"op": "remove_status",
-		"ctx": ctx,
-	})
+	var s := current_scope()
+	_queue.push_back({"op":"remove_status","ctx":ctx,"scope":s})
+	_scope_pending_counts[s] = int(_scope_pending_counts.get(s,0)) + 1
 	_kick()
 
 func enqueue_status_proc(target_id: int, proc_type: int) -> void:
-	#print("battle_resolution_runner.gd enqueue_status_proc()")
-	_queue.push_back({"op":"status_proc","id":target_id,"proc":proc_type})
+	var s := current_scope()
+	_queue.push_back({"op":"status_proc","id":target_id,"proc":proc_type,"scope":s})
+	_scope_pending_counts[s] = int(_scope_pending_counts.get(s,0)) + 1
 	_kick()
 
 func enqueue_move(ctx: MoveContext) -> void:
-	_queue.push_back({"op":"move","ctx":ctx})
+	var s := current_scope()
+	_queue.push_back({"op":"move","ctx":ctx,"scope":s})
+	_scope_pending_counts[s] = int(_scope_pending_counts.get(s,0)) + 1
 	_kick()
 
 func enqueue_damage(ctx: DamageContext) -> void:
-	#print("battle_resolution_runner.gd enqueue-damage()")
-	_queue.push_back({
-		"op": "damage",
-		"ctx": ctx,
-	})
+	var s := current_scope()
+	_queue.push_back({"op":"damage","ctx":ctx,"scope":s})
+	_scope_pending_counts[s] = int(_scope_pending_counts.get(s,0)) + 1
 	_kick()
 
 func enqueue_summon(ctx: SummonContext) -> void:
-	_queue.push_back({"op":"summon","ctx": ctx})
+	var s := current_scope()
+	_queue.push_back({"op":"summon","ctx":ctx,"scope":s})
+	_scope_pending_counts[s] = int(_scope_pending_counts.get(s,0)) + 1
 	_kick()
 
 func enqueue_heal(ctx: HealContext) -> void:
-	_queue.push_back({"op":"heal","ctx":ctx})
+	var s := current_scope()
+	_queue.push_back({"op":"heal","ctx":ctx,"scope":s})
+	_scope_pending_counts[s] = int(_scope_pending_counts.get(s,0)) + 1
 	_kick()
 
 func enqueue_attack_now(ctx: AttackNowContext) -> void:
-	_queue.push_back({"op":"attack_now","ctx":ctx})
+	var s := current_scope()
+	_queue.push_back({"op":"attack_now","ctx":ctx,"scope":s})
+	_scope_pending_counts[s] = int(_scope_pending_counts.get(s,0)) + 1
 	_kick()
 
 
@@ -85,20 +139,15 @@ func _kick() -> void:
 	_busy = true
 	call_deferred("_process_queue")
 
-#func _kick() -> void:
-	#if _busy:
-		#return
-	#_busy = true
-	#_process_queue()
-
 func _process_queue() -> void:
 	# coroutine
 	await _run()
 
 func _run() -> void:
 	while !_queue.is_empty():
-		var item = _queue.pop_front()# := _queue.pop_front()
+		var item = _queue.pop_front()
 		var op := str(item.get("op", ""))
+
 		match op:
 			"damage":
 				var ctx: DamageContext = item.get("ctx", null)
@@ -141,4 +190,13 @@ func _run() -> void:
 			_:
 				push_warning("BattleResolutionRunner: unknown op: %s" % op)
 
+		var s := int(item.get("scope", 0))
+		if s != 0:
+			_scope_pending_counts[s] = int(_scope_pending_counts.get(s, 0)) - 1
+			_maybe_release_scope(s)
+
+	# Busy flips false only after all work is done.
 	_busy = false
+
+	# Wake any waiters who were waiting for !_busy.
+	scope_drained.emit(-1)

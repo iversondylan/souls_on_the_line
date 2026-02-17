@@ -265,9 +265,20 @@ func _run_actor_live(combat_id: int) -> bool:
 	print("battle.gd _run_actor_live() cid=", combat_id)
 	var f: Fighter = battle_scene.get_combatant_by_id(combat_id, true)
 	print("battle.gd _run_actor_live() fighter= ", f.name if f else "NULL")
+
 	if !f or !is_instance_valid(f) or !f.is_alive():
 		turn_engine.notify_actor_removed(combat_id)
 		return false
+
+	# -----------------------------
+	# NEW: begin runner scope
+	# -----------------------------
+	var runner := api.runner
+	var scope_id := 0
+	if runner:
+		scope_id = runner.begin_scope(combat_id)
+		# Optional debug:
+		#print("BATTLE begin_scope cid=%s scope=%s" % [combat_id, scope_id])
 
 	# --- Start-of-turn ---
 	f.enter()
@@ -284,7 +295,19 @@ func _run_actor_live(combat_id: int) -> bool:
 	await _await_status_proc_finished(f, Status.ProcType.END_OF_TURN)
 
 	f.exit()
+
+	# -----------------------------
+	# NEW: close + await scope drain
+	# -----------------------------
+	if runner and scope_id != 0:
+		runner.close_scope(scope_id)
+		await runner.await_scope_drained(scope_id)
+		runner.end_scope(scope_id)
+		# Optional debug:
+		#print("BATTLE scope_drained cid=%s scope=%s" % [combat_id, scope_id])
+
 	return true
+
 
 
 func _await_action_or_removal(actor: Fighter) -> bool:
