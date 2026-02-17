@@ -92,9 +92,9 @@ func _update_visuals() -> void:
 
 func _on_gui_input(event: InputEvent) -> void:
 	# do something
-	pass
-	#if event.is_action_pressed("mouse_click"):
-		#Events.status_tooltip_requested.emit(_get_all_statuses())
+	#pass
+	if event.is_action_pressed("mouse_click"):
+		Events.status_tooltip_requested.emit(status_system.get_all())
 
 
 #func apply_statuses_by_type(proc_type: Status.ProcType) -> void:

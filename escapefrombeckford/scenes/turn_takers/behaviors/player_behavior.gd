@@ -10,6 +10,9 @@ func _ready() -> void:
 
 func _on_do_turn() -> void:
 	# Player turn flow is managed by Battle.gd now.
+	var fighter: Fighter = get_parent()
+	fighter.combatant_data.reset_armor()
+	fighter.combatant_data.reset_mana()
 	Events.request_draw_hand.emit()
 	pass
 

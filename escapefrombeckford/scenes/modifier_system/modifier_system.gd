@@ -1,12 +1,16 @@
 # modifier_system.gd
-class_name ModifierSystem extends Node
+
+class_name ModifierSystem extends RefCounted
 
 signal modifier_changed()
 
 var _cache: Dictionary = {}   # Modifier.Type -> ResolvedModifier
 var _dirty: Dictionary = {}   # Modifier.Type -> bool
-
+var owner: Node
 var run: Run
+
+func _init(new_owner: Node) -> void:
+	owner = new_owner
 
 func _ready() -> void:
 	for type in Modifier.Type.values():
@@ -40,7 +44,7 @@ func get_modifier_tokens_for(type: Modifier.Type) -> Array[ModifierToken]:
 	if !run:
 		return []
 	
-	var all_tokens: Array[ModifierToken] = run.get_modifier_tokens_for(get_parent())
+	var all_tokens: Array[ModifierToken] = run.get_modifier_tokens_for(owner)
 	
 	var relevant: Array[ModifierToken] = []
 	for token in all_tokens:

@@ -13,7 +13,8 @@ const SHOP_ARCANUM_SCN = preload("res://scenes/shop/shop_arcanum.tscn")
 @onready var shopkeeper_animation: AnimationPlayer = %ShopkeeperAnimation
 @onready var blink_timer: Timer = %BlinkTimer
 @onready var card_tooltip_popup: CardTooltipPopup = %CardTooltipPopup
-@onready var modifier_system: ModifierSystem = $ModifierSystem
+
+var modifier_system: ModifierSystem
 
 var run: Run: set = _set_run
 var arcana_reward_pool: ArcanaRewardPool
@@ -25,6 +26,8 @@ func _set_run(value) -> void:
 			modifier_system.run = run
 
 func _ready() -> void:
+	if !modifier_system:
+		modifier_system = ModifierSystem.new(self)
 	for shop_card: ShopCard in card_container.get_children():
 		shop_card.queue_free()
 	for shop_arcanum: ShopArcanum in arcanum_container.get_children():

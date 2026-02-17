@@ -28,10 +28,11 @@ enum TurnStatus {TURN_PENDING, TURN_ACTIVE, NONE}
 @onready var area_left: CombatantAreaLeft = combatant.area_left
 @onready var damage_number_scn: PackedScene = preload("res://scenes/ui/damage_number.tscn")
 @onready var blocked_message_scn: PackedScene = preload("res://scenes/ui/blocked_message.tscn")
-@onready var modifier_system: ModifierSystem = $ModifierSystem
+
 
 var combatant_data: CombatantData : set = _set_combatant_data
 var status_system: StatusSystem
+var modifier_system: ModifierSystem
 var state: FighterState
 var battle_scene: BattleScene : set = _set_battle_scene
 var run: Run : set = _set_run
@@ -48,6 +49,10 @@ func _ready() -> void:
 			status_system.catalog = run.status_catalog
 	if combatant and combatant.status_grid:
 		combatant.status_grid.bind_system(status_system, self)
+	
+	if !modifier_system:
+		modifier_system = ModifierSystem.new(self)
+	
 	combatant.target_area_area_entered.connect(_on_target_area_area_entered)
 	combatant.target_area_area_exited.connect(_on_target_area_area_exited)
 	Events.battle_reset.connect(_battle_reset)
