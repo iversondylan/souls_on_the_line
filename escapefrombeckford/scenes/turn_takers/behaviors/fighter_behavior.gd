@@ -1,26 +1,18 @@
-class_name FighterBehavior extends Node
+# fighter_behavior.gd
 
-func _ready() -> void:
-	pass
+class_name FighterBehavior extends Resource
 
-func _on_combatant_data_set(_data: CombatantData) -> void:
-	pass
+var owner: Fighter
 
-func load_ai():
-	pass
+func _on_combatant_data_set(new_owner: Fighter) -> void:
+	owner = new_owner
 
 func _on_enter() -> void:
 	pass
 
-## There are some legacy virtual functions here to clean up
-
-func update_action() -> void:
-	pass
+func _on_opposing_group_turn_start() -> void: pass
 
 func update_action_intent() -> void:
-	pass
-
-func _set_current_action(_current_action: NPCAction) -> void:
 	pass
 
 func _on_exit() -> void:
@@ -29,24 +21,10 @@ func _on_exit() -> void:
 func _on_do_turn() -> void:
 	pass
 
-func _on_opposing_group_turn_start() -> void:
-	pass
-func _on_opposing_group_turn_end() -> void: pass
-func _on_my_group_turn_start() -> void: pass
-func _on_my_group_turn_end() -> void: pass
-func _on_group_turn_start() -> void:
-	pass
-
 func _on_group_turn_end() -> void:
 	pass
 
-func _on_hand_drawn() -> void:
-	pass
-
 func _on_hand_discarded() -> void:
-	pass
-
-func _on_end_turn_button_pressed() -> void:
 	pass
 
 func _on_modifier_changed() -> void:
@@ -61,16 +39,7 @@ func _on_fade() -> void:
 func bind_card(_new_card_data: CardData) -> void:
 	pass
 
-func _on_traverse_player() -> void:
-	pass
-
-func get_sibling(_name: String) -> Node:
-	return null
-
 func _on_discard_summon_reserve_card(_deck: Deck) -> void:
-	pass
-
-func _on_turn_reset() -> void:
 	pass
 
 func _on_battle_reset() -> void:

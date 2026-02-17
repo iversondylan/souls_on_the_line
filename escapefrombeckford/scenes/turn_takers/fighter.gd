@@ -71,9 +71,8 @@ func _set_combatant_data(new_data: CombatantData) -> void:
 	if battle_scene and battle_scene.api and combatant_data:
 		if not combatant_data.combatant_data_changed.is_connected(_on_data_changed):
 			combatant_data.combatant_data_changed.connect(_on_data_changed)
-	for child in get_children():
-		if child is FighterBehavior:
-			child._on_combatant_data_set(new_data)
+	for behavior: FighterBehavior in combatant_data.behaviors:
+		behavior._on_combatant_data_set(self)
 	
 
 func _set_battle_scene(new_battle_scene: BattleScene) -> void:
@@ -94,15 +93,13 @@ func enter() -> void:
 	#print("fighter.gd enter() name: ", name)
 	set_pending_turn_glow(TurnStatus.TURN_ACTIVE)
 	Events.fighter_entered_turn.emit(self)
-	for child in get_children():
-		if child is FighterBehavior:
-			child._on_enter()
+	for behavior: FighterBehavior in combatant_data.behaviors:
+		behavior._on_enter()
 
 func exit() -> void:
 	#print("fighter.gd exit() name: ", name)
-	for child in get_children():
-		if child is FighterBehavior:
-			child._on_exit()
+	for behavior: FighterBehavior in combatant_data.behaviors:
+		behavior._on_exit()
 
 func _emit_status_proc_finished(proc_type: int) -> void:
 	last_status_proc_finished = proc_type
@@ -114,20 +111,17 @@ func my_group_turn_start() -> void:
 	#combatant.status_grid.clear_group_turn_start_statuses()
 
 func opposing_group_turn_start() -> void:
-	for child in get_children():
-		if child is FighterBehavior:
-			child._on_opposing_group_turn_start()
+	for behavior: FighterBehavior in combatant_data.behaviors:
+		behavior._on_opposing_group_turn_start()
 
 func my_group_turn_end() -> void:
-	for child in get_children():
-		if child is FighterBehavior:
-			child._on_group_turn_end()
+	for behavior: FighterBehavior in combatant_data.behaviors:
+		behavior._on_group_turn_end()
 	#combatant.status_grid.clear_group_turn_end_statuses()
 
 func opposing_group_turn_end() -> void:
-	for child in get_children():
-		if child is FighterBehavior:
-			child._on_group_turn_end()
+	for behavior: FighterBehavior in combatant_data.behaviors:
+		behavior._on_group_turn_end()
 
 func set_anchor_position(_position: Vector2, animate: bool) -> void:
 	anchor_position = _position
@@ -194,16 +188,14 @@ func die() -> void:
 	combatant_data.alive = false
 
 func fade():
-	for child in get_children():
-		if child is FighterBehavior:
-			child._on_fade()
+	for behavior: FighterBehavior in combatant_data.behaviors:
+		behavior._on_fade()
 	
 
 func do_turn() -> void:
 	print("fighter.gd do_turn() name: ", name)
-	for child in get_children():
-		if child is FighterBehavior:
-			child._on_do_turn()
+	for behavior: FighterBehavior in combatant_data.behaviors:
+		behavior._on_do_turn()
 
 func can_play_card(card_data: CardData) -> bool:
 	return combatant_data.can_play_card(card_data)
@@ -215,9 +207,8 @@ func spend_mana(card_data: CardData) -> bool:
 		return false
 
 func discard_summon_reserve_card(_deck: Deck) -> void:
-	for child in get_children():
-		if child is FighterBehavior:
-			child._on_discard_summon_reserve_card(_deck)
+	for behavior: FighterBehavior in combatant_data.behaviors:
+		behavior._on_discard_summon_reserve_card(_deck)
 
 func reset():
 	combatant_data.reset_armor()
@@ -226,9 +217,8 @@ func reset():
 	#Events.auras_requested.emit(self)
 
 func _battle_reset() -> void:
-	for child in get_children():
-		if child is FighterBehavior:
-			child._on_battle_reset()
+	for behavior: FighterBehavior in combatant_data.behaviors:
+		behavior._on_battle_reset()
 
 func turn_reset() -> void:
 	combatant_data.reset_armor()
@@ -303,10 +293,9 @@ func _on_combatant_statuses_applied(proc_type: Status.ProcType) -> void:
 	statuses_applied.emit(proc_type)
 
 func _on_modifier_changed() -> void:
-	for child in get_children():
-		if child is FighterBehavior:
-			child.update_action_intent()
-			child._on_modifier_changed()
+	for behavior: FighterBehavior in combatant_data.behaviors:
+		behavior.update_action_intent()
+		behavior._on_modifier_changed()
 
 func get_modifier_tokens() -> Array[ModifierToken]:
 	if !battle_scene:

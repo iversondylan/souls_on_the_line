@@ -66,9 +66,9 @@ func on_removed() -> void:
 	else:
 		return
 	
-	var ai := fighter.get_node_or_null("NPCAIBehavior")
-	if !ai:
-		return
+	#var ai := fighter.get_node_or_null("NPCAIBehavior")
+	#if !ai:
+		#return
 
 	var state := fighter.state# : Dictionary = ai.get_meta("ai_state")
 	if state:

@@ -19,6 +19,7 @@ signal combatant_data_changed()
 @export var max_mana_red: int = 3
 @export var max_mana_green: int = 3
 @export var max_mana_blue: int = 3
+@export var behaviors: Array[FighterBehavior]
 @export var ai: NPCAIProfile
 
 @export_group("Audio")

@@ -209,9 +209,8 @@ func _run_death_op(combat_id: int, _reason: String = "") -> void:
 	if f.combatant and f.combatant.status_grid:
 		f.status_system.end_non_self_statuses()
 
-	for child in f.get_children():
-		if child is FighterBehavior:
-			child._on_die()
+	for behavior: FighterBehavior in f.combatant_data.behaviors:
+		behavior._on_die()
 
 	# Optional: clear intent visuals right away
 	if f.intent_container:
@@ -407,9 +406,9 @@ func _run_summon_op(ctx: SummonContext) -> void:
 	fighter.combatant_data = data
 
 	# ---- AI bootstrap ----
-	for child in fighter.get_children():
-		if child is NPCAIBehavior:
-			child.initiate_first_intents()
+	for behavior: FighterBehavior in fighter.combatant_data.behaviors:
+		if behavior is NPCAIBehavior:
+			behavior.initiate_first_intents()
 
 	# ---- Optional binding (SummonedAlly only) ----
 	if ctx.bound_card_data and fighter is SummonedAlly:

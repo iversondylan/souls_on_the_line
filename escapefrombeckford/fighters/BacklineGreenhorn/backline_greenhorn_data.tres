@@ -1,8 +1,14 @@
-[gd_resource type="Resource" script_class="CombatantData" load_steps=4 format=3 uid="uid://cdmyfenehv67g"]
+[gd_resource type="Resource" script_class="CombatantData" format=3 uid="uid://cdmyfenehv67g"]
 
 [ext_resource type="Resource" uid="uid://6st7qsavadsd" path="res://fighters/BacklineGreenhorn/backline_greenhorn_ai.tres" id="1_qov74"]
+[ext_resource type="Script" uid="uid://03807i8cp3r3" path="res://scenes/turn_takers/behaviors/fighter_behavior.gd" id="2_8cg22"]
 [ext_resource type="Texture2D" uid="uid://dtvvequ1w1dlu" path="res://assets/sprites/assorted/enemy_thrall_mage.png" id="2_yg3uk"]
 [ext_resource type="Script" uid="uid://cfatj0ryn8uv3" path="res://custom_resources/combatant_data.gd" id="3_8cg22"]
+[ext_resource type="Script" uid="uid://csljslxfgnidf" path="res://scenes/turn_takers/behaviors/npcai_behavior.gd" id="3_opskt"]
+
+[sub_resource type="Resource" id="Resource_3oh1h"]
+script = ExtResource("3_opskt")
+metadata/_custom_type_script = "uid://csljslxfgnidf"
 
 [resource]
 script = ExtResource("3_8cg22")
@@ -12,6 +18,6 @@ facing_right = false
 height = 270
 color_tint = Color(0.34310004, 0.73, 0.37534165, 1)
 max_health = 12
-team = 2
+behaviors = Array[ExtResource("2_8cg22")]([SubResource("Resource_3oh1h")])
 ai = ExtResource("1_qov74")
 metadata/_custom_type_script = "uid://cfatj0ryn8uv3"

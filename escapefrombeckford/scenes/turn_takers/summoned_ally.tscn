@@ -2,17 +2,8 @@
 
 [ext_resource type="Script" uid="uid://buubnon543t7p" path="res://scenes/turn_takers/summoned_ally.gd" id="1_on5pq"]
 [ext_resource type="PackedScene" uid="uid://dghmlrg1poqs7" path="res://scenes/combatant.tscn" id="3_e71qy"]
-[ext_resource type="PackedScene" uid="uid://cvtelvimr3235" path="res://scenes/turn_takers/behaviors/friendly_behavior.tscn" id="5_ri57q"]
-[ext_resource type="PackedScene" uid="uid://2t8myn8agsqh" path="res://scenes/turn_takers/behaviors/npcai_behavior.tscn" id="6_on5pq"]
-[ext_resource type="PackedScene" uid="uid://lwyeupi6ld8k" path="res://scenes/turn_takers/behaviors/summoned_ally_behavior.tscn" id="7_5ikkc"]
 
 [node name="SummonedAlly" type="Node2D" unique_id=831165029 groups=["allies"]]
 script = ExtResource("1_on5pq")
 
 [node name="Combatant" parent="." unique_id=887427414 instance=ExtResource("3_e71qy")]
-
-[node name="FriendlyBehavior" parent="." unique_id=1390760634 instance=ExtResource("5_ri57q")]
-
-[node name="NPCAIBehavior" parent="." unique_id=1844379276 instance=ExtResource("6_on5pq")]
-
-[node name="SummonedAllyBehavior" parent="." unique_id=1004641140 instance=ExtResource("7_5ikkc")]

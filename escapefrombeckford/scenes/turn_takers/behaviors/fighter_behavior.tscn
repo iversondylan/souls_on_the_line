@@ -1,6 +1,0 @@
-[gd_scene load_steps=2 format=3 uid="uid://s5slh3d4uwf6"]
-
-[ext_resource type="Script" uid="uid://03807i8cp3r3" path="res://scenes/turn_takers/behaviors/fighter_behavior.gd" id="1_xxy8y"]
-
-[node name="FighterBehavior" type="Node"]
-script = ExtResource("1_xxy8y")

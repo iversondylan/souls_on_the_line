@@ -29,14 +29,14 @@ var remaining_effect_packages: Array[NPCEffectPackage] = []
 # -------------------------------------------------------------------
 
 func _make_context() -> NPCAIContext:
-	var fighter: Fighter = get_parent()
+	#var fighter: Fighter = get_parent()
 	
 	var ctx := NPCAIContext.new()
-	ctx.combatant = fighter
-	ctx.api = fighter.battle_scene.api
-	ctx.battle_scene = fighter.battle_scene
-	ctx.state = fighter.state.ai_state
-	ctx.rng =  fighter.state.rng
+	ctx.combatant = owner
+	ctx.api = owner.battle_scene.api
+	ctx.battle_scene = owner.battle_scene
+	ctx.state = owner.state.ai_state
+	ctx.rng =  owner.state.rng
 	ctx.params = {}
 	ctx.forecast = false
 	return ctx
@@ -46,19 +46,19 @@ func _make_context() -> NPCAIContext:
 # Initialization
 # -------------------------------------------------------------------
 
-func _on_combatant_data_set(_data: CombatantData) -> void:
-	ai_profile = _data.ai
-
-	var fighter: Fighter = get_parent()
-	if not fighter:
+func _on_combatant_data_set(new_owner: Fighter) -> void:
+	owner = new_owner
+	ai_profile = owner.combatant_data.ai
+	
+	if not owner:
 		return
 
-	if not fighter.state:
-		fighter.state = FighterState.new()
+	if not owner.state:
+		owner.state = FighterState.new()
 
-	fighter.state.ai_state = {}
-	var state := fighter.state.ai_state
-	state[HP_AT_TURN_START] = _data.health
+	owner.state.ai_state = {}
+	var state := owner.state.ai_state
+	state[HP_AT_TURN_START] = owner.combatant_data.health
 	state[DMG_SINCE_LAST_TURN] = 0
 	state[KEY_PLANNED_IDX] = -1
 	state["telegraph_committed"] = false
@@ -66,16 +66,16 @@ func _on_combatant_data_set(_data: CombatantData) -> void:
 	state[FIRST_INTENTS_READY] = false
 
 	var battle_seed := 0
-	if fighter.battle_scene:
-		battle_seed = int(fighter.battle_scene.battle_seed)
+	if owner.battle_scene:
+		battle_seed = int(owner.battle_scene.battle_seed)
 
-	var seed := RNGUtil.mix_seed(battle_seed, fighter.combat_id)
-	fighter.state.rng = RNG.new(seed)
+	var seed := RNGUtil.mix_seed(battle_seed, owner.combat_id)
+	owner.state.rng = RNG.new(seed)
 
-	if not _data.combatant_data_changed.is_connected(_on_stats_changed):
-		_data.combatant_data_changed.connect(_on_stats_changed)
+	if not owner.combatant_data.combatant_data_changed.is_connected(_on_stats_changed):
+		owner.combatant_data.combatant_data_changed.connect(_on_stats_changed)
 
-	var grid: StatusSystem = fighter.status_system
+	var grid: StatusSystem = owner.status_system
 	if grid and not grid.intent_conditions_changed.is_connected(_on_intent_conditions_changed):
 		grid.intent_conditions_changed.connect(_on_intent_conditions_changed)
 
@@ -90,14 +90,14 @@ func _on_initiate_first_intents() -> void:
 	if Events.initiate_first_intents.is_connected(_on_initiate_first_intents):
 		Events.initiate_first_intents.disconnect(_on_initiate_first_intents)
 	
-	var fighter: Fighter = get_parent()
-	if not fighter or not fighter.is_alive() or not ai_profile:
+	#var fighter: Fighter = get_parent()
+	if not owner or not owner.is_alive() or not ai_profile:
 		return
 	
-	if not fighter.state or not fighter.state.ai_state:
+	if not owner.state or not owner.state.ai_state:
 		return
 	
-	fighter.state.ai_state[FIRST_INTENTS_READY] = true
+	owner.state.ai_state[FIRST_INTENTS_READY] = true
 	
 	# One-time plan + display
 	sync_intent(false)
@@ -108,16 +108,16 @@ func _on_initiate_first_intents() -> void:
 # -------------------------------------------------------------------
 
 func _on_stats_changed() -> void:
-	var fighter: Fighter = get_parent()
-	if !fighter or !fighter.is_alive() or !ai_profile:
+	#var fighter: Fighter = get_parent()
+	if !owner or !owner.is_alive() or !ai_profile:
 		return
 	
-	if not fighter.state or not fighter.state.ai_state.get(FIRST_INTENTS_READY, false):
+	if not owner.state or not owner.state.ai_state.get(FIRST_INTENTS_READY, false):
 		return
 	
-	var state := fighter.state.ai_state
+	var state := owner.state.ai_state
 	if state and state.has(HP_AT_TURN_START):
-		var cur_hp := fighter.combatant_data.health
+		var cur_hp := owner.combatant_data.health
 		var delta : int = state[HP_AT_TURN_START] - cur_hp
 		if delta > 0:
 			state[DMG_SINCE_LAST_TURN] = delta
@@ -127,11 +127,11 @@ func _on_stats_changed() -> void:
 
 
 func _on_intent_conditions_changed() -> void:
-	var fighter: Fighter = get_parent()
-	if !fighter or !fighter.is_alive() or !ai_profile:
+	#var owner: Fighter = get_parent()
+	if !owner or !owner.is_alive() or !ai_profile:
 		return
 	
-	if not fighter.state or not fighter.state.ai_state.get(FIRST_INTENTS_READY, false):
+	if not owner.state or not owner.state.ai_state.get(FIRST_INTENTS_READY, false):
 		return
 	
 	plan_next_intent(true)
@@ -180,8 +180,8 @@ func _roll_chance_idx(ctx: NPCAIContext) -> int:
 
 func plan_next_intent(allow_hooks: bool = false) -> void:
 	
-	var fighter: Fighter = get_parent()
-	if !fighter or !fighter.is_alive() or !ai_profile:
+	#var fighter: Fighter = get_parent()
+	if !owner or !owner.is_alive() or !ai_profile:
 		return
 	
 	var ctx := _make_context()
@@ -268,8 +268,8 @@ func _on_opposing_group_turn_start() -> void:
 	state["telegraph_committed"] = true
 
 func _on_group_turn_end() -> void:
-	var fighter: Fighter = get_parent()
-	var state := fighter.state.ai_state # Dictionary = get_meta("ai_state")
+	#var fighter: Fighter = get_parent()
+	var state := owner.state.ai_state # Dictionary = get_meta("ai_state")
 	if state:
 		state["telegraph_committed"] = false
 
@@ -279,8 +279,8 @@ func _on_group_turn_end() -> void:
 
 
 func ensure_valid_plan(allow_hooks: bool = true) -> void:
-	var fighter: Fighter = get_parent()
-	if !fighter or !fighter.is_alive() or !ai_profile:
+	#var fighter: Fighter = get_parent()
+	if !owner or !owner.is_alive() or !ai_profile:
 		return
 
 	var ctx := _make_context()
@@ -304,15 +304,15 @@ func ensure_valid_plan(allow_hooks: bool = true) -> void:
 		plan_next_intent(allow_hooks)
 
 func refresh_intent_display() -> void:
-	var fighter: Fighter = get_parent()
-	if !fighter or !fighter.is_alive() or !ai_profile:
-		if fighter:
-			fighter.intent_container.clear_display()
+	#var fighter: Fighter = get_parent()
+	if !owner or !owner.is_alive() or !ai_profile:
+		if owner:
+			owner.intent_container.clear_display()
 		return
 	
 	# Before init, don't plan and don't spam. Just show nothing.
-	if !fighter.state or !fighter.state.ai_state.get(FIRST_INTENTS_READY, false):
-		fighter.intent_container.clear_display()
+	if !owner.state or !owner.state.ai_state.get(FIRST_INTENTS_READY, false):
+		owner.intent_container.clear_display()
 		return
 	
 	var ctx := _make_context()
@@ -321,16 +321,16 @@ func refresh_intent_display() -> void:
 	
 	var idx := int(ctx.state.get(KEY_PLANNED_IDX, -1))
 	if idx < 0:
-		fighter.intent_container.clear_display()
+		owner.intent_container.clear_display()
 		return
 	
 	var action := _get_action_by_idx(idx)
 	if !action:
-		fighter.intent_container.clear_display()
+		owner.intent_container.clear_display()
 		return
 	
 	var intent := _build_intent_from_action(action, ctx)
-	fighter.intent_container.display_icons([intent])
+	owner.intent_container.display_icons([intent])
 
 
 func sync_intent(allow_hooks: bool = true) -> void:
@@ -378,9 +378,9 @@ func _change_params_only(action: NPCAction, ctx: NPCAIContext) -> void:
 # -------------------------------------------------------------------
 
 func _on_enter() -> void:
-	var fighter: Fighter = get_parent()
-	var state := fighter.state.ai_state
-	state[HP_AT_TURN_START] = fighter.combatant_data.health
+	#var fighter: Fighter = get_parent()
+	var state := owner.state.ai_state
+	state[HP_AT_TURN_START] = owner.combatant_data.health
 	state[DMG_SINCE_LAST_TURN] = 0
 
 	if state.get(FIRST_INTENTS_READY, false):
@@ -424,9 +424,9 @@ func _get_action_chance_weight(action: NPCAction, ctx: NPCAIContext) -> float:
 # -------------------------------------------------------------------
 
 func _on_do_turn() -> void:
-	var fighter: Fighter = get_parent()
-	if !fighter.is_alive() or !ai_profile:
-		fighter.resolve_action()
+	#var fighter: Fighter = get_parent()
+	if !owner.is_alive() or !ai_profile:
+		owner.resolve_action()
 		return
 	
 	var ctx := _make_context()
@@ -442,7 +442,7 @@ func _on_do_turn() -> void:
 	
 	var action := _get_action_by_idx(int(ctx.state.get(KEY_PLANNED_IDX, -1)))
 	if not action:
-		fighter.resolve_action()
+		owner.resolve_action()
 		return
 	
 	_start_windup_delay(action, ctx)
@@ -470,8 +470,8 @@ func _start_action(action: NPCAction, ctx: NPCAIContext) -> void:
 func _next_effect_package() -> void:
 	
 	if remaining_effect_packages.is_empty():
-		var fighter: Fighter = get_parent()
-		var state := fighter.state.ai_state # Dictionary = get_meta("ai_state")
+		#var fighter: Fighter = get_parent()
+		var state := owner.state.ai_state # Dictionary = get_meta("ai_state")
 		var taken: int = state.get(ACTIONS_TAKEN, 0)
 		state[ACTIONS_TAKEN] = taken + 1
 		_start_impact_delay()
@@ -509,10 +509,10 @@ func _on_sequence_done() -> void:
 	_next_effect_package()
 
 func _start_windup_delay(action: NPCAction, ctx: NPCAIContext) -> void:
-	get_tree().create_timer(BASE_WINDUP_DELAY/speed_setting, false).timeout.connect(_start_action.bind(action, ctx))
+	owner.get_tree().create_timer(BASE_WINDUP_DELAY/speed_setting, false).timeout.connect(_start_action.bind(action, ctx))
 
 func _start_impact_delay() -> void:
-	get_tree().create_timer(BASE_IMPACT_DELAY/speed_setting, false).timeout.connect(_finish_action)
+	owner.get_tree().create_timer(BASE_IMPACT_DELAY/speed_setting, false).timeout.connect(_finish_action)
 	
 
 func _finish_action() -> void:

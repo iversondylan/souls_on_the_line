@@ -421,7 +421,7 @@ func _on_player_data_changed() -> void:
 		mana_panel.blue_mana = player.combatant_data.mana_blue
 
 func _on_hand_drawn() -> void:
-	print_tree_pretty()
+	#print_tree_pretty()
 	#run._print_tree()
 	pass
 	#_arm_end_turn_button(true)

@@ -1,6 +1,0 @@
-[gd_scene load_steps=2 format=3 uid="uid://cvtelvimr3235"]
-
-[ext_resource type="Script" uid="uid://bh3u544b28osi" path="res://scenes/turn_takers/behaviors/friendly_behavior.gd" id="1_0xxjq"]
-
-[node name="FriendlyBehavior" type="Node"]
-script = ExtResource("1_0xxjq")

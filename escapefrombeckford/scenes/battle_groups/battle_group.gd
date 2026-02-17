@@ -20,53 +20,6 @@ func reset_npc_actions() -> void:
 	for child in get_combatants():
 		if has_ai_behavior(child):
 			child.current_action = null
-			#child.update_action()
-
-#func build_acting_queue(start_at_player := false) -> void:
-	#print("battle_group.gd build_acting_queue()")
-	#_restored_turn_this_group_turn.clear()
-	#acting_fighters.clear()
-#
-	#if start_at_player and self is BattleGroupFriendly:
-		#var reached_player := false
-		#for fighter: Fighter in get_combatants():
-			#if fighter is Player and !reached_player:
-				#reached_player = true
-			#if reached_player:
-				#acting_fighters.append(fighter)
-	#else:
-		#for fighter: Fighter in get_combatants():
-			#acting_fighters.append(fighter)
-#
-	#_update_pending_turn_glow()
-
-#func pop_current_actor(actor: Fighter) -> void:
-	## Only pop if it’s actually current
-	#if acting_fighters.is_empty():
-		#return
-	#if actor != acting_fighters[0]:
-		#return
-#
-	#acting_fighters.pop_front()
-	#_update_pending_turn_glow()
-
-#func start_turn() -> void:
-	#if get_combatants().is_empty():
-		#print("battle_group.gd start_turn() ERROR: stuck with no fighters")
-		#return
-	#_restored_turn_this_group_turn.clear()
-	#acting_fighters.clear()
-	#
-	#for fighter: Fighter in get_combatants():
-		#acting_fighters.append(fighter)
-	#_update_pending_turn_glow()
-	#_next_turn_taker()
-
-#func _next_turn_taker() -> void:
-	#if acting_fighters.is_empty():
-		#end_turn()
-		#return
-	#acting_fighters[0].enter()
 
 func end_turn() -> void:
 	print("battle_group.gd end_turn()")
@@ -112,30 +65,15 @@ func add_combatant(fighter: Fighter, rank: int):
 	move_child(fighter, rank)
 	Events.n_combatants_changed.emit()
 	update_combatant_position()
-	_recompute_intents_for_group()
+	#_recompute_intents_for_group()
 	
 	# TurnEngine owns turn order / queue. Group should not mutate acting_fighters here.
 	_update_pending_turn_glow()
-
-	#if acting_fighters.is_empty():
-		#return
-	#
-	#var acted: int = -1
-	#for combatant in get_combatants():
-		#if !acting_fighters.has(combatant):
-			#acted += 1
-	#if rank - acted > 0:
-		#acting_fighters.insert(rank - acted, fighter)
-	#_update_pending_turn_glow()
 
 func remove_combatant(fighter: Fighter):
 	remove_child(fighter)
 
 	var was_acting := false
-	#if !acting_fighters.is_empty():
-		#was_acting = fighter == acting_fighters[0]
-#
-	#acting_fighters.erase(fighter)
 
 	if battle_scene and battle_scene.runner:
 		battle_scene.runner.mark_removed(fighter.combat_id)
@@ -144,7 +82,7 @@ func remove_combatant(fighter: Fighter):
 
 	Events.n_combatants_changed.emit()
 	update_combatant_position()
-	_recompute_intents_for_group()
+	#_recompute_intents_for_group()
 	_update_pending_turn_glow()
 
 	if get_combatants().is_empty():
@@ -260,38 +198,8 @@ func execute_move_ctx(ctx: MoveContext) -> void:
 		if f and is_instance_valid(f):
 			ctx.after_order_ids.append(int(f.combat_id))
 
-	# IMPORTANT:
-	# Do NOT reconcile acting_fighters here anymore (TurnEngine owns eligibility + restores).
-	# If you still want glow updates, TurnEngine will push acting_fighters as a view.
-
 	update_combatant_position()
-	_recompute_intents_for_group()
-
-
-#func _reconcile_acting_list_ctx(
-	#before_order: Array[Fighter],
-	#before_acting: Array[Fighter],
-	#ctx: MoveContext
-#) -> void:
-	#var after_order := get_combatants()
-#
-	#if _should_rebuild_from_scratch(before_acting, after_order):
-		#acting_fighters = after_order.duplicate()
-		#_update_pending_turn_glow()
-		#return
-#
-	#var current_actor := before_acting[0]
-	#var before_acted_set := _build_before_acted_set(before_order, before_acting)
-#
-	#acting_fighters = _build_reconciled_queue_ctx(
-		#current_actor,
-		#after_order,
-		#before_acted_set,
-		#ctx
-	#)
-#
-	#_update_pending_turn_glow()
-
+	#_recompute_intents_for_group()
 
 func _build_reconciled_queue_ctx(
 	current_actor: Fighter,
@@ -363,7 +271,7 @@ func execute_move(effect: MoveEffect) -> void:
 	
 	#_reconcile_acting_list(before_order, before_acting, effect)
 	update_combatant_position()
-	_recompute_intents_for_group()
+	#_recompute_intents_for_group()
 
 
 func _swap(actor: Fighter, target: Fighter) -> void:
@@ -399,37 +307,6 @@ func _swap(actor: Fighter, target: Fighter) -> void:
 	print("ORDER AFTER SWAP:")
 	for f in get_combatants(false):
 		print("\tidx=", f.get_index(), " name=", f.name, " id=", f.combat_id, " x=", snappedf(f.global_position.x, 0.1))
-	
-
-
-#func _reconcile_acting_list(
-	#before_order: Array[Fighter],
-	#before_acting: Array[Fighter],
-	#effect: MoveEffect
-#) -> void:
-	#var after_order := get_combatants()
-	#
-	#if _should_rebuild_from_scratch(before_acting, after_order):
-		#acting_fighters = after_order.duplicate()
-		#_update_pending_turn_glow()
-		#return
-	#
-	#var current_actor := before_acting[0]
-#
-	#var before_acted_set := _build_before_acted_set(
-		#before_order,
-		#before_acting
-	#)
-	#
-	#acting_fighters = _build_reconciled_queue(
-		#current_actor,
-		#after_order,
-		#before_acted_set,
-		#effect
-	#)
-	#
-	#_update_pending_turn_glow()
-
 
 func _should_rebuild_from_scratch(
 	before_acting: Array[Fighter],
@@ -506,9 +383,6 @@ func _can_restore_turn(fighter: Fighter, effect: MoveEffect) -> bool:
 
 
 func _update_pending_turn_glow() -> void:
-	#print("_update_pending_turn_glow()")
-	#for fighter: Fighter in pending_turn_queue_view:
-		#print("name: %s, id: %s" % [fighter.name, fighter.combat_id])
 	var q := pending_turn_queue_view
 	for f: Fighter in get_combatants():
 		if q.size() > 0 and f == q[0]:
@@ -560,33 +434,31 @@ func turn_reset() -> void:
 	for fighter: Fighter in get_combatants():
 		fighter.turn_reset()
 
-func _on_turn_taker_action_resolved(turn_taker_who_finished: Fighter) -> void:
-	pass
-	#if turn_taker_who_finished != acting_fighters[0]:
-		##print("battle_group.gd _on_turn_taker_turn_complete() turn_taker_who_finished is not the acting fighter.")
-		#return
-	#turn_taker_who_finished.exit()
+#func _on_turn_taker_action_resolved(turn_taker_who_finished: Fighter) -> void:
+	#pass
 
-func _on_combatant_statuses_applied(proc_type: Status.ProcType, fighter: Fighter) -> void:
-	match proc_type:
-		Status.ProcType.START_OF_TURN:
-			pass
-			#fighter.do_turn()
-		Status.ProcType.END_OF_TURN:
-			#acting_fighters.erase(fighter)
-			_update_pending_turn_glow()
-			#_next_turn_taker()
+#func _on_combatant_statuses_applied(proc_type: Status.ProcType, fighter: Fighter) -> void:
+	#match proc_type:
+		#Status.ProcType.START_OF_TURN:
+			#pass
+			##fighter.do_turn()
+		#Status.ProcType.END_OF_TURN:
+			##acting_fighters.erase(fighter)
+			#_update_pending_turn_glow()
+			##_next_turn_taker()
 
 func has_ai_behavior(node: Node) -> bool:
-	for child in node.get_children():
-		if child is NPCAIBehavior:
+	if !node.combatant_data:
+		return false
+	for behavior: FighterBehavior in node.combatant_data.behaviors:
+		if behavior is NPCAIBehavior:
 			return true
 	return false
 
-func _recompute_intents_for_group() -> void:
-	#print("battle_group.gd _recompute_intents_for_group()")
-	for fighter: Fighter in get_combatants():
-		if has_ai_behavior(fighter):
-			for child in fighter.get_children():
-				if child is NPCAIBehavior:
-					child.sync_intent()
+#func _recompute_intents_for_group() -> void:
+	##print("battle_group.gd _recompute_intents_for_group()")
+	#for fighter: Fighter in get_combatants():
+		#if has_ai_behavior(fighter):
+			#for behavior in fighter.combatant_data.behaviors:
+				#if behavior is NPCAIBehavior:
+					#behavior.sync_intent()

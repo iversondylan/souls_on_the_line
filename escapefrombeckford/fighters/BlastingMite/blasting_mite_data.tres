@@ -1,8 +1,14 @@
 [gd_resource type="Resource" script_class="CombatantData" format=3 uid="uid://crh6yx2uv3odp"]
 
 [ext_resource type="Resource" uid="uid://ci0r20871m74q" path="res://fighters/BlastingMite/blasting_mite_ai.tres" id="1_cfx54"]
+[ext_resource type="Script" uid="uid://03807i8cp3r3" path="res://scenes/turn_takers/behaviors/fighter_behavior.gd" id="2_23h7w"]
 [ext_resource type="Texture2D" uid="uid://s71ei3q4f3da" path="res://assets/character_visuals/blasting_mite/blasting_mite.PNG" id="2_h1wvl"]
 [ext_resource type="Script" uid="uid://cfatj0ryn8uv3" path="res://custom_resources/combatant_data.gd" id="3_23h7w"]
+[ext_resource type="Script" uid="uid://csljslxfgnidf" path="res://scenes/turn_takers/behaviors/npcai_behavior.gd" id="3_gip3x"]
+
+[sub_resource type="Resource" id="Resource_4pyq5"]
+script = ExtResource("3_gip3x")
+metadata/_custom_type_script = "uid://csljslxfgnidf"
 
 [resource]
 script = ExtResource("3_23h7w")
@@ -14,5 +20,6 @@ max_health = 8
 max_mana_red = 4
 max_mana_green = 1
 max_mana_blue = 1
+behaviors = Array[ExtResource("2_23h7w")]([SubResource("Resource_4pyq5")])
 ai = ExtResource("1_cfx54")
 metadata/_custom_type_script = "uid://cfatj0ryn8uv3"
