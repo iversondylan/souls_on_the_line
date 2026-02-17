@@ -1,3 +1,5 @@
+# battle_group_enemy.gd
+
 class_name BattleGroupEnemy extends BattleGroup
 
 func _ready() -> void:

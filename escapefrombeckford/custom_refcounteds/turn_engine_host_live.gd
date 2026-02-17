@@ -16,9 +16,21 @@ func get_group_order_ids(group_index: int) -> PackedInt32Array:
 	var g: BattleGroup = battle_scene.get_group_by_index(group_index)
 	var fighters := g.get_combatants(false)
 	var out := PackedInt32Array()
+	print("HOST get_group_order_ids group=", group_index, " node=", g.name, " fighters_n=", fighters.size())
 	for f in fighters:
+		print("\t", f.name, " cid=", int(f.combat_id), " alive=", f.is_alive(), " idx=", f.get_index())
 		out.append(int(f.combat_id))
+	print("\t=> out=", out)
 	return out
+
+
+#func get_group_order_ids(group_index: int) -> PackedInt32Array:
+	#var g: BattleGroup = battle_scene.get_group_by_index(group_index)
+	#var fighters := g.get_combatants(false)
+	#var out := PackedInt32Array()
+	#for f in fighters:
+		#out.append(int(f.combat_id))
+	#return out
 
 func get_group_index_of(combat_id: int) -> int:
 	var f := battle_scene.get_combatant_by_id(combat_id, true)

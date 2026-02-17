@@ -55,9 +55,14 @@ func get_combatants(allow_dead: bool = false) -> Array[Fighter]:
 func connect_combatant(fighter: Fighter):
 	fighter.battle_group = self
 	fighter.run = run
-	#fighter.statuses_applied.connect(_on_combatant_statuses_applied.bind(fighter))
-	#fighter.action_resolved.connect(_on_turn_taker_action_resolved)
-	fighter.status_system.modifier_tokens_changed.connect(battle_scene._on_modifier_tokens_changed)
+
+	if fighter.is_node_ready() and fighter.status_system:
+		fighter.status_system.modifier_tokens_changed.connect(battle_scene._on_modifier_tokens_changed)
+	else:
+		fighter.ready.connect(func ():
+			if fighter.status_system and !fighter.status_system.modifier_tokens_changed.is_connected(battle_scene._on_modifier_tokens_changed):
+				fighter.status_system.modifier_tokens_changed.connect(battle_scene._on_modifier_tokens_changed)
+		)
 
 func add_combatant(fighter: Fighter, rank: int):
 	add_child(fighter)
@@ -71,9 +76,16 @@ func add_combatant(fighter: Fighter, rank: int):
 	_update_pending_turn_glow()
 
 func remove_combatant(fighter: Fighter):
-	remove_child(fighter)
+	if !fighter:
+		return
+	
+	# Notify turn engine if this fighter is the current actor (or even always, safely).
+	if battle_scene and battle_scene.api and battle_scene.api is LiveBattleAPI:
+		var api := battle_scene.api as LiveBattleAPI
+		if api.turn_engine:
+			api.turn_engine.notify_actor_removed(int(fighter.combat_id))
 
-	var was_acting := false
+	remove_child(fighter)
 
 	if battle_scene and battle_scene.runner:
 		battle_scene.runner.mark_removed(fighter.combat_id)
@@ -82,16 +94,34 @@ func remove_combatant(fighter: Fighter):
 
 	Events.n_combatants_changed.emit()
 	update_combatant_position()
-	#_recompute_intents_for_group()
 	_update_pending_turn_glow()
 
 	if get_combatants().is_empty():
 		Events.battle_group_empty.emit(self)
 
-	if was_acting:
-		if battle_scene and battle_scene.api and battle_scene.api is LiveBattleAPI:
-			var api := battle_scene.api as LiveBattleAPI
-			api.turn_engine.on_actor_removed(fighter)
+
+#func remove_combatant(fighter: Fighter):
+	#remove_child(fighter)
+#
+	#var was_acting := false
+#
+	#if battle_scene and battle_scene.runner:
+		#battle_scene.runner.mark_removed(fighter.combat_id)
+#
+	#fighter.queue_free()
+#
+	#Events.n_combatants_changed.emit()
+	#update_combatant_position()
+	##_recompute_intents_for_group()
+	#_update_pending_turn_glow()
+#
+	#if get_combatants().is_empty():
+		#Events.battle_group_empty.emit(self)
+#
+	#if was_acting:
+		#if battle_scene and battle_scene.api and battle_scene.api is LiveBattleAPI:
+			#var api := battle_scene.api as LiveBattleAPI
+			#api.turn_engine.on_actor_removed(fighter)
 
 func on_combatant_death_side_effects(fighter: Fighter) -> void:
 	if fighter is SummonedAlly:
@@ -434,31 +464,10 @@ func turn_reset() -> void:
 	for fighter: Fighter in get_combatants():
 		fighter.turn_reset()
 
-#func _on_turn_taker_action_resolved(turn_taker_who_finished: Fighter) -> void:
-	#pass
-
-#func _on_combatant_statuses_applied(proc_type: Status.ProcType, fighter: Fighter) -> void:
-	#match proc_type:
-		#Status.ProcType.START_OF_TURN:
-			#pass
-			##fighter.do_turn()
-		#Status.ProcType.END_OF_TURN:
-			##acting_fighters.erase(fighter)
-			#_update_pending_turn_glow()
-			##_next_turn_taker()
-
 func has_ai_behavior(node: Node) -> bool:
 	if !node.combatant_data:
 		return false
-	for behavior: FighterBehavior in node.combatant_data.behaviors:
+	for behavior: FighterBehavior in node.my_behaviors:
 		if behavior is NPCAIBehavior:
 			return true
 	return false
-
-#func _recompute_intents_for_group() -> void:
-	##print("battle_group.gd _recompute_intents_for_group()")
-	#for fighter: Fighter in get_combatants():
-		#if has_ai_behavior(fighter):
-			#for behavior in fighter.combatant_data.behaviors:
-				#if behavior is NPCAIBehavior:
-					#behavior.sync_intent()

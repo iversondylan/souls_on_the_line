@@ -168,7 +168,7 @@ func _on_request_activate_arcana_by_type(type: Arcanum.Type):
 		Arcanum.Type.START_OF_COMBAT:
 			arcana.activate_arcana_by_type(Arcanum.Type.START_OF_COMBAT)
 		Arcanum.Type.START_OF_TURN:
-			print("battle.gd _on_request_activate_arcana_by_type START_OF_TURN")
+			#print("battle.gd _on_request_activate_arcana_by_type START_OF_TURN")
 			arcana.activate_arcana_by_type(Arcanum.Type.START_OF_TURN)
 		Arcanum.Type.END_OF_TURN:
 			arcana.activate_arcana_by_type(Arcanum.Type.END_OF_TURN)
@@ -205,7 +205,7 @@ func _on_arcana_activated(type: Arcanum.Type) -> void:
 
 func _apply_glow_live(active_id: int, pending_ids: PackedInt32Array) -> void:
 	# If nothing active, clear glow (or keep last — but clearing is safer)
-	print("battle.gd _apply_glow_live() active_id: %s, pending_ids: %s" % [active_id, pending_ids])
+	#print("battle.gd _apply_glow_live() active_id: %s, pending_ids: %s" % [active_id, pending_ids])
 	if active_id <= 0:
 		_clear_all_pending_glow()
 		return
@@ -248,17 +248,23 @@ func _clear_all_pending_glow() -> void:
 				f.set_pending_turn_glow(Fighter.TurnStatus.NONE)
 
 func _on_pending_view_changed(active_id: int, pending_ids: PackedInt32Array) -> void:
-	print("battle.gd _on_pending_view_changed()")
+	#print("battle.gd _on_pending_view_changed()")
 	_apply_glow_live(active_id, pending_ids)
 
 func _on_actor_requested(combat_id: int) -> void:
+	print("battle.gd _on_actor_requested() awaiting _run_actor_live")
 	var ok := await _run_actor_live(combat_id)
+	print("battle.gd _on_actor_requested() _run_actor_live done")
 	if ok:
+		print("battle.gd _on_actor_requested() OK, notifying turn engine done")
 		turn_engine.notify_actor_done(combat_id)
-	# else _run_actor_live already notified removed
+	else:
+		print("battle.gd _on_actor_requested() not OK")# _run_actor_live already notified removed
 
 func _run_actor_live(combat_id: int) -> bool:
+	print("battle.gd _run_actor_live() cid=", combat_id)
 	var f: Fighter = battle_scene.get_combatant_by_id(combat_id, true)
+	print("battle.gd _run_actor_live() fighter= ", f.name if f else "NULL")
 	if !f or !is_instance_valid(f) or !f.is_alive():
 		turn_engine.notify_actor_removed(combat_id)
 		return false
@@ -492,7 +498,7 @@ func simulate_battle() -> void:
 	#sim_battle.print_sim_snapshot()
 
 func _on_hand_done_drawing() -> void:
-	print("battle.gd _on_hand_done_drawing()")
+	#print("battle.gd _on_hand_done_drawing()")
 	wait_for_anims = false
 	_arm_end_turn_button(true)
 

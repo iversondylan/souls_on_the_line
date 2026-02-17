@@ -209,7 +209,7 @@ func _run_death_op(combat_id: int, _reason: String = "") -> void:
 	if f.combatant and f.combatant.status_grid:
 		f.status_system.end_non_self_statuses()
 
-	for behavior: FighterBehavior in f.combatant_data.behaviors:
+	for behavior: FighterBehavior in f.my_behaviors:
 		behavior._on_die()
 
 	# Optional: clear intent visuals right away
@@ -406,7 +406,7 @@ func _run_summon_op(ctx: SummonContext) -> void:
 	fighter.combatant_data = data
 
 	# ---- AI bootstrap ----
-	for behavior: FighterBehavior in fighter.combatant_data.behaviors:
+	for behavior: FighterBehavior in fighter.my_behaviors:
 		if behavior is NPCAIBehavior:
 			behavior.initiate_first_intents()
 

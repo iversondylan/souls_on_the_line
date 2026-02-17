@@ -140,6 +140,7 @@ func _make_random_room_weights() -> void:
 func _make_room_types() -> void:
 	#first room is always a battle
 	for room: Room in map_data[0]:
+		#print("map_generator() _make_room_types() MAKING A COLUMN 0 BATTLE")
 		if room.next_rooms.size() > 0:
 			room.type = Room.RoomType.BATTLE
 			room.battle_data = battle_pool.get_random_battle_for_tier(0)
@@ -185,9 +186,9 @@ func _set_weighted_room_type(room_to_set: Room) -> void:
 	if type_candidate == Room.RoomType.BATTLE:
 		var tier_for_battle_rooms := 0
 		
-		if room_to_set.row > 2:
+		if room_to_set.column > 2:
 			tier_for_battle_rooms = 1
-		
+		#print("map_generator() _make_room_types() MAKING A GENERIC BATTLE")
 		room_to_set.battle_data = battle_pool.get_random_battle_for_tier(tier_for_battle_rooms)
 
 func _room_has_parent_of_type(room: Room, type: Room.RoomType) -> bool:

@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="RunStartup" load_steps=4 format=3 uid="uid://ck8qxvs3me11h"]
+[gd_resource type="Resource" script_class="RunStartup" format=3 uid="uid://ck8qxvs3me11h"]
 
 [ext_resource type="Resource" uid="uid://dk5tv1hrr615d" path="res://arcana/arcana_catalog.tres" id="1_fwnab"]
 [ext_resource type="Script" uid="uid://dlxexdxlypm2o" path="res://scenes/run/run_startup.gd" id="1_ujbn8"]

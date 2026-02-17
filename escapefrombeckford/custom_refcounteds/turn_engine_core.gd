@@ -56,6 +56,7 @@ func resume_after_player_done() -> void:
 		_advance_to_next_actor()
 
 func notify_actor_done(combat_id: int) -> void:
+	#print("TE notify_actor_done cid=", combat_id, " current=", current_actor_id, " running=", _running_actor)
 	#print("turn_engine_core.gd notify_actor_done()")
 	# Called by host after it finishes running the actor.
 	if combat_id != current_actor_id:
@@ -70,7 +71,8 @@ func notify_actor_done(combat_id: int) -> void:
 	_advance_to_next_actor()
 
 func notify_actor_removed(combat_id: int) -> void:
-	#print("turn_engine_core.gd notify_actor_removed()")
+	#print("TE notify_actor_removed cid=", combat_id, " current=", current_actor_id, " running=", _running_actor)
+		#print("turn_engine_core.gd notify_actor_removed()")
 	if combat_id == current_actor_id:
 		current_actor_id = 0
 		phase = Phase.IDLE
@@ -141,14 +143,17 @@ func _advance_to_next_actor() -> void:
 		return
 
 	if _queue_dirty:
+		#print("turn_engine_core.gd _advance_to_next_actor() rebuilding queue")
 		_rebuild_queue()
-
+	print("queue is ", _queue)
 	if _queue.is_empty():
+		#print("turn_engine_core.gd _advance_to_next_actor() queue is empty")
 		_end_group_turn()
 		return
-
+	
 	var actor_id := int(_queue[0])
 	if !host.is_alive(actor_id):
+		#print("turn_engine_core.gd _advance_to_next_actor() first in queue is dead")
 		_queue.remove_at(0)
 		_queue_dirty = true
 		_advance_to_next_actor()
@@ -190,6 +195,86 @@ func _turns_left(combat_id: int) -> int:
 	if active_group_index == 0 and host.is_player(combat_id):
 		return 1 - int(_turns_taken.get(combat_id, 0))
 	return MAX_TURNS_PER_FIGHTER_PER_GROUP_TURN - int(_turns_taken.get(combat_id, 0))
+
+#func _rebuild_queue() -> void:
+	#_queue_dirty = false
+	#_queue = PackedInt32Array()
+#
+	##_dbg_dump_state("rebuild_queue:begin")
+#
+	#var desired := _get_desired_order_ids(active_group_index)
+	##print("\tdesired_ids=", desired)
+##
+	### Per-id facts
+	##for cid in desired:
+		##var id := int(cid)
+		##var alive := host.is_alive(id)
+		##var grp := host.get_group_index_of(id)
+		##var is_p := host.is_player(id)
+		##var taken := int(_turns_taken.get(id, 0))
+		##var left := _turns_left(id)
+		##var can_restore := bool(_restore_allowed.get(id, false))
+		##print("\tID ", id,
+			##" alive=", alive,
+			##" group=", grp,
+			##" is_player=", is_p,
+			##" taken=", taken,
+			##" turns_left=", left,
+			##" restore_allowed=", can_restore)
+##
+	##print("\t-- normal pass --")
+	#for cid in desired:
+		#var id := int(cid)
+#
+		#if !host.is_alive(id):
+			##print("\tskip ", id, " (dead)")
+			#continue
+#
+		#if _turns_left(id) <= 0:
+			##print("\tskip ", id, " (no turns left)")
+			#continue
+#
+		#var taken := int(_turns_taken.get(id, 0))
+		#if taken == 0:
+			##print("\tappend ", id, " (first turn)")
+			#_queue.append(id)
+		#else:
+			#if active_group_index == 0 and host.is_player(id):
+				##print("\tskip ", id, " (player already acted)")
+				#continue
+			#if bool(_restore_allowed.get(id, false)):
+				##print("\tappend ", id, " (restore)")
+				#_queue.append(id)
+				#_restore_allowed.erase(id)
+			##else:
+				##print("\tskip ", id, " (already acted, no restore)")
+#
+	##print("\tqueue(after normal)=", _queue)
+	##print("\trestore_allowed(after normal)=", _restore_allowed)
+##
+	##print("\t-- restore pass --")
+	#for k in _restore_allowed.keys():
+		#var id := int(k)
+#
+		#if !host.is_alive(id):
+			##print("\tskip ", id, " (dead in restore pass)")
+			#continue
+		#if host.get_group_index_of(id) != active_group_index:
+			##print("\tskip ", id, " (wrong group in restore pass)")
+			#continue
+		#if active_group_index == 0 and host.is_player(id):
+			##print("\tskip ", id, " (player in restore pass)")
+			#continue
+		#if _turns_left(id) <= 0:
+			##print("\tskip ", id, " (no turns left in restore pass)")
+			#continue
+		#if !_queue.has(id):
+			##print("\tappend ", id, " (restore pass)")
+			#_queue.append(id)
+#
+	#print("\tqueue(final)=", _queue)
+	#_dbg_dump_state("rebuild_queue:end")
+
 
 func _rebuild_queue() -> void:
 	#print("turn_engine_core.gd _rebuild_queue()")
@@ -234,6 +319,8 @@ func _rebuild_queue() -> void:
 func _get_desired_order_ids(group_index: int) -> PackedInt32Array:
 	#print("turn_engine_core.gd _get_desired_order_ids()")
 	var order := host.get_group_order_ids(group_index)
+	#print("TE _get_desired_order_ids group=", group_index, " raw_order=", order, " cursor=", _cursor_cid, " player_id=", _player_id)
+
 	if order.is_empty():
 		return PackedInt32Array()
 
@@ -300,3 +387,18 @@ func _publish_pending_view() -> void:
 					pending.append(id)
 	#print("turn_engine_core.gd _publish_pending_view about to emit pending_view_changed")
 	pending_view_changed.emit(active_id, pending)
+
+#func _dbg_dump_state(tag: String) -> void:
+	#print("\n--- TE DEBUG ", tag, " ---")
+	#print("\tgroup=", active_group_index,
+		#" running=", _running_actor,
+		#" current=", current_actor_id,
+		#" phase=", phase,
+		#" token=", _turn_token,
+		#" cursor=", _cursor_cid,
+		#" player_id=", _player_id,
+		#" start_at_player=", _start_at_player,
+		#" queue_dirty=", _queue_dirty)
+	#print("\tturns_taken=", _turns_taken)
+	#print("\trestore_allowed=", _restore_allowed)
+	#print("\tqueue(before)=", _queue)

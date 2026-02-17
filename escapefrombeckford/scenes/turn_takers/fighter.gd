@@ -31,6 +31,7 @@ enum TurnStatus {TURN_PENDING, TURN_ACTIVE, NONE}
 
 
 var combatant_data: CombatantData : set = _set_combatant_data
+var my_behaviors: Array[FighterBehavior] = []
 var status_system: StatusSystem
 var modifier_system: ModifierSystem
 var state: FighterState
@@ -71,8 +72,11 @@ func _set_combatant_data(new_data: CombatantData) -> void:
 	if battle_scene and battle_scene.api and combatant_data:
 		if not combatant_data.combatant_data_changed.is_connected(_on_data_changed):
 			combatant_data.combatant_data_changed.connect(_on_data_changed)
+	my_behaviors.clear()
 	for behavior: FighterBehavior in combatant_data.behaviors:
-		behavior._on_combatant_data_set(self)
+		var new_behavior := behavior.duplicate(true)
+		my_behaviors.push_back(new_behavior)
+		new_behavior._on_combatant_data_set(self)
 	
 
 func _set_battle_scene(new_battle_scene: BattleScene) -> void:
@@ -93,12 +97,12 @@ func enter() -> void:
 	#print("fighter.gd enter() name: ", name)
 	set_pending_turn_glow(TurnStatus.TURN_ACTIVE)
 	Events.fighter_entered_turn.emit(self)
-	for behavior: FighterBehavior in combatant_data.behaviors:
+	for behavior: FighterBehavior in my_behaviors:
 		behavior._on_enter()
 
 func exit() -> void:
 	#print("fighter.gd exit() name: ", name)
-	for behavior: FighterBehavior in combatant_data.behaviors:
+	for behavior: FighterBehavior in my_behaviors:
 		behavior._on_exit()
 
 func _emit_status_proc_finished(proc_type: int) -> void:
@@ -111,16 +115,16 @@ func my_group_turn_start() -> void:
 	#combatant.status_grid.clear_group_turn_start_statuses()
 
 func opposing_group_turn_start() -> void:
-	for behavior: FighterBehavior in combatant_data.behaviors:
+	for behavior: FighterBehavior in my_behaviors:
 		behavior._on_opposing_group_turn_start()
 
 func my_group_turn_end() -> void:
-	for behavior: FighterBehavior in combatant_data.behaviors:
+	for behavior: FighterBehavior in my_behaviors:
 		behavior._on_group_turn_end()
 	#combatant.status_grid.clear_group_turn_end_statuses()
 
 func opposing_group_turn_end() -> void:
-	for behavior: FighterBehavior in combatant_data.behaviors:
+	for behavior: FighterBehavior in my_behaviors:
 		behavior._on_group_turn_end()
 
 func set_anchor_position(_position: Vector2, animate: bool) -> void:
@@ -188,13 +192,13 @@ func die() -> void:
 	combatant_data.alive = false
 
 func fade():
-	for behavior: FighterBehavior in combatant_data.behaviors:
+	for behavior: FighterBehavior in my_behaviors:
 		behavior._on_fade()
 	
 
 func do_turn() -> void:
 	print("fighter.gd do_turn() name: ", name)
-	for behavior: FighterBehavior in combatant_data.behaviors:
+	for behavior: FighterBehavior in my_behaviors:
 		behavior._on_do_turn()
 
 func can_play_card(card_data: CardData) -> bool:
@@ -207,7 +211,7 @@ func spend_mana(card_data: CardData) -> bool:
 		return false
 
 func discard_summon_reserve_card(_deck: Deck) -> void:
-	for behavior: FighterBehavior in combatant_data.behaviors:
+	for behavior: FighterBehavior in my_behaviors:
 		behavior._on_discard_summon_reserve_card(_deck)
 
 func reset():
@@ -217,7 +221,7 @@ func reset():
 	#Events.auras_requested.emit(self)
 
 func _battle_reset() -> void:
-	for behavior: FighterBehavior in combatant_data.behaviors:
+	for behavior: FighterBehavior in my_behaviors:
 		behavior._on_battle_reset()
 
 func turn_reset() -> void:
@@ -281,7 +285,7 @@ func set_fade_mark(show_it: bool) -> void:
 		fade_mark.hide()
 
 func resolve_action() -> void:
-	
+	print("FIGHTER resolve_action name=", name, " cid=", combat_id)
 	action_resolved.emit(self)
 
 func _on_data_changed() -> void:
@@ -293,7 +297,7 @@ func _on_combatant_statuses_applied(proc_type: Status.ProcType) -> void:
 	statuses_applied.emit(proc_type)
 
 func _on_modifier_changed() -> void:
-	for behavior: FighterBehavior in combatant_data.behaviors:
+	for behavior: FighterBehavior in my_behaviors:
 		behavior.update_action_intent()
 		behavior._on_modifier_changed()
 

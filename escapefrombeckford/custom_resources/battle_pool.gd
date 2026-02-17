@@ -1,12 +1,15 @@
 class_name BattlePool extends Resource
 
+
 @export var pool: Array[BattleData]
 
 var total_weights_by_tier: Array[float] = [0.0, 0.0, 0.0]
 
 func _get_all_battles_for_tier(tier: int) -> Array[BattleData]:
+	#print("battle_pool.gd _get_all_battles_for_tier() tier: ", tier)
 	return pool.filter(
 		func(battle: BattleData):
+			#print("filtering %s = %s" % [battle.encounter_name, battle.battle_tier == tier])
 			return battle.battle_tier == tier
 	)
 
@@ -19,6 +22,7 @@ func _make_weight_for_tier(tier: int) -> void:
 		battle.accumulated_weight = total_weights_by_tier[tier]
 
 func get_random_battle_for_tier(tier: int) -> BattleData:
+	#print("battle_pool.gd get_random_battle_for_tier() tier: ", tier)
 	var roll: float = randf_range(0.0, total_weights_by_tier[tier])
 	var battles: Array[BattleData] = _get_all_battles_for_tier(tier)
 	

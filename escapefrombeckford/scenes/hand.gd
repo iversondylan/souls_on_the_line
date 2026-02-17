@@ -445,7 +445,7 @@ func _on_hand_area_mouse_exited() -> void:
 	mouse_in_hand_area = false
 
 func _on_request_draw_hand() -> void:
-	print("hand.gd _on_request_draw_hand()")
+	#print("hand.gd _on_request_draw_hand()")
 	var n := 5
 	if deck and !deck.first_hand_drawn and deck.first_hand_summon_guarantee:
 		_draw_first_hand_with_summon_guarantee(n)
