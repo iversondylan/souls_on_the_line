@@ -524,6 +524,7 @@ func _finish_action() -> void:
 	remaining_effect_packages.clear()
 	
 	if fighter:
+		#print("npcai_behavior.gd _finish_action() not calling resolve action")
 		fighter.resolve_action()
 
 
