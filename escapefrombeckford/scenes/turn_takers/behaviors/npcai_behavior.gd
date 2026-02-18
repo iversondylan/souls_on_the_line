@@ -225,8 +225,6 @@ func plan_next_intent(allow_hooks: bool = false) -> void:
 	
 	state[KEY_PLANNED_IDX] = new_idx
 
-
-
 func _on_planned_intent_changed(prev_idx: int, _new_idx: int, ctx: NPCAIContext) -> void:
 	var prev_action := _get_action_by_idx(prev_idx)
 	if prev_action:
@@ -262,6 +260,7 @@ func _on_opposing_group_turn_start() -> void:
 	
 	# Commit intent-time effects (telegraphs, posture, channeling, etc.)
 	for model in action.intent_lifecycle_models:
+		print("npcai_behavior.gd _on_opposing_group_turn_start() proccing a model")
 		model.on_opposing_group_start(ctx)
 	
 	# Mark as committed so it won't reapply mid-cycle
@@ -276,7 +275,6 @@ func _on_group_turn_end() -> void:
 # -------------------------------------------------------------------
 # Intent display
 # -------------------------------------------------------------------
-
 
 func ensure_valid_plan(allow_hooks: bool = true) -> void:
 	#var fighter: Fighter = get_parent()
@@ -445,6 +443,13 @@ func _on_do_turn() -> void:
 		owner.resolve_action()
 		return
 	
+	var runner := owner.battle_scene.runner
+	#var scope := runner.current_scope() if runner else 0
+	var scope := owner.turn_scope_id
+	if runner and scope != 0:
+		runner.retain_scope(scope, "npc_action_async")
+
+	
 	_start_windup_delay(action, ctx)
 
 
@@ -516,13 +521,19 @@ func _start_impact_delay() -> void:
 	
 
 func _finish_action() -> void:
+	
 	var fighter := action_ctx.combatant
+	print("npcai_behavior.gd _finish_action() name: ", fighter.name, " cid: ", fighter.combat_id)
 	if fighter and fighter.state and fighter.state.ai_state:
 		fighter.state.ai_state[KEY_PLANNED_IDX] = -1
 	current_action = null
 	action_ctx = null
 	remaining_effect_packages.clear()
-	
+	var runner := fighter.battle_scene.runner if fighter and fighter.battle_scene else null
+	var scope := fighter.turn_scope_id
+	if runner and scope != 0:
+		runner.release_scope(scope, "npc_action_async")
+
 	if fighter:
 		#print("npcai_behavior.gd _finish_action() not calling resolve action")
 		fighter.resolve_action()

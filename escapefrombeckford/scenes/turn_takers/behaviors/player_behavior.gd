@@ -21,6 +21,7 @@ func _on_do_turn() -> void:
 
 func _on_hand_discarded() -> void:
 	#var fighter: Fighter = get_parent()
+	print("player_behavior.gd _on_hand_discarded() resolving action.")
 	owner.resolve_action()
 
 func _on_modifier_changed() -> void:

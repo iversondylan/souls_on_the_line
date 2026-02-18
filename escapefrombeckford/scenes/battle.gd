@@ -182,13 +182,12 @@ func _on_request_activate_arcana_by_type(type: Arcanum.Type):
 func _on_arcana_activated(type: Arcanum.Type) -> void:
 	match type:
 		Arcanum.Type.START_OF_COMBAT:
-			BattleController.current_state = BattleController.BattleState.FRIENDLY_TURN
-			Events.first_friendly_turn_started.emit()
-
-			battle_scene.friendly_group_turn_start()
-			_apply_group_turn_start_hooks(0)
-
-			# Defer engine start until START_OF_TURN arcana resolves + we draw.
+			await _with_system_scope(-1, func():
+				BattleController.current_state = BattleController.BattleState.FRIENDLY_TURN
+				Events.first_friendly_turn_started.emit()
+				battle_scene.friendly_group_turn_start()
+				_apply_group_turn_start_hooks(0)
+			)
 			_pending_start_engine_group = 0
 			_pending_start_engine_start_at_player = true
 			Events.request_activate_arcana_by_type.emit(Arcanum.Type.START_OF_TURN)
@@ -196,7 +195,7 @@ func _on_arcana_activated(type: Arcanum.Type) -> void:
 		Arcanum.Type.START_OF_TURN:
 			#_request_player_hand_draw()
 			#_arm_end_turn_button(true)
-
+			
 			# If we were waiting to start the engine, do it now.
 			if _pending_start_engine_group != -1:
 				var gi := _pending_start_engine_group
@@ -213,26 +212,26 @@ func _apply_glow_live(active_id: int, pending_ids: PackedInt32Array) -> void:
 	if active_id <= 0:
 		_clear_all_pending_glow()
 		return
-
+	
 	var group_index := host.get_group_index_of(active_id)
 	if group_index < 0:
 		_clear_all_pending_glow()
 		return
-
+	
 	var group: BattleGroup = battle_scene.get_group_by_index(group_index)
 	if !group or !is_instance_valid(group):
 		_clear_all_pending_glow()
 		return
-
+	
 	# Fast membership check
 	var pending_set := {}
 	for id in pending_ids:
 		pending_set[int(id)] = true
-
+	
 	for f: Fighter in group.get_combatants(false):
 		if !f or !is_instance_valid(f):
 			continue
-
+		
 		var cid := int(f.combat_id)
 		if cid == active_id:
 			f.set_pending_turn_glow(Fighter.TurnStatus.TURN_ACTIVE)
@@ -265,54 +264,37 @@ func _on_actor_requested(combat_id: int) -> void:
 	else:
 		print("battle.gd _on_actor_requested() not OK")# _run_actor_live already notified removed
 
-func _run_actor_live(combat_id: int) -> bool:
-	print("battle.gd _run_actor_live() cid=", combat_id)
+func _run_actor_live(combat_id:int) -> bool:
 	var f: Fighter = battle_scene.get_combatant_by_id(combat_id, true)
-	print("battle.gd _run_actor_live() fighter= ", f.name if f else "NULL")
-
 	if !f or !is_instance_valid(f) or !f.is_alive():
 		turn_engine.notify_actor_removed(combat_id)
 		return false
-
-	# -----------------------------
-	# NEW: begin runner scope
-	# -----------------------------
+	
 	var runner := api.runner
-	var scope_id := 0
-	if runner:
-		scope_id = runner.begin_scope(combat_id)
-		# Optional debug:
-		#print("BATTLE begin_scope cid=%s scope=%s" % [combat_id, scope_id])
-
-	# --- Start-of-turn ---
+	var scope_id := runner.begin_scope(combat_id) if runner else 0
+	f.turn_scope_id = scope_id
+	
+	# Start-of-turn
 	f.enter()
-
 	api.run_status_proc(combat_id, Status.ProcType.START_OF_TURN)
 	await _await_status_proc_finished(f, Status.ProcType.START_OF_TURN)
-
-	# --- Main action ---
+	
+	# Main action (NPC retains/releases scope internally once you add that)
 	f.do_turn()
 	await _await_action_or_removal(f)
-
-	# --- End-of-turn ---
+	
+	# End-of-turn
 	api.run_status_proc(combat_id, Status.ProcType.END_OF_TURN)
 	await _await_status_proc_finished(f, Status.ProcType.END_OF_TURN)
-
-	f.exit()
-
-	# -----------------------------
-	# NEW: close + await scope drain
-	# -----------------------------
+	
+	# Now we know the actor is done enqueueing anything *new*
 	if runner and scope_id != 0:
 		runner.close_scope(scope_id)
 		await runner.await_scope_drained(scope_id)
 		runner.end_scope(scope_id)
-		# Optional debug:
-		#print("BATTLE scope_drained cid=%s scope=%s" % [combat_id, scope_id])
-
+	
+	f.exit()
 	return true
-
-
 
 func _await_action_or_removal(actor: Fighter) -> bool:
 	while actor and is_instance_valid(actor):
@@ -326,7 +308,7 @@ func _await_status_proc_finished(actor: Fighter, want_proc: Status.ProcType) -> 
 	var start_tick := actor.last_status_proc_tick
 	if actor.last_status_proc_finished == want_proc and actor.last_status_proc_tick != start_tick:
 		return
-
+	
 	while actor and is_instance_valid(actor):
 		var got: int = await actor.status_proc_finished
 		if got == want_proc:
@@ -334,32 +316,35 @@ func _await_status_proc_finished(actor: Fighter, want_proc: Status.ProcType) -> 
 
 func _on_group_turn_ended(ended_group_index: int) -> void:
 	_apply_group_turn_end_hooks(ended_group_index)
-
+	
 	if ended_group_index == 0:
 		# Friendly group ended => real END_OF_TURN boundary
 		Events.request_activate_arcana_by_type.emit(Arcanum.Type.END_OF_TURN)
-
+		
 		# Friendly -> Enemy
-		battle_scene.friendly_group_turn_end()
+		#battle_scene.friendly_group_turn_end()
 		BattleController.current_state = BattleController.BattleState.ENEMY_TURN
-		battle_scene.enemy_group_turn_start()
+		#battle_scene.enemy_group_turn_start()
 		Events.enemy_turn_started.emit()
-
-		var next_group_index := 1
-		_apply_group_turn_start_hooks(next_group_index)
+		print("battle.gd _on_group_turn_ended() awaiting _apply_group_turn_start_hooks_scoped(1)...")
+		await _apply_group_turn_start_hooks_scoped(1)
+		print("battle.gd _on_group_turn_ended() done awaiting _apply_group_turn_start_hooks_scoped(1)")
+		#_apply_group_turn_start_hooks(1)
 		_arm_end_turn_button(false) # player not acting
-		turn_engine.start_group_turn(next_group_index, false)
+		turn_engine.start_group_turn(1, false)
 		return
-
+	
 	# Enemy -> Friendly
-	battle_scene.enemy_group_turn_end()
+	#battle_scene.enemy_group_turn_end()
 	BattleController.current_state = BattleController.BattleState.FRIENDLY_TURN
-	battle_scene.friendly_group_turn_start()
+	#battle_scene.friendly_group_turn_start()
 	Events.friendly_turn_started.emit()
-
-	var next_group_index := 0
-	_apply_group_turn_start_hooks(next_group_index)
-
+	print("battle.gd _on_group_turn_ended() awaiting _apply_group_turn_start_hooks_scoped(0)...")
+	await _apply_group_turn_start_hooks_scoped(0)
+	print("battle.gd _on_group_turn_ended() done awaiting _apply_group_turn_start_hooks_scoped(0)")
+	#var next_group_index := 0
+	#_apply_group_turn_start_hooks(0)
+	
 	# Defer engine start until arcana START_OF_TURN resolves + hand is drawn.
 	_pending_start_engine_group = 0
 	_pending_start_engine_start_at_player = true
@@ -374,25 +359,32 @@ func _get_next_group_index(ended_group_index: int) -> int:
 		_:
 			return -1
 
+func _apply_group_turn_start_hooks_scoped(active_group_index: int) -> void:
+	print("battle.gd _apply_group_turn_start_hooks_scoped() active_group_index: ", active_group_index)
+	await _with_system_scope(-1, func():
+		_apply_group_turn_start_hooks(active_group_index)
+	)
+
 func _apply_group_turn_start_hooks(active_group_index: int) -> void:
+	print("battle.gd _apply_group_turn_start_hooks() active_group_index: ", active_group_index)
 	# Group starting: members get my_group_turn_start; opposing gets opposing_group_turn_start
 	var my_group: BattleGroup = battle_scene.get_group_by_index(active_group_index)
 	if !my_group or !is_instance_valid(my_group):
 		return
-
+	
 	var opp_group: BattleGroup = battle_scene.get_group_by_index(_get_next_group_index(active_group_index))
 	if !opp_group or !is_instance_valid(opp_group):
 		opp_group = null
-
+	
 	for f: Fighter in my_group.get_combatants(false):
 		if f and is_instance_valid(f):
 			f.my_group_turn_start()
-
+	
 	if opp_group:
 		for f: Fighter in opp_group.get_combatants(false):
 			if f and is_instance_valid(f):
 				f.opposing_group_turn_start()
-
+	
 	# Optional: do any Battle-level start-of-turn plumbing here
 	# - reset per-group UI
 	# - clear intent previews
@@ -403,23 +395,38 @@ func _apply_group_turn_end_hooks(ended_group_index: int) -> void:
 	var my_group: BattleGroup = battle_scene.get_group_by_index(ended_group_index)
 	if !my_group or !is_instance_valid(my_group):
 		return
-
+	
 	var opp_group: BattleGroup = battle_scene.get_group_by_index(_get_next_group_index(ended_group_index))
 	if !opp_group or !is_instance_valid(opp_group):
 		opp_group = null
-
+	
 	for f: Fighter in my_group.get_combatants(false):
 		if f and is_instance_valid(f):
 			f.my_group_turn_end()
-
+	
 	if opp_group:
 		for f: Fighter in opp_group.get_combatants(false):
 			if f and is_instance_valid(f):
 				f.opposing_group_turn_end()
-
+	
 	# Optional: do any Battle-level end-of-turn plumbing here
 	# - discard hand / cleanup UI
 	# - arcana “end of friendly/enemy group turn” proc hooks, etc.
+
+func _with_system_scope(actor_id: int, work: Callable) -> void:
+	var runner := api.runner
+	if !runner:
+		work.call()
+		return
+	
+	var sid := runner.begin_scope(actor_id) # actor_id can be -1 or "group leader" id
+	print("battle.gd _with_system_scope() actor_id: %s, sid: %s calling work and awaiting..." % [actor_id, sid])
+	work.call()
+	runner.close_scope(sid)
+	await runner.await_scope_drained(sid)
+	print("battle.gd _with_system_scope() actor_id: %s, sid: %s done awaiting." % [actor_id, sid])
+	runner.end_scope(sid)
+
 
 func make_player_combatant() -> void:
 	var new_player: Player = player_scn.instantiate()
@@ -541,10 +548,10 @@ func _on_end_turn_button_pressed_live() -> void:
 		return
 	if !_player_end_turn_armed:
 		return
-
+	
 	# Disarm immediately so double clicks / repeated presses don't re-enter.
 	_arm_end_turn_button(false)
-
+	
 	# This is the ONE thing End Turn does:
 	# it tells the Player to finish their action, which Hand turns into discard->hand_discarded->resolve_action.
 	Events.player_turn_completed.emit()

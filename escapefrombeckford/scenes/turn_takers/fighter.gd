@@ -41,6 +41,7 @@ var fighter_tween: Tween
 var anchor_position: Vector2# = Vector2(0, 0)
 var has_anchor_position: bool = false
 var combat_id: int
+var turn_scope_id: int
 #var dying: bool = false
 
 func _ready() -> void:
@@ -115,6 +116,7 @@ func my_group_turn_start() -> void:
 	#combatant.status_grid.clear_group_turn_start_statuses()
 
 func opposing_group_turn_start() -> void:
+	print("fighter.gd opposing_group_turn_start() fighter: %s, cid: %s" % [name, combat_id])
 	for behavior: FighterBehavior in my_behaviors:
 		behavior._on_opposing_group_turn_start()
 
@@ -197,7 +199,7 @@ func fade():
 	
 
 func do_turn() -> void:
-	print("fighter.gd do_turn() name: ", name)
+	print("fighter.gd do_turn() name: ", name, " cid: ", combat_id)
 	for behavior: FighterBehavior in my_behaviors:
 		behavior._on_do_turn()
 

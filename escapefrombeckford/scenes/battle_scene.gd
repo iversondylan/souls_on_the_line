@@ -48,33 +48,37 @@ func alloc_combat_id() -> int:
 	return id
 
 func friendly_group_turn_start() -> void:
-	for group: BattleGroup in groups:
-		if group is BattleGroupFriendly:
-			group.my_turn_start()
-		elif group is BattleGroupEnemy:
-			group.opposing_turn_start()
+	print("battle_scene.gd  called but is unhooked")
+	#for group: BattleGroup in groups:
+		#if group is BattleGroupFriendly:
+			#group.my_turn_start()
+		#elif group is BattleGroupEnemy:
+			#group.opposing_turn_start()
 
 func friendly_group_turn_end() -> void:
-	for group: BattleGroup in groups:
-		if group is BattleGroupFriendly:
-			group.my_turn_end()
-		elif group is BattleGroupEnemy:
-			group.opposing_turn_end()
+	print("battle_scene.gd  called but is unhooked")
+	#for group: BattleGroup in groups:
+		#if group is BattleGroupFriendly:
+			#group.my_turn_end()
+		#elif group is BattleGroupEnemy:
+			#group.opposing_turn_end()
 
 
 func enemy_group_turn_start() -> void:
-	for group: BattleGroup in groups:
-		if group is BattleGroupFriendly:
-			group.opposing_turn_start()
-		elif group is BattleGroupEnemy:
-			group.my_turn_start()
+	print("battle_scene.gd  called but is unhooked")
+	#for group: BattleGroup in groups:
+		#if group is BattleGroupFriendly:
+			#group.opposing_turn_start()
+		#elif group is BattleGroupEnemy:
+			#group.my_turn_start()
 
 func enemy_group_turn_end() -> void:
-	for group: BattleGroup in groups:
-		if group is BattleGroupFriendly:
-			group.opposing_turn_end()
-		elif group is BattleGroupEnemy:
-			group.my_turn_end()
+	print("battle_scene.gd  called but is unhooked")
+	#for group: BattleGroup in groups:
+		#if group is BattleGroupFriendly:
+			#group.opposing_turn_end()
+		#elif group is BattleGroupEnemy:
+			#group.my_turn_end()
 
 func get_index_of_parent_group(fighter: Fighter) -> int:
 	for i in range(groups.size()):

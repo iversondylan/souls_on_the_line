@@ -154,6 +154,7 @@ func apply_proc(proc_type: Status.ProcType) -> void:
 
 	for s in get_all():
 		if s and s.proc_type == proc_type:
+			print("status_system.gd apply_proc() owner: %s, cid: %s, proc_type: %s, status: %s" % [owner.name, owner.combat_id, Status.ProcType.keys()[proc_type], s.get_id()])
 			s.apply_status(owner)
 
 	# After all apply calls, handle duration ticking for DURATION policy
