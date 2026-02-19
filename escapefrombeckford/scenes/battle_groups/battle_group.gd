@@ -59,7 +59,7 @@ func get_combatants(allow_dead: bool = false) -> Array[Fighter]:
 func connect_combatant(fighter: Fighter):
 	fighter.battle_group = self
 	fighter.run = run
-
+	
 	if fighter.is_node_ready() and fighter.status_system:
 		fighter.status_system.modifier_tokens_changed.connect(battle_scene._on_modifier_tokens_changed)
 	else:
@@ -88,18 +88,18 @@ func remove_combatant(fighter: Fighter):
 		var api := battle_scene.api as LiveBattleAPI
 		if api.turn_engine:
 			api.turn_engine.notify_actor_removed(int(fighter.combat_id))
-
+	
 	remove_child(fighter)
-
+	
 	if battle_scene and battle_scene.runner:
 		battle_scene.runner.mark_removed(fighter.combat_id)
-
+	
 	fighter.queue_free()
-
+	
 	Events.n_combatants_changed.emit()
 	update_combatant_position()
 	_update_pending_turn_glow()
-
+	
 	if get_combatants().is_empty():
 		Events.battle_group_empty.emit(self)
 

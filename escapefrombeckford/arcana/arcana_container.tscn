@@ -1,11 +1,11 @@
 [gd_scene format=3 uid="uid://c2yr5yhrn3jcb"]
 
-[ext_resource type="Script" uid="uid://couk23ruu04uf" path="res://arcana/arcanum_system.gd" id="1_ea8ym"]
+[ext_resource type="Script" uid="uid://blyo5lqixnxb4" path="res://arcana/arcana_container.gd" id="1_ea8ym"]
 [ext_resource type="Texture2D" uid="uid://6uxtaq6s35em" path="res://assets/sprites/assorted/white_arrow_transparent.png" id="1_yf6ut"]
 [ext_resource type="Texture2D" uid="uid://dpjk5oo5ma48q" path="res://assets/sprites/assorted/white-arrow-50alpha.png" id="2_ea8ym"]
 [ext_resource type="Script" uid="uid://d2gy2gc44vh3k" path="res://arcana/arcana_control.gd" id="3_j7246"]
 
-[node name="ArcanaSystem" type="HBoxContainer" unique_id=1473251662]
+[node name="ArcanaContainer" type="HBoxContainer" unique_id=1473251662]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0

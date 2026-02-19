@@ -2,6 +2,9 @@
 
 class_name TurnEngineHost extends RefCounted
 
+#func run_system_hook(h: Callable) -> Signal:
+	#return Signal()
+
 func get_group_order_ids(group_index: int) -> PackedInt32Array:
 	return PackedInt32Array()
 

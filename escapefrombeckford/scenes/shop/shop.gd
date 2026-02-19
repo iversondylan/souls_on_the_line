@@ -6,7 +6,7 @@ const SHOP_ARCANUM_SCN = preload("res://scenes/shop/shop_arcanum.tscn")
 @export var shop_arcana: Arcana
 @export var player_data: PlayerData
 @export var run_account: RunAccount
-@export var arcana_system: ArcanaSystem
+var arcana_system: ArcanaSystem
 
 @onready var card_container: HBoxContainer = %Cards
 @onready var arcanum_container: HBoxContainer = %Arcana

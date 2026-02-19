@@ -3,10 +3,11 @@
 class_name TurnEngineHostLive extends TurnEngineHost
 
 var battle_scene: BattleScene
-#var battle: Battle
+var battle: Battle
 
-func _init(_battle_scene: BattleScene) -> void:
-	battle_scene = _battle_scene
+func _init(_battle: Battle) -> void:
+	battle = _battle
+	battle_scene = battle.battle_scene
 
 func get_player_id() -> int:
 	var p := battle_scene.player

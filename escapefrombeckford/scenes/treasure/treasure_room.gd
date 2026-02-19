@@ -1,7 +1,7 @@
 class_name TreasureRoom extends Control
 
 @export var treasure_arcanum_pool: Arcana
-@export var arcanum_system: ArcanaSystem
+var arcanum_system: ArcanaSystem
 @export var player_data: PlayerData
 
 @onready var animation_player: AnimationPlayer = %AnimationPlayer

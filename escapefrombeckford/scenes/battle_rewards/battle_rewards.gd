@@ -13,7 +13,7 @@ const CARD_TEXT := "Add New Card"
 
 @export var run_account: RunAccount
 @export var player_data: CombatantData
-@export var arcanum_system: ArcanaSystem
+var arcanum_system: ArcanaSystem
 
 @onready var rewards: VBoxContainer = %Rewards
 

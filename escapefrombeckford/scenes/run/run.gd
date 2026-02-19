@@ -22,7 +22,8 @@ const TREASURE_SCN := preload("res://scenes/treasure/treasure_room.tscn")
 
 @onready var current_view: Node = $CurrentView
 @onready var gold_display: GoldDisplay = %GoldDisplay
-@onready var arcana_system: ArcanaSystem = %ArcanaSystem
+#@onready var arcana_system: ArcanaSystem = %ArcanaSystem
+@onready var arcana_container: ArcanaContainer = %ArcanaContainer
 
 @onready var collection_button: CardPileOpener = %CollectionButton
 @onready var collection_pile_view: CardPileView = %CollectionPileView
@@ -39,14 +40,25 @@ const TREASURE_SCN := preload("res://scenes/treasure/treasure_room.tscn")
 var account: RunAccount
 var player_data: PlayerData
 var run_seed: int = 0
+var arcana_system: ArcanaSystem
 var arcana_catalog: Arcana
 var starting_deck: CardPile
 var draftable_cards: CardPile
 var deck: Deck
 
 func _ready() -> void:
+	#print_tree_pretty()
 	status_catalog.build_index()
+	arcana_system = arcana_container.system
 	arcana_system.modifier_tokens_changed.connect(_on_modifier_tokens_changed)
+	#if !arcana_system:
+		#arcana_system = ArcanaSystem.new()
+		#if arcana_catalog:
+			#arcana_system.catalog = arcana_catalog
+	#if arcana_container:
+		#arcana_container.bind_system(arcana_system, self)
+	
+	
 	if !run_startup:
 		return
 	match run_startup.startup_type:
@@ -124,7 +136,8 @@ func _init_top_bar() -> void:
 	health_panel.update_health(player_data)
 	gold_display.run_account = account
 	
-	arcana_system.add_arcanum(player_data.starting_arcanum)
+	arcana_container.add_arcana([player_data.starting_arcanum])
+
 	
 	collection_button.card_pile = deck.card_collection
 	collection_pile_view.card_pile = deck.card_collection
@@ -141,7 +154,7 @@ func _on_battle_entered(room: Room) -> void:
 	battle_scn.player_data = player_data
 	battle_scn.deck = deck
 	battle_scn.battle_data = room.battle_data
-	battle_scn.arcana = arcana_system
+	battle_scn.arcana = arcana_container.system
 	battle_scn.start_battle()
 
 func _on_rest_site_entered() -> void:
@@ -154,7 +167,7 @@ func _on_shop_entered() -> void:
 	shop.run = self
 	shop.player_data = player_data
 	shop.run_account = account
-	shop.arcana_system = arcana_system
+	shop.arcana_system = arcana_container.system
 	shop.arcana_catalog = arcana_catalog
 	shop.arcana_reward_pool = player_data.arcana_reward_pool
 	Events.request_shop_modifiers.emit(shop)
@@ -171,7 +184,7 @@ func _on_battle_won() -> void:
 
 func _on_treasure_room_entered() -> void:
 	var treasure_scn := _change_view(TREASURE_SCN) as TreasureRoom
-	treasure_scn.arcanum_system = arcana_system
+	treasure_scn.arcanum_system = arcana_container.system
 	treasure_scn.player_data = player_data
 	treasure_scn.generate_arcanum()
 
@@ -179,7 +192,7 @@ func _on_treasure_room_exited(arcanum: Arcanum) -> void:
 	var reward_scn := _change_view(BATTLE_REWARDS_SCN) as BattleRewardsScreen
 	reward_scn.run_account = account
 	reward_scn.player_data = player_data
-	reward_scn.arcanum_system = arcana_system
+	reward_scn.arcanum_system = arcana_container.system
 	
 	reward_scn.add_arcanum_reward(arcanum)
 
@@ -201,7 +214,9 @@ func get_modifier_tokens_for(target: Node) -> Array[ModifierToken]:
 	var tokens: Array[ModifierToken] = []
 	
 	# 1. Arcana (global, persistent)
-	tokens.append_array(arcana_system.get_modifier_tokens_for(target))
+	tokens.append_array(arcana_container.get_modifier_tokens_for(target))
+	# (or arcana_system.get_modifier_tokens_for, both work)
+
 	
 	# 2. Combat-only tokens (if in battle)
 	var battle_scene := _get_active_battle_scene()

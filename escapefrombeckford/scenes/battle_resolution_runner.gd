@@ -64,7 +64,6 @@ func await_scope_drained(scope_id:int) -> void:
 		# Wait for *any* drain/busy transition; loop re-checks.
 		await scope_drained
 		print("battle_resolution_runner.gd await_scope_drained() s: %s. Scope Drained." % scope_id)
-		
 
 func retain_scope(scope_id:int, why:="") -> void:
 	print("battle_resolution_runner.gd retain_scope() scope: %s, because: %s" % [scope_id, why])
@@ -79,7 +78,6 @@ func release_scope(scope_id:int, why:="") -> void:
 		return
 	_scope_pending_counts[scope_id] = int(_scope_pending_counts.get(scope_id, 0)) - 1
 	_maybe_release_scope(scope_id)
-
 
 func _maybe_release_scope(scope_id:int) -> void:
 	print("battle_resolution_runner.gd _maybe_release_scope() scope: %s" % scope_id)

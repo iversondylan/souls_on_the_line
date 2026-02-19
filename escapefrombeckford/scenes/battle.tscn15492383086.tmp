@@ -1,0 +1,232 @@
+[gd_scene format=3 uid="uid://k11cug4p8o3l"]
+
+[ext_resource type="Script" uid="uid://dixfcu6jmx0kd" path="res://scenes/battle.gd" id="1_dd63g"]
+[ext_resource type="AudioStream" uid="uid://dqm0r66m6ggwt" path="res://assets/music/enchanted tiki 86.mp3" id="2_3b6xh"]
+[ext_resource type="Script" uid="uid://0a8baesyqdot" path="res://scenes/battle_scene.gd" id="3_lcn8m"]
+[ext_resource type="PackedScene" uid="uid://co7q6uigpt8n4" path="res://scenes/battle_resolution_runner.tscn" id="4_kl6ie"]
+[ext_resource type="Texture2D" uid="uid://jml4obgrdfeg" path="res://assets/backgrounds/flat-forestred-dark.png" id="4_yhk5m"]
+[ext_resource type="PackedScene" uid="uid://gmxev02ltcly" path="res://scenes/battle_groups/battle_group_friendly.tscn" id="5_n2clt"]
+[ext_resource type="PackedScene" uid="uid://0jk65n5vl1s7" path="res://scenes/battle_groups/battle_group_enemy.tscn" id="6_xn15y"]
+[ext_resource type="Script" uid="uid://b4bb2s8x838ip" path="res://scenes/battle_scene_area_left.gd" id="7_rgwlw"]
+[ext_resource type="Theme" uid="uid://d2wc7fposrlqs" path="res://themes/wizard_theme.tres" id="8_2tyvl"]
+[ext_resource type="Texture2D" uid="uid://deopg8hjud5es" path="res://assets/sprites/assorted/arrow_down.png" id="8_h4dll"]
+[ext_resource type="Script" uid="uid://ckq1sgjqlphh3" path="res://scenes/ui/battle_ui.gd" id="9_jujjx"]
+[ext_resource type="Script" uid="uid://b0ws73jyx6b4c" path="res://scenes/battlefield_target_arrow.gd" id="9_p0caf"]
+[ext_resource type="Script" uid="uid://8uvr4kljlbkb" path="res://scenes/battle_camera_rig.gd" id="10_dd63g"]
+[ext_resource type="PackedScene" uid="uid://cy1kfsc2qfglo" path="res://scenes/hand.tscn" id="15_wvgjd"]
+[ext_resource type="PackedScene" uid="uid://chyl400nmwlxo" path="res://scenes/selection_prompt.tscn" id="16_61i1y"]
+[ext_resource type="PackedScene" uid="uid://bxtf6la07t0t5" path="res://scenes/ui/card_pile_opener.tscn" id="17_ariee"]
+[ext_resource type="PackedScene" uid="uid://bhps5rw0coka5" path="res://VFX/turn_order_spark_controller.tscn" id="17_saiin"]
+[ext_resource type="PackedScene" uid="uid://cmc2ypry076mq" path="res://scenes/ui/status_view.tscn" id="18_h4dll"]
+[ext_resource type="Theme" uid="uid://1dr1eewpv0jd" path="res://themes/ui_theme.tres" id="18_s5alk"]
+[ext_resource type="PackedScene" uid="uid://d6f3t1qcn8bk" path="res://scenes/ui/turn_phase_title.tscn" id="19_fpf3k"]
+[ext_resource type="PackedScene" uid="uid://ggbqqkmgvjb1" path="res://scenes/ui/mana_panel.tscn" id="19_tgt58"]
+[ext_resource type="PackedScene" uid="uid://b0y800rpavgwc" path="res://scenes/ui/deck_view_window.tscn" id="20_3q5c2"]
+[ext_resource type="PackedScene" uid="uid://x25ulb6i36lc" path="res://scenes/ui/thank_you_for_playing.tscn" id="20_bi5l8"]
+[ext_resource type="PackedScene" uid="uid://b1rro3h5dxilx" path="res://scenes/ui/battle_over_panel.tscn" id="21_p2d7x"]
+[ext_resource type="PackedScene" uid="uid://c634qgskmd0a" path="res://scenes/ui/card_pile_view.tscn" id="22_wyn7e"]
+[ext_resource type="Script" uid="uid://bmlyytso4qsj6" path="res://scenes/interactions/battle_interaction_handler.gd" id="25_jt4d8"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_eb6dy"]
+size = Vector2(1200, 200)
+
+[node name="Battle" type="Node2D" unique_id=707689584]
+script = ExtResource("1_dd63g")
+debug_mode = null
+music = ExtResource("2_3b6xh")
+idle_delay_sec = null
+idle_cooldown_sec = null
+
+[node name="Battle_Scene" type="Node2D" parent="." unique_id=862417419 groups=["battle_scene"]]
+script = ExtResource("3_lcn8m")
+
+[node name="BattleResolutionRunner" parent="Battle_Scene" unique_id=615590965 instance=ExtResource("4_kl6ie")]
+
+[node name="Background" type="TextureRect" parent="Battle_Scene" unique_id=1487696658]
+offset_left = -92.0
+offset_top = -94.0
+offset_right = 1828.0
+offset_bottom = 986.0
+scale = Vector2(1.1, 1.1)
+texture = ExtResource("4_yhk5m")
+
+[node name="BattleGroupFriendly" parent="Battle_Scene" unique_id=1183869742 instance=ExtResource("5_n2clt")]
+position = Vector2(480, 748)
+
+[node name="BattleGroupEnemy" parent="Battle_Scene" unique_id=2120926567 instance=ExtResource("6_xn15y")]
+position = Vector2(1440, 748)
+faces_right = false
+
+[node name="BattleSceneAreaLeft" type="Area2D" parent="Battle_Scene" unique_id=366013195]
+position = Vector2(969, 698)
+collision_layer = 8
+script = ExtResource("7_rgwlw")
+
+[node name="CollisionShapeLeft" type="CollisionShape2D" parent="Battle_Scene/BattleSceneAreaLeft" unique_id=1587785464]
+position = Vector2(-600, -50)
+shape = SubResource("RectangleShape2D_eb6dy")
+
+[node name="TargetArrow" type="Sprite2D" parent="Battle_Scene" unique_id=1896918255]
+visible = false
+position = Vector2(0, -18)
+scale = Vector2(0.153333, 0.153333)
+texture = ExtResource("8_h4dll")
+script = ExtResource("9_p0caf")
+
+[node name="CameraRig" type="Node2D" parent="Battle_Scene" unique_id=1612841384]
+position = Vector2(960, 540)
+script = ExtResource("10_dd63g")
+zoom_in = null
+max_offset_px = null
+movement_duration = null
+offset_deadzone = null
+world_bounds = null
+
+[node name="Camera2D" type="Camera2D" parent="Battle_Scene/CameraRig" unique_id=1968275134]
+
+[node name="Debug_UI" type="CanvasLayer" parent="." unique_id=1870619922]
+
+[node name="KillEnemiesButton" type="Button" parent="Debug_UI" unique_id=1437914900]
+offset_top = 99.0
+offset_right = 126.0
+offset_bottom = 130.0
+theme = ExtResource("8_2tyvl")
+text = "kill enemies"
+
+[node name="Battle_UI" type="CanvasLayer" parent="." unique_id=82108263 groups=["ui_layer"]]
+script = ExtResource("9_jujjx")
+
+[node name="EndTurn" type="Button" parent="Battle_UI" unique_id=200877520]
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -220.0
+offset_top = -100.0
+offset_right = -41.0
+offset_bottom = -46.0
+grow_horizontal = 0
+grow_vertical = 0
+text = "End Turn"
+
+[node name="DrawPileButton" parent="Battle_UI" unique_id=175258487 node_paths=PackedStringArray("counter") instance=ExtResource("17_ariee")]
+unique_name_in_owner = true
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 22.0
+offset_top = -110.0
+offset_right = 86.0
+offset_bottom = -46.0
+grow_vertical = 0
+counter = NodePath("Counter")
+
+[node name="Counter" type="Label" parent="Battle_UI/DrawPileButton" unique_id=1277727095]
+layout_mode = 0
+offset_left = 12.0
+offset_top = 22.0
+offset_right = 52.0
+offset_bottom = 68.0
+theme = ExtResource("18_s5alk")
+theme_override_colors/font_color = Color(0.45098, 0.160784, 0.27451, 1)
+theme_override_font_sizes/font_size = 26
+text = "99"
+horizontal_alignment = 1
+
+[node name="DiscardPileButton" parent="Battle_UI" unique_id=836578458 node_paths=PackedStringArray("counter") instance=ExtResource("17_ariee")]
+unique_name_in_owner = true
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -303.0
+offset_top = -110.0
+offset_right = -239.0
+offset_bottom = -46.0
+grow_horizontal = 0
+grow_vertical = 0
+counter = NodePath("Counter")
+
+[node name="Counter" type="Label" parent="Battle_UI/DiscardPileButton" unique_id=610420263]
+layout_mode = 0
+offset_left = 13.0
+offset_top = 22.0
+offset_right = 53.0
+offset_bottom = 68.0
+theme = ExtResource("18_s5alk")
+theme_override_colors/font_color = Color(0.45098, 0.160784, 0.27451, 1)
+theme_override_font_sizes/font_size = 26
+text = "99"
+horizontal_alignment = 1
+
+[node name="ManaPanel" parent="Battle_UI" unique_id=561465951 instance=ExtResource("19_tgt58")]
+position = Vector2(190, 953)
+scale = Vector2(1, 1)
+color_red = Color(0.91, 0.82809997, 0.82809997, 1)
+color_green = Color(0.8366, 0.89, 0.8366, 1)
+color_blue = Color(0.81523997, 0.8099, 0.89, 1)
+
+[node name="Hand" parent="Battle_UI" unique_id=1775012993 instance=ExtResource("15_wvgjd")]
+discard_anchor_path = NodePath("../DiscardPileButton")
+draw_anchor_path = NodePath("../DrawPileButton")
+
+[node name="TurnOrderSparkController" parent="Battle_UI" unique_id=1883551906 instance=ExtResource("17_saiin")]
+position = Vector2(859, 364)
+intro_label_fade = 0.35
+pulse_scale_mult = 1.55
+fade_out_duration = 0.22
+base_blue = Color(0.45, 0.75, 1, 1)
+ghost_alpha = 0.95
+
+[node name="TurnPhaseTitle" parent="Battle_UI" unique_id=1916446982 instance=ExtResource("19_fpf3k")]
+position = Vector2(960, 108)
+
+[node name="ThankYouBox" parent="Battle_UI" unique_id=212376634 instance=ExtResource("20_bi5l8")]
+visible = false
+position = Vector2(1302, 347)
+
+[node name="SelectionPrompt" parent="Battle_UI" unique_id=1859690242 instance=ExtResource("16_61i1y")]
+visible = false
+position = Vector2(960, 103)
+
+[node name="Visual_Overlays" type="CanvasLayer" parent="." unique_id=1155891591]
+
+[node name="DrawViewWindow" parent="Visual_Overlays" unique_id=1838225771 instance=ExtResource("20_3q5c2")]
+visible = false
+position = Vector2(576, 324)
+
+[node name="DiscardViewWindow" parent="Visual_Overlays" unique_id=1437595028 instance=ExtResource("20_3q5c2")]
+visible = false
+position = Vector2(576, 324)
+
+[node name="CollectionViewWindow" parent="Visual_Overlays" unique_id=1429078153 instance=ExtResource("20_3q5c2")]
+visible = false
+position = Vector2(576, 324)
+
+[node name="BattleOverPanel" parent="Visual_Overlays" unique_id=1894133634 instance=ExtResource("21_p2d7x")]
+visible = false
+
+[node name="CardPileViews" type="CanvasLayer" parent="." unique_id=1250335853]
+layer = 4
+
+[node name="DrawPileView" parent="CardPileViews" unique_id=2085647040 instance=ExtResource("22_wyn7e")]
+unique_name_in_owner = true
+visible = false
+
+[node name="DiscardPileView" parent="CardPileViews" unique_id=506262802 instance=ExtResource("22_wyn7e")]
+unique_name_in_owner = true
+visible = false
+
+[node name="StatusView" type="CanvasLayer" parent="." unique_id=2094819986]
+
+[node name="StatusView" parent="StatusView" unique_id=1932521555 instance=ExtResource("18_h4dll")]
+visible = false
+
+[node name="BattleInteractionHandler" type="Node" parent="." unique_id=1048632546]
+script = ExtResource("25_jt4d8")
+
+[connection signal="pressed" from="Debug_UI/KillEnemiesButton" to="." method="_on_kill_enemies_button_pressed"]
+[connection signal="pressed" from="Battle_UI/EndTurn" to="." method="_on_end_turn_pressed"]
+[connection signal="card_activated" from="Battle_UI/Hand" to="." method="_on_hand_card_activated"]

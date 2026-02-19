@@ -10,7 +10,8 @@ class_name Battle extends Node2D
 		$Debug_UI.visible = debug_mode
 @export var music: AudioStream
 @export var battle_data: BattleData
-@export var arcana: ArcanaSystem
+
+
 
 @export var idle_delay_sec: float = 1.0
 @export var idle_cooldown_sec: float = 6.0
@@ -44,7 +45,7 @@ var player_data: PlayerData
 var player: Player
 var deck: Deck : set = _set_deck
 var run: Run : set = _set_run
-
+var arcana: ArcanaSystem
 var mouse_pressed: bool = false
 var enemy_character_state: int = 0
 var wait_for_anims: bool = false
@@ -63,13 +64,14 @@ var _player_end_turn_armed: bool = false
 func _ready() -> void:
 	#print_tree_pretty()
 	api = LiveBattleAPI.new(battle_scene)
-	host = TurnEngineHostLive.new(battle_scene)
+	host = TurnEngineHostLive.new(self)
 	turn_engine = TurnEngineCore.new(host)
 	api.turn_engine = turn_engine
 	battle_scene.api = api
 	turn_engine.actor_requested.connect(_on_actor_requested)
 	turn_engine.group_turn_ended.connect(_on_group_turn_ended)
 	turn_engine.pending_view_changed.connect(_on_pending_view_changed)
+	turn_engine.arcana_proc_requested.connect(_on_arcana_proc_requested)
 	Events.live_battle_api_created.emit(api)
 	set_process(true)
 	
@@ -98,7 +100,7 @@ func _ready() -> void:
 	Events.summon_reserve_card_released.connect(_on_summon_reserve_card_released)
 	Events.request_defeat.connect(_on_request_defeat)
 	Events.request_victory.connect(_on_request_victory)
-	Events.request_activate_arcana_by_type.connect(_on_request_activate_arcana_by_type)
+	#Events.request_activate_arcana_by_type.connect(_on_request_activate_arcana_by_type)
 	#Events.request_enemy_turn.connect(_on_request_enemy_turn)
 	#Events.request_friendly_turn.connect(_on_request_friendly_turn)
 	Events.arcana_activated.connect(_on_arcana_activated)
@@ -161,28 +163,21 @@ func start_battle():
 	MusicPlayer.play(music, true)
 	initialize_card_pile_ui()
 	BattleController.current_state = BattleController.BattleState.FRIENDLY_TURN
-	Events.request_activate_arcana_by_type.emit(Arcanum.Type.START_OF_COMBAT)
+	await _apply_group_turn_start_hooks_scoped(0)
+	turn_engine.start_group_turn(0, true)
 
 func _on_runner_scope_drained(scope: int) -> void:
 	print("battle.gd _on_runner_scope_drained() scope: ", scope)
 
 func _on_request_activate_arcana_by_type(type: Arcanum.Type):
-	
-	match type:
-		Arcanum.Type.START_OF_COMBAT:
-			arcana.activate_arcana_by_type(Arcanum.Type.START_OF_COMBAT)
-		Arcanum.Type.START_OF_TURN:
-			#print("battle.gd _on_request_activate_arcana_by_type START_OF_TURN")
-			arcana.activate_arcana_by_type(Arcanum.Type.START_OF_TURN)
-		Arcanum.Type.END_OF_TURN:
-			arcana.activate_arcana_by_type(Arcanum.Type.END_OF_TURN)
-		Arcanum.Type.END_OF_COMBAT:
-			arcana.activate_arcana_by_type(Arcanum.Type.END_OF_COMBAT)
+	if arcana:
+		arcana.activate_arcana_by_type_async(type, self)
+
 
 func _on_arcana_activated(type: Arcanum.Type) -> void:
 	match type:
 		Arcanum.Type.START_OF_COMBAT:
-			await _with_system_scope(-1, func():
+			await _with_system_scope_async(-1, func():
 				BattleController.current_state = BattleController.BattleState.FRIENDLY_TURN
 				Events.first_friendly_turn_started.emit()
 				battle_scene.friendly_group_turn_start()
@@ -190,7 +185,9 @@ func _on_arcana_activated(type: Arcanum.Type) -> void:
 			)
 			_pending_start_engine_group = 0
 			_pending_start_engine_start_at_player = true
-			Events.request_activate_arcana_by_type.emit(Arcanum.Type.START_OF_TURN)
+			await _with_system_scope_async(-1, func():
+				return arcana.activate_arcana_by_type_async(Arcanum.Type.START_OF_TURN, self)
+			)
 
 		Arcanum.Type.START_OF_TURN:
 			#_request_player_hand_draw()
@@ -303,6 +300,35 @@ func _await_action_or_removal(actor: Fighter) -> bool:
 			return true
 	return false
 
+func _on_arcana_proc_requested(proc: int, token: int) -> void:
+	match proc:
+		TurnEngineCore.ArcanaProc.START_OF_COMBAT:
+			_run_arcana_start_of_combat(token)
+		TurnEngineCore.ArcanaProc.START_OF_TURN:
+			_run_arcana_start_of_turn(token)
+		TurnEngineCore.ArcanaProc.END_OF_TURN:
+			_run_arcana_end_of_turn(token)
+		_:
+			turn_engine.notify_arcana_proc_done(token)
+
+func _run_arcana_start_of_combat(token: int) -> void:
+	await _with_system_scope_async(-1, func():
+		return arcana.activate_arcana_by_type_async(Arcanum.Type.START_OF_COMBAT, self)
+	)
+	turn_engine.notify_arcana_proc_done(token)
+
+func _run_arcana_start_of_turn(token: int) -> void:
+	await _with_system_scope_async(-1, func():
+		return arcana.activate_arcana_by_type_async(Arcanum.Type.START_OF_TURN, self) # <- stack overflow here
+	)
+	turn_engine.notify_arcana_proc_done(token)
+
+func _run_arcana_end_of_turn(token: int) -> void:
+	await _with_system_scope_async(-1, func():
+		return arcana.activate_arcana_by_type_async(Arcanum.Type.END_OF_TURN, self)
+	)
+	turn_engine.notify_arcana_proc_done(token)
+
 
 func _await_status_proc_finished(actor: Fighter, want_proc: Status.ProcType) -> void:
 	var start_tick := actor.last_status_proc_tick
@@ -319,7 +345,10 @@ func _on_group_turn_ended(ended_group_index: int) -> void:
 	
 	if ended_group_index == 0:
 		# Friendly group ended => real END_OF_TURN boundary
-		Events.request_activate_arcana_by_type.emit(Arcanum.Type.END_OF_TURN)
+		await _with_system_scope_async(-1, func():
+			return arcana.activate_arcana_by_type_async(Arcanum.Type.END_OF_TURN, self)
+		)
+
 		
 		# Friendly -> Enemy
 		#battle_scene.friendly_group_turn_end()
@@ -348,7 +377,9 @@ func _on_group_turn_ended(ended_group_index: int) -> void:
 	# Defer engine start until arcana START_OF_TURN resolves + hand is drawn.
 	_pending_start_engine_group = 0
 	_pending_start_engine_start_at_player = true
-	Events.request_activate_arcana_by_type.emit(Arcanum.Type.START_OF_TURN)
+	await _with_system_scope_async(-1, func():
+		return arcana.activate_arcana_by_type_async(Arcanum.Type.START_OF_TURN, self)
+	)
 
 func _get_next_group_index(ended_group_index: int) -> int:
 	match ended_group_index:
@@ -361,7 +392,7 @@ func _get_next_group_index(ended_group_index: int) -> int:
 
 func _apply_group_turn_start_hooks_scoped(active_group_index: int) -> void:
 	print("battle.gd _apply_group_turn_start_hooks_scoped() active_group_index: ", active_group_index)
-	await _with_system_scope(-1, func():
+	await _with_system_scope_async(-1, func():
 		_apply_group_turn_start_hooks(active_group_index)
 	)
 
@@ -427,6 +458,39 @@ func _with_system_scope(actor_id: int, work: Callable) -> void:
 	print("battle.gd _with_system_scope() actor_id: %s, sid: %s done awaiting." % [actor_id, sid])
 	runner.end_scope(sid)
 
+func _with_system_scope_async(actor_id: int, work: Callable) -> void:
+	var runner := api.runner
+
+	if !runner:
+		var r = work.call()
+		if typeof(r) == TYPE_OBJECT and r != null and r.get_class() == "GDScriptFunctionState":
+			await r
+		elif r is Signal:
+			await r
+		return
+
+	var sid := runner.begin_scope(actor_id)
+	print("battle.gd _with_system_scope_async() actor_id: %s, sid: %s calling work and awaiting..." % [actor_id, sid])
+
+	var result = work.call()
+
+	# If work kicked off an async function, keep the scope open until it completes.
+	if typeof(result) == TYPE_OBJECT and result != null and result.get_class() == "GDScriptFunctionState":
+		print("battle.gd _with_system_scope_async() actor_id: %s, sid: %s now awaiting (a)..." % [actor_id, sid])
+		await result
+	elif result is Signal and !(result as Signal).is_null():
+		print("battle.gd _with_system_scope_async() actor_id: %s, sid: %s now awaiting (b)..." % [actor_id, sid])
+		await result
+
+	# Now we know the async work is done enqueueing anything new
+	runner.close_scope(sid)
+	await runner.await_scope_drained(sid)
+	print("battle.gd _with_system_scope_async() actor_id: %s, sid: %s done awaiting." % [actor_id, sid])
+	runner.end_scope(sid)
+
+
+
+
 
 func make_player_combatant() -> void:
 	var new_player: Player = player_scn.instantiate()
@@ -474,7 +538,9 @@ func _on_dead_combatant_data(combatant_data: CombatantData):
 
 func _on_battle_group_empty(_battle_group: BattleGroup) -> void:
 	if _battle_group is BattleGroupEnemy:
-		arcana.activate_arcana_by_type(Arcanum.Type.END_OF_COMBAT)
+		await _with_system_scope_async(-1, func():
+			return arcana.activate_arcana_by_type_async(Arcanum.Type.END_OF_COMBAT, self)
+		)
 		#BattleController.transition(BattleController.BattleState.VICTORY)
 
 func _on_summon_reserve_card_released(summoned_ally: SummonedAlly) -> void:

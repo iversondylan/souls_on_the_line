@@ -10,7 +10,7 @@
 [ext_resource type="PackedScene" uid="uid://yab08gtx7087" path="res://scenes/ui/gold_display.tscn" id="5_wo0nw"]
 [ext_resource type="Theme" uid="uid://1dr1eewpv0jd" path="res://themes/ui_theme.tres" id="6_wo0nw"]
 [ext_resource type="PackedScene" uid="uid://c634qgskmd0a" path="res://scenes/ui/card_pile_view.tscn" id="7_0tt4g"]
-[ext_resource type="PackedScene" uid="uid://c2yr5yhrn3jcb" path="res://arcana/arcanum_system.tscn" id="7_yeia0"]
+[ext_resource type="PackedScene" uid="uid://c2yr5yhrn3jcb" path="res://arcana/arcana_container.tscn" id="7_yeia0"]
 [ext_resource type="PackedScene" uid="uid://b32tn7y6k3shn" path="res://scenes/ui/arcanum_tooltip_popup.tscn" id="11_cnkn7"]
 [ext_resource type="PackedScene" uid="uid://3hsvnd70wteq" path="res://scenes/ui/tooltip.tscn" id="11_g42ja"]
 
@@ -100,7 +100,7 @@ layout_mode = 2
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="ArcanaSystem" parent="TopBar/Items/ArcanaSystemContainer" unique_id=776093882 instance=ExtResource("7_yeia0")]
+[node name="ArcanaContainer" parent="TopBar/Items/ArcanaSystemContainer" unique_id=776093882 instance=ExtResource("7_yeia0")]
 unique_name_in_owner = true
 layout_mode = 2
 

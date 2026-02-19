@@ -1,12 +1,18 @@
 # turn_engine_core.gd
-class_name TurnEngineCore
-extends RefCounted
+
+class_name TurnEngineCore extends RefCounted
 
 signal actor_requested(combat_id: int)
 signal group_turn_ended(group_index: int)
+signal arcana_proc_requested(proc: int, token: int)
 signal pending_view_changed(active_id: int, pending_ids: PackedInt32Array)
 
 enum Phase { IDLE, ACTOR_START, WAITING_FOR_ACTION, ACTOR_END }
+enum ArcanaProc { START_OF_COMBAT, START_OF_TURN, END_OF_TURN }
+
+var _waiting_for_arcana: bool = false
+var _arcana_token: int = 0
+var _resume_after_arcana: Callable = Callable()
 
 const MAX_TURNS_PER_FIGHTER_PER_GROUP_TURN := 3
 
@@ -25,12 +31,19 @@ var _queue_dirty: bool = false
 var _start_at_player: bool = false
 var _player_id: int = 0
 var _cursor_cid: int = 0
+var _player_start_of_turn_fired: bool = false
+var _start_of_combat_fired: bool = false
+
+# turn_engine_core.gd
+#var on_start_of_combat: Callable = Callable()
+#var on_before_player_turn: Callable = Callable()
+#var on_after_player_turn: Callable = Callable()
+
 
 func _init(_host: TurnEngineHost) -> void:
 	host = _host
 
 func start_group_turn(group_index: int, start_at_player := false) -> void:
-	#print("turn_engine_core.gd start_group_turn()")
 	active_group_index = group_index
 	_start_at_player = start_at_player
 	_turn_token += 1
@@ -47,8 +60,18 @@ func start_group_turn(group_index: int, start_at_player := false) -> void:
 
 	if active_group_index == 0:
 		_player_id = host.get_player_id()
+		_player_start_of_turn_fired = false
+
+		# Only once per fight
+		if _start_at_player and !_start_of_combat_fired:
+			_start_of_combat_fired = true
+			_request_arcana(ArcanaProc.START_OF_COMBAT, func():
+				_advance_to_next_actor()
+			)
+			return
 
 	_advance_to_next_actor()
+
 
 func resume_after_player_done() -> void:
 	#print("turn_engine_core.gd resume_after_player_done()")
@@ -62,12 +85,22 @@ func notify_actor_done(combat_id: int) -> void:
 	if combat_id != current_actor_id:
 		# stale / ignored
 		return
-
+	
 	_running_actor = false
 	_mark_turn_taken(combat_id)
 	_restore_allowed.erase(combat_id)
 	_queue_dirty = true
 	phase = Phase.IDLE
+	
+	if active_group_index == 0 and host.is_player(combat_id):
+		_request_arcana(ArcanaProc.END_OF_TURN, func():
+			# allow START_OF_TURN again only when we come back around to player in a future cycle
+			# (optional; only needed if player can re-enter in same group turn)
+			# _player_start_of_turn_fired = false
+			_advance_to_next_actor()
+		)
+		return
+	
 	_advance_to_next_actor()
 
 func notify_actor_removed(combat_id: int) -> void:
@@ -145,7 +178,7 @@ func _advance_to_next_actor() -> void:
 	if _queue_dirty:
 		#print("turn_engine_core.gd _advance_to_next_actor() rebuilding queue")
 		_rebuild_queue()
-	print("queue is ", _queue)
+	print("turn_engine_core.gd _advance_to_next_actor() queue is ", _queue)
 	if _queue.is_empty():
 		#print("turn_engine_core.gd _advance_to_next_actor() queue is empty")
 		_end_group_turn()
@@ -158,12 +191,20 @@ func _advance_to_next_actor() -> void:
 		_queue_dirty = true
 		_advance_to_next_actor()
 		return
-
+	
+	if active_group_index == 0 and host.is_player(actor_id) and !_player_start_of_turn_fired:
+		_player_start_of_turn_fired = true
+		_request_arcana(ArcanaProc.START_OF_TURN, func():
+			_advance_to_next_actor()
+		)
+		return
+	
 	current_actor_id = actor_id
 	_running_actor = true
 	_cursor_cid = actor_id
-
+	
 	_publish_pending_view()
+	
 	actor_requested.emit(actor_id)
 
 func _reset() -> void:
@@ -195,6 +236,15 @@ func _turns_left(combat_id: int) -> int:
 	if active_group_index == 0 and host.is_player(combat_id):
 		return 1 - int(_turns_taken.get(combat_id, 0))
 	return MAX_TURNS_PER_FIGHTER_PER_GROUP_TURN - int(_turns_taken.get(combat_id, 0))
+
+func _call_hook(h: Callable) -> Signal:
+	if h.is_null():
+		return Signal()
+	var r = h.call()
+	if r is Signal and !(r as Signal).is_null():
+		return r
+	# If you ever return a GDScriptFunctionState in 4.6, you can keep your class-name check here too.
+	return Signal()
 
 func _rebuild_queue() -> void:
 	#print("turn_engine_core.gd _rebuild_queue()")
@@ -307,3 +357,31 @@ func _publish_pending_view() -> void:
 					pending.append(id)
 	#print("turn_engine_core.gd _publish_pending_view about to emit pending_view_changed")
 	pending_view_changed.emit(active_id, pending)
+
+func notify_arcana_proc_done(token: int) -> void:
+	if !_waiting_for_arcana:
+		return
+	if token != _arcana_token:
+		return
+	_waiting_for_arcana = false
+	_arcana_token = 0
+	var resume := _resume_after_arcana
+	_resume_after_arcana = Callable()
+	if !resume.is_null():
+		resume.call()
+
+func _request_arcana(proc: int, resume: Callable) -> void:
+	if _waiting_for_arcana:
+		return # or push/queue, but "return" is fine while you debug
+	_waiting_for_arcana = true
+	_arcana_token += 1
+	_resume_after_arcana = resume
+	arcana_proc_requested.emit(proc, _arcana_token)
+
+func reset_for_new_battle() -> void:
+	_start_of_combat_fired = false
+	_player_start_of_turn_fired = false
+	_waiting_for_arcana = false
+	_arcana_token = 0
+	_resume_after_arcana = Callable()
+	_reset()
