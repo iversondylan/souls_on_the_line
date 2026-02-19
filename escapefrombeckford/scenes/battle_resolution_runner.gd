@@ -58,6 +58,12 @@ func close_scope(scope_id:int) -> void:
 	print("battle_resolution_runner.gd close_scope() s: %s" % scope_id)
 	_closed_scopes[scope_id] = true
 
+func pop_scope(scope_id: int) -> void:
+	# Detach the "current scope" label without destroying bookkeeping.
+	print("battle_resolution_runner.gd pop_scope() s: %s" % scope_id)
+	if _scope_stack.size() > 0 and _scope_stack.back() == scope_id:
+		_scope_stack.pop_back()
+
 func await_scope_drained(scope_id:int) -> bool:
 	print("battle_resolution_runner.gd await_scope_drained() s: %s" % scope_id)
 	while true:

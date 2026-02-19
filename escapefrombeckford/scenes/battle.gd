@@ -61,6 +61,9 @@ var turn_engine : TurnEngineCore
 #var _pending_start_engine_start_at_player: bool = false
 var _player_end_turn_armed: bool = false
 
+var _arcana_gate: Variant = null # GDScriptFunctionState or Signal or null
+var _arcana_gate_seq: int = 0    # monotonic token to avoid “old gate clears new 
+
 func _ready() -> void:
 	#print_tree_pretty()
 	api = LiveBattleAPI.new(battle_scene)
@@ -256,13 +259,28 @@ func _on_pending_view_changed(active_id: int, pending_ids: PackedInt32Array) -> 
 
 func _on_actor_requested(combat_id: int) -> void:
 	print("battle.gd _on_actor_requested() awaiting _run_actor_live")
+
+	# HARD RULE: don’t start an actor while arcana still running.
+	await _await_arcana_gate_if_any()
+
 	var ok := await _run_actor_live(combat_id)
 	print("battle.gd _on_actor_requested() _run_actor_live done")
 	if ok:
 		print("battle.gd _on_actor_requested() OK, notifying turn engine done")
 		turn_engine.notify_actor_done(combat_id)
 	else:
-		print("battle.gd _on_actor_requested() not OK")# _run_actor_live already notified removed
+		print("battle.gd _on_actor_requested() not OK")
+
+
+#func _on_actor_requested(combat_id: int) -> void:
+	#print("battle.gd _on_actor_requested() awaiting _run_actor_live")
+	#var ok := await _run_actor_live(combat_id)
+	#print("battle.gd _on_actor_requested() _run_actor_live done")
+	#if ok:
+		#print("battle.gd _on_actor_requested() OK, notifying turn engine done")
+		#turn_engine.notify_actor_done(combat_id)
+	#else:
+		#print("battle.gd _on_actor_requested() not OK")# _run_actor_live already notified removed
 
 func _run_actor_live(combat_id:int) -> bool:
 	print("battle.gd _run_actor_live() step 1")
@@ -308,15 +326,25 @@ func _await_action_or_removal(actor: Fighter) -> bool:
 
 func _on_arcana_proc_requested(proc: int, token: int) -> void:
 	print("battle.gd _on_arcana_proc_requested")
+
+	var arcanum_type := -1
 	match proc:
 		TurnEngineCore.ArcanaProc.START_OF_COMBAT:
-			_run_arcana_start_of_combat(token)
+			arcanum_type = Arcanum.Type.START_OF_COMBAT
 		TurnEngineCore.ArcanaProc.START_OF_TURN:
-			_run_arcana_start_of_turn(token)
+			arcanum_type = Arcanum.Type.START_OF_TURN
 		TurnEngineCore.ArcanaProc.END_OF_TURN:
-			_run_arcana_end_of_turn(token)
+			arcanum_type = Arcanum.Type.END_OF_TURN
 		_:
 			turn_engine.notify_arcana_proc_done(token)
+			return
+
+	# start arcana in detached scope, but do NOT await here.
+	_start_arcana_scope_detached(arcanum_type)
+
+	# Engine can proceed immediately, but execution paths will await the gate.
+	turn_engine.notify_arcana_proc_done(token)
+
 
 func _run_arcana_start_of_combat(token: int) -> void:
 	arcana.activate_arcana_by_type_async(Arcanum.Type.START_OF_COMBAT, self)
@@ -339,6 +367,59 @@ func _run_arcana_end_of_turn(token: int) -> void:
 	#)
 	turn_engine.notify_arcana_proc_done(token)
 
+func _await_arcana_gate_if_any() -> void:
+	if _arcana_gate == null:
+		return
+
+	# Wait for whatever we stored (FunctionState or Signal)
+	var g = _arcana_gate
+	if typeof(g) == TYPE_OBJECT and g != null and g.get_class() == "GDScriptFunctionState":
+		await g
+	elif g is Signal and !(g as Signal).is_null():
+		await g
+	# else: ignore
+
+
+func _start_arcana_scope_detached(arcanum_type: int) -> void:
+	# This starts arcana work "now" but does NOT block the engine.
+	# It updates _arcana_gate so other execution paths can await it.
+
+	if !arcana or !api or !api.runner:
+		# No runner => nothing to gate on; run immediately
+		arcana.activate_arcana_by_type_async(arcanum_type, self)
+		return
+
+	var runner := api.runner
+
+	# Begin a scope so arcana enqueues are tagged (avoid scope=0 warnings)
+	var sid := runner.begin_scope(-1)
+
+	# Kick the arcana enqueue (this likely enqueues ArcanumActivateOp + WaitOp)
+	arcana.activate_arcana_by_type_async(arcanum_type, self)
+
+	# Close says "no more new enqueues for this scope"
+	runner.close_scope(sid)
+
+	# Detach from current scope stack so subsequent enqueues are NOT forced into sid
+	runner.pop_scope(sid)
+
+	# Make/advance the gate token, and store a new gate for "latest arcana"
+	_arcana_gate_seq += 1
+	var my_seq := _arcana_gate_seq
+
+	# Fire-and-forget coroutine that will end the scope later
+	#_arcana_gate = _finish_detached_scope_later(sid, my_seq)
+	_finish_detached_scope_later(sid, my_seq)
+
+
+func _finish_detached_scope_later(scope_id: int, seq: int) -> void:
+	# This is the gate "promise"
+	await api.runner.await_scope_drained(scope_id)
+	api.runner.end_scope(scope_id)
+
+	# Only clear if we're still the latest gate
+	if seq == _arcana_gate_seq:
+		_arcana_gate = null
 
 func _await_status_proc_finished(actor: Fighter, want_proc: Status.ProcType) -> void:
 	var start_tick := actor.last_status_proc_tick
@@ -351,6 +432,8 @@ func _await_status_proc_finished(actor: Fighter, want_proc: Status.ProcType) -> 
 			return
 
 func _on_group_turn_ended(ended_group_index: int) -> void:
+	# Don’t run group transitions while arcana still running.
+	await _await_arcana_gate_if_any()
 	_apply_group_turn_end_hooks(ended_group_index)
 	
 	if ended_group_index == 0:
@@ -609,9 +692,14 @@ func simulate_battle() -> void:
 	#sim_battle.print_sim_snapshot()
 
 func _on_hand_done_drawing() -> void:
-	#print("battle.gd _on_hand_done_drawing()")
+	await _await_arcana_gate_if_any()
 	wait_for_anims = false
 	_arm_end_turn_button(true)
+
+#func _on_hand_done_drawing() -> void:
+	##print("battle.gd _on_hand_done_drawing()")
+	#wait_for_anims = false
+	#_arm_end_turn_button(true)
 
 
 func _arm_end_turn_button(armed: bool) -> void:
