@@ -149,6 +149,37 @@ func on_damage_applied(ctx: DamageContext) -> void:
 		Shaker.shake(ctx.target, 16, 0.15)
 		ctx.target._spawn_damage_number_or_block(ctx) # if private, wrap it
 
+func enqueue_wait(seconds: float) -> void:
+	if runner:
+		runner.enqueue_op(WaitOp.new(seconds))
+
+#This is not necessarily how I want to communicate enqueues -> what happened to ctx?
+func enqueue_arcanum_activate(arcanum: Arcanum, display: ArcanumDisplay) -> void:
+	if runner:
+		runner.enqueue_op(ArcanumActivateOp.new(arcanum, display))
+
+func _run_arcanum_activate_op(arcanum: Arcanum, display: ArcanumDisplay) -> Variant:
+	print("live_battle_api.gd _run_arcanum_activate_op()")
+	if !arcanum:
+		return null
+
+	var ctx := ArcanumContext.new()
+	ctx.api = self
+	ctx.arcanum_display = display
+	ctx.battle_scene = battle_scene
+	ctx.player = battle_scene.player
+
+	# If you ever decide some arcanum wants to be awaitable,
+	# you can have activate_arcanum return a Signal / FunctionState.
+	var r : Variant = arcanum.activate_arcanum(ctx)
+
+	if typeof(r) == TYPE_OBJECT and r != null and r.get_class() == "GDScriptFunctionState":
+		return r
+	if r is Signal and !(r as Signal).is_null():
+		return r
+
+	return null
+
 
 
 # This is what the runner awaits.

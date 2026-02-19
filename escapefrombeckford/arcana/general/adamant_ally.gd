@@ -4,17 +4,30 @@ extends Arcanum
 
 @export var summon_data: CombatantData
 
-func activate_arcanum(ctx: ArcanumContext) -> void:
+func activate_arcanum(ctx: ArcanumContext) -> Variant:
 	if !summon_data or !ctx:
 		push_warning("adamant_ally.gd error: no summon_data or ctx")
 		return
-	ctx.battle_scene = ctx.arcanum_display.get_tree().get_first_node_in_group("battle_scene")
-	ctx.player = ctx.arcanum_display.get_tree().get_first_node_in_group("player")
 	if !ctx.battle_scene or !ctx.player:
 		push_warning("adamant_ally.gd error: no battle_scene or player")
 		return
+
 	var effect := build_effect(ctx)
 	effect.execute(ctx.api)
+	return null
+
+
+#func activate_arcanum(ctx: ArcanumContext) -> void:
+	#if !summon_data or !ctx:
+		#push_warning("adamant_ally.gd error: no summon_data or ctx")
+		#return
+	#ctx.battle_scene = ctx.arcanum_display.get_tree().get_first_node_in_group("battle_scene")
+	#ctx.player = ctx.arcanum_display.get_tree().get_first_node_in_group("player")
+	#if !ctx.battle_scene or !ctx.player:
+		#push_warning("adamant_ally.gd error: no battle_scene or player")
+		#return
+	#var effect := build_effect(ctx)
+	#effect.execute(ctx.api)
 
 func build_effect(ctx: ArcanumContext) -> SummonEffect:
 	var effect := SummonEffect.new()

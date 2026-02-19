@@ -2,7 +2,7 @@ extends Arcanum
 
 var damage := 2
 
-func activate_arcanum(ctx: ArcanumContext) -> void:
+func activate_arcanum(ctx: ArcanumContext) -> Variant:
 	var enemies: Array[Fighter] = []
 	for node: Node in arcanum_display.get_tree().get_nodes_in_group("enemies"):
 		if node is Fighter:
@@ -15,3 +15,4 @@ func activate_arcanum(ctx: ArcanumContext) -> void:
 	damage_effect.modifier_type = Modifier.Type.NO_MODIFIER
 	damage_effect.execute(ctx.api)
 	arcanum_display.flash()
+	return null

@@ -163,45 +163,49 @@ func start_battle():
 	MusicPlayer.play(music, true)
 	initialize_card_pile_ui()
 	BattleController.current_state = BattleController.BattleState.FRIENDLY_TURN
-	await _apply_group_turn_start_hooks_scoped(0)
+	print("1")
+	_apply_group_turn_start_hooks(0)
+	print("2")
 	turn_engine.start_group_turn(0, true)
 
 func _on_runner_scope_drained(scope: int) -> void:
 	print("battle.gd _on_runner_scope_drained() scope: ", scope)
 
 func _on_request_activate_arcana_by_type(type: Arcanum.Type):
-	if arcana:
-		arcana.activate_arcana_by_type_async(type, self)
+	pass
+	#if arcana:
+		#arcana.activate_arcana_by_type_async(type, self)
 
 
 func _on_arcana_activated(type: Arcanum.Type) -> void:
-	match type:
-		Arcanum.Type.START_OF_COMBAT:
-			await _with_system_scope_async(-1, func():
-				BattleController.current_state = BattleController.BattleState.FRIENDLY_TURN
-				Events.first_friendly_turn_started.emit()
-				battle_scene.friendly_group_turn_start()
-				_apply_group_turn_start_hooks(0)
-			)
-			_pending_start_engine_group = 0
-			_pending_start_engine_start_at_player = true
-			await _with_system_scope_async(-1, func():
-				return arcana.activate_arcana_by_type_async(Arcanum.Type.START_OF_TURN, self)
-			)
-
-		Arcanum.Type.START_OF_TURN:
-			#_request_player_hand_draw()
-			#_arm_end_turn_button(true)
-			
-			# If we were waiting to start the engine, do it now.
-			if _pending_start_engine_group != -1:
-				var gi := _pending_start_engine_group
-				var sap := _pending_start_engine_start_at_player
-				_pending_start_engine_group = -1
-				turn_engine.start_group_turn(gi, sap)
-
-		Arcanum.Type.END_OF_COMBAT:
-			Events.request_victory.emit()
+	pass
+	#match type:
+		#Arcanum.Type.START_OF_COMBAT:
+			#await _with_system_scope_async(-1, func():
+				#BattleController.current_state = BattleController.BattleState.FRIENDLY_TURN
+				#Events.first_friendly_turn_started.emit()
+				#battle_scene.friendly_group_turn_start()
+				#_apply_group_turn_start_hooks(0)
+			#)
+			#_pending_start_engine_group = 0
+			#_pending_start_engine_start_at_player = true
+			#await _with_system_scope_async(-1, func():
+				#return arcana.activate_arcana_by_type_async(Arcanum.Type.START_OF_TURN, self)
+			#)
+#
+		#Arcanum.Type.START_OF_TURN:
+			##_request_player_hand_draw()
+			##_arm_end_turn_button(true)
+			#
+			## If we were waiting to start the engine, do it now.
+			#if _pending_start_engine_group != -1:
+				#var gi := _pending_start_engine_group
+				#var sap := _pending_start_engine_start_at_player
+				#_pending_start_engine_group = -1
+				#turn_engine.start_group_turn(gi, sap)
+#
+		#Arcanum.Type.END_OF_COMBAT:
+			#Events.request_victory.emit()
 
 func _apply_glow_live(active_id: int, pending_ids: PackedInt32Array) -> void:
 	# If nothing active, clear glow (or keep last — but clearing is safer)
@@ -301,6 +305,7 @@ func _await_action_or_removal(actor: Fighter) -> bool:
 	return false
 
 func _on_arcana_proc_requested(proc: int, token: int) -> void:
+	print("battle.gd _on_arcana_proc_requested")
 	match proc:
 		TurnEngineCore.ArcanaProc.START_OF_COMBAT:
 			_run_arcana_start_of_combat(token)
@@ -312,21 +317,24 @@ func _on_arcana_proc_requested(proc: int, token: int) -> void:
 			turn_engine.notify_arcana_proc_done(token)
 
 func _run_arcana_start_of_combat(token: int) -> void:
-	await _with_system_scope_async(-1, func():
-		return arcana.activate_arcana_by_type_async(Arcanum.Type.START_OF_COMBAT, self)
-	)
+	arcana.activate_arcana_by_type_async(Arcanum.Type.START_OF_COMBAT, self)
+	#await _with_system_scope_async(-1, func():
+		#return arcana.activate_arcana_by_type_async(Arcanum.Type.START_OF_COMBAT, self)
+	#)
 	turn_engine.notify_arcana_proc_done(token)
 
 func _run_arcana_start_of_turn(token: int) -> void:
-	await _with_system_scope_async(-1, func():
-		return arcana.activate_arcana_by_type_async(Arcanum.Type.START_OF_TURN, self) # <- stack overflow here
-	)
+	arcana.activate_arcana_by_type_async(Arcanum.Type.START_OF_TURN, self)
+	#await _with_system_scope_async(-1, func():
+		#return arcana.activate_arcana_by_type_async(Arcanum.Type.START_OF_TURN, self)
+	#)
 	turn_engine.notify_arcana_proc_done(token)
 
 func _run_arcana_end_of_turn(token: int) -> void:
-	await _with_system_scope_async(-1, func():
-		return arcana.activate_arcana_by_type_async(Arcanum.Type.END_OF_TURN, self)
-	)
+	arcana.activate_arcana_by_type_async(Arcanum.Type.END_OF_TURN, self)
+	#await _with_system_scope_async(-1, func():
+		#return arcana.activate_arcana_by_type_async(Arcanum.Type.END_OF_TURN, self)
+	#)
 	turn_engine.notify_arcana_proc_done(token)
 
 

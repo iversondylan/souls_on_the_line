@@ -15,8 +15,8 @@ enum Type {START_OF_TURN, START_OF_COMBAT, END_OF_TURN, END_OF_COMBAT, EVENT_BAS
 
 var arcanum_display: ArcanumDisplay
 
-func activate_arcanum(_ctx: ArcanumContext) -> void:
-	pass
+func activate_arcanum(_ctx: ArcanumContext) -> Variant:
+	return null
 
 func get_modifier_tokens_for(_target: Node) -> Array[ModifierToken]:
 	return []

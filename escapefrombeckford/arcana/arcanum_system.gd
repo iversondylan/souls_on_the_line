@@ -89,11 +89,13 @@ func get_modifier_tokens_for(target: Node) -> Array[ModifierToken]:
 	return tokens
 
 func activate_arcana_by_type_async(type: Arcanum.Type, host: Node) -> Signal:
-	if !host or !is_instance_valid(host):
-		Events.arcana_activated.emit(type)
+	# host no longer needed; keep signature for now so callsites don’t explode
+	print("arcanum_system.gd activate_arcana_by_type_async")
+	if type == Arcanum.Type.EVENT_BASED:
 		return Signal()
 
-	if type == Arcanum.Type.EVENT_BASED:
+	if !api or !api.runner:
+		# No runner => just do immediate (or emit nothing). For now, no-op safely.
 		return Signal()
 
 	var queue: Array[Arcanum] = []
@@ -102,24 +104,48 @@ func activate_arcana_by_type_async(type: Arcanum.Type, host: Node) -> Signal:
 			queue.push_back(a)
 
 	if queue.is_empty():
-		Events.arcana_activated.emit(type)
 		return Signal()
 
-	var tween := host.get_tree().create_tween()
-
 	for a in queue:
-		var ctx := ArcanumContext.new()
-		ctx.api = api
-		ctx.arcanum_display = _get_display(a.id) # may be null
-		tween.tween_callback(a.activate_arcanum.bind(ctx))
-		print("arcanum_system applying a tween interval")
-		tween.tween_interval(ARCANUM_APPLY_INTERVAL)
-	
-	#tween.finished.connect(func():
+		var d := _get_display(a.id) # may be null
+		api.enqueue_arcanum_activate(a, d)
+		api.enqueue_wait(ARCANUM_APPLY_INTERVAL)
+
+	return Signal()
+
+
+#func activate_arcana_by_type_async(type: Arcanum.Type, host: Node) -> Signal:
+	#if !host or !is_instance_valid(host):
 		#Events.arcana_activated.emit(type)
-	#, CONNECT_ONE_SHOT)
-	
-	return tween.finished
+		#return Signal()
+#
+	#if type == Arcanum.Type.EVENT_BASED:
+		#return Signal()
+#
+	#var queue: Array[Arcanum] = []
+	#for a in _arcana:
+		#if a and a.type == type:
+			#queue.push_back(a)
+#
+	#if queue.is_empty():
+		#Events.arcana_activated.emit(type)
+		#return Signal()
+#
+	#var tween := host.get_tree().create_tween()
+#
+	#for a in queue:
+		#var ctx := ArcanumContext.new()
+		#ctx.api = api
+		#ctx.arcanum_display = _get_display(a.id) # may be null
+		#tween.tween_callback(a.activate_arcanum.bind(ctx))
+		#print("arcanum_system applying a tween interval")
+		#tween.tween_interval(ARCANUM_APPLY_INTERVAL)
+	#
+	##tween.finished.connect(func():
+		##Events.arcana_activated.emit(type)
+	##, CONNECT_ONE_SHOT)
+	#
+	#return tween.finished
 	
 
 
