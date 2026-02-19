@@ -2,12 +2,16 @@
 
 class_name ArcanumActivateOp extends BattleOp
 
+const ID := &"ARCANUM_ACTIVATE_OP"
 var arcanum: Arcanum
 var display: ArcanumDisplay
 
 func _init(a: Arcanum, d: ArcanumDisplay) -> void:
 	arcanum = a
 	display = d
+
+func get_id() -> StringName:
+	return ID
 
 func run(api: LiveBattleAPI, _runner: BattleResolutionRunner) -> Variant:
 	if !api or !arcanum:

@@ -8,3 +8,6 @@ class_name BattleOp extends RefCounted
 # - a GDScriptFunctionState (awaitable)
 func run(_api: LiveBattleAPI, _runner: BattleResolutionRunner) -> Variant:
 	return null
+
+func get_id() -> StringName:
+	return &""

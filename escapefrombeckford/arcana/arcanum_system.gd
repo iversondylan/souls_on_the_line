@@ -90,7 +90,7 @@ func get_modifier_tokens_for(target: Node) -> Array[ModifierToken]:
 
 func activate_arcana_by_type_async(type: Arcanum.Type, host: Node) -> Signal:
 	# host no longer needed; keep signature for now so callsites don’t explode
-	print("arcanum_system.gd activate_arcana_by_type_async")
+	print("arcanum_system.gd activate_arcana_by_type_async() type: ", Arcanum.Type.keys()[type])
 	if type == Arcanum.Type.EVENT_BASED:
 		return Signal()
 

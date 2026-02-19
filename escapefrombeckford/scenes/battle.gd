@@ -57,8 +57,8 @@ var api: LiveBattleAPI
 var host : TurnEngineHostLive
 var turn_engine : TurnEngineCore
 
-var _pending_start_engine_group: int = -1
-var _pending_start_engine_start_at_player: bool = false
+#var _pending_start_engine_group: int = -1
+#var _pending_start_engine_start_at_player: bool = false
 var _player_end_turn_armed: bool = false
 
 func _ready() -> void:
@@ -163,9 +163,7 @@ func start_battle():
 	MusicPlayer.play(music, true)
 	initialize_card_pile_ui()
 	BattleController.current_state = BattleController.BattleState.FRIENDLY_TURN
-	print("1")
-	_apply_group_turn_start_hooks(0)
-	print("2")
+	await _apply_group_turn_start_hooks_scoped(0)
 	turn_engine.start_group_turn(0, true)
 
 func _on_runner_scope_drained(scope: int) -> void:
@@ -178,6 +176,7 @@ func _on_request_activate_arcana_by_type(type: Arcanum.Type):
 
 
 func _on_arcana_activated(type: Arcanum.Type) -> void:
+	print("battle.gd _on_arcana_activated() type: ", Arcanum.Type.keys()[type])
 	pass
 	#match type:
 		#Arcanum.Type.START_OF_COMBAT:
@@ -266,6 +265,7 @@ func _on_actor_requested(combat_id: int) -> void:
 		print("battle.gd _on_actor_requested() not OK")# _run_actor_live already notified removed
 
 func _run_actor_live(combat_id:int) -> bool:
+	print("battle.gd _run_actor_live() step 1")
 	var f: Fighter = battle_scene.get_combatant_by_id(combat_id, true)
 	if !f or !is_instance_valid(f) or !f.is_alive():
 		turn_engine.notify_actor_removed(combat_id)
@@ -279,28 +279,30 @@ func _run_actor_live(combat_id:int) -> bool:
 	f.enter()
 	api.run_status_proc(combat_id, Status.ProcType.START_OF_TURN)
 	await _await_status_proc_finished(f, Status.ProcType.START_OF_TURN)
-	
+	print("battle.gd _run_actor_live() step 2")
 	# Main action (NPC retains/releases scope internally once you add that)
 	f.do_turn()
 	await _await_action_or_removal(f)
-	
+	print("battle.gd _run_actor_live() step 3")
 	# End-of-turn
 	api.run_status_proc(combat_id, Status.ProcType.END_OF_TURN)
 	await _await_status_proc_finished(f, Status.ProcType.END_OF_TURN)
-	
+	print("battle.gd _run_actor_live() step 4")
 	# Now we know the actor is done enqueueing anything *new*
 	if runner and scope_id != 0:
 		runner.close_scope(scope_id)
 		await runner.await_scope_drained(scope_id)
 		runner.end_scope(scope_id)
-	
+	print("battle.gd _run_actor_live() step 5")
 	f.exit()
 	return true
 
 func _await_action_or_removal(actor: Fighter) -> bool:
 	while actor and is_instance_valid(actor):
+		print("battle.gd _await_action_or_removal() awaiting %s, cid: %s..." % [actor.name, actor.combat_id])
 		var resolved: Fighter = await actor.action_resolved
 		if resolved == actor:
+			print("battle.gd _await_action_or_removal() %s, cid: %s action resolved." % [actor.name, actor.combat_id])
 			return true
 	return false
 
@@ -383,11 +385,12 @@ func _on_group_turn_ended(ended_group_index: int) -> void:
 	#_apply_group_turn_start_hooks(0)
 	
 	# Defer engine start until arcana START_OF_TURN resolves + hand is drawn.
-	_pending_start_engine_group = 0
-	_pending_start_engine_start_at_player = true
+	#_pending_start_engine_group = 0
+	#_pending_start_engine_start_at_player = true
 	await _with_system_scope_async(-1, func():
 		return arcana.activate_arcana_by_type_async(Arcanum.Type.START_OF_TURN, self)
 	)
+	turn_engine.start_group_turn(0, true)
 
 func _get_next_group_index(ended_group_index: int) -> int:
 	match ended_group_index:

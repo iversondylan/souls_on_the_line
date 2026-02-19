@@ -58,16 +58,19 @@ func close_scope(scope_id:int) -> void:
 	print("battle_resolution_runner.gd close_scope() s: %s" % scope_id)
 	_closed_scopes[scope_id] = true
 
-func await_scope_drained(scope_id:int) -> void:
+func await_scope_drained(scope_id:int) -> bool:
 	print("battle_resolution_runner.gd await_scope_drained() s: %s" % scope_id)
 	while true:
 		var n := int(_scope_pending_counts.get(scope_id, 0))
 		# IMPORTANT: if closed + no pending + not busy, done.
+		print("battle_resolution_runner.gd await_scope_drained() s: %s. n = %s. _closed_scopes.has(scope_id) = %s" % [scope_id, n, _closed_scopes.has(scope_id)])
 		if n <= 0 and _closed_scopes.has(scope_id):# and !_busy:
-			return
+			print("battle_resolution_runner.gd await_scope_drained() s: %s. Returning." % scope_id)
+			return true
 		# Wait for *any* drain/busy transition; loop re-checks.
 		await scope_drained
 		print("battle_resolution_runner.gd await_scope_drained() s: %s. Scope Drained." % scope_id)
+	return false
 
 func retain_scope(scope_id:int, why:="") -> void:
 	print("battle_resolution_runner.gd retain_scope() scope: %s, because: %s" % [scope_id, why])
@@ -96,13 +99,14 @@ func enqueue_op(op: BattleOp) -> void:
 		return
 	var s := current_scope()
 	if s == 0:
-		print("RUNNER WARN enqueue with scope=0 op=BattleOp (no active scope)")
+		print("RUNNER WARN enqueue with scope=0 op=BattleOp id= %s (no active scope)" % op.get_id())
 	var item := {"op_obj": op, "scope": s}
 	_enqueue_item(item)
 
 func _enqueue_item(item: Dictionary) -> void:
 	var s := int(item.get("scope", 0))
 	if s != 0:
+		print("battle_resolution_runner.gd _enqueue_item() adding +1 to _scope_pending_counts[%s]" % s)
 		_scope_pending_counts[s] = int(_scope_pending_counts.get(s, 0)) + 1
 
 	if _in_run:
@@ -132,81 +136,81 @@ func enqueue_death(combat_id: int, reason: String = "") -> void:
 	if s == 0:
 		print("RUNNER WARN enqueue with scope=0 op=death (no active scope)")
 	_enqueue_item({"op":"death","combat_id":combat_id,"reason":reason,"scope":s})
-	if s != 0:
-		_scope_pending_counts[s] = int(_scope_pending_counts.get(s,0)) + 1
-	_kick()
+	#if s != 0:
+		#_scope_pending_counts[s] = int(_scope_pending_counts.get(s,0)) + 1
+	#_kick()
 
 func enqueue_apply_status(ctx: StatusContext) -> void:
 	var s := current_scope()
 	if s == 0:
 		print("RUNNER WARN enqueue with scope=0 op=apply_status (no active scope)")
 	_enqueue_item({"op":"apply_status","ctx":ctx,"scope":s})
-	if s != 0:
-		_scope_pending_counts[s] = int(_scope_pending_counts.get(s,0)) + 1
-	_kick()
+	#if s != 0:
+		#_scope_pending_counts[s] = int(_scope_pending_counts.get(s,0)) + 1
+	#_kick()
 
 func enqueue_remove_status(ctx: RemoveStatusContext) -> void:
 	var s := current_scope()
 	if s == 0:
 		print("RUNNER WARN enqueue with scope=0 op=remove_status (no active scope)")
 	_enqueue_item({"op":"remove_status","ctx":ctx,"scope":s})
-	if s != 0:
-		_scope_pending_counts[s] = int(_scope_pending_counts.get(s,0)) + 1
-	_kick()
+	#if s != 0:
+		#_scope_pending_counts[s] = int(_scope_pending_counts.get(s,0)) + 1
+	#_kick()
 
 func enqueue_status_proc(target_id: int, proc_type: int) -> void:
 	var s := current_scope()
 	if s == 0:
 		print("RUNNER WARN enqueue with scope=0 op=status_proc (no active scope)")
 	_enqueue_item({"op":"status_proc","id":target_id,"proc":proc_type,"scope":s})
-	if s != 0:
-		_scope_pending_counts[s] = int(_scope_pending_counts.get(s,0)) + 1
-	_kick()
+	#if s != 0:
+		#_scope_pending_counts[s] = int(_scope_pending_counts.get(s,0)) + 1
+	#_kick()
 
 func enqueue_move(ctx: MoveContext) -> void:
 	var s := current_scope()
 	if s == 0:
 		print("RUNNER WARN enqueue with scope=0 op=move (no active scope)")
 	_enqueue_item({"op":"move","ctx":ctx,"scope":s})
-	if s != 0:
-		_scope_pending_counts[s] = int(_scope_pending_counts.get(s,0)) + 1
-	_kick()
+	#if s != 0:
+		#_scope_pending_counts[s] = int(_scope_pending_counts.get(s,0)) + 1
+	#_kick()
 
 func enqueue_damage(ctx: DamageContext) -> void:
 	var s := current_scope()
 	if s == 0:
 		print("RUNNER WARN enqueue with scope=0 op=damage (no active scope)")
 	_enqueue_item({"op":"damage","ctx":ctx,"scope":s})
-	if s != 0:
-		_scope_pending_counts[s] = int(_scope_pending_counts.get(s,0)) + 1
-	_kick()
+	#if s != 0:
+		#_scope_pending_counts[s] = int(_scope_pending_counts.get(s,0)) + 1
+	#_kick()
 
 func enqueue_summon(ctx: SummonContext) -> void:
 	var s := current_scope()
 	if s == 0:
 		print("RUNNER WARN enqueue with scope=0 op=summon (no active scope)")
 	_enqueue_item({"op":"summon","ctx":ctx,"scope":s})
-	if s != 0:
-		_scope_pending_counts[s] = int(_scope_pending_counts.get(s,0)) + 1
-	_kick()
+	#if s != 0:
+		#_scope_pending_counts[s] = int(_scope_pending_counts.get(s,0)) + 1
+	#_kick()
 
 func enqueue_heal(ctx: HealContext) -> void:
 	var s := current_scope()
 	if s == 0:
 		print("RUNNER WARN enqueue with scope=0 op=heal (no active scope)")
 	_enqueue_item({"op":"heal","ctx":ctx,"scope":s})
-	if s != 0:
-		_scope_pending_counts[s] = int(_scope_pending_counts.get(s,0)) + 1
-	_kick()
+	#if s != 0:
+		#_scope_pending_counts[s] = int(_scope_pending_counts.get(s,0)) + 1
+	#_kick()
 
 func enqueue_attack_now(ctx: AttackNowContext) -> void:
 	var s := current_scope()
 	if s == 0:
 		print("RUNNER WARN enqueue with scope=0 op=attack_now (no active scope)")
 	_enqueue_item({"op":"attack_now","ctx":ctx,"scope":s})
-	if s != 0:
-		_scope_pending_counts[s] = int(_scope_pending_counts.get(s,0)) + 1
-	_kick()
+	#if s != 0:
+		#_scope_pending_counts[s] = int(_scope_pending_counts.get(s,0)) + 1
+	#_kick()
 
 
 func _kick() -> void:
