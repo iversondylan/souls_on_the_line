@@ -346,58 +346,6 @@ func _fighter_to_turn_entry(f: Fighter) -> Dictionary:
 		"is_enemy": f is Enemy,
 	}
 
-
-##attack effect target pipeline
-
-#func get_targets_for_attack_sequence(ai_ctx: NPCAIContext) -> Array[Fighter]:
-	#var atk_ctx := AttackTargetContext.new()
-	#atk_ctx.source = ai_ctx.combatant
-	#atk_ctx.params = ai_ctx.params
-	#atk_ctx.base_targets = _get_base_targets_for_attack_sequence(
-		#atk_ctx.source,
-		#atk_ctx.params
-	#)
-	#atk_ctx.base_targets = atk_ctx.base_targets.filter(func(t): return t != null)
-	#atk_ctx.final_targets = atk_ctx.base_targets.duplicate()
-	#atk_ctx.is_single_target_intent = _get_if_single_target_sequence(atk_ctx.params)
-	#_apply_target_modifiers(atk_ctx)
-	#return atk_ctx.final_targets
-
-#func _get_base_targets_for_attack_sequence(
-	#source: Fighter,
-	#params: Dictionary
-#) -> Array[Fighter]:
-	#var target_type : String = params.get(
-		#NPCKeys.TARGET_TYPE,
-		#NPCAttackSequence.TARGET_STANDARD
-	#)
-	#match target_type:
-		#NPCAttackSequence.TARGET_STANDARD:
-			#return [get_front_enemy_of(source)]
-		#NPCAttackSequence.TARGET_OPPONENTS:
-			#return get_enemies_of(source)
-		#NPCAttackSequence.TARGET_ALL:
-			#return get_all_combatants()
-	#return []
-
-#func _get_if_single_target_sequence(params: Dictionary) -> bool:
-	#var target_type : String = params.get(
-		#NPCKeys.TARGET_TYPE,
-		#NPCAttackSequence.TARGET_STANDARD
-	#)
-	#match target_type:
-		#NPCAttackSequence.TARGET_STANDARD:
-			#return true
-		#NPCAttackSequence.TARGET_OPPONENTS:
-			#return false
-		#NPCAttackSequence.TARGET_ALL:
-			#return false
-	#return false
-
-#func _apply_target_modifiers(ctx: AttackTargetContext) -> void:
-	#for fighter in get_all_combatants():
-		#fighter.modify_target(ctx)
-
 func get_front_enemy_of(source: Fighter) -> Fighter:
 	var enemies = get_enemy_fighters_of(source)
 	if enemies.is_empty():

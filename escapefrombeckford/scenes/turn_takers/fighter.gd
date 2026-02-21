@@ -78,7 +78,6 @@ func _set_combatant_data(new_data: CombatantData) -> void:
 		var new_behavior := behavior.duplicate(true)
 		my_behaviors.push_back(new_behavior)
 		new_behavior._on_combatant_data_set(self)
-	
 
 func _set_battle_scene(new_battle_scene: BattleScene) -> void:
 	battle_scene = new_battle_scene
@@ -141,35 +140,35 @@ func set_anchor_position(_position: Vector2, animate: bool) -> void:
 func apply_heal(ctx: HealContext) -> void:
 	if !ctx:
 		return
-
+	
 	# Always ensure ids
 	ctx.target = self
 	ctx.target_id = combat_id
 	if ctx.source and ctx.source_id == 0:
 		ctx.source_id = ctx.source.combat_id
-
+	
 	if battle_scene and battle_scene.api:
 		battle_scene.api.resolve_heal(ctx)
 		return
-
+	
 	push_warning("Fighter.apply_heal called without battle_scene.api")
 
 
 func apply_damage(ctx: DamageContext) -> void:
 	if !ctx:
 		return
-
+	
 	# Always ensure ids
 	ctx.target = self
 	ctx.target_id = combat_id
 	if ctx.source and ctx.source_id == 0:
 		ctx.source_id = ctx.source.combat_id
-
+	
 	# Preferred path: API owns damage + death + visuals
 	if battle_scene and battle_scene.api:
 		battle_scene.api.resolve_damage(ctx)
 		return
-
+	
 	# Fallback: do nothing (or keep a private legacy impl if you want)
 	push_warning("Fighter.apply_damage called without battle_scene.api")
 

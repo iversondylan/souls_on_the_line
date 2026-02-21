@@ -6,13 +6,9 @@ signal scope_drained(scope_id:int)
 
 enum LifeState { ALIVE, DYING, REMOVED }
 
-# combat_id -> LifeState
-
 var _pending_deaths := {} # int combat_id -> true
 var _removed := {} # int combat_id -> true
 
-
-#var _life: Dictionary = {}
 
 var api: LiveBattleAPI
 
@@ -23,7 +19,6 @@ var _scope_stack: Array[int] = []
 var _scope_next: int = 1
 var _closed_scopes := {} # scope_id -> true
 var _scope_pending_counts := {} # scope_id -> int
-#var _scope_waiters := {} # scope_id -> Array[Callable] or Signal
 var _scope_actor := {} # scope_id -> actor_id
 
 var _in_run: bool = false
@@ -142,82 +137,54 @@ func enqueue_death(combat_id: int, reason: String = "") -> void:
 	if s == 0:
 		print("RUNNER WARN enqueue with scope=0 op=death (no active scope)")
 	_enqueue_item({"op":"death","combat_id":combat_id,"reason":reason,"scope":s})
-	#if s != 0:
-		#_scope_pending_counts[s] = int(_scope_pending_counts.get(s,0)) + 1
-	#_kick()
 
 func enqueue_apply_status(ctx: StatusContext) -> void:
 	var s := current_scope()
 	if s == 0:
 		print("RUNNER WARN enqueue with scope=0 op=apply_status (no active scope)")
 	_enqueue_item({"op":"apply_status","ctx":ctx,"scope":s})
-	#if s != 0:
-		#_scope_pending_counts[s] = int(_scope_pending_counts.get(s,0)) + 1
-	#_kick()
 
 func enqueue_remove_status(ctx: RemoveStatusContext) -> void:
 	var s := current_scope()
 	if s == 0:
 		print("RUNNER WARN enqueue with scope=0 op=remove_status (no active scope)")
 	_enqueue_item({"op":"remove_status","ctx":ctx,"scope":s})
-	#if s != 0:
-		#_scope_pending_counts[s] = int(_scope_pending_counts.get(s,0)) + 1
-	#_kick()
 
 func enqueue_status_proc(target_id: int, proc_type: int) -> void:
 	var s := current_scope()
 	if s == 0:
 		print("RUNNER WARN enqueue with scope=0 op=status_proc (no active scope)")
 	_enqueue_item({"op":"status_proc","id":target_id,"proc":proc_type,"scope":s})
-	#if s != 0:
-		#_scope_pending_counts[s] = int(_scope_pending_counts.get(s,0)) + 1
-	#_kick()
 
 func enqueue_move(ctx: MoveContext) -> void:
 	var s := current_scope()
 	if s == 0:
 		print("RUNNER WARN enqueue with scope=0 op=move (no active scope)")
 	_enqueue_item({"op":"move","ctx":ctx,"scope":s})
-	#if s != 0:
-		#_scope_pending_counts[s] = int(_scope_pending_counts.get(s,0)) + 1
-	#_kick()
 
 func enqueue_damage(ctx: DamageContext) -> void:
 	var s := current_scope()
 	if s == 0:
 		print("RUNNER WARN enqueue with scope=0 op=damage (no active scope)")
 	_enqueue_item({"op":"damage","ctx":ctx,"scope":s})
-	#if s != 0:
-		#_scope_pending_counts[s] = int(_scope_pending_counts.get(s,0)) + 1
-	#_kick()
 
 func enqueue_summon(ctx: SummonContext) -> void:
 	var s := current_scope()
 	if s == 0:
 		print("RUNNER WARN enqueue with scope=0 op=summon (no active scope)")
 	_enqueue_item({"op":"summon","ctx":ctx,"scope":s})
-	#if s != 0:
-		#_scope_pending_counts[s] = int(_scope_pending_counts.get(s,0)) + 1
-	#_kick()
 
 func enqueue_heal(ctx: HealContext) -> void:
 	var s := current_scope()
 	if s == 0:
 		print("RUNNER WARN enqueue with scope=0 op=heal (no active scope)")
 	_enqueue_item({"op":"heal","ctx":ctx,"scope":s})
-	#if s != 0:
-		#_scope_pending_counts[s] = int(_scope_pending_counts.get(s,0)) + 1
-	#_kick()
 
 func enqueue_attack_now(ctx: AttackNowContext) -> void:
 	var s := current_scope()
 	if s == 0:
 		print("RUNNER WARN enqueue with scope=0 op=attack_now (no active scope)")
 	_enqueue_item({"op":"attack_now","ctx":ctx,"scope":s})
-	#if s != 0:
-		#_scope_pending_counts[s] = int(_scope_pending_counts.get(s,0)) + 1
-	#_kick()
-
 
 func _kick() -> void:
 	if _busy:
@@ -304,61 +271,3 @@ func _run() -> void:
 	_busy = false
 	_in_run = false
 	scope_drained.emit(-1)
-
-#func _run() -> void:
-	#while !_queue.is_empty():
-		#var item = _queue.pop_front()
-		#var op := str(item.get("op", ""))
-#
-		#match op:
-			#"damage":
-				#var ctx: DamageContext = item.get("ctx", null)
-				#if api and ctx:
-					#await api._run_damage_op(ctx)
-			#"death":
-				#var cid := int(item.get("combat_id", -1))
-				#var reason := str(item.get("reason", ""))
-				#if api and cid != -1:
-					#await api._run_death_op(cid, reason)
-			#"apply_status":
-				#var ctx: StatusContext = item.get("ctx", null)
-				#if api and ctx:
-					#await api._run_apply_status_op(ctx)
-			#"remove_status":
-				#var ctx: RemoveStatusContext = item.get("ctx", null)
-				#if api and ctx:
-					#await api._run_remove_status_op(ctx)
-			#"status_proc":
-				#var cid := int(item.get("id", -1))
-				#var proc := int(item.get("proc", -1))
-				#if api and cid != -1 and proc != -1:
-					#await api._run_status_proc_op(cid, proc)
-			#"summon":
-				#var ctx: SummonContext = item.get("ctx", null)
-				#if api and ctx:
-					#await api._run_summon_op(ctx)
-			#"heal":
-				#var ctx: HealContext = item.get("ctx", null)
-				#if api and ctx:
-					#await api._run_heal_op(ctx)
-			#"move":
-				#var ctx: MoveContext = item.get("ctx", null)
-				#if api and ctx:
-					#await api._run_move_op(ctx)
-			#"attack_now":
-				#var ctx: AttackNowContext = item.get("ctx", null)
-				#if api and ctx:
-					#await api._run_attack_now_op(ctx)
-			#_:
-				#push_warning("BattleResolutionRunner: unknown op: %s" % op)
-#
-		#var s := int(item.get("scope", 0))
-		#if s != 0:
-			#_scope_pending_counts[s] = int(_scope_pending_counts.get(s, 0)) - 1
-			#_maybe_release_scope(s)
-#
-	## Busy flips false only after all work is done.
-	#_busy = false
-#
-	## Wake any waiters who were waiting for !_busy.
-	#scope_drained.emit(-1)

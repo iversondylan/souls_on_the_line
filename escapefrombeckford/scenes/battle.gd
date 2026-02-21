@@ -11,8 +11,6 @@ class_name Battle extends Node2D
 @export var music: AudioStream
 @export var battle_data: BattleData
 
-
-
 @export var idle_delay_sec: float = 1.0
 @export var idle_cooldown_sec: float = 6.0
 
@@ -181,33 +179,6 @@ func _on_request_activate_arcana_by_type(type: Arcanum.Type):
 func _on_arcana_activated(type: Arcanum.Type) -> void:
 	print("battle.gd _on_arcana_activated() type: ", Arcanum.Type.keys()[type])
 	pass
-	#match type:
-		#Arcanum.Type.START_OF_COMBAT:
-			#await _with_system_scope_async(-1, func():
-				#BattleController.current_state = BattleController.BattleState.FRIENDLY_TURN
-				#Events.first_friendly_turn_started.emit()
-				#battle_scene.friendly_group_turn_start()
-				#_apply_group_turn_start_hooks(0)
-			#)
-			#_pending_start_engine_group = 0
-			#_pending_start_engine_start_at_player = true
-			#await _with_system_scope_async(-1, func():
-				#return arcana.activate_arcana_by_type_async(Arcanum.Type.START_OF_TURN, self)
-			#)
-#
-		#Arcanum.Type.START_OF_TURN:
-			##_request_player_hand_draw()
-			##_arm_end_turn_button(true)
-			#
-			## If we were waiting to start the engine, do it now.
-			#if _pending_start_engine_group != -1:
-				#var gi := _pending_start_engine_group
-				#var sap := _pending_start_engine_start_at_player
-				#_pending_start_engine_group = -1
-				#turn_engine.start_group_turn(gi, sap)
-#
-		#Arcanum.Type.END_OF_COMBAT:
-			#Events.request_victory.emit()
 
 func _apply_glow_live(active_id: int, pending_ids: PackedInt32Array) -> void:
 	# If nothing active, clear glow (or keep last — but clearing is safer)
@@ -270,17 +241,6 @@ func _on_actor_requested(combat_id: int) -> void:
 		turn_engine.notify_actor_done(combat_id)
 	else:
 		print("battle.gd _on_actor_requested() not OK")
-
-
-#func _on_actor_requested(combat_id: int) -> void:
-	#print("battle.gd _on_actor_requested() awaiting _run_actor_live")
-	#var ok := await _run_actor_live(combat_id)
-	#print("battle.gd _on_actor_requested() _run_actor_live done")
-	#if ok:
-		#print("battle.gd _on_actor_requested() OK, notifying turn engine done")
-		#turn_engine.notify_actor_done(combat_id)
-	#else:
-		#print("battle.gd _on_actor_requested() not OK")# _run_actor_live already notified removed
 
 func _run_actor_live(combat_id:int) -> bool:
 	print("battle.gd _run_actor_live() step 1")
@@ -695,12 +655,6 @@ func _on_hand_done_drawing() -> void:
 	await _await_arcana_gate_if_any()
 	wait_for_anims = false
 	_arm_end_turn_button(true)
-
-#func _on_hand_done_drawing() -> void:
-	##print("battle.gd _on_hand_done_drawing()")
-	#wait_for_anims = false
-	#_arm_end_turn_button(true)
-
 
 func _arm_end_turn_button(armed: bool) -> void:
 	_player_end_turn_armed = armed

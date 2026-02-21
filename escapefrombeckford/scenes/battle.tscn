@@ -32,10 +32,7 @@ size = Vector2(1200, 200)
 
 [node name="Battle" type="Node2D" unique_id=707689584]
 script = ExtResource("1_dd63g")
-debug_mode = null
 music = ExtResource("2_3b6xh")
-idle_delay_sec = null
-idle_cooldown_sec = null
 
 [node name="Battle_Scene" type="Node2D" parent="." unique_id=862417419 groups=["battle_scene"]]
 script = ExtResource("3_lcn8m")

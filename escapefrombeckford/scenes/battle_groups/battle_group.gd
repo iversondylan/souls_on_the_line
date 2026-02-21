@@ -103,30 +103,6 @@ func remove_combatant(fighter: Fighter):
 	if get_combatants().is_empty():
 		Events.battle_group_empty.emit(self)
 
-
-#func remove_combatant(fighter: Fighter):
-	#remove_child(fighter)
-#
-	#var was_acting := false
-#
-	#if battle_scene and battle_scene.runner:
-		#battle_scene.runner.mark_removed(fighter.combat_id)
-#
-	#fighter.queue_free()
-#
-	#Events.n_combatants_changed.emit()
-	#update_combatant_position()
-	##_recompute_intents_for_group()
-	#_update_pending_turn_glow()
-#
-	#if get_combatants().is_empty():
-		#Events.battle_group_empty.emit(self)
-#
-	#if was_acting:
-		#if battle_scene and battle_scene.api and battle_scene.api is LiveBattleAPI:
-			#var api := battle_scene.api as LiveBattleAPI
-			#api.turn_engine.on_actor_removed(fighter)
-
 func on_combatant_death_side_effects(fighter: Fighter) -> void:
 	if fighter is SummonedAlly:
 		fighter.discard_summon_reserve_card(deck)
@@ -368,7 +344,7 @@ func _build_before_acted_set(
 	for f in before_acting:
 		if f:
 			acting_set[f.get_instance_id()] = true
-
+	
 	var acted_set := {}
 	for f in before_order:
 		if f and !acting_set.has(f.get_instance_id()):
@@ -446,10 +422,8 @@ func clear_preview() -> void:
 	_preview_index = -1
 	update_combatant_position()
 
-
 func get_window_dist() -> float:
 	return get_viewport_rect().size.x * 0.26875
-
 
 func get_summon_slot_position(slot_index: int) -> Vector2:
 	var nodes := _get_layout_nodes()
@@ -461,8 +435,6 @@ func get_summon_slot_position(slot_index: int) -> Vector2:
 	var slot := float(slot_index) + 0.5
 	var x := _get_x_for_slot(slot, layout_count)
 	return global_position + Vector2(x, 0)
-
-
 
 func turn_reset() -> void:
 	for fighter: Fighter in get_combatants():

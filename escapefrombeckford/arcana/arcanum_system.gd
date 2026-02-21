@@ -113,42 +113,6 @@ func activate_arcana_by_type_async(type: Arcanum.Type, host: Node) -> Signal:
 
 	return Signal()
 
-
-#func activate_arcana_by_type_async(type: Arcanum.Type, host: Node) -> Signal:
-	#if !host or !is_instance_valid(host):
-		#Events.arcana_activated.emit(type)
-		#return Signal()
-#
-	#if type == Arcanum.Type.EVENT_BASED:
-		#return Signal()
-#
-	#var queue: Array[Arcanum] = []
-	#for a in _arcana:
-		#if a and a.type == type:
-			#queue.push_back(a)
-#
-	#if queue.is_empty():
-		#Events.arcana_activated.emit(type)
-		#return Signal()
-#
-	#var tween := host.get_tree().create_tween()
-#
-	#for a in queue:
-		#var ctx := ArcanumContext.new()
-		#ctx.api = api
-		#ctx.arcanum_display = _get_display(a.id) # may be null
-		#tween.tween_callback(a.activate_arcanum.bind(ctx))
-		#print("arcanum_system applying a tween interval")
-		#tween.tween_interval(ARCANUM_APPLY_INTERVAL)
-	#
-	##tween.finished.connect(func():
-		##Events.arcana_activated.emit(type)
-	##, CONNECT_ONE_SHOT)
-	#
-	#return tween.finished
-	
-
-
 func activate_arcana_by_type(type: Arcanum.Type, host: Node) -> void:
 	# host is required to create tweens / intervals.
 	if !host or !is_instance_valid(host):
