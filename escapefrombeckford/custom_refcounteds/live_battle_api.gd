@@ -47,8 +47,13 @@ func resolve_damage(ctx: DamageContext) -> void:
 
 
 func resolve_damage_immediate(ctx: DamageContext) -> void:
-	# hydrate (optional), then
+	if !ctx:
+		return
+	print("live_battle_api.gd resolve_damage_immediate() source: ", ctx.source.name, ", base_amount: ", ctx.base_amount)
+	# hydrate if desired (optional; your _run_damage_op does it already)
 	DamageResolver.resolve(self, ctx)
+
+	# sfx
 	if ctx.sound:
 		play_sfx(ctx.sound)
 	else:
@@ -57,7 +62,8 @@ func resolve_damage_immediate(ctx: DamageContext) -> void:
 			play_sfx(load(DEFAULT_RANGED_SOUND))
 		else:
 			play_sfx(load(DEFAULT_MELEE_SOUND))
-	if ctx.was_lethal:
+
+	if ctx.was_lethal and runner:
 		runner.enqueue_death(ctx.target_id, "damage")
 
 func resolve_death(combat_id: int, reason := "") -> void:
@@ -141,7 +147,7 @@ func on_damage_applied(ctx: DamageContext) -> void:
 	# Reactions first (gameplay)
 	if ctx.target:
 		ctx.target.damage_taken.emit(ctx)
-		if ctx.target.combatant and ctx.target.combatant.status_grid:
+		if ctx.target.status_system:
 			ctx.target.status_system.on_damage_taken(ctx)
 
 	# Presentation (live-only)
@@ -184,7 +190,6 @@ func _run_arcanum_activate_op(arcanum: Arcanum, display: ArcanumDisplay) -> Vari
 
 # This is what the runner awaits.
 func _run_damage_op(ctx: DamageContext) -> void:
-	#print("live_battle_api.gd _run_damage_op()")
 	if !ctx:
 		return
 
@@ -198,12 +203,10 @@ func _run_damage_op(ctx: DamageContext) -> void:
 		return
 	if !ctx.target.is_alive():
 		return
-		
 
-	
 	# central resolver
-	DamageResolver.resolve(self, ctx)
-	
+	BattleResolver.resolve_damage_live(self, ctx)
+
 	# lethal followup timing (if you still want the tiny beat)
 	if ctx.was_lethal and ctx.target_id != 0:
 		await battle_scene.get_tree().create_timer(0.05).timeout

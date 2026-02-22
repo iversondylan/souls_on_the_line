@@ -11,15 +11,15 @@ extends Node
 #var is_running: bool = true
 #var turn_number: int = 0
 
-enum BattleState {
-	PRE_GAME,
-	FRIENDLY_TURN,
-	ENEMY_TURN,
-	GAME_OVER,
-	VICTORY
-}
+#enum BattleState {
+	#PRE_GAME,
+	#FRIENDLY_TURN,
+	#ENEMY_TURN,
+	#GAME_OVER,
+	#VICTORY
+#}
 
-var current_state: BattleState = BattleState.PRE_GAME
+#var current_state: BattleState = BattleState.PRE_GAME
 #var current_cards_view_state: CardsViewState = CardsViewState.NO_CARDS_VIEW
 #
 #func pause():

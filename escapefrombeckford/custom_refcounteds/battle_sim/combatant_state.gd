@@ -3,27 +3,86 @@
 class_name CombatantState extends RefCounted
 
 var id: int
-var team: int  # 0 friendly, 1 enemy (you can keep team==group for now)
+var team: int  # 0 friendly, 1 enemy
 var alive: bool = true
 
 # Stats (data-only)
-var name: String
-var max_health: int
-var health: int
-var armor: int
-var mana_r: int
-var mana_g: int
-var mana_b: int
+var name: String = ""
+var max_health: int = 0
+var health: int = 0
+var armor: int = 0
 
-# Authoring refs (do NOT duplicate heavy resources in sim unless needed)
-var data_proto_path: String # or ResourceUID, or reference to CombatantData prototype
+# New: unified mana + attack powers
+var max_mana: int = 0
+var mana: int = 0
+var apm: int = 0 # attack power melee
+var apr: int = 0 # attack power ranged
 
-# Systems (data-side)
+# Authoring refs
+var data_proto_path: String = "" # optional for reconstruction
+
+# Systems (data-side) - keep stubs, even if you ignore them for now
 var statuses: StatusState = StatusState.new()
 var modifiers: ModifierCache = ModifierCache.new()
 
 # AI (data-side)
-var ai_state: Dictionary # AIState = AIState.new()
+var ai_state: Dictionary = {}
 
 # RNG stream (deterministic per unit)
 var rng: RNG
+
+func init_unit_rng(seed: int) -> void:
+	rng = RNG.new()
+	rng.seed = seed
+
+func is_alive() -> bool:
+	return alive and health > 0
+
+func init_from_combatant_data(data: CombatantData) -> void:
+	if !data:
+		return
+
+	name = data.name
+	max_health = int(data.max_health)
+	health = clampi(int(data.health if data.health >= 0 else data.max_health), 0, max_health)
+	armor = int(data.armor)
+
+	# Mapping requested:
+	# - max_mana_blue becomes mana/max_mana
+	# - max_mana_green becomes apm
+	# - max_mana_red becomes apr
+	max_mana = maxi(int(data.max_mana_blue), 0)
+	mana = clampi(int(data.mana_blue), 0, max_mana)
+
+	apm = maxi(int(data.max_mana_green), 0)
+	apr = maxi(int(data.max_mana_red), 0)
+
+	alive = data.is_alive()
+
+func clone() -> CombatantState:
+	var c := CombatantState.new()
+	c.id = id
+	c.team = team
+	c.alive = alive
+
+	c.name = name
+	c.max_health = max_health
+	c.health = health
+	c.armor = armor
+
+	c.max_mana = max_mana
+	c.mana = mana
+	c.apm = apm
+	c.apr = apr
+
+	c.data_proto_path = data_proto_path
+
+	c.statuses = statuses.clone()
+	c.modifiers = modifiers.clone()
+	c.ai_state = ai_state.duplicate(true)
+
+	if rng:
+		c.rng = RNG.new()
+		c.rng.seed = rng.seed
+
+	return c

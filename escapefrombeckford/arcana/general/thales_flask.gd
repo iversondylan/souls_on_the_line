@@ -1,4 +1,8 @@
+# thales_flask.gd
+
 extends Arcanum
+
+const ID := &"thales_flask"
 
 @export var n_heal := 6
 #
@@ -11,6 +15,9 @@ func activate_arcanum(ctx: ArcanumContext) -> Variant:
 		player.heal(n_heal)
 		arcanum_display.flash()
 	return null
+
+func get_id() -> StringName:
+	return ID
 
 #func deactivate_arcanum(_arcanum_display: ArcanumDisplay) -> void:
 	#print("arcanum.gd deactivate_arcanum(): this gets called when an ArcanumDisplay is exiting scene tree.")

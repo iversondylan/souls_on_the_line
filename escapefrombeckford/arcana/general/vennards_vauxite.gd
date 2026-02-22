@@ -1,4 +1,8 @@
+# vennards_vauxite.gd
+
 extends Arcanum
+
+const ID := &"vennards_vauxite.gd"
 
 var block := 3
 
@@ -11,3 +15,6 @@ func activate_arcanum(ctx: ArcanumContext) -> Variant:
 	
 	arcanum_display.flash()
 	return null
+
+func get_id() -> StringName:
+	return ID

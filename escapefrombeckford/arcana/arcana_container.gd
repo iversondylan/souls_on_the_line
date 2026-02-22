@@ -31,7 +31,7 @@ func add_arcana(arcana: Array[Arcanum]) -> void:
 func add_arcanum(arcanum: Arcanum) -> void:
 	if !arcanum:
 		return
-	if system.has_arcanum(arcanum.id):
+	if system.has_arcanum(arcanum.get_id()):
 		return
 
 	system.add_arcanum(arcanum)
@@ -42,18 +42,18 @@ func add_arcanum(arcanum: Arcanum) -> void:
 	d.arcanum = arcanum
 	arcanum.initialize_arcanum(d)
 
-	system.bind_display(arcanum.id, d)
+	system.bind_display(arcanum.get_id(), d)
 
-func remove_arcanum(id: String) -> void:
+func remove_arcanum(id: StringName) -> void:
 	# Kill display first (triggers exiting-tree cleanup), then remove from system.
 	for child in arcana_row.get_children():
 		var d := child as ArcanumDisplay
-		if d and d.arcanum and d.arcanum.id == id:
+		if d and d.arcanum and d.arcanum.get_id() == id:
 			d.queue_free()
 			break
 	system.remove_arcanum(id)
 
-func has_arcanum(id: String) -> bool:
+func has_arcanum(id: StringName) -> bool:
 	return system.has_arcanum(id)
 
 func get_all_arcana() -> Array[Arcanum]:
@@ -65,4 +65,4 @@ func _on_arcanum_display_exiting_tree(node: Node) -> void:
 		return
 	if d.arcanum:
 		d.arcanum.deactivate_arcanum(d)
-		system.unbind_display(d.arcanum.id)
+		system.unbind_display(d.arcanum.get_id())

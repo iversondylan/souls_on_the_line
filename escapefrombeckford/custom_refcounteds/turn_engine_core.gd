@@ -34,14 +34,20 @@ var _cursor_cid: int = 0
 var _player_start_of_turn_fired: bool = false
 var _start_of_combat_fired: bool = false
 
-# turn_engine_core.gd
-#var on_start_of_combat: Callable = Callable()
-#var on_before_player_turn: Callable = Callable()
-#var on_after_player_turn: Callable = Callable()
-
-
 func _init(_host: TurnEngineHost) -> void:
 	host = _host
+
+func _await_maybe(v: Variant) -> void:
+	if v is Signal and !(v as Signal).is_null():
+		await (v as Signal)
+		return
+	if typeof(v) == TYPE_OBJECT and v != null:
+		# Covers async function states
+		if v.get_class() == "GDScriptFunctionState":
+			await v
+			return
+	# Anything else (bool/int/null/etc): treat as immediate
+	return
 
 func start_group_turn(group_index: int, start_at_player := false) -> void:
 	print("turn_engine_core.gd start_group_turn()")
@@ -73,31 +79,21 @@ func start_group_turn(group_index: int, start_at_player := false) -> void:
 
 	_advance_to_next_actor()
 
-
-func resume_after_player_done() -> void:
-	print("turn_engine_core.gd resume_after_player_done()")
-	if phase == Phase.IDLE:
-		_advance_to_next_actor()
-
 func notify_actor_done(combat_id: int) -> void:
-	#print("TE notify_actor_done cid=", combat_id, " current=", current_actor_id, " running=", _running_actor)
-	print("turn_engine_core.gd notify_actor_done()")
-	# Called by host after it finishes running the actor.
+	print("turn_engine_core.gd notify_actor_done() cid: ", combat_id)
 	if combat_id != current_actor_id:
-		# stale / ignored
 		return
-	
+
 	_running_actor = false
 	_mark_turn_taken(combat_id)
 	_restore_allowed.erase(combat_id)
 	_queue_dirty = true
 	phase = Phase.IDLE
-	
+
+	# Player: after the actor finishes (i.e., action_resolved already happened),
+	# bracket END_OF_TURN arcana.
 	if active_group_index == 0 and host.is_player(combat_id):
 		_request_arcana(ArcanaProc.END_OF_TURN, func():
-			# allow START_OF_TURN again only when we come back around to player in a future cycle
-			# (optional; only needed if player can re-enter in same group turn)
-			# _player_start_of_turn_fired = false
 			_advance_to_next_actor()
 		)
 		return
@@ -169,7 +165,6 @@ func _crossed_behind(cid: int, ctx, before_anchor: int, after_anchor: int) -> bo
 	return (b <= before_anchor) and (a > after_anchor)
 
 func _advance_to_next_actor() -> void:
-	print("turn_engine_core.gd _advance_to_next_actor()")
 	if _running_actor:
 		return
 	if active_group_index < 0:
@@ -177,35 +172,41 @@ func _advance_to_next_actor() -> void:
 		return
 
 	if _queue_dirty:
-		#print("turn_engine_core.gd _advance_to_next_actor() rebuilding queue")
 		_rebuild_queue()
-	print("turn_engine_core.gd _advance_to_next_actor() queue is ", _queue)
+
 	if _queue.is_empty():
-		#print("turn_engine_core.gd _advance_to_next_actor() queue is empty")
 		_end_group_turn()
 		return
-	
+
 	var actor_id := int(_queue[0])
 	if !host.is_alive(actor_id):
-		#print("turn_engine_core.gd _advance_to_next_actor() first in queue is dead")
 		_queue.remove_at(0)
 		_queue_dirty = true
 		_advance_to_next_actor()
 		return
-	
-	if active_group_index == 0 and host.is_player(actor_id) and !_player_start_of_turn_fired:
-		_player_start_of_turn_fired = true
-		_request_arcana(ArcanaProc.START_OF_TURN, func():
-			_advance_to_next_actor()
-		)
-		return
-	
+
+	# PLAYER SPECIAL CASE
+	if active_group_index == 0 and host.is_player(actor_id):
+		# Only once per group-turn cycle (your existing flag still useful)
+		if !_player_start_of_turn_fired:
+			_player_start_of_turn_fired = true
+
+			# 1) host runs: reset stats, draw hand, wait for hand draw
+			await _await_maybe(await host.begin_player_turn_async())
+
+			# 2) now arcana START_OF_TURN happens AFTER hand draw
+			_request_arcana(ArcanaProc.START_OF_TURN, func():
+				# after arcana finishes, proceed into actually granting the turn
+				_advance_to_next_actor()
+			)
+			return
+
+		# If already fired, fall through and request actor like normal.
+
 	current_actor_id = actor_id
 	_running_actor = true
 	_cursor_cid = actor_id
-	
 	_publish_pending_view()
-	
 	actor_requested.emit(actor_id)
 
 func _reset() -> void:
@@ -373,7 +374,7 @@ func notify_arcana_proc_done(token: int) -> void:
 		resume.call()
 
 func _request_arcana(proc: int, resume: Callable) -> void:
-	print("turn_engine_core.gd _request_arcana()")
+	print("turn_engine_core.gd _request_arcana() type: ", Arcanum.Type.keys()[proc])
 	if _waiting_for_arcana:
 		return # or push/queue, but "return" is fine while you debug
 	_waiting_for_arcana = true

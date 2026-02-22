@@ -13,6 +13,7 @@ class_name Battle extends Node2D
 
 @export var idle_delay_sec: float = 1.0
 @export var idle_cooldown_sec: float = 6.0
+@onready var sim_host: SimHost = $SimHost
 
 @onready var player_scn: PackedScene = preload("res://scenes/turn_takers/player.tscn")
 @onready var enemy_scn: PackedScene = preload("res://scenes/turn_takers/enemy.tscn")
@@ -44,6 +45,7 @@ var player: Player
 var deck: Deck : set = _set_deck
 var run: Run : set = _set_run
 var arcana: ArcanaSystem
+var arcana_catalog: ArcanaCatalog
 var mouse_pressed: bool = false
 var enemy_character_state: int = 0
 var wait_for_anims: bool = false
@@ -58,11 +60,16 @@ var turn_engine : TurnEngineCore
 #var _pending_start_engine_group: int = -1
 #var _pending_start_engine_start_at_player: bool = false
 var _player_end_turn_armed: bool = false
+var _awaiting_player_discard: bool = false
 
 var _arcana_gate: Variant = null # GDScriptFunctionState or Signal or null
 var _arcana_gate_seq: int = 0    # monotonic token to avoid “old gate clears new 
 
 func _ready() -> void:
+	
+	
+	
+	
 	#print_tree_pretty()
 	api = LiveBattleAPI.new(battle_scene)
 	host = TurnEngineHostLive.new(self)
@@ -87,7 +94,7 @@ func _ready() -> void:
 	Events.fighter_entered_turn.connect(_on_fighter_entered_turn)
 	
 	get_tree().paused = false
-	BattleController.current_state = BattleController.BattleState.PRE_GAME
+	#BattleController.current_state = BattleController.BattleState.PRE_GAME
 	Events.dead_combatant_data.connect(_on_dead_combatant_data)
 	Events.battle_group_empty.connect(_on_battle_group_empty)
 	Events.player_combatant_data_changed.connect(_on_player_data_changed)
@@ -115,6 +122,7 @@ func _ready() -> void:
 	
 	Events.end_turn_button_pressed.connect(_on_end_turn_button_pressed_live)
 	Events.hand_drawn.connect(_on_hand_done_drawing)
+	Events.hand_discarded.connect(_on_hand_discarded)
 	# Optional: start with End Turn disabled until we draw
 	battle_ui.set_end_turn_enabled(false)
 
@@ -142,11 +150,20 @@ func initialize_card_pile_ui() -> void:
 	discard_pile_view.deck = deck
 
 func start_battle():
+	
+	sim_host.init_from_seeds(battle_scene.battle_seed, battle_scene.run_seed)
+	sim_host.status_catalog = run.status_catalog
+	sim_host.arcana_catalog = run.arcanum_catalog
+	# ids are the .get_id()'s of currently owned arcana
+	seed_arcana_from_ids(ids) #ids: Array[StringName]
+	
+	
+	
 	battle_scene.run_seed = run_seed
 	battle_scene.battle_seed = battle_seed
 	if wait_for_anims:
 		return
-	BattleController.current_state = BattleController.BattleState.PRE_GAME
+	#BattleController.current_state = BattleController.BattleState.PRE_GAME
 	
 	wait_for_anims = true
 	
@@ -163,7 +180,7 @@ func start_battle():
 	deck.make_draw_pile()
 	MusicPlayer.play(music, true)
 	initialize_card_pile_ui()
-	BattleController.current_state = BattleController.BattleState.FRIENDLY_TURN
+	#BattleController.current_state = BattleController.BattleState.FRIENDLY_TURN
 	await _apply_group_turn_start_hooks_scoped(0)
 	turn_engine.start_group_turn(0, true)
 
@@ -233,7 +250,11 @@ func _on_actor_requested(combat_id: int) -> void:
 
 	# HARD RULE: don’t start an actor while arcana still running.
 	await _await_arcana_gate_if_any()
-
+	print("battle.gd _on_actor_requested() done awaiting _run_actor_live. Asking if it's the player.")
+	if host.is_player(combat_id):
+		print("battle.gd _on_actor_requested() it is. Arming end turn button.")
+		wait_for_anims = false
+		_arm_end_turn_button(true)
 	var ok := await _run_actor_live(combat_id)
 	print("battle.gd _on_actor_requested() _run_actor_live done")
 	if ok:
@@ -368,11 +389,84 @@ func _start_arcana_scope_detached(arcanum_type: int) -> void:
 	var my_seq := _arcana_gate_seq
 
 	# Fire-and-forget coroutine that will end the scope later
-	#_arcana_gate = _finish_detached_scope_later(sid, my_seq)
+	_arcana_gate = await _finish_detached_scope_later(sid, my_seq)
 	_finish_detached_scope_later(sid, my_seq)
 
+func begin_player_turn_async() -> bool:
+	print("battle.gd begin_player_turn_async()")
+	await _await_arcana_gate_if_any()
 
-func _finish_detached_scope_later(scope_id: int, seq: int) -> void:
+	wait_for_anims = true
+	_arm_end_turn_button(false)
+
+	if player and is_instance_valid(player):
+		player.combatant_data.reset_armor()
+		player.combatant_data.reset_mana()
+		_on_player_data_changed()
+
+	_prepare_hand_draw_gate()
+	Events.request_draw_hand.emit()
+	await _await_hand_draw_gate()
+
+	print("battle.gd begin_player_turn_async() done awaiting hand_draw")
+	wait_for_anims = false
+	
+	sim_host.debug_dump_orders()
+	
+	return true
+
+func _prepare_hand_draw_gate() -> void:
+	_wait_hand_drawn_done = false
+	var c := Callable(self, "_on_hand_drawn_one_shot")
+	if Events.hand_drawn.is_connected(c):
+		Events.hand_drawn.disconnect(c)
+	Events.hand_drawn.connect(c, CONNECT_ONE_SHOT)
+
+func _await_hand_draw_gate() -> void:
+	while !_wait_hand_drawn_done:
+		await get_tree().process_frame
+
+func end_player_turn_async() -> bool:
+	print("battle.gd end_player_turn_async()")
+	# Called by TurnEngineCore after it thinks player is "done".
+	# Goal: ensure discard finished, resolve action, and drain runner scope (already handled in _run_actor_live)
+
+	await _await_arcana_gate_if_any()
+
+	# If End Turn triggers discard flow, wait for that to complete.
+	# We treat hand_discarded as the boundary that the player's chosen discard is complete.
+	await _await_hand_discarded_once()
+
+	# Now resolve the player's action (this is what PlayerBehavior used to do)
+	if player and is_instance_valid(player):
+		player.resolve_action()
+	return true
+
+var _wait_hand_discarded_done: bool = false
+func _on_hand_discarded_one_shot() -> void:
+	print("battle.gd _on_hand_discarded_one_shot()")
+	_wait_hand_discarded_done = true
+func _await_hand_discarded_once() -> void:
+	print("battle.gd _await_hand_discarded_once()")
+	_wait_hand_discarded_done = false
+	if !Events.hand_discarded.is_connected(_on_hand_discarded_one_shot):
+		Events.hand_discarded.connect(_on_hand_discarded_one_shot, CONNECT_ONE_SHOT)
+	while !_wait_hand_discarded_done:
+		await get_tree().process_frame
+
+var _wait_hand_drawn_done: bool = false
+func _on_hand_drawn_one_shot() -> void:
+	print("battle.gd _on_hand_drawn_one_shot()")
+	_wait_hand_drawn_done = true
+func _await_hand_drawn_once() -> void:
+	print("battle.gd _await_hand_drawn_once()")
+	_wait_hand_drawn_done = false
+	if !Events.hand_drawn.is_connected(_on_hand_drawn_one_shot):
+		Events.hand_drawn.connect(_on_hand_drawn_one_shot, CONNECT_ONE_SHOT)
+	while !_wait_hand_drawn_done:
+		await get_tree().process_frame
+
+func _finish_detached_scope_later(scope_id: int, seq: int) -> bool:
 	# This is the gate "promise"
 	await api.runner.await_scope_drained(scope_id)
 	api.runner.end_scope(scope_id)
@@ -380,6 +474,7 @@ func _finish_detached_scope_later(scope_id: int, seq: int) -> void:
 	# Only clear if we're still the latest gate
 	if seq == _arcana_gate_seq:
 		_arcana_gate = null
+	return true
 
 func _await_status_proc_finished(actor: Fighter, want_proc: Status.ProcType) -> void:
 	var start_tick := actor.last_status_proc_tick
@@ -392,47 +487,19 @@ func _await_status_proc_finished(actor: Fighter, want_proc: Status.ProcType) -> 
 			return
 
 func _on_group_turn_ended(ended_group_index: int) -> void:
-	# Don’t run group transitions while arcana still running.
 	await _await_arcana_gate_if_any()
 	_apply_group_turn_end_hooks(ended_group_index)
-	
-	if ended_group_index == 0:
-		# Friendly group ended => real END_OF_TURN boundary
-		await _with_system_scope_async(-1, func():
-			return arcana.activate_arcana_by_type_async(Arcanum.Type.END_OF_TURN, self)
-		)
 
-		
-		# Friendly -> Enemy
-		#battle_scene.friendly_group_turn_end()
-		BattleController.current_state = BattleController.BattleState.ENEMY_TURN
-		#battle_scene.enemy_group_turn_start()
+	if ended_group_index == 0:
 		Events.enemy_turn_started.emit()
-		print("battle.gd _on_group_turn_ended() awaiting _apply_group_turn_start_hooks_scoped(1)...")
 		await _apply_group_turn_start_hooks_scoped(1)
-		print("battle.gd _on_group_turn_ended() done awaiting _apply_group_turn_start_hooks_scoped(1)")
-		#_apply_group_turn_start_hooks(1)
-		_arm_end_turn_button(false) # player not acting
+		_arm_end_turn_button(false)
 		turn_engine.start_group_turn(1, false)
 		return
-	
-	# Enemy -> Friendly
-	#battle_scene.enemy_group_turn_end()
-	BattleController.current_state = BattleController.BattleState.FRIENDLY_TURN
-	#battle_scene.friendly_group_turn_start()
+
 	Events.friendly_turn_started.emit()
-	print("battle.gd _on_group_turn_ended() awaiting _apply_group_turn_start_hooks_scoped(0)...")
 	await _apply_group_turn_start_hooks_scoped(0)
-	print("battle.gd _on_group_turn_ended() done awaiting _apply_group_turn_start_hooks_scoped(0)")
-	#var next_group_index := 0
-	#_apply_group_turn_start_hooks(0)
-	
-	# Defer engine start until arcana START_OF_TURN resolves + hand is drawn.
-	#_pending_start_engine_group = 0
-	#_pending_start_engine_start_at_player = true
-	await _with_system_scope_async(-1, func():
-		return arcana.activate_arcana_by_type_async(Arcanum.Type.START_OF_TURN, self)
-	)
+	_arm_end_turn_button(false)
 	turn_engine.start_group_turn(0, true)
 
 func _get_next_group_index(ended_group_index: int) -> int:
@@ -542,10 +609,6 @@ func _with_system_scope_async(actor_id: int, work: Callable) -> void:
 	print("battle.gd _with_system_scope_async() actor_id: %s, sid: %s done awaiting." % [actor_id, sid])
 	runner.end_scope(sid)
 
-
-
-
-
 func make_player_combatant() -> void:
 	var new_player: Player = player_scn.instantiate()
 	battle_scene.add_combatant(new_player, 0, 0)
@@ -554,6 +617,8 @@ func make_player_combatant() -> void:
 	battle_scene.set_player(new_player)
 	player = new_player
 	hand.player = new_player
+	# --- NEW: add to sim (after live has a combat_id) ---
+	sim_host.add_combatant_from_data(new_player.combat_id, player_data, 0, 0, true)
 
 func make_enemies() -> void:
 	if !battle_data:
@@ -566,6 +631,8 @@ func make_enemies() -> void:
 		var new_data: CombatantData = enemy_data.duplicate()
 		new_data.init()
 		new_enemy.combatant_data = new_data
+		# --- NEW: add to sim using same id + group/rank ---
+		sim_host.add_combatant_from_data(new_enemy.combat_id, new_data, 1, new_enemy_index, false)
 
 func _on_end_turn_pressed() -> void:
 	if wait_for_anims:
@@ -652,25 +719,49 @@ func simulate_battle() -> void:
 	#sim_battle.print_sim_snapshot()
 
 func _on_hand_done_drawing() -> void:
+	#above^:     Events.hand_drawn.connect(_on_hand_done_drawing)
+	print("battle.gd _on_hand_done_drawing()")
 	await _await_arcana_gate_if_any()
 	wait_for_anims = false
-	_arm_end_turn_button(true)
+	#_arm_end_turn_button(true)
+
+func _on_hand_discarded() -> void:
+	print("battle.gd _on_hand_discarded() awaiting=%s current_actor=%s player=%s" % [
+		_awaiting_player_discard,
+		turn_engine.current_actor_id,
+		(player.combat_id if player else -1)
+	])
+
+	if !_awaiting_player_discard:
+		return
+
+	# Only treat this as the player’s discard if the player is the current actor.
+	if !player or !is_instance_valid(player):
+		return
+	if int(turn_engine.current_actor_id) != int(player.combat_id):
+		return
+
+	_awaiting_player_discard = false
+
+	# This MUST happen to release _await_action_or_removal().
+	print("battle.gd _on_hand_discarded(): calling player.resolve_action()")
+	player.resolve_action()
 
 func _arm_end_turn_button(armed: bool) -> void:
+	print("battle.gd _arm_end_turn_button() armed: ", armed)
 	_player_end_turn_armed = armed
 	battle_ui.set_end_turn_enabled(armed)
 
 func _on_end_turn_button_pressed_live() -> void:
+	print("battle.gd _on_end_turn_button_pressed_live()")
 	if wait_for_anims:
-		return
-	if BattleController.current_state != BattleController.BattleState.FRIENDLY_TURN:
 		return
 	if !_player_end_turn_armed:
 		return
-	
-	# Disarm immediately so double clicks / repeated presses don't re-enter.
+
 	_arm_end_turn_button(false)
-	
-	# This is the ONE thing End Turn does:
-	# it tells the Player to finish their action, which Hand turns into discard->hand_discarded->resolve_action.
+
+	# We are now waiting for the discard flow to finish.
+	_awaiting_player_discard = true
+
 	Events.player_turn_completed.emit()

@@ -1,15 +1,20 @@
+# favoring_scales.gd
+
 class_name FavoringScales extends Arcanum
 
-#const ID := "favoring_scales"
+const ID := "favoring_scales"
 
 @export_range(1, 100) var discount := 50
+
+func get_id() -> StringName:
+	return ID
 
 func get_modifier_tokens_for(_target: Node) -> Array[ModifierToken]:
 	var token := ModifierToken.new()
 	token.type = Modifier.Type.SHOP_COST
 	token.mult_value = -discount / 100.0
 	token.scope = ModifierToken.Scope.GLOBAL
-	token.source_id = id
+	token.source_id = get_id()
 	token.owner = arcanum_display
 	return [token]
 

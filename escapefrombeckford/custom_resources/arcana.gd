@@ -1,3 +1,5 @@
+# arcana.gd
+
 class_name Arcana extends Resource
 
 ##To populate the list of all arcana at

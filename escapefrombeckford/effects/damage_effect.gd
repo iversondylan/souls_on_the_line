@@ -28,7 +28,7 @@ func execute(api: BattleAPI) -> void:
 		ctx.target_id = t.combat_id
 
 		ctx.base_amount = n_damage
-
+		print("damage_effect.gd execute() [building a DamageContext] base amount: ", ctx.base_amount)
 		# IMPORTANT: these are what enable DMG_DEALT / DMG_TAKEN
 		if use_modifiers:
 			ctx.deal_modifier_type = deal_modifier_type

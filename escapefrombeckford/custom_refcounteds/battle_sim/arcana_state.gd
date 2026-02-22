@@ -4,7 +4,7 @@ class_name ArcanaState extends RefCounted
 # Headless ownership + per-arcana runtime fields.
 # Keep it light: no Resources, no Nodes.
 #
-# You can store either:
+# Store either:
 # - arcana_id: StringName (preferred)
 # - proto_path: String (if you author them as .tres and want to load in Live only)
 #
@@ -24,7 +24,7 @@ class ArcanumEntry extends RefCounted:
 # Ordered list = deterministic activation order
 var list: Array[ArcanumEntry] = []
 
-# Fast lookup (optional)
+# Fast lookup
 var by_id: Dictionary = {} # StringName -> ArcanumEntry
 
 func clear() -> void:

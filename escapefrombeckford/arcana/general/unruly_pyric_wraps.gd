@@ -1,4 +1,10 @@
+# unruly_pyric_wraps.gd
+
+
+
 extends Arcanum
+
+const ID := &"unruly_pyric_wraps"
 
 var damage := 2
 
@@ -16,3 +22,6 @@ func activate_arcanum(ctx: ArcanumContext) -> Variant:
 	damage_effect.execute(ctx.api)
 	arcanum_display.flash()
 	return null
+
+func get_id() -> StringName:
+	return ID

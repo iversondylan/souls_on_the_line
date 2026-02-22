@@ -5,7 +5,7 @@ class_name Arcanum extends Resource
 enum Type {START_OF_TURN, START_OF_COMBAT, END_OF_TURN, END_OF_COMBAT, EVENT_BASED}
 
 @export var arcanum_name: String
-@export var id: String
+#@export var id: String
 @export var type: Type
 @export var starter_arcanum: bool = false
 @export var icon: Texture
@@ -14,6 +14,9 @@ enum Type {START_OF_TURN, START_OF_COMBAT, END_OF_TURN, END_OF_COMBAT, EVENT_BAS
 @export_multiline var lore: String
 
 var arcanum_display: ArcanumDisplay
+
+func get_id() -> StringName:
+	return &""
 
 func activate_arcanum(_ctx: ArcanumContext) -> Variant:
 	return null
@@ -42,4 +45,4 @@ func get_tooltip() -> String:
 func can_appear_as_reward(player: PlayerData) -> bool:
 	if starter_arcanum:
 		return false
-	return player.possible_arcana.get_ids().has(id)
+	return player.possible_arcana.get_ids().has(get_id())

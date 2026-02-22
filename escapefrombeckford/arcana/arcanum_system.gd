@@ -49,20 +49,20 @@ func add_arcana(arcana: Array[Arcanum]) -> void:
 func add_arcanum(arcanum: Arcanum) -> void:
 	if !arcanum:
 		return
-	if arcanum.id == "":
+	if arcanum.get_id() == &"":
 		return
-	if has_arcanum(arcanum.id):
+	if has_arcanum(arcanum.get_id()):
 		return
 
 	_arcana.push_back(arcanum)
-	_by_id[arcanum.id] = arcanum
+	_by_id[arcanum.get_id()] = arcanum
 
 	if arcanum.contributes_modifier():
 		for mod_type in arcanum.get_contributed_modifier_types():
 			modifier_tokens_changed.emit(mod_type)
 
-func remove_arcanum(id: String) -> void:
-	if id == "" or !_by_id.has(id):
+func remove_arcanum(id: StringName) -> void:
+	if id == &"" or !_by_id.has(id):
 		return
 
 	var arcanum: Arcanum = _by_id[id]
@@ -107,7 +107,7 @@ func activate_arcana_by_type_async(type: Arcanum.Type, host: Node) -> Signal:
 		return Signal()
 
 	for a in queue:
-		var d := _get_display(a.id) # may be null
+		var d := _get_display(a.get_id()) # may be null
 		api.enqueue_arcanum_activate(a, d)
 		api.enqueue_wait(ARCANUM_APPLY_INTERVAL)
 
@@ -137,7 +137,7 @@ func activate_arcana_by_type(type: Arcanum.Type, host: Node) -> void:
 	for a in queue:
 		var ctx := ArcanumContext.new()
 		ctx.api = api
-		ctx.arcanum_display = _get_display(a.id) # may be null; ok
+		ctx.arcanum_display = _get_display(a.get_id()) # may be null; ok
 		tween.tween_callback(a.activate_arcanum.bind(ctx))
 		tween.tween_interval(ARCANUM_APPLY_INTERVAL)
 

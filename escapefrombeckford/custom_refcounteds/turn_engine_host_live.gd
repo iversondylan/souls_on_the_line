@@ -38,3 +38,16 @@ func is_alive(combat_id: int) -> bool:
 func is_player(combat_id: int) -> bool:
 	var f := battle_scene.get_combatant_by_id(combat_id, true)
 	return f != null and is_instance_valid(f) and (f is Player)
+
+
+# Called when the engine is about to hand control to the player.
+func begin_player_turn_async() -> Variant:
+	if !battle:
+		return null
+	return await battle.begin_player_turn_async()
+
+# Called after the player has finished and battle resolved discard/resolve.
+func end_player_turn_async() -> Variant:
+	if !battle:
+		return null
+	return await battle.end_player_turn_async()

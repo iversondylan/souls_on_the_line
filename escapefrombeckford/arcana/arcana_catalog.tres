@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="Arcana" load_steps=9 format=3 uid="uid://dk5tv1hrr615d"]
+[gd_resource type="Resource" script_class="Arcana" format=3 uid="uid://dk5tv1hrr615d"]
 
 [ext_resource type="Script" uid="uid://cnmucv1qsei4i" path="res://custom_resources/arcanum.gd" id="1_ia7j3"]
 [ext_resource type="Script" uid="uid://ohjvtcorpcp4" path="res://custom_resources/arcana.gd" id="2_quber"]

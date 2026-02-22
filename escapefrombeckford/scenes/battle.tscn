@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" uid="uid://dixfcu6jmx0kd" path="res://scenes/battle.gd" id="1_dd63g"]
 [ext_resource type="AudioStream" uid="uid://dqm0r66m6ggwt" path="res://assets/music/enchanted tiki 86.mp3" id="2_3b6xh"]
+[ext_resource type="Script" uid="uid://8txpx232aks0" path="res://scenes/sim_host.gd" id="3_1m01a"]
 [ext_resource type="Script" uid="uid://0a8baesyqdot" path="res://scenes/battle_scene.gd" id="3_lcn8m"]
 [ext_resource type="PackedScene" uid="uid://co7q6uigpt8n4" path="res://scenes/battle_resolution_runner.tscn" id="4_kl6ie"]
 [ext_resource type="Texture2D" uid="uid://jml4obgrdfeg" path="res://assets/backgrounds/flat-forestred-dark.png" id="4_yhk5m"]
@@ -32,7 +33,13 @@ size = Vector2(1200, 200)
 
 [node name="Battle" type="Node2D" unique_id=707689584]
 script = ExtResource("1_dd63g")
+debug_mode = null
 music = ExtResource("2_3b6xh")
+idle_delay_sec = null
+idle_cooldown_sec = null
+
+[node name="SimHost" type="Node" parent="." unique_id=1488075628]
+script = ExtResource("3_1m01a")
 
 [node name="Battle_Scene" type="Node2D" parent="." unique_id=862417419 groups=["battle_scene"]]
 script = ExtResource("3_lcn8m")
