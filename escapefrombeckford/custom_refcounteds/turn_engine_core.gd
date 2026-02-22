@@ -10,6 +10,8 @@ signal pending_view_changed(active_id: int, pending_ids: PackedInt32Array)
 enum Phase { IDLE, ACTOR_START, WAITING_FOR_ACTION, ACTOR_END }
 enum ArcanaProc { START_OF_COMBAT, START_OF_TURN, END_OF_TURN }
 
+var sim: bool = false
+
 var _waiting_for_arcana: bool = false
 var _arcana_token: int = 0
 var _resume_after_arcana: Callable = Callable()
@@ -37,20 +39,20 @@ var _start_of_combat_fired: bool = false
 func _init(_host: TurnEngineHost) -> void:
 	host = _host
 
-func _await_maybe(v: Variant) -> void:
-	if v is Signal and !(v as Signal).is_null():
-		await (v as Signal)
-		return
-	if typeof(v) == TYPE_OBJECT and v != null:
-		# Covers async function states
-		if v.get_class() == "GDScriptFunctionState":
-			await v
-			return
-	# Anything else (bool/int/null/etc): treat as immediate
-	return
+#func _await_maybe(v: Variant) -> void:
+	#if v is Signal and !(v as Signal).is_null():
+		#await (v as Signal) # <- Error connecting to signal: completed during await.
+		#return
+	#if typeof(v) == TYPE_OBJECT and v != null:
+		## Covers async function states
+		#if v.get_class() == "GDScriptFunctionState":
+			#await v
+			#return
+	## Anything else (bool/int/null/etc): treat as immediate
+	#return
 
 func start_group_turn(group_index: int, start_at_player := false) -> void:
-	print("turn_engine_core.gd start_group_turn()")
+	print("turn_engine_core.gd start_group_turn() %s group index: %s, " % ["SIM" if sim else "LIVE", group_index])
 	active_group_index = group_index
 	_start_at_player = start_at_player
 	_turn_token += 1
@@ -80,7 +82,7 @@ func start_group_turn(group_index: int, start_at_player := false) -> void:
 	_advance_to_next_actor()
 
 func notify_actor_done(combat_id: int) -> void:
-	print("turn_engine_core.gd notify_actor_done() cid: ", combat_id)
+	print("turn_engine_core.gd notify_actor_done() %s cid: %s" % ["SIM" if sim else "LIVE", combat_id])
 	if combat_id != current_actor_id:
 		return
 
@@ -102,7 +104,7 @@ func notify_actor_done(combat_id: int) -> void:
 
 func notify_actor_removed(combat_id: int) -> void:
 	#print("TE notify_actor_removed cid=", combat_id, " current=", current_actor_id, " running=", _running_actor)
-	print("turn_engine_core.gd notify_actor_removed()")
+	print("turn_engine_core.gd notify_actor_removed() %s cid: %s" % ["SIM" if sim else "LIVE", combat_id])
 	if combat_id == current_actor_id:
 		current_actor_id = 0
 		phase = Phase.IDLE
@@ -113,14 +115,14 @@ func notify_actor_removed(combat_id: int) -> void:
 		_queue_dirty = true
 
 func notify_summon_added(combat_id: int, group_index: int) -> void:
-	print("turn_engine_core.gd notify_summon_added()")
+	print("turn_engine_core.gd notify_summon_added() %s cid: %s group_idx: %s" % ["SIM" if sim else "LIVE", combat_id, group_index])
 	if group_index != active_group_index:
 		return
 	_queue_dirty = true
 	_publish_pending_view()
 
 func notify_move_executed(ctx) -> void:
-	print("turn_engine_core.gd notify_move_executed()")
+	print("turn_engine_core.gd notify_move_executed() %s" % ["SIM" if sim else "LIVE"])
 	# ctx should be "data only": actor_id, target_id, can_restore_turn, before_order_ids, after_order_ids
 	if ctx == null or !ctx.can_restore_turn:
 		return
@@ -155,7 +157,7 @@ func notify_move_executed(ctx) -> void:
 	_publish_pending_view()
 
 func _crossed_behind(cid: int, ctx, before_anchor: int, after_anchor: int) -> bool:
-	print("turn_engine_core.gd _crossed_behind()")
+	print("turn_engine_core.gd _crossed_behind() %s" % ["SIM" if sim else "LIVE"])
 	if cid <= 0:
 		return false
 	var b : int = ctx.before_order_ids.find(cid)
@@ -165,6 +167,7 @@ func _crossed_behind(cid: int, ctx, before_anchor: int, after_anchor: int) -> bo
 	return (b <= before_anchor) and (a > after_anchor)
 
 func _advance_to_next_actor() -> void:
+	print("turn_engine_core.gd _advance_to_next_actor() %s" % ["SIM" if sim else "LIVE"])
 	if _running_actor:
 		return
 	if active_group_index < 0:
@@ -192,7 +195,7 @@ func _advance_to_next_actor() -> void:
 			_player_start_of_turn_fired = true
 
 			# 1) host runs: reset stats, draw hand, wait for hand draw
-			await _await_maybe(await host.begin_player_turn_async())
+			await host.begin_player_turn_async()
 
 			# 2) now arcana START_OF_TURN happens AFTER hand draw
 			_request_arcana(ArcanaProc.START_OF_TURN, func():
@@ -210,7 +213,7 @@ func _advance_to_next_actor() -> void:
 	actor_requested.emit(actor_id)
 
 func _reset() -> void:
-	print("turn_engine_core.gd _reset()")
+	print("turn_engine_core.gd _reset() %s" % ["SIM" if sim else "LIVE"])
 	active_group_index = -1
 	current_actor_id = 0
 	phase = Phase.IDLE
@@ -221,13 +224,13 @@ func _reset() -> void:
 	_cursor_cid = 0
 
 func _end_group_turn() -> void:
-	print("turn_engine_core.gd _end_group_turn()")
+	print("turn_engine_core.gd _end_group_turn() %s" % ["SIM" if sim else "LIVE"])
 	var idx := active_group_index
 	_reset()
 	group_turn_ended.emit(idx)
 
 func _mark_turn_taken(combat_id: int) -> void:
-	print("turn_engine_core.gd _mark_turn_taken()")
+	print("turn_engine_core.gd _mark_turn_taken() %s" % ["SIM" if sim else "LIVE"])
 	var n := int(_turns_taken.get(combat_id, 0))
 	_turns_taken[combat_id] = n + 1
 
@@ -249,7 +252,7 @@ func _call_hook(h: Callable) -> Signal:
 	return Signal()
 
 func _rebuild_queue() -> void:
-	print("turn_engine_core.gd _rebuild_queue()")
+	print("turn_engine_core.gd _rebuild_queue() %s" % ["SIM" if sim else "LIVE"])
 	_queue_dirty = false
 	_queue = PackedInt32Array()
 
@@ -289,7 +292,7 @@ func _rebuild_queue() -> void:
 			_queue.append(id)
 
 func _get_desired_order_ids(group_index: int) -> PackedInt32Array:
-	#print("turn_engine_core.gd _get_desired_order_ids()")
+	print("turn_engine_core.gd _get_desired_order_ids() %s" % ["SIM" if sim else "LIVE"])
 	var order := host.get_group_order_ids(group_index)
 	#print("TE _get_desired_order_ids group=", group_index, " raw_order=", order, " cursor=", _cursor_cid, " player_id=", _player_id)
 
@@ -361,7 +364,7 @@ func _publish_pending_view() -> void:
 	pending_view_changed.emit(active_id, pending)
 
 func notify_arcana_proc_done(token: int) -> void:
-	print("turn_engine_core.gd notify_arcana_proc_done()")
+	print("turn_engine_core.gd notify_arcana_proc_done() %s" % ["SIM" if sim else "LIVE"])
 	if !_waiting_for_arcana:
 		return
 	if token != _arcana_token:
@@ -374,7 +377,7 @@ func notify_arcana_proc_done(token: int) -> void:
 		resume.call()
 
 func _request_arcana(proc: int, resume: Callable) -> void:
-	print("turn_engine_core.gd _request_arcana() type: ", Arcanum.Type.keys()[proc])
+	print("turn_engine_core.gd _request_arcana() %s" % ["SIM" if sim else "LIVE"])
 	if _waiting_for_arcana:
 		return # or push/queue, but "return" is fine while you debug
 	_waiting_for_arcana = true

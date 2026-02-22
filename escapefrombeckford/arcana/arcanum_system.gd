@@ -144,3 +144,9 @@ func activate_arcana_by_type(type: Arcanum.Type, host: Node) -> void:
 	tween.finished.connect(func():
 		Events.arcana_activated.emit(type)
 	)
+
+func get_my_arcana() -> Array[StringName]:
+	var arcana_ids : Array[StringName] = []
+	for arcanum: Arcanum in _arcana:
+		arcana_ids.push_back(arcanum.get_id())
+	return arcana_ids

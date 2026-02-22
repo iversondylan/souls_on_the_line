@@ -3,6 +3,8 @@
 class_name SimBattleAPI extends BattleAPI
 
 var state: BattleState
+var alloc_id: Callable = Callable() # () -> int
+var on_summoned: Callable = Callable() # (summoned_id: int, group_index: int) -> void
 
 func _init(_state: BattleState) -> void:
 	state = _state
@@ -177,25 +179,33 @@ func remove_status(ctx: RemoveStatusContext) -> void:
 
 
 func summon(ctx: SummonContext) -> void:
-	# Headless summon should only mutate state + ordering.
-	# Creating CombatantState from a proto is a host/catalog concern.
 	if ctx == null or state == null:
 		return
-
-	# Expect ctx already has: summoned_id and a prebuilt CombatantState (ideal),
-	# OR ctx.summon_data and host can translate.
-	# Here: support "ctx.summoned_state" as the clean path.
-	if !ctx.has_meta("summoned_state"):
-		push_warning("SimBattleAPI.summon: ctx missing summoned_state")
+	if ctx.summon_data == null:
+		push_warning("SimBattleAPI.summon: missing summon_data")
 		return
 
-	var u: CombatantState = ctx.get_meta("summoned_state")
-	if u == null:
+	var id := 0
+	if alloc_id.is_valid():
+		id = int(alloc_id.call())
+	if id <= 0:
+		push_warning("SimBattleAPI.summon: alloc_id produced invalid id")
 		return
+
+	var u := CombatantState.new()
+	u.id = id
+	u.init_from_combatant_data(ctx.summon_data)
+	if ctx.summon_data.resource_path != "":
+		u.data_proto_path = String(ctx.summon_data.resource_path)
 
 	var g := clampi(ctx.group_index, 0, 1)
-	var idx := ctx.insert_index
-	state.add_unit(u, g, idx)
+	state.add_unit(u, g, int(ctx.insert_index))
+
+	ctx.summoned_id = id
+	ctx.summoned_fighter = null # headless
+
+	if on_summoned.is_valid():
+		on_summoned.call(id, g)
 
 
 func resolve_move(ctx: MoveContext) -> void:

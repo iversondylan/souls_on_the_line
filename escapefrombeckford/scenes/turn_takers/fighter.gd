@@ -115,7 +115,7 @@ func my_group_turn_start() -> void:
 	#combatant.status_grid.clear_group_turn_start_statuses()
 
 func opposing_group_turn_start() -> void:
-	print("fighter.gd opposing_group_turn_start() fighter: %s, cid: %s" % [name, combat_id])
+	#print("fighter.gd opposing_group_turn_start() fighter: %s, cid: %s" % [name, combat_id])
 	for behavior: FighterBehavior in my_behaviors:
 		behavior._on_opposing_group_turn_start()
 

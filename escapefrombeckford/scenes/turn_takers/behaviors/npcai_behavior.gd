@@ -260,7 +260,7 @@ func _on_opposing_group_turn_start() -> void:
 	
 	# Commit intent-time effects (telegraphs, posture, channeling, etc.)
 	for model in action.intent_lifecycle_models:
-		print("npcai_behavior.gd _on_opposing_group_turn_start() proccing a model")
+		#print("npcai_behavior.gd _on_opposing_group_turn_start() proccing a model")
 		model.on_opposing_group_start(ctx)
 	
 	# Mark as committed so it won't reapply mid-cycle

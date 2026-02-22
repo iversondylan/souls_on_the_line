@@ -12,7 +12,7 @@ extends ParamModel
 @export var mana_scaling: float = 1.0   # multiplied by max_mana_red
 
 func change_params(ctx: NPCAIContext) -> NPCAIContext:
-	print("max_mana_red_damage_model.gd")
+	#print("max_mana_red_damage_model.gd")
 	var max_red: int = 0
 	if ctx.combatant and ctx.combatant.combatant_data:
 		max_red = ctx.combatant.combatant_data.max_mana_red
@@ -26,5 +26,5 @@ func change_params(ctx: NPCAIContext) -> NPCAIContext:
 
 	# IMPORTANT: base damage only (no DMG_DEALT here)
 	ctx.params[NPCKeys.DAMAGE] = total
-	print("max_mana_red_damage_model.gd total: ", total)
+	#print("max_mana_red_damage_model.gd total: ", total)
 	return ctx

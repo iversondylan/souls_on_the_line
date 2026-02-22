@@ -46,6 +46,7 @@ var deck: Deck : set = _set_deck
 var run: Run : set = _set_run
 var arcana: ArcanaSystem
 var arcana_catalog: ArcanaCatalog
+var my_arcana: Array[StringName]
 var mouse_pressed: bool = false
 var enemy_character_state: int = 0
 var wait_for_anims: bool = false
@@ -155,7 +156,7 @@ func start_battle():
 	sim_host.status_catalog = run.status_catalog
 	sim_host.arcana_catalog = run.arcanum_catalog
 	# ids are the .get_id()'s of currently owned arcana
-	seed_arcana_from_ids(ids) #ids: Array[StringName]
+	sim_host.seed_arcana_from_ids(my_arcana) #ids: Array[StringName]
 	
 	
 	
@@ -180,12 +181,15 @@ func start_battle():
 	deck.make_draw_pile()
 	MusicPlayer.play(music, true)
 	initialize_card_pile_ui()
+	
+	sim_host.start_group_turn(0, true)
 	#BattleController.current_state = BattleController.BattleState.FRIENDLY_TURN
 	await _apply_group_turn_start_hooks_scoped(0)
 	turn_engine.start_group_turn(0, true)
 
 func _on_runner_scope_drained(scope: int) -> void:
-	print("battle.gd _on_runner_scope_drained() scope: ", scope)
+	pass
+	#print("battle.gd _on_runner_scope_drained() scope: ", scope)
 
 func _on_request_activate_arcana_by_type(type: Arcanum.Type):
 	pass
@@ -194,12 +198,12 @@ func _on_request_activate_arcana_by_type(type: Arcanum.Type):
 
 
 func _on_arcana_activated(type: Arcanum.Type) -> void:
-	print("battle.gd _on_arcana_activated() type: ", Arcanum.Type.keys()[type])
+	#print("battle.gd _on_arcana_activated() type: ", Arcanum.Type.keys()[type])
 	pass
 
 func _apply_glow_live(active_id: int, pending_ids: PackedInt32Array) -> void:
 	# If nothing active, clear glow (or keep last — but clearing is safer)
-	#print("battle.gd _apply_glow_live() active_id: %s, pending_ids: %s" % [active_id, pending_ids])
+	##print("battle.gd _apply_glow_live() active_id: %s, pending_ids: %s" % [active_id, pending_ids])
 	if active_id <= 0:
 		_clear_all_pending_glow()
 		return
@@ -242,29 +246,29 @@ func _clear_all_pending_glow() -> void:
 				f.set_pending_turn_glow(Fighter.TurnStatus.NONE)
 
 func _on_pending_view_changed(active_id: int, pending_ids: PackedInt32Array) -> void:
-	#print("battle.gd _on_pending_view_changed()")
+	##print("battle.gd _on_pending_view_changed()")
 	_apply_glow_live(active_id, pending_ids)
 
 func _on_actor_requested(combat_id: int) -> void:
-	print("battle.gd _on_actor_requested() awaiting _run_actor_live")
+	#print("battle.gd _on_actor_requested() awaiting _run_actor_live")
 
 	# HARD RULE: don’t start an actor while arcana still running.
 	await _await_arcana_gate_if_any()
-	print("battle.gd _on_actor_requested() done awaiting _run_actor_live. Asking if it's the player.")
+	#print("battle.gd _on_actor_requested() done awaiting _run_actor_live. Asking if it's the player.")
 	if host.is_player(combat_id):
-		print("battle.gd _on_actor_requested() it is. Arming end turn button.")
+		#print("battle.gd _on_actor_requested() it is. Arming end turn button.")
 		wait_for_anims = false
 		_arm_end_turn_button(true)
 	var ok := await _run_actor_live(combat_id)
-	print("battle.gd _on_actor_requested() _run_actor_live done")
+	#print("battle.gd _on_actor_requested() _run_actor_live done")
 	if ok:
-		print("battle.gd _on_actor_requested() OK, notifying turn engine done")
+		#print("battle.gd _on_actor_requested() OK, notifying turn engine done")
 		turn_engine.notify_actor_done(combat_id)
-	else:
-		print("battle.gd _on_actor_requested() not OK")
+	#else:
+		#print("battle.gd _on_actor_requested() not OK")
 
 func _run_actor_live(combat_id:int) -> bool:
-	print("battle.gd _run_actor_live() step 1")
+	#print("battle.gd _run_actor_live() step 1")
 	var f: Fighter = battle_scene.get_combatant_by_id(combat_id, true)
 	if !f or !is_instance_valid(f) or !f.is_alive():
 		turn_engine.notify_actor_removed(combat_id)
@@ -278,35 +282,35 @@ func _run_actor_live(combat_id:int) -> bool:
 	f.enter()
 	api.run_status_proc(combat_id, Status.ProcType.START_OF_TURN)
 	await _await_status_proc_finished(f, Status.ProcType.START_OF_TURN)
-	print("battle.gd _run_actor_live() step 2")
+	#print("battle.gd _run_actor_live() step 2")
 	# Main action (NPC retains/releases scope internally once you add that)
 	f.do_turn()
 	await _await_action_or_removal(f)
-	print("battle.gd _run_actor_live() step 3")
+	#print("battle.gd _run_actor_live() step 3")
 	# End-of-turn
 	api.run_status_proc(combat_id, Status.ProcType.END_OF_TURN)
 	await _await_status_proc_finished(f, Status.ProcType.END_OF_TURN)
-	print("battle.gd _run_actor_live() step 4")
+	#print("battle.gd _run_actor_live() step 4")
 	# Now we know the actor is done enqueueing anything *new*
 	if runner and scope_id != 0:
 		runner.close_scope(scope_id)
 		await runner.await_scope_drained(scope_id)
 		runner.end_scope(scope_id)
-	print("battle.gd _run_actor_live() step 5")
+	#print("battle.gd _run_actor_live() step 5")
 	f.exit()
 	return true
 
 func _await_action_or_removal(actor: Fighter) -> bool:
 	while actor and is_instance_valid(actor):
-		print("battle.gd _await_action_or_removal() awaiting %s, cid: %s..." % [actor.name, actor.combat_id])
+		#print("battle.gd _await_action_or_removal() awaiting %s, cid: %s..." % [actor.name, actor.combat_id])
 		var resolved: Fighter = await actor.action_resolved
 		if resolved == actor:
-			print("battle.gd _await_action_or_removal() %s, cid: %s action resolved." % [actor.name, actor.combat_id])
+			#print("battle.gd _await_action_or_removal() %s, cid: %s action resolved." % [actor.name, actor.combat_id])
 			return true
 	return false
 
 func _on_arcana_proc_requested(proc: int, token: int) -> void:
-	print("battle.gd _on_arcana_proc_requested")
+	#print("battle.gd _on_arcana_proc_requested")
 
 	var arcanum_type := -1
 	match proc:
@@ -393,7 +397,7 @@ func _start_arcana_scope_detached(arcanum_type: int) -> void:
 	_finish_detached_scope_later(sid, my_seq)
 
 func begin_player_turn_async() -> bool:
-	print("battle.gd begin_player_turn_async()")
+	#print("battle.gd begin_player_turn_async()")
 	await _await_arcana_gate_if_any()
 
 	wait_for_anims = true
@@ -408,7 +412,7 @@ func begin_player_turn_async() -> bool:
 	Events.request_draw_hand.emit()
 	await _await_hand_draw_gate()
 
-	print("battle.gd begin_player_turn_async() done awaiting hand_draw")
+	#print("battle.gd begin_player_turn_async() done awaiting hand_draw")
 	wait_for_anims = false
 	
 	sim_host.debug_dump_orders()
@@ -427,7 +431,7 @@ func _await_hand_draw_gate() -> void:
 		await get_tree().process_frame
 
 func end_player_turn_async() -> bool:
-	print("battle.gd end_player_turn_async()")
+	#print("battle.gd end_player_turn_async()")
 	# Called by TurnEngineCore after it thinks player is "done".
 	# Goal: ensure discard finished, resolve action, and drain runner scope (already handled in _run_actor_live)
 
@@ -444,10 +448,10 @@ func end_player_turn_async() -> bool:
 
 var _wait_hand_discarded_done: bool = false
 func _on_hand_discarded_one_shot() -> void:
-	print("battle.gd _on_hand_discarded_one_shot()")
+	#print("battle.gd _on_hand_discarded_one_shot()")
 	_wait_hand_discarded_done = true
 func _await_hand_discarded_once() -> void:
-	print("battle.gd _await_hand_discarded_once()")
+	#print("battle.gd _await_hand_discarded_once()")
 	_wait_hand_discarded_done = false
 	if !Events.hand_discarded.is_connected(_on_hand_discarded_one_shot):
 		Events.hand_discarded.connect(_on_hand_discarded_one_shot, CONNECT_ONE_SHOT)
@@ -456,10 +460,10 @@ func _await_hand_discarded_once() -> void:
 
 var _wait_hand_drawn_done: bool = false
 func _on_hand_drawn_one_shot() -> void:
-	print("battle.gd _on_hand_drawn_one_shot()")
+	#print("battle.gd _on_hand_drawn_one_shot()")
 	_wait_hand_drawn_done = true
 func _await_hand_drawn_once() -> void:
-	print("battle.gd _await_hand_drawn_once()")
+	#print("battle.gd _await_hand_drawn_once()")
 	_wait_hand_drawn_done = false
 	if !Events.hand_drawn.is_connected(_on_hand_drawn_one_shot):
 		Events.hand_drawn.connect(_on_hand_drawn_one_shot, CONNECT_ONE_SHOT)
@@ -512,13 +516,13 @@ func _get_next_group_index(ended_group_index: int) -> int:
 			return -1
 
 func _apply_group_turn_start_hooks_scoped(active_group_index: int) -> void:
-	print("battle.gd _apply_group_turn_start_hooks_scoped() active_group_index: ", active_group_index)
+	#print("battle.gd _apply_group_turn_start_hooks_scoped() active_group_index: ", active_group_index)
 	await _with_system_scope_async(-1, func():
 		_apply_group_turn_start_hooks(active_group_index)
 	)
 
 func _apply_group_turn_start_hooks(active_group_index: int) -> void:
-	print("battle.gd _apply_group_turn_start_hooks() active_group_index: ", active_group_index)
+	#print("battle.gd _apply_group_turn_start_hooks() active_group_index: ", active_group_index)
 	# Group starting: members get my_group_turn_start; opposing gets opposing_group_turn_start
 	var my_group: BattleGroup = battle_scene.get_group_by_index(active_group_index)
 	if !my_group or !is_instance_valid(my_group):
@@ -572,11 +576,11 @@ func _with_system_scope(actor_id: int, work: Callable) -> void:
 		return
 	
 	var sid := runner.begin_scope(actor_id) # actor_id can be -1 or "group leader" id
-	print("battle.gd _with_system_scope() actor_id: %s, sid: %s calling work and awaiting..." % [actor_id, sid])
+	#print("battle.gd _with_system_scope() actor_id: %s, sid: %s calling work and awaiting..." % [actor_id, sid])
 	work.call()
 	runner.close_scope(sid)
 	await runner.await_scope_drained(sid)
-	print("battle.gd _with_system_scope() actor_id: %s, sid: %s done awaiting." % [actor_id, sid])
+	#print("battle.gd _with_system_scope() actor_id: %s, sid: %s done awaiting." % [actor_id, sid])
 	runner.end_scope(sid)
 
 func _with_system_scope_async(actor_id: int, work: Callable) -> void:
@@ -591,22 +595,22 @@ func _with_system_scope_async(actor_id: int, work: Callable) -> void:
 		return
 
 	var sid := runner.begin_scope(actor_id)
-	print("battle.gd _with_system_scope_async() actor_id: %s, sid: %s calling work and awaiting..." % [actor_id, sid])
+	#print("battle.gd _with_system_scope_async() actor_id: %s, sid: %s calling work and awaiting..." % [actor_id, sid])
 
 	var result = work.call()
 
 	# If work kicked off an async function, keep the scope open until it completes.
 	if typeof(result) == TYPE_OBJECT and result != null and result.get_class() == "GDScriptFunctionState":
-		print("battle.gd _with_system_scope_async() actor_id: %s, sid: %s now awaiting (a)..." % [actor_id, sid])
+		#print("battle.gd _with_system_scope_async() actor_id: %s, sid: %s now awaiting (a)..." % [actor_id, sid])
 		await result
 	elif result is Signal and !(result as Signal).is_null():
-		print("battle.gd _with_system_scope_async() actor_id: %s, sid: %s now awaiting (b)..." % [actor_id, sid])
+		#print("battle.gd _with_system_scope_async() actor_id: %s, sid: %s now awaiting (b)..." % [actor_id, sid])
 		await result
 
 	# Now we know the async work is done enqueueing anything new
 	runner.close_scope(sid)
 	await runner.await_scope_drained(sid)
-	print("battle.gd _with_system_scope_async() actor_id: %s, sid: %s done awaiting." % [actor_id, sid])
+	#print("battle.gd _with_system_scope_async() actor_id: %s, sid: %s done awaiting." % [actor_id, sid])
 	runner.end_scope(sid)
 
 func make_player_combatant() -> void:
@@ -618,7 +622,7 @@ func make_player_combatant() -> void:
 	player = new_player
 	hand.player = new_player
 	# --- NEW: add to sim (after live has a combat_id) ---
-	sim_host.add_combatant_from_data(new_player.combat_id, player_data, 0, 0, true)
+	sim_host.add_combatant_from_data(player_data, 0, 0, true)
 
 func make_enemies() -> void:
 	if !battle_data:
@@ -632,7 +636,7 @@ func make_enemies() -> void:
 		new_data.init()
 		new_enemy.combatant_data = new_data
 		# --- NEW: add to sim using same id + group/rank ---
-		sim_host.add_combatant_from_data(new_enemy.combat_id, new_data, 1, new_enemy_index, false)
+		sim_host.add_combatant_from_data(new_data, 1, new_enemy_index, false)
 
 func _on_end_turn_pressed() -> void:
 	if wait_for_anims:
@@ -720,17 +724,17 @@ func simulate_battle() -> void:
 
 func _on_hand_done_drawing() -> void:
 	#above^:     Events.hand_drawn.connect(_on_hand_done_drawing)
-	print("battle.gd _on_hand_done_drawing()")
+	#print("battle.gd _on_hand_done_drawing()")
 	await _await_arcana_gate_if_any()
 	wait_for_anims = false
 	#_arm_end_turn_button(true)
 
 func _on_hand_discarded() -> void:
-	print("battle.gd _on_hand_discarded() awaiting=%s current_actor=%s player=%s" % [
-		_awaiting_player_discard,
-		turn_engine.current_actor_id,
-		(player.combat_id if player else -1)
-	])
+	#print("battle.gd _on_hand_discarded() awaiting=%s current_actor=%s player=%s" % [
+		#_awaiting_player_discard,
+		#turn_engine.current_actor_id,
+		#(player.combat_id if player else -1)
+	#])
 
 	if !_awaiting_player_discard:
 		return
@@ -744,16 +748,16 @@ func _on_hand_discarded() -> void:
 	_awaiting_player_discard = false
 
 	# This MUST happen to release _await_action_or_removal().
-	print("battle.gd _on_hand_discarded(): calling player.resolve_action()")
+	#print("battle.gd _on_hand_discarded(): calling player.resolve_action()")
 	player.resolve_action()
 
 func _arm_end_turn_button(armed: bool) -> void:
-	print("battle.gd _arm_end_turn_button() armed: ", armed)
+	#print("battle.gd _arm_end_turn_button() armed: ", armed)
 	_player_end_turn_armed = armed
 	battle_ui.set_end_turn_enabled(armed)
 
 func _on_end_turn_button_pressed_live() -> void:
-	print("battle.gd _on_end_turn_button_pressed_live()")
+	#print("battle.gd _on_end_turn_button_pressed_live()")
 	if wait_for_anims:
 		return
 	if !_player_end_turn_armed:

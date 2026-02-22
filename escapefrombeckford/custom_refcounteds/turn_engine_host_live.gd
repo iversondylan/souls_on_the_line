@@ -41,13 +41,15 @@ func is_player(combat_id: int) -> bool:
 
 
 # Called when the engine is about to hand control to the player.
-func begin_player_turn_async() -> Variant:
+func begin_player_turn_async() -> void:
 	if !battle:
-		return null
-	return await battle.begin_player_turn_async()
+		return
+	await battle.begin_player_turn_async()
+	return
 
 # Called after the player has finished and battle resolved discard/resolve.
-func end_player_turn_async() -> Variant:
+func end_player_turn_async() -> void:
 	if !battle:
-		return null
-	return await battle.end_player_turn_async()
+		return
+	await battle.end_player_turn_async()
+	return

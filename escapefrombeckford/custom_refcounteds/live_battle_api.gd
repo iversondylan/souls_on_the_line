@@ -49,7 +49,7 @@ func resolve_damage(ctx: DamageContext) -> void:
 func resolve_damage_immediate(ctx: DamageContext) -> void:
 	if !ctx:
 		return
-	print("live_battle_api.gd resolve_damage_immediate() source: ", ctx.source.name, ", base_amount: ", ctx.base_amount)
+	#print("live_battle_api.gd resolve_damage_immediate() source: ", ctx.source.name, ", base_amount: ", ctx.base_amount)
 	# hydrate if desired (optional; your _run_damage_op does it already)
 	DamageResolver.resolve(self, ctx)
 
@@ -73,7 +73,7 @@ func resolve_death(combat_id: int, reason := "") -> void:
 		runner.enqueue_death(combat_id, reason)
 
 func apply_status(ctx: StatusContext) -> void:
-	print("live_battle_api.gd apply_status() source_id: %s, target_id: %s, status_id: %s" % [ctx.source_id, ctx.target_id, ctx.status_id])
+	#print("live_battle_api.gd apply_status() source_id: %s, target_id: %s, status_id: %s" % [ctx.source_id, ctx.target_id, ctx.status_id])
 	if !ctx:
 		return
 	if runner:
@@ -101,7 +101,7 @@ func resolve_heal(ctx: HealContext) -> void:
 		runner.enqueue_heal(ctx)
 
 func resolve_move(ctx: MoveContext) -> void:
-	print("live_battle_api.gd resolve_move()")
+	#print("live_battle_api.gd resolve_move()")
 	if !ctx:
 		return
 	if runner:
@@ -165,7 +165,7 @@ func enqueue_arcanum_activate(arcanum: Arcanum, display: ArcanumDisplay) -> void
 		runner.enqueue_op(ArcanumActivateOp.new(arcanum, display))
 
 func _run_arcanum_activate_op(arcanum: Arcanum, display: ArcanumDisplay) -> Variant:
-	print("live_battle_api.gd _run_arcanum_activate_op()")
+	#print("live_battle_api.gd _run_arcanum_activate_op()")
 	if !arcanum:
 		return null
 
@@ -500,7 +500,7 @@ func _run_heal_op(ctx: HealContext) -> void:
 	# await battle_scene.get_tree().process_frame  # optional ordering beat
 
 func _run_move_op(ctx: MoveContext) -> void:
-	print("live_battle_api.gd _run_move_op()")
+	#print("live_battle_api.gd _run_move_op()")
 	if !ctx:
 		return
 

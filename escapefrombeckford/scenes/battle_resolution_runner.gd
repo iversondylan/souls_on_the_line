@@ -28,7 +28,7 @@ var _insert_after_current: Array[Dictionary] = []
 func begin_scope(actor_id:int) -> int:
 	
 	var s := _scope_next
-	print("battle_resolution_runner.gd begin_scope() actor_id: %s, s: %s" % [actor_id, s])
+	#print("battle_resolution_runner.gd begin_scope() actor_id: %s, s: %s" % [actor_id, s])
 	_scope_next += 1
 	_scope_stack.push_back(s)
 	_scope_actor[s] = actor_id
@@ -37,7 +37,7 @@ func begin_scope(actor_id:int) -> int:
 	return s
 
 func end_scope(scope_id:int) -> void:
-	print("battle_resolution_runner.gd end_scope() s: %s" % scope_id)
+	#print("battle_resolution_runner.gd end_scope() s: %s" % scope_id)
 	if _scope_stack.size() > 0 and _scope_stack.back() == scope_id:
 		_scope_stack.pop_back()
 	_scope_actor.erase(scope_id)
@@ -46,49 +46,49 @@ func end_scope(scope_id:int) -> void:
 
 func current_scope() -> int:
 	var curr_scope : int = _scope_stack.back() if _scope_stack.size() > 0 else 0
-	print("battle_resolution_runner.gd current_scope() s: %s" % curr_scope)
+	#print("battle_resolution_runner.gd current_scope() s: %s" % curr_scope)
 	return curr_scope
 
 func close_scope(scope_id:int) -> void:
-	print("battle_resolution_runner.gd close_scope() s: %s" % scope_id)
+	#print("battle_resolution_runner.gd close_scope() s: %s" % scope_id)
 	_closed_scopes[scope_id] = true
 
 func pop_scope(scope_id: int) -> void:
 	# Detach the "current scope" label without destroying bookkeeping.
-	print("battle_resolution_runner.gd pop_scope() s: %s" % scope_id)
+	#print("battle_resolution_runner.gd pop_scope() s: %s" % scope_id)
 	if _scope_stack.size() > 0 and _scope_stack.back() == scope_id:
 		_scope_stack.pop_back()
 
 func await_scope_drained(scope_id:int) -> bool:
-	print("battle_resolution_runner.gd await_scope_drained() s: %s" % scope_id)
+	#print("battle_resolution_runner.gd await_scope_drained() s: %s" % scope_id)
 	while true:
 		var n := int(_scope_pending_counts.get(scope_id, 0))
 		# IMPORTANT: if closed + no pending + not busy, done.
-		print("battle_resolution_runner.gd await_scope_drained() s: %s. n = %s. _closed_scopes.has(scope_id) = %s" % [scope_id, n, _closed_scopes.has(scope_id)])
+		#print("battle_resolution_runner.gd await_scope_drained() s: %s. n = %s. _closed_scopes.has(scope_id) = %s" % [scope_id, n, _closed_scopes.has(scope_id)])
 		if n <= 0 and _closed_scopes.has(scope_id):# and !_busy:
-			print("battle_resolution_runner.gd await_scope_drained() s: %s. Returning." % scope_id)
+			#print("battle_resolution_runner.gd await_scope_drained() s: %s. Returning." % scope_id)
 			return true
 		# Wait for *any* drain/busy transition; loop re-checks.
 		await scope_drained
-		print("battle_resolution_runner.gd await_scope_drained() s: %s. Scope Drained." % scope_id)
+		#print("battle_resolution_runner.gd await_scope_drained() s: %s. Scope Drained." % scope_id)
 	return false
 
 func retain_scope(scope_id:int, why:="") -> void:
-	print("battle_resolution_runner.gd retain_scope() scope: %s, because: %s" % [scope_id, why])
+	#print("battle_resolution_runner.gd retain_scope() scope: %s, because: %s" % [scope_id, why])
 	if scope_id == 0:
 		
 		return
 	_scope_pending_counts[scope_id] = int(_scope_pending_counts.get(scope_id, 0)) + 1
 
 func release_scope(scope_id:int, why:="") -> void:
-	print("battle_resolution_runner.gd release_scope() scope: %s, because: %s" % [scope_id, why])
+	#print("battle_resolution_runner.gd release_scope() scope: %s, because: %s" % [scope_id, why])
 	if scope_id == 0:
 		return
 	_scope_pending_counts[scope_id] = int(_scope_pending_counts.get(scope_id, 0)) - 1
 	_maybe_release_scope(scope_id)
 
 func _maybe_release_scope(scope_id:int) -> void:
-	print("battle_resolution_runner.gd _maybe_release_scope() scope: %s" % scope_id)
+	#print("battle_resolution_runner.gd _maybe_release_scope() scope: %s" % scope_id)
 	var n := int(_scope_pending_counts.get(scope_id, 0))
 	# Emit whenever the scope is "count-drained" and closed.
 	# We don't require !_busy here; the waiter will loop until !_busy too.
@@ -107,7 +107,7 @@ func enqueue_op(op: BattleOp) -> void:
 func _enqueue_item(item: Dictionary) -> void:
 	var s := int(item.get("scope", 0))
 	if s != 0:
-		print("battle_resolution_runner.gd _enqueue_item() adding +1 to _scope_pending_counts[%s]" % s)
+		#print("battle_resolution_runner.gd _enqueue_item() adding +1 to _scope_pending_counts[%s]" % s)
 		_scope_pending_counts[s] = int(_scope_pending_counts.get(s, 0)) + 1
 
 	if _in_run:

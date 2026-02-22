@@ -1,20 +1,4 @@
-# turn_engine_host.gd
 class_name TurnEngineHost extends RefCounted
-
-# ------------------------------------------------------------
-# Small helper: returns an awaitable Signal that fires next tick
-# ------------------------------------------------------------
-class _ImmediateAwaiter extends RefCounted:
-	signal completed
-	func _fire() -> void:
-		completed.emit()
-
-func _await_next_tick() -> Signal:
-	var a := _ImmediateAwaiter.new()
-	# Defer emit so `await` always has a chance to subscribe.
-	a.call_deferred("_fire")
-	return a.completed
-
 
 # -------------------------
 # Required query interface
@@ -35,15 +19,24 @@ func get_player_id() -> int:
 	return 0
 
 
+# ------------------------------------------------------------
+# Internal: coroutine marker (no real delay)
+# ------------------------------------------------------------
+func _coroutine_marker() -> void:
+	# This makes the function a coroutine in Godot 4.x without actually yielding.
+	if false:
+		var tree := Engine.get_main_loop() as SceneTree
+		if tree != null:
+			await tree.process_frame
+
+
 # -------------------------
 # Player boundary hooks
 # -------------------------
-# Called when the engine is about to hand control to the player.
-func begin_player_turn_async() -> Variant:
+func begin_player_turn_async() -> void:
 	# default: no-op but awaitable
-	return true#_await_next_tick()
+	await _coroutine_marker()
 
-# Called after the player has finished and “end turn” resolutions are done.
-func end_player_turn_async() -> Variant:
+func end_player_turn_async() -> void:
 	# default: no-op but awaitable
-	return true#_await_next_tick()
+	await _coroutine_marker()

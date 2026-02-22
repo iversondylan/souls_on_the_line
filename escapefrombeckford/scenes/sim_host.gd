@@ -26,7 +26,7 @@ var preview_api: SimBattleAPI
 var turn_engine: TurnEngineCore
 var turn_engine_host_sim: TurnEngineHostSim
 var preview_turn_engine: TurnEngineCore
-
+var arcana_resolver: ArcanaResolver
 # Optional: if you want the host to be responsible for assigning ids later.
 var _next_sim_id: int = 1
 
@@ -48,18 +48,23 @@ func reset() -> void:
 	_next_sim_id = 1
 
 func init_from_seeds(battle_seed: int, run_seed: int) -> void:
-	# Fresh authoritative sim
-	
 	main_state = BattleState.new()
 	main_state.init(int(battle_seed), int(run_seed))
-
+	
 	main_api = SimBattleAPI.new(main_state)
 	main_api.status_catalog = status_catalog
-
-	# Preview state is lazily created.
+	
+	# NEW: id allocation + notify turn engine
+	main_api.alloc_id = func() -> int:
+		return alloc_sim_id()
+	
+	main_api.on_summoned = func(summoned_id: int, group_index: int) -> void:
+		# Let TurnEngineCore rebuild pending view immediately
+		if turn_engine != null:
+			turn_engine.notify_summon_added(int(summoned_id), int(group_index))
+	
 	preview_state = null
 	preview_api = null
-
 	main_state_initialized.emit()
 
 func ensure_initialized() -> void:
@@ -69,6 +74,8 @@ func ensure_initialized() -> void:
 	if main_state == null:
 		# Safe default if caller forgot.
 		init_from_seeds(0, 0)
+	if arcana_resolver == null and arcana_catalog != null:
+		arcana_resolver = ArcanaResolver.new(self, arcana_catalog)
 
 func alloc_sim_id() -> int:
 	# Not used yet if you mirror live combat_id, but useful when sim becomes canonical.
@@ -95,6 +102,7 @@ func start_group_turn(group_index: int, start_at_player := false) -> void:
 
 	if turn_engine == null:
 		turn_engine = TurnEngineCore.new(turn_engine_host_sim)
+		turn_engine.sim = true
 		turn_engine.arcana_proc_requested.connect(_on_sim_arcana_proc_requested)
 		turn_engine.actor_requested.connect(_on_sim_actor_requested)
 
@@ -139,10 +147,9 @@ func is_player(combat_id: int) -> bool:
 # Combatant bootstrap
 # -------------------------
 
-## Add a unit to MAIN state by translating CombatantData -> CombatantState.
-## You should call this right after live allocates the combat_id and sets combatant_data.
+# sim_host.gd
+
 func add_combatant_from_data(
-	combat_id: int,
 	data: CombatantData,
 	group_index: int,
 	insert_index: int,
@@ -150,33 +157,76 @@ func add_combatant_from_data(
 ) -> CombatantState:
 	ensure_initialized()
 
-	if combat_id <= 0:
-		push_warning("SimHost.add_combatant_from_data: combat_id must be > 0")
+	if data == null:
+		push_warning("SimHost.add_combatant_from_data: data is null")
 		return null
 
-	# Keep sim id allocator in sync with live ids (helpful while mirroring live ids).
-	_next_sim_id = maxi(_next_sim_id, combat_id + 1)
+	var combat_id := int(data.combat_id)
+	if combat_id <= 0:
+		push_warning("SimHost.add_combatant_from_data: data.combat_id must be > 0 (got %s)" % combat_id)
+		return null
 
+	# Don’t “ensure” alignment, just detect & warn.
 	if main_state.has_unit(combat_id):
-		push_warning("SimHost.add_combatant_from_data: unit id already exists: %s" % combat_id)
+		push_warning("SimHost.add_combatant_from_data: duplicate id %s (data=%s)" % [combat_id, data.resource_path])
 		return main_state.get_unit(combat_id)
 
+	# Optional: if you're still tracking _next_sim_id for any reason, keep it loosely in sync.
+	_next_sim_id = maxi(_next_sim_id, combat_id + 1)
+
 	var u := CombatantState.new()
-	u.id = int(combat_id)
+	u.id = combat_id
 	u.init_from_combatant_data(data)
 
-	# Optional: store reconstruction hints (helpful later)
-	# If CombatantData has resource path accessible, keep it.
-	if data and data.resource_path != "":
+	if data.resource_path != "":
 		u.data_proto_path = String(data.resource_path)
 
 	main_state.add_unit(u, int(group_index), int(insert_index))
 
 	if is_player:
-		main_state.groups[FRIENDLY].player_id = int(combat_id)
+		main_state.groups[FRIENDLY].player_id = combat_id
 
-	combatant_added.emit(int(combat_id), int(group_index), int(insert_index), false)
+	combatant_added.emit(combat_id, int(group_index), int(insert_index), false)
 	return u
+
+### Add a unit to MAIN state by translating CombatantData -> CombatantState.
+### You should call this right after live allocates the combat_id and sets combatant_data.
+#func add_combatant_from_data(
+	#combat_id: int,
+	#data: CombatantData,
+	#group_index: int,
+	#insert_index: int,
+	#is_player: bool = false
+#) -> CombatantState:
+	#ensure_initialized()
+#
+	#if combat_id <= 0:
+		#push_warning("SimHost.add_combatant_from_data: combat_id must be > 0")
+		#return null
+#
+	## Keep sim id allocator in sync with live ids (helpful while mirroring live ids).
+	#_next_sim_id = maxi(_next_sim_id, combat_id + 1)
+#
+	#if main_state.has_unit(combat_id):
+		#push_warning("SimHost.add_combatant_from_data: unit id already exists: %s" % combat_id)
+		#return main_state.get_unit(combat_id)
+#
+	#var u := CombatantState.new()
+	#u.id = int(combat_id)
+	#u.init_from_combatant_data(data)
+#
+	## Optional: store reconstruction hints (helpful later)
+	## If CombatantData has resource path accessible, keep it.
+	#if data and data.resource_path != "":
+		#u.data_proto_path = String(data.resource_path)
+#
+	#main_state.add_unit(u, int(group_index), int(insert_index))
+#
+	#if is_player:
+		#main_state.groups[FRIENDLY].player_id = int(combat_id)
+#
+	#combatant_added.emit(int(combat_id), int(group_index), int(insert_index), false)
+	#return u
 
 
 # -------------------------
@@ -233,8 +283,13 @@ func with_fresh_preview(fn: Callable) -> void:
 # -------------------------
 
 func _on_sim_arcana_proc_requested(proc: int, token: int) -> void:
-	# Run headless arcana synchronously using main_api, then notify core.
-	_run_arcana_headless(proc)
+	if arcana_resolver == null:
+		if arcana_catalog == null:
+			push_warning("SimHost: no arcana_catalog; cannot run arcana")
+		else:
+			arcana_resolver = ArcanaResolver.new(self, arcana_catalog)
+	if arcana_resolver != null:
+		arcana_resolver.run_proc(proc)
 	turn_engine.notify_arcana_proc_done(token)
 
 func _proc_to_arcanum_type(proc: int) -> int:
