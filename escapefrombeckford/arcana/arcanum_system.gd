@@ -146,7 +146,9 @@ func activate_arcana_by_type(type: Arcanum.Type, host: Node) -> void:
 	)
 
 func get_my_arcana() -> Array[StringName]:
+	print("arcanum_syste.gd get_my_arcana")
 	var arcana_ids : Array[StringName] = []
 	for arcanum: Arcanum in _arcana:
+		print(arcanum.get_id())
 		arcana_ids.push_back(arcanum.get_id())
 	return arcana_ids

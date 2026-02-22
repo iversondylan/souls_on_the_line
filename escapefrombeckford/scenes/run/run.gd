@@ -18,6 +18,10 @@ const TREASURE_SCN := preload("res://scenes/treasure/treasure_room.tscn")
 ##this variable before changing scenes.
 @export var arcanum_catalog: ArcanaCatalog
 
+# TEMPORARY v
+@export var extra_arcana: Array[Arcanum]
+# TEMPORARY ^
+
 @onready var map: Map = $Map
 
 @onready var current_view: Node = $CurrentView
@@ -45,6 +49,8 @@ var arcana_catalog: Arcana
 var starting_deck: CardPile
 var draftable_cards: CardPile
 var deck: Deck
+
+
 
 func _ready() -> void:
 	#print_tree_pretty()
@@ -138,6 +144,11 @@ func _init_top_bar() -> void:
 	gold_display.run_account = account
 	
 	arcana_container.add_arcana([player_data.starting_arcanum])
+	
+# TEMPORARY v
+	for arcanum: Arcanum in extra_arcana:
+		arcana_container.add_arcana([arcanum])
+# TEMPORARY ^
 
 	
 	collection_button.card_pile = deck.card_collection

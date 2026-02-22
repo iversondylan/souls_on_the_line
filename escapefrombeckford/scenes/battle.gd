@@ -2,6 +2,9 @@
 
 class_name Battle extends Node2D
 
+const FRIENDLY := 0
+const ENEMY := 1
+
 @export var debug_mode: bool = true:
 	set(value):
 		if !is_node_ready():
@@ -81,6 +84,7 @@ func _ready() -> void:
 	turn_engine.group_turn_ended.connect(_on_group_turn_ended)
 	turn_engine.pending_view_changed.connect(_on_pending_view_changed)
 	turn_engine.arcana_proc_requested.connect(_on_arcana_proc_requested)
+	turn_engine.player_end_requested.connect(_on_player_end_requested)
 	Events.live_battle_api_created.emit(api)
 	set_process(true)
 	
@@ -181,7 +185,7 @@ func start_battle():
 	deck.make_draw_pile()
 	MusicPlayer.play(music, true)
 	initialize_card_pile_ui()
-	
+	#print_tree_pretty()
 	sim_host.start_group_turn(0, true)
 	#BattleController.current_state = BattleController.BattleState.FRIENDLY_TURN
 	await _apply_group_turn_start_hooks_scoped(0)
@@ -415,7 +419,6 @@ func begin_player_turn_async() -> bool:
 	#print("battle.gd begin_player_turn_async() done awaiting hand_draw")
 	wait_for_anims = false
 	
-	sim_host.debug_dump_orders()
 	
 	return true
 
@@ -504,7 +507,7 @@ func _on_group_turn_ended(ended_group_index: int) -> void:
 	Events.friendly_turn_started.emit()
 	await _apply_group_turn_start_hooks_scoped(0)
 	_arm_end_turn_button(false)
-	turn_engine.start_group_turn(0, true)
+	turn_engine.start_group_turn(0, false)
 
 func _get_next_group_index(ended_group_index: int) -> int:
 	match ended_group_index:
@@ -522,7 +525,7 @@ func _apply_group_turn_start_hooks_scoped(active_group_index: int) -> void:
 	)
 
 func _apply_group_turn_start_hooks(active_group_index: int) -> void:
-	#print("battle.gd _apply_group_turn_start_hooks() active_group_index: ", active_group_index)
+	print("battle.gd _apply_group_turn_start_hooks() active_group_index: ", active_group_index)
 	# Group starting: members get my_group_turn_start; opposing gets opposing_group_turn_start
 	var my_group: BattleGroup = battle_scene.get_group_by_index(active_group_index)
 	if !my_group or !is_instance_valid(my_group):
@@ -727,6 +730,10 @@ func _on_hand_done_drawing() -> void:
 	#print("battle.gd _on_hand_done_drawing()")
 	await _await_arcana_gate_if_any()
 	wait_for_anims = false
+	sim_host.debug_dump_orders()
+	sim_host.debug_dump_units()
+	debug_dump_orders_live()
+	debug_dump_units_live()
 	#_arm_end_turn_button(true)
 
 func _on_hand_discarded() -> void:
@@ -735,18 +742,18 @@ func _on_hand_discarded() -> void:
 		#turn_engine.current_actor_id,
 		#(player.combat_id if player else -1)
 	#])
-
+	
 	if !_awaiting_player_discard:
 		return
-
+	
 	# Only treat this as the player’s discard if the player is the current actor.
 	if !player or !is_instance_valid(player):
 		return
 	if int(turn_engine.current_actor_id) != int(player.combat_id):
 		return
-
+	
 	_awaiting_player_discard = false
-
+	
 	# This MUST happen to release _await_action_or_removal().
 	#print("battle.gd _on_hand_discarded(): calling player.resolve_action()")
 	player.resolve_action()
@@ -769,3 +776,148 @@ func _on_end_turn_button_pressed_live() -> void:
 	_awaiting_player_discard = true
 
 	Events.player_turn_completed.emit()
+
+
+func debug_dump_orders_live() -> void:
+	if battle_scene == null or !is_instance_valid(battle_scene):
+		print("Battle.debug_dump_orders_live(): (no battle_scene)")
+		return
+
+	var friendly := _get_live_group_order_ids(FRIENDLY)
+	var enemy := _get_live_group_order_ids(ENEMY)
+
+	print("Battle LIVE orders:")
+	print("\tFRIENDLY: ", Array(friendly))
+	print("\tENEMY:    ", Array(enemy))
+
+
+func debug_dump_units_live() -> void:
+	if battle_scene == null or !is_instance_valid(battle_scene):
+		print("Battle.debug_dump_units_live(): (no battle_scene)")
+		return
+
+	print("Battle LIVE units dump:")
+	for group_index in [FRIENDLY, ENEMY]:
+		var gname := "FRIENDLY" if group_index == FRIENDLY else "ENEMY"
+		var fighters := _get_live_group_fighters(group_index)
+
+		# Build "order" as combat_ids in node order (front->back per your group implementation)
+		var order: Array[int] = []
+		order.resize(fighters.size())
+		for i in range(fighters.size()):
+			var f: Fighter = fighters[i]
+			order[i] = int(f.combat_id) if f != null else 0
+
+		print("%s order: %s" % [gname, order])
+
+		for i in range(fighters.size()):
+			var f: Fighter = fighters[i]
+			if f == null or !is_instance_valid(f):
+				print("\t[%d] cid=%d MISSING_UNIT" % [i, int(order[i])])
+				continue
+
+			var cid := int(f.combat_id)
+			var uname := _debug_live_unit_name(f)
+
+			# Pull hp/max from combatant_data (preferred), else from Fighter fields if you have them.
+			var hp := -1
+			var max_hp := -1
+			var alive := false
+
+			if f.combatant_data != null:
+				# Adjust field names if yours differ.
+				if "health" in f.combatant_data:
+					hp = int(f.combatant_data.health)
+				elif "hp" in f.combatant_data:
+					hp = int(f.combatant_data.hp)
+
+				if "max_health" in f.combatant_data:
+					max_hp = int(f.combatant_data.max_health)
+				elif "max_hp" in f.combatant_data:
+					max_hp = int(f.combatant_data.max_hp)
+
+				alive = f.combatant_data.is_alive() if f.combatant_data.has_method("is_alive") else f.is_alive()
+			else:
+				alive = f.is_alive()
+
+			var hp_str := "%d/%d" % [hp, max_hp] if hp >= 0 and max_hp >= 0 else ("%d" % hp if hp >= 0 else "?")
+			print("\t[%d] cid=%d name=%s hp=%s group=%s pos=%d alive=%s" % [
+				i, cid, uname, hp_str, gname, i, str(alive)
+			])
+
+	# Optional: show any live combatants not present in either group’s order
+	var seen := {}
+	for group_index in [FRIENDLY, ENEMY]:
+		var fighters := _get_live_group_fighters(group_index)
+		for f: Fighter in fighters:
+			if f != null and is_instance_valid(f):
+				seen[int(f.combat_id)] = true
+
+	var extras: Array[int] = []
+	if battle_scene.has_method("get_all_combatants"):
+		var all := battle_scene.get_all_combatants() # if you have this helper
+		for f in all:
+			if f == null or !is_instance_valid(f):
+				continue
+			var cid := int(f.combat_id)
+			if !seen.has(cid):
+				extras.append(cid)
+	elif battle_scene.has_method("get_combatant_by_id"):
+		# If you *don’t* have get_all_combatants, you can skip extras cleanly.
+		pass
+
+	if !extras.is_empty():
+		extras.sort()
+		print("Battle LIVE units not in any group order: ", extras)
+
+
+# -------------------------
+# Internal helpers (LIVE)
+# -------------------------
+
+func _get_live_group_fighters(group_index: int) -> Array:
+	if battle_scene == null or !is_instance_valid(battle_scene):
+		return []
+	var g: BattleGroup = battle_scene.get_group_by_index(group_index)
+	if g == null:
+		return []
+	# `false` here should match your TurnEngineHostLive: "get_combatants(false)"
+	return g.get_combatants(false)
+
+
+func _get_live_group_order_ids(group_index: int) -> PackedInt32Array:
+	var out := PackedInt32Array()
+	var fighters := _get_live_group_fighters(group_index)
+	for f: Fighter in fighters:
+		if f != null and is_instance_valid(f):
+			out.append(int(f.combat_id))
+	return out
+
+
+func _debug_live_unit_name(f: Fighter) -> String:
+	# 1) Fighter name (your logs show this is good)
+	if f != null:
+		var n := String(f.name)
+		if n != "":
+			return n
+
+	# 2) Try CombatantData name-ish fields if present
+	if f != null and f.combatant_data != null:
+		if "display_name" in f.combatant_data:
+			var dn := String(f.combatant_data.display_name)
+			if dn != "":
+				return dn
+		if "combatant_name" in f.combatant_data:
+			var cn := String(f.combatant_data.combatant_name)
+			if cn != "":
+				return cn
+
+	# 3) proto path basename if available
+	if f != null and f.combatant_data != null and ("resource_path" in f.combatant_data):
+		var p := String(f.combatant_data.resource_path)
+		if p != "":
+			var base := p.get_file()
+			if base != "":
+				return base.get_basename()
+
+	return "<unnamed>"

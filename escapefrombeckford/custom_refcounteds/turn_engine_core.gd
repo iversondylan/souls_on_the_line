@@ -7,6 +7,16 @@ signal group_turn_ended(group_index: int)
 signal arcana_proc_requested(proc: int, token: int)
 signal pending_view_changed(active_id: int, pending_ids: PackedInt32Array)
 
+signal player_begin_requested(token: int)
+signal player_end_requested(token: int)
+
+var _waiting_for_player_begin: bool = false
+var _waiting_for_player_end: bool = false
+var _player_token: int = 0
+
+var _resume_after_player_begin: Callable = Callable()
+var _resume_after_player_end: Callable = Callable()
+
 enum Phase { IDLE, ACTOR_START, WAITING_FOR_ACTION, ACTOR_END }
 enum ArcanaProc { START_OF_COMBAT, START_OF_TURN, END_OF_TURN }
 
@@ -95,9 +105,10 @@ func notify_actor_done(combat_id: int) -> void:
 	# Player: after the actor finishes (i.e., action_resolved already happened),
 	# bracket END_OF_TURN arcana.
 	if active_group_index == 0 and host.is_player(combat_id):
-		_request_arcana(ArcanaProc.END_OF_TURN, func():
-			_advance_to_next_actor()
-		)
+		_request_player_end(func():
+			_request_arcana(ArcanaProc.END_OF_TURN, func():
+				_advance_to_next_actor()
+			))
 		return
 	
 	_advance_to_next_actor()
@@ -190,18 +201,12 @@ func _advance_to_next_actor() -> void:
 
 	# PLAYER SPECIAL CASE
 	if active_group_index == 0 and host.is_player(actor_id):
-		# Only once per group-turn cycle (your existing flag still useful)
 		if !_player_start_of_turn_fired:
 			_player_start_of_turn_fired = true
-
-			# 1) host runs: reset stats, draw hand, wait for hand draw
-			await host.begin_player_turn_async()
-
-			# 2) now arcana START_OF_TURN happens AFTER hand draw
-			_request_arcana(ArcanaProc.START_OF_TURN, func():
-				# after arcana finishes, proceed into actually granting the turn
-				_advance_to_next_actor()
-			)
+			_request_player_begin(func():
+				_request_arcana(ArcanaProc.START_OF_TURN, func():
+					_advance_to_next_actor()
+				))
 			return
 
 		# If already fired, fall through and request actor like normal.
@@ -211,6 +216,52 @@ func _advance_to_next_actor() -> void:
 	_cursor_cid = actor_id
 	_publish_pending_view()
 	actor_requested.emit(actor_id)
+
+func _request_player_begin(resume: Callable) -> void:
+	if _waiting_for_player_begin:
+		return
+	_waiting_for_player_begin = true
+	_player_token += 1
+	_resume_after_player_begin = resume
+	player_begin_requested.emit(_player_token)
+
+func notify_player_begin_done(token: int) -> void:
+	if !_waiting_for_player_begin:
+		return
+	if token != _player_token:
+		return
+	_waiting_for_player_begin = false
+	var resume := _resume_after_player_begin
+	_resume_after_player_begin = Callable()
+	if !resume.is_null():
+		resume.call()
+
+func _request_player_end(resume: Callable) -> void:
+	print("turn_engine_core.gd _request_player_end() %s" % ["SIM" if sim else "LIVE"])
+
+	# If you want to be strict, warn instead of silently returning.
+	if _waiting_for_player_end:
+		push_warning("TurnEngineCore: player_end already pending; ignoring request")
+		return
+
+	_waiting_for_player_end = true
+	_player_token += 1
+	_resume_after_player_end = resume
+	player_end_requested.emit(_player_token)
+
+func notify_player_end_done(token: int) -> void:
+	print("turn_engine_core.gd notify_player_end_done() %s" % ["SIM" if sim else "LIVE"])
+
+	if !_waiting_for_player_end:
+		return
+	if token != _player_token:
+		return
+
+	_waiting_for_player_end = false
+	var resume := _resume_after_player_end
+	_resume_after_player_end = Callable()
+	if !resume.is_null():
+		resume.call()
 
 func _reset() -> void:
 	print("turn_engine_core.gd _reset() %s" % ["SIM" if sim else "LIVE"])
@@ -305,14 +356,22 @@ func _get_desired_order_ids(group_index: int) -> PackedInt32Array:
 		if p == 0:
 			p = host.get_player_id()
 			_player_id = p
+
 		var player_idx := order.find(p)
 		if player_idx == -1:
 			return PackedInt32Array()
 
 		var out := PackedInt32Array()
-		out.append(p)
-		for i in range(player_idx + 1, order.size()):
-			out.append(order[i])
+
+		if _start_at_player:
+			# Player + everyone behind
+			out.append(p)
+			for i in range(player_idx + 1, order.size()):
+				out.append(order[i])
+		else:
+			for i in range(0, order.size()):
+				out.append(order[i])
+
 		return out
 
 	# Enemy: optionally cursor-based (ID-based)
@@ -377,8 +436,9 @@ func notify_arcana_proc_done(token: int) -> void:
 		resume.call()
 
 func _request_arcana(proc: int, resume: Callable) -> void:
-	print("turn_engine_core.gd _request_arcana() %s" % ["SIM" if sim else "LIVE"])
+	print("turn_engine_core.gd _request_arcana() %s, proc: %s" % ["SIM" if sim else "LIVE", ArcanaProc.keys()[proc]])
 	if _waiting_for_arcana:
+		push_error("_request_arcana _waiting_for_arcana")
 		return # or push/queue, but "return" is fine while you debug
 	_waiting_for_arcana = true
 	_arcana_token += 1
@@ -392,3 +452,8 @@ func reset_for_new_battle() -> void:
 	_arcana_token = 0
 	_resume_after_arcana = Callable()
 	_reset()
+
+#func allow_restore_turn(combat_id: int) -> void:
+	#_restore_allowed[combat_id] = true
+	#_queue_dirty = true
+	#_publish_pending_view()

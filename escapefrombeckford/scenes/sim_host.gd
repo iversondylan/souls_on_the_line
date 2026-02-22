@@ -332,6 +332,9 @@ func _run_arcana_headless(proc: int) -> void:
 
 		var ctx := ArcanumContext.new()
 		ctx.api = main_api
+		ctx.api = main_api
+		ctx.params = {}
+		ctx.params["source_id"] = int(main_state.groups[FRIENDLY].player_id)
 		# ctx.battle_scene = null (headless)
 		# ctx.player = null (headless) unless you add a sim player handle
 		# ctx.arcanum_display = null (headless)
@@ -367,3 +370,65 @@ func debug_dump_orders() -> void:
 		print("SimHost preview orders:")
 		print("\tFRIENDLY: ", Array(preview_state.groups[0].order))
 		print("\tENEMY:    ", Array(preview_state.groups[1].order))
+
+func debug_dump_units() -> void:
+	if main_state == null:
+		print("SimHost.debug_dump_units(): (no main_state)")
+		return
+	
+	print("SimHost units dump:")
+	for group_index in [FRIENDLY, ENEMY]:
+		var gname := "FRIENDLY" if group_index == FRIENDLY else "ENEMY"
+		var order := main_state.groups[group_index].order
+		print("%s order: %s" % [gname, Array(order)])
+		
+		for i in range(order.size()):
+			var cid := int(order[i])
+			var u: CombatantState = main_state.get_unit(cid)
+			if u == null:
+				print("\t[%d] cid=%d MISSING_UNIT" % [i, cid])
+				continue
+			
+			var uname := _debug_unit_name(u)
+			var hp := int(u.health)
+			var max_hp := int(u.max_health) if "max_health" in u else int(u.max_hp) if "max_hp" in u else -1
+			var alive := bool(u.alive) if "alive" in u else main_state.is_alive(cid)
+			
+			var hp_str := "%d/%d" % [hp, max_hp] if max_hp >= 0 else "%d" % hp
+			print("\t[%d] cid=%d name=%s hp=%s group=%s pos=%d alive=%s" % [
+				i, cid, uname, hp_str, gname, i, str(alive)
+			])
+
+	# Optional: show any units not present in either group order (diagnostic)
+	var seen := {}
+	for group_index in [FRIENDLY, ENEMY]:
+		for cid in main_state.groups[group_index].order:
+			seen[int(cid)] = true
+
+	var extras: Array[int] = []
+	for k in main_state.units.keys():
+		var cid := int(k)
+		if !seen.has(cid):
+			extras.append(cid)
+
+	if !extras.is_empty():
+		extras.sort()
+		print("SimHost units not in any group order: ", extras)
+
+
+func _debug_unit_name(u: CombatantState) -> String:
+	# 1) direct name field (if your CombatantState has it)
+	if u != null and ("name" in u):
+		var n := String(u.name)
+		if n != "":
+			return n
+
+	# 2) fall back to proto path file basename
+	if u != null and ("data_proto_path" in u):
+		var p := String(u.data_proto_path)
+		if p != "":
+			var base := p.get_file()
+			if base != "":
+				return base.get_basename()
+
+	return "<unnamed>"

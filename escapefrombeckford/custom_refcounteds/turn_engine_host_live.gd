@@ -46,10 +46,3 @@ func begin_player_turn_async() -> void:
 		return
 	await battle.begin_player_turn_async()
 	return
-
-# Called after the player has finished and battle resolved discard/resolve.
-func end_player_turn_async() -> void:
-	if !battle:
-		return
-	await battle.end_player_turn_async()
-	return
