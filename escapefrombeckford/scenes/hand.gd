@@ -137,10 +137,10 @@ func draw_cards(n_cards: int) -> void:
 	done_drawing.emit()
 
 func draw_cards_from_ctx(ctx: DrawContext) -> void:
-	draw_cards(ctx.amount)
+	await draw_cards(ctx.amount)
 
 func draw_hand(n_cards: int) -> void:
-	draw_cards(n_cards)
+	await draw_cards(n_cards)
 	Events.hand_drawn.emit()
 
 func _draw_first_hand_with_summon_guarantee(n_cards: int) -> void:
@@ -399,7 +399,7 @@ func empty_hand() -> void:
 		card.queue_free()
 
 func disable_hand_cards() -> void:
-	for usable_card in _get_hand_cards(): #<- Stack overflow (stack size: 1024). Check for infinite recursion in your script.
+	for usable_card in _get_hand_cards():
 		usable_card.unhighlight()
 		usable_card.disabled = true
 

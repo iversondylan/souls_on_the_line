@@ -1,3 +1,5 @@
+# unruly_pyric_wraps.gd
+
 extends Arcanum
 
 const ID := &"unruly_pyric_wraps"
@@ -9,13 +11,14 @@ func get_id() -> StringName:
 
 
 func activate_arcanum(ctx: ArcanumContext) -> Variant:
+	
 	if ctx == null or ctx.api == null:
 		return null
-
+	var is_sim : bool = (ctx.params != null and ctx.params.get(Keys.MODE, &"") == Keys.MODE_SIM)
 	# -------------------------
 	# LIVE PATH (scene tree)
 	# -------------------------
-	if arcanum_display != null and is_instance_valid(arcanum_display):
+	if !is_sim and arcanum_display != null and is_instance_valid(arcanum_display):
 		var enemies: Array[Fighter] = []
 		for node: Node in arcanum_display.get_tree().get_nodes_in_group("enemies"):
 			if node is Fighter:
@@ -36,7 +39,6 @@ func activate_arcanum(ctx: ArcanumContext) -> Variant:
 	# HEADLESS PATH (sim)
 	# -------------------------
 	var source_id := _get_source_id(ctx)
-
 	var enemy_ids: Array[int] = []
 	if ctx.api.has_method("get_enemies_of") and source_id > 0:
 		enemy_ids = ctx.api.call("get_enemies_of", source_id)
@@ -46,7 +48,6 @@ func activate_arcanum(ctx: ArcanumContext) -> Variant:
 	else:
 		push_warning("unruly_pyric_wraps.gd headless: api missing enemy query helpers")
 		return null
-
 	for tid in enemy_ids:
 		_apply_damage_headless(ctx.api, source_id, int(tid), damage)
 
@@ -54,13 +55,15 @@ func activate_arcanum(ctx: ArcanumContext) -> Variant:
 
 
 func _get_source_id(ctx: ArcanumContext) -> int:
-	# Prefer ctx.player if present (live), else ctx.params["source_id"] (sim).
 	if ctx.player != null and is_instance_valid(ctx.player):
 		if ctx.player.combatant_data != null:
 			return int(ctx.player.combatant_data.combat_id)
 
-	if ctx.params != null and ctx.params.has("source_id"):
-		return int(ctx.params["source_id"])
+	if ctx.params != null:
+		if ctx.params.has(Keys.SOURCE_ID):
+			return int(ctx.params[Keys.SOURCE_ID])
+		if ctx.params.has("source_id"):
+			return int(ctx.params["source_id"])
 
 	return 0
 
@@ -68,23 +71,17 @@ func _get_source_id(ctx: ArcanumContext) -> int:
 func _apply_damage_headless(api: BattleAPI, source_id: int, target_id: int, amount: int) -> void:
 	if api == null or target_id <= 0:
 		return
-
 	var d := DamageContext.new()
 
-	# The minimum invariants
 	_safe_set(d, &"source_id", source_id)
 	_safe_set(d, &"target_id", target_id)
 
-	# Damage field names vary across projects; support common ones.
-	# Prefer "amount" if present, else "n_damage" / "damage" / "base_damage".
-	if !_safe_set_any(d, [&"amount", &"n_damage", &"damage", &"base_damage"], amount):
-		push_warning("unruly_pyric_wraps.gd headless: DamageContext has no known damage field")
+	# IMPORTANT: your sim DamageResolver reads ctx.base_amount.
+	_safe_set_any(d, [&"base_amount"], amount)
 
-	# Modifier fields vary too; set what exists.
-	_safe_set_any(d, [&"modifier_type", &"deal_modifier_type"], int(Modifier.Type.NO_MODIFIER))
+	_safe_set_any(d, [&"deal_modifier_type"], int(Modifier.Type.NO_MODIFIER))
 	_safe_set_any(d, [&"take_modifier_type"], int(Modifier.Type.NO_MODIFIER))
 
-	# Route through API
 	if api.has_method("resolve_damage"):
 		api.call("resolve_damage", d)
 	elif api.has_method("resolve_damage_immediate"):

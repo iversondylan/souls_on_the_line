@@ -86,12 +86,26 @@ func alloc_sim_id() -> int:
 func seed_arcana_from_ids(ids: Array[StringName]) -> void:
 	if main_state == null:
 		return
+
+	print("[SIM][SEED] ids=%s" % str(ids))
 	main_state.arcana.clear()
+
 	for id in ids:
-		var a := arcana_catalog.get_proto(id)
-		if a == null:
+		var proto := arcana_catalog.get_proto(id)
+		print("[SIM][SEED] id=%s proto=%s" % [String(id), proto])
+
+		if proto == null:
 			continue
-		main_state.arcana.add_arcanum(id, int(a.type))
+
+		print("[SIM][SEED]  -> type=%s (%d)" % [Arcanum.Type.keys()[int(proto.type)], int(proto.type)])
+
+		main_state.arcana.add_arcanum(id, int(proto.type))
+
+		# Immediately dump what arcana state thinks it has
+		print("[SIM][SEED]  -> after add: list_size=%d list=%s" % [
+			main_state.arcana.list.size(),
+			str(main_state.arcana.list.map(func(e): return String(e.id)))
+		])
 
 # -------------------------
 # Battle Commands
@@ -103,11 +117,65 @@ func start_group_turn(group_index: int, start_at_player := false) -> void:
 	if turn_engine == null:
 		turn_engine = TurnEngineCore.new(turn_engine_host_sim)
 		turn_engine.sim = true
+
 		turn_engine.arcana_proc_requested.connect(_on_sim_arcana_proc_requested)
 		turn_engine.actor_requested.connect(_on_sim_actor_requested)
 
+		# IMPORTANT: SIM must handle these or the engine stalls at _request_player_begin/_request_player_end.
+		turn_engine.player_begin_requested.connect(_on_sim_player_begin_requested)
+		turn_engine.player_end_requested.connect(_on_sim_player_end_requested)
+
+	# WARNING: this resets “start_of_combat fired” etc.
+	# If you call start_group_turn multiple times per battle, you probably *don’t* want this here.
 	turn_engine.reset_for_new_battle()
+	print("[SIM] pre-start_group_turn arcana_list_size=%d ids=%s" % [
+		main_state.arcana.list.size(),
+		str(main_state.arcana.list.map(func(e): return String(e.id)))
+	])
 	turn_engine.start_group_turn(group_index, start_at_player)
+
+
+func _on_sim_player_begin_requested(token: int) -> void:
+	# In SIM, we don't want to block on UI. Do any bookkeeping, then ACK.
+	# If you have sim-only bookkeeping hooks, call them here.
+	if turn_engine_host_sim != null:
+		# Optional: if you want to run begin_player_turn_sim() now.
+		# You already have begin_player_turn_async() on the host, but that’s coroutine-shaped.
+		if sim_host_has_begin_player_turn():
+			_call_sim_begin_player_turn()
+
+	turn_engine.notify_player_begin_done(token)
+
+func _on_sim_player_end_requested(token: int) -> void:
+	# Same idea: no UI wait in headless.
+	if turn_engine_host_sim != null:
+		if sim_host_has_end_player_turn():
+			_call_sim_end_player_turn()
+
+	turn_engine.notify_player_end_done(token)
+
+
+func sim_host_has_begin_player_turn() -> bool:
+	return has_method("begin_player_turn_sim") or has_method("begin_player_turn_headless") or has_method("begin_player_turn")
+
+func sim_host_has_end_player_turn() -> bool:
+	return has_method("end_player_turn_sim") or has_method("end_player_turn_headless") or has_method("end_player_turn")
+
+func _call_sim_begin_player_turn() -> void:
+	if has_method("begin_player_turn_sim"):
+		call("begin_player_turn_sim")
+	elif has_method("begin_player_turn_headless"):
+		call("begin_player_turn_headless")
+	elif has_method("begin_player_turn"):
+		call("begin_player_turn")
+
+func _call_sim_end_player_turn() -> void:
+	if has_method("end_player_turn_sim"):
+		call("end_player_turn_sim")
+	elif has_method("end_player_turn_headless"):
+		call("end_player_turn_headless")
+	elif has_method("end_player_turn"):
+		call("end_player_turn")
 
 # -------------------------
 # Stuff that happens
@@ -189,46 +257,6 @@ func add_combatant_from_data(
 	combatant_added.emit(combat_id, int(group_index), int(insert_index), false)
 	return u
 
-### Add a unit to MAIN state by translating CombatantData -> CombatantState.
-### You should call this right after live allocates the combat_id and sets combatant_data.
-#func add_combatant_from_data(
-	#combat_id: int,
-	#data: CombatantData,
-	#group_index: int,
-	#insert_index: int,
-	#is_player: bool = false
-#) -> CombatantState:
-	#ensure_initialized()
-#
-	#if combat_id <= 0:
-		#push_warning("SimHost.add_combatant_from_data: combat_id must be > 0")
-		#return null
-#
-	## Keep sim id allocator in sync with live ids (helpful while mirroring live ids).
-	#_next_sim_id = maxi(_next_sim_id, combat_id + 1)
-#
-	#if main_state.has_unit(combat_id):
-		#push_warning("SimHost.add_combatant_from_data: unit id already exists: %s" % combat_id)
-		#return main_state.get_unit(combat_id)
-#
-	#var u := CombatantState.new()
-	#u.id = int(combat_id)
-	#u.init_from_combatant_data(data)
-#
-	## Optional: store reconstruction hints (helpful later)
-	## If CombatantData has resource path accessible, keep it.
-	#if data and data.resource_path != "":
-		#u.data_proto_path = String(data.resource_path)
-#
-	#main_state.add_unit(u, int(group_index), int(insert_index))
-#
-	#if is_player:
-		#main_state.groups[FRIENDLY].player_id = int(combat_id)
-#
-	#combatant_added.emit(int(combat_id), int(group_index), int(insert_index), false)
-	#return u
-
-
 # -------------------------
 # Preview cloning
 # -------------------------
@@ -283,6 +311,12 @@ func with_fresh_preview(fn: Callable) -> void:
 # -------------------------
 
 func _on_sim_arcana_proc_requested(proc: int, token: int) -> void:
+	print("[SIM][ARCANA] proc=%s token=%d player_id=%d arcana_count=%d" % [
+		TurnEngineCore.ArcanaProc.keys()[proc],
+		token,
+		int(main_state.groups[FRIENDLY].player_id) if main_state else -1,
+		main_state.arcana.list.size() if main_state else -1
+	])
 	if arcana_resolver == null:
 		if arcana_catalog == null:
 			push_warning("SimHost: no arcana_catalog; cannot run arcana")
@@ -334,7 +368,8 @@ func _run_arcana_headless(proc: int) -> void:
 		ctx.api = main_api
 		ctx.api = main_api
 		ctx.params = {}
-		ctx.params["source_id"] = int(main_state.groups[FRIENDLY].player_id)
+		ctx.params[Keys.MODE] = Keys.MODE_SIM
+		ctx.params[Keys.SOURCE_ID] = int(main_state.groups[FRIENDLY].player_id)
 		# ctx.battle_scene = null (headless)
 		# ctx.player = null (headless) unless you add a sim player handle
 		# ctx.arcanum_display = null (headless)

@@ -18,13 +18,13 @@ func run_proc(proc: int) -> void:
 	var arcanum_type := _proc_to_arcanum_type(proc)
 	if arcanum_type < 0:
 		return
-
+	var ran := 0
 	for entry: ArcanaState.ArcanumEntry in host.main_state.arcana.list:
 		if entry == null:
 			continue
 		if int(entry.type) != arcanum_type:
 			continue
-
+		
 		var id := entry.id
 		if id == &"":
 			continue
@@ -33,14 +33,16 @@ func run_proc(proc: int) -> void:
 		if proto == null:
 			push_warning("ArcanaResolverSim: missing proto for id=%s" % String(id))
 			continue
-
+		print("[SIM][ARCANA] -> id=%s type=%s" % [String(entry.id), Arcanum.Type.keys()[int(entry.type)]])
+		ran += 1
 		var ctx := ArcanumContext.new()
 		ctx.api = host.main_api
 
 		# Headless context params
-		ctx.params[&"mode"] = &"sim"
-		ctx.params[&"player_id"] = host.main_state.groups[0].player_id
-		ctx.params[&"group_index"] = 0
+		ctx.params[Keys.MODE] = Keys.MODE_SIM
+		ctx.params[Keys.PLAYER_ID] = host.main_state.groups[0].player_id
+		ctx.params[Keys.SOURCE_ID] = host.main_state.groups[0].player_id
+		ctx.params[Keys.GROUP_INDEX] = 0
 		
 		# variants can't be inferred, numbnuts
 		var r = proto.activate_arcanum(ctx)
@@ -50,6 +52,7 @@ func run_proc(proc: int) -> void:
 			push_warning("ArcanaResolverSim: arcana %s returned Signal; ignored" % String(id))
 		elif typeof(r) == TYPE_OBJECT and r != null and r.get_class() == "GDScriptFunctionState":
 			push_warning("ArcanaResolverSim: arcana %s returned FunctionState; ignored" % String(id))
+	print("[SIM][ARCANA] matched=%d" % ran)
 
 
 func _proc_to_arcanum_type(proc: int) -> int:

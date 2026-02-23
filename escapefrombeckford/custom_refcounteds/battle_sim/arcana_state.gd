@@ -32,6 +32,7 @@ func clear() -> void:
 	by_id.clear()
 
 func add_arcanum(id: StringName, type: int) -> void:
+	print("[SIM][ARCANA_STATE] add id=%s type=%d" % [String(id), int(type)])
 	if id == &"":
 		return
 	if by_id.has(id):

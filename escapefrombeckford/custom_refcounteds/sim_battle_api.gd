@@ -72,7 +72,7 @@ func has_status(combat_id: int, status_id: StringName) -> bool:
 
 func find_marked_ranged_redirect_target(attacker_id: int) -> int:
 	for id in get_enemies_of(attacker_id):
-		if has_status(id, &"marked"):
+		if has_status(id, Keys.STATUS_MARKED):
 			return id
 	return 0
 
@@ -105,7 +105,13 @@ func resolve_damage(ctx: DamageContext) -> void:
 func resolve_damage_immediate(ctx: DamageContext) -> void:
 	if ctx == null or state == null:
 		return
-
+	print("[SIM][DMG] resolve_damage_immediate src=%d tgt=%d base=%d amt=%d alive=%s" % [
+		int(ctx.source_id),
+		int(ctx.target_id),
+		int(ctx.base_amount),
+		int(ctx.amount),
+		str(state.is_alive(int(ctx.target_id))) if state and int(ctx.target_id) > 0 else "?"
+	])
 	# ensure ids
 	if ctx.target_id == 0 and ctx.target:
 		ctx.target_id = int(ctx.target.combat_id)

@@ -64,7 +64,7 @@ var turn_engine : TurnEngineCore
 #var _pending_start_engine_group: int = -1
 #var _pending_start_engine_start_at_player: bool = false
 var _player_end_turn_armed: bool = false
-var _awaiting_player_discard: bool = false
+#var _awaiting_player_discard: bool = false
 
 var _arcana_gate: Variant = null # GDScriptFunctionState or Signal or null
 var _arcana_gate_seq: int = 0    # monotonic token to avoid “old gate clears new 
@@ -78,6 +78,7 @@ func _ready() -> void:
 	api = LiveBattleAPI.new(battle_scene)
 	host = TurnEngineHostLive.new(self)
 	turn_engine = TurnEngineCore.new(host)
+	turn_engine.player_begin_requested.connect(_on_player_begin_requested)
 	api.turn_engine = turn_engine
 	battle_scene.api = api
 	turn_engine.actor_requested.connect(_on_actor_requested)
@@ -127,7 +128,7 @@ func _ready() -> void:
 	
 	Events.end_turn_button_pressed.connect(_on_end_turn_button_pressed_live)
 	Events.hand_drawn.connect(_on_hand_done_drawing)
-	Events.hand_discarded.connect(_on_hand_discarded)
+	#Events.hand_discarded.connect(_on_hand_discarded)
 	# Optional: start with End Turn disabled until we draw
 	battle_ui.set_end_turn_enabled(false)
 
@@ -254,22 +255,44 @@ func _on_pending_view_changed(active_id: int, pending_ids: PackedInt32Array) -> 
 	_apply_glow_live(active_id, pending_ids)
 
 func _on_actor_requested(combat_id: int) -> void:
-	#print("battle.gd _on_actor_requested() awaiting _run_actor_live")
-
 	# HARD RULE: don’t start an actor while arcana still running.
 	await _await_arcana_gate_if_any()
-	#print("battle.gd _on_actor_requested() done awaiting _run_actor_live. Asking if it's the player.")
+	
+	print("=== AFTER ARCANA GATE, BEFORE ACTOR RUNS ===")
+	sim_host.debug_dump_orders()
+	sim_host.debug_dump_units()
+	#debug_dump_orders_live()
+	#debug_dump_units_live()
+
 	if host.is_player(combat_id):
-		#print("battle.gd _on_actor_requested() it is. Arming end turn button.")
 		wait_for_anims = false
 		_arm_end_turn_button(true)
+
 	var ok := await _run_actor_live(combat_id)
-	#print("battle.gd _on_actor_requested() _run_actor_live done")
 	if ok:
-		#print("battle.gd _on_actor_requested() OK, notifying turn engine done")
 		turn_engine.notify_actor_done(combat_id)
-	#else:
-		#print("battle.gd _on_actor_requested() not OK")
+
+#func _on_actor_requested(combat_id: int) -> void:
+	##print("battle.gd _on_actor_requested() awaiting _run_actor_live")
+#
+	## HARD RULE: don’t start an actor while arcana still running.
+	#await _await_arcana_gate_if_any()
+	##print("battle.gd _on_actor_requested() done awaiting _run_actor_live. Asking if it's the player.")
+	#if host.is_player(combat_id):
+		##print("battle.gd _on_actor_requested() it is. Arming end turn button.")
+		#wait_for_anims = false
+		#_arm_end_turn_button(true)
+	#var ok := await _run_actor_live(combat_id)
+	##print("battle.gd _on_actor_requested() _run_actor_live done")
+	#if ok:
+		##print("battle.gd _on_actor_requested() OK, notifying turn engine done")
+		#turn_engine.notify_actor_done(combat_id)
+	#sim_host.debug_dump_orders()
+	#sim_host.debug_dump_units()
+	#debug_dump_orders_live()
+	#debug_dump_units_live()
+	##else:
+		##print("battle.gd _on_actor_requested() not OK")
 
 func _run_actor_live(combat_id:int) -> bool:
 	#print("battle.gd _run_actor_live() step 1")
@@ -368,37 +391,53 @@ func _await_arcana_gate_if_any() -> void:
 		await g
 	# else: ignore
 
-
 func _start_arcana_scope_detached(arcanum_type: int) -> void:
-	# This starts arcana work "now" but does NOT block the engine.
-	# It updates _arcana_gate so other execution paths can await it.
-
 	if !arcana or !api or !api.runner:
-		# No runner => nothing to gate on; run immediately
 		arcana.activate_arcana_by_type_async(arcanum_type, self)
 		return
 
 	var runner := api.runner
-
-	# Begin a scope so arcana enqueues are tagged (avoid scope=0 warnings)
 	var sid := runner.begin_scope(-1)
 
-	# Kick the arcana enqueue (this likely enqueues ArcanumActivateOp + WaitOp)
+	# IMPORTANT: enqueue arcana ops while sid is the current scope
 	arcana.activate_arcana_by_type_async(arcanum_type, self)
 
-	# Close says "no more new enqueues for this scope"
+	# Close scope to say “no more new items for this scope”
 	runner.close_scope(sid)
 
-	# Detach from current scope stack so subsequent enqueues are NOT forced into sid
+	# Detach from stack so other scopes can proceed normally
 	runner.pop_scope(sid)
 
-	# Make/advance the gate token, and store a new gate for "latest arcana"
 	_arcana_gate_seq += 1
 	var my_seq := _arcana_gate_seq
 
-	# Fire-and-forget coroutine that will end the scope later
-	_arcana_gate = await _finish_detached_scope_later(sid, my_seq)
+	# Store the awaitable (FunctionState), DO NOT await it here
+	_arcana_gate = await runner.await_scope_drained(sid)
+
+	# fire-and-forget cleanup
 	_finish_detached_scope_later(sid, my_seq)
+
+#func _start_arcana_scope_detached(arcanum_type: int) -> void:
+	#if !arcana or !api or !api.runner:
+		#arcana.activate_arcana_by_type_async(arcanum_type, self)
+		#return
+#
+	#var runner := api.runner
+	#var sid := runner.begin_scope(-1)
+#
+	#arcana.activate_arcana_by_type_async(arcanum_type, self)
+#
+	#runner.close_scope(sid)
+	#runner.pop_scope(sid)
+#
+	#_arcana_gate_seq += 1
+	#var my_seq := _arcana_gate_seq
+#
+	## Set the gate to something awaitable
+	#_arcana_gate = await runner.await_scope_drained(sid)
+#
+	## fire-and-forget cleanup
+	#_finish_detached_scope_later(sid, my_seq)
 
 func begin_player_turn_async() -> bool:
 	#print("battle.gd begin_player_turn_async()")
@@ -419,6 +458,10 @@ func begin_player_turn_async() -> bool:
 	#print("battle.gd begin_player_turn_async() done awaiting hand_draw")
 	wait_for_anims = false
 	
+	#sim_host.debug_dump_orders()
+	#sim_host.debug_dump_units()
+	#debug_dump_orders_live()
+	#debug_dump_units_live()
 	
 	return true
 
@@ -730,33 +773,7 @@ func _on_hand_done_drawing() -> void:
 	#print("battle.gd _on_hand_done_drawing()")
 	await _await_arcana_gate_if_any()
 	wait_for_anims = false
-	sim_host.debug_dump_orders()
-	sim_host.debug_dump_units()
-	debug_dump_orders_live()
-	debug_dump_units_live()
-	#_arm_end_turn_button(true)
-
-func _on_hand_discarded() -> void:
-	#print("battle.gd _on_hand_discarded() awaiting=%s current_actor=%s player=%s" % [
-		#_awaiting_player_discard,
-		#turn_engine.current_actor_id,
-		#(player.combat_id if player else -1)
-	#])
 	
-	if !_awaiting_player_discard:
-		return
-	
-	# Only treat this as the player’s discard if the player is the current actor.
-	if !player or !is_instance_valid(player):
-		return
-	if int(turn_engine.current_actor_id) != int(player.combat_id):
-		return
-	
-	_awaiting_player_discard = false
-	
-	# This MUST happen to release _await_action_or_removal().
-	#print("battle.gd _on_hand_discarded(): calling player.resolve_action()")
-	player.resolve_action()
 
 func _arm_end_turn_button(armed: bool) -> void:
 	#print("battle.gd _arm_end_turn_button() armed: ", armed)
@@ -764,7 +781,6 @@ func _arm_end_turn_button(armed: bool) -> void:
 	battle_ui.set_end_turn_enabled(armed)
 
 func _on_end_turn_button_pressed_live() -> void:
-	#print("battle.gd _on_end_turn_button_pressed_live()")
 	if wait_for_anims:
 		return
 	if !_player_end_turn_armed:
@@ -772,10 +788,12 @@ func _on_end_turn_button_pressed_live() -> void:
 
 	_arm_end_turn_button(false)
 
-	# We are now waiting for the discard flow to finish.
-	_awaiting_player_discard = true
-
+	# Trigger your discard UX / cleanup the same way you already do.
 	Events.player_turn_completed.emit()
+
+	# tell the turn engine "player wants to end now"
+	# This should cause TurnEngineCore to emit player_end_requested(token).
+	turn_engine.request_player_end()
 
 
 func debug_dump_orders_live() -> void:
@@ -921,3 +939,16 @@ func _debug_live_unit_name(f: Fighter) -> String:
 				return base.get_basename()
 
 	return "<unnamed>"
+
+func _on_player_begin_requested(token: int) -> void:
+	var ok := await begin_player_turn_async()
+	turn_engine.notify_player_begin_done(token)
+
+func _on_player_end_requested(token: int) -> void:
+	# TurnEngine is asking Battle to actually complete the player turn.
+	# This should:
+	# - wait for discard flow to finish
+	# - call player.resolve_action()
+	# - then notify engine so it can continue (arcana / next actor)
+	var ok := await end_player_turn_async()
+	turn_engine.notify_player_end_done(token)

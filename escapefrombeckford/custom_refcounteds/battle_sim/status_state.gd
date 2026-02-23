@@ -3,7 +3,7 @@ class_name StatusState extends RefCounted
 
 class StatusStack extends RefCounted:
 	var id: StringName
-	var intensity: int = 1
+	var stacks: int = 1
 	var duration: int = 0 # 0 = infinite (or proc-based), you decide
 	var data: Dictionary = {}
 
@@ -12,7 +12,7 @@ class StatusStack extends RefCounted:
 
 	func clone() -> StatusStack:
 		var s := StatusStack.new(id)
-		s.intensity = intensity
+		s.stacks = stacks
 		s.duration = duration
 		s.data = data.duplicate(true)
 		return s
