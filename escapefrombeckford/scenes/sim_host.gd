@@ -27,10 +27,12 @@ var turn_engine: TurnEngineCore
 var turn_engine_host_sim: TurnEngineHostSim
 var preview_turn_engine: TurnEngineCore
 var arcana_resolver: ArcanaResolver
+var card_executor: CardExecutor
 # Optional: if you want the host to be responsible for assigning ids later.
 var _next_sim_id: int = 1
 
 # --- optional catalogs (wire later) ---
+var card_catalog: CardCatalog
 var status_catalog: StatusCatalog
 # var ai_catalog: NPCAIProfileCatalog
 var arcana_catalog: ArcanaCatalog
@@ -256,6 +258,15 @@ func add_combatant_from_data(
 
 	combatant_added.emit(combat_id, int(group_index), int(insert_index), false)
 	return u
+
+func apply_player_card(req: CardPlayRequest) -> bool:
+	ensure_initialized()
+	if main_api == null:
+		return false
+	if card_executor == null:
+		card_executor = CardExecutor.new()
+		card_executor.card_catalog = card_catalog
+	return card_executor.play_card(main_api, req)
 
 # -------------------------
 # Preview cloning

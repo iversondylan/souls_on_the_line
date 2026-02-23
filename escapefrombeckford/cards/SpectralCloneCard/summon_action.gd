@@ -26,6 +26,30 @@ func activate(ctx: CardActionContext) -> bool:
 
 	return true
 
+# summon_action.gd
+func activate_sim(ctx: CardActionContextSim) -> bool:
+	if ctx == null or ctx.api == null:
+		return false
+
+	# Determine insert index
+	var insert_index := ctx.resolved.insert_index
+	if insert_index < 0:
+		insert_index = 0
+
+	var sctx := SummonContext.new()
+	sctx.group_index = 0 # friendly
+	sctx.insert_index = insert_index
+	sctx.summon_data = _build_clone_data_sim() # same duplicate/init
+	ctx.api.summon(sctx)
+
+	if sctx.summoned_id > 0:
+		ctx.summoned_ids.append(sctx.summoned_id)
+	return true
+
+func _build_clone_data_sim() -> CombatantData:
+	var data := summon_data.duplicate()
+	data.init()
+	return data
 
 func _build_clone_data(ctx: CardActionContext) -> CombatantData:
 	var data := summon_data.duplicate()

@@ -23,16 +23,16 @@ func activate(_ctx: CardActionContext) -> bool:
 	push_error("Override activate(ctx) in CardAction.")
 	return false
 
+func activate_sim(_ctx: CardActionContextSim) -> bool:
+	# default: if an action isn't sim-ready yet, fail loudly
+	push_error("%s missing activate_sim()" % get_class())
+	return false
+
 # --- DESCRIPTION CONTRACT ---
 # Each CardAction:
 # 1. Declares how many placeholders it consumes
 # 2. Supplies exactly that many concrete values
 # 3. Leaves remaining placeholders intact ("%s") for later actions
-#
-# FUTURE NOTE (Dylan):
-# Later, add:
-# @export var modular_description: String
-# If no placeholders remain, this text may be appended instead of formatted.
 # --------------------------------
 
 func description_arity() -> int:
