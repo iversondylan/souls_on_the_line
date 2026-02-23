@@ -5,6 +5,8 @@ class_name BattleState extends RefCounted
 const FRIENDLY := 0
 const ENEMY := 1
 
+var events: BattleEventLog = BattleEventLog.new()
+
 var battle_seed: int = 0
 var run_seed: int = 0
 
@@ -23,12 +25,15 @@ var rng: RNG
 # Arcana (battle-level)
 var arcana: ArcanaState = ArcanaState.new()
 
+# Resource(s)
+var resource: ResourceState = ResourceState.new() 
+
 func init(_battle_seed: int, _run_seed: int) -> void:
 	battle_seed = _battle_seed
 	run_seed = _run_seed
 	rng = RNG.new()
-	# Choose whichever you want as the single source seed; battle_seed is fine.
 	rng.seed = battle_seed
+	events = BattleEventLog.new()
 
 func has_unit(id: int) -> bool:
 	return units.has(id)
@@ -79,25 +84,29 @@ func clone() -> BattleState:
 	b.battle_seed = battle_seed
 	b.run_seed = run_seed
 
-	# RNG: clone by copying seed + internal state-ish.
-	# Godot doesn't expose full PRNG state cleanly; for determinism,
-	# prefer a custom RNG wrapper later. For now: copy seed + advance count stored externally if needed.
 	b.rng = RNG.new()
 	b.rng.seed = rng.seed
 
-	# Units
 	for id in units.keys():
 		var u: CombatantState = units[id]
 		if u:
 			b.units[id] = u.clone()
 
-	# Groups
 	b.groups = [groups[0].clone(), groups[1].clone()]
-
-	# Turn
 	b.turn = turn.clone()
-
-	# Arcana
 	b.arcana = arcana.duplicate(true)
 
+	# Policy: preview clones start with a fresh empty event log.
+	b.events = BattleEventLog.new()
+
 	return b
+
+func debug_dump_events(last_n: int = 20) -> void:
+	if events == null:
+		print("BattleState: no events")
+		return
+	var n := events.size()
+	var start := maxi(n - last_n, 0)
+	for i in range(start, n):
+		var e := events.get_event(i)
+		print("[EV] #%d type=%d scope=%d kind=%s data=%s" % [e.seq, e.type, e.scope_id, String(e.scope_kind), str(e.data)])

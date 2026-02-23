@@ -82,6 +82,8 @@ func play_sfx(sound: Sound) -> void:
 	if sound:
 		SFXPlayer.play(sound)
 
+func on_card_played(_ctx: CardActionContextSim) -> void:
+	pass
 
 # spatial / ordering
 func get_group(combat_id: int) -> int:

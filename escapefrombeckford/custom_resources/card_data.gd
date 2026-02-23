@@ -35,8 +35,15 @@ const RARITY_COLORS := {
 	CardData.Rarity.RARE: Color.DARK_ORANGE,
 }
 
+
+@export_group("Identity")
+@export var uid: String = ""				# stable per instance
+@export var version: int = 1
+@export var base_proto_path: String = ""	# optional: template origin
+
 @export_group("Card Attributes")
 @export var id: int
+
 @export var card_type: CardType
 @export var target_type: TargetType
 @export var rarity: Rarity
@@ -48,6 +55,11 @@ const RARITY_COLORS := {
 @export var cost_blue: int
 @export var texture: Texture2D
 @export var actions: Array[CardAction] = []
+
+func ensure_uid() -> void:
+	if uid != "":
+		return
+	uid = "%d_%d_%d" % [Time.get_unix_time_from_system(), randi(), int(hash(name))]
 
 func is_single_targeted() -> bool:
 	return target_type == TargetType.SINGLE_ENEMY or target_type == TargetType.ALLY_OR_SELF or target_type == TargetType.ALLY or target_type == TargetType.BATTLEFIELD

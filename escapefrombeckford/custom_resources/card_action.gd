@@ -23,6 +23,9 @@ func activate(_ctx: CardActionContext) -> bool:
 	push_error("Override activate(ctx) in CardAction.")
 	return false
 
+func activate_live(ctx: CardActionContext) -> bool:
+	return activate(ctx) # temporary shim
+
 func activate_sim(_ctx: CardActionContextSim) -> bool:
 	# default: if an action isn't sim-ready yet, fail loudly
 	push_error("%s missing activate_sim()" % get_class())

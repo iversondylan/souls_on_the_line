@@ -6,6 +6,9 @@ var state: BattleState
 var alloc_id: Callable = Callable() # () -> int
 var on_summoned: Callable = Callable() # (summoned_id: int, group_index: int) -> void
 
+var scopes: BattleScopeManager
+var writer: BattleEventWriter
+
 func _init(_state: BattleState) -> void:
 	state = _state
 
@@ -206,7 +209,10 @@ func summon(ctx: SummonContext) -> void:
 
 	var g := clampi(ctx.group_index, 0, 1)
 	state.add_unit(u, g, int(ctx.insert_index))
-
+	
+	if writer != null:
+		writer.emit_summoned(id, g, int(ctx.insert_index), String(u.data_proto_path))
+	
 	ctx.summoned_id = id
 	ctx.summoned_fighter = null # headless
 
@@ -299,6 +305,18 @@ func apply_damage_amount(ctx: DamageContext, amount: int) -> void:
 	ctx.armor_damage = armor_loss
 	ctx.health_damage = pre_hp - tgt.health
 	ctx.was_lethal = (tgt.health <= 0)
+	
+
+	if writer != null:
+		writer.emit_damage_applied(
+			int(ctx.source_id),
+			int(ctx.target_id),
+			int(ctx.base_amount),
+			int(amount),
+			int(ctx.armor_damage),
+			int(ctx.health_damage),
+			bool(ctx.was_lethal)
+		)
 
 func on_damage_applied(ctx: DamageContext) -> void:
 	if state == null or ctx == null:
@@ -309,6 +327,18 @@ func on_damage_applied(ctx: DamageContext) -> void:
 	# - “on hit” triggers
 	# Keep it empty until you formalize procs.
 	pass
+
+func on_card_played(ctx: CardActionContextSim) -> void:
+	if ctx == null or ctx.card_data == null:
+		return
+	var targets: Array[int] = []
+	if ctx.resolved != null:
+		for id in ctx.resolved.fighter_ids:
+			targets.append(int(id))
+
+	if writer != null:
+		writer.emit_card_played(ctx.card_data, int(ctx.source_id), targets)
+
 
 
 # --------------------------

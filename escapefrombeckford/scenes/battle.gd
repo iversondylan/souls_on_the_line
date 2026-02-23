@@ -81,6 +81,7 @@ func _ready() -> void:
 	turn_engine.player_begin_requested.connect(_on_player_begin_requested)
 	api.turn_engine = turn_engine
 	battle_scene.api = api
+	battle_scene.sim_host = sim_host
 	turn_engine.actor_requested.connect(_on_actor_requested)
 	turn_engine.group_turn_ended.connect(_on_group_turn_ended)
 	turn_engine.pending_view_changed.connect(_on_pending_view_changed)

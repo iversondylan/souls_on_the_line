@@ -35,5 +35,6 @@ const OP_ARCANA_PROC := &"arcana_proc"
 
 const GROUP := &"group"
 const PROC := &"proc"
+const GROUP_TURN := &"group_turn"
 
 const TARGET_ID := &"target_id"

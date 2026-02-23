@@ -5,7 +5,7 @@ class_name BattleScene extends Node2D
 @onready var groups: Array[BattleGroup] = [$BattleGroupFriendly, $BattleGroupEnemy]
 @onready var target_arrow: Sprite2D = $TargetArrow
 @onready var runner: BattleResolutionRunner = $BattleResolutionRunner
-
+var sim_host: SimHost
 var deck: Deck : set = _set_deck
 var run: Run : set = _set_run
 var _next_combat_id: int = 1

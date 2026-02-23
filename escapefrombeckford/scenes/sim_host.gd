@@ -52,8 +52,19 @@ func reset() -> void:
 func init_from_seeds(battle_seed: int, run_seed: int) -> void:
 	main_state = BattleState.new()
 	main_state.init(int(battle_seed), int(run_seed))
-	
+	# sim_host.gd init_from_seeds(...)
 	main_api = SimBattleAPI.new(main_state)
+	main_api.status_catalog = status_catalog
+
+	# NEW: scopes + writer
+	var scopes := BattleScopeManager.new()
+	scopes.reset()
+	main_api.scopes = scopes
+	main_api.writer = BattleEventWriter.new(main_state.events, scopes)
+
+	# Optional: forbid unscoped writes; keep strict early
+	main_api.writer.allow_unscoped_events = false
+
 	main_api.status_catalog = status_catalog
 	
 	# NEW: id allocation + notify turn engine
@@ -73,6 +84,7 @@ func ensure_initialized() -> void:
 	
 	if turn_engine_host_sim == null:
 		turn_engine_host_sim = TurnEngineHostSim.new(self)
+	
 	if main_state == null:
 		# Safe default if caller forgot.
 		init_from_seeds(0, 0)
@@ -119,7 +131,7 @@ func start_group_turn(group_index: int, start_at_player := false) -> void:
 	if turn_engine == null:
 		turn_engine = TurnEngineCore.new(turn_engine_host_sim)
 		turn_engine.sim = true
-
+		turn_engine.group_turn_ended.connect(_on_sim_group_turn_ended)
 		turn_engine.arcana_proc_requested.connect(_on_sim_arcana_proc_requested)
 		turn_engine.actor_requested.connect(_on_sim_actor_requested)
 
@@ -134,8 +146,15 @@ func start_group_turn(group_index: int, start_at_player := false) -> void:
 		main_state.arcana.list.size(),
 		str(main_state.arcana.list.map(func(e): return String(e.id)))
 	])
+	if main_api and main_api.writer:
+		# you can use turn_engine._turn_token if you expose it, or track your own sim turn counter
+		main_api.writer.set_turn_context(turn_engine._turn_token, group_index, 0)
+		main_api.writer.scope_begin(Keys.GROUP_TURN, "group=%d" % group_index, 0)
 	turn_engine.start_group_turn(group_index, start_at_player)
 
+func _on_sim_group_turn_ended(gi: int) -> void:
+	if main_api and main_api.writer:
+		main_api.writer.scope_end() # ends group_turn
 
 func _on_sim_player_begin_requested(token: int) -> void:
 	# In SIM, we don't want to block on UI. Do any bookkeeping, then ACK.
@@ -179,12 +198,22 @@ func _call_sim_end_player_turn() -> void:
 	elif has_method("end_player_turn"):
 		call("end_player_turn")
 
+func sim_notify_actor_done(cid: int) -> void:
+	# close actor scope first
+	if main_api and main_api.writer:
+		main_api.writer.scope_end() # actor_turn
+	turn_engine.notify_actor_done(cid)
+
+
 # -------------------------
 # Stuff that happens
 # -------------------------
 
 func _on_sim_actor_requested(cid: int) -> void:
-	# For your current milestone:
+	if main_api and main_api.writer:
+		main_api.writer.set_turn_context(turn_engine._turn_token, turn_engine.active_group_index, cid)
+		main_api.writer.scope_begin(&"actor_turn", "actor=%d" % cid, cid)
+		
 	if is_player(cid):
 		# We are now at "player gets control" boundary in sim.
 		player_input_reached.emit()

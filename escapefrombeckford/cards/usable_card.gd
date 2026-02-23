@@ -178,33 +178,123 @@ func get_description() -> String:
 func get_cost() -> Array[int]:
 	return [card_data.cost_red, card_data.cost_green, card_data.cost_blue]
 
+#func activate() -> bool:
+	#var resolved_targets := resolve_targets(targets)
+	#if resolved_targets.fighters.is_empty() and resolved_targets.areas.is_empty():
+		#return false
+#
+	#if !player.can_play_card(card_data):
+		#return false
+#
+	#var ctx := build_action_context(resolved_targets)
+#
+	## detect summon replace need
+	#var summon_action := _get_first_summon_action()
+	#if summon_action != null and summon_action.requires_summon_slot():
+		#var needs_replace := battle_scene.get_n_summoned_allies() >= BattleGroupFriendly.MAX_SOULBOUND
+		#if needs_replace:
+			#var effect := summon_action.build_effect(ctx)
+			#Events.request_summon_replace.emit(self, ctx, effect, summon_action)
+			#return true
+	#
+	#var swap_action := _get_first_swap_action()
+	#if swap_action != null:
+		## We require an initial target (actor) via your targeting rules.
+		#Events.request_swap_partner.emit(self, ctx, resolved_targets.fighters[0], swap_action)
+		#return true
+	#
+	## normal commit path
+	#return commit_play(ctx, null, true)
+
 func activate() -> bool:
-	var resolved_targets := resolve_targets(targets)
-	if resolved_targets.fighters.is_empty() and resolved_targets.areas.is_empty():
+	# --- basic validation (UI-side) ---
+	if card_data == null or player == null or battle_scene == null:
+		return false
+
+	# Live resolution (what the user pointed at)
+	var resolved_live := resolve_targets(targets)
+	if resolved_live.fighters.is_empty() and resolved_live.areas.is_empty():
 		return false
 
 	if !player.can_play_card(card_data):
 		return false
 
-	var ctx := build_action_context(resolved_targets)
+	# Build SIM target payload from live resolution
+	var resolved_sim := _build_resolved_sim_from_live(resolved_live)
 
-	# detect summon replace need
+	# Special-case: summon replace / swap partner still driven by UI flow
+	# (we cannot “just do sim + live” if you need extra user choice)
 	var summon_action := _get_first_summon_action()
 	if summon_action != null and summon_action.requires_summon_slot():
 		var needs_replace := battle_scene.get_n_summoned_allies() >= BattleGroupFriendly.MAX_SOULBOUND
 		if needs_replace:
-			var effect := summon_action.build_effect(ctx)
-			Events.request_summon_replace.emit(self, ctx, effect, summon_action)
+			# Keep existing UX path; do NOT apply sim/live yet
+			var ctx_live := build_action_context(resolved_live)
+			var effect := summon_action.build_effect(ctx_live)
+			Events.request_summon_replace.emit(self, ctx_live, effect, summon_action)
 			return true
-	
+
 	var swap_action := _get_first_swap_action()
 	if swap_action != null:
-		# We require an initial target (actor) via your targeting rules.
-		Events.request_swap_partner.emit(self, ctx, resolved_targets.fighters[0], swap_action)
+		Events.request_swap_partner.emit(self, build_action_context(resolved_live), resolved_live.fighters[0], swap_action)
 		return true
-	
-	# normal commit path
-	return commit_play(ctx, null, true)
+
+	# --- Commit ---
+	# You said: “card plays engage sim; sim applies immediately and queues animation events to be shown in live”.
+	# For now we’ll do BOTH:
+	# 1) SIM mutates + logs events
+	# 2) LIVE runs current pipeline (until you switch live to consume event log)
+
+	var ok_sim := activate_sim(resolved_sim)
+	if !ok_sim:
+		# Policy choice: if sim fails, do not do live.
+		# (Keeps source of truth consistent.)
+		return false
+
+	var ok_live := activate_live(resolved_live)
+	return ok_live
+
+
+func activate_live(resolved_live: CardResolvedTarget) -> bool:
+	var ctx := build_action_context(resolved_live)
+	return commit_play_live(ctx, null, true)
+
+func activate_sim(resolved_sim: CardResolvedTargetSim) -> bool:
+	if battle_scene == null or battle_scene.sim_host == null:
+		# If you want to allow “live-only” in some situations, flip this policy.
+		push_warning("UsableCard.activate_sim: no sim_host on battle_scene")
+		return false
+
+	# ensure persistent identity
+	if card_data != null:
+		card_data.ensure_uid()
+
+	var req := CardPlayRequest.new()
+	req.source_id = int(player.combat_id)
+	req.card = card_data
+	req.target_ids = resolved_sim.fighter_ids
+	req.insert_index = resolved_sim.insert_index
+	# optional
+	# req.params = ...
+	return battle_scene.sim_host.apply_player_card(req)
+
+func _build_resolved_sim_from_live(resolved_live: CardResolvedTarget) -> CardResolvedTargetSim:
+	var out := CardResolvedTargetSim.new()
+
+	# Fighters -> ids
+	if resolved_live.fighters != null:
+		for f: Fighter in resolved_live.fighters:
+			if f != null and is_instance_valid(f):
+				out.fighter_ids.append(int(f.combat_id))
+
+	# Battlefield insert index
+	out.insert_index = int(resolved_live.insert_index) if ("insert_index" in resolved_live) else -1
+
+	# If you care later:
+	# out.group_index = ...
+	# out.area_index = ...
+	return out
+
 
 func _get_first_summon_action() -> SummonAction:
 	for action in card_data.actions:
@@ -388,28 +478,53 @@ func build_action_context(resolved_targets: CardResolvedTarget) -> CardActionCon
 	ctx.resolved_target = resolved_targets
 	return ctx
 
+func build_action_context_sim(resolved_targets: CardResolvedTargetSim) -> CardActionContextSim:
+	var ctx := CardActionContextSim.new()
+	#ctx.player = player
+	#ctx.battle_scene = battle_scene
+	ctx.card_data = card_data
+	ctx.resolved = resolved_targets
+	return ctx
 
-func commit_play(ctx: CardActionContext, skip_action: CardAction = null, spend_mana: bool = true) -> bool:
-	# Spend mana once
-	#print("1")
+
+func commit_play_live(ctx: CardActionContext, skip_action: CardAction = null, spend_mana: bool = true) -> bool:
 	if spend_mana:
 		ctx.player.spend_mana(ctx.card_data)
 
-	# Execute actions (skipping one if requested)
 	var any_action_executed := false
 	for action: CardAction in ctx.card_data.actions:
 		if skip_action != null and action == skip_action:
 			continue
-		if action.activate(ctx):
+		if action != null and action.activate_live(ctx):
 			any_action_executed = true
-	#print("2")
-	#if !any_action_executed:
-		#return false
-	#print("3")
+
 	Events.card_played.emit(self)
 	flush_pending_summons.call_deferred(ctx)
 	_move_to_destination()
 	return true
+
+
+#func commit_play(ctx: CardActionContext, skip_action: CardAction = null, spend_mana: bool = true) -> bool:
+	## Spend mana once
+	##print("1")
+	#if spend_mana:
+		#ctx.player.spend_mana(ctx.card_data)
+#
+	## Execute actions (skipping one if requested)
+	#var any_action_executed := false
+	#for action: CardAction in ctx.card_data.actions:
+		#if skip_action != null and action == skip_action:
+			#continue
+		#if action.activate(ctx):
+			#any_action_executed = true
+	##print("2")
+	##if !any_action_executed:
+		##return false
+	##print("3")
+	#Events.card_played.emit(self)
+	#flush_pending_summons.call_deferred(ctx)
+	#_move_to_destination()
+	#return true
 
 
 func _move_to_destination() -> void:

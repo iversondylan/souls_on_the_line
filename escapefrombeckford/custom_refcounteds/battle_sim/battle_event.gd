@@ -1,37 +1,46 @@
 # battle_event.gd
-class_name BattleEvent extends RefCounted
+class_name BattleEvent
+extends RefCounted
 
+# Keep this broad; you'll add more event types over time.
 enum Type {
+	SCOPE_BEGIN,
+	SCOPE_END,
+	
+	TURN_GROUP_BEGIN,
+	TURN_GROUP_END,
+	
+	ACTOR_BEGIN,
+	ACTOR_END,
+	
 	CARD_PLAYED,
+	
 	DAMAGE_APPLIED,
 	HEAL_APPLIED,
 	STATUS_APPLIED,
 	STATUS_REMOVED,
 	SUMMONED,
 	MOVED,
-	ATTACK_SEQUENCE_STARTED,
-	ATTACK_HIT,
-	UNIT_DIED,
-	TURN_COUNTERS_CHANGED,
+	
+	CARD_MUTATED,
+	
+	DEBUG
 }
 
-var type: int = -1
-var t: int = 0 # monotonic sequence number for stable ordering (optional)
+var seq: int = 0					# monotonic per battle
+var battle_tick: int = 0			# optional; can equal seq for now
 
-var source_id: int = 0
-var target_id: int = 0
-
-var amount: int = 0
-var status_id: StringName = &""
-var duration: int = 0
-var intensity: int = 0
-
-var card_id: int = 0
-var card_type: int = -1
-
-var summoned_id: int = 0
+var turn_id: int = 0
 var group_index: int = -1
-var insert_index: int = -1
-var proto_path: String = "" # optional: for live spawn visuals
+var active_actor_id: int = 0
 
-var params: Dictionary = {} # flexible: crit flags, tags, etc.
+var scope_id: int = 0
+var parent_scope_id: int = 0
+var scope_kind: StringName = &""	# e.g. &"actor_turn", &"damage"
+var type: int = Type.DEBUG
+
+# Data payload (keep flexible)
+var data: Dictionary = {}
+
+func _init(_type: int = Type.DEBUG) -> void:
+	type = _type

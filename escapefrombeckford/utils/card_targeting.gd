@@ -32,7 +32,7 @@ static func resolve(api: BattleAPI, card: CardData, req: CardPlayRequest) -> Car
 				out.fighter_ids = PackedInt32Array(a + b)
 
 		CardData.TargetType.BATTLEFIELD:
-			out.area_index = req.area_index
-			out.insert_index = req.area_index # or req.params["insert_index"] if you want
+			#out.area_index = req.area_index
+			out.insert_index = req.insert_index # or req.params["insert_index"] if you want
 	
 	return out
