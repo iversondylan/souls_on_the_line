@@ -27,6 +27,9 @@ func activate(ctx: CardActionContext) -> bool:
 	eff.execute(ctx.battle_scene.api)
 	return true
 
+func activate_sim(_ctx: CardActionContextSim) -> bool:
+	return true
+
 func description_arity() -> int:
 	return 0
 

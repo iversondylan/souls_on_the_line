@@ -1,3 +1,5 @@
+# marked.gd
+
 class_name MarkedStatus extends Status
 
 # export settings:

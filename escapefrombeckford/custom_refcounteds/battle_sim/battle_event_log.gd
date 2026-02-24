@@ -3,7 +3,7 @@
 class_name BattleEventLog extends RefCounted
 
 var _events: Array[BattleEvent] = []
-var _next_seq: int = 1
+var _next_seq: int = 0
 
 func clear() -> void:
 	_events.clear()
@@ -24,9 +24,12 @@ func append(e: BattleEvent) -> int:
 	_events.append(e)
 	return e.seq
 
+func append_event(e: BattleEvent) -> void:
+	e.seq = _next_seq
+	_next_seq += 1
+	_events.append(e)
+
 func get_event(i: int) -> BattleEvent:
-	if i < 0 or i >= _events.size():
-		return null
 	return _events[i]
 
 # Read a slice (inclusive start, exclusive end)

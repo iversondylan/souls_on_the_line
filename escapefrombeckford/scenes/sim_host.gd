@@ -52,7 +52,7 @@ func reset() -> void:
 func init_from_seeds(battle_seed: int, run_seed: int) -> void:
 	main_state = BattleState.new()
 	main_state.init(int(battle_seed), int(run_seed))
-	# sim_host.gd init_from_seeds(...)
+	main_state._next_sim_id = 1
 	main_api = SimBattleAPI.new(main_state)
 	main_api.status_catalog = status_catalog
 
@@ -260,7 +260,7 @@ func add_combatant_from_data(
 		push_warning("SimHost.add_combatant_from_data: data is null")
 		return null
 
-	var combat_id := int(data.combat_id)
+	var combat_id := main_state.alloc_id()
 	if combat_id <= 0:
 		push_warning("SimHost.add_combatant_from_data: data.combat_id must be > 0 (got %s)" % combat_id)
 		return null
@@ -286,6 +286,13 @@ func add_combatant_from_data(
 		main_state.groups[FRIENDLY].player_id = combat_id
 
 	combatant_added.emit(combat_id, int(group_index), int(insert_index), false)
+	print("[SIM][BOOT] add unit id=%d (live=%d) group=%d idx=%d name=%s" % [
+		u.id,
+		int(data.combat_id),
+		group_index,
+		insert_index,
+		data.name
+	])
 	return u
 
 func apply_player_card(req: CardPlayRequest) -> bool:
@@ -450,28 +457,31 @@ func debug_dump_units() -> void:
 	if main_state == null:
 		print("SimHost.debug_dump_units(): (no main_state)")
 		return
-	
+
 	print("SimHost units dump:")
 	for group_index in [FRIENDLY, ENEMY]:
 		var gname := "FRIENDLY" if group_index == FRIENDLY else "ENEMY"
 		var order := main_state.groups[group_index].order
 		print("%s order: %s" % [gname, Array(order)])
-		
+
 		for i in range(order.size()):
 			var cid := int(order[i])
 			var u: CombatantState = main_state.get_unit(cid)
 			if u == null:
 				print("\t[%d] cid=%d MISSING_UNIT" % [i, cid])
 				continue
-			
+
 			var uname := _debug_unit_name(u)
 			var hp := int(u.health)
 			var max_hp := int(u.max_health) if "max_health" in u else int(u.max_hp) if "max_hp" in u else -1
 			var alive := bool(u.alive) if "alive" in u else main_state.is_alive(cid)
-			
+
 			var hp_str := "%d/%d" % [hp, max_hp] if max_hp >= 0 else "%d" % hp
-			print("\t[%d] cid=%d name=%s hp=%s group=%s pos=%d alive=%s" % [
-				i, cid, uname, hp_str, gname, i, str(alive)
+
+			var statuses_str := _format_sim_statuses(u)
+
+			print("\t[%d] cid=%d name=%s hp=%s group=%s pos=%d alive=%s%s" % [
+				i, cid, uname, hp_str, gname, i, str(alive), statuses_str
 			])
 
 	# Optional: show any units not present in either group order (diagnostic)
@@ -490,6 +500,51 @@ func debug_dump_units() -> void:
 		extras.sort()
 		print("SimHost units not in any group order: ", extras)
 
+func _format_sim_statuses(u: CombatantState) -> String:
+	if u == null:
+		return ""
+
+	# CombatantState.statuses is StatusState
+	if u.statuses == null:
+		return ""
+
+	var by_id : Dictionary = u.statuses.by_id if ("by_id" in u.statuses) else null
+	if by_id == null or by_id.size() == 0:
+		return ""
+
+	var parts: Array[String] = []
+	for k in by_id.keys():
+		var sid := String(k)
+		var stack = by_id[k]
+		if stack == null:
+			continue
+
+		var stacks := 0
+		var dur := 0
+
+		if "stacks" in stack:
+			stacks = int(stack.stacks)
+		elif "intensity" in stack:
+			stacks = int(stack.intensity) # just in case older shape
+
+		if "duration" in stack:
+			dur = int(stack.duration)
+
+		# Display:
+		# - if duration > 0, show dur
+		# - always show stacks if != 1 (or if you want always, remove the condition)
+		var show_bits: Array[String] = []
+		if dur > 0:
+			show_bits.append("dur=%d" % dur)
+		if stacks != 1 and stacks != 0:
+			show_bits.append("stk=%d" % stacks)
+
+		if show_bits.is_empty():
+			parts.append("%s" % sid)
+		else:
+			parts.append("%s(%s)" % [sid, ", ".join(show_bits)])
+
+	return " [" + ", ".join(parts) + "]"
 
 func _debug_unit_name(u: CombatantState) -> String:
 	# 1) direct name field (if your CombatantState has it)

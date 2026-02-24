@@ -23,7 +23,6 @@ func set_turn_context(_turn_id: int, _group_index: int, _actor_id: int) -> void:
 	active_actor_id = _actor_id
 
 func _append(type: int, data: Dictionary = {}) -> int:
-	
 	if log == null:
 		return 0
 
@@ -36,17 +35,18 @@ func _append(type: int, data: Dictionary = {}) -> int:
 	e.turn_id = turn_id
 	e.group_index = group_index
 	e.active_actor_id = active_actor_id
-	
 
-	
 	if scopes != null:
 		e.scope_id = scopes.current_scope_id()
 		e.parent_scope_id = scopes.current_parent_scope_id()
 		e.scope_kind = scopes.current_scope_kind()
 
 	e.data = data
-	print("[EV] seq=%d type=%d scope=%d kind=%s data=%s" % [e.seq, e.type, e.scope_id, String(e.scope_kind), str(e.data)])
-	return log.append(e)
+
+	var seq := log.append(e)
+
+	print("[EV] seq=%d type=%d scope=%d kind=%s data=%s" % [seq, e.type, e.scope_id, String(e.scope_kind), str(e.data)])
+	return seq
 
 # -------------------------
 # Scope helpers (emit begin/end markers)
@@ -97,16 +97,18 @@ func scope_end() -> int:
 # Common battle events (you’ll expand these)
 # -------------------------
 
-func emit_card_played(card: CardData, source_id: int, target_ids: Array[int]) -> int:
-	if card == null:
+func emit_card_played(ctx: CardActionContextSim) -> int:
+	if ctx.card_data == null:
 		return 0
-	card.ensure_uid()
+	ctx.card_data.ensure_uid()
 	return _append(BattleEvent.Type.CARD_PLAYED, {
-		&"card_uid": card.uid,
-		&"card_name": card.name,
-		&"card_type": int(card.card_type),
-		&"source_id": source_id,
-		&"targets": target_ids,
+		&"card_uid": ctx.card_data.uid,
+		&"card_name": ctx.card_data.name,
+		&"card_type": CardData.CardType.keys()[int(ctx.card_data.card_type)],
+		&"source_id": ctx.source_id,
+		&"target_type": CardData.TargetType.keys()[int(ctx.card_data.target_type)],
+		&"targets": ctx.affected_ids,
+		&"insert_index": ctx.insert_index
 	})
 
 
@@ -121,7 +123,9 @@ func emit_damage_applied(source_id: int, target_id: int, base: int, final_amount
 		&"was_lethal": lethal,
 	})
 
-func emit_summoned(summoned_id: int, group_idx: int, insert_index: int, proto: String = "") -> int:
+
+## Do I need to change the return output here to include something from spec?
+func emit_summoned(summoned_id: int, group_idx: int, insert_index: int, proto: String = "", spec: Dictionary = {}) -> int:
 	return _append(BattleEvent.Type.SUMMONED, {
 		&"summoned_id": summoned_id,
 		&"group_index": group_idx,
@@ -138,4 +142,22 @@ func emit_card_mutated(card: CardData, reason: String = "", delta: Dictionary = 
 		&"card_name": card.name,
 		&"reason": reason,
 		&"delta": delta,
+	})
+
+func emit_status_applied(source_id: int, target_id: int, status_id: StringName, stacks_delta: int, duration: int) -> int:
+	return _append(BattleEvent.Type.STATUS_APPLIED, {
+		&"source_id": int(source_id),
+		&"target_id": int(target_id),
+		&"status_id": status_id,
+		&"stacks_delta": int(stacks_delta),
+		&"duration": int(duration),
+	})
+
+func emit_status_removed(source_id: int, target_id: int, status_id: StringName, stacks_delta: int, removed_all: bool) -> int:
+	return _append(BattleEvent.Type.STATUS_REMOVED, {
+		&"source_id": int(source_id),
+		&"target_id": int(target_id),
+		&"status_id": status_id,
+		&"stacks_delta": int(stacks_delta),
+		&"removed_all": bool(removed_all),
 	})

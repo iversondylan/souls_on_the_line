@@ -101,6 +101,6 @@ func _confirm(target: Fighter) -> void:
 
 	# Commit the card play, skipping the swap action (since we already executed it).
 	if card != null and is_instance_valid(card):
-		card.commit_play(card_ctx, skip_action, true)
+		card.commit_play_live(card_ctx, skip_action, true)
 
 	handler.end_active_context()

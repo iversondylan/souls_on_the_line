@@ -160,13 +160,18 @@ func apply_status(ctx: StatusContext) -> void:
 	if ctx.status_id == &"":
 		return
 
-	# Headless status application: store stacks/duration only.
-	# Any “on apply” hooks should be centralized elsewhere later.
+	# Default intensity policy (so callers can omit it)
+	if int(ctx.intensity) == 0:
+		ctx.intensity = 1
+
 	u.statuses.add_or_reapply(ctx.status_id, ctx.intensity, ctx.duration)
 	ctx.applied = true
 
-	# When statuses change, rebuild modifier caches if you use them.
+	if writer != null:
+		writer.emit_status_applied(int(ctx.source_id), int(ctx.target_id), ctx.status_id, int(ctx.intensity), int(ctx.duration))
+
 	_rebuild_modifier_cache_for(ctx.target_id)
+
 
 func remove_status(ctx: RemoveStatusContext) -> void:
 	if ctx == null or state == null:
@@ -179,11 +184,17 @@ func remove_status(ctx: RemoveStatusContext) -> void:
 	if ctx.status_id == &"":
 		return
 
+	var stacks_delta := maxi(int(ctx.stacks_delta if ("stacks_delta" in ctx) else 1), 1)
+
 	if ctx.remove_all_stacks:
 		u.statuses.remove(ctx.status_id, true)
 	else:
-		u.statuses.remove(ctx.status_id, false, 1)
+		u.statuses.remove(ctx.status_id, false, stacks_delta)
 
+	if writer != null:
+		writer.emit_status_removed(int(ctx.source_id), int(ctx.target_id), ctx.status_id, stacks_delta, bool(ctx.remove_all_stacks))
+
+	_rebuild_modifier_cache_for(ctx.target_id)
 	_rebuild_modifier_cache_for(ctx.target_id)
 
 
@@ -194,12 +205,13 @@ func summon(ctx: SummonContext) -> void:
 		push_warning("SimBattleAPI.summon: missing summon_data")
 		return
 
-	var id := 0
-	if alloc_id.is_valid():
-		id = int(alloc_id.call())
-	if id <= 0:
-		push_warning("SimBattleAPI.summon: alloc_id produced invalid id")
-		return
+	var id := state.alloc_id()
+	ctx.summon_data.combat_id = id
+	#if alloc_id.is_valid():
+		#id = int(alloc_id.call())
+	#if id <= 0:
+		#push_warning("SimBattleAPI.summon: alloc_id produced invalid id")
+		#return
 
 	var u := CombatantState.new()
 	u.id = id
@@ -209,13 +221,26 @@ func summon(ctx: SummonContext) -> void:
 
 	var g := clampi(ctx.group_index, 0, 1)
 	state.add_unit(u, g, int(ctx.insert_index))
-	
+	var proto := String(u.data_proto_path)
+	var spec := {}
+	if ctx.summon_data != null:
+		spec = {
+			&"name": String(ctx.summon_data.name),
+			&"max_hp": int(ctx.summon_data.max_health),
+			&"hp": int(ctx.summon_data.health),
+			&"armor": int(ctx.summon_data.armor),
+			&"max_mana_blue": int(ctx.summon_data.max_mana_blue),
+			&"max_mana_green": int(ctx.summon_data.max_mana_green),
+			&"max_mana_red": int(ctx.summon_data.max_mana_red),
+			&"proto_path": String(ctx.summon_data.resource_path),
+		}
+
 	if writer != null:
-		writer.emit_summoned(id, g, int(ctx.insert_index), String(u.data_proto_path))
+		writer.emit_summoned(id, g, int(ctx.insert_index), proto, spec)
 	
 	ctx.summoned_id = id
 	ctx.summoned_fighter = null # headless
-
+	print("[SIM][SUMMON] new_id=%d group=%d idx=%d proto=%s" % [id, g, int(ctx.insert_index), String(u.data_proto_path)])
 	if on_summoned.is_valid():
 		on_summoned.call(id, g)
 
@@ -331,13 +356,16 @@ func on_damage_applied(ctx: DamageContext) -> void:
 func on_card_played(ctx: CardActionContextSim) -> void:
 	if ctx == null or ctx.card_data == null:
 		return
+
 	var targets: Array[int] = []
 	if ctx.resolved != null:
 		for id in ctx.resolved.fighter_ids:
 			targets.append(int(id))
 
+	var insert_index := (ctx.resolved.insert_index if ctx.resolved != null else -1)
+
 	if writer != null:
-		writer.emit_card_played(ctx.card_data, int(ctx.source_id), targets)
+		writer.emit_card_played(ctx)
 
 
 

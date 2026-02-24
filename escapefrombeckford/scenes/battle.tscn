@@ -87,12 +87,23 @@ world_bounds = null
 
 [node name="Debug_UI" type="CanvasLayer" parent="." unique_id=1870619922]
 
-[node name="KillEnemiesButton" type="Button" parent="Debug_UI" unique_id=1437914900]
-offset_top = 99.0
-offset_right = 126.0
-offset_bottom = 130.0
+[node name="VBoxContainer" type="VBoxContainer" parent="Debug_UI" unique_id=1878463671]
+offset_left = 5.0
+offset_top = 111.0
+offset_right = 114.0
+offset_bottom = 175.0
+
+[node name="KillEnemiesButton" type="Button" parent="Debug_UI/VBoxContainer" unique_id=1437914900]
+unique_name_in_owner = true
+layout_mode = 2
 theme = ExtResource("8_2tyvl")
 text = "kill enemies"
+
+[node name="DumpStatesButton" type="Button" parent="Debug_UI/VBoxContainer" unique_id=1146114074]
+unique_name_in_owner = true
+layout_mode = 2
+theme = ExtResource("8_2tyvl")
+text = "dump state"
 
 [node name="Battle_UI" type="CanvasLayer" parent="." unique_id=82108263 groups=["ui_layer"]]
 script = ExtResource("9_jujjx")
@@ -228,6 +239,7 @@ visible = false
 [node name="BattleInteractionHandler" type="Node" parent="." unique_id=1048632546]
 script = ExtResource("25_jt4d8")
 
-[connection signal="pressed" from="Debug_UI/KillEnemiesButton" to="." method="_on_kill_enemies_button_pressed"]
+[connection signal="pressed" from="Debug_UI/VBoxContainer/KillEnemiesButton" to="." method="_on_kill_enemies_button_pressed"]
+[connection signal="pressed" from="Debug_UI/VBoxContainer/DumpStatesButton" to="." method="_on_dump_states_button_pressed"]
 [connection signal="pressed" from="Battle_UI/EndTurn" to="." method="_on_end_turn_pressed"]
 [connection signal="card_activated" from="Battle_UI/Hand" to="." method="_on_hand_card_activated"]

@@ -9,20 +9,20 @@ static func resolve(api: BattleAPI, card: CardData, req: CardPlayRequest) -> Car
 			out.fighter_ids = PackedInt32Array([req.source_id])
 
 		CardData.TargetType.SINGLE_ENEMY:
-			if req.targets.size() > 0:
-				out.fighter_ids = PackedInt32Array([req.targets[0]])
+			if req.target_ids.size() > 0:
+				out.fighter_ids = PackedInt32Array([req.target_ids[0]])
 
 		CardData.TargetType.ALL_ENEMIES:
 			if api.has_method("get_enemies_of"):
 				out.fighter_ids = PackedInt32Array(api.call("get_enemies_of", req.source_id))
 				
 		CardData.TargetType.ALLY:
-			if req.targets.size() > 0:
-				out.fighter_ids = PackedInt32Array([req.targets[0]])
+			if req.target_ids.size() > 0:
+				out.fighter_ids = PackedInt32Array([req.target_ids[0]])
 		
 		CardData.TargetType.ALLY_OR_SELF:
-			if req.targets.size() > 0:
-				out.fighter_ids = PackedInt32Array([req.targets[0]])
+			if req.target_ids.size() > 0:
+				out.fighter_ids = PackedInt32Array([req.target_ids[0]])
 				
 		CardData.TargetType.EVERYONE:
 			# you might add api.get_all_combatants() in sim

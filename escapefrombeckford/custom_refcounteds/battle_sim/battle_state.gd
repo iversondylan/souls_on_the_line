@@ -12,7 +12,7 @@ var run_seed: int = 0
 
 # combat_id -> CombatantState
 var units: Dictionary = {}  # int -> CombatantState
-
+var _next_sim_id: int = 1
 # group index -> GroupState
 var groups: Array[GroupState] = [GroupState.new(), GroupState.new()]
 
@@ -56,6 +56,15 @@ func add_unit(u: CombatantState, group_index: int, insert_index: int = -1) -> vo
 	units[u.id] = u
 	groups[group_index].add(u.id, insert_index)
 
+func alloc_id() -> int:
+	var id := _next_sim_id
+	print("[SIM][ID] alloc -> ", id)
+	_next_sim_id += 1
+	return id
+
+func sync_next_id_at_least(min_next: int) -> void:
+	_next_sim_id = maxi(_next_sim_id, int(min_next))
+
 func remove_unit(id: int) -> void:
 	if !units.has(id):
 		return
@@ -86,7 +95,7 @@ func clone() -> BattleState:
 
 	b.rng = RNG.new()
 	b.rng.seed = rng.seed
-
+	b._next_sim_id = _next_sim_id
 	for id in units.keys():
 		var u: CombatantState = units[id]
 		if u:

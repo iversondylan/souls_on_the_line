@@ -288,10 +288,7 @@ func _on_actor_requested(combat_id: int) -> void:
 	#if ok:
 		##print("battle.gd _on_actor_requested() OK, notifying turn engine done")
 		#turn_engine.notify_actor_done(combat_id)
-	#sim_host.debug_dump_orders()
-	#sim_host.debug_dump_units()
-	#debug_dump_orders_live()
-	#debug_dump_units_live()
+	
 	##else:
 		##print("battle.gd _on_actor_requested() not OK")
 
@@ -820,7 +817,6 @@ func debug_dump_units_live() -> void:
 		var gname := "FRIENDLY" if group_index == FRIENDLY else "ENEMY"
 		var fighters := _get_live_group_fighters(group_index)
 
-		# Build "order" as combat_ids in node order (front->back per your group implementation)
 		var order: Array[int] = []
 		order.resize(fighters.size())
 		for i in range(fighters.size()):
@@ -838,13 +834,11 @@ func debug_dump_units_live() -> void:
 			var cid := int(f.combat_id)
 			var uname := _debug_live_unit_name(f)
 
-			# Pull hp/max from combatant_data (preferred), else from Fighter fields if you have them.
 			var hp := -1
 			var max_hp := -1
 			var alive := false
 
 			if f.combatant_data != null:
-				# Adjust field names if yours differ.
 				if "health" in f.combatant_data:
 					hp = int(f.combatant_data.health)
 				elif "hp" in f.combatant_data:
@@ -860,34 +854,12 @@ func debug_dump_units_live() -> void:
 				alive = f.is_alive()
 
 			var hp_str := "%d/%d" % [hp, max_hp] if hp >= 0 and max_hp >= 0 else ("%d" % hp if hp >= 0 else "?")
-			print("\t[%d] cid=%d name=%s hp=%s group=%s pos=%d alive=%s" % [
-				i, cid, uname, hp_str, gname, i, str(alive)
+
+			var statuses_str := _format_live_statuses(f)
+
+			print("\t[%d] cid=%d name=%s hp=%s group=%s pos=%d alive=%s%s" % [
+				i, cid, uname, hp_str, gname, i, str(alive), statuses_str
 			])
-
-	# Optional: show any live combatants not present in either group’s order
-	var seen := {}
-	for group_index in [FRIENDLY, ENEMY]:
-		var fighters := _get_live_group_fighters(group_index)
-		for f: Fighter in fighters:
-			if f != null and is_instance_valid(f):
-				seen[int(f.combat_id)] = true
-
-	var extras: Array[int] = []
-	if battle_scene.has_method("get_all_combatants"):
-		var all := battle_scene.get_all_combatants() # if you have this helper
-		for f in all:
-			if f == null or !is_instance_valid(f):
-				continue
-			var cid := int(f.combat_id)
-			if !seen.has(cid):
-				extras.append(cid)
-	elif battle_scene.has_method("get_combatant_by_id"):
-		# If you *don’t* have get_all_combatants, you can skip extras cleanly.
-		pass
-
-	if !extras.is_empty():
-		extras.sort()
-		print("Battle LIVE units not in any group order: ", extras)
 
 
 # -------------------------
@@ -941,6 +913,93 @@ func _debug_live_unit_name(f: Fighter) -> String:
 
 	return "<unnamed>"
 
+func _format_live_statuses(f: Fighter) -> String:
+	if f == null or !is_instance_valid(f):
+		return ""
+
+	# Try common field names
+	var ss = null
+	if "status_system" in f:
+		ss = f.status_system
+	elif f.has_method("get_status_system"):
+		ss = f.get_status_system()
+
+	if ss == null:
+		return ""
+
+	if !ss.has_method("get_all"):
+		return ""
+
+	var statuses: Array = ss.get_all()
+	if statuses == null or statuses.is_empty():
+		return ""
+
+	var parts: Array[String] = []
+	for s in statuses:
+		if s == null:
+			continue
+
+		# id
+		var sid := ""
+		if s.has_method("get_id"):
+			sid = String(s.get_id())
+		elif "id" in s:
+			sid = String(s.id)
+		if sid == "":
+			sid = "<status>"
+
+		# Prefer display policy if present
+		var show := ""
+		var dur := 0
+		var inten := 0
+
+		if "duration" in s:
+			dur = int(s.duration)
+		if "intensity" in s:
+			inten = int(s.intensity)
+
+		# number_display_type is your authoring knob (Duration vs Intensity etc.)
+		var ndt := -1
+		if "number_display_type" in s:
+			ndt = int(s.number_display_type)
+
+		# Your Status enum likely: NumberDisplayType.DURATION / INTENSITY
+		# But we can’t rely on the enum values here, so we do heuristic:
+		# - if intensity > 0 and duration == 0 => show intensity
+		# - if duration > 0 and intensity == 0 => show duration
+		# - if both > 0 => show both
+		# - if both == 0 => just id
+
+		if dur > 0 and inten > 0:
+			show = "dur=%d int=%d" % [dur, inten]
+		elif dur > 0:
+			show = "dur=%d" % dur
+		elif inten > 0:
+			show = "int=%d" % inten
+		else:
+			show = ""
+
+		# If number_display_type exists, use it to pick which one to show
+		# (still keep fallback if the chosen value is 0)
+		if ndt != -1:
+			# Best-effort: compare enum key names if available
+			if s.get_script() and s.get_script().has_script_signal("dummy_nope"):
+				pass # no-op, just avoiding unused warning patterns
+			# We can’t read enum names reliably; keep it heuristic:
+			# If ndt is set and one of dur/int is nonzero, prefer the nonzero one.
+			if dur > 0 and inten == 0:
+				show = "dur=%d" % dur
+			elif inten > 0 and dur == 0:
+				show = "int=%d" % inten
+			# else leave "both" as-is
+
+		if show != "":
+			parts.append("%s(%s)" % [sid, show])
+		else:
+			parts.append("%s" % sid)
+
+	return " [" + ", ".join(parts) + "]"
+
 func _on_player_begin_requested(token: int) -> void:
 	var ok := await begin_player_turn_async()
 	turn_engine.notify_player_begin_done(token)
@@ -953,3 +1012,10 @@ func _on_player_end_requested(token: int) -> void:
 	# - then notify engine so it can continue (arcana / next actor)
 	var ok := await end_player_turn_async()
 	turn_engine.notify_player_end_done(token)
+
+
+func _on_dump_states_button_pressed() -> void:
+	sim_host.debug_dump_orders()
+	sim_host.debug_dump_units()
+	debug_dump_orders_live()
+	debug_dump_units_live()

@@ -12,6 +12,6 @@ var params: Dictionary = {}         # play request params merged here
 # Optional outputs
 var affected_ids: PackedInt32Array = PackedInt32Array()
 var summoned_ids: PackedInt32Array = PackedInt32Array()
-
+var insert_index: int
 # If you want consistent RNG for effects
 var rng_seed: int = 0

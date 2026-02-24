@@ -16,6 +16,7 @@ func play_card(api: BattleAPI, req: CardPlayRequest) -> bool:
 	ctx.api = api
 	ctx.card_data = card
 	ctx.source_id = req.source_id
+	ctx.insert_index = req.insert_index
 	ctx.resolved = resolved
 	ctx.params = req.params
 

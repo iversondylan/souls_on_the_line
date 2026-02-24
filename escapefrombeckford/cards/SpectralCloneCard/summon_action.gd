@@ -26,7 +26,6 @@ func activate(ctx: CardActionContext) -> bool:
 
 	return true
 
-# summon_action.gd
 func activate_sim(ctx: CardActionContextSim) -> bool:
 	if ctx == null or ctx.api == null:
 		return false
