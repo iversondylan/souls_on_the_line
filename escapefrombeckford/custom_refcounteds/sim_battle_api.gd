@@ -108,7 +108,7 @@ func resolve_damage(ctx: DamageContext) -> void:
 func resolve_damage_immediate(ctx: DamageContext) -> void:
 	if ctx == null or state == null:
 		return
-	print("[SIM][DMG] resolve_damage_immediate src=%d tgt=%d base=%d amt=%d alive=%s" % [
+	print("sim_battle_api.gd resolve_damage_immediate() src=%d tgt=%d base=%d amt=%d alive=%s" % [
 		int(ctx.source_id),
 		int(ctx.target_id),
 		int(ctx.base_amount),

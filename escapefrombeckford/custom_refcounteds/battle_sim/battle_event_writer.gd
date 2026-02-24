@@ -45,7 +45,7 @@ func _append(type: int, data: Dictionary = {}) -> int:
 
 	var seq := log.append(e)
 
-	print("[EV] seq=%d type=%d scope=%d kind=%s data=%s" % [seq, e.type, e.scope_id, String(e.scope_kind), str(e.data)])
+	print("battle_event_writer.gd _append() seq=%d type=%d scope=%d kind=%s data=%s" % [seq, e.type, e.scope_id, String(e.scope_kind), str(e.data)])
 	return seq
 
 # -------------------------
@@ -54,7 +54,7 @@ func _append(type: int, data: Dictionary = {}) -> int:
 
 func scope_begin(kind: StringName, label: String = "", actor_id: int = 0) -> int:
 	if scopes == null:
-		push_warning("BattleEventWriter: scope_begin without scopes")
+		push_warning("battle_event_writer.gd scope_begin() without scopes")
 		return 0
 
 	var f := scopes.push(kind, label, actor_id, group_index, turn_id)

@@ -118,4 +118,4 @@ func debug_dump_events(last_n: int = 20) -> void:
 	var start := maxi(n - last_n, 0)
 	for i in range(start, n):
 		var e := events.get_event(i)
-		print("[EV] #%d type=%d scope=%d kind=%s data=%s" % [e.seq, e.type, e.scope_id, String(e.scope_kind), str(e.data)])
+		print("battle_state.gd debug_dump_events() #%d type=%d scope=%d kind=%s data=%s" % [e.seq, e.type, e.scope_id, String(e.scope_kind), str(e.data)])
