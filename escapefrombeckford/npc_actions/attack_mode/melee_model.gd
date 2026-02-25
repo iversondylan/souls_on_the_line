@@ -1,3 +1,5 @@
+# melee_model.gd
+
 class_name MeleeModel extends ParamModel
 
 func change_params(ctx: NPCAIContext) -> NPCAIContext:

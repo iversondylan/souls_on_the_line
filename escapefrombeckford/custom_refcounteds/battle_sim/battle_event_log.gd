@@ -7,7 +7,7 @@ var _next_seq: int = 0
 
 func clear() -> void:
 	_events.clear()
-	_next_seq = 1
+	_next_seq = 0
 
 func size() -> int:
 	return _events.size()
@@ -23,11 +23,6 @@ func append(e: BattleEvent) -> int:
 	_next_seq += 1
 	_events.append(e)
 	return e.seq
-
-func append_event(e: BattleEvent) -> void:
-	e.seq = _next_seq
-	_next_seq += 1
-	_events.append(e)
 
 func get_event(i: int) -> BattleEvent:
 	return _events[i]

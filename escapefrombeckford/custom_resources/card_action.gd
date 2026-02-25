@@ -26,9 +26,9 @@ func activate(_ctx: CardActionContext) -> bool:
 func activate_live(ctx: CardActionContext) -> bool:
 	return activate(ctx) # temporary shim
 
-func activate_sim(_ctx: CardActionContextSim) -> bool:
-	# default: if an action isn't sim-ready yet, fail loudly
-	push_error("%s missing activate_sim()" % get_class())
+func activate_sim(ctx: CardActionContextSim) -> bool:
+	var cname := ctx.card_data.name if ctx and ctx.card_data else "<no card/ctx>"
+	push_error("%s missing activate_sim() (card=%s)" % [get_class(), cname])
 	return false
 
 # --- DESCRIPTION CONTRACT ---

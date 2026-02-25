@@ -9,15 +9,15 @@ func activate(ctx: CardActionContext) -> bool:
 		return false
 	if !ctx.resolved_target:
 		return false
-
+	
 	var resolved_fighters := ctx.resolved_target.fighters
 	if resolved_fighters.is_empty():
 		return false
-
+	
 	var attacker: Fighter = resolved_fighters[0]
 	if !attacker:
 		return false
-
+	
 	var eff := AttackNowEffect.new()
 	eff.attacker = attacker
 	eff.attacks = attacks

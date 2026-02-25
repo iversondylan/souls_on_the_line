@@ -7,7 +7,7 @@ static func get_modified_value(battle: SimBattle, target_id: int, base: int, mod
 		return base
 	
 	var resolved := ResolvedModifier.new()
-	var tokens := battle.get_modifier_tokens_for_target(target_id, mod_type)
+	var tokens : Array[ModifierToken]= battle.get_modifier_tokens_for_target(target_id, mod_type)
 	
 	for token: ModifierToken in tokens:
 		if token.type != mod_type:
