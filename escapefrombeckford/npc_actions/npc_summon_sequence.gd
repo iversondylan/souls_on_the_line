@@ -8,32 +8,32 @@ func execute(ctx: NPCAIContext, on_done: Callable) -> void:
 	if !ctx:
 		on_done.call()
 		return
-
+	
 	if bool(ctx.forecast):
 		on_done.call()
 		return
-
+	
 	if !ctx.api:
 		push_warning("NPCSummonSequence: missing ctx.api")
 		on_done.call()
 		return
-
+	
 	var params: Dictionary = ctx.params if ctx.params else {}
-
+	
 	var group_index := int(params.get(NPCKeys.GROUP_INDEX, 0))
 	var insert_index := int(params.get(NPCKeys.INSERT_INDEX, 0))
 	var count := int(params.get(NPCKeys.SUMMON_COUNT, 1))
 	group_index = clampi(group_index, 0, 1)
-
+	
 	if count <= 0:
 		on_done.call()
 		return
-
+	
 	var summon_data_orig: CombatantData = _resolve_summon_data(
 		params.get(NPCKeys.SUMMON_DATA, load(SummonEffect.DEFAULT_SUMMON_DATA))
 	)
 	var summon_sound : Sound = params.get(NPCKeys.SUMMON_SOUND, null)
-
+	
 	# Capacity check via API
 	var n_existing := ctx.api.get_n_combatants_in_group(group_index, false)
 	if n_existing >= MAX_UNITS_PER_GROUP:
@@ -42,22 +42,22 @@ func execute(ctx: NPCAIContext, on_done: Callable) -> void:
 	if n_existing + count > MAX_UNITS_PER_GROUP:
 		on_done.call()
 		return
-
+	
 	for i in range(count):
 		var cur_n := ctx.api.get_n_combatants_in_group(group_index, false)
 		var idx := clampi(insert_index, 0, cur_n)
-
+	
 		var effect := SummonEffect.new()
 		effect.group_index = group_index
 		effect.insert_index = idx
-
+	
 		if summon_data_orig:
 			effect.summon_data = summon_data_orig.duplicate()
 		if summon_sound:
 			effect.sound = summon_sound
-
+	
 		effect.execute(ctx.api)
-
+	
 	on_done.call()
 
 func _resolve_summon_data(value) -> CombatantData:

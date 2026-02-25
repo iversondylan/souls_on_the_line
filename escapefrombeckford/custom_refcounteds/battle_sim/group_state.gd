@@ -6,7 +6,7 @@ class_name GroupState extends RefCounted
 var order: PackedInt32Array = PackedInt32Array()
 
 # Optional: track player anchor
-var player_id: int = 0
+var player_id: int = -1
 
 func index_of(id: int) -> int:
 	return order.find(id)

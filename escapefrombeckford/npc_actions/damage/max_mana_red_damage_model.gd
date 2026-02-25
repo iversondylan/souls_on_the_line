@@ -36,7 +36,7 @@ func change_params_sim(ctx: NPCAIContext) -> NPCAIContext:
 		apr = ctx.combatant_state.apr
 	elif ctx.combatant_data:
 		apr = ctx.combatant_data.max_mana_red
-
+	
 	var scaled := floori(scaling * apr)
 	var total := base_damage + scaled
 	if total < 0:
@@ -44,5 +44,7 @@ func change_params_sim(ctx: NPCAIContext) -> NPCAIContext:
 	print("max_mana_red_damage_model.gd change_params_sim() base dmg: %s, scaled dmg: %s, total: %s" % [base_damage, scaled, total])
 	# IMPORTANT: base damage only (no DMG_DEALT here)
 	ctx.params[NPCKeys.DAMAGE] = total
+	ctx.params[NPCKeys.DAMAGE_MELEE] = total
+	ctx.params[NPCKeys.DAMAGE_RANGED] = total
 	#print("max_mana_red_damage_model.gd total: ", total)
 	return ctx

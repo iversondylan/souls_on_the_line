@@ -2,6 +2,9 @@
 
 class_name SimBattleAPI extends BattleAPI
 
+const FRIENDLY := 0
+const ENEMY := 1
+
 var state: BattleState
 #var alloc_id: Callable = Callable() # () -> int
 var on_summoned: Callable = Callable() # (summoned_id: int, group_index: int) -> void
@@ -65,6 +68,11 @@ func get_rank_in_group(combat_id: int) -> int:
 	if g == -1:
 		return -1
 	return state.groups[g].index_of(combat_id)
+
+func get_player_id() -> int:
+	if !state or !state.groups:
+		return -1
+	return state.groups[FRIENDLY].player_id
 
 func has_status(combat_id: int, status_id: StringName) -> bool:
 	var u := state.get_unit(combat_id)

@@ -3,8 +3,11 @@ class_name NPCKeys
 
 # Effect params
 const DAMAGE := &"damage"
+const DAMAGE_MELEE := &"damage_melee"
+const DAMAGE_RANGED := &"damage_ranged"
 const STRIKES := &"strikes"
 const ATTACK_MODE := &"attack_mode"
+
 const TARGET_TYPE := &"target_type"
 const EXPLODE_ON_FINISH := &"explode_on_finish"
 const ATTACK_SOUND := &"attack_sound"

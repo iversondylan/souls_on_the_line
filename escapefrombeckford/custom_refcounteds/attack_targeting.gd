@@ -115,9 +115,9 @@ static func get_target_ids(api: BattleAPI, attacker_id: int, params: Dictionary)
 	var final: Array[int] = base.duplicate()
 
 	var is_single := _is_single(params)
-	var attack_mode := String(params.get(NPCKeys.ATTACK_MODE, NPCAttackSequence.ATTACK_MODE_MELEE))
+	var attack_mode : int = params.get(NPCKeys.ATTACK_MODE, Attack.Mode.MELEE)
 
-	if is_single and attack_mode == NPCAttackSequence.ATTACK_MODE_RANGED:
+	if is_single and attack_mode == Attack.Mode.RANGED:
 		var redirect := api.find_marked_ranged_redirect_target(attacker_id)
 		if redirect > 0:
 			if final.size() == 1:

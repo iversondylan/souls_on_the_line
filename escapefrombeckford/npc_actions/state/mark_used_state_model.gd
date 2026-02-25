@@ -12,3 +12,12 @@ func change_state(ctx: NPCAIContext) -> NPCAIContext:
 		ctx.state = {}
 	ctx.state[key] = value
 	return ctx
+
+
+func change_state_sim(ctx: NPCAIContext) -> NPCAIContext:
+	if !ctx:
+		return ctx
+	if !ctx.state:
+		ctx.state = {}
+	ctx.state[key] = bool(value)
+	return ctx

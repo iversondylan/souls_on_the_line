@@ -14,3 +14,11 @@ func change_params(ctx: NPCAIContext) -> NPCAIContext:
 	ctx.params[NPCKeys.STATUS_INTENSITY] = intensity
 	ctx.params[NPCKeys.STATUS_DURATION] = duration
 	return ctx
+
+func change_params_sim(ctx: NPCAIContext) -> NPCAIContext:
+	if !ctx or !status:
+		return ctx
+	ctx.params[NPCKeys.STATUS_ID] = StringName(status.get_id())
+	ctx.params[NPCKeys.STATUS_INTENSITY] = int(intensity)
+	ctx.params[NPCKeys.STATUS_DURATION] = int(duration)
+	return ctx

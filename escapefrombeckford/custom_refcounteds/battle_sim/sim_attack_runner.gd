@@ -9,10 +9,10 @@ static func run(api, spec: SimAttackSpec) -> bool:
 		return false
 	if spec.attacker_id <= 0 or !api.is_alive(spec.attacker_id):
 		return false
-
+	
 	var strikes := maxi(int(spec.strikes), 1)
 	var any := false
-
+	
 	for _s in range(strikes):
 		if !api.is_alive(spec.attacker_id):
 			break
@@ -24,12 +24,21 @@ static func run(api, spec: SimAttackSpec) -> bool:
 		else:
 			# You already have this; it’s the right place for Marked redirect, etc.
 			target_ids = AttackTargeting.get_target_ids(api, spec.attacker_id, spec.params)
-
+		
 		# Alive filter
 		target_ids = target_ids.filter(func(id): return int(id) > 0 and api.is_alive(int(id)))
 		if target_ids.is_empty():
 			continue
-
+		
+		
+		var mode := int(spec.params.get(NPCKeys.ATTACK_MODE, Attack.Mode.MELEE))
+		var dmg := spec.base_damage
+		
+		if spec.params.has(NPCKeys.DAMAGE_MELEE) or spec.params.has(NPCKeys.DAMAGE_RANGED):
+			dmg = int(spec.params.get(NPCKeys.DAMAGE_RANGED if mode == Attack.Mode.RANGED else NPCKeys.DAMAGE_MELEE, dmg))
+		else:
+			# legacy fallback
+			dmg = int(spec.params.get(NPCKeys.DAMAGE, dmg))
 		for tid in target_ids:
 			var d := DamageContext.new()
 			d.source_id = int(spec.attacker_id)
@@ -39,7 +48,7 @@ static func run(api, spec: SimAttackSpec) -> bool:
 			d.take_modifier_type = int(spec.take_modifier_type)
 			d.tags = spec.tags
 			d.params = spec.params
-
+			
 			api.resolve_damage_immediate(d)
 			any = true
 

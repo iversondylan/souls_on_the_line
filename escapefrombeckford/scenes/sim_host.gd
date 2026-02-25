@@ -28,8 +28,6 @@ var turn_engine_host_sim: TurnEngineHostSim
 var preview_turn_engine: TurnEngineCore
 var arcana_resolver: ArcanaResolver
 var card_executor: CardExecutor
-# Optional: if you want the host to be responsible for assigning ids later.
-var _next_sim_id: int = 1
 
 # --- optional catalogs (wire later) ---
 var card_catalog: CardCatalog
@@ -90,12 +88,6 @@ func ensure_initialized() -> void:
 		init_from_seeds(0, 0)
 	if arcana_resolver == null and arcana_catalog != null:
 		arcana_resolver = ArcanaResolver.new(self, arcana_catalog)
-
-func alloc_sim_id() -> int:
-	# Not used yet if you mirror live combat_id, but useful when sim becomes canonical.
-	var id := _next_sim_id
-	_next_sim_id += 1
-	return id
 
 func seed_arcana_from_ids(ids: Array[StringName]) -> void:
 	if main_state == null:
@@ -269,9 +261,6 @@ func add_combatant_from_data(
 	if main_state.has_unit(combat_id):
 		push_warning("SimHost.add_combatant_from_data: duplicate id %s (data=%s)" % [combat_id, data.resource_path])
 		return main_state.get_unit(combat_id)
-
-	# Optional: if you're still tracking _next_sim_id for any reason, keep it loosely in sync.
-	_next_sim_id = maxi(_next_sim_id, combat_id + 1)
 
 	var u := CombatantState.new()
 	u.id = combat_id
