@@ -7,6 +7,7 @@ var card: CardData
 
 # “resolved target” payload for sim
 var target_ids: PackedInt32Array = PackedInt32Array()
+#var combatant_datas: Array[CombatantData] = []
 var insert_index: int = -1
 
 # Optional extra params

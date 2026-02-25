@@ -10,9 +10,6 @@ func activate(ctx: CardActionContext) -> bool:
 	draw_effect.execute(ctx.battle_scene.api)
 	return true
 
-func activate_sim(_ctx: CardActionContextSim) -> bool:
-	return true
-
 func description_arity() -> int:
 	return 1
 

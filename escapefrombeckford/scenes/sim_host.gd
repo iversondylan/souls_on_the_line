@@ -67,9 +67,9 @@ func init_from_seeds(battle_seed: int, run_seed: int) -> void:
 
 	main_api.status_catalog = status_catalog
 	
-	# NEW: id allocation + notify turn engine
-	main_api.alloc_id = func() -> int:
-		return alloc_sim_id()
+	## NEW: id allocation + notify turn engine
+	#main_api.alloc_id = func() -> int:
+		#return alloc_sim_id()
 	
 	main_api.on_summoned = func(summoned_id: int, group_index: int) -> void:
 		# Let TurnEngineCore rebuild pending view immediately

@@ -4,6 +4,8 @@ class_name NPCAIContext extends RefCounted
 # stable
 var api: BattleAPI
 var combatant: Fighter
+var cid: int = -1
+var combatant_state: CombatantState
 var combatant_data: CombatantData
 var battle_scene: BattleScene
 var rng: RNG

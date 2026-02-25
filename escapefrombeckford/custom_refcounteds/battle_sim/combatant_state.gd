@@ -3,6 +3,7 @@
 class_name CombatantState extends RefCounted
 
 var id: int
+var combatant_data: CombatantData
 var team: int  # 0 friendly, 1 enemy
 var alive: bool = true
 
@@ -41,7 +42,7 @@ func is_alive() -> bool:
 func init_from_combatant_data(data: CombatantData) -> void:
 	if !data:
 		return
-
+	combatant_data = data
 	name = data.name
 	max_health = int(data.max_health)
 	health = clampi(int(data.health if data.health >= 0 else data.max_health), 0, max_health)

@@ -3,7 +3,7 @@
 class_name SimBattleAPI extends BattleAPI
 
 var state: BattleState
-var alloc_id: Callable = Callable() # () -> int
+#var alloc_id: Callable = Callable() # () -> int
 var on_summoned: Callable = Callable() # (summoned_id: int, group_index: int) -> void
 
 var scopes: BattleScopeManager
@@ -81,14 +81,15 @@ func find_marked_ranged_redirect_target(attacker_id: int) -> int:
 
 
 func get_targets_for_attack_sequence(ai_ctx) -> Array:
-	var attacker_id := 0
+	#var attacker_id := 0
 	if ai_ctx == null:
 		return []
 
-	if ai_ctx.combatant_data:
-		attacker_id = int(ai_ctx.combatant_data.combat_id)
-	elif ai_ctx.combatant:
+	var attacker_id := int(ai_ctx.cid) if ai_ctx and ("cid" in ai_ctx) else 0
+	if attacker_id <= 0 and ai_ctx.combatant:
 		attacker_id = int(ai_ctx.combatant.combat_id)
+	if attacker_id <= 0 and ai_ctx.combatant_data:
+		attacker_id = int(ai_ctx.combatant_data.combat_id)
 
 	if attacker_id <= 0:
 		return []
@@ -104,6 +105,11 @@ func get_targets_for_attack_sequence(ai_ctx) -> Array:
 func resolve_damage(ctx: DamageContext) -> void:
 	# In sim, "resolve_damage" is immediate by default.
 	resolve_damage_immediate(ctx)
+
+func resolve_attack(spec: SimAttackSpec) -> bool:
+	print("sim_battle_api.gd resolve_attack() attacker=%d strikes=%d base=%d params=%s explicit=%s"
+	% [spec.attacker_id, spec.strikes, spec.base_damage, spec.params, spec.explicit_target_ids])
+	return SimAttackRunner.run(self, spec)
 
 func resolve_damage_immediate(ctx: DamageContext) -> void:
 	if ctx == null or state == null:
@@ -207,14 +213,10 @@ func summon(ctx: SummonContext) -> void:
 
 	var id := state.alloc_id()
 	ctx.summon_data.combat_id = id
-	#if alloc_id.is_valid():
-		#id = int(alloc_id.call())
-	#if id <= 0:
-		#push_warning("SimBattleAPI.summon: alloc_id produced invalid id")
-		#return
 
 	var u := CombatantState.new()
 	u.id = id
+	u.combatant_data = ctx.summon_data
 	u.init_from_combatant_data(ctx.summon_data)
 	if ctx.summon_data.resource_path != "":
 		u.data_proto_path = String(ctx.summon_data.resource_path)

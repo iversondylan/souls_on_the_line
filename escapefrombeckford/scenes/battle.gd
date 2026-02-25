@@ -260,8 +260,8 @@ func _on_actor_requested(combat_id: int) -> void:
 	await _await_arcana_gate_if_any()
 	
 	print("=== AFTER ARCANA GATE, BEFORE ACTOR RUNS ===")
-	sim_host.debug_dump_orders()
-	sim_host.debug_dump_units()
+	#sim_host.debug_dump_orders()
+	#sim_host.debug_dump_units()
 	#debug_dump_orders_live()
 	#debug_dump_units_live()
 

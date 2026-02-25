@@ -271,11 +271,13 @@ func activate_sim(resolved_sim: CardResolvedTargetSim) -> bool:
 
 	var req := CardPlayRequest.new()
 	req.source_id = int(player.combat_id)
+	#req.combatant_datas = resolved_sim.combatant_datas
 	req.card = card_data
 	req.target_ids = resolved_sim.fighter_ids
 	req.insert_index = resolved_sim.insert_index
 	# optional
 	# req.params = ...
+	#print("usable_card.gd activate_sim() request combatant_datas: ", req.combatant_datas)
 	return battle_scene.sim_host.apply_player_card(req)
 
 func _build_resolved_sim_from_live(resolved_live: CardResolvedTarget) -> CardResolvedTargetSim:
@@ -285,6 +287,8 @@ func _build_resolved_sim_from_live(resolved_live: CardResolvedTarget) -> CardRes
 	if resolved_live.fighters != null:
 		for f: Fighter in resolved_live.fighters:
 			if f != null and is_instance_valid(f):
+				#print("usable_card.gd _build_resolved_sim_from_live() appending %s to combatant_datas and fighter_ids" % f.name)
+				#out.combatant_datas.append(f.combatant_data)
 				out.fighter_ids.append(int(f.combat_id))
 
 	# Battlefield insert index
@@ -293,6 +297,7 @@ func _build_resolved_sim_from_live(resolved_live: CardResolvedTarget) -> CardRes
 	# If you care later:
 	# out.group_index = ...
 	# out.area_index = ...
+	#print("usable_card.gd _build_resolved_sim_from_live() out combatant_data: ", out.combatant_datas)
 	return out
 
 

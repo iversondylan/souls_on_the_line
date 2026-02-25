@@ -33,6 +33,7 @@ func _make_context() -> NPCAIContext:
 	
 	var ctx := NPCAIContext.new()
 	ctx.combatant = owner
+	ctx.cid = owner.combat_id
 	ctx.api = owner.battle_scene.api
 	ctx.battle_scene = owner.battle_scene
 	ctx.state = owner.state.ai_state
