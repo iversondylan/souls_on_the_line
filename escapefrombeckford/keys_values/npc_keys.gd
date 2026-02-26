@@ -7,6 +7,8 @@ const DAMAGE_MELEE := &"damage_melee"
 const DAMAGE_RANGED := &"damage_ranged"
 const STRIKES := &"strikes"
 const ATTACK_MODE := &"attack_mode"
+const DEAL_MOD_TYPE := &"deal_mod_type"
+const TAKE_MOD_TYPE := &"take_mod_type"
 
 const TARGET_TYPE := &"target_type"
 const EXPLODE_ON_FINISH := &"explode_on_finish"

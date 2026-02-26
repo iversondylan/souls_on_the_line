@@ -39,8 +39,8 @@ func resolve_damage(ctx: DamageContext) -> void:
 	if ctx.sound:
 		play_sfx(ctx.sound)
 	else:
-		var attack_mode: String = ctx.params.get(NPCKeys.ATTACK_MODE, NPCAttackSequence.ATTACK_MODE_MELEE)
-		if attack_mode == NPCAttackSequence.ATTACK_MODE_RANGED:
+		var attack_mode: int = ctx.params.get(NPCKeys.ATTACK_MODE, Attack.Mode.MELEE)
+		if attack_mode == Attack.Mode.RANGED:
 			play_sfx(load(DEFAULT_RANGED_SOUND))
 		else:
 			play_sfx(load(DEFAULT_MELEE_SOUND))
@@ -57,8 +57,8 @@ func resolve_damage_immediate(ctx: DamageContext) -> void:
 	if ctx.sound:
 		play_sfx(ctx.sound)
 	else:
-		var attack_mode: String = ctx.params.get(NPCKeys.ATTACK_MODE, NPCAttackSequence.ATTACK_MODE_MELEE)
-		if attack_mode == NPCAttackSequence.ATTACK_MODE_RANGED:
+		var attack_mode: int = ctx.params.get(NPCKeys.ATTACK_MODE, Attack.Mode.MELEE)
+		if attack_mode == Attack.Mode.RANGED:
 			play_sfx(load(DEFAULT_RANGED_SOUND))
 		else:
 			play_sfx(load(DEFAULT_MELEE_SOUND))

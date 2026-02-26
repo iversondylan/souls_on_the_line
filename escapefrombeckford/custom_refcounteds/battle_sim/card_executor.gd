@@ -35,5 +35,5 @@ func play_card(api: BattleAPI, req: CardPlayRequest) -> bool:
 			continue
 		if action.activate_sim(ctx):
 			any = true
-
+	(api as SimBattleAPI).on_card_finished(ctx)
 	return any

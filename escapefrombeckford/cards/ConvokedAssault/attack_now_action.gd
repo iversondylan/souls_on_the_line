@@ -50,29 +50,7 @@ func activate_sim(ctx: CardActionContextSim) -> bool:
 	spec.base_damage = 0 # if AttackNow has its own base; else default 0 and let param models set it
 	spec.params = {
 		NPCKeys.STRIKES: spec.strikes,
-		NPCKeys.TARGET_TYPE: Attack.Targeting.STANDARD,
-		# NPCKeys.ATTACK_MODE can be set by param models
+		NPCKeys.TARGET_TYPE: Attack.Targeting.STANDARD
 	}
-	
-	## Apply your param models (they already speak ctx.params style)
-	#var ai_ctx := NPCAIContext.new()
-	#ai_ctx.api = ctx.api
-	#ai_ctx.combatant = null
-	#ai_ctx.combatant_state = ctx.api.state.get_unit(attacker_id)
-	##ai_ctx.combatant_data = api. #ctx.resolved.combatant_datas[0]
-	#ai_ctx.battle_scene = null
-	#ai_ctx.state = {} # if needed
-	#ai_ctx.params = spec.params
-	#ai_ctx.forecast = false
-#
-	#if param_models:
-		#for m in param_models:
-			#if m:
-				#m.change_params_sim(ai_ctx)
-
-	# Pull any values param models might set
-	#spec.strikes = int(spec.params.get(NPCKeys.STRIKES, spec.strikes))
-	#spec.base_damage = int(spec.params.get(NPCKeys.DAMAGE, spec.base_damage))
 	spec.param_models = param_models
-	#print("attack_now_action.gd activate_sim() base_damage: ", spec.base_damage)
-	return (ctx.api as SimBattleAPI).resolve_attack(spec)
+	return (ctx.api as SimBattleAPI).apply_attack_now(spec)

@@ -91,8 +91,8 @@ static func _apply_target_modifiers(
 	final_targets: Array[int]
 ) -> void:
 	# Example: Marked redirect for RANGED only
-	var attack_mode := String(params.get(NPCKeys.ATTACK_MODE, NPCAttackSequence.ATTACK_MODE_MELEE))
-	if attack_mode != NPCAttackSequence.ATTACK_MODE_RANGED:
+	var attack_mode := int(params.get(NPCKeys.ATTACK_MODE, Attack.Mode.MELEE))
+	if attack_mode != Attack.Mode.RANGED:
 		return
 	if !is_single_target_intent:
 		return

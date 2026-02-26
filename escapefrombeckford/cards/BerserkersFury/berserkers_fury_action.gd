@@ -29,7 +29,7 @@ func activate(ctx: CardActionContext) -> bool:
 	var base_damage := attacker.combatant_data.max_mana_red + bonus_damage
 	var final_damage := attacker.modifier_system.get_modified_value(base_damage, Modifier.Type.DMG_DEALT)
 	# Params consumed by NPCAttackSequence.
-	ai_ctx.params[NPCKeys.ATTACK_MODE] = NPCAttackSequence.ATTACK_MODE_MELEE
+	ai_ctx.params[NPCKeys.ATTACK_MODE] = Attack.Mode.MELEE
 	ai_ctx.params[NPCKeys.DAMAGE] = final_damage
 	ai_ctx.params[NPCKeys.STRIKES] = attacks
 	ai_ctx.params[NPCKeys.TARGET_TYPE] = NPCAttackSequence.TARGET_OPPONENTS

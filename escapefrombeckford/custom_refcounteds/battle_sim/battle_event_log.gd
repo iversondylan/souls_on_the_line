@@ -40,3 +40,35 @@ func read_range(start_index: int, end_index: int) -> Array[BattleEvent]:
 		out[k] = _events[i]
 		k += 1
 	return out
+
+static func print_event_log(log: BattleEventLog) -> void:
+	if log == null:
+		return
+	var indent := 0
+	for i in range(log.size()):
+		var e := log.get_event(i)
+		if e == null:
+			continue
+
+		var type_name = BattleEvent.Type.keys()[int(e.type)] if int(e.type) >= 0 and int(e.type) < BattleEvent.Type.size() else str(e.type)
+
+		if int(e.type) == BattleEvent.Type.SCOPE_END:
+			indent = maxi(indent - 1, 0)
+
+		var pad := ""
+		for _k in range(indent):
+			pad += "\t"
+
+		print("%s[%04d] %s t=%d g=%d a=%d kind=%s data=%s" % [
+			pad,
+			int(e.seq),
+			type_name,
+			int(e.turn_id),
+			int(e.group_index),
+			int(e.active_actor_id),
+			String(e.scope_kind),
+			str(e.data)
+		])
+
+		if int(e.type) == BattleEvent.Type.SCOPE_BEGIN:
+			indent += 1

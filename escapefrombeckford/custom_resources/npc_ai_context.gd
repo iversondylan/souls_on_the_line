@@ -13,5 +13,4 @@ var state: Dictionary      # persistent AI state
 
 # per-effect
 var params: Dictionary = {}
-#var param_models: Array[ParamModel] = [] # and this?
 var forecast: bool = false

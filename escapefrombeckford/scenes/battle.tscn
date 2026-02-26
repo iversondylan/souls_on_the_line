@@ -105,6 +105,12 @@ layout_mode = 2
 theme = ExtResource("8_2tyvl")
 text = "dump state"
 
+[node name="DumpEventsButton" type="Button" parent="Debug_UI/VBoxContainer" unique_id=1250426177]
+unique_name_in_owner = true
+layout_mode = 2
+theme = ExtResource("8_2tyvl")
+text = "dump events"
+
 [node name="Battle_UI" type="CanvasLayer" parent="." unique_id=82108263 groups=["ui_layer"]]
 script = ExtResource("9_jujjx")
 
@@ -241,5 +247,6 @@ script = ExtResource("25_jt4d8")
 
 [connection signal="pressed" from="Debug_UI/VBoxContainer/KillEnemiesButton" to="." method="_on_kill_enemies_button_pressed"]
 [connection signal="pressed" from="Debug_UI/VBoxContainer/DumpStatesButton" to="." method="_on_dump_states_button_pressed"]
+[connection signal="pressed" from="Debug_UI/VBoxContainer/DumpEventsButton" to="." method="_on_dump_events_button_pressed"]
 [connection signal="pressed" from="Battle_UI/EndTurn" to="." method="_on_end_turn_pressed"]
 [connection signal="card_activated" from="Battle_UI/Hand" to="." method="_on_hand_card_activated"]

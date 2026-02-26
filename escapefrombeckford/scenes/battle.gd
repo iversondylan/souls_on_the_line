@@ -1019,3 +1019,7 @@ func _on_dump_states_button_pressed() -> void:
 	sim_host.debug_dump_units()
 	debug_dump_orders_live()
 	debug_dump_units_live()
+
+
+func _on_dump_events_button_pressed() -> void:
+	sim_host.debug_dump_events()

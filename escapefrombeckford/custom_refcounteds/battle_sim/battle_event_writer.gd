@@ -1,16 +1,13 @@
 # battle_event_writer.gd
-
 class_name BattleEventWriter extends RefCounted
 
 var log: BattleEventLog
 var scopes: BattleScopeManager
 
-# Turn context (set by SIM orchestrator / turn engine driver)
 var turn_id: int = 0
 var group_index: int = -1
 var active_actor_id: int = 0
 
-# Policy: allow events without a scope?
 var allow_unscoped_events: bool = false
 
 func _init(_log: BattleEventLog, _scopes: BattleScopeManager) -> void:
@@ -44,33 +41,40 @@ func _append(type: int, data: Dictionary = {}) -> int:
 	e.data = data
 
 	var seq := log.append(e)
-
-	print("battle_event_writer.gd _append() seq=%d type=%d scope=%d kind=%s data=%s" % [seq, e.type, e.scope_id, String(e.scope_kind), str(e.data)])
+	print("EVT seq=%d type=%s scope=%d kind=%s ctx(t=%d g=%d a=%d) data=%s" % [
+		seq,
+		BattleEvent.Type.keys()[int(e.type)] if int(e.type) >= 0 and int(e.type) < BattleEvent.Type.size() else str(e.type),
+		e.scope_id,
+		String(e.scope_kind),
+		int(e.turn_id),
+		int(e.group_index),
+		int(e.active_actor_id),
+		str(e.data)
+	])
 	return seq
 
 # -------------------------
-# Scope helpers (emit begin/end markers)
+# Scope helpers
 # -------------------------
 
 func scope_begin(kind: StringName, label: String = "", actor_id: int = 0) -> int:
 	if scopes == null:
-		push_warning("battle_event_writer.gd scope_begin() without scopes")
+		push_warning("BattleEventWriter: scope_begin without scopes")
 		return 0
 
 	var f := scopes.push(kind, label, actor_id, group_index, turn_id)
 
-	# Update active_actor_id if this scope is actor-centric (optional policy)
 	if actor_id > 0:
 		active_actor_id = actor_id
 
 	return _append(BattleEvent.Type.SCOPE_BEGIN, {
-		&"scope_id": f.id,
-		&"parent_scope_id": f.parent_id,
-		&"kind": f.kind,
-		&"label": f.label,
-		&"actor_id": f.actor_id,
-		&"group_index": f.group_index,
-		&"turn_id": f.turn_id,
+		Keys.SCOPE_ID: f.id,
+		Keys.PARENT_SCOPE_ID: f.parent_id,
+		Keys.SCOPE_KIND: f.kind,
+		Keys.SCOPE_LABEL: f.label,
+		Keys.ACTOR_ID: f.actor_id,
+		Keys.GROUP_INDEX: f.group_index,
+		Keys.TURN_ID: f.turn_id,
 	})
 
 func scope_end() -> int:
@@ -83,54 +87,137 @@ func scope_end() -> int:
 		push_warning("BattleEventWriter: scope_end with empty stack")
 		return 0
 
-	# After pop, writer stamps events to new current scope; but SCOPE_END should reference the ended scope.
-	# So we emit with explicit ids in data.
-	return _append(BattleEvent.Type.SCOPE_END, {
-		&"scope_id": f.id,
-		&"parent_scope_id": f.parent_id,
-		&"kind": f.kind,
-		&"label": f.label,
-		&"actor_id": f.actor_id,
+	return _append_manual(BattleEvent.Type.SCOPE_END, f.id, f.parent_id, f.kind, {
+		Keys.SCOPE_ID: f.id,
+		Keys.PARENT_SCOPE_ID: f.parent_id,
+		Keys.SCOPE_KIND: f.kind,
+		Keys.SCOPE_LABEL: f.label,
+		Keys.ACTOR_ID: f.actor_id,
 	})
 
 # -------------------------
-# Common battle events (you’ll expand these)
+# “Structural” timeline markers (these scale into animation)
+# -------------------------
+
+func emit_group_turn_begin(group_idx: int) -> int:
+	return _append(BattleEvent.Type.TURN_GROUP_BEGIN, {
+		Keys.GROUP_INDEX: int(group_idx),
+		Keys.TURN_ID: int(turn_id),
+	})
+
+func emit_group_turn_end(group_idx: int) -> int:
+	return _append(BattleEvent.Type.TURN_GROUP_END, {
+		Keys.GROUP_INDEX: int(group_idx),
+		Keys.TURN_ID: int(turn_id),
+	})
+
+func emit_actor_begin(actor_id: int) -> int:
+	return _append(BattleEvent.Type.ACTOR_BEGIN, {
+		Keys.ACTOR_ID: int(actor_id),
+		Keys.GROUP_INDEX: int(group_index),
+		Keys.TURN_ID: int(turn_id),
+	})
+
+func emit_actor_end(actor_id: int) -> int:
+	return _append(BattleEvent.Type.ACTOR_END, {
+		Keys.ACTOR_ID: int(actor_id),
+		Keys.GROUP_INDEX: int(group_index),
+		Keys.TURN_ID: int(turn_id),
+	})
+
+func emit_arcana_proc(proc: int) -> int:
+	return _append(BattleEvent.Type.DEBUG, { # if you later add ARCANA_PROC type, switch to it
+		Keys.PROC: int(proc),
+		Keys.TURN_ID: int(turn_id),
+		Keys.GROUP_INDEX: int(group_index),
+	})
+
+# -------------------------
+# Gameplay events
 # -------------------------
 
 func emit_card_played(ctx: CardActionContextSim) -> int:
-	if ctx.card_data == null:
+	if ctx == null or ctx.card_data == null:
 		return 0
-	ctx.card_data.ensure_uid()
-	return _append(BattleEvent.Type.CARD_PLAYED, {
-		&"card_uid": ctx.card_data.uid,
-		&"card_name": ctx.card_data.name,
-		&"card_type": CardData.CardType.keys()[int(ctx.card_data.card_type)],
-		&"source_id": ctx.source_id,
-		&"target_type": CardData.TargetType.keys()[int(ctx.card_data.target_type)],
-		&"targets": ctx.affected_ids,
-		&"insert_index": ctx.insert_index
-	})
 
+	ctx.card_data.ensure_uid()
+
+	var card_type_i := int(ctx.card_data.card_type)
+	var target_type_i := int(ctx.card_data.target_type)
+
+	var data := {
+		Keys.CARD_UID: ctx.card_data.uid,
+		Keys.CARD_NAME: ctx.card_data.name,
+		Keys.CARD_TYPE_I: card_type_i,
+		Keys.CARD_TARGET_TYPE_I: target_type_i,
+		Keys.SOURCE_ID: int(ctx.source_id),
+		Keys.TARGETS: ctx.affected_ids,
+		Keys.INSERT_INDEX: int(ctx.insert_index),
+	}
+
+	if Keys.LOG_ENUM_STRINGS:
+		var card_type_s := int(CardData.CardType.keys()[card_type_i] if card_type_i >= 0 and card_type_i < CardData.CardType.size() else -1)
+		var target_type_s := int(CardData.TargetType.keys()[target_type_i] if target_type_i >= 0 and target_type_i < CardData.TargetType.size() else -1)
+		data[Keys.CARD_TYPE_S] = card_type_s
+		data[Keys.CARD_TARGET_TYPE_S] = target_type_s
+
+	return _append(BattleEvent.Type.CARD_PLAYED, data)
 
 func emit_damage_applied(source_id: int, target_id: int, base: int, final_amount: int, armor_dmg: int, hp_dmg: int, lethal: bool) -> int:
 	return _append(BattleEvent.Type.DAMAGE_APPLIED, {
-		&"source_id": source_id,
-		&"target_id": target_id,
-		&"base": base,
-		&"amount": final_amount,
-		&"armor_damage": armor_dmg,
-		&"health_damage": hp_dmg,
-		&"was_lethal": lethal,
+		Keys.SOURCE_ID: int(source_id),
+		Keys.TARGET_ID: int(target_id),
+		Keys.BASE_AMOUNT: int(base),
+		Keys.FINAL_AMOUNT: int(final_amount),
+		Keys.ARMOR_DAMAGE: int(armor_dmg),
+		Keys.HEALTH_DAMAGE: int(hp_dmg),
+		Keys.WAS_LETHAL: bool(lethal),
 	})
 
+func emit_death(combat_id: int, reason: String = "") -> int:
+	return _append(BattleEvent.Type.DEBUG, {
+		Keys.TARGET_ID: int(combat_id),
+		Keys.DEATH_REASON: String(reason),
+	})
 
-## Do I need to change the return output here to include something from spec?
 func emit_summoned(summoned_id: int, group_idx: int, insert_index: int, proto: String = "", spec: Dictionary = {}) -> int:
-	return _append(BattleEvent.Type.SUMMONED, {
-		&"summoned_id": summoned_id,
-		&"group_index": group_idx,
-		&"insert_index": insert_index,
-		&"proto": proto,
+	var data := {
+		Keys.SUMMONED_ID: int(summoned_id),
+		Keys.GROUP_INDEX: int(group_idx),
+		Keys.INSERT_INDEX: int(insert_index),
+		Keys.PROTO: String(proto),
+	}
+	if spec != null and !spec.is_empty():
+		data[Keys.SUMMON_SPEC] = spec
+	return _append(BattleEvent.Type.SUMMONED, data)
+
+func emit_moved(actor_id: int, move_type: int, before_order: PackedInt32Array, after_order: PackedInt32Array, extra: Dictionary = {}) -> int:
+	var data := {
+		Keys.ACTOR_ID: int(actor_id),
+		Keys.MOVE_TYPE: int(move_type),
+		Keys.BEFORE_ORDER_IDS: before_order,
+		Keys.AFTER_ORDER_IDS: after_order,
+	}
+	for k in extra.keys():
+		data[k] = extra[k]
+	return _append(BattleEvent.Type.MOVED, data)
+
+func emit_status_applied(source_id: int, target_id: int, status_id: StringName, stacks_delta: int, duration: int) -> int:
+	return _append(BattleEvent.Type.STATUS_APPLIED, {
+		Keys.SOURCE_ID: int(source_id),
+		Keys.TARGET_ID: int(target_id),
+		Keys.STATUS_ID: status_id,
+		Keys.STACKS_DELTA: int(stacks_delta),
+		Keys.DURATION: int(duration),
+	})
+
+func emit_status_removed(source_id: int, target_id: int, status_id: StringName, stacks_delta: int, removed_all: bool) -> int:
+	return _append(BattleEvent.Type.STATUS_REMOVED, {
+		Keys.SOURCE_ID: int(source_id),
+		Keys.TARGET_ID: int(target_id),
+		Keys.STATUS_ID: status_id,
+		Keys.STACKS_DELTA: int(stacks_delta),
+		Keys.REMOVED_ALL: bool(removed_all),
 	})
 
 func emit_card_mutated(card: CardData, reason: String = "", delta: Dictionary = {}) -> int:
@@ -138,26 +225,36 @@ func emit_card_mutated(card: CardData, reason: String = "", delta: Dictionary = 
 		return 0
 	card.ensure_uid()
 	return _append(BattleEvent.Type.CARD_MUTATED, {
-		&"card_uid": card.uid,
-		&"card_name": card.name,
-		&"reason": reason,
-		&"delta": delta,
+		Keys.CARD_UID: card.uid,
+		Keys.CARD_NAME: card.name,
+		Keys.REASON: String(reason),
+		Keys.DELTA: delta,
 	})
 
-func emit_status_applied(source_id: int, target_id: int, status_id: StringName, stacks_delta: int, duration: int) -> int:
-	return _append(BattleEvent.Type.STATUS_APPLIED, {
-		&"source_id": int(source_id),
-		&"target_id": int(target_id),
-		&"status_id": status_id,
-		&"stacks_delta": int(stacks_delta),
-		&"duration": int(duration),
-	})
+func _append_manual(type: int, scope_id: int, parent_scope_id: int, scope_kind: StringName, data: Dictionary = {}) -> int:
+	if log == null:
+		return 0
 
-func emit_status_removed(source_id: int, target_id: int, status_id: StringName, stacks_delta: int, removed_all: bool) -> int:
-	return _append(BattleEvent.Type.STATUS_REMOVED, {
-		&"source_id": int(source_id),
-		&"target_id": int(target_id),
-		&"status_id": status_id,
-		&"stacks_delta": int(stacks_delta),
-		&"removed_all": bool(removed_all),
-	})
+	var e := BattleEvent.new(type)
+	e.turn_id = turn_id
+	e.group_index = group_index
+	e.active_actor_id = active_actor_id
+
+	e.scope_id = scope_id
+	e.parent_scope_id = parent_scope_id
+	e.scope_kind = scope_kind
+
+	e.data = data
+
+	var seq := log.append(e)
+	print("EVT seq=%d type=%s scope=%d kind=%s ctx(t=%d g=%d a=%d) data=%s" % [
+		seq,
+		BattleEvent.Type.keys()[int(e.type)] if int(e.type) >= 0 and int(e.type) < BattleEvent.Type.size() else str(e.type),
+		e.scope_id,
+		String(e.scope_kind),
+		int(e.turn_id),
+		int(e.group_index),
+		int(e.active_actor_id),
+		str(e.data)
+	])
+	return seq

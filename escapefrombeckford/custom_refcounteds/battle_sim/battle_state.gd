@@ -50,7 +50,7 @@ func add_unit(u: CombatantState, group_index: int, insert_index: int = -1) -> vo
 	if units.has(u.id):
 		push_warning("BattleState.add_unit: duplicate id %s" % u.id)
 		return
-
+	
 	group_index = clampi(group_index, 0, 1)
 	u.team = group_index
 	units[u.id] = u
@@ -92,7 +92,7 @@ func clone() -> BattleState:
 	var b := BattleState.new()
 	b.battle_seed = battle_seed
 	b.run_seed = run_seed
-
+	
 	b.rng = RNG.new()
 	b.rng.seed = rng.seed
 	b._next_sim_id = _next_sim_id
@@ -100,14 +100,14 @@ func clone() -> BattleState:
 		var u: CombatantState = units[id]
 		if u:
 			b.units[id] = u.clone()
-
+	
 	b.groups = [groups[0].clone(), groups[1].clone()]
 	b.turn = turn.clone()
 	b.arcana = arcana.duplicate(true)
-
+	
 	# Policy: preview clones start with a fresh empty event log.
 	b.events = BattleEventLog.new()
-
+	
 	return b
 
 func debug_dump_events(last_n: int = 20) -> void:

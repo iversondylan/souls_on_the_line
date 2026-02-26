@@ -51,32 +51,56 @@ func init_from_seeds(battle_seed: int, run_seed: int) -> void:
 	main_state = BattleState.new()
 	main_state.init(int(battle_seed), int(run_seed))
 	main_state._next_sim_id = 1
+
 	main_api = SimBattleAPI.new(main_state)
 	main_api.status_catalog = status_catalog
 
-	# NEW: scopes + writer
 	var scopes := BattleScopeManager.new()
 	scopes.reset()
 	main_api.scopes = scopes
 	main_api.writer = BattleEventWriter.new(main_state.events, scopes)
-
-	# Optional: forbid unscoped writes; keep strict early
 	main_api.writer.allow_unscoped_events = false
 
-	main_api.status_catalog = status_catalog
-	
-	## NEW: id allocation + notify turn engine
-	#main_api.alloc_id = func() -> int:
-		#return alloc_sim_id()
-	
+	# Root scope: battle
+	main_api.writer.set_turn_context(0, -1, 0)
+	main_api.writer.scope_begin(Keys.SCOPE_BATTLE, "battle_seed=%d run_seed=%d" % [battle_seed, run_seed], 0)
+
 	main_api.on_summoned = func(summoned_id: int, group_index: int) -> void:
-		# Let TurnEngineCore rebuild pending view immediately
 		if turn_engine != null:
 			turn_engine.notify_summon_added(int(summoned_id), int(group_index))
-	
-	preview_state = null
-	preview_api = null
+
 	main_state_initialized.emit()
+
+#func init_from_seeds(battle_seed: int, run_seed: int) -> void:
+	#main_state = BattleState.new()
+	#main_state.init(int(battle_seed), int(run_seed))
+	#main_state._next_sim_id = 1
+	#main_api = SimBattleAPI.new(main_state)
+	#main_api.status_catalog = status_catalog
+#
+	## NEW: scopes + writer
+	#var scopes := BattleScopeManager.new()
+	#scopes.reset()
+	#main_api.scopes = scopes
+	#main_api.writer = BattleEventWriter.new(main_state.events, scopes)
+#
+	## Optional: forbid unscoped writes; keep strict early
+	#main_api.writer.allow_unscoped_events = false
+#
+	#main_api.status_catalog = status_catalog
+	#
+	### NEW: id allocation + notify turn engine
+	##main_api.alloc_id = func() -> int:
+		##return alloc_sim_id()
+	#
+	#main_api.on_summoned = func(summoned_id: int, group_index: int) -> void:
+		## Let TurnEngineCore rebuild pending view immediately
+		#if turn_engine != null:
+			#turn_engine.notify_summon_added(int(summoned_id), int(group_index))
+	#
+	#preview_state = null
+	#preview_api = null
+	#main_state_initialized.emit()
 
 func ensure_initialized() -> void:
 	
@@ -126,27 +150,24 @@ func start_group_turn(group_index: int, start_at_player := false) -> void:
 		turn_engine.group_turn_ended.connect(_on_sim_group_turn_ended)
 		turn_engine.arcana_proc_requested.connect(_on_sim_arcana_proc_requested)
 		turn_engine.actor_requested.connect(_on_sim_actor_requested)
-
-		# IMPORTANT: SIM must handle these or the engine stalls at _request_player_begin/_request_player_end.
 		turn_engine.player_begin_requested.connect(_on_sim_player_begin_requested)
 		turn_engine.player_end_requested.connect(_on_sim_player_end_requested)
 
-	# WARNING: this resets “start_of_combat fired” etc.
-	# If you call start_group_turn multiple times per battle, you probably *don’t* want this here.
+	# NOTE: if you call reset_for_new_battle() here, you’re wiping turn engine “start_of_combat fired” etc.
+	# Keep it if that's what you want; just know it's per-call.
 	turn_engine.reset_for_new_battle()
-	print("[SIM] pre-start_group_turn arcana_list_size=%d ids=%s" % [
-		main_state.arcana.list.size(),
-		str(main_state.arcana.list.map(func(e): return String(e.id)))
-	])
-	if main_api and main_api.writer:
-		# you can use turn_engine._turn_token if you expose it, or track your own sim turn counter
+
+	if main_api != null and main_api.writer != null:
 		main_api.writer.set_turn_context(turn_engine._turn_token, group_index, 0)
-		main_api.writer.scope_begin(Keys.GROUP_TURN, "group=%d" % group_index, 0)
+		main_api.writer.scope_begin(Keys.SCOPE_GROUP_TURN, "group=%d" % group_index, 0)
+		main_api.writer.emit_group_turn_begin(group_index)
+
 	turn_engine.start_group_turn(group_index, start_at_player)
 
 func _on_sim_group_turn_ended(gi: int) -> void:
-	if main_api and main_api.writer:
-		main_api.writer.scope_end() # ends group_turn
+	if main_api != null and main_api.writer != null:
+		main_api.writer.emit_group_turn_end(gi)
+		main_api.writer.scope_end() # group_turn
 
 func _on_sim_player_begin_requested(token: int) -> void:
 	# In SIM, we don't want to block on UI. Do any bookkeeping, then ACK.
@@ -191,8 +212,8 @@ func _call_sim_end_player_turn() -> void:
 		call("end_player_turn")
 
 func sim_notify_actor_done(cid: int) -> void:
-	# close actor scope first
-	if main_api and main_api.writer:
+	if main_api != null and main_api.writer != null:
+		main_api.writer.emit_actor_end(cid)
 		main_api.writer.scope_end() # actor_turn
 	turn_engine.notify_actor_done(cid)
 
@@ -202,17 +223,16 @@ func sim_notify_actor_done(cid: int) -> void:
 # -------------------------
 
 func _on_sim_actor_requested(cid: int) -> void:
-	if main_api and main_api.writer:
+	if main_api != null and main_api.writer != null:
 		main_api.writer.set_turn_context(turn_engine._turn_token, turn_engine.active_group_index, cid)
-		main_api.writer.scope_begin(&"actor_turn", "actor=%d" % cid, cid)
-		
+		main_api.writer.scope_begin(Keys.SCOPE_ACTOR_TURN, "actor=%d" % cid, cid)
+		main_api.writer.emit_actor_begin(cid)
+
 	if is_player(cid):
-		# We are now at "player gets control" boundary in sim.
 		player_input_reached.emit()
 		return
 
-	# Later: run headless AI here, call api verbs, then:
-	# turn_engine.notify_actor_done(cid)
+	# Run AI later, then call sim_notify_actor_done(cid)
 
 
 # -------------------------
@@ -347,6 +367,9 @@ func with_fresh_preview(fn: Callable) -> void:
 # -------------------------
 
 func _on_sim_arcana_proc_requested(proc: int, token: int) -> void:
+	if main_api != null and main_api.writer != null:
+		main_api.writer.scope_begin(Keys.SCOPE_ARCANA, "proc=%d" % int(proc), 0)
+		main_api.writer.emit_arcana_proc(proc)
 	print("[SIM][ARCANA] proc=%s token=%d player_id=%d arcana_count=%d" % [
 		TurnEngineCore.ArcanaProc.keys()[proc],
 		token,
@@ -360,6 +383,10 @@ func _on_sim_arcana_proc_requested(proc: int, token: int) -> void:
 			arcana_resolver = ArcanaResolver.new(self, arcana_catalog)
 	if arcana_resolver != null:
 		arcana_resolver.run_proc(proc)
+
+	if main_api != null and main_api.writer != null:
+		main_api.writer.scope_end() # arcana
+
 	turn_engine.notify_arcana_proc_done(token)
 
 func _proc_to_arcanum_type(proc: int) -> int:
@@ -551,3 +578,7 @@ func _debug_unit_name(u: CombatantState) -> String:
 				return base.get_basename()
 
 	return "<unnamed>"
+
+
+func debug_dump_events() -> void:
+	BattleEventLog.print_event_log(main_state.events)

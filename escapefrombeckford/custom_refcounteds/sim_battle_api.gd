@@ -111,13 +111,10 @@ func get_targets_for_attack_sequence(ai_ctx) -> Array:
 # --------------------------
 
 func resolve_damage(ctx: DamageContext) -> void:
-	# In sim, "resolve_damage" is immediate by default.
 	resolve_damage_immediate(ctx)
 
-func resolve_attack(spec: SimAttackSpec) -> bool:
-	print("sim_battle_api.gd resolve_attack() attacker=%d strikes=%d base=%d params=%s explicit=%s"
-	% [spec.attacker_id, spec.strikes, spec.base_damage, spec.params, spec.explicit_target_ids])
-	return SimAttackRunner.run(self, spec)
+func resolve_attack(ctx: NPCAIContext) -> bool:
+	return SimAttackRunner.run(self, ctx)
 
 func resolve_damage_immediate(ctx: DamageContext) -> void:
 	if ctx == null or state == null:
@@ -154,13 +151,15 @@ func resolve_death(combat_id: int, reason := "") -> void:
 	var u := state.get_unit(combat_id)
 	if u == null:
 		return
+
 	u.alive = false
-	# remove from ordering (corpse can remain addressable in units dict)
+
 	var g := u.team
 	if g != -1:
 		state.groups[g].remove(combat_id)
-	# optional: battle-level hook
-	# state.on_death(combat_id, reason)
+
+	if writer != null:
+		writer.emit_death(combat_id, String(reason))
 
 
 func apply_status(ctx: StatusContext) -> void:
@@ -254,7 +253,6 @@ func summon(ctx: SummonContext) -> void:
 	if on_summoned.is_valid():
 		on_summoned.call(id, g)
 
-
 func resolve_move(ctx: MoveContext) -> void:
 	if ctx == null or state == null:
 		return
@@ -281,21 +279,80 @@ func resolve_move(ctx: MoveContext) -> void:
 		MoveContext.MoveType.SWAP_WITH_TARGET:
 			if ctx.target_id > 0:
 				_swap_ids(g, ctx.actor_id, ctx.target_id)
-		MoveContext.MoveType.TRAVERSE_PLAYER:
-			# This is a policy decision. Implement once you have "player_id" stored in GroupState.
-			pass
 		_:
 			pass
 
 	# Snapshot after
 	ctx.after_order_ids = PackedInt32Array(state.groups[g].order)
 
+	if writer != null:
+		writer.scope_begin(Keys.SCOPE_MOVE, "actor=%d" % int(ctx.actor_id), int(ctx.actor_id))
+		var extra := {}
+		if int(ctx.target_id) > 0:
+			extra[Keys.TARGET_ID] = int(ctx.target_id)
+		if int(ctx.index) >= 0:
+			extra[Keys.TO_INDEX] = int(ctx.index)
+		writer.emit_moved(int(ctx.actor_id), int(ctx.move_type), ctx.before_order_ids, ctx.after_order_ids, extra)
+		writer.scope_end()
 
-func resolve_attack_now(ctx: AttackNowContext) -> void:
-	# In sim: typically build a NPCAIContext and run NPCAttackSequence synchronously.
-	# This is optional right now; can stay stubbed until AI is wired headlessly.
-	pass
+#func resolve_move(ctx: MoveContext) -> void:
+	#if ctx == null or state == null:
+		#return
+	#if ctx.actor_id <= 0:
+		#return
+	#var u := state.get_unit(ctx.actor_id)
+	#if u == null or !u.is_alive():
+		#return
+#
+	#var g := u.team
+	#if g < 0:
+		#return
+#
+	## Snapshot before
+	#ctx.before_order_ids = PackedInt32Array(state.groups[g].order)
+#
+	#match ctx.move_type:
+		#MoveContext.MoveType.MOVE_TO_FRONT:
+			#_move_id_to_index(g, ctx.actor_id, 0)
+		#MoveContext.MoveType.MOVE_TO_BACK:
+			#_move_id_to_index(g, ctx.actor_id, state.groups[g].order.size() - 1)
+		#MoveContext.MoveType.INSERT_AT_INDEX:
+			#_move_id_to_index(g, ctx.actor_id, ctx.index)
+		#MoveContext.MoveType.SWAP_WITH_TARGET:
+			#if ctx.target_id > 0:
+				#_swap_ids(g, ctx.actor_id, ctx.target_id)
+		#MoveContext.MoveType.TRAVERSE_PLAYER:
+			## This is a policy decision. Implement once you have "player_id" stored in GroupState.
+			#pass
+		#_:
+			#pass
+#
+	## Snapshot after
+	#ctx.after_order_ids = PackedInt32Array(state.groups[g].order)
 
+
+func apply_attack_now(spec: SimAttackSpec) -> bool:
+	if spec == null or state == null:
+		return false
+	if spec.attacker_id <= 0 or !is_alive(spec.attacker_id):
+		return false
+	var ai_ctx := NPCAIContext.new()
+	ai_ctx.api = self
+	ai_ctx.cid = spec.attacker_id
+	ai_ctx.combatant_state = state.get_unit(spec.attacker_id)
+	#ai_ctx.combatant_data = api. #ctx.resolved.combatant_datas[0]
+	ai_ctx.battle_scene = null
+	ai_ctx.state = {}
+	ai_ctx.params = {}
+	ai_ctx.forecast = false
+
+	if spec.param_models:
+		for m in spec.param_models:
+			if m:
+				m.change_params_sim(ai_ctx)
+	return resolve_attack(ai_ctx)
+	
+	
 
 # --------------------------
 # Damage pipeline hooks
@@ -366,6 +423,16 @@ func on_damage_applied(ctx: DamageContext) -> void:
 func on_card_played(ctx: CardActionContextSim) -> void:
 	if ctx == null or ctx.card_data == null:
 		return
+	if writer == null:
+		return
+	
+	if ctx.emitted_card_played:
+		return
+	ctx.emitted_card_played = true
+	
+	ctx.card_data.ensure_uid()
+
+	writer.scope_begin(Keys.SCOPE_CARD, "uid=%s %s" % [str(ctx.card_data.uid), String(ctx.card_data.name)], int(ctx.source_id))
 
 	var targets: Array[int] = []
 	if ctx.resolved != null:
@@ -377,7 +444,9 @@ func on_card_played(ctx: CardActionContextSim) -> void:
 	if writer != null:
 		writer.emit_card_played(ctx)
 
-
+func on_card_finished(ctx: CardActionContextSim) -> void:
+	if writer != null:
+		writer.scope_end() # card scope
 
 # --------------------------
 # Internal helpers

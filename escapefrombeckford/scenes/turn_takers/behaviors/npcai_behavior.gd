@@ -347,7 +347,7 @@ func _build_intent_from_action(action: NPCAction, ctx: NPCAIContext) -> IntentDa
 	intent.icon = action.intent_icon
 	# Override icon if attack mode is ranged
 	if ctx.params.has(NPCKeys.ATTACK_MODE):
-		if ctx.params[NPCKeys.ATTACK_MODE] == NPCAttackSequence.ATTACK_MODE_RANGED:
+		if ctx.params[NPCKeys.ATTACK_MODE] == Attack.Mode.RANGED:
 			if action.intent_icon_ranged:
 				intent.icon = action.intent_icon_ranged
 	if action.intent_text_model:

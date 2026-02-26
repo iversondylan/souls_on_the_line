@@ -11,15 +11,15 @@ func get_text(ctx: NPCAIContext) -> String:
 	var result := text_template
 	
 	# ---- Attack mode ----
-	var mode_raw := str(ctx.params.get(NPCKeys.ATTACK_MODE, ""))
+	var mode_raw := int(ctx.params.get(NPCKeys.ATTACK_MODE, -1))
 	var mode_text := ""
 	
 	match mode_raw:
-		NPCAttackSequence.ATTACK_MODE_MELEE:
+		Attack.Mode.MELEE:
 			mode_text = "Melee"
-		NPCAttackSequence.ATTACK_MODE_RANGED:
+		Attack.Mode.RANGED:
 			mode_text = "Ranged"
-		_:
+		-1:
 			mode_text = "Standard"
 	
 	result = result.replace("{attack_mode}", mode_text)

@@ -6,8 +6,8 @@ const TARGET_STANDARD := "target_standard"
 const TARGET_OPPONENTS := "target_opponents"
 const TARGET_ALL := "target_all"
 
-const ATTACK_MODE_MELEE := "melee"
-const ATTACK_MODE_RANGED := "ranged"
+#const ATTACK_MODE_MELEE := "melee"
+#const ATTACK_MODE_RANGED := "ranged"
 
 const DEFAULT_PROJECTILE_SCENE := "res://VFX/projectiles/fireball/fireball.tscn"
 
@@ -47,8 +47,8 @@ func run_async(ctx: NPCAIContext) -> void:
 		if targets.is_empty():
 			continue
 
-		var mode := String(ctx.params.get(NPCKeys.ATTACK_MODE, ATTACK_MODE_MELEE))
-		if mode == ATTACK_MODE_MELEE:
+		var mode := int(ctx.params.get(NPCKeys.ATTACK_MODE, Attack.Mode.MELEE))
+		if mode == Attack.Mode.MELEE:
 			await _melee_strike(ctx, targets, dmg)
 		else:
 			await _ranged_strike(ctx, targets, dmg)
