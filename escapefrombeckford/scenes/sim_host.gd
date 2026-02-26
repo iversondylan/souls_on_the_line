@@ -17,7 +17,7 @@ signal player_input_reached()
 const FRIENDLY := 0
 const ENEMY := 1
 
-var main_state: BattleState
+var main_state: BattleState : set = _set_main_state
 var preview_state: BattleState
 
 var main_api: SimBattleAPI
@@ -30,15 +30,32 @@ var arcana_resolver: ArcanaResolver
 var card_executor: CardExecutor
 
 # --- optional catalogs (wire later) ---
-var card_catalog: CardCatalog
-var status_catalog: StatusCatalog
+#var card_catalog: CardCatalog
+var status_catalog: StatusCatalog : set = _set_status_catalog
 # var ai_catalog: NPCAIProfileCatalog
-var arcana_catalog: ArcanaCatalog
+var arcana_catalog: ArcanaCatalog : set = _set_arcana_catalog
 
 
 # -------------------------
 # Lifecycle / initialization
 # -------------------------
+
+func _set_status_catalog(catalog: StatusCatalog) -> void:
+	status_catalog = catalog
+	if main_state:
+		main_state.status_catalog = catalog
+
+func _set_arcana_catalog(catalog: ArcanaCatalog) -> void:
+	arcana_catalog = catalog
+	if main_state:
+		main_state.arcana_catalog = catalog
+
+func _set_main_state(new_state: BattleState) -> void:
+	main_state = new_state
+	if status_catalog:
+		main_state.status_catalog = status_catalog
+	if arcana_catalog:
+		main_state.arcana_catalog = arcana_catalog
 
 func reset() -> void:
 	main_state = null
@@ -310,7 +327,7 @@ func apply_player_card(req: CardPlayRequest) -> bool:
 		return false
 	if card_executor == null:
 		card_executor = CardExecutor.new()
-		card_executor.card_catalog = card_catalog
+		#card_executor.card_catalog = card_catalog
 	return card_executor.play_card(main_api, req)
 
 # -------------------------

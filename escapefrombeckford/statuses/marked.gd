@@ -12,7 +12,7 @@ class_name MarkedStatus extends Status
 
 const ID := &"marked"
 
-func get_id() -> String:
+func get_id() -> StringName:
 	return ID
 
 func get_tooltip() -> String:

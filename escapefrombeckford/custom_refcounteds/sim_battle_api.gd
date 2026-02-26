@@ -116,34 +116,116 @@ func resolve_damage(ctx: DamageContext) -> void:
 func resolve_attack(ctx: NPCAIContext) -> bool:
 	return SimAttackRunner.run(self, ctx)
 
-func resolve_damage_immediate(ctx: DamageContext) -> void:
-	if ctx == null or state == null:
-		return
-	print("sim_battle_api.gd resolve_damage_immediate() src=%d tgt=%d base=%d amt=%d alive=%s" % [
-		int(ctx.source_id),
-		int(ctx.target_id),
-		int(ctx.base_amount),
-		int(ctx.amount),
-		str(state.is_alive(int(ctx.target_id))) if state and int(ctx.target_id) > 0 else "?"
-	])
-	# ensure ids
-	if ctx.target_id == 0 and ctx.target:
-		ctx.target_id = int(ctx.target.combat_id)
-	if ctx.source_id == 0 and ctx.source:
-		ctx.source_id = int(ctx.source.combat_id)
+# sim_battle_api.gd
+func resolve_damage_immediate(ctx: DamageContext) -> int:
+	if !ctx:
+		return 0
 
-	# bail if invalid / dead
-	if ctx.target_id <= 0 or !state.is_alive(ctx.target_id):
-		return
+	# --- PREP / VALIDATION ---
+	if ctx.base_amount <= 0:
+		ctx.amount = 0
+		return 0
 
-	# Central resolver should call back into:
-	# - modify_damage_amount()
-	# - apply_damage_amount()
-	# - on_damage_applied()
-	DamageResolver.resolve(self, ctx)
+	if !state.is_alive(ctx.target_id):
+		ctx.amount = 0
+		return 0
+
+	ctx.phase = DamageContext.Phase.PRE_MODIFIERS
+	ctx.amount = ctx.base_amount
+
+	# Optional: give statuses a chance to react before math
+	# (Only do this if you actually have these hooks in your status pipeline.)
+	# _emit_damage_event(ctx, "pre_modifiers")
+
+	# --- APPLY MODIFIERS (one at a time; cid-based) ---
+	# 1) attacker modifies damage dealt
+	print("sim_battle_api.gd resolve_damage_immediate() pre dealt amt: ", ctx.amount)
+	ctx.amount = SimModifierResolver.get_modified_value(
+		state,
+		ctx.amount,
+		ctx.deal_modifier_type,
+		ctx.source_id
+	)
+	print("sim_battle_api.gd resolve_damage_immediate() pre taken amt: ", ctx.amount)
+	# 2) defender modifies damage taken
+	ctx.amount = SimModifierResolver.get_modified_value(
+		state,
+		ctx.amount,
+		ctx.take_modifier_type,
+		ctx.target_id
+	)
+	print("sim_battle_api.gd resolve_damage_immediate() post dealt amt: ", ctx.amount)
+	ctx.amount = maxi(ctx.amount, 0)
+	ctx.phase = DamageContext.Phase.POST_MODIFIERS
+
+	# Optional: statuses that care about "final damage about to be applied"
+	# _emit_damage_event(ctx, "post_modifiers")
+
+	# --- APPLY TO STATE ---
+	var tgt := state.get_unit(ctx.target_id)
+	if !tgt:
+		ctx.amount = 0
+		return 0
+
+	var remaining := ctx.amount
+
+	# Armor first (if that’s your rule)
+	var armor_damage := mini(remaining, maxi(tgt.armor, 0))
+	tgt.armor -= armor_damage
+	remaining -= armor_damage
+
+	var health_damage := mini(remaining, maxi(tgt.health, 0))
+	tgt.health -= health_damage
+	remaining -= health_damage
+
+	ctx.armor_damage = armor_damage
+	ctx.health_damage = health_damage
+	ctx.was_lethal = (tgt.health <= 0)
 
 	if ctx.was_lethal:
-		resolve_death(ctx.target_id, "damage")
+		tgt.alive = false
+		# If you keep corpses in units but remove from order:
+		state.remove_unit(ctx.target_id)
+
+	ctx.phase = DamageContext.Phase.APPLIED
+
+	# --- LOG EVENT (SIM event log) ---
+	# You already emit DAMAGE_APPLIED elsewhere; fill it from ctx.
+	on_damage_applied(ctx)
+
+	# Optional: reactive statuses (EVENT_BASED) after application
+	# _emit_damage_event(ctx, "applied")
+
+	return ctx.amount
+
+#func resolve_damage_immediate(ctx: DamageContext) -> void:
+	#if ctx == null or state == null:
+		#return
+	#print("sim_battle_api.gd resolve_damage_immediate() src=%d tgt=%d base=%d amt=%d alive=%s" % [
+		#int(ctx.source_id),
+		#int(ctx.target_id),
+		#int(ctx.base_amount),
+		#int(ctx.amount),
+		#str(state.is_alive(int(ctx.target_id))) if state and int(ctx.target_id) > 0 else "?"
+	#])
+	## ensure ids
+	#if ctx.target_id == 0 and ctx.target:
+		#ctx.target_id = int(ctx.target.combat_id)
+	#if ctx.source_id == 0 and ctx.source:
+		#ctx.source_id = int(ctx.source.combat_id)
+#
+	## bail if invalid / dead
+	#if ctx.target_id <= 0 or !state.is_alive(ctx.target_id):
+		#return
+#
+	## Central resolver should call back into:
+	## - modify_damage_amount()
+	## - apply_damage_amount()
+	## - on_damage_applied()
+	#DamageResolver.resolve(self, ctx)
+#
+	#if ctx.was_lethal:
+		#resolve_death(ctx.target_id, "damage")
 
 func resolve_death(combat_id: int, reason := "") -> void:
 	if state == null or combat_id <= 0:

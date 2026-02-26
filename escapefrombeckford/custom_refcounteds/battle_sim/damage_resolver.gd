@@ -34,7 +34,7 @@ static func resolve(api: BattleAPI, ctx: DamageContext) -> void:
 	ctx.amount = int(api.modify_damage_amount(ctx, int(ctx.base_amount)))
 	ctx.amount = maxi(ctx.amount, 0)
 	ctx.phase = DamageContext.Phase.POST_MODIFIERS
-
+	
 	# Apply to stats (numeric only)
 	api.apply_damage_amount(ctx, ctx.amount)
 	ctx.armor_damage = int(ctx.armor_damage)

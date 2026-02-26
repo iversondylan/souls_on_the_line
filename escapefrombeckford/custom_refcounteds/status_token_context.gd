@@ -2,7 +2,7 @@
 
 class_name StatusTokenContext extends RefCounted
 
-var id: String = ""
+var id: StringName = &""
 
 var intensity : int = -1
 var duration: int = -1

@@ -1,7 +1,7 @@
 # card_executor.gd
 class_name CardExecutor extends RefCounted
 
-var card_catalog: CardCatalog
+#var card_catalog: CardCatalog
 
 func play_card(api: BattleAPI, req: CardPlayRequest) -> bool:
 	if api == null or req == null or req.card == null:

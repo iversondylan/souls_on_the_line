@@ -4,7 +4,7 @@ const ID := &"cruel_dominion"
 
 const ECHOED_CRUELTY_STATUS := preload("res://statuses/echoed_cruelty.tres")
 
-func get_id() -> String:
+func get_id() -> StringName:
 	return ID
 
 func apply_status(target: Node) -> void:

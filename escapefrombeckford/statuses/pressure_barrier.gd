@@ -4,7 +4,7 @@ class_name PressureBarrier extends Status
 
 const ID = &"pressure_barrier"
 
-func get_id() -> String:
+func get_id() -> StringName:
 	return ID
 
 func contributes_modifier() -> bool:

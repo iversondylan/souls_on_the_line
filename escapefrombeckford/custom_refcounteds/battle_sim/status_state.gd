@@ -1,21 +1,7 @@
 # status_state.gd
 class_name StatusState extends RefCounted
 
-class StatusStack extends RefCounted:
-	var id: StringName
-	var stacks: int = 1
-	var duration: int = 0 # 0 = infinite (or proc-based), you decide
-	var data: Dictionary = {}
 
-	func _init(_id: StringName = &"") -> void:
-		id = _id
-
-	func clone() -> StatusStack:
-		var s := StatusStack.new(id)
-		s.stacks = stacks
-		s.duration = duration
-		s.data = data.duplicate(true)
-		return s
 
 # status_id -> StatusStack
 var by_id: Dictionary = {}  # StringName -> StatusStack
@@ -27,11 +13,10 @@ func get_status_stack(id: StringName) -> StatusStack:
 	return by_id.get(id, null)
 
 func add_or_reapply(id: StringName, stacks_delta: int, duration: int = 0) -> void:
+	print("status_state.gd add_or_reapply() id: %s, stacks: %s, duration: %s" % [id, stacks_delta, duration])
 	if id == &"":
 		return
-	stacks_delta = int(stacks_delta)
-	duration = int(duration)
-
+	
 	var s: StatusStack = by_id.get(id, null)
 	if s == null:
 		s = StatusStack.new(id)
@@ -42,9 +27,10 @@ func add_or_reapply(id: StringName, stacks_delta: int, duration: int = 0) -> voi
 		s.stacks = maxi(s.stacks + stacks_delta, 0)
 		# duration policy: take max, or overwrite if nonzero—choose one.
 		if duration > 0:
-			s.duration = max(s.duration, duration)
-		if s.stacks <= 0:
-			by_id.erase(id)
+			s.duration = max(s.duration + duration, 0)
+		#if s.stacks <= 0:
+			#by_id.erase(id)
+	print("status_state.gd add_or_reapply() stack stacks: %s, duration: %s" % [by_id[id].stacks, by_id[id].duration])
 
 func remove(id: StringName, remove_all: bool = true, stacks_delta: int = 1) -> void:
 	if !by_id.has(id):

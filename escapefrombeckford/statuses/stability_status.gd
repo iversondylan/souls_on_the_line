@@ -8,7 +8,7 @@ const ID := &"stability"
 
 var _last_known_hp: int = -1
 
-func get_id() -> String:
+func get_id() -> StringName:
 	return ID
 
 func init_status(target: Node) -> void:

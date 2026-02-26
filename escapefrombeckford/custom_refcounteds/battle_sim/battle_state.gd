@@ -5,6 +5,9 @@ class_name BattleState extends RefCounted
 const FRIENDLY := 0
 const ENEMY := 1
 
+var status_catalog: StatusCatalog
+var arcana_catalog: ArcanaCatalog
+
 var events: BattleEventLog = BattleEventLog.new()
 
 var battle_seed: int = 0
@@ -86,6 +89,112 @@ func is_alive(id: int) -> bool:
 func get_front_id(group_index: int) -> int:
 	group_index = clampi(group_index, 0, 1)
 	return groups[group_index].front_id(units)
+
+# battle_state.gd (additions)
+
+func get_modifier_tokens_for_cid(target_id: int) -> Array[ModifierToken]:
+	print("battle_state.gd get_modifier_tokens_for_cid() cid: ", target_id)
+	var tokens: Array[ModifierToken] = []
+
+	# 0) Battle-level globals (arcana, relic-like systems, etc.)
+	# Keep this centralized so nothing else needs to know “where tokens live”.
+	tokens.append_array(_get_arcana_tokens_for(target_id))
+
+	# 1) Per-unit sources (statuses, auras, secondaries, etc.)
+	for source_id in units.keys():
+		var source: CombatantState = units[source_id]
+		if !source or !source.is_alive():
+			continue
+		
+		var same_team := _same_team(int(source_id), target_id)
+		
+		# 1a) Status tokens (produced by status protos via StatusCatalog)
+		var source_tokens := _get_status_tokens_for_source(int(source_id))
+		for token in source_tokens:
+			print("looking at a token: ", token.owner_id)
+			if !token:
+				continue
+			
+			# Safety: aura secondaries must not be GLOBAL (same check as LIVE)
+			if token.scope == ModifierToken.Scope.GLOBAL and token.tags.has(Aura.AURA_SECONDARY_FLAG):
+				push_error("SIM: Aura token must not be GLOBAL: %s" % token.source_id)
+			
+			match token.scope:
+				ModifierToken.Scope.GLOBAL:
+					# Always applies to everyone
+					tokens.append(token)
+				
+				ModifierToken.Scope.SELF:
+					# Applies only to the source itself
+					if int(source_id) == target_id:
+						tokens.append(token)
+				
+				ModifierToken.Scope.TARGET:
+					# Two cases (same as LIVE):
+					# 1) Aura-style routing via tags
+					# 2) Explicit owner_id match
+					if token.tags.has(Aura.AURA_SECONDARY_FLAG):
+						if token.tags.has(Aura.AURA_ALLIES):
+							if same_team:
+								tokens.append(token)
+						elif token.tags.has(Aura.AURA_ENEMIES):
+							if !same_team:
+								tokens.append(token)
+					else:
+						if int(token.owner_id) == target_id:
+							tokens.append(token)
+
+	return tokens
+
+func _get_status_tokens_for_source(source_id: int) -> Array[ModifierToken]:
+	print("battle_state.gd _get_status_tokens_for_source()")
+	var out: Array[ModifierToken] = []
+	var u: CombatantState = units.get(source_id, null)
+	if !u or !status_catalog:
+		return out
+
+	for id_key in u.statuses.by_id.keys():
+		print("looking at a status: ", id_key)
+		var stack: StatusStack = u.statuses.by_id[id_key]
+		var id_strn := StringName(id_key)
+		
+		var proto: Status = status_catalog.get_proto(id_strn)
+		if !proto:
+			print("there's no proto")
+			continue
+		proto.intensity = stack.stacks
+		proto.duration = stack.duration
+		print("StatusStack stacks: %s, duration: %s" % [stack.stacks, stack.duration])
+		# Build token ctx from STATE (NOT from resource fields)
+		var ctx := StatusTokenContext.new()#proto.make_token_ctx_state({}, source_id)
+		ctx.owner_id = source_id
+		ctx.duration = stack.duration
+		ctx.intensity = stack.stacks
+		# Respect expiry for DURATION policy
+		if proto.expiration_policy == Status.ExpirationPolicy.DURATION and proto.duration <= 0:
+			print("it's expired")
+			continue
+		print("not expired")
+		if proto.contributes_modifier():
+			var tokens: Array[ModifierToken] = proto.get_modifier_tokens(ctx)
+			print("trying to append tokens: ", tokens)
+			out.append_array(tokens)
+	print("out: ", out)
+	return out
+
+func _get_arcana_tokens_for(target_id: int) -> Array[ModifierToken]:
+	# ArcanaState should be the SIM “ArcanaSystem” data equivalent.
+	# If ArcanaState doesn't provide tokens yet, return [] for now.
+	if arcana and arcana.has_method("get_modifier_tokens_for_target"):
+		return arcana.get_modifier_tokens_for_target(self, target_id)
+	return []
+
+func _same_team(a: int, b: int) -> bool:
+	var ua: CombatantState = units.get(a, null)
+	var ub: CombatantState = units.get(b, null)
+	if !ua or !ub:
+		return false
+	return ua.team == ub.team
 
 # Minimal clone (good enough for early previews; deepen as needed)
 func clone() -> BattleState:

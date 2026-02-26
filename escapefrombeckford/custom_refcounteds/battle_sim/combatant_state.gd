@@ -29,6 +29,10 @@ var modifiers: ModifierCache = ModifierCache.new()
 # AI (data-side)
 var ai_state: Dictionary = {}
 
+# the status_dict is newer and possibly replacing StatusState.
+# id:StringName -> {duration:int, intensity:int}
+#var status_dict: Dictionary = {} # &"amplify" -> {"duration":2,"intensity":1}
+
 # RNG stream (deterministic per unit)
 var rng: RNG
 

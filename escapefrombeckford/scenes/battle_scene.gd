@@ -358,6 +358,7 @@ func get_enemy_fighters_of(source: Fighter) -> Array[Fighter]:
 	else:
 		return get_combatants_in_group(0)
 
+# in battle_scene.gd
 ##Numerical Modifier System
 func get_modifier_tokens_for(fighter: Fighter) -> Array[ModifierToken]:
 	

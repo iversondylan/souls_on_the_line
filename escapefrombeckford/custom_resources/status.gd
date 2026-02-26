@@ -1,4 +1,5 @@
 # status.gd
+
 class_name Status extends Resource
 
 signal status_applied(status: Status)
@@ -32,7 +33,7 @@ enum ExpirationPolicy {
 var status_parent: Fighter
 #var battle_scene: BattleScene
 
-func get_id() -> String:
+func get_id() -> StringName:
 	return ""
 
 func init_status(_target: Node) -> void:
@@ -75,8 +76,6 @@ func on_damage_taken(_ctx: DamageContext) -> void:
 
 func affects_intent_legality() -> bool:
 	return false
-#func _on_status_changed(target: Node) -> void:
-	#print("status.gd _on_status_changed(): virtual function called")
 
 # -------------------------------------------------------------------
 # Helpers so callers don't need separate functions for live vs sim
@@ -91,6 +90,9 @@ func make_token_ctx_node(owner_node: Node) -> StatusTokenContext:
 	ctx.owner_id = -1
 	return ctx
 
+# THIS SEEMS FREAKIN POINTLESS WHY WOULD I NEED TO TELL THE STATUS WHAT ITS STATE IS?
+# IS IT JUST BECAUSE THE SIM STATUSES ARE SUPPOSED TO BE STATELESS?
+# IF SO I DIDN'T WRITE THOSE METHODS TO CONSIDER THE CONTEXT I DON'T THINK
 func make_token_ctx_state(state, _owner_id: int) -> StatusTokenContext:
 	# `state` can be a StatusState or Dictionary; keep it flexible.
 	var ctx := StatusTokenContext.new()

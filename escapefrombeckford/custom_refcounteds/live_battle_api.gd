@@ -46,9 +46,9 @@ func resolve_damage(ctx: DamageContext) -> void:
 			play_sfx(load(DEFAULT_MELEE_SOUND))
 
 
-func resolve_damage_immediate(ctx: DamageContext) -> void:
+func resolve_damage_immediate(ctx: DamageContext) -> int:
 	if !ctx:
-		return
+		return 0
 	#print("live_battle_api.gd resolve_damage_immediate() source: ", ctx.source.name, ", base_amount: ", ctx.base_amount)
 	# hydrate if desired (optional; your _run_damage_op does it already)
 	DamageResolver.resolve(self, ctx)
@@ -65,6 +65,7 @@ func resolve_damage_immediate(ctx: DamageContext) -> void:
 
 	if ctx.was_lethal and runner:
 		runner.enqueue_death(ctx.target_id, "damage")
+	return 0
 
 func resolve_death(combat_id: int, reason := "") -> void:
 	if combat_id <= 0:

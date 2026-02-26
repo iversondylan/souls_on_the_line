@@ -3,7 +3,7 @@ class_name ExplosiveAmbition extends Status
 const ID := &"explosive_ambition"
 var member_var := 0
 
-func get_id() -> String:
+func get_id() -> StringName:
 	return ID
 
 func init_status(_target: Node) -> void:

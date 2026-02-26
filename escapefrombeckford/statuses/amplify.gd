@@ -5,7 +5,7 @@ class_name AmplifyStatus extends Status
 const ID := &"amplify"
 const MULT_VALUE := 0.5
 
-func get_id() -> String:
+func get_id() -> StringName:
 	return ID
 
 func get_modifier_tokens(ctx: StatusTokenContext) -> Array[ModifierToken]:
@@ -27,6 +27,7 @@ func get_modifier_tokens(ctx: StatusTokenContext) -> Array[ModifierToken]:
 	token.tags = [ID]
 	
 	Status.set_token_owner(token, ctx)
+	print("token.mult_value = ", token.mult_value)
 	return [token]
 
 ##Must return true if this status contributes a numerical modifier.

@@ -4,7 +4,7 @@ class_name Might extends Status
 
 const ID = &"might"
 
-func get_id() -> String:
+func get_id() -> StringName:
 	return ID
 
 func contributes_modifier() -> bool:
