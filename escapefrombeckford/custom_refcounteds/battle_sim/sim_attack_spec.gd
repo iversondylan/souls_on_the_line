@@ -13,6 +13,7 @@ var deal_modifier_type: int = Modifier.Type.DMG_DEALT
 var take_modifier_type: int = Modifier.Type.DMG_TAKEN
 
 # Params used by AttackTargeting + any later conditional logic
+var param_models: Array[ParamModel] = [] #<--- adding this??
 var params: Dictionary = {}
 
 # Optional: explicit targets override targeting (useful for some AttackNow designs)

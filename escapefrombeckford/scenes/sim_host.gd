@@ -45,7 +45,7 @@ func reset() -> void:
 	preview_state = null
 	main_api = null
 	preview_api = null
-	_next_sim_id = 1
+#	_next_sim_id = 1
 
 func init_from_seeds(battle_seed: int, run_seed: int) -> void:
 	main_state = BattleState.new()
