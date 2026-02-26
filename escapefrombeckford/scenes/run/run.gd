@@ -58,13 +58,6 @@ func _ready() -> void:
 	arcanum_catalog.build_index()
 	arcana_system = arcana_container.system
 	arcana_system.modifier_tokens_changed.connect(_on_modifier_tokens_changed)
-	#if !arcana_system:
-		#arcana_system = ArcanaSystem.new()
-		#if arcana_catalog:
-			#arcana_system.catalog = arcana_catalog
-	#if arcana_container:
-		#arcana_container.bind_system(arcana_system, self)
-	
 	
 	if !run_startup:
 		return

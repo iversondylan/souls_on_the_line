@@ -29,22 +29,6 @@ func get_modifier_tokens(ctx: StatusTokenContext) -> Array[ModifierToken]:
 	Status.set_token_owner(token, ctx)
 	return [token]
 
-#func get_modifier_tokens(ctx: StatusTokenContext) -> Array[ModifierToken]:
-	#if !ctx or is_expired():
-		#return []
-#
-	#var token := ModifierToken.new()
-	#token.type = Modifier.Type.DMG_DEALT
-	#token.mult_value = MULT_VALUE
-	#token.flat_value = 0
-	#token.source_id = ID
-	#token.scope = ModifierToken.Scope.SELF
-	#token.priority = 0
-	#token.tags = [ID]
-#
-	#Status.set_token_owner(token, ctx)
-	#return [token]
-
 ##Must return true if this status contributes a numerical modifier.
 func contributes_modifier() -> bool:
 	return true

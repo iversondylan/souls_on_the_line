@@ -166,7 +166,7 @@ func _tick_duration_after_proc(_proc_type: Status.ProcType) -> void:
 	# duration-- happens in _on_status_applied(). But that was per-status signal.
 	# Here we can keep it per-status signal OR do a pass.
 	# If you want EXACT old behavior: keep _on_status_applied() doing duration--.
-
+	
 	pass
 
 func _on_status_applied(_status: Status, id: StringName) -> void:
@@ -185,7 +185,7 @@ func _remove_expired() -> void:
 		var s: Status = by_id[id]
 		if s and s.is_expired():
 			to_remove.append(id)
-
+	
 	for id in to_remove:
 		var s: Status = by_id.get(id, null)
 		_remove_status_instance(s)
@@ -218,7 +218,7 @@ func end_non_self_statuses() -> void:
 				_emit_status_changed(s)
 			else:
 				to_remove.append(id)
-
+	
 	for id in to_remove:
 		_remove_status_instance(by_id.get(id, null))
 
@@ -238,11 +238,8 @@ func on_damage_taken(ctx: DamageContext) -> void:
 # ----------------------------
 
 func get_modifier_tokens() -> Array[ModifierToken]:
-	#if owner and owner.combat_id:
-		#print("status_system.gd get_modifier_tokens() owner id: %s, name: %s" % [owner.combat_id, owner.name])
 	var tokens: Array[ModifierToken] = []
 	for s in get_all():
-		#print("status_system.gd get_modifier_tokens() has status: ", s.get_id())
 		if !s:
 			continue
 		if s.is_expired():
@@ -280,9 +277,6 @@ func _on_status_changed(id: StringName) -> void:
 	status_changed.emit(id)
 	changed.emit()
 
-#func on_proc_applied(proc_type: Status.ProcType) -> void:
-	#print("status_system.gd on_proc_applied(): this method is not implemented and does nothing.")
-	#pass
 # ----------------------------
 # Serialization (replace StatusGridData/StatusState)
 # ----------------------------
@@ -300,11 +294,11 @@ func export_state() -> Dictionary:
 func sync_from_state(state: Dictionary, _catalog: StatusCatalog) -> void:
 	if !_catalog or !state:
 		return
-
+	
 	# Clear existing
 	for id in by_id.keys():
 		_remove_status_instance(by_id[id])
-
+	
 	# Build new
 	for id_str in state.keys():
 		var proto := _catalog.get_proto(id_str)
