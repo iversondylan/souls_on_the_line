@@ -198,35 +198,6 @@ func resolve_damage_immediate(ctx: DamageContext) -> int:
 
 	return ctx.amount
 
-#func resolve_damage_immediate(ctx: DamageContext) -> void:
-	#if ctx == null or state == null:
-		#return
-	#print("sim_battle_api.gd resolve_damage_immediate() src=%d tgt=%d base=%d amt=%d alive=%s" % [
-		#int(ctx.source_id),
-		#int(ctx.target_id),
-		#int(ctx.base_amount),
-		#int(ctx.amount),
-		#str(state.is_alive(int(ctx.target_id))) if state and int(ctx.target_id) > 0 else "?"
-	#])
-	## ensure ids
-	#if ctx.target_id == 0 and ctx.target:
-		#ctx.target_id = int(ctx.target.combat_id)
-	#if ctx.source_id == 0 and ctx.source:
-		#ctx.source_id = int(ctx.source.combat_id)
-#
-	## bail if invalid / dead
-	#if ctx.target_id <= 0 or !state.is_alive(ctx.target_id):
-		#return
-#
-	## Central resolver should call back into:
-	## - modify_damage_amount()
-	## - apply_damage_amount()
-	## - on_damage_applied()
-	#DamageResolver.resolve(self, ctx)
-#
-	#if ctx.was_lethal:
-		#resolve_death(ctx.target_id, "damage")
-
 func resolve_death(combat_id: int, reason := "") -> void:
 	if state == null or combat_id <= 0:
 		return

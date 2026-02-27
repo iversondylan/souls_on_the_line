@@ -14,7 +14,7 @@ func run_proc(proc: int) -> void:
 	if catalog == null:
 		push_warning("ArcanaResolverSim: catalog is null")
 		return
-
+	
 	var arcanum_type := _proc_to_arcanum_type(proc)
 	if arcanum_type < 0:
 		return
@@ -28,7 +28,7 @@ func run_proc(proc: int) -> void:
 		var id := entry.id
 		if id == &"":
 			continue
-
+		
 		var proto: Arcanum = catalog.get_proto(id)
 		if proto == null:
 			push_warning("ArcanaResolverSim: missing proto for id=%s" % String(id))
@@ -37,7 +37,7 @@ func run_proc(proc: int) -> void:
 		ran += 1
 		var ctx := ArcanumContext.new()
 		ctx.api = host.main_api
-
+		
 		# Headless context params
 		ctx.params[Keys.MODE] = Keys.MODE_SIM
 		ctx.params[Keys.PLAYER_ID] = host.main_state.groups[0].player_id
@@ -46,7 +46,7 @@ func run_proc(proc: int) -> void:
 		
 		# variants can't be inferred, numbnuts
 		var r = proto.activate_arcanum(ctx)
-
+		
 		# policy: headless arcana must be sync
 		if r is Signal and !(r as Signal).is_null():
 			push_warning("ArcanaResolverSim: arcana %s returned Signal; ignored" % String(id))

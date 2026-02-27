@@ -127,6 +127,7 @@ func get_modifier_tokens_for_cid(target_id: int) -> Array[ModifierToken]:
 				ModifierToken.Scope.SELF:
 					# Applies only to the source itself
 					if int(source_id) == target_id:
+						print("battle_state.gd get_modifier_tokens_for_cid() appending token source: %s, owner: %s" % [token.source_id, token.owner_id])
 						tokens.append(token)
 				
 				ModifierToken.Scope.TARGET:
