@@ -259,7 +259,6 @@ func _on_actor_requested(combat_id: int) -> void:
 	# HARD RULE: don’t start an actor while arcana still running.
 	await _await_arcana_gate_if_any()
 	
-	print("=== AFTER ARCANA GATE, BEFORE ACTOR RUNS ===")
 	#sim_host.debug_dump_orders()
 	#sim_host.debug_dump_units()
 	#debug_dump_orders_live()
@@ -566,7 +565,7 @@ func _apply_group_turn_start_hooks_scoped(active_group_index: int) -> void:
 	)
 
 func _apply_group_turn_start_hooks(active_group_index: int) -> void:
-	print("battle.gd _apply_group_turn_start_hooks() active_group_index: ", active_group_index)
+	#print("battle.gd _apply_group_turn_start_hooks() active_group_index: ", active_group_index)
 	# Group starting: members get my_group_turn_start; opposing gets opposing_group_turn_start
 	var my_group: BattleGroup = battle_scene.get_group_by_index(active_group_index)
 	if !my_group or !is_instance_valid(my_group):
@@ -796,7 +795,7 @@ func _on_end_turn_button_pressed_live() -> void:
 
 func debug_dump_orders_live() -> void:
 	if battle_scene == null or !is_instance_valid(battle_scene):
-		print("Battle.debug_dump_orders_live(): (no battle_scene)")
+		push_warning("Battle.debug_dump_orders_live(): (no battle_scene)")
 		return
 
 	var friendly := _get_live_group_order_ids(FRIENDLY)

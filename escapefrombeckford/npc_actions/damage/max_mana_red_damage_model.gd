@@ -23,7 +23,7 @@ func change_params(ctx: NPCAIContext) -> NPCAIContext:
 	var total := base_damage + scaled
 	if total < 0:
 		total = 0
-	print("max_mana_red_damage_model.gd change_params() base dmg: %s, scaled dmg: %s, total: %s" % [base_damage, scaled, total])
+	#print("max_mana_red_damage_model.gd change_params() base dmg: %s, scaled dmg: %s, total: %s" % [base_damage, scaled, total])
 	# IMPORTANT: base damage only (no DMG_DEALT here)
 	ctx.params[NPCKeys.DAMAGE] = total
 	#print("max_mana_red_damage_model.gd total: ", total)
@@ -41,7 +41,7 @@ func change_params_sim(ctx: NPCAIContext) -> NPCAIContext:
 	var total := base_damage + scaled
 	if total < 0:
 		total = 0
-	print("max_mana_red_damage_model.gd change_params_sim() base dmg: %s, scaled dmg: %s, total: %s" % [base_damage, scaled, total])
+	#print("max_mana_red_damage_model.gd change_params_sim() base dmg: %s, scaled dmg: %s, total: %s" % [base_damage, scaled, total])
 	# IMPORTANT: base damage only (no DMG_DEALT here)
 	ctx.params[NPCKeys.DAMAGE] = total
 	ctx.params[NPCKeys.DAMAGE_MELEE] = total

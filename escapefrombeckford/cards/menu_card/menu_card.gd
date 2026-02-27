@@ -8,9 +8,6 @@ signal tooltip_requested(card_data: CardData)
 # Must be set by parent (Run / Shop / Collection)
 var player_data: PlayerData
 
-#func _ready() -> void:
-	#print("menu card ready")
-
 func set_card_data(new_card_data: CardData) -> void:
 	card_data = new_card_data
 	visuals.card_data = card_data
@@ -21,9 +18,6 @@ func get_description() -> String:
 	var resolved := CardResolvedTarget.new()
 	
 	var ctx := CardActionContext.new()
-	#ctx.player = player
-	#ctx.player_data = player.combatant_data
-	#ctx.battle_scene = battle_scene
 	ctx.card_data = card_data
 	ctx.resolved_target = resolved
 	

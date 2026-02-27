@@ -58,7 +58,7 @@ func _break_posture() -> void:
 
 func on_removed() -> void:
 	# Defensive cleanup for any explicit removal hooks
-	print("stability_status.gd on_removed()")
+	#print("stability_status.gd on_removed()")
 	var fighter := status_parent
 	if fighter:
 		var data := fighter.combatant_data

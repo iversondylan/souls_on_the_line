@@ -3,7 +3,6 @@
 class_name BaseState extends CardState
 
 func enter() -> void:
-	#print(usable_card.name, " entering BaseState")
 	if not usable_card.is_node_ready():
 		await  usable_card.ready
 	

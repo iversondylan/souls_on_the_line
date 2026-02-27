@@ -24,7 +24,7 @@ func activate_arcanum(ctx: ArcanumContext) -> Variant:
 			if node is Fighter:
 				enemies.push_back(node)
 			else:
-				print("unruly_pyric_wraps.gd error: node is not Fighter")
+				push_warning("unruly_pyric_wraps.gd error: node is not Fighter")
 
 		var damage_effect := DamageEffect.new()
 		damage_effect.targets = enemies

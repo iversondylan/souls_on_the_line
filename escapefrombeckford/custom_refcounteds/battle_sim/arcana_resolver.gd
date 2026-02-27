@@ -33,7 +33,7 @@ func run_proc(proc: int) -> void:
 		if proto == null:
 			push_warning("ArcanaResolverSim: missing proto for id=%s" % String(id))
 			continue
-		print("[SIM][ARCANA] -> id=%s type=%s" % [String(entry.id), Arcanum.Type.keys()[int(entry.type)]])
+		#print("[SIM][ARCANA] -> id=%s type=%s" % [String(entry.id), Arcanum.Type.keys()[int(entry.type)]])
 		ran += 1
 		var ctx := ArcanumContext.new()
 		ctx.api = host.main_api
@@ -52,7 +52,7 @@ func run_proc(proc: int) -> void:
 			push_warning("ArcanaResolverSim: arcana %s returned Signal; ignored" % String(id))
 		elif typeof(r) == TYPE_OBJECT and r != null and r.get_class() == "GDScriptFunctionState":
 			push_warning("ArcanaResolverSim: arcana %s returned FunctionState; ignored" % String(id))
-	print("[SIM][ARCANA] matched=%d" % ran)
+	#print("[SIM][ARCANA] matched=%d" % ran)
 
 
 func _proc_to_arcanum_type(proc: int) -> int:

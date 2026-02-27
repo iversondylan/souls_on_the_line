@@ -391,7 +391,7 @@ func _run_status_proc_op(target_id: int, proc_type: Status.ProcType) -> void:
 	
 	var tween := f.create_tween()
 	for s: Status in queue:
-		print("live_battle_api.gd _run_status_proc_op(): tweening a queued apply_status.bind(f) status id: ", s.get_id())
+		#print("live_battle_api.gd _run_status_proc_op(): tweening a queued apply_status.bind(f) status id: ", s.get_id())
 		tween.tween_callback(s.apply_status.bind(f))
 		tween.tween_interval(StatusGrid.STATUS_APPLY_INTERVAL) # keep your constant somewhere shared
 	#print("live_battle_api.gd _run_status_proc_op(): awaiting tween.finished...")

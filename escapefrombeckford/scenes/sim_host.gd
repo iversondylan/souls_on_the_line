@@ -134,25 +134,25 @@ func seed_arcana_from_ids(ids: Array[StringName]) -> void:
 	if main_state == null:
 		return
 
-	print("[SIM][SEED] ids=%s" % str(ids))
+	#print("[SIM][SEED] ids=%s" % str(ids))
 	main_state.arcana.clear()
 
 	for id in ids:
 		var proto := arcana_catalog.get_proto(id)
-		print("[SIM][SEED] id=%s proto=%s" % [String(id), proto])
+		#print("[SIM][SEED] id=%s proto=%s" % [String(id), proto])
 
 		if proto == null:
 			continue
 
-		print("[SIM][SEED]  -> type=%s (%d)" % [Arcanum.Type.keys()[int(proto.type)], int(proto.type)])
+		#print("[SIM][SEED]  -> type=%s (%d)" % [Arcanum.Type.keys()[int(proto.type)], int(proto.type)])
 
 		main_state.arcana.add_arcanum(id, int(proto.type))
 
 		# Immediately dump what arcana state thinks it has
-		print("[SIM][SEED]  -> after add: list_size=%d list=%s" % [
-			main_state.arcana.list.size(),
-			str(main_state.arcana.list.map(func(e): return String(e.id)))
-		])
+		#print("[SIM][SEED]  -> after add: list_size=%d list=%s" % [
+			#main_state.arcana.list.size(),
+			#str(main_state.arcana.list.map(func(e): return String(e.id)))
+		#])
 
 # -------------------------
 # Battle Commands
@@ -312,13 +312,13 @@ func add_combatant_from_data(
 		main_state.groups[FRIENDLY].player_id = combat_id
 
 	combatant_added.emit(combat_id, int(group_index), int(insert_index), false)
-	print("[SIM][BOOT] add unit id=%d (live=%d) group=%d idx=%d name=%s" % [
-		u.id,
-		int(data.combat_id),
-		group_index,
-		insert_index,
-		data.name
-	])
+	#print("[SIM][BOOT] add unit id=%d (live=%d) group=%d idx=%d name=%s" % [
+		#u.id,
+		#int(data.combat_id),
+		#group_index,
+		#insert_index,
+		#data.name
+	#])
 	return u
 
 func apply_player_card(req: CardPlayRequest) -> bool:
@@ -387,12 +387,12 @@ func _on_sim_arcana_proc_requested(proc: int, token: int) -> void:
 	if main_api != null and main_api.writer != null:
 		main_api.writer.scope_begin(Keys.SCOPE_ARCANA, "proc=%d" % int(proc), 0)
 		main_api.writer.emit_arcana_proc(proc)
-	print("[SIM][ARCANA] proc=%s token=%d player_id=%d arcana_count=%d" % [
-		TurnEngineCore.ArcanaProc.keys()[proc],
-		token,
-		int(main_state.groups[FRIENDLY].player_id) if main_state else -1,
-		main_state.arcana.list.size() if main_state else -1
-	])
+	#print("[SIM][ARCANA] proc=%s token=%d player_id=%d arcana_count=%d" % [
+		#TurnEngineCore.ArcanaProc.keys()[proc],
+		#token,
+		#int(main_state.groups[FRIENDLY].player_id) if main_state else -1,
+		#main_state.arcana.list.size() if main_state else -1
+	#])
 	if arcana_resolver == null:
 		if arcana_catalog == null:
 			push_warning("SimHost: no arcana_catalog; cannot run arcana")
@@ -474,7 +474,7 @@ func _run_arcana_headless(proc: int) -> void:
 
 func debug_dump_orders() -> void:
 	if main_state == null:
-		print("SimHost: (no main_state)")
+		push_warning("SimHost: (no main_state)")
 		return
 
 	print("SimHost main orders:")

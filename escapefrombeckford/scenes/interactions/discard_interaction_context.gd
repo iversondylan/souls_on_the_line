@@ -133,8 +133,6 @@ func _commit_selected() -> void:
 	
 
 func _on_discard_done() -> void:
-	#print("discard_interaction_context.gd _on_discard_done()")
-	#Events.hand_discard_animation_finished.disconnect(_on_discard_done)
 	Events.discard_finished.emit(discard_ctx)
 	handler.end_active_context()
 

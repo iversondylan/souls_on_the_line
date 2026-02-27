@@ -26,7 +26,6 @@ func mark_dirty(type: Modifier.Type = Modifier.Type.NO_MODIFIER) -> void:
 	_cache.erase(type)
 
 func get_resolved_modifier(type: Modifier.Type) -> ResolvedModifier:
-	print("sim_modifier_system.gd get_resolved_modifier")
 	if !_dirty.get(type, true) and _cache.has(type):
 		return _cache[type]
 
@@ -35,7 +34,6 @@ func get_resolved_modifier(type: Modifier.Type) -> ResolvedModifier:
 	# Prefer letting battle filter by type
 	var tokens : Array[ModifierToken] = battle.get_modifier_tokens_for_target(target_id, type)
 	for token in tokens:
-		print("")
 		resolved.flat += token.flat_value
 		resolved.mult *= (1.0 + token.mult_value)
 

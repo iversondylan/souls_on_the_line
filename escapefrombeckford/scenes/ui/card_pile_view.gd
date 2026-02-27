@@ -54,7 +54,6 @@ func show_current_view(new_title: String, randomized: bool = false) -> void:
 	_update_view.call_deferred(randomized)
 
 func _update_view(randomized: bool) -> void:
-	print("card_pile_view.gd _update_view()")
 	if !card_pile:
 		return
 	

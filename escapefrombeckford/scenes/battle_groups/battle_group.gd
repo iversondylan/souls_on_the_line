@@ -22,31 +22,22 @@ func reset_npc_actions() -> void:
 			child.current_action = null
 
 func end_turn() -> void:
-	print("battle_group.gd end_turn()")
 	if self is BattleGroupEnemy:
 		Events.request_friendly_turn.emit()
 	elif self is BattleGroupFriendly:
 		Events.request_enemy_turn.emit()
 
 func my_turn_start() -> void:
-	print("battle_group.gd my_turn_start called but is unhooked")
-	#for fighter: Fighter in get_combatants():
-		#fighter.my_group_turn_start()
+	push_warning("battle_group.gd my_turn_start called but is unhooked")
 
 func opposing_turn_start() -> void:
-	print("battle_group.gd opposing_turn_start called but is unhooked")
-	#for fighter: Fighter in get_combatants():
-		#fighter.opposing_group_turn_start()
+	push_warning("battle_group.gd opposing_turn_start called but is unhooked")
 
 func my_turn_end() -> void:
-	print("battle_group.gd my_turn_end called but is unhooked")
-	#for fighter: Fighter in get_combatants():
-		#fighter.my_group_turn_end()
+	push_warning("battle_group.gd my_turn_end called but is unhooked")
 
 func opposing_turn_end() -> void:
-	print("battle_group.gd opposing_turn_end called but is unhooked")
-	#for fighter: Fighter in get_combatants():
-		#fighter.opposing_group_turn_end()
+	push_warning("battle_group.gd opposing_turn_end called but is unhooked")
 
 func get_combatants(allow_dead: bool = false) -> Array[Fighter]:
 	var combatants: Array[Fighter] = []
@@ -311,12 +302,6 @@ func _swap(actor: Fighter, target: Fighter) -> void:
 	else:
 		# actor moved backward, target index unchanged
 		move_child(target, a_idx)
-	#print("SWAP result: actor idx=", actor.get_index(),
-		#" target idx=", target.get_index())
-	
-	#print("ORDER AFTER SWAP:")
-	#for f in get_combatants(false):
-		#print("\tidx=", f.get_index(), " name=", f.name, " id=", f.combat_id, " x=", snappedf(f.global_position.x, 0.1))
 
 func _should_rebuild_from_scratch(
 	before_acting: Array[Fighter],

@@ -61,7 +61,7 @@ func add_unit(u: CombatantState, group_index: int, insert_index: int = -1) -> vo
 
 func alloc_id() -> int:
 	var id := _next_sim_id
-	print("[SIM][ID] alloc -> ", id)
+	#print("[SIM][ID] alloc -> ", id)
 	_next_sim_id += 1
 	return id
 
@@ -92,8 +92,8 @@ func get_front_id(group_index: int) -> int:
 
 # battle_state.gd (additions)
 
-func get_modifier_tokens_for_cid(target_id: int) -> Array[ModifierToken]:
-	print("battle_state.gd get_modifier_tokens_for_cid() cid: ", target_id)
+func get_modifier_tokens_for_cid(target_id: int, mod_type: Modifier.Type) -> Array[ModifierToken]:
+	#print("battle_state.gd get_modifier_tokens_for_cid() cid: ", target_id)
 	var tokens: Array[ModifierToken] = []
 
 	# 0) Battle-level globals (arcana, relic-like systems, etc.)
@@ -109,9 +109,9 @@ func get_modifier_tokens_for_cid(target_id: int) -> Array[ModifierToken]:
 		var same_team := _same_team(int(source_id), target_id)
 		
 		# 1a) Status tokens (produced by status protos via StatusCatalog)
-		var source_tokens := _get_status_tokens_for_source(int(source_id))
+		var source_tokens := _get_status_tokens_for_source(int(source_id), mod_type)
 		for token in source_tokens:
-			print("looking at a token: ", token.owner_id)
+			#print("looking at a token: ", token.owner_id)
 			if !token:
 				continue
 			
@@ -127,7 +127,7 @@ func get_modifier_tokens_for_cid(target_id: int) -> Array[ModifierToken]:
 				ModifierToken.Scope.SELF:
 					# Applies only to the source itself
 					if int(source_id) == target_id:
-						print("battle_state.gd get_modifier_tokens_for_cid() appending token source: %s, owner: %s" % [token.source_id, token.owner_id])
+						#print("battle_state.gd get_modifier_tokens_for_cid() appending token source: %s, owner: %s" % [token.source_id, token.owner_id])
 						tokens.append(token)
 				
 				ModifierToken.Scope.TARGET:
@@ -147,40 +147,31 @@ func get_modifier_tokens_for_cid(target_id: int) -> Array[ModifierToken]:
 
 	return tokens
 
-func _get_status_tokens_for_source(source_id: int) -> Array[ModifierToken]:
-	print("battle_state.gd _get_status_tokens_for_source()")
+func _get_status_tokens_for_source(source_id: int, mod_type: Modifier.Type) -> Array[ModifierToken]:
+	#print("battle_state.gd _get_status_tokens_for_source()")
 	var out: Array[ModifierToken] = []
 	var u: CombatantState = units.get(source_id, null)
 	if !u or !status_catalog:
 		return out
 
 	for id_key in u.statuses.by_id.keys():
-		print("looking at a status: ", id_key)
 		var stack: StatusStack = u.statuses.by_id[id_key]
 		var id_strn := StringName(id_key)
-		
 		var proto: Status = status_catalog.get_proto(id_strn)
 		if !proto:
-			print("there's no proto")
+			push_warning("there's no proto")
 			continue
-		proto.intensity = stack.stacks
-		proto.duration = stack.duration
-		print("StatusStack stacks: %s, duration: %s" % [stack.stacks, stack.duration])
-		# Build token ctx from STATE (NOT from resource fields)
+		if mod_type not in proto.get_contributed_modifier_types():
+			continue
 		var ctx := StatusTokenContext.new()#proto.make_token_ctx_state({}, source_id)
-		ctx.owner_id = source_id
 		ctx.duration = stack.duration
 		ctx.intensity = stack.stacks
-		# Respect expiry for DURATION policy
-		if proto.expiration_policy == Status.ExpirationPolicy.DURATION and proto.duration <= 0:
-			print("it's expired")
+		ctx.owner_id = source_id
+		if proto.expiration_policy == Status.ExpirationPolicy.DURATION and stack.duration <= 0:
 			continue
-		print("not expired")
 		if proto.contributes_modifier():
 			var tokens: Array[ModifierToken] = proto.get_modifier_tokens(ctx)
-			print("trying to append tokens: ", tokens)
 			out.append_array(tokens)
-	print("out: ", out)
 	return out
 
 func _get_arcana_tokens_for(target_id: int) -> Array[ModifierToken]:
@@ -222,10 +213,10 @@ func clone() -> BattleState:
 
 func debug_dump_events(last_n: int = 20) -> void:
 	if events == null:
-		print("BattleState: no events")
+		#print("BattleState: no events")
 		return
 	var n := events.size()
 	var start := maxi(n - last_n, 0)
 	for i in range(start, n):
 		var e := events.get_event(i)
-		print("battle_state.gd debug_dump_events() seq=%d type=%d scope=%d kind=%s data=%s" % [e.seq, e.type, e.scope_id, String(e.scope_kind), str(e.data)])
+		#print("battle_state.gd debug_dump_events() seq=%d type=%d scope=%d kind=%s data=%s" % [e.seq, e.type, e.scope_id, String(e.scope_kind), str(e.data)])

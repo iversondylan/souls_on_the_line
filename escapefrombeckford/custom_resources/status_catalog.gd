@@ -18,5 +18,5 @@ func build_index() -> void:
 func get_proto(id: StringName) -> Status:
 	
 	var proto: Status = by_id.get(id, null)
-	print("status_catalog.gd get_proto() status is ", proto.get_id() if proto else &"NULL STATUS")
+	#print("status_catalog.gd get_proto() status is ", proto.get_id() if proto else &"NULL STATUS")
 	return proto

@@ -524,7 +524,7 @@ func _start_impact_delay() -> void:
 func _finish_action() -> void:
 	
 	var fighter := action_ctx.combatant
-	print("npcai_behavior.gd _finish_action() name: ", fighter.name, " cid: ", fighter.combat_id)
+	#print("npcai_behavior.gd _finish_action() name: ", fighter.name, " cid: ", fighter.combat_id)
 	if fighter and fighter.state and fighter.state.ai_state:
 		fighter.state.ai_state[KEY_PLANNED_IDX] = -1
 	current_action = null

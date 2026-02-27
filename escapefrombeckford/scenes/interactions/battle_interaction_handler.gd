@@ -191,18 +191,13 @@ func on_prompt_button_pressed() -> void:
 
 
 func _cancel_active() -> void:
-	print("battle_interaction_handler.gd _cancel_active()")
 	if active == null:
 		return
-	print("...1")
 	# Give context a chance to clean up previews, etc.
 	if active.has_method("on_cancel"):
-		print("...2")
 		active.on_primary()
-	print("...3")
 	# If context didn't end itself, end it here.
 	if active != null:
-		print("...4")
 		end_active_context()
 
 func on_request_swap_partner(card: UsableCard, ctx: CardActionContext, actor: Fighter, skip_action: CardAction) -> void:

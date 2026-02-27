@@ -407,9 +407,9 @@ static func resolve_damage_live(api: BattleAPI, ctx: DamageContext) -> void:
 		return
 	
 	
-	print("DAMAGE ctx.amount=", ctx.amount, " params_keys=", (ctx.params.keys() if ctx.params else null))
-	print("has StringName? ", (ctx.params.has(NPCKeys.DAMAGE) if ctx.params else false),
-		" has String? ", (ctx.params.has(String(NPCKeys.DAMAGE)) if ctx.params else false))
+	#print("DAMAGE ctx.amount=", ctx.amount, " params_keys=", (ctx.params.keys() if ctx.params else null))
+	#print("has StringName? ", (ctx.params.has(NPCKeys.DAMAGE) if ctx.params else false),
+		#" has String? ", (ctx.params.has(String(NPCKeys.DAMAGE)) if ctx.params else false))
 	# Determine raw base damage
 	# Prefer ctx.amount / ctx.base_amount if you have them; otherwise use ctx.params.
 	var base := 0

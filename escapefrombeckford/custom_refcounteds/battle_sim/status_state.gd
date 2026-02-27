@@ -13,7 +13,7 @@ func get_status_stack(id: StringName) -> StatusStack:
 	return by_id.get(id, null)
 
 func add_or_reapply(id: StringName, stacks_delta: int, duration: int = 0) -> void:
-	print("status_state.gd add_or_reapply() id: %s, stacks: %s, duration: %s" % [id, stacks_delta, duration])
+	#print("status_state.gd add_or_reapply() id: %s, stacks: %s, duration: %s" % [id, stacks_delta, duration])
 	if id == &"":
 		return
 	
@@ -30,7 +30,7 @@ func add_or_reapply(id: StringName, stacks_delta: int, duration: int = 0) -> voi
 			s.duration = max(s.duration + duration, 0)
 		#if s.stacks <= 0:
 			#by_id.erase(id)
-	print("status_state.gd add_or_reapply() stack stacks: %s, duration: %s" % [by_id[id].stacks, by_id[id].duration])
+	#print("status_state.gd add_or_reapply() stack stacks: %s, duration: %s" % [by_id[id].stacks, by_id[id].duration])
 
 func remove(id: StringName, remove_all: bool = true, stacks_delta: int = 1) -> void:
 	if !by_id.has(id):

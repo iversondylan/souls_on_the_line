@@ -73,7 +73,7 @@ static func get_target_ids(api: BattleAPI, attacker_id: int, params: Dictionary)
 
 
 static func _get_base_target_ids(api: BattleAPI, attacker_id: int, params: Dictionary) -> Array[int]:
-	print("attack_targeting.gd _get_base_target_ids() attacker_id: %s, params: %s" % [attacker_id, params])
+	#print("attack_targeting.gd _get_base_target_ids() attacker_id: %s, params: %s" % [attacker_id, params])
 	var target_type := String(params.get(NPCKeys.TARGET_TYPE, NPCAttackSequence.TARGET_STANDARD))
 
 	match target_type:

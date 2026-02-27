@@ -159,7 +159,7 @@ func _finish(ctx: NPCAIContext) -> void:
 		f.info_visible(true)
 
 func _apply_damage(ctx: NPCAIContext, targets: Array[Fighter], base_dmg: int, impact_sound: Resource) -> void:
-	print("npc_attack_sequence.gd _apply_damage() source: ", ctx.combatant.name, ", base_dmg: ", base_dmg)
+	#print("npc_attack_sequence.gd _apply_damage() source: ", ctx.combatant.name, ", base_dmg: ", base_dmg)
 	var dmg_effect := DamageEffect.new()
 	dmg_effect.targets = targets
 	dmg_effect.n_damage = base_dmg

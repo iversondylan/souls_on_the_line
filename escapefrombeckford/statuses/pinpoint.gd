@@ -9,7 +9,7 @@ func get_id() -> StringName:
 	return ID
 
 func get_modifier_tokens(ctx: StatusTokenContext) -> Array[ModifierToken]:
-	print("pinpoint.gd get_modifier_tokens()")
+	#print("pinpoint.gd get_modifier_tokens()")
 	if !ctx:
 		return []
 
@@ -26,7 +26,7 @@ func get_modifier_tokens(ctx: StatusTokenContext) -> Array[ModifierToken]:
 	token.tags = [ID]
 
 	Status.set_token_owner(token, ctx)
-	print("pinpoint.gd token.mult_value ", token.mult_value)
+	#print("pinpoint.gd token.mult_value ", token.mult_value)
 	return [token]
 
 ##Must return true if this status contributes a numerical modifier.

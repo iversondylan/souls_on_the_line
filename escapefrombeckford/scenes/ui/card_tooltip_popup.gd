@@ -17,7 +17,6 @@ func _ready() -> void:
 	background.color = background_color
 
 func show_tooltip(card: CardData) -> void:
-	print("card_tooltip_popup.gd show_tooltip()")
 	var new_card := MENU_CARD_SCENE.instantiate() as MenuCard
 	tooltip_card_container.add_child(new_card)
 	new_card.card_data = card
