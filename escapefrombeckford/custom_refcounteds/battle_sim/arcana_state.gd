@@ -15,7 +15,7 @@ class ArcanumEntry extends RefCounted:
 	var type: int # Arcanum.Type enum int
 	var charges: int = 0
 	var cooldown: int = 0
-	var data: Dictionary = {} # arbitrary per-arcanum state (stacks, flags, etc.)
+	var data: Dictionary = {} # arbitrary per-arcanum state (intensity, flags, etc.)
 
 	func _init(_id: StringName = &"", _type: int = -1) -> void:
 		id = _id

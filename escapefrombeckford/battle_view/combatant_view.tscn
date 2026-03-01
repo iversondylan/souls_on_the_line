@@ -25,7 +25,7 @@ size = Vector2(1200, 270)
 font_size = 25
 font_color = Color(0.47967, 0.346496, 0.233082, 1)
 
-[node name="Combatant" type="Node2D" unique_id=859325072]
+[node name="CombatantView" type="Node2D" unique_id=859325072]
 script = ExtResource("1_rluy7")
 
 [node name="PendingTurnGlow" type="Sprite2D" parent="." unique_id=511405662]
@@ -36,7 +36,7 @@ scale = Vector2(0.5222222, 0.31111112)
 texture = ExtResource("2_c2uom")
 
 [node name="CharacterArt" type="Sprite2D" parent="." unique_id=1924670836]
-modulate = Color(0.38, 0.64866674, 1, 1)
+modulate = Color(1, 1, 1, 0.4745098)
 position = Vector2(0, -135)
 scale = Vector2(2.69, 2.69)
 texture = ExtResource("3_0po12")

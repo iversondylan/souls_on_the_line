@@ -7,7 +7,6 @@
 [ext_resource type="PackedScene" uid="uid://co7q6uigpt8n4" path="res://scenes/battle_resolution_runner.tscn" id="4_kl6ie"]
 [ext_resource type="Script" uid="uid://cyefuqg3i2y7o" path="res://battle_view/battle_view.gd" id="4_lv4so"]
 [ext_resource type="Texture2D" uid="uid://jml4obgrdfeg" path="res://assets/backgrounds/flat-forestred-dark.png" id="4_yhk5m"]
-[ext_resource type="Script" uid="uid://chqthfo2t83me" path="res://battle_view/group_view.gd" id="5_eivww"]
 [ext_resource type="PackedScene" uid="uid://gmxev02ltcly" path="res://scenes/battle_groups/battle_group_friendly.tscn" id="5_n2clt"]
 [ext_resource type="PackedScene" uid="uid://0jk65n5vl1s7" path="res://scenes/battle_groups/battle_group_enemy.tscn" id="6_xn15y"]
 [ext_resource type="Script" uid="uid://b4bb2s8x838ip" path="res://scenes/battle_scene_area_left.gd" id="7_rgwlw"]
@@ -41,17 +40,7 @@ music = ExtResource("2_3b6xh")
 script = ExtResource("3_1m01a")
 
 [node name="BattleView" type="Node2D" parent="." unique_id=1276052910]
-z_index = 1
 script = ExtResource("4_lv4so")
-
-[node name="Group0" type="Node2D" parent="BattleView" unique_id=479709658]
-position = Vector2(519, 532)
-script = ExtResource("5_eivww")
-
-[node name="Group1" type="Node2D" parent="BattleView" unique_id=1978793079]
-position = Vector2(1333, 463)
-script = ExtResource("5_eivww")
-faces_right = false
 
 [node name="Battle_Scene" type="Node2D" parent="." unique_id=862417419 groups=["battle_scene"]]
 script = ExtResource("3_lcn8m")

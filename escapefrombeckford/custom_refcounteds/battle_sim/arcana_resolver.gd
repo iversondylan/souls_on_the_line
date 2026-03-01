@@ -19,6 +19,7 @@ func run_proc(proc: int) -> void:
 	if arcanum_type < 0:
 		return
 	var ran := 0
+	var writer : BattleEventWriter = host.main_api.writer
 	for entry: ArcanaState.ArcanumEntry in host.main_state.arcana.list:
 		if entry == null:
 			continue
@@ -35,6 +36,19 @@ func run_proc(proc: int) -> void:
 			continue
 		#print("[SIM][ARCANA] -> id=%s type=%s" % [String(entry.id), Arcanum.Type.keys()[int(entry.type)]])
 		ran += 1
+		
+		# if ("writer" in host.main_api) else null
+		#var scope_id := 0
+		if writer != null:# and writer.has_method("begin_scope"):
+			# actor_id: usually player_id for friendly-owned arcana; keep consistent with your earlier ctx params
+			var player_id := int(host.main_state.groups[0].player_id)
+			writer.scope_begin(
+				Scope.Kind.ARCANUM,
+				"id=%s" % String(id),
+				player_id,
+				{}
+			)
+		
 		var ctx := ArcanumContext.new()
 		ctx.api = host.main_api
 		
@@ -52,7 +66,8 @@ func run_proc(proc: int) -> void:
 			push_warning("ArcanaResolverSim: arcana %s returned Signal; ignored" % String(id))
 		elif typeof(r) == TYPE_OBJECT and r != null and r.get_class() == "GDScriptFunctionState":
 			push_warning("ArcanaResolverSim: arcana %s returned FunctionState; ignored" % String(id))
-	#print("[SIM][ARCANA] matched=%d" % ran)
+		if writer != null:# and writer.has_method("end_scope") and scope_id != 0:
+			writer.scope_end()
 
 
 func _proc_to_arcanum_type(proc: int) -> int:

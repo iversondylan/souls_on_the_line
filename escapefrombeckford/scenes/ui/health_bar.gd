@@ -18,6 +18,10 @@ func update_health(combatant_data: CombatantData) -> void:
 	max_health = combatant_data.max_health
 	health = combatant_data.health
 
+func update_health_view(_max_health: int, _health: int) -> void:
+	max_health = _max_health
+	health = _health
+
 func _set_max_health(new_health: int) -> void:
 	max_health = new_health
 	health_bar.max_value = max_health

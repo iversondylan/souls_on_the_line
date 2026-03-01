@@ -2,13 +2,13 @@
 
 class_name BattleEventDirector extends RefCounted
 
-var _view: BattleView
+var battle_view: BattleView
 
-func bind(view: BattleView) -> void:
-	_view = view
+func bind(new_battle_view: BattleView) -> void:
+	battle_view = new_battle_view
 
 func on_event(e: BattleEvent) -> void:
-	if e == null or _view == null:
+	if e == null or battle_view == null:
 		return
 
 	match int(e.type):
@@ -28,6 +28,8 @@ func on_event(e: BattleEvent) -> void:
 			_on_status_applied(e)
 		BattleEvent.Type.STATUS_REMOVED:
 			_on_status_removed(e)
+		BattleEvent.Type.DIED:
+			_on_died(e)
 		BattleEvent.Type.SCOPE_BEGIN:
 			_on_scope_begin(e)
 		BattleEvent.Type.SCOPE_END:
@@ -37,62 +39,66 @@ func on_event(e: BattleEvent) -> void:
 			pass
 
 func _on_spawned(e: BattleEvent) -> void:
-	var cid := int(e.data.get(&"spawned_id", 0))
+	var cid := int(e.data.get(Keys.SPAWNED_ID, 0))
 	var g := int(e.data.get(Keys.GROUP_INDEX, e.group_index))
 	var idx := int(e.data.get(Keys.INSERT_INDEX, -1))
-
-	var v := _view.get_or_create_combatant_view(cid, g, idx)
+	var after_ids : PackedInt32Array = e.data.get(Keys.AFTER_ORDER_IDS, PackedInt32Array())
+	print("battle_event_director.gd _on_spawned() cid: %s, group: %s, ind: %s" % [cid, g, idx])
+	var v := battle_view.get_or_create_combatant_view(cid, g, idx)
 	if v == null:
 		return
-
+	
 	var spec: Dictionary = e.data.get(Keys.SUMMON_SPEC, {})
-	# You’re using SPAWNED spec key &"spec"; keep flexible:
-	if e.data.has(&"spec"):
-		spec = e.data[&"spec"]
-
+	
 	v.apply_spawn_spec(spec)
+	battle_view.set_group_order(g, after_ids)
 
 func _on_summoned(e: BattleEvent) -> void:
+	
 	var cid := int(e.data.get(Keys.SUMMONED_ID, 0))
 	var g := int(e.data.get(Keys.GROUP_INDEX, e.group_index))
 	var idx := int(e.data.get(Keys.INSERT_INDEX, -1))
-
-	var v := _view.get_or_create_combatant_view(cid, g, idx)
-	if v == null:
+	var after_ids : PackedInt32Array = e.data.get(Keys.AFTER_ORDER_IDS, PackedInt32Array())
+	print("battle_event_director.gd _on_summoned() cid: %s, group: %s, ind: %s" % [cid, g, idx])
+	var combatant := battle_view.get_or_create_combatant_view(cid, g, idx)
+	if combatant == null:
 		return
-
+	
 	var spec: Dictionary = e.data.get(Keys.SUMMON_SPEC, {})
-	v.apply_spawn_spec(spec)
-	v.play_summon_fx()
+	combatant.apply_spawn_spec(spec)
+	combatant.play_summon_fx()
+	battle_view.set_group_order(g, after_ids)
 
 func _on_formation_set(e: BattleEvent) -> void:
 	# Your payload: {player_id, group_0, group_1}
-	var g0: Array = e.data.get(&"group_0", [])
-	var g1: Array = e.data.get(&"group_1", [])
-
-	_view.set_group_order(0, g0)
-	_view.set_group_order(1, g1)
+	var g0: Array = e.data.get(Keys.GROUP_0, [])
+	var g1: Array = e.data.get(Keys.GROUP_1, [])
+	print("battle_event_director.gd _on_formation_set() g0: %s, g1: %s" % [g0, g1])
+	battle_view.set_group_order(0, g0)
+	battle_view.set_group_order(1, g1)
 
 func _on_moved(e: BattleEvent) -> void:
 	# Current moved event stores before/after orders.
-	var after_ids := e.data.get(Keys.AFTER_ORDER_IDS, PackedInt32Array())
+	var after_ids : PackedInt32Array = e.data.get(Keys.AFTER_ORDER_IDS, PackedInt32Array())
 	var g := int(e.group_index)
+	print("battle_event_director.gd _on_moved() after_ids: %s, g: %s" % [after_ids, g])
 	if after_ids is PackedInt32Array:
 		var arr: Array = []
 		arr.resize(after_ids.size())
 		for i in range(after_ids.size()):
 			arr[i] = int(after_ids[i])
-		_view.set_group_order(g, arr)
+		battle_view.set_group_order(g, arr)
 
 func _on_targeted(e: BattleEvent) -> void:
 	var src := int(e.data.get(Keys.SOURCE_ID, 0))
 	var targets: Array = e.data.get(Keys.TARGET_IDS, [])
-	var src_view := _view.get_view(src)
-	if src_view != null:
-		src_view.play_targeting()
-
+	var combatant := battle_view.get_combatant(src)
+	print("battle_event_director.gd _on_targeted() src: %s, targets: %s" % [src, targets])
+	if combatant != null:
+		combatant.play_targeting()
+	
 	for tid in targets:
-		var tv := _view.get_view(int(tid))
+		var tv := battle_view.get_combatant(int(tid))
 		if tv != null:
 			tv.show_targeted(true)
 
@@ -100,33 +106,57 @@ func _on_damage_applied(e: BattleEvent) -> void:
 	var src := int(e.data.get(Keys.SOURCE_ID, 0))
 	var tid := int(e.data.get(Keys.TARGET_ID, 0))
 	var amount := int(e.data.get(Keys.FINAL_AMOUNT, 0))
+	var lethal := bool(e.data.get(Keys.WAS_LETHAL, false))
+	var target_combatant := battle_view.get_combatant(tid)
+	print("battle_event_director.gd _on_damage_applied() src: %s, tid: %s, amount: %s" % [src, tid, amount])
+	if target_combatant != null:
+		target_combatant.play_hit()
+		target_combatant.apply_damage(amount, 0, lethal)
+		target_combatant.pop_damage_number(amount)
 
-	var target_view := _view.get_view(tid)
-	if target_view != null:
-		target_view.play_hit()
-		target_view.pop_damage_number(amount)
-
-	var src_view := _view.get_view(src)
-	if src_view != null:
-		src_view.play_attack_react()
+	#var combatant := battle_view.get_combatant(src)
+	#if combatant != null:
+		#combatant.apply_damage(amount, 0, lethal)
+		#combatant.play_attack_react()
 
 func _on_status_applied(e: BattleEvent) -> void:
 	var tid := int(e.data.get(Keys.TARGET_ID, 0))
-	var status_id := e.data.get(Keys.STATUS_ID, &"")
-	var tv := _view.get_view(tid)
-	if tv != null:
-		tv.add_status_icon(status_id)
+	var status_id : StringName = e.data.get(Keys.STATUS_ID, &"")
+	var target_combatant := battle_view.get_combatant(tid)
+	print("battle_event_director.gd _on_status_applied() tid: %s, status_id: %s" % [tid, status_id])
+	if target_combatant != null:
+		target_combatant.add_status_icon(status_id)
 
 func _on_status_removed(e: BattleEvent) -> void:
 	var tid := int(e.data.get(Keys.TARGET_ID, 0))
-	var status_id := e.data.get(Keys.STATUS_ID, &"")
-	var tv := _view.get_view(tid)
-	if tv != null:
-		tv.remove_status_icon(status_id)
+	var status_id : StringName = e.data.get(Keys.STATUS_ID, &"")
+	var target_combatant := battle_view.get_combatant(tid)
+	print("battle_event_director.gd _on_status_removed() tid: %s, status_id: %s" % [tid, status_id])
+	if target_combatant != null:
+		target_combatant.remove_status_icon(status_id)
+
+func _on_died(e: BattleEvent) -> void:
+	pass
 
 func _on_scope_begin(_e: BattleEvent) -> void:
+	print("battle_event_director.gd _on_scope_begin()")
 	# Later: update “phase title”, camera focus, etc.
 	pass
 
 func _on_scope_end(_e: BattleEvent) -> void:
+	print("battle_event_director.gd _on_scope_end()")
 	pass
+
+# entry point: play one beat.
+# For now it just dispatches instantly, but this is to add awaits.
+func play_beat(beat: Array[BattleEvent]) -> void:
+	if battle_view == null or beat.is_empty():
+		return
+
+	# Optional: you can peek the root scope kind to choose a pacing preset
+	# var root := beat[0]
+	# var kind := int(root.scope_kind)
+
+	for e in beat:
+		on_event(e)
+# Later I’ll convert this to: # func play_beat(beat): await _view.fx.play_hit(); etc.

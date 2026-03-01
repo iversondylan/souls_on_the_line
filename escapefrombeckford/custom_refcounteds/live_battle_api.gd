@@ -355,7 +355,7 @@ func _run_remove_status_op(ctx: RemoveStatusContext) -> void:
 	# Example:
 	var removed_count := 0
 	if f.status_system.has_method("remove_status"):
-		removed_count = f.status_system.remove_status(ctx.status_id, ctx.remove_all_stacks)
+		removed_count = f.status_system.remove_status(ctx.status_id, ctx.remove_all_intensity)
 	elif f.status_system.has_method("remove_status_by_id"):
 		# fallback for your older name
 		removed_count = f.status_system.remove_status_by_id(String(ctx.status_id))

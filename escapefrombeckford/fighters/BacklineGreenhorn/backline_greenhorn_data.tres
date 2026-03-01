@@ -14,6 +14,7 @@ metadata/_custom_type_script = "uid://csljslxfgnidf"
 script = ExtResource("3_8cg22")
 name = "Backline Greenhorn"
 character_art = ExtResource("2_yg3uk")
+character_art_uid = "uid://dtvvequ1w1dlu"
 facing_right = false
 height = 270
 color_tint = Color(0.34310004, 0.73, 0.37534165, 1)

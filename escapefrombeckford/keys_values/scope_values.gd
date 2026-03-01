@@ -14,6 +14,7 @@ enum Kind {
 	SUMMON,
 	MOVE,
 	ARCANA,
+	ARCANUM,
 	STRIKE,
 	HIT
 }

@@ -11,7 +11,7 @@ var target_id: int = 0
 var status_id: StringName
 
 # optional behavior flags
-var remove_all_stacks: bool = false
+var remove_all_intensity: bool = false
 
 # results
 var removed: bool = false

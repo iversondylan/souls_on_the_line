@@ -89,6 +89,10 @@ const ARMOR := &"armor"
 const MAX_MANA := &"max_mana"
 const APR := &"apr"
 const APM := &"apm"
+const ART_UID := &"art_uid"
+const ART_FACES_RIGHT := &"art_faces_right"
+const HEIGHT := &"height"
+const COLOR_TINT := &"color_tint"
 const PROTO_PATH := &"proto_path"
 
 # Card mutated
@@ -97,7 +101,7 @@ const DELTA := &"delta"
 
 # Status
 const STATUS_ID := &"status_id"
-const STACKS_DELTA := &"stacks_delta"
+const INTENSITY := &"intensity"
 const DURATION := &"duration"
 const REMOVED_ALL := &"removed_all"
 

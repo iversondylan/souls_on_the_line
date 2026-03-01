@@ -8,8 +8,10 @@ signal combatant_data_changed()
 @export var name: String = "error"
 @export_multiline var description: String
 @export var character_art: Texture2D
+@export var character_art_uid: String
 @export var portrait: Texture2D
-@export var character_scale: float = 1
+@export var portrait_art_uid: String
+#@export var character_scale: float = 1
 @export var facing_right: bool = true
 @export var height: int = 365
 @export var color_tint: Color = Color.WHITE

@@ -164,7 +164,7 @@ func _get_status_tokens_for_source(source_id: int, mod_type: Modifier.Type) -> A
 			continue
 		var ctx := StatusTokenContext.new()#proto.make_token_ctx_state({}, source_id)
 		ctx.duration = stack.duration
-		ctx.intensity = stack.stacks
+		ctx.intensity = stack.intensity
 		ctx.owner_id = source_id
 		if proto.expiration_policy == Status.ExpirationPolicy.DURATION and stack.duration <= 0:
 			continue

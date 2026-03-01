@@ -106,6 +106,9 @@ func end_setup() -> void:
 	main_api.writer.emit_formation_set(main_state.groups[0].order.duplicate(), main_state.groups[1].order.duplicate(), main_state.groups[0].player_id)
 	main_api.writer.scope_end() # setup
 
+func get_event_log() -> BattleEventLog:
+	return main_state.events
+
 func seed_arcana_from_ids(ids: Array[StringName]) -> void:
 	if main_state == null:
 		return
@@ -253,49 +256,6 @@ func is_player(combat_id: int) -> bool:
 
 func add_combatant_from_data(data: CombatantData, group_index: int, insert_index: int = -1, is_player := false) -> int:
 	return main_api.spawn_from_data(data, group_index, insert_index, is_player)
-#func add_combatant_from_data(
-	#data: CombatantData,
-	#group_index: int,
-	#insert_index: int,
-	#is_player: bool = false
-#) -> CombatantState:
-	#ensure_initialized()
-#
-	#if data == null:
-		#push_warning("SimHost.add_combatant_from_data: data is null")
-		#return null
-#
-	#var combat_id := main_state.alloc_id()
-	#if combat_id <= 0:
-		#push_warning("SimHost.add_combatant_from_data: data.combat_id must be > 0 (got %s)" % combat_id)
-		#return null
-#
-	## Don’t “ensure” alignment, just detect & warn.
-	#if main_state.has_unit(combat_id):
-		#push_warning("SimHost.add_combatant_from_data: duplicate id %s (data=%s)" % [combat_id, data.resource_path])
-		#return main_state.get_unit(combat_id)
-#
-	#var u := CombatantState.new()
-	#u.id = combat_id
-	#u.init_from_combatant_data(data)
-#
-	#if data.resource_path != "":
-		#u.data_proto_path = String(data.resource_path)
-#
-	#main_state.add_unit(u, int(group_index), int(insert_index))
-#
-	#if is_player:
-		#main_state.groups[FRIENDLY].player_id = combat_id
-#
-	#combatant_added.emit(combat_id, int(group_index), int(insert_index), false)
-	##print("[SIM][BOOT] add unit id=%d (live=%d) group=%d idx=%d name=%s" % [
-		##u.id,
-		##int(data.combat_id),
-		##group_index,
-		##insert_index,
-		##data.name
-	##])
-	#return u
 
 func apply_player_card(req: CardPlayRequest) -> bool:
 	ensure_initialized()
@@ -393,56 +353,56 @@ func _proc_to_arcanum_type(proc: int) -> int:
 		_:
 			return -1
 
-func _run_arcana_headless(proc: int) -> void:
-	if main_state == null or main_api == null:
-		return
-	if arcana_catalog == null:
-		push_warning("SimHost._run_arcana_headless: arcana_catalog is null")
-		return
-
-	var arcanum_type := _proc_to_arcanum_type(proc)
-	if arcanum_type == -1:
-		return
-
-	# Deterministic: iterate the ArcanaState ordered list
-	for entry: ArcanaState.ArcanumEntry in main_state.arcana.list:
-		if entry == null:
-			continue
-		if int(entry.type) != arcanum_type:
-			continue
-
-		var id := entry.id
-		if id == &"":
-			continue
-
-		var proto: Arcanum = arcana_catalog.get_proto(id)
-		if proto == null:
-			push_warning("SimHost._run_arcana_headless: missing proto for id=%s" % String(id))
-			continue
-
-		var ctx := ArcanumContext.new()
-		ctx.api = main_api
-		ctx.api = main_api
-		ctx.params = {}
-		ctx.params[Keys.MODE] = Keys.MODE_SIM
-		ctx.params[Keys.SOURCE_ID] = int(main_state.groups[FRIENDLY].player_id)
-		# ctx.battle_scene = null (headless)
-		# ctx.player = null (headless) unless you add a sim player handle
-		# ctx.arcanum_display = null (headless)
-
-		# Optional: if you want arcana to know it’s a forecast/sim.
-		# ctx.forecast = false
-		
-		
-		
-		## What class should this be? Can't be inferred.
-		var r = proto.activate_arcanum(ctx)
-
-		# Headless policy: warn if arcana tries to async.
-		if r is Signal and !(r as Signal).is_null():
-			push_warning("Sim arcana %s returned Signal; ignoring in headless." % String(id))
-		elif typeof(r) == TYPE_OBJECT and r != null and r.get_class() == "GDScriptFunctionState":
-			push_warning("Sim arcana %s returned FunctionState; ignoring in headless." % String(id))
+#func _run_arcana_headless(proc: int) -> void:
+	#if main_state == null or main_api == null:
+		#return
+	#if arcana_catalog == null:
+		#push_warning("SimHost._run_arcana_headless: arcana_catalog is null")
+		#return
+#
+	#var arcanum_type := _proc_to_arcanum_type(proc)
+	#if arcanum_type == -1:
+		#return
+#
+	## Deterministic: iterate the ArcanaState ordered list
+	#for entry: ArcanaState.ArcanumEntry in main_state.arcana.list:
+		#if entry == null:
+			#continue
+		#if int(entry.type) != arcanum_type:
+			#continue
+#
+		#var id := entry.id
+		#if id == &"":
+			#continue
+#
+		#var proto: Arcanum = arcana_catalog.get_proto(id)
+		#if proto == null:
+			#push_warning("SimHost._run_arcana_headless: missing proto for id=%s" % String(id))
+			#continue
+#
+		#var ctx := ArcanumContext.new()
+		#ctx.api = main_api
+		#ctx.api = main_api
+		#ctx.params = {}
+		#ctx.params[Keys.MODE] = Keys.MODE_SIM
+		#ctx.params[Keys.SOURCE_ID] = int(main_state.groups[FRIENDLY].player_id)
+		## ctx.battle_scene = null (headless)
+		## ctx.player = null (headless) unless you add a sim player handle
+		## ctx.arcanum_display = null (headless)
+#
+		## Optional: if you want arcana to know it’s a forecast/sim.
+		## ctx.forecast = false
+		#
+		#
+		#
+		### What class should this be? Can't be inferred.
+		#var r = proto.activate_arcanum(ctx)
+#
+		## Headless policy: warn if arcana tries to async.
+		#if r is Signal and !(r as Signal).is_null():
+			#push_warning("Sim arcana %s returned Signal; ignoring in headless." % String(id))
+		#elif typeof(r) == TYPE_OBJECT and r != null and r.get_class() == "GDScriptFunctionState":
+			#push_warning("Sim arcana %s returned FunctionState; ignoring in headless." % String(id))
 
 # -------------------------
 # Debug / sanity
@@ -512,47 +472,47 @@ func debug_dump_units() -> void:
 func _format_sim_statuses(u: CombatantState) -> String:
 	if u == null:
 		return ""
-
+	
 	# CombatantState.statuses is StatusState
 	if u.statuses == null:
 		return ""
-
+	
 	var by_id : Dictionary = u.statuses.by_id if ("by_id" in u.statuses) else null
 	if by_id == null or by_id.size() == 0:
 		return ""
-
+	
 	var parts: Array[String] = []
 	for k in by_id.keys():
 		var sid := String(k)
 		var stack = by_id[k]
 		if stack == null:
 			continue
-
-		var stacks := 0
+		
+		var intensity := 0
 		var dur := 0
-
-		if "stacks" in stack:
-			stacks = int(stack.stacks)
+		
+		if "intensity" in stack:
+			intensity = int(stack.intensity)
 		elif "intensity" in stack:
-			stacks = int(stack.intensity) # just in case older shape
-
+			intensity = int(stack.intensity) # just in case older shape
+		
 		if "duration" in stack:
 			dur = int(stack.duration)
-
+		
 		# Display:
 		# - if duration > 0, show dur
-		# - always show stacks if != 1 (or if you want always, remove the condition)
+		# - always show intensity if != 1 (or if you want always, remove the condition)
 		var show_bits: Array[String] = []
 		if dur > 0:
 			show_bits.append("dur=%d" % dur)
-		if stacks != 1 and stacks != 0:
-			show_bits.append("stk=%d" % stacks)
-
+		if intensity != 1 and intensity != 0:
+			show_bits.append("stk=%d" % intensity)
+		
 		if show_bits.is_empty():
 			parts.append("%s" % sid)
 		else:
 			parts.append("%s(%s)" % [sid, ", ".join(show_bits)])
-
+		
 	return " [" + ", ".join(parts) + "]"
 
 func _debug_unit_name(u: CombatantState) -> String:

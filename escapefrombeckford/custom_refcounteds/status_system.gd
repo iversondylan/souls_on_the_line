@@ -88,7 +88,7 @@ func add_status(incoming: Status) -> void:
 		Status.ReapplyType.IGNORE:
 			return
 
-func remove_status(id: StringName, _remove_all_stacks: bool = true) -> int:
+func remove_status(id: StringName, _remove_all_intensity: bool = true) -> int:
 	return remove_status_by_id(String(id))
 
 func remove_status_by_id(id: String) -> int:

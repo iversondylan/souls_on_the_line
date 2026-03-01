@@ -104,7 +104,7 @@ func get_allies_of(combat_id: int) -> Array[int]:
 	return []
 
 
-func get_status_stacks(combat_id: int, status_id: StringName) -> int:
+func get_status_intensity(combat_id: int, status_id: StringName) -> int:
 	return -1
 
 func get_player_pos_delta(combat_id: int) -> int:

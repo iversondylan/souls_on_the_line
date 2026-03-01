@@ -41,16 +41,16 @@ func _append(type: int, data: Dictionary = {}) -> int:
 	e.data = data
 
 	var seq := log.append(e)
-	print("EVT seq=%d type=%s scope=%d kind=%s ctx(t=%d g=%d a=%d) data=%s" % [
-		seq,
-		BattleEvent.Type.keys()[int(e.type)] if int(e.type) >= 0 and int(e.type) < BattleEvent.Type.size() else str(e.type),
-		e.scope_id,
-		Scope.Kind.keys()[e.scope_kind],
-		int(e.turn_id),
-		int(e.group_index),
-		int(e.active_actor_id),
-		str(e.data)
-	])
+	#print("EVT seq=%d type=%s scope=%d kind=%s ctx(t=%d g=%d a=%d) data=%s" % [
+		#seq,
+		#BattleEvent.Type.keys()[int(e.type)] if int(e.type) >= 0 and int(e.type) < BattleEvent.Type.size() else str(e.type),
+		#e.scope_id,
+		#Scope.Kind.keys()[e.scope_kind],
+		#int(e.turn_id),
+		#int(e.group_index),
+		#int(e.active_actor_id),
+		#str(e.data)
+	#])
 	return seq
 
 # -------------------------
@@ -104,11 +104,12 @@ func scope_end() -> int:
 # “Structural” timeline markers (these scale into animation)
 # -------------------------
 
-func emit_spawned(spawned_id: int, group_idx: int, insert_index: int, proto: String = "", spec: Dictionary = {}) -> int:
+func emit_spawned(spawned_id: int, group_idx: int, insert_index: int, after_order: PackedInt32Array, proto: String = "", spec: Dictionary = {}) -> int:
 	var data := {
 		Keys.SPAWNED_ID: int(spawned_id),
 		Keys.GROUP_INDEX: int(group_idx),
 		Keys.INSERT_INDEX: int(insert_index),
+		Keys.AFTER_ORDER_IDS: after_order,
 		Keys.PROTO: String(proto),
 	}
 	if spec != null and !spec.is_empty():
@@ -219,17 +220,19 @@ func emit_attack_meta(attacker_id: int, attack_mode: int, strikes: int, extra :=
 		data[k] = extra[k]
 	return _append(BattleEvent.Type.ATTACK, data)
 
-func emit_death(combat_id: int, reason: String = "") -> int:
+func emit_death(combat_id: int, after_order: PackedInt32Array,  reason: String = "") -> int:
 	return _append(BattleEvent.Type.DEBUG, {
 		Keys.TARGET_ID: int(combat_id),
 		Keys.DEATH_REASON: String(reason),
+		Keys.AFTER_ORDER_IDS: after_order,
 	})
 
-func emit_summoned(summoned_id: int, group_idx: int, insert_index: int, proto: String = "", spec: Dictionary = {}) -> int:
+func emit_summoned(summoned_id: int, group_idx: int, insert_index: int, after_order: PackedInt32Array, proto: String = "", spec: Dictionary = {}) -> int:
 	var data := {
 		Keys.SUMMONED_ID: int(summoned_id),
 		Keys.GROUP_INDEX: int(group_idx),
 		Keys.INSERT_INDEX: int(insert_index),
+		Keys.AFTER_ORDER_IDS: after_order,
 		Keys.PROTO: String(proto),
 	}
 	if spec != null and !spec.is_empty():
@@ -247,21 +250,21 @@ func emit_moved(actor_id: int, move_type: int, before_order: PackedInt32Array, a
 		data[k] = extra[k]
 	return _append(BattleEvent.Type.MOVED, data)
 
-func emit_status_applied(source_id: int, target_id: int, status_id: StringName, stacks_delta: int, duration: int) -> int:
+func emit_status_applied(source_id: int, target_id: int, status_id: StringName, intensity: int, duration: int) -> int:
 	return _append(BattleEvent.Type.STATUS_APPLIED, {
 		Keys.SOURCE_ID: int(source_id),
 		Keys.TARGET_ID: int(target_id),
 		Keys.STATUS_ID: status_id,
-		Keys.STACKS_DELTA: int(stacks_delta),
+		Keys.INTENSITY: int(intensity),
 		Keys.DURATION: int(duration),
 	})
 
-func emit_status_removed(source_id: int, target_id: int, status_id: StringName, stacks_delta: int, removed_all: bool) -> int:
+func emit_status_removed(source_id: int, target_id: int, status_id: StringName, intensity: int, removed_all: bool) -> int:
 	return _append(BattleEvent.Type.STATUS_REMOVED, {
 		Keys.SOURCE_ID: int(source_id),
 		Keys.TARGET_ID: int(target_id),
 		Keys.STATUS_ID: status_id,
-		Keys.STACKS_DELTA: int(stacks_delta),
+		Keys.INTENSITY: int(intensity),
 		Keys.REMOVED_ALL: bool(removed_all),
 	})
 

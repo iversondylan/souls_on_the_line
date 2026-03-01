@@ -1,6 +1,6 @@
 # battle.gd
 
-class_name Battle extends Node2D
+class_name Battle extends Node
 
 const FRIENDLY := 0
 const ENEMY := 1
@@ -17,6 +17,8 @@ const ENEMY := 1
 @export var idle_delay_sec: float = 1.0
 @export var idle_cooldown_sec: float = 6.0
 @onready var sim_host: SimHost = $SimHost
+@onready var battle_view: BattleView = $BattleView
+
 
 @onready var player_scn: PackedScene = preload("res://scenes/turn_takers/player.tscn")
 @onready var enemy_scn: PackedScene = preload("res://scenes/turn_takers/enemy.tscn")
@@ -71,7 +73,8 @@ var _arcana_gate_seq: int = 0    # monotonic token to avoid “old gate clears n
 
 func _ready() -> void:
 	
-	
+	battle_view.sim_host = sim_host
+	battle_view.battle_ui = battle_ui
 	
 	
 	#print_tree_pretty()
@@ -163,6 +166,10 @@ func start_battle():
 	sim_host.arcana_catalog = run.arcanum_catalog
 	# ids are the .get_id()'s of currently owned arcana
 	sim_host.seed_arcana_from_ids(my_arcana) #ids: Array[StringName]
+	#battle_view.reset_view()
+	battle_view.bind_log(sim_host.get_event_log()) # or sim_host.state.events
+	battle_view.start_playback()
+	
 	sim_host.start_setup()
 	
 	
@@ -188,7 +195,7 @@ func start_battle():
 	deck.make_draw_pile()
 	MusicPlayer.play(music, true)
 	initialize_card_pile_ui()
-	print_tree_pretty()
+	#print_tree_pretty()
 	sim_host.end_setup()
 	sim_host.start_group_turn(0, true)
 	#BattleController.current_state = BattleController.BattleState.FRIENDLY_TURN

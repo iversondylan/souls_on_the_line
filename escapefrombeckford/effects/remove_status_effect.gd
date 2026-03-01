@@ -4,7 +4,7 @@ extends Effect
 
 var status_id: StringName
 var source: Fighter = null
-var remove_all_stacks: bool = false
+var remove_all_intensity: bool = false
 
 func execute(api: BattleAPI) -> void:
 	if !api:
@@ -24,7 +24,7 @@ func execute(api: BattleAPI) -> void:
 		ctx.source = source
 		ctx.target = target
 		ctx.status_id = status_id
-		ctx.remove_all_stacks = remove_all_stacks
+		ctx.remove_all_intensity = remove_all_intensity
 		ctx.hydrate_ids()
 
 		api.remove_status(ctx)

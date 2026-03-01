@@ -120,19 +120,19 @@ func resolve_attack(ctx: NPCAIContext) -> bool:
 func resolve_damage_immediate(ctx: DamageContext) -> int:
 	if !ctx:
 		return 0
-
+	
 	# --- PREP / VALIDATION ---
 	if ctx.base_amount <= 0:
 		ctx.amount = 0
 		return 0
-
+	
 	if !state.is_alive(ctx.target_id):
 		ctx.amount = 0
 		return 0
-
+	
 	ctx.phase = DamageContext.Phase.PRE_MODIFIERS
 	ctx.amount = ctx.base_amount
-
+	
 	# --- APPLY MODIFIERS (one at a time; cid-based) ---
 	# 1) attacker modifies damage dealt
 	#print("sim_battle_api.gd resolve_damage_immediate() pre dealt amt: ", ctx.amount)
@@ -153,38 +153,38 @@ func resolve_damage_immediate(ctx: DamageContext) -> int:
 	#print("sim_battle_api.gd resolve_damage_immediate() post dealt amt: ", ctx.amount)
 	ctx.amount = maxi(ctx.amount, 0)
 	ctx.phase = DamageContext.Phase.POST_MODIFIERS
-
+	
 	# Optional: statuses that care about "final damage about to be applied"
 	# _emit_damage_event(ctx, "post_modifiers")
-
+	
 	# --- APPLY TO STATE ---
 	var tgt := state.get_unit(ctx.target_id)
 	if !tgt:
 		ctx.amount = 0
 		return 0
-
+	
 	var remaining := ctx.amount
-
+	
 	# Armor first (if that’s your rule)
 	var armor_damage := mini(remaining, maxi(tgt.armor, 0))
 	tgt.armor -= armor_damage
 	remaining -= armor_damage
-
+	
 	var health_damage := mini(remaining, maxi(tgt.health, 0))
 	tgt.health -= health_damage
 	remaining -= health_damage
-
+	
 	ctx.armor_damage = armor_damage
 	ctx.health_damage = health_damage
 	ctx.was_lethal = (tgt.health <= 0)
-
+	
 	if ctx.was_lethal:
 		tgt.alive = false
 		# If you keep corpses in units but remove from order:
 		state.remove_unit(ctx.target_id)
-
+	
 	ctx.phase = DamageContext.Phase.APPLIED
-
+	
 	if writer != null:
 		writer.emit_damage_applied(
 			int(ctx.source_id),
@@ -197,10 +197,10 @@ func resolve_damage_immediate(ctx: DamageContext) -> int:
 		)
 	
 	on_damage_applied(ctx)
-
+	
 	# Optional: reactive statuses (EVENT_BASED) after application
 	# _emit_damage_event(ctx, "applied")
-
+	
 	return ctx.amount
 
 func resolve_death(combat_id: int, reason := "") -> void:
@@ -209,15 +209,15 @@ func resolve_death(combat_id: int, reason := "") -> void:
 	var u := state.get_unit(combat_id)
 	if u == null:
 		return
-
+	
 	u.alive = false
-
+	
 	var g := u.team
 	if g != -1:
 		state.groups[g].remove(combat_id)
-
+	var after_order_ids = PackedInt32Array(state.groups[g].order)
 	if writer != null:
-		writer.emit_death(combat_id, String(reason))
+		writer.emit_death(combat_id, after_order_ids, String(reason))
 
 
 func apply_status(ctx: StatusContext) -> void:
@@ -230,17 +230,17 @@ func apply_status(ctx: StatusContext) -> void:
 		return
 	if ctx.status_id == &"":
 		return
-
+	
 	# Default intensity policy (so callers can omit it)
 	if int(ctx.intensity) == 0:
 		ctx.intensity = 1
-
+	
 	u.statuses.add_or_reapply(ctx.status_id, ctx.intensity, ctx.duration)
 	ctx.applied = true
-
+	
 	if writer != null:
 		writer.emit_status_applied(int(ctx.source_id), int(ctx.target_id), ctx.status_id, int(ctx.intensity), int(ctx.duration))
-
+	
 	_rebuild_modifier_cache_for(ctx.target_id)
 
 
@@ -254,17 +254,17 @@ func remove_status(ctx: RemoveStatusContext) -> void:
 		return
 	if ctx.status_id == &"":
 		return
-
-	var stacks_delta := maxi(int(ctx.stacks_delta if ("stacks_delta" in ctx) else 1), 1)
-
-	if ctx.remove_all_stacks:
+	
+	var intensity := maxi(int(ctx.intensity if ("intensity" in ctx) else 1), 1)
+	
+	if ctx.remove_all_intensity:
 		u.statuses.remove(ctx.status_id, true)
 	else:
-		u.statuses.remove(ctx.status_id, false, stacks_delta)
-
+		u.statuses.remove(ctx.status_id, false, intensity)
+	
 	if writer != null:
-		writer.emit_status_removed(int(ctx.source_id), int(ctx.target_id), ctx.status_id, stacks_delta, bool(ctx.remove_all_stacks))
-
+		writer.emit_status_removed(int(ctx.source_id), int(ctx.target_id), ctx.status_id, intensity, bool(ctx.remove_all_intensity))
+	
 	_rebuild_modifier_cache_for(ctx.target_id)
 	_rebuild_modifier_cache_for(ctx.target_id)
 
@@ -296,8 +296,13 @@ func spawn_from_data(combatant_data: CombatantData, group_index: int, insert_ind
 			Keys.APM: int(combatant_data.apm),
 			Keys.APR: int(combatant_data.apr),
 			Keys.PROTO_PATH: String(combatant_data.resource_path),
+			Keys.ART_UID: String(combatant_data.character_art_uid),
+			Keys.ART_FACES_RIGHT: bool(combatant_data.facing_right),
+			Keys.HEIGHT: int(combatant_data.height),
+			Keys.COLOR_TINT: combatant_data.color_tint as Color,
 		}
-		writer.emit_spawned(id, g, int(insert_index), proto, spec)
+		var after_order_ids = PackedInt32Array(state.groups[g].order)
+		writer.emit_spawned(id, g, int(insert_index), after_order_ids, proto, spec)
 	
 	return id
 
@@ -331,10 +336,14 @@ func summon(ctx: SummonContext) -> void:
 			Keys.APM: int(ctx.summon_data.apm),
 			Keys.APR: int(ctx.summon_data.apr),
 			Keys.PROTO_PATH: String(ctx.summon_data.resource_path),
+			Keys.ART_UID: String(ctx.summon_data.character_art_uid),
+			Keys.ART_FACES_RIGHT: bool(ctx.summon_data.facing_right),
+			Keys.HEIGHT: int(ctx.summon_data.height),
+			Keys.COLOR_TINT: ctx.summon_data.color_tint as Color,
 		}
-	
+	var after_order_ids = PackedInt32Array(state.groups[g].order)
 	if writer != null:
-		writer.emit_summoned(id, g, int(ctx.insert_index), proto, spec)
+		writer.emit_summoned(id, g, int(ctx.insert_index), after_order_ids, proto, spec)
 	
 	ctx.summoned_id = id
 	ctx.summoned_fighter = null # headless

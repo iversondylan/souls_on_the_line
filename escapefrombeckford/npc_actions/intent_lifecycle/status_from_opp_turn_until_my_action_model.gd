@@ -59,7 +59,7 @@ func _remove_from_self(ctx: NPCAIContext) -> void:
 	e.targets = [ctx.combatant]
 	e.source = ctx.combatant
 	e.status_id = _status_id()
-	e.remove_all_stacks = true
+	e.remove_all_intensity = true
 	e.execute(api)
 
 func on_opposing_group_start_sim(ctx: NPCAIContext) -> void:
@@ -106,5 +106,5 @@ func _remove_from_self_sim(ctx: NPCAIContext) -> void:
 	rc.source_id = id
 	rc.target_id = id
 	rc.status_id = _status_id()
-	rc.remove_all_stacks = true
+	rc.remove_all_intensity = true
 	ctx.api.remove_status(rc)

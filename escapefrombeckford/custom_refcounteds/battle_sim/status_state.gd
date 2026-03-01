@@ -12,35 +12,35 @@ func has(id: StringName) -> bool:
 func get_status_stack(id: StringName) -> StatusStack:
 	return by_id.get(id, null)
 
-func add_or_reapply(id: StringName, stacks_delta: int, duration: int = 0) -> void:
-	#print("status_state.gd add_or_reapply() id: %s, stacks: %s, duration: %s" % [id, stacks_delta, duration])
+func add_or_reapply(id: StringName, intensity: int, duration: int = 0) -> void:
+	#print("status_state.gd add_or_reapply() id: %s, intensity: %s, duration: %s" % [id, intensity_delta, duration])
 	if id == &"":
 		return
 	
 	var s: StatusStack = by_id.get(id, null)
 	if s == null:
 		s = StatusStack.new(id)
-		s.stacks = maxi(stacks_delta, 1)
+		s.intensity = maxi(intensity, 1)
 		s.duration = duration
 		by_id[id] = s
 	else:
-		s.stacks = maxi(s.stacks + stacks_delta, 0)
+		s.intensity = maxi(s.intensity + intensity, 0)
 		# duration policy: take max, or overwrite if nonzero—choose one.
 		if duration > 0:
 			s.duration = max(s.duration + duration, 0)
-		#if s.stacks <= 0:
+		#if s.intensity <= 0:
 			#by_id.erase(id)
-	#print("status_state.gd add_or_reapply() stack stacks: %s, duration: %s" % [by_id[id].stacks, by_id[id].duration])
+	#print("status_state.gd add_or_reapply() stack intensity: %s, duration: %s" % [by_id[id].intensity, by_id[id].duration])
 
-func remove(id: StringName, remove_all: bool = true, stacks_delta: int = 1) -> void:
+func remove(id: StringName, remove_all: bool = true, intensity: int = 1) -> void:
 	if !by_id.has(id):
 		return
 	if remove_all:
 		by_id.erase(id)
 		return
 	var s: StatusStack = by_id[id]
-	s.stacks = maxi(s.stacks - maxi(int(stacks_delta), 1), 0)
-	if s.stacks <= 0:
+	s.intensity = maxi(s.intensity - maxi(int(intensity), 1), 0)
+	if s.intensity <= 0:
 		by_id.erase(id)
 
 func clone() -> StatusState:

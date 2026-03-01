@@ -24,6 +24,7 @@ metadata/_custom_type_script = "uid://scekanx56uiy"
 script = ExtResource("1_ago3s")
 name = "Shadow Clone"
 character_art = ExtResource("1_kbgrf")
+character_art_uid = "uid://boidn5bneb5f0"
 height = 270
 max_health = 5
 behaviors = Array[ExtResource("2_ahv35")]([SubResource("Resource_4mtla"), SubResource("Resource_n6q0x"), SubResource("Resource_ykc33")])

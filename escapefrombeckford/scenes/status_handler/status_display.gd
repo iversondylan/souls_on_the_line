@@ -6,7 +6,7 @@ class_name StatusDisplay extends Control
 
 @onready var icon: TextureRect = $Icon
 @onready var duration: Label = $Duration
-@onready var intensity: Label = $Stacks
+@onready var stacks: Label = $Stacks
 
 var status_parent: Fighter : set = _set_status_parent
 
@@ -20,13 +20,13 @@ func _set_status(new_status) -> void:
 	status = new_status
 	icon.texture = status.icon
 	duration.visible = status.number_display_type == Status.NumberDisplayType.DURATION
-	intensity.visible = status.number_display_type == Status.NumberDisplayType.INTENSITY
+	stacks.visible = status.number_display_type == Status.NumberDisplayType.INTENSITY
 	custom_minimum_size = icon.size
 	
 	if duration.visible:
 		custom_minimum_size = duration.size + duration.position
-	elif intensity.visible:
-		custom_minimum_size = intensity.size + intensity.position
+	elif stacks.visible:
+		custom_minimum_size = stacks.size + stacks.position
 	
 	if !status.status_changed.is_connected(_on_status_changed):
 		status.status_changed.connect(_on_status_changed)
@@ -42,7 +42,7 @@ func _on_status_changed() -> void:
 		return
 	
 	duration.text = str(status.duration)
-	intensity.text = str(status.intensity)
+	stacks.text = str(status.intensity)
 
 func _on_focused_gained(marked_status: Status):
 	if marked_status.status_parent != status_parent and status.get_id() == MarkedStatus.ID:

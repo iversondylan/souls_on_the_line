@@ -26,7 +26,7 @@ enum Type {
 	MOVED,
 	ATTACK,
 	TARGETED,
-	
+	DIED,
 	CARD_MUTATED,
 	
 	DEBUG

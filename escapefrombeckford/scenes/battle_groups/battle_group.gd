@@ -129,6 +129,22 @@ func _get_layout_params(layout_count: int) -> Dictionary:
 
 	return {"left": left_bound, "right": right_bound, "increment": increment, "n": n}
 
+	update_combatant_position()
+
+func get_window_dist() -> float:
+	return get_viewport_rect().size.x * 0.26875
+
+func get_summon_slot_position(slot_index: int) -> Vector2:
+	var nodes := _get_layout_nodes()
+	var layout_count := nodes.size()
+	
+	if layout_count == 0:
+		return global_position
+	
+	var slot := float(slot_index) + 0.5
+	var x := _get_x_for_slot(slot, layout_count)
+	return global_position + Vector2(x, 0)
+
 func _get_x_for_slot(slot: float, layout_count: int) -> float:
 	var p := _get_layout_params(layout_count)
 	if p.n == 0:
@@ -146,8 +162,6 @@ func update_combatant_position():
 		else:
 			n.position = Vector2(x, 0)
 		slot += 1.0
-
-
 
 func _get_layout_nodes() -> Array[Node2D]:
 	var nodes: Array[Node2D] = []
@@ -405,21 +419,7 @@ func clear_preview() -> void:
 	
 	_preview_node = null
 	_preview_index = -1
-	update_combatant_position()
 
-func get_window_dist() -> float:
-	return get_viewport_rect().size.x * 0.26875
-
-func get_summon_slot_position(slot_index: int) -> Vector2:
-	var nodes := _get_layout_nodes()
-	var layout_count := nodes.size()
-	
-	if layout_count == 0:
-		return global_position
-	
-	var slot := float(slot_index) + 0.5
-	var x := _get_x_for_slot(slot, layout_count)
-	return global_position + Vector2(x, 0)
 
 func turn_reset() -> void:
 	for fighter: Fighter in get_combatants():
