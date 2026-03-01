@@ -11,7 +11,7 @@ func execute(ctx: NPCAIContext, on_done: Callable) -> void:
 		return
 
 	# Decode semantic parameter with default
-	var armor := int(ctx.params.get(NPCKeys.ARMOR_AMOUNT, 1))
+	var armor := int(ctx.params.get(Keys.ARMOR_AMOUNT, 1))
 
 	# Defensive: non-positive armor does nothing
 	if armor <= 0:

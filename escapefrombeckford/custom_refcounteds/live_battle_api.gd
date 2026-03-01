@@ -31,19 +31,20 @@ func observe_stats_changed(fighter: Fighter) -> void:
 # Public API verbs
 # --------------------------
 
-func resolve_damage(ctx: DamageContext) -> void:
-	if !ctx:
-		return
-	if runner:
-		runner.enqueue_damage(ctx)
-	if ctx.sound:
-		play_sfx(ctx.sound)
-	else:
-		var attack_mode: int = ctx.params.get(NPCKeys.ATTACK_MODE, Attack.Mode.MELEE)
-		if attack_mode == Attack.Mode.RANGED:
-			play_sfx(load(DEFAULT_RANGED_SOUND))
-		else:
-			play_sfx(load(DEFAULT_MELEE_SOUND))
+#func resolve_damage(ctx: DamageContext) -> void:
+	#print("LIVE RESOLE DAMAGE_WAS CALLED")
+	#if !ctx:
+		#return
+	#if runner:
+		#runner.enqueue_damage(ctx)
+	#if ctx.sound:
+		#play_sfx(ctx.sound)
+	#else:
+		#var attack_mode: int = ctx.params.get(Keys.ATTACK_MODE, Attack.Mode.MELEE)
+		#if attack_mode == Attack.Mode.RANGED:
+			#play_sfx(load(DEFAULT_RANGED_SOUND))
+		#else:
+			#play_sfx(load(DEFAULT_MELEE_SOUND))
 
 
 func resolve_damage_immediate(ctx: DamageContext) -> int:
@@ -57,7 +58,7 @@ func resolve_damage_immediate(ctx: DamageContext) -> int:
 	if ctx.sound:
 		play_sfx(ctx.sound)
 	else:
-		var attack_mode: int = ctx.params.get(NPCKeys.ATTACK_MODE, Attack.Mode.MELEE)
+		var attack_mode: int = ctx.params.get(Keys.ATTACK_MODE, Attack.Mode.MELEE)
 		if attack_mode == Attack.Mode.RANGED:
 			play_sfx(load(DEFAULT_RANGED_SOUND))
 		else:
@@ -562,20 +563,20 @@ func _run_attack_now_op(ctx: AttackNowContext) -> void:
 	var strikes := maxi(ctx.strikes, 0)
 	if strikes <= 0:
 		return
-	ai_ctx.params[NPCKeys.STRIKES] = strikes
-	ai_ctx.params[NPCKeys.TARGET_TYPE] = NPCAttackSequence.TARGET_STANDARD
+	ai_ctx.params[Keys.STRIKES] = strikes
+	ai_ctx.params[Keys.TARGET_TYPE] = Attack.Targeting.STANDARD
 
 	var base_damage := 0
 	if ctx.use_base_damage_override:
 		base_damage = maxi(ctx.base_damage, 0)
 	else:
 		if attacker.combatant_data:
-			base_damage = attacker.combatant_data.max_mana_red + 1
-	ai_ctx.params[NPCKeys.DAMAGE] = maxi(base_damage, 0) # raw only
+			base_damage = attacker.combatant_data.apr + 1
+	ai_ctx.params[Keys.DAMAGE] = maxi(base_damage, 0) # raw only
 	#if attacker.modifier_system:
 		#base_damage = attacker.modifier_system.get_modified_value(base_damage, Modifier.Type.DMG_DEALT)
 #
-	#ai_ctx.params[NPCKeys.DAMAGE] = maxi(base_damage, 0)
+	#ai_ctx.params[Keys.DAMAGE] = maxi(base_damage, 0)
 
 	if ctx.param_models:
 		for model in ctx.param_models:

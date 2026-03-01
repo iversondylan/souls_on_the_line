@@ -5,6 +5,7 @@
 [ext_resource type="Script" uid="uid://8txpx232aks0" path="res://scenes/sim_host.gd" id="3_1m01a"]
 [ext_resource type="Script" uid="uid://0a8baesyqdot" path="res://scenes/battle_scene.gd" id="3_lcn8m"]
 [ext_resource type="PackedScene" uid="uid://co7q6uigpt8n4" path="res://scenes/battle_resolution_runner.tscn" id="4_kl6ie"]
+[ext_resource type="Script" uid="uid://cyefuqg3i2y7o" path="res://battle_view/battle_view.gd" id="4_lv4so"]
 [ext_resource type="Texture2D" uid="uid://jml4obgrdfeg" path="res://assets/backgrounds/flat-forestred-dark.png" id="4_yhk5m"]
 [ext_resource type="PackedScene" uid="uid://gmxev02ltcly" path="res://scenes/battle_groups/battle_group_friendly.tscn" id="5_n2clt"]
 [ext_resource type="PackedScene" uid="uid://0jk65n5vl1s7" path="res://scenes/battle_groups/battle_group_enemy.tscn" id="6_xn15y"]
@@ -37,6 +38,9 @@ music = ExtResource("2_3b6xh")
 
 [node name="SimHost" type="Node" parent="." unique_id=1488075628]
 script = ExtResource("3_1m01a")
+
+[node name="BattleView" type="Node2D" parent="." unique_id=1276052910]
+script = ExtResource("4_lv4so")
 
 [node name="Battle_Scene" type="Node2D" parent="." unique_id=862417419 groups=["battle_scene"]]
 script = ExtResource("3_lcn8m")
@@ -182,9 +186,6 @@ horizontal_alignment = 1
 [node name="ManaPanel" parent="Battle_UI" unique_id=561465951 instance=ExtResource("19_tgt58")]
 position = Vector2(190, 953)
 scale = Vector2(1, 1)
-color_red = Color(0.91, 0.82809997, 0.82809997, 1)
-color_green = Color(0.8366, 0.89, 0.8366, 1)
-color_blue = Color(0.81523997, 0.8099, 0.89, 1)
 
 [node name="Hand" parent="Battle_UI" unique_id=1775012993 instance=ExtResource("15_wvgjd")]
 discard_anchor_path = NodePath("../DiscardPileButton")

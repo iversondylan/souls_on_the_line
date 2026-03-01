@@ -50,9 +50,7 @@ const RARITY_COLORS := {
 @export var name: String
 @export var deplete: bool
 @export_multiline var description: String
-@export var cost_red: int
-@export var cost_green: int
-@export var cost_blue: int
+@export var cost: int
 @export var texture: Texture2D
 @export var actions: Array[CardAction] = []
 
@@ -65,4 +63,4 @@ func is_single_targeted() -> bool:
 	return target_type == TargetType.SINGLE_ENEMY or target_type == TargetType.ALLY_OR_SELF or target_type == TargetType.ALLY or target_type == TargetType.BATTLEFIELD
 
 func get_total_cost() -> int:
-	return cost_red + cost_green + cost_blue
+	return cost

@@ -419,7 +419,7 @@ func is_playable() -> bool:
 	
 	#for action in card_data.actions:
 		#if action.requires_summon_slot():
-			#if battle_scene.get_n_summoned_allies() >= player.combatant_data.max_mana_blue:
+			#if battle_scene.get_n_summoned_allies() >= player.combatant_data.max_mana:
 				#return false
 	#
 	return true

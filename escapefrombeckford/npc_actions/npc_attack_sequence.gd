@@ -27,8 +27,8 @@ func run_async(ctx: NPCAIContext) -> void:
 	if !ctx or !ctx.battle_scene:
 		return
 
-	var strikes := int(ctx.params.get(NPCKeys.STRIKES, 1))
-	var dmg := int(ctx.params.get(NPCKeys.DAMAGE, 0))
+	var strikes := int(ctx.params.get(Keys.STRIKES, 1))
+	var dmg := int(ctx.params.get(Keys.DAMAGE, 0))
 	if strikes <= 0:
 		return
 
@@ -47,7 +47,7 @@ func run_async(ctx: NPCAIContext) -> void:
 		if targets.is_empty():
 			continue
 
-		var mode := int(ctx.params.get(NPCKeys.ATTACK_MODE, Attack.Mode.MELEE))
+		var mode := int(ctx.params.get(Keys.ATTACK_MODE, Attack.Mode.MELEE))
 		if mode == Attack.Mode.MELEE:
 			await _melee_strike(ctx, targets, dmg)
 		else:
@@ -88,7 +88,7 @@ func _ranged_strike(ctx: NPCAIContext, targets: Array[Fighter], dmg: int) -> voi
 	if !f or !is_instance_valid(f) or !bs:
 		return
 
-	var projectile_path := String(ctx.params.get(NPCKeys.PROJECTILE_SCENE, DEFAULT_PROJECTILE_SCENE))
+	var projectile_path := String(ctx.params.get(Keys.PROJECTILE_SCENE, DEFAULT_PROJECTILE_SCENE))
 	var projectile_scene := load(projectile_path)
 	if !projectile_scene:
 		if _is_attacker_valid(ctx):
@@ -139,7 +139,7 @@ func _finish(ctx: NPCAIContext) -> void:
 	if !f or !is_instance_valid(f):
 		return
 
-	var explode := bool(ctx.params.get(NPCKeys.EXPLODE_ON_FINISH, false))
+	var explode := bool(ctx.params.get(Keys.EXPLODE_ON_FINISH, false))
 	var tween := bs.get_tree().create_tween().set_trans(Tween.TRANS_QUINT)
 
 	if explode:

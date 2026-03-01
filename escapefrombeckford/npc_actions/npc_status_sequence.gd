@@ -35,19 +35,19 @@ func execute(ctx: NPCAIContext, on_done: Callable) -> void:
 	# -------------------------
 	# Resolve status identifier
 	# -------------------------
-	# Preferred: callers set NPCKeys.STATUS_ID to a StringName like &"amplify"
+	# Preferred: callers set Keys.STATUS_ID to a StringName like &"amplify"
 	var status_id: StringName = &""
 
-	if ctx.params.has(NPCKeys.STATUS_ID):
-		var v = ctx.params[NPCKeys.STATUS_ID]
+	if ctx.params.has(Keys.STATUS_ID):
+		var v = ctx.params[Keys.STATUS_ID]
 		if v is StringName:
 			status_id = v
 		elif v is String:
 			status_id = StringName(v)
 
-	# Back-compat: old callers pass a Status resource in NPCKeys.STATUS_SCENE
+	# Back-compat: old callers pass a Status resource in Keys.STATUS_SCENE
 	if status_id == &"":
-		var status_res = ctx.params.get(NPCKeys.STATUS_SCENE, null)
+		var status_res = ctx.params.get(Keys.STATUS_SCENE, null)
 		if status_res and status_res is Status:
 			status_id = StringName((status_res as Status).get_id())
 
@@ -61,11 +61,11 @@ func execute(ctx: NPCAIContext, on_done: Callable) -> void:
 	var intensity := 0
 	var duration := 0
 
-	if ctx.params.has(NPCKeys.STATUS_INTENSITY):
-		intensity = int(ctx.params[NPCKeys.STATUS_INTENSITY])
+	if ctx.params.has(Keys.STATUS_INTENSITY):
+		intensity = int(ctx.params[Keys.STATUS_INTENSITY])
 
-	if ctx.params.has(NPCKeys.STATUS_DURATION):
-		duration = int(ctx.params[NPCKeys.STATUS_DURATION])
+	if ctx.params.has(Keys.STATUS_DURATION):
+		duration = int(ctx.params[Keys.STATUS_DURATION])
 
 	# -------------------------
 	# Build context + apply via API

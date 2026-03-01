@@ -61,7 +61,6 @@ func add_unit(u: CombatantState, group_index: int, insert_index: int = -1) -> vo
 
 func alloc_id() -> int:
 	var id := _next_sim_id
-	#print("[SIM][ID] alloc -> ", id)
 	_next_sim_id += 1
 	return id
 
@@ -116,21 +115,21 @@ func get_modifier_tokens_for_cid(target_id: int, mod_type: Modifier.Type) -> Arr
 				continue
 			
 			# Safety: aura secondaries must not be GLOBAL (same check as LIVE)
-			if token.scope == ModifierToken.Scope.GLOBAL and token.tags.has(Aura.AURA_SECONDARY_FLAG):
+			if token.scope == ModifierToken.ModScope.GLOBAL and token.tags.has(Aura.AURA_SECONDARY_FLAG):
 				push_error("SIM: Aura token must not be GLOBAL: %s" % token.source_id)
 			
 			match token.scope:
-				ModifierToken.Scope.GLOBAL:
+				ModifierToken.ModScope.GLOBAL:
 					# Always applies to everyone
 					tokens.append(token)
 				
-				ModifierToken.Scope.SELF:
+				ModifierToken.ModScope.SELF:
 					# Applies only to the source itself
 					if int(source_id) == target_id:
 						#print("battle_state.gd get_modifier_tokens_for_cid() appending token source: %s, owner: %s" % [token.source_id, token.owner_id])
 						tokens.append(token)
 				
-				ModifierToken.Scope.TARGET:
+				ModifierToken.ModScope.TARGET:
 					# Two cases (same as LIVE):
 					# 1) Aura-style routing via tags
 					# 2) Explicit owner_id match

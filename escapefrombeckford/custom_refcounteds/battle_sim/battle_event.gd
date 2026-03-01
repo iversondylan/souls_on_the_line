@@ -7,6 +7,9 @@ enum Type {
 	SCOPE_BEGIN,
 	SCOPE_END,
 	
+	SPAWNED,
+	FORMATION_SET,
+	
 	TURN_GROUP_BEGIN,
 	TURN_GROUP_END,
 	
@@ -21,6 +24,8 @@ enum Type {
 	STATUS_REMOVED,
 	SUMMONED,
 	MOVED,
+	ATTACK,
+	TARGETED,
 	
 	CARD_MUTATED,
 	
@@ -36,7 +41,7 @@ var active_actor_id: int = 0
 
 var scope_id: int = 0
 var parent_scope_id: int = 0
-var scope_kind: StringName = &""	# e.g. &"actor_turn", &"damage"
+var scope_kind: int = -1 # an enum value from Scope.Kind
 var type: int = Type.DEBUG
 
 # Data payload (keep flexible)

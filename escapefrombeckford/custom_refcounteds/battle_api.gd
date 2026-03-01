@@ -36,12 +36,12 @@ func find_marked_ranged_redirect_target(_attacker_id: int) -> int:
 # Core verbs (queued in live)
 # --------------------------
 
-func resolve_damage(_ctx: DamageContext) -> void:
-	push_error("BattleAPI.resolve_damage not implemented")
+#func resolve_damage(_ctx: DamageContext) -> void:
+	#push_error("BattleAPI.resolve_damage not implemented")
 
 func resolve_damage_immediate(ctx: DamageContext) -> int:
 	# default: just enqueue like normal
-	resolve_damage(ctx)
+	#resolve_damage(ctx)
 	return 0
 
 func resolve_death(_combat_id: int, _reason := "") -> void:

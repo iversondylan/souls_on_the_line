@@ -5,13 +5,13 @@ class_name BattleScopeManager extends RefCounted
 class ScopeFrame extends RefCounted:
 	var id: int = 0
 	var parent_id: int = 0
-	var kind: StringName = &""
+	var kind: int = -1
 	var label: String = ""
 	var actor_id: int = 0
 	var group_index: int = -1
 	var turn_id: int = 0
 
-	func _init(_id: int, _parent: int, _kind: StringName, _label: String, _actor_id: int, _group: int, _turn_id: int) -> void:
+	func _init(_id: int, _parent: int, _kind: int, _label: String, _actor_id: int, _group: int, _turn_id: int) -> void:
 		id = _id
 		parent_id = _parent
 		kind = _kind
@@ -33,10 +33,10 @@ func current_scope_id() -> int:
 func current_parent_scope_id() -> int:
 	return _stack.back().parent_id if _stack.size() > 0 else 0
 
-func current_scope_kind() -> StringName:
-	return _stack.back().kind if _stack.size() > 0 else &""
+func current_scope_kind() -> int:
+	return _stack.back().kind if _stack.size() > 0 else -1
 
-func push(kind: StringName, label: String, actor_id: int, group_index: int, turn_id: int) -> ScopeFrame:
+func push(kind: int, label: String, actor_id: int, group_index: int, turn_id: int) -> ScopeFrame:
 	var parent := current_scope_id()
 	var id := _next_scope_id
 	_next_scope_id += 1

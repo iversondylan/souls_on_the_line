@@ -25,7 +25,7 @@ func get_modifier_tokens(ctx: StatusTokenContext) -> Array[ModifierToken]:
 	token.flat_value = ctx.intensity
 	token.mult_value = 0.0
 	token.source_id = ID
-	token.scope = ModifierToken.Scope.TARGET
+	token.scope = ModifierToken.ModScope.TARGET
 	token.tags = [
 		Aura.AURA_SECONDARY_FLAG,
 		Aura.AURA_ALLIES

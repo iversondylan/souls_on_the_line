@@ -49,8 +49,8 @@ func activate_sim(ctx: CardActionContextSim) -> bool:
 	spec.strikes = maxi(int(attacks), 1)
 	spec.base_damage = 0 # if AttackNow has its own base; else default 0 and let param models set it
 	spec.params = {
-		NPCKeys.STRIKES: spec.strikes,
-		NPCKeys.TARGET_TYPE: Attack.Targeting.STANDARD
+		Keys.STRIKES: spec.strikes,
+		Keys.TARGET_TYPE: Attack.Targeting.STANDARD
 	}
 	spec.param_models = param_models
 	return (ctx.api as SimBattleAPI).apply_attack_now(spec)

@@ -26,14 +26,14 @@ func activate(ctx: CardActionContext) -> bool:
 	ai_ctx.params = {}
 	ai_ctx.forecast = false
 	
-	var base_damage := attacker.combatant_data.max_mana_red + bonus_damage
+	var base_damage := attacker.combatant_data.apr + bonus_damage
 	var final_damage := attacker.modifier_system.get_modified_value(base_damage, Modifier.Type.DMG_DEALT)
 	# Params consumed by NPCAttackSequence.
-	ai_ctx.params[NPCKeys.ATTACK_MODE] = Attack.Mode.MELEE
-	ai_ctx.params[NPCKeys.DAMAGE] = final_damage
-	ai_ctx.params[NPCKeys.STRIKES] = attacks
-	ai_ctx.params[NPCKeys.TARGET_TYPE] = NPCAttackSequence.TARGET_OPPONENTS
-	ai_ctx.params[NPCKeys.EXPLODE_ON_FINISH] = true
+	ai_ctx.params[Keys.ATTACK_MODE] = Attack.Mode.MELEE
+	ai_ctx.params[Keys.DAMAGE] = final_damage
+	ai_ctx.params[Keys.STRIKES] = attacks
+	ai_ctx.params[Keys.TARGET_TYPE] = NPCAttackSequence.TARGET_OPPONENTS
+	ai_ctx.params[Keys.EXPLODE_ON_FINISH] = true
 	
 	# Run sequence
 	var seq := NPCAttackSequence.new()
@@ -55,7 +55,7 @@ func get_description_values(ctx: CardActionContext) -> Array:
 	if ctx.resolved_target and !ctx.resolved_target.fighters.is_empty():
 		var ally: Fighter = ctx.resolved_target.fighters[0]
 
-		var base_damage := ally.combatant_data.max_mana_red + bonus_damage
+		var base_damage := ally.combatant_data.apr + bonus_damage
 		var modified_damage := ally.modifier_system.get_modified_value(
 			base_damage,
 			Modifier.Type.DMG_DEALT
@@ -66,10 +66,10 @@ func get_description_values(ctx: CardActionContext) -> Array:
 	# Case 2: no ally hovered → baseline preview (no modifiers)
 	# Prefer player_data if player is not instantiated
 	if ctx.player:
-		return [ctx.player.combatant_data.max_mana_red + bonus_damage]
+		return [ctx.player.combatant_data.apr + bonus_damage]
 
 	if ctx.player_data:
-		return [ctx.player_data.max_mana_red + bonus_damage]
+		return [ctx.player_data.apr + bonus_damage]
 
 	# Absolute fallback (should be rare)
 	return [bonus_damage]

@@ -11,7 +11,18 @@ const MODE_SIM := &"sim"
 
 const PLAYER_ID := &"player_id"
 const SOURCE_ID := &"source_id"
+const SPAWNED_ID := &"spawned_id"
+const ORDER_IDS := &"order_ids"
+const GROUPS := &"groups" # maybe
+const GROUP_0 := &"group_0"
+const GROUP_1 := &"group_1"
+
+# for single instances of damage and HITS:
 const TARGET_ID := &"target_id"
+# an attacker's STRIKE may result in multiple HITS on its targets.
+
+#for the targets of attacks (often size = 1) and STRIKES:
+const TARGET_IDS := &"target_ids"
 const ACTOR_ID := &"actor_id"
 
 const TURN_ID := &"turn_id"
@@ -27,18 +38,19 @@ const PARENT_SCOPE_ID := &"parent_scope_id"
 const SCOPE_KIND := &"kind"
 const SCOPE_LABEL := &"label"
 
-# Scope kinds (these are *values* used in BattleScopeManager / writer)
-const SCOPE_BATTLE := &"battle"
-const SCOPE_GROUP_TURN := &"group_turn"
-const SCOPE_ACTOR_TURN := &"actor_turn"
-const SCOPE_CARD := &"card"
-const SCOPE_ATTACK := &"attack"
-const SCOPE_DAMAGE := &"damage"
-const SCOPE_STATUS := &"status"
-const SCOPE_SUMMON := &"summon"
-const SCOPE_MOVE := &"move"
-const SCOPE_ARCANA := &"arcana"
-
+## Scope kinds (these are *values* used in BattleScopeManager / writer)
+#const SCOPE_BATTLE := &"battle"
+#const SCOPE_GROUP_TURN := &"group_turn"
+#const SCOPE_ACTOR_TURN := &"actor_turn"
+#const SCOPE_CARD := &"card"
+#const SCOPE_ATTACK := &"attack"
+#const SCOPE_DAMAGE := &"damage"
+#const SCOPE_STATUS := &"status"
+#const SCOPE_SUMMON := &"summon"
+#const SCOPE_MOVE := &"move"
+#const SCOPE_ARCANA := &"arcana"
+#const SCOPE_STRIKE := &"strike"
+#const SCOPE_HIT := &"hit"
 # -------------------------
 # Event data keys
 # -------------------------
@@ -59,10 +71,25 @@ const ARMOR_DAMAGE := &"armor_damage"
 const HEALTH_DAMAGE := &"health_damage"
 const WAS_LETHAL := &"was_lethal"
 
+# Attack
+#const TARGETED := &"targeted"
+const STRIKE_INDEX := &"strike_index"
+const ATTACK_META := &"attack_meta"
+const STRIKE_META := &"strike_meta"
+const HIT_META := &"hit_meta"
+
 # Summon
 const SUMMONED_ID := &"summoned_id"
 const PROTO := &"proto"
 const SUMMON_SPEC := &"spec"
+const COMBATANT_NAME := &"combatant_name"
+const MAX_HEALTH := &"max_health"
+const HEALTH := &"health"
+const ARMOR := &"armor"
+const MAX_MANA := &"max_mana"
+const APR := &"apr"
+const APM := &"apm"
+const PROTO_PATH := &"proto_path"
 
 # Card mutated
 const REASON := &"reason"
@@ -92,3 +119,42 @@ const PROC := &"proc"
 # Status ids you’ve used so far
 # -------------------------
 const STATUS_MARKED := &"marked"
+
+
+# Effect params
+const DAMAGE := &"damage"
+const DAMAGE_MELEE := &"damage_melee"
+const DAMAGE_RANGED := &"damage_ranged"
+const STRIKES := &"strikes"
+const ATTACK_MODE := &"attack_mode"
+const DEAL_MOD_TYPE := &"deal_mod_type"
+const TAKE_MOD_TYPE := &"take_mod_type"
+
+const TARGET_TYPE := &"target_type"
+const EXPLODE_ON_FINISH := &"explode_on_finish"
+const ATTACK_SOUND := &"attack_sound"
+
+const ARMOR_AMOUNT := &"armor_amount"
+const PROJECTILE_SCENE := &"projectile_scene"
+const STATUS_SCENE := &"status_scene"
+const STATUS_INTENSITY := &"status_intensity"
+const STATUS_DURATION := &"status_duration"
+#const STATUS_ID := &"status_id"
+
+
+#const GROUP_INDEX := &"group_index"
+#const INSERT_INDEX := &"insert_index"
+const SUMMON_COUNT := &"summon_count"
+const SUMMON_DATA := &"summon_data"
+const SUMMON_SOUND := &"summon_sound"
+
+
+# AI state
+const ATTACK_SPREE := &"attack_spree"
+const USED_1 := &"used_1"
+const COOLDOWN_1 := &"cooldown_1"
+
+# Chance-weight protocol
+const CHANCE_ADD := &"chance_add"        # float, default 0.0
+const CHANCE_MULT := &"chance_mult"      # float, default 1.0
+const CHANCE_DISABLED := &"chance_disabled"  # bool, default false

@@ -53,14 +53,14 @@ func init_from_combatant_data(data: CombatantData) -> void:
 	armor = int(data.armor)
 
 	# Mapping requested:
-	# - max_mana_blue becomes mana/max_mana
-	# - max_mana_green becomes apm
-	# - max_mana_red becomes apr
-	max_mana = maxi(int(data.max_mana_blue), 0)
-	mana = clampi(int(data.mana_blue), 0, max_mana)
+	# - max_mana becomes mana/max_mana
+	# - apm becomes apm
+	# - apr becomes apr
+	max_mana = maxi(int(data.max_mana), 0)
+	mana = clampi(int(data.mana), 0, max_mana)
 
-	apm = maxi(int(data.max_mana_green), 0)
-	apr = maxi(int(data.max_mana_red), 0)
+	apm = maxi(int(data.apm), 0)
+	apr = maxi(int(data.apr), 0)
 
 	alive = data.is_alive()
 

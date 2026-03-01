@@ -20,9 +20,9 @@ func execute(ctx: NPCAIContext, on_done: Callable) -> void:
 	
 	var params: Dictionary = ctx.params if ctx.params else {}
 	
-	var group_index := int(params.get(NPCKeys.GROUP_INDEX, 0))
-	var insert_index := int(params.get(NPCKeys.INSERT_INDEX, 0))
-	var count := int(params.get(NPCKeys.SUMMON_COUNT, 1))
+	var group_index := int(params.get(Keys.GROUP_INDEX, 0))
+	var insert_index := int(params.get(Keys.INSERT_INDEX, 0))
+	var count := int(params.get(Keys.SUMMON_COUNT, 1))
 	group_index = clampi(group_index, 0, 1)
 	
 	if count <= 0:
@@ -30,9 +30,9 @@ func execute(ctx: NPCAIContext, on_done: Callable) -> void:
 		return
 	
 	var summon_data_orig: CombatantData = _resolve_summon_data(
-		params.get(NPCKeys.SUMMON_DATA, load(SummonEffect.DEFAULT_SUMMON_DATA))
+		params.get(Keys.SUMMON_DATA, load(SummonEffect.DEFAULT_SUMMON_DATA))
 	)
-	var summon_sound : Sound = params.get(NPCKeys.SUMMON_SOUND, null)
+	var summon_sound : Sound = params.get(Keys.SUMMON_SOUND, null)
 	
 	# Capacity check via API
 	var n_existing := ctx.api.get_n_combatants_in_group(group_index, false)

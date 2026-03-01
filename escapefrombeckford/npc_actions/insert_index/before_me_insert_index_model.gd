@@ -16,7 +16,7 @@ func change_params(ctx: NPCAIContext) -> NPCAIContext:
 		return ctx
 
 	var my_rank := ctx.api.get_rank_in_group(cid)
-	ctx.params[NPCKeys.INSERT_INDEX] = maxi(my_rank, 0)
+	ctx.params[Keys.INSERT_INDEX] = maxi(my_rank, 0)
 	return ctx
 
 func change_params_sim(ctx: NPCAIContext) -> NPCAIContext:
@@ -26,5 +26,5 @@ func change_params_sim(ctx: NPCAIContext) -> NPCAIContext:
 	if cid <= 0:
 		return ctx
 	var my_rank := int(ctx.api.get_rank_in_group(cid))
-	ctx.params[NPCKeys.INSERT_INDEX] = maxi(my_rank, 0)
+	ctx.params[Keys.INSERT_INDEX] = maxi(my_rank, 0)
 	return ctx

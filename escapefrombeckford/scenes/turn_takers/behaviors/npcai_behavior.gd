@@ -346,8 +346,8 @@ func _build_intent_from_action(action: NPCAction, ctx: NPCAIContext) -> IntentDa
 	
 	intent.icon = action.intent_icon
 	# Override icon if attack mode is ranged
-	if ctx.params.has(NPCKeys.ATTACK_MODE):
-		if ctx.params[NPCKeys.ATTACK_MODE] == Attack.Mode.RANGED:
+	if ctx.params.has(Keys.ATTACK_MODE):
+		if ctx.params[Keys.ATTACK_MODE] == Attack.Mode.RANGED:
 			if action.intent_icon_ranged:
 				intent.icon = action.intent_icon_ranged
 	if action.intent_text_model:
@@ -409,11 +409,11 @@ func _get_action_chance_weight(action: NPCAction, ctx: NPCAIContext) -> float:
 	var weight := action.chance_weight
 	var state := ctx.state if ctx and ctx.state else {}
 	
-	if state.get(NPCKeys.CHANCE_DISABLED, false):
+	if state.get(Keys.CHANCE_DISABLED, false):
 		return 0.0
 	
-	weight += float(state.get(NPCKeys.CHANCE_ADD, 0.0))
-	weight *= float(state.get(NPCKeys.CHANCE_MULT, 1.0))
+	weight += float(state.get(Keys.CHANCE_ADD, 0.0))
+	weight *= float(state.get(Keys.CHANCE_MULT, 1.0))
 	
 	return maxf(weight, 0.0)
 

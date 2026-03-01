@@ -63,7 +63,7 @@ func get_description_values(ctx: CardActionContext) -> Array:
 	var data := summon_data.duplicate()
 	data.init()
 	var params := CombatForecast.preview_action_params(summon_data)
-	var dmg := int(params.get(NPCKeys.DAMAGE, 0))
+	var dmg := int(params.get(Keys.DAMAGE, 0))
 	return [dmg, summon_data.max_health, summon_data.name]
 
 func requires_summon_slot() -> bool:

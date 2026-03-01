@@ -2,7 +2,7 @@
 class_name NotUsedYetPerformableModel
 extends PerformableModel
 
-@export var key: String = NPCKeys.USED_1
+@export var key: String = Keys.USED_1
 
 func is_performable(ctx: NPCAIContext) -> bool:
 	if !ctx or !ctx.state:

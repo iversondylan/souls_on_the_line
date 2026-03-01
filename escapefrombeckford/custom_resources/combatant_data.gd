@@ -16,9 +16,9 @@ signal combatant_data_changed()
 
 @export_group("Gameplay Data")
 @export var max_health: int = 10
-@export var max_mana_red: int = 3
-@export var max_mana_green: int = 3
-@export var max_mana_blue: int = 3
+@export var apr: int = 3
+@export var apm: int = 3
+@export var max_mana: int = 3
 @export var behaviors: Array[FighterBehavior]
 @export var ai: NPCAIProfile
 
@@ -26,9 +26,7 @@ signal combatant_data_changed()
 var alive: bool = true
 var health: int = -1# : set = set_health
 var armor: int# : set = set_armor
-var mana_red: int# : set = set_mana_red
-var mana_green: int# : set = set_mana_green
-var mana_blue: int# : set = set_mana_blue
+var mana: int# : set = set_mana
 var combat_id: int
 #var rank: int
 
@@ -126,7 +124,6 @@ func increase_max_health(amount: int, heal_same := true) -> void:
 	if heal_same:
 		health = clampi(health + amount, 0, max_health)
 	stats_changed()
-		
 
 func create_instance() -> CombatantData:
 	var instance: CombatantData = duplicate()
@@ -135,100 +132,24 @@ func create_instance() -> CombatantData:
 	instance.reset_mana()
 	instance.stats_changed()
 	return instance
-	
 
 func can_play_card(card_data: CardData) -> bool:
 	if card_data == null:
 		return false
-	var cost := card_data.cost_red + card_data.cost_green + card_data.cost_blue
-	return (mana_red + mana_green + mana_blue) >= cost
-
+	var cost := card_data.cost
+	return mana >= cost
 
 func spend_mana(card_data: CardData) -> bool:
 	if !can_play_card(card_data):
 		return false
-
-	var remaining := card_data.cost_red + card_data.cost_green + card_data.cost_blue
-	if remaining <= 0:
-		return true
-
-	# RR cursor: 0=R, 1=G, 2=B. Normal starts at red.
-	var cursor := 0
-
-	while remaining > 0:
-		# ------------------------------------------------------------
-		# 1) REPAIR: enforce R <= G <= B if it's currently violated.
-		# Repair spend does NOT advance cursor; it resets to red.
-		# ------------------------------------------------------------
-		if mana_red > mana_green or mana_red > mana_blue:
-			# Red is "unexpectedly high" compared to others
-			if mana_red > 0:
-				mana_red -= 1
-				remaining -= 1
-				cursor = 0
-				continue
-
-		if mana_green > mana_blue:
-			# Green is unexpectedly high compared to blue
-			if mana_green > 0:
-				mana_green -= 1
-				remaining -= 1
-				cursor = 0
-				continue
-
-		# ------------------------------------------------------------
-		# 2) NORMAL RR: try R -> G -> B, but only if it preserves
-		# the invariant R <= G <= B after the spend. Skip otherwise.
-		# ------------------------------------------------------------
-		var spent := false
-		for i in range(3):
-			var idx := (cursor + i) % 3
-
-			match idx:
-				0:
-					# Spending red always helps (can't violate R <= ...)
-					if mana_red > 0:
-						mana_red -= 1
-						spent = true
-
-				1:
-					# After spending green: require G' >= R and G' <= B
-					if mana_green > 0:
-						var g2 := mana_green - 1
-						if g2 >= mana_red and g2 <= mana_blue:
-							mana_green = g2
-							spent = true
-
-				2:
-					# After spending blue: require B' >= G (R <= G already holds)
-					if mana_blue > 0:
-						var b2 := mana_blue - 1
-						if b2 >= mana_green:
-							mana_blue = b2
-							spent = true
-
-			if spent:
-				cursor = (idx + 1) % 3
-				remaining -= 1
-				break
-
-		# With total-mana check, this *shouldn't* happen, but safety is good.
-		if !spent:
-			push_error("spend_mana(): deadlock spending mana despite can_play_card() true")
-			return false
-
+	mana = maxi(mana - card_data.get_total_cost(), 0)
 	stats_changed()
 	return true
 
-
-func add_mana(n_red: int, n_green: int, n_blue: int) -> void:
-	mana_red += n_red
-	mana_green += n_green
-	mana_blue += n_blue
+func add_mana(n: int) -> void:
+	mana += n
 	stats_changed()
 
 func reset_mana() -> void:
-	mana_red = max_mana_red
-	mana_green = max_mana_green
-	mana_blue = max_mana_blue
+	mana = max_mana
 	stats_changed()

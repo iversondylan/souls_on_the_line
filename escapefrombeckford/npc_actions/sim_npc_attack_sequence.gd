@@ -19,8 +19,8 @@ static func run(ctx: NPCAIContext) -> bool:
 
 	var spec := SimAttackSpec.new()
 	spec.attacker_id = attacker_id
-	spec.strikes = int(ctx.params.get(NPCKeys.STRIKES, 1))
-	spec.base_damage = int(ctx.params.get(NPCKeys.DAMAGE, 0))
+	spec.strikes = int(ctx.params.get(Keys.STRIKES, 1))
+	spec.base_damage = int(ctx.params.get(Keys.DAMAGE, 0))
 	spec.params = ctx.params # (shared dict is fine if you treat it as read-only here)
 
 	return ctx.api.resolve_attack(spec)

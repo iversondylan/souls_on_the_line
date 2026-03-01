@@ -352,19 +352,19 @@ func get_modifier_tokens_for(fighter: Fighter) -> Array[ModifierToken]:
 		var same_group := source.battle_group == fighter.battle_group
 
 		for token in source.status_system.get_modifier_tokens():
-			if token.scope == ModifierToken.Scope.GLOBAL and token.tags.has(Aura.AURA_SECONDARY_FLAG):
+			if token.scope == ModifierToken.ModScope.GLOBAL and token.tags.has(Aura.AURA_SECONDARY_FLAG):
 				push_error("Aura token must not be GLOBAL: %s" % token.source_id)
 			match token.scope:
-				ModifierToken.Scope.GLOBAL:
+				ModifierToken.ModScope.GLOBAL:
 					# Always applies to everyone
 					tokens.append(token)
 
-				ModifierToken.Scope.SELF:
+				ModifierToken.ModScope.SELF:
 					# Only applies to the source itself
 					if source == fighter:
 						tokens.append(token)
 
-				ModifierToken.Scope.TARGET:
+				ModifierToken.ModScope.TARGET:
 					# Two cases:
 					# 1) Normal “targeted” token (non-aura) — uses token.owner.
 					# 2) Aura-style token — routed by allies/enemies tags.

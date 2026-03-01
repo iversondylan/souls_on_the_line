@@ -163,6 +163,7 @@ func start_battle():
 	sim_host.arcana_catalog = run.arcanum_catalog
 	# ids are the .get_id()'s of currently owned arcana
 	sim_host.seed_arcana_from_ids(my_arcana) #ids: Array[StringName]
+	sim_host.start_setup()
 	
 	
 	
@@ -187,7 +188,8 @@ func start_battle():
 	deck.make_draw_pile()
 	MusicPlayer.play(music, true)
 	initialize_card_pile_ui()
-	#print_tree_pretty()
+	print_tree_pretty()
+	sim_host.end_setup()
 	sim_host.start_group_turn(0, true)
 	#BattleController.current_state = BattleController.BattleState.FRIENDLY_TURN
 	await _apply_group_turn_start_hooks_scoped(0)
@@ -688,9 +690,7 @@ func _on_end_turn_pressed() -> void:
 
 func _on_player_data_changed() -> void:
 	if player:
-		mana_panel.red_mana = player.combatant_data.mana_red
-		mana_panel.green_mana = player.combatant_data.mana_green
-		mana_panel.blue_mana = player.combatant_data.mana_blue
+		mana_panel.mana = player.combatant_data.mana
 
 func _on_hand_drawn() -> void:
 	#print_tree_pretty()

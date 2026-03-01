@@ -2,7 +2,7 @@
 class_name MarkUsedStateModel
 extends StateModel
 
-@export var key: String = NPCKeys.USED_1
+@export var key: String = Keys.USED_1
 @export var value: bool = true
 
 func change_state(ctx: NPCAIContext) -> NPCAIContext:

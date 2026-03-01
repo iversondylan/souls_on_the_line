@@ -1,78 +1,8 @@
 [gd_scene format=3 uid="uid://ggbqqkmgvjb1"]
 
 [ext_resource type="Script" uid="uid://4a0kral1mie" path="res://scenes/ui/mana_panel.gd" id="1_jg8c6"]
-[ext_resource type="Texture2D" uid="uid://dpwvp48gmtirj" path="res://assets/sprites/mana_meter/ManaMeterVoid.png" id="2_cg4vr"]
 [ext_resource type="Texture2D" uid="uid://dfm0pl5uj0mhs" path="res://assets/sprites/mana_meter/brass_instrument_card_front_vectors_meter.png" id="2_h7u3w"]
-[ext_resource type="Texture2D" uid="uid://bmpii7ft7nglx" path="res://assets/sprites/mana_meter/ManaMeterL1o3.png" id="3_w8n1v"]
-[ext_resource type="Texture2D" uid="uid://dqg5rwagaxom0" path="res://assets/sprites/mana_meter/ManaMeterL2o3.png" id="4_u0vew"]
-[ext_resource type="Texture2D" uid="uid://bbvannxmj10s8" path="res://assets/sprites/mana_meter/ManaMeterL3o3.png" id="5_2rmms"]
-[ext_resource type="Texture2D" uid="uid://i6so7o014wu6" path="res://assets/sprites/mana_meter/ManaMeterR1o3.png" id="6_5v083"]
-[ext_resource type="Texture2D" uid="uid://cblfdj3cos136" path="res://assets/sprites/mana_meter/ManaMeterR2o3.png" id="7_ei2l7"]
-[ext_resource type="Texture2D" uid="uid://dwkqrndn72nip" path="res://assets/sprites/mana_meter/ManaMeterR3o3.png" id="8_h7u3w"]
-[ext_resource type="Texture2D" uid="uid://dfipigf4l8345" path="res://assets/sprites/mana_meter/ManaMeterT1o3.png" id="9_ibaeo"]
-[ext_resource type="Texture2D" uid="uid://cb483wm3ee8ek" path="res://assets/sprites/mana_meter/ManaMeterT2o3.png" id="10_mimc3"]
-[ext_resource type="Texture2D" uid="uid://dak0urnbkadj0" path="res://assets/sprites/mana_meter/ManaMeterT3o3.png" id="11_ut35u"]
 [ext_resource type="Theme" uid="uid://1dr1eewpv0jd" path="res://themes/ui_theme.tres" id="13_ibaeo"]
-
-[sub_resource type="SpriteFrames" id="SpriteFrames_5v083"]
-animations = [{
-"frames": [{
-"duration": 1.0,
-"texture": ExtResource("2_cg4vr")
-}, {
-"duration": 1.0,
-"texture": ExtResource("3_w8n1v")
-}, {
-"duration": 1.0,
-"texture": ExtResource("4_u0vew")
-}, {
-"duration": 1.0,
-"texture": ExtResource("5_2rmms")
-}],
-"loop": true,
-"name": &"mana_bar_L_3",
-"speed": 5.0
-}]
-
-[sub_resource type="SpriteFrames" id="SpriteFrames_ei2l7"]
-animations = [{
-"frames": [{
-"duration": 1.0,
-"texture": ExtResource("2_cg4vr")
-}, {
-"duration": 1.0,
-"texture": ExtResource("6_5v083")
-}, {
-"duration": 1.0,
-"texture": ExtResource("7_ei2l7")
-}, {
-"duration": 1.0,
-"texture": ExtResource("8_h7u3w")
-}],
-"loop": true,
-"name": &"mana_bar_R_3",
-"speed": 5.0
-}]
-
-[sub_resource type="SpriteFrames" id="SpriteFrames_h7u3w"]
-animations = [{
-"frames": [{
-"duration": 1.0,
-"texture": ExtResource("2_cg4vr")
-}, {
-"duration": 1.0,
-"texture": ExtResource("9_ibaeo")
-}, {
-"duration": 1.0,
-"texture": ExtResource("10_mimc3")
-}, {
-"duration": 1.0,
-"texture": ExtResource("11_ut35u")
-}],
-"loop": true,
-"name": &"mana_bar_T_3",
-"speed": 5.0
-}]
 
 [node name="ManaPanel" type="Node2D" unique_id=1012957252]
 scale = Vector2(0.35, 0.35)
@@ -81,24 +11,6 @@ script = ExtResource("1_jg8c6")
 [node name="Background" type="Sprite2D" parent="." unique_id=1949324715]
 scale = Vector2(0.6, 0.6)
 texture = ExtResource("2_h7u3w")
-
-[node name="RedRadialBar" type="AnimatedSprite2D" parent="." unique_id=1348090033]
-unique_name_in_owner = true
-visible = false
-sprite_frames = SubResource("SpriteFrames_5v083")
-animation = &"mana_bar_L_3"
-
-[node name="GreenRadialBar" type="AnimatedSprite2D" parent="." unique_id=84294872]
-unique_name_in_owner = true
-visible = false
-sprite_frames = SubResource("SpriteFrames_ei2l7")
-animation = &"mana_bar_R_3"
-
-[node name="BlueRadialBar" type="AnimatedSprite2D" parent="." unique_id=601167270]
-unique_name_in_owner = true
-visible = false
-sprite_frames = SubResource("SpriteFrames_h7u3w")
-animation = &"mana_bar_T_3"
 
 [node name="CurrentManaLabel" type="Label" parent="." unique_id=1325748883]
 anchors_preset = 8

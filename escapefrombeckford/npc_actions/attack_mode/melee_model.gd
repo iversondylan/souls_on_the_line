@@ -3,5 +3,5 @@
 class_name MeleeModel extends ParamModel
 
 func change_params(ctx: NPCAIContext) -> NPCAIContext:
-	ctx.params[NPCKeys.ATTACK_MODE] = Attack.Mode.MELEE
+	ctx.params[Keys.ATTACK_MODE] = Attack.Mode.MELEE
 	return ctx

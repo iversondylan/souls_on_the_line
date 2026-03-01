@@ -22,7 +22,7 @@ func get_modifier_tokens(ctx: StatusTokenContext) -> Array[ModifierToken]:
 	token.flat_value = ctx.intensity
 	token.mult_value = 0.0
 	token.source_id = ID
-	token.scope = ModifierToken.Scope.SELF
+	token.scope = ModifierToken.ModScope.SELF
 	token.tags = [ID]
 
 	Status.set_token_owner(token, ctx)

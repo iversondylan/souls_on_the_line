@@ -13,7 +13,7 @@ func get_modifier_tokens_for(_target: Node) -> Array[ModifierToken]:
 	var token := ModifierToken.new()
 	token.type = Modifier.Type.SHOP_COST
 	token.mult_value = -discount / 100.0
-	token.scope = ModifierToken.Scope.GLOBAL
+	token.scope = ModifierToken.ModScope.GLOBAL
 	token.source_id = get_id()
 	token.owner = arcanum_display
 	return [token]

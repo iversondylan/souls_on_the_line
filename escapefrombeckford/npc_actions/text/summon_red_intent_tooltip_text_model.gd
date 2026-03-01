@@ -1,6 +1,6 @@
 # summon_red_intent_tooltip_text_model.gd
 # red in the title denotes: this unit's attack damage shall equal its
-# combatant_data.max_mana_red
+# combatant_data.apr
 # for this to work, that unit must have an attack package with MaxManaRedDamageModel
 # whose base damage is 0 and mana scaling is 1.0
 
@@ -15,14 +15,14 @@ func get_text(ctx: NPCAIContext) -> String:
 		return "error"
 	
 	
-	# NOTE: requires NPCKeys.SUMMON_DATA to be set by a ParamModel, but defaults safely.
+	# NOTE: requires Keys.SUMMON_DATA to be set by a ParamModel, but defaults safely.
 	var fallback: CombatantData = load(SummonEffect.DEFAULT_SUMMON_DATA)
-	var data: CombatantData = ctx.params.get(NPCKeys.SUMMON_DATA, fallback)
+	var data: CombatantData = ctx.params.get(Keys.SUMMON_DATA, fallback)
 	
 	if !data:
 		return "error"
 	var result := text_template
-	var red := int(data.max_mana_red)
+	var red := int(data.apr)
 	var hp := int(data.max_health)
 	
 	if red < 0 or hp <= 0:

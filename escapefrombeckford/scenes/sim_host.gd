@@ -80,44 +80,13 @@ func init_from_seeds(battle_seed: int, run_seed: int) -> void:
 
 	# Root scope: battle
 	main_api.writer.set_turn_context(0, -1, 0)
-	main_api.writer.scope_begin(Keys.SCOPE_BATTLE, "battle_seed=%d run_seed=%d" % [battle_seed, run_seed], 0)
+	main_api.writer.scope_begin(Scope.Kind.BATTLE, "battle_seed=%d run_seed=%d" % [battle_seed, run_seed], 0)
 
 	main_api.on_summoned = func(summoned_id: int, group_index: int) -> void:
 		if turn_engine != null:
 			turn_engine.notify_summon_added(int(summoned_id), int(group_index))
 
 	main_state_initialized.emit()
-
-#func init_from_seeds(battle_seed: int, run_seed: int) -> void:
-	#main_state = BattleState.new()
-	#main_state.init(int(battle_seed), int(run_seed))
-	#main_state._next_sim_id = 1
-	#main_api = SimBattleAPI.new(main_state)
-	#main_api.status_catalog = status_catalog
-#
-	## NEW: scopes + writer
-	#var scopes := BattleScopeManager.new()
-	#scopes.reset()
-	#main_api.scopes = scopes
-	#main_api.writer = BattleEventWriter.new(main_state.events, scopes)
-#
-	## Optional: forbid unscoped writes; keep strict early
-	#main_api.writer.allow_unscoped_events = false
-#
-	#main_api.status_catalog = status_catalog
-	#
-	### NEW: id allocation + notify turn engine
-	##main_api.alloc_id = func() -> int:
-		##return alloc_sim_id()
-	#
-	#main_api.on_summoned = func(summoned_id: int, group_index: int) -> void:
-		## Let TurnEngineCore rebuild pending view immediately
-		#if turn_engine != null:
-			#turn_engine.notify_summon_added(int(summoned_id), int(group_index))
-	#
-	#preview_state = null
-	#preview_api = null
-	#main_state_initialized.emit()
 
 func ensure_initialized() -> void:
 	
@@ -129,6 +98,13 @@ func ensure_initialized() -> void:
 		init_from_seeds(0, 0)
 	if arcana_resolver == null and arcana_catalog != null:
 		arcana_resolver = ArcanaResolver.new(self, arcana_catalog)
+
+func start_setup() -> void:
+	main_api.writer.scope_begin(Scope.Kind.SETUP, "setup", 0)
+
+func end_setup() -> void:
+	main_api.writer.emit_formation_set(main_state.groups[0].order.duplicate(), main_state.groups[1].order.duplicate(), main_state.groups[0].player_id)
+	main_api.writer.scope_end() # setup
 
 func seed_arcana_from_ids(ids: Array[StringName]) -> void:
 	if main_state == null:
@@ -176,7 +152,7 @@ func start_group_turn(group_index: int, start_at_player := false) -> void:
 
 	if main_api != null and main_api.writer != null:
 		main_api.writer.set_turn_context(turn_engine._turn_token, group_index, 0)
-		main_api.writer.scope_begin(Keys.SCOPE_GROUP_TURN, "group=%d" % group_index, 0)
+		main_api.writer.scope_begin(Scope.Kind.GROUP_TURN, "group=%d" % group_index, 0)
 		main_api.writer.emit_group_turn_begin(group_index)
 
 	turn_engine.start_group_turn(group_index, start_at_player)
@@ -242,7 +218,7 @@ func sim_notify_actor_done(cid: int) -> void:
 func _on_sim_actor_requested(cid: int) -> void:
 	if main_api != null and main_api.writer != null:
 		main_api.writer.set_turn_context(turn_engine._turn_token, turn_engine.active_group_index, cid)
-		main_api.writer.scope_begin(Keys.SCOPE_ACTOR_TURN, "actor=%d" % cid, cid)
+		main_api.writer.scope_begin(Scope.Kind.ACTOR_TURN, "actor=%d" % cid, cid)
 		main_api.writer.emit_actor_begin(cid)
 
 	if is_player(cid):
@@ -275,51 +251,51 @@ func is_player(combat_id: int) -> bool:
 # Combatant bootstrap
 # -------------------------
 
-# sim_host.gd
-
-func add_combatant_from_data(
-	data: CombatantData,
-	group_index: int,
-	insert_index: int,
-	is_player: bool = false
-) -> CombatantState:
-	ensure_initialized()
-
-	if data == null:
-		push_warning("SimHost.add_combatant_from_data: data is null")
-		return null
-
-	var combat_id := main_state.alloc_id()
-	if combat_id <= 0:
-		push_warning("SimHost.add_combatant_from_data: data.combat_id must be > 0 (got %s)" % combat_id)
-		return null
-
-	# Don’t “ensure” alignment, just detect & warn.
-	if main_state.has_unit(combat_id):
-		push_warning("SimHost.add_combatant_from_data: duplicate id %s (data=%s)" % [combat_id, data.resource_path])
-		return main_state.get_unit(combat_id)
-
-	var u := CombatantState.new()
-	u.id = combat_id
-	u.init_from_combatant_data(data)
-
-	if data.resource_path != "":
-		u.data_proto_path = String(data.resource_path)
-
-	main_state.add_unit(u, int(group_index), int(insert_index))
-
-	if is_player:
-		main_state.groups[FRIENDLY].player_id = combat_id
-
-	combatant_added.emit(combat_id, int(group_index), int(insert_index), false)
-	#print("[SIM][BOOT] add unit id=%d (live=%d) group=%d idx=%d name=%s" % [
-		#u.id,
-		#int(data.combat_id),
-		#group_index,
-		#insert_index,
-		#data.name
-	#])
-	return u
+func add_combatant_from_data(data: CombatantData, group_index: int, insert_index: int = -1, is_player := false) -> int:
+	return main_api.spawn_from_data(data, group_index, insert_index, is_player)
+#func add_combatant_from_data(
+	#data: CombatantData,
+	#group_index: int,
+	#insert_index: int,
+	#is_player: bool = false
+#) -> CombatantState:
+	#ensure_initialized()
+#
+	#if data == null:
+		#push_warning("SimHost.add_combatant_from_data: data is null")
+		#return null
+#
+	#var combat_id := main_state.alloc_id()
+	#if combat_id <= 0:
+		#push_warning("SimHost.add_combatant_from_data: data.combat_id must be > 0 (got %s)" % combat_id)
+		#return null
+#
+	## Don’t “ensure” alignment, just detect & warn.
+	#if main_state.has_unit(combat_id):
+		#push_warning("SimHost.add_combatant_from_data: duplicate id %s (data=%s)" % [combat_id, data.resource_path])
+		#return main_state.get_unit(combat_id)
+#
+	#var u := CombatantState.new()
+	#u.id = combat_id
+	#u.init_from_combatant_data(data)
+#
+	#if data.resource_path != "":
+		#u.data_proto_path = String(data.resource_path)
+#
+	#main_state.add_unit(u, int(group_index), int(insert_index))
+#
+	#if is_player:
+		#main_state.groups[FRIENDLY].player_id = combat_id
+#
+	#combatant_added.emit(combat_id, int(group_index), int(insert_index), false)
+	##print("[SIM][BOOT] add unit id=%d (live=%d) group=%d idx=%d name=%s" % [
+		##u.id,
+		##int(data.combat_id),
+		##group_index,
+		##insert_index,
+		##data.name
+	##])
+	#return u
 
 func apply_player_card(req: CardPlayRequest) -> bool:
 	ensure_initialized()
@@ -385,7 +361,7 @@ func with_fresh_preview(fn: Callable) -> void:
 
 func _on_sim_arcana_proc_requested(proc: int, token: int) -> void:
 	if main_api != null and main_api.writer != null:
-		main_api.writer.scope_begin(Keys.SCOPE_ARCANA, "proc=%d" % int(proc), 0)
+		main_api.writer.scope_begin(Scope.Kind.ARCANA, "proc=%d" % int(proc), 0)
 		main_api.writer.emit_arcana_proc(proc)
 	#print("[SIM][ARCANA] proc=%s token=%d player_id=%d arcana_count=%d" % [
 		#TurnEngineCore.ArcanaProc.keys()[proc],

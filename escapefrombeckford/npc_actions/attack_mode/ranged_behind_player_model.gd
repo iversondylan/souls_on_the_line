@@ -11,9 +11,9 @@ func change_params(ctx: NPCAIContext) -> NPCAIContext:
 	
 	var delta := ctx.api.get_player_pos_delta(id)
 	if delta > 0:
-		ctx.params[NPCKeys.ATTACK_MODE] = Attack.Mode.RANGED
+		ctx.params[Keys.ATTACK_MODE] = Attack.Mode.RANGED
 	elif delta < 0:
-		ctx.params[NPCKeys.ATTACK_MODE] = Attack.Mode.MELEE
+		ctx.params[Keys.ATTACK_MODE] = Attack.Mode.MELEE
 	return ctx
 
 func change_params_sim(ctx: NPCAIContext) -> NPCAIContext:
@@ -38,8 +38,8 @@ func change_params_sim(ctx: NPCAIContext) -> NPCAIContext:
 	
 	# Behind player => ranged
 	if delta > 0:
-		ctx.params[NPCKeys.ATTACK_MODE] = Attack.Mode.RANGED
+		ctx.params[Keys.ATTACK_MODE] = Attack.Mode.RANGED
 	elif delta < 0:
-		ctx.params[NPCKeys.ATTACK_MODE] = Attack.Mode.MELEE
+		ctx.params[Keys.ATTACK_MODE] = Attack.Mode.MELEE
 
 	return ctx

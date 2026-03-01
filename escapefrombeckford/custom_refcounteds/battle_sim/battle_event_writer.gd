@@ -45,7 +45,7 @@ func _append(type: int, data: Dictionary = {}) -> int:
 		seq,
 		BattleEvent.Type.keys()[int(e.type)] if int(e.type) >= 0 and int(e.type) < BattleEvent.Type.size() else str(e.type),
 		e.scope_id,
-		String(e.scope_kind),
+		Scope.Kind.keys()[e.scope_kind],
 		int(e.turn_id),
 		int(e.group_index),
 		int(e.active_actor_id),
@@ -57,7 +57,7 @@ func _append(type: int, data: Dictionary = {}) -> int:
 # Scope helpers
 # -------------------------
 
-func scope_begin(kind: StringName, label: String = "", actor_id: int = 0) -> int:
+func scope_begin(kind: int, label: String = "", actor_id: int = 0, extra := {}) -> int:
 	if scopes == null:
 		push_warning("BattleEventWriter: scope_begin without scopes")
 		return 0
@@ -66,8 +66,8 @@ func scope_begin(kind: StringName, label: String = "", actor_id: int = 0) -> int
 
 	if actor_id > 0:
 		active_actor_id = actor_id
-
-	return _append(BattleEvent.Type.SCOPE_BEGIN, {
+	
+	var data := {
 		Keys.SCOPE_ID: f.id,
 		Keys.PARENT_SCOPE_ID: f.parent_id,
 		Keys.SCOPE_KIND: f.kind,
@@ -75,7 +75,10 @@ func scope_begin(kind: StringName, label: String = "", actor_id: int = 0) -> int
 		Keys.ACTOR_ID: f.actor_id,
 		Keys.GROUP_INDEX: f.group_index,
 		Keys.TURN_ID: f.turn_id,
-	})
+	}
+	for k in extra.keys():
+		data[k] = extra[k]
+	return _append(BattleEvent.Type.SCOPE_BEGIN, data)
 
 func scope_end() -> int:
 	if scopes == null:
@@ -86,18 +89,38 @@ func scope_end() -> int:
 	if f == null:
 		push_warning("BattleEventWriter: scope_end with empty stack")
 		return 0
-
-	return _append_manual(BattleEvent.Type.SCOPE_END, f.id, f.parent_id, f.kind, {
+	
+	var data := {
 		Keys.SCOPE_ID: f.id,
 		Keys.PARENT_SCOPE_ID: f.parent_id,
 		Keys.SCOPE_KIND: f.kind,
 		Keys.SCOPE_LABEL: f.label,
 		Keys.ACTOR_ID: f.actor_id,
-	})
+	}
+	
+	return _append_manual(BattleEvent.Type.SCOPE_END, f.id, f.parent_id, f.kind, data)
 
 # -------------------------
 # “Structural” timeline markers (these scale into animation)
 # -------------------------
+
+func emit_spawned(spawned_id: int, group_idx: int, insert_index: int, proto: String = "", spec: Dictionary = {}) -> int:
+	var data := {
+		Keys.SPAWNED_ID: int(spawned_id),
+		Keys.GROUP_INDEX: int(group_idx),
+		Keys.INSERT_INDEX: int(insert_index),
+		Keys.PROTO: String(proto),
+	}
+	if spec != null and !spec.is_empty():
+		data[Keys.SUMMON_SPEC] = spec
+	return _append(BattleEvent.Type.SPAWNED, data)
+
+func emit_formation_set(g0: PackedInt32Array, g1: PackedInt32Array, player_id: int) -> int:
+	return _append(BattleEvent.Type.FORMATION_SET, {
+		Keys.PLAYER_ID: int(player_id),
+		Keys.GROUP_0: g0,
+		Keys.GROUP_1: g1,
+	})
 
 func emit_group_turn_begin(group_idx: int) -> int:
 	return _append(BattleEvent.Type.TURN_GROUP_BEGIN, {
@@ -174,6 +197,28 @@ func emit_damage_applied(source_id: int, target_id: int, base: int, final_amount
 		Keys.WAS_LETHAL: bool(lethal),
 	})
 
+func emit_targeted(attacker_id: int, target_ids: Array[int], attack_mode: int, strike_index: int, extra := {}) -> void:
+	var data := {
+		Keys.SOURCE_ID: attacker_id,
+		Keys.TARGET_IDS: target_ids,
+		Keys.ATTACK_MODE: attack_mode,
+		Keys.STRIKE_INDEX: strike_index
+	}
+	for k in extra.keys():
+		data[k] = extra[k]
+	return _append(BattleEvent.Type.TARGETED, data)
+
+# Optional: meta events (if you don’t want to stuff everything into scope_begin)
+func emit_attack_meta(attacker_id: int, attack_mode: int, strikes: int, extra := {}) -> void:
+	var data := {
+		Keys.SOURCE_ID: attacker_id,
+		Keys.ATTACK_MODE: attack_mode,
+		Keys.STRIKES: strikes,
+	}
+	for k in extra.keys():
+		data[k] = extra[k]
+	return _append(BattleEvent.Type.ATTACK, data)
+
 func emit_death(combat_id: int, reason: String = "") -> int:
 	return _append(BattleEvent.Type.DEBUG, {
 		Keys.TARGET_ID: int(combat_id),
@@ -231,7 +276,7 @@ func emit_card_mutated(card: CardData, reason: String = "", delta: Dictionary = 
 		Keys.DELTA: delta,
 	})
 
-func _append_manual(type: int, scope_id: int, parent_scope_id: int, scope_kind: StringName, data: Dictionary = {}) -> int:
+func _append_manual(type: int, scope_id: int, parent_scope_id: int, scope_kind: int, data: Dictionary = {}) -> int:
 	if log == null:
 		return 0
 
@@ -247,14 +292,14 @@ func _append_manual(type: int, scope_id: int, parent_scope_id: int, scope_kind: 
 	e.data = data
 
 	var seq := log.append(e)
-	print("EVT seq=%d type=%s scope=%d kind=%s ctx(t=%d g=%d a=%d) data=%s" % [
-		seq,
-		BattleEvent.Type.keys()[int(e.type)] if int(e.type) >= 0 and int(e.type) < BattleEvent.Type.size() else str(e.type),
-		e.scope_id,
-		String(e.scope_kind),
-		int(e.turn_id),
-		int(e.group_index),
-		int(e.active_actor_id),
-		str(e.data)
-	])
+	#print("EVT seq=%d type=%s scope=%d kind=%s ctx(t=%d g=%d a=%d) data=%s" % [
+		#seq,
+		#BattleEvent.Type.keys()[int(e.type)] if int(e.type) >= 0 and int(e.type) < BattleEvent.Type.size() else str(e.type),
+		#e.scope_id,
+		#Scope.Kind.keys()[e.scope_kind],
+		#int(e.turn_id),
+		#int(e.group_index),
+		#int(e.active_actor_id),
+		#str(e.data)
+	#])
 	return seq

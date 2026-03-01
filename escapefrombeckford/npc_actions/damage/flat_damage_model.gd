@@ -6,5 +6,5 @@ class_name FlatDamageModel extends ParamModel
 
 func change_params(ctx: NPCAIContext) -> NPCAIContext:
 	# base damage only (no DMG_DEALT modifier here)
-	ctx.params[NPCKeys.DAMAGE] = maxi(damage, 0)
+	ctx.params[Keys.DAMAGE] = maxi(damage, 0)
 	return ctx

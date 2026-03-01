@@ -110,8 +110,8 @@ func get_targets_for_attack_sequence(ai_ctx) -> Array:
 # Core verbs (SYNC)
 # --------------------------
 
-func resolve_damage(ctx: DamageContext) -> void:
-	resolve_damage_immediate(ctx)
+#func resolve_damage(ctx: DamageContext) -> void:
+	#resolve_damage_immediate(ctx)
 
 func resolve_attack(ctx: NPCAIContext) -> bool:
 	return SimAttackRunner.run(self, ctx)
@@ -133,20 +133,16 @@ func resolve_damage_immediate(ctx: DamageContext) -> int:
 	ctx.phase = DamageContext.Phase.PRE_MODIFIERS
 	ctx.amount = ctx.base_amount
 
-	# Optional: give statuses a chance to react before math
-	# (Only do this if you actually have these hooks in your status pipeline.)
-	# _emit_damage_event(ctx, "pre_modifiers")
-
 	# --- APPLY MODIFIERS (one at a time; cid-based) ---
 	# 1) attacker modifies damage dealt
-	print("sim_battle_api.gd resolve_damage_immediate() pre dealt amt: ", ctx.amount)
+	#print("sim_battle_api.gd resolve_damage_immediate() pre dealt amt: ", ctx.amount)
 	ctx.amount = SimModifierResolver.get_modified_value(
 		state,
 		ctx.amount,
 		ctx.deal_modifier_type,
 		ctx.source_id
 	)
-	print("sim_battle_api.gd resolve_damage_immediate() pre taken amt: ", ctx.amount)
+	#print("sim_battle_api.gd resolve_damage_immediate() pre taken amt: ", ctx.amount)
 	# 2) defender modifies damage taken
 	ctx.amount = SimModifierResolver.get_modified_value(
 		state,
@@ -154,7 +150,7 @@ func resolve_damage_immediate(ctx: DamageContext) -> int:
 		ctx.take_modifier_type,
 		ctx.target_id
 	)
-	print("sim_battle_api.gd resolve_damage_immediate() post dealt amt: ", ctx.amount)
+	#print("sim_battle_api.gd resolve_damage_immediate() post dealt amt: ", ctx.amount)
 	ctx.amount = maxi(ctx.amount, 0)
 	ctx.phase = DamageContext.Phase.POST_MODIFIERS
 
@@ -189,8 +185,17 @@ func resolve_damage_immediate(ctx: DamageContext) -> int:
 
 	ctx.phase = DamageContext.Phase.APPLIED
 
-	# --- LOG EVENT (SIM event log) ---
-	# You already emit DAMAGE_APPLIED elsewhere; fill it from ctx.
+	if writer != null:
+		writer.emit_damage_applied(
+			int(ctx.source_id),
+			int(ctx.target_id),
+			int(ctx.base_amount),
+			int(ctx.amount),
+			int(ctx.armor_damage),
+			int(ctx.health_damage),
+			bool(ctx.was_lethal)
+		)
+	
 	on_damage_applied(ctx)
 
 	# Optional: reactive statuses (EVENT_BASED) after application
@@ -263,6 +268,38 @@ func remove_status(ctx: RemoveStatusContext) -> void:
 	_rebuild_modifier_cache_for(ctx.target_id)
 	_rebuild_modifier_cache_for(ctx.target_id)
 
+func spawn_from_data(combatant_data: CombatantData, group_index: int, insert_index: int = -1, is_player := false) -> int:
+	if combatant_data == null or state == null:
+		return 0
+	
+	var id := state.alloc_id()
+	if is_player:
+		state.groups[FRIENDLY].player_id = id
+	var u := CombatantState.new()
+	u.id = id
+	u.combatant_data = combatant_data
+	u.init_from_combatant_data(combatant_data)
+	
+	if combatant_data.resource_path != "":
+		u.data_proto_path = String(combatant_data.resource_path)
+	
+	var g := clampi(group_index, 0, 1)
+	state.add_unit(u, g, int(insert_index))
+	
+	if writer != null:
+		var proto := String(u.data_proto_path)
+		var spec := {
+			Keys.COMBATANT_NAME: String(combatant_data.name),
+			Keys.MAX_HEALTH: int(combatant_data.max_health),
+			Keys.HEALTH: int(combatant_data.health),
+			Keys.MAX_MANA: int(combatant_data.max_mana),
+			Keys.APM: int(combatant_data.apm),
+			Keys.APR: int(combatant_data.apr),
+			Keys.PROTO_PATH: String(combatant_data.resource_path),
+		}
+		writer.emit_spawned(id, g, int(insert_index), proto, spec)
+	
+	return id
 
 func summon(ctx: SummonContext) -> void:
 	if ctx == null or state == null:
@@ -270,33 +307,32 @@ func summon(ctx: SummonContext) -> void:
 	if ctx.summon_data == null:
 		push_warning("SimBattleAPI.summon: missing summon_data")
 		return
-
+	
 	var id := state.alloc_id()
 	ctx.summon_data.combat_id = id
-
+	
 	var u := CombatantState.new()
 	u.id = id
 	u.combatant_data = ctx.summon_data
 	u.init_from_combatant_data(ctx.summon_data)
 	if ctx.summon_data.resource_path != "":
 		u.data_proto_path = String(ctx.summon_data.resource_path)
-
+	
 	var g := clampi(ctx.group_index, 0, 1)
 	state.add_unit(u, g, int(ctx.insert_index))
 	var proto := String(u.data_proto_path)
 	var spec := {}
 	if ctx.summon_data != null:
 		spec = {
-			&"name": String(ctx.summon_data.name),
-			&"max_hp": int(ctx.summon_data.max_health),
-			&"hp": int(ctx.summon_data.health),
-			&"armor": int(ctx.summon_data.armor),
-			&"max_mana_blue": int(ctx.summon_data.max_mana_blue),
-			&"max_mana_green": int(ctx.summon_data.max_mana_green),
-			&"max_mana_red": int(ctx.summon_data.max_mana_red),
-			&"proto_path": String(ctx.summon_data.resource_path),
+			Keys.COMBATANT_NAME: String(ctx.summon_data.name),
+			Keys.MAX_HEALTH: int(ctx.summon_data.max_health),
+			Keys.HEALTH: int(ctx.summon_data.health),
+			Keys.MAX_MANA: int(ctx.summon_data.max_mana),
+			Keys.APM: int(ctx.summon_data.apm),
+			Keys.APR: int(ctx.summon_data.apr),
+			Keys.PROTO_PATH: String(ctx.summon_data.resource_path),
 		}
-
+	
 	if writer != null:
 		writer.emit_summoned(id, g, int(ctx.insert_index), proto, spec)
 	
@@ -314,14 +350,14 @@ func resolve_move(ctx: MoveContext) -> void:
 	var u := state.get_unit(ctx.actor_id)
 	if u == null or !u.is_alive():
 		return
-
+	
 	var g := u.team
 	if g < 0:
 		return
-
+	
 	# Snapshot before
 	ctx.before_order_ids = PackedInt32Array(state.groups[g].order)
-
+	
 	match ctx.move_type:
 		MoveContext.MoveType.MOVE_TO_FRONT:
 			_move_id_to_index(g, ctx.actor_id, 0)
@@ -337,9 +373,9 @@ func resolve_move(ctx: MoveContext) -> void:
 
 	# Snapshot after
 	ctx.after_order_ids = PackedInt32Array(state.groups[g].order)
-
+	
 	if writer != null:
-		writer.scope_begin(Keys.SCOPE_MOVE, "actor=%d" % int(ctx.actor_id), int(ctx.actor_id))
+		writer.scope_begin(Scope.Kind.MOVE, "actor=%d" % int(ctx.actor_id), int(ctx.actor_id))
 		var extra := {}
 		if int(ctx.target_id) > 0:
 			extra[Keys.TARGET_ID] = int(ctx.target_id)
@@ -347,42 +383,6 @@ func resolve_move(ctx: MoveContext) -> void:
 			extra[Keys.TO_INDEX] = int(ctx.index)
 		writer.emit_moved(int(ctx.actor_id), int(ctx.move_type), ctx.before_order_ids, ctx.after_order_ids, extra)
 		writer.scope_end()
-
-#func resolve_move(ctx: MoveContext) -> void:
-	#if ctx == null or state == null:
-		#return
-	#if ctx.actor_id <= 0:
-		#return
-	#var u := state.get_unit(ctx.actor_id)
-	#if u == null or !u.is_alive():
-		#return
-#
-	#var g := u.team
-	#if g < 0:
-		#return
-#
-	## Snapshot before
-	#ctx.before_order_ids = PackedInt32Array(state.groups[g].order)
-#
-	#match ctx.move_type:
-		#MoveContext.MoveType.MOVE_TO_FRONT:
-			#_move_id_to_index(g, ctx.actor_id, 0)
-		#MoveContext.MoveType.MOVE_TO_BACK:
-			#_move_id_to_index(g, ctx.actor_id, state.groups[g].order.size() - 1)
-		#MoveContext.MoveType.INSERT_AT_INDEX:
-			#_move_id_to_index(g, ctx.actor_id, ctx.index)
-		#MoveContext.MoveType.SWAP_WITH_TARGET:
-			#if ctx.target_id > 0:
-				#_swap_ids(g, ctx.actor_id, ctx.target_id)
-		#MoveContext.MoveType.TRAVERSE_PLAYER:
-			## This is a policy decision. Implement once you have "player_id" stored in GroupState.
-			#pass
-		#_:
-			#pass
-#
-	## Snapshot after
-	#ctx.after_order_ids = PackedInt32Array(state.groups[g].order)
-
 
 func apply_attack_now(spec: SimAttackSpec) -> bool:
 	if spec == null or state == null:
@@ -398,14 +398,12 @@ func apply_attack_now(spec: SimAttackSpec) -> bool:
 	ai_ctx.state = {}
 	ai_ctx.params = {}
 	ai_ctx.forecast = false
-
+	
 	if spec.param_models:
 		for m in spec.param_models:
 			if m:
 				m.change_params_sim(ai_ctx)
 	return resolve_attack(ai_ctx)
-	
-	
 
 # --------------------------
 # Damage pipeline hooks
@@ -415,14 +413,14 @@ func modify_damage_amount(ctx: DamageContext, base: int) -> int:
 	var amount := base
 	if state == null or ctx == null:
 		return amount
-
+	
 	var src := state.get_unit(ctx.source_id)
 	var tgt := state.get_unit(ctx.target_id)
-
+	
 	# Deal-side cache
 	if src and src.modifiers:
 		amount = src.modifiers.apply(ctx.deal_modifier_type, amount)
-
+	
 	# Take-side cache
 	if tgt and tgt.modifiers:
 		amount = tgt.modifiers.apply(ctx.take_modifier_type, amount)
@@ -435,22 +433,21 @@ func apply_damage_amount(ctx: DamageContext, amount: int) -> void:
 	var tgt := state.get_unit(ctx.target_id)
 	if tgt == null or !tgt.is_alive():
 		return
-
+	
 	var pre_armor := tgt.armor
-
+	
 	# Armor-first; adjust to match your live CombatantData.take_damage semantics.
 	var remaining := amount
 	var armor_loss := mini(pre_armor, remaining)
 	tgt.armor = pre_armor - armor_loss
 	remaining -= armor_loss
-
+	
 	var pre_hp := tgt.health
 	tgt.health = maxi(pre_hp - remaining, 0)
-
+	
 	ctx.armor_damage = armor_loss
 	ctx.health_damage = pre_hp - tgt.health
 	ctx.was_lethal = (tgt.health <= 0)
-	
 
 	if writer != null:
 		writer.emit_damage_applied(
@@ -485,7 +482,7 @@ func on_card_played(ctx: CardActionContextSim) -> void:
 	
 	ctx.card_data.ensure_uid()
 
-	writer.scope_begin(Keys.SCOPE_CARD, "uid=%s %s" % [str(ctx.card_data.uid), String(ctx.card_data.name)], int(ctx.source_id))
+	writer.scope_begin(Scope.Kind.CARD, "uid=%s %s" % [str(ctx.card_data.uid), String(ctx.card_data.name)], int(ctx.source_id))
 
 	var targets: Array[int] = []
 	if ctx.resolved != null:
