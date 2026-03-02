@@ -16,7 +16,6 @@ name = "Slab Construct"
 character_art = ExtResource("2_p1pqp")
 facing_right = false
 max_health = 35
-max_mana_red = 8
 behaviors = Array[ExtResource("2_g48a1")]([SubResource("Resource_l2s82")])
 ai = ExtResource("1_xvhqi")
 metadata/_custom_type_script = "uid://cfatj0ryn8uv3"

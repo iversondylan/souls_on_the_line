@@ -19,7 +19,6 @@ const ENEMY := 1
 @onready var sim_host: SimHost = $SimHost
 @onready var battle_view: BattleView = $BattleView
 
-
 @onready var player_scn: PackedScene = preload("res://scenes/turn_takers/player.tscn")
 @onready var enemy_scn: PackedScene = preload("res://scenes/turn_takers/enemy.tscn")
 @onready var perspective_card_scn: PackedScene = preload("res://scenes/perspective_card.tscn")

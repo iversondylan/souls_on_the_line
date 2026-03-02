@@ -101,9 +101,12 @@ func remove_status_icon(_status_id: StringName) -> void:
 	# TODO: update grid
 	pass
 
-func apply_damage(health_damage: int, armor_damage: int, was_lethal: bool) -> void:
-	health = clampi(health - health_damage, 0, max_health)
+func set_health(new_health: int, was_lethal: bool = false) -> void:
+	health = clampi(new_health, 0, max_health)
 	health_bar.update_health_view(max_health, health)
+	if was_lethal:
+		# later: death animation
+		pass
 	
 
 func _set_character_art(_uid: String) -> void:

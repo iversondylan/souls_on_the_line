@@ -2,6 +2,9 @@
 
 class_name BattleEventLog extends RefCounted
 
+
+signal appended(new_size: int)
+
 var _events: Array[BattleEvent] = []
 var _next_seq: int = 0
 
@@ -22,6 +25,7 @@ func append(e: BattleEvent) -> int:
 	e.battle_tick = _next_seq
 	_next_seq += 1
 	_events.append(e)
+	appended.emit(e.seq)
 	return e.seq
 
 func get_event(i: int) -> BattleEvent:

@@ -8,7 +8,9 @@ func reset() -> void:
 	index = 0
 
 func has_next(log: BattleEventLog) -> bool:
-	return log != null and index < log.size()
+	if log == null:
+		return false
+	return index < log._events.size()
 
 func peek(log: BattleEventLog) -> BattleEvent:
 	if log == null:

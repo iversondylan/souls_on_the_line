@@ -70,6 +70,8 @@ const FINAL_AMOUNT := &"amount"
 const ARMOR_DAMAGE := &"armor_damage"
 const HEALTH_DAMAGE := &"health_damage"
 const WAS_LETHAL := &"was_lethal"
+const BEFORE_HEALTH := &"before_health"
+const AFTER_HEALTH := &"after_health"
 
 # Attack
 #const TARGETED := &"targeted"

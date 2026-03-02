@@ -4,13 +4,29 @@ class_name BattleEventDirector extends RefCounted
 
 var battle_view: BattleView
 
+
+@export var spawn_pause_sec: float = 0.04
+@export var summon_pause_sec: float = 0.06
+@export var hit_pause_sec: float = 0.05
+
 func bind(new_battle_view: BattleView) -> void:
 	battle_view = new_battle_view
+
+func play_beat_async(beat: Array[BattleEvent], gen: int) -> void:
+	if battle_view == null or beat.is_empty():
+		return
+	
+	for e in beat:
+		# cancellation check
+		if !battle_view._playing or gen != battle_view._playback_gen:
+			return
+		
+		on_event(e)
 
 func on_event(e: BattleEvent) -> void:
 	if e == null or battle_view == null:
 		return
-
+	
 	match int(e.type):
 		BattleEvent.Type.SPAWNED:
 			_on_spawned(e)
@@ -108,16 +124,12 @@ func _on_damage_applied(e: BattleEvent) -> void:
 	var amount := int(e.data.get(Keys.FINAL_AMOUNT, 0))
 	var lethal := bool(e.data.get(Keys.WAS_LETHAL, false))
 	var target_combatant := battle_view.get_combatant(tid)
+	var after_health := int(e.data.get(Keys.AFTER_HEALTH, 1))
 	print("battle_event_director.gd _on_damage_applied() src: %s, tid: %s, amount: %s" % [src, tid, amount])
 	if target_combatant != null:
 		target_combatant.play_hit()
-		target_combatant.apply_damage(amount, 0, lethal)
+		target_combatant.set_health(after_health, lethal)
 		target_combatant.pop_damage_number(amount)
-
-	#var combatant := battle_view.get_combatant(src)
-	#if combatant != null:
-		#combatant.apply_damage(amount, 0, lethal)
-		#combatant.play_attack_react()
 
 func _on_status_applied(e: BattleEvent) -> void:
 	var tid := int(e.data.get(Keys.TARGET_ID, 0))
@@ -147,16 +159,9 @@ func _on_scope_end(_e: BattleEvent) -> void:
 	print("battle_event_director.gd _on_scope_end()")
 	pass
 
-# entry point: play one beat.
-# For now it just dispatches instantly, but this is to add awaits.
 func play_beat(beat: Array[BattleEvent]) -> void:
 	if battle_view == null or beat.is_empty():
 		return
 
-	# Optional: you can peek the root scope kind to choose a pacing preset
-	# var root := beat[0]
-	# var kind := int(root.scope_kind)
-
 	for e in beat:
 		on_event(e)
-# Later I’ll convert this to: # func play_beat(beat): await _view.fx.play_hit(); etc.

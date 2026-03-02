@@ -33,7 +33,6 @@ description = "Cole creates spectral clones of himself. Once an instructor at Be
 character_art = ExtResource("1_8y483")
 character_art_uid = "uid://ppn4laxwte56"
 portrait = ExtResource("2_qttha")
-character_scale = 0.6
 height = 270
 max_health = 50
 behaviors = Array[ExtResource("2_e6iat")]([SubResource("Resource_iaxe5"), SubResource("Resource_g0v2d")])

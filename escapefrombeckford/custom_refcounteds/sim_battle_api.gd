@@ -164,7 +164,7 @@ func resolve_damage_immediate(ctx: DamageContext) -> int:
 		return 0
 	
 	var remaining := ctx.amount
-	
+	var before_health := tgt.health
 	# Armor first (if that’s your rule)
 	var armor_damage := mini(remaining, maxi(tgt.armor, 0))
 	tgt.armor -= armor_damage
@@ -193,7 +193,9 @@ func resolve_damage_immediate(ctx: DamageContext) -> int:
 			int(ctx.amount),
 			int(ctx.armor_damage),
 			int(ctx.health_damage),
-			bool(ctx.was_lethal)
+			bool(ctx.was_lethal),
+			int(before_health),
+			int(tgt.health),
 		)
 	
 	on_damage_applied(ctx)
@@ -436,38 +438,40 @@ func modify_damage_amount(ctx: DamageContext, base: int) -> int:
 
 	return amount
 
-func apply_damage_amount(ctx: DamageContext, amount: int) -> void:
-	if state == null or ctx == null:
-		return
-	var tgt := state.get_unit(ctx.target_id)
-	if tgt == null or !tgt.is_alive():
-		return
-	
-	var pre_armor := tgt.armor
-	
-	# Armor-first; adjust to match your live CombatantData.take_damage semantics.
-	var remaining := amount
-	var armor_loss := mini(pre_armor, remaining)
-	tgt.armor = pre_armor - armor_loss
-	remaining -= armor_loss
-	
-	var pre_hp := tgt.health
-	tgt.health = maxi(pre_hp - remaining, 0)
-	
-	ctx.armor_damage = armor_loss
-	ctx.health_damage = pre_hp - tgt.health
-	ctx.was_lethal = (tgt.health <= 0)
-
-	if writer != null:
-		writer.emit_damage_applied(
-			int(ctx.source_id),
-			int(ctx.target_id),
-			int(ctx.base_amount),
-			int(amount),
-			int(ctx.armor_damage),
-			int(ctx.health_damage),
-			bool(ctx.was_lethal)
-		)
+#func apply_damage_amount(ctx: DamageContext, amount: int) -> void:
+	#if state == null or ctx == null:
+		#return
+	#var tgt := state.get_unit(ctx.target_id)
+	#if tgt == null or !tgt.is_alive():
+		#return
+	#
+	#var pre_armor := tgt.armor
+	#
+	## Armor-first; adjust to match your live CombatantData.take_damage semantics.
+	#var remaining := amount
+	#var armor_loss := mini(pre_armor, remaining)
+	#tgt.armor = pre_armor - armor_loss
+	#remaining -= armor_loss
+	#
+	#var pre_hp := tgt.health
+	#tgt.health = maxi(pre_hp - remaining, 0)
+	#
+	#ctx.armor_damage = armor_loss
+	#ctx.health_damage = pre_hp - tgt.health
+	#ctx.was_lethal = (tgt.health <= 0)
+#
+	#if writer != null:
+		#writer.emit_damage_applied(
+			#int(ctx.source_id),
+			#int(ctx.target_id),
+			#int(ctx.base_amount),
+			#int(amount),
+			#int(ctx.armor_damage),
+			#int(ctx.health_damage),
+			#bool(ctx.was_lethal),
+			#0,
+			#0
+		#)
 
 func on_damage_applied(ctx: DamageContext) -> void:
 	if state == null or ctx == null:

@@ -187,7 +187,7 @@ func emit_card_played(ctx: CardActionContextSim) -> int:
 
 	return _append(BattleEvent.Type.CARD_PLAYED, data)
 
-func emit_damage_applied(source_id: int, target_id: int, base: int, final_amount: int, armor_dmg: int, hp_dmg: int, lethal: bool) -> int:
+func emit_damage_applied(source_id: int, target_id: int, base: int, final_amount: int, armor_dmg: int, hp_dmg: int, lethal: bool, before_health: int, after_health: int) -> int:
 	return _append(BattleEvent.Type.DAMAGE_APPLIED, {
 		Keys.SOURCE_ID: int(source_id),
 		Keys.TARGET_ID: int(target_id),
@@ -196,6 +196,8 @@ func emit_damage_applied(source_id: int, target_id: int, base: int, final_amount
 		Keys.ARMOR_DAMAGE: int(armor_dmg),
 		Keys.HEALTH_DAMAGE: int(hp_dmg),
 		Keys.WAS_LETHAL: bool(lethal),
+		Keys.BEFORE_HEALTH: int(before_health),
+		Keys.AFTER_HEALTH: int(after_health),
 	})
 
 func emit_targeted(attacker_id: int, target_ids: Array[int], attack_mode: int, strike_index: int, extra := {}) -> void:
@@ -209,16 +211,16 @@ func emit_targeted(attacker_id: int, target_ids: Array[int], attack_mode: int, s
 		data[k] = extra[k]
 	return _append(BattleEvent.Type.TARGETED, data)
 
-# Optional: meta events (if you don’t want to stuff everything into scope_begin)
-func emit_attack_meta(attacker_id: int, attack_mode: int, strikes: int, extra := {}) -> void:
-	var data := {
-		Keys.SOURCE_ID: attacker_id,
-		Keys.ATTACK_MODE: attack_mode,
-		Keys.STRIKES: strikes,
-	}
-	for k in extra.keys():
-		data[k] = extra[k]
-	return _append(BattleEvent.Type.ATTACK, data)
+## Optional: meta events (if you don’t want to stuff everything into scope_begin)
+#func emit_attack_meta(attacker_id: int, attack_mode: int, strikes: int, extra := {}) -> void:
+	#var data := {
+		#Keys.SOURCE_ID: attacker_id,
+		#Keys.ATTACK_MODE: attack_mode,
+		#Keys.STRIKES: strikes,
+	#}
+	#for k in extra.keys():
+		#data[k] = extra[k]
+	#return _append(BattleEvent.Type.ATTACK, data)
 
 func emit_death(combat_id: int, after_order: PackedInt32Array,  reason: String = "") -> int:
 	return _append(BattleEvent.Type.DEBUG, {
