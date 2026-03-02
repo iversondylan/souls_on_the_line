@@ -211,16 +211,41 @@ func emit_targeted(attacker_id: int, target_ids: Array[int], attack_mode: int, s
 		data[k] = extra[k]
 	return _append(BattleEvent.Type.TARGETED, data)
 
-## Optional: meta events (if you don’t want to stuff everything into scope_begin)
-#func emit_attack_meta(attacker_id: int, attack_mode: int, strikes: int, extra := {}) -> void:
-	#var data := {
-		#Keys.SOURCE_ID: attacker_id,
-		#Keys.ATTACK_MODE: attack_mode,
-		#Keys.STRIKES: strikes,
-	#}
-	#for k in extra.keys():
-		#data[k] = extra[k]
-	#return _append(BattleEvent.Type.ATTACK, data)
+func emit_attack_prep(attacker_id: int, target_ids: Array[int], attack_mode: int, target_type: int, strikes: int) -> int:
+	return _append(BattleEvent.Type.ATTACK_PREP, {
+		Keys.SOURCE_ID: int(attacker_id),
+		Keys.TARGET_IDS: target_ids, # <-- REQUIRED BY YOU
+		Keys.ATTACK_MODE: int(attack_mode),
+		Keys.TARGET_TYPE: int(target_type),
+		Keys.STRIKES: int(strikes),
+	})
+
+func emit_attack_wrapup(attacker_id: int, attack_mode: int, target_type: int, strikes: int) -> int:
+	return _append(BattleEvent.Type.ATTACK_WRAPUP, {
+		Keys.SOURCE_ID: int(attacker_id),
+		Keys.ATTACK_MODE: int(attack_mode),
+		Keys.TARGET_TYPE: int(target_type),
+		Keys.STRIKES: int(strikes),
+	})
+
+
+func emit_strike_windup(attacker_id: int, target_ids: Array[int], attack_mode: int, target_type: int, strike_index: int) -> int:
+	return _append(BattleEvent.Type.STRIKE_WINDUP, {
+		Keys.SOURCE_ID: int(attacker_id),
+		Keys.TARGET_IDS: target_ids,
+		Keys.ATTACK_MODE: int(attack_mode),
+		Keys.TARGET_TYPE: int(target_type),
+		Keys.STRIKE_INDEX: int(strike_index),
+	})
+
+func emit_strike_followthrough(attacker_id: int, target_ids: Array[int], attack_mode: int, target_type: int, strike_index: int) -> int:
+	return _append(BattleEvent.Type.STRIKE_FOLLOWTHROUGH, {
+		Keys.SOURCE_ID: int(attacker_id),
+		Keys.TARGET_IDS: target_ids,
+		Keys.ATTACK_MODE: int(attack_mode),
+		Keys.TARGET_TYPE: int(target_type),
+		Keys.STRIKE_INDEX: int(strike_index),
+	})
 
 func emit_death(combat_id: int, after_order: PackedInt32Array,  reason: String = "") -> int:
 	return _append(BattleEvent.Type.DEBUG, {

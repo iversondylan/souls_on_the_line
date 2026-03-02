@@ -12,6 +12,7 @@ var battle_ui: BattleUI
 
 var event_player: BattleEventPlayer
 var event_director: BattleEventDirector
+var transport: BattleTransport
 #var _assets := BattleAssetCache.new()
 
 var _playing := false
@@ -28,6 +29,8 @@ func _ready() -> void:
 	event_player = BattleEventPlayer.new()
 	event_director = BattleEventDirector.new()
 	event_director.bind(self)
+	transport = BattleTransport.new()
+	transport.playback_scale = playback_scale
 
 func bind_log(log: BattleEventLog) -> void:
 	event_player.bind_log(log)
@@ -70,7 +73,7 @@ func _playback_loop(gen: int) -> void:
 		
 		var gap := _gap_for_beat(beat)
 		if gap > 0.0:
-			await get_tree().create_timer(gap).timeout
+			await transport.wait_seconds(gap)
 		
 		await get_tree().process_frame
 
