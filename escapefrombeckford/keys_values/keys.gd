@@ -64,6 +64,10 @@ const CARD_TYPE_S := &"card_type_s"
 const CARD_TARGET_TYPE_S := &"card_target_type_s"
 const TARGETS := &"targets"
 
+# Arcana
+const ARCANUM_ID := &"arcanum_id"
+const PROC := &"proc"
+
 # Damage applied
 const BASE_AMOUNT := &"base"
 const FINAL_AMOUNT := &"amount"
@@ -118,8 +122,6 @@ const TO_INDEX := &"to_index"
 # Death
 const DEATH_REASON := &"death_reason"
 
-# Arcana proc
-const PROC := &"proc"
 
 # -------------------------
 # Status ids you’ve used so far

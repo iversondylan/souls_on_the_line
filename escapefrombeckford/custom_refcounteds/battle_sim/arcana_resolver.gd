@@ -39,9 +39,10 @@ func run_proc(proc: int) -> void:
 		
 		# if ("writer" in host.main_api) else null
 		#var scope_id := 0
+		var player_id := int(host.main_state.groups[0].player_id)
 		if writer != null:# and writer.has_method("begin_scope"):
 			# actor_id: usually player_id for friendly-owned arcana; keep consistent with your earlier ctx params
-			var player_id := int(host.main_state.groups[0].player_id)
+			
 			writer.scope_begin(
 				Scope.Kind.ARCANUM,
 				"id=%s" % String(id),
@@ -58,8 +59,16 @@ func run_proc(proc: int) -> void:
 		ctx.params[Keys.SOURCE_ID] = host.main_state.groups[0].player_id
 		ctx.params[Keys.GROUP_INDEX] = 0
 		
-		# variants can't be inferred, numbnuts
+		if writer != null and proto.wants_in_beat():
+			var prep_targets: Array[int] = ctx.params.get(Keys.TARGET_IDS, [])
+			writer.emit_arcanum_prep(player_id, id, proc, prep_targets)
+		
 		var r = proto.activate_arcanum(ctx)
+		
+		if writer != null and proto.wants_out_beat():
+			var out_targets: Array[int] = ctx.params.get(Keys.TARGET_IDS, [])
+			writer.emit_arcanum_wrapup(player_id, id, proc, out_targets)
+		
 		
 		# policy: headless arcana must be sync
 		if r is Signal and !(r as Signal).is_null():

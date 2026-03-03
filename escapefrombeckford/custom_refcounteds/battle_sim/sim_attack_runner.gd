@@ -12,7 +12,7 @@ static func run(api: SimBattleAPI, ctx: NPCAIContext) -> bool:
 	var any := false
 	var mode := int(ctx.params.get(Keys.ATTACK_MODE, Attack.Mode.MELEE))
 	var targeting := int(ctx.params.get(Keys.TARGET_TYPE, Attack.Targeting.STANDARD))
-
+	
 	# ----------------------------
 	# ATTACK SCOPE
 	# ----------------------------
@@ -23,7 +23,7 @@ static func run(api: SimBattleAPI, ctx: NPCAIContext) -> bool:
 			Keys.STRIKES: strikes,
 			Keys.TARGET_TYPE: targeting,
 		})
-
+	
 	# ----------------------------
 	# ATTACK_PREP (one-time) with TARGET_IDS
 	# ----------------------------
@@ -31,45 +31,45 @@ static func run(api: SimBattleAPI, ctx: NPCAIContext) -> bool:
 	prep_target_ids = prep_target_ids.filter(func(id):
 		return int(id) > 0 and api.is_alive(int(id))
 	)
-
+	
 	if api.writer != null:
 		api.writer.emit_attack_prep(int(ctx.cid), prep_target_ids, mode, targeting, strikes)
-
+	
 	# ----------------------------
 	# STRIKES
 	# ----------------------------
 	for s in range(strikes):
 		if !api.is_alive(ctx.cid):
 			break
-
+		
 		if api.writer != null:
 			api.writer.scope_begin(Scope.Kind.STRIKE, "i=%d" % s, int(ctx.cid), {
 				Keys.STRIKE_INDEX: s,
 				Keys.ATTACK_MODE: mode,
 				Keys.TARGET_TYPE: targeting,
 			})
-
+		
 		# Per-strike target selection (can retarget)
 		var target_ids: Array[int] = AttackTargeting.get_target_ids(api, ctx.cid, ctx.params)
 		target_ids = target_ids.filter(func(id):
 			return int(id) > 0 and api.is_alive(int(id))
 		)
-
+		
 		if target_ids.is_empty():
 			if api.writer != null:
 				api.writer.scope_end() # strike
 			continue
-
+		
 		# ----------------------------
 		# STRIKE_WINDUP (per strike)
 		# ----------------------------
 		if api.writer != null:
 			api.writer.emit_strike_windup(int(ctx.cid), target_ids, mode, targeting, s)
-
+		
 		# Keep TARGETED too (it’s still useful as “lock-in/telegraph”)
 		if api.writer != null:
 			api.writer.emit_targeted(int(ctx.cid), target_ids, mode, s)
-
+		
 		var dmg := 0
 		if ctx.params.has(Keys.DAMAGE_MELEE) or ctx.params.has(Keys.DAMAGE_RANGED):
 			var k := Keys.DAMAGE_RANGED if mode == Attack.Mode.RANGED else Keys.DAMAGE_MELEE
@@ -77,10 +77,10 @@ static func run(api: SimBattleAPI, ctx: NPCAIContext) -> bool:
 		else:
 			dmg = int(ctx.params.get(Keys.DAMAGE, 0))
 		dmg = maxi(dmg, 0)
-
+		
 		var deal_mod := int(ctx.params.get(Keys.DEAL_MOD_TYPE, Modifier.Type.DMG_DEALT))
 		var take_mod := int(ctx.params.get(Keys.TAKE_MOD_TYPE, Modifier.Type.DMG_TAKEN))
-
+		
 		for tid: int in target_ids:
 			if api.writer != null:
 				api.writer.scope_begin(Scope.Kind.HIT, "t=%d" % int(tid), int(ctx.cid), {

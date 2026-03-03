@@ -3,9 +3,8 @@
 class_name Arcanum extends Resource
 
 enum Type {START_OF_TURN, START_OF_COMBAT, END_OF_TURN, END_OF_COMBAT, EVENT_BASED}
-
+enum Beats {NONE, IN, OUT, IN_OUT}
 @export var arcanum_name: String
-#@export var id: String
 @export var type: Type
 @export var starter_arcanum: bool = false
 @export var icon: Texture
@@ -29,6 +28,17 @@ func contributes_modifier() -> bool:
 
 func get_contributed_modifier_types() -> Array[Modifier.Type]:
 	return []
+
+func get_beats() -> int:
+	return Beats.NONE
+
+func wants_in_beat() -> bool:
+	var b := int(get_beats())
+	return b == Beats.IN or b == Beats.IN_OUT
+
+func wants_out_beat() -> bool:
+	var b := int(get_beats())
+	return b == Beats.OUT or b == Beats.IN_OUT
 
 # This method should be implemented by event-based arcana
 # that connect to the Events bus to make sure that they
