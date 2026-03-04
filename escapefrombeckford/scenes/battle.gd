@@ -163,6 +163,7 @@ func start_battle():
 	sim_host.init_from_seeds(battle_scene.battle_seed, battle_scene.run_seed)
 	sim_host.status_catalog = run.status_catalog
 	sim_host.arcana_catalog = run.arcanum_catalog
+	battle_view.status_catalog = run.status_catalog
 	# ids are the .get_id()'s of currently owned arcana
 	sim_host.seed_arcana_from_ids(my_arcana) #ids: Array[StringName]
 	#battle_view.reset_view()

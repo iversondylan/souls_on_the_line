@@ -349,7 +349,7 @@ func summon(ctx: SummonContext) -> void:
 	
 	ctx.summoned_id = id
 	ctx.summoned_fighter = null # headless
-	print("[SIM][SUMMON] new_id=%d group=%d idx=%d proto=%s" % [id, g, int(ctx.insert_index), String(u.data_proto_path)])
+	#print("[SIM][SUMMON] new_id=%d group=%d idx=%d proto=%s" % [id, g, int(ctx.insert_index), String(u.data_proto_path)])
 	if on_summoned.is_valid():
 		on_summoned.call(id, g)
 

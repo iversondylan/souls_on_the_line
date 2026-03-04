@@ -13,17 +13,19 @@ var battle_ui: BattleUI
 var event_player: BattleEventPlayer
 var event_director: BattleEventDirector
 var transport: BattleTransport
-#var _assets := BattleAssetCache.new()
+var status_catalog: StatusCatalog = null
 
 var _playing := false
 var _playback_gen: int = 0
 
+var _projectiles_by_attacker: Dictionary = {} # int attacker_id -> Node2D projectile
+
 var combatants_by_cid: Dictionary = {}
 
 # Playback knobs
-var tempo: float = 130
-#@export var beat_gap_sec: float = 0.12
-#@export var scope_gap_sec: float = 0.20
+var tempo: float = 110
+
+var tween_bg: Tween
 
 func _ready() -> void:
 	event_player = BattleEventPlayer.new()
@@ -46,7 +48,6 @@ func stop_playback() -> void:
 	_playing = false
 	_playback_gen += 1 # invalidates any running loop
 
-# battle_view.gd
 func _playback_loop(gen: int) -> void:
 	while _playing and gen == _playback_gen and event_player != null:
 		# If we reached end-of-log, wait for more events to arrive.
@@ -69,11 +70,11 @@ func _playback_loop(gen: int) -> void:
 		print("battle_view.gd _playback_loop() this beat contains : v")
 		for event: BattleEvent in beat:
 			print("battle_view.gd _playback_loop() ", BattleEvent.Type.keys()[event.type])
-		print("battle_view.gd _playback_loop() this beat contained: ^")
+		print("battle_view.gd _playback_loop() this beat contains: ^")
 		
 		var note_denom := _note_for_beat(beat)
 		var duration := transport.get_beat_duration(note_denom)
-		
+		print("battle_view.gd _playback_loop() allocating time: %ss" % duration)
 		var pkg := BeatPackage.new()
 		pkg.beat = beat
 		pkg.gen = gen
@@ -103,7 +104,7 @@ func get_or_create_combatant_view(cid: int, group_index: int, insert_index: int)
 	#var cv := combatant as CombatantView
 	combatant.cid = cid
 	#cv.bind_assets(_assets)
-	
+	combatant.bind_status_catalog(status_catalog)
 	# Optional insert
 	var n_children := group.get_child_count()
 	if insert_index < 0:
@@ -112,12 +113,15 @@ func get_or_create_combatant_view(cid: int, group_index: int, insert_index: int)
 	group.move_child(combatant, insert_index)
 	
 	combatants_by_cid[cid] = combatant
-	group.register_view(combatant) # triggers layout
+	var ctx := GroupLayoutOrder.new()
+	ctx.group_index = group_index
+	ctx.new_combatant = combatant
+	group.register_combatant(ctx) # triggers layout
 	return combatant
 
-func set_group_order(group_index: int, order: Array) -> void:
-	var group : GroupView = friendly_group if group_index == 0 else enemy_group
-	group.set_order(order)
+func set_group_order(ctx: GroupLayoutOrder) -> void:#group_index: int, order: Array) -> void:
+	var group : GroupView = friendly_group if ctx.group_index == 0 else enemy_group
+	group.set_order(ctx)
 
 func get_combatant(cid: int) -> CombatantView:
 	return combatants_by_cid.get(cid, null)
@@ -129,7 +133,6 @@ func get_combatants() -> Array[CombatantView]:
 	return combatants
 
 func _note_for_beat(beat: Array[BattleEvent]) -> float:
-	print("battle_view.gd _gap_for_beat()")
 	if beat.is_empty():
 		return 0.0
 	
@@ -145,17 +148,17 @@ func _note_for_beat(beat: Array[BattleEvent]) -> float:
 	# defaults by type (for now)
 	match int(marker.type):
 		BattleEvent.Type.ARCANUM_PREP:
-			return 4.0
+			return 8.0
 		BattleEvent.Type.ARCANUM_WRAPUP:
-			return 4.0
+			return 8.0
 		BattleEvent.Type.ATTACK_PREP:
-			return 4.0
+			return 8.0
 		BattleEvent.Type.STRIKE_WINDUP:
-			return 4.0
+			return 8.0
 		BattleEvent.Type.STRIKE_FOLLOWTHROUGH:
-			return 4.0
+			return 8.0
 		BattleEvent.Type.ATTACK_WRAPUP:
-			return 4.0
+			return 8.0
 		_:
 			return 0.0
 
@@ -167,21 +170,50 @@ func clear_focus(duration: float) -> void:
 	for combatant: CombatantView in get_combatants():
 		combatant.clear_focus(duration)
 	var bg: Array[Node] = get_tree().get_nodes_in_group("background")
+	if tween_bg:
+		tween_bg.kill()
+	if bg:
+		tween_bg = self.create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
 	for item in bg:
-		if item.has_method("modulate"):
-			var tween = item.create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
-			tween.tween_property(item, "modulate", Color(1, 1, 1, 1.0), duration)
+		if "modulate" in item:
+			tween_bg.tween_property(item, "modulate", Color(1, 1, 1, 1.0), duration)
 
 func _apply_focus_background(order: FocusOrder) -> void:
-	print("battle_view.gd _apply_focus_background() 1")
 	var bg = get_tree().get_nodes_in_group("background")
+	if tween_bg:
+		tween_bg.kill()
+	if bg:
+		tween_bg = self.create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
 	for item in bg:
-		print("battle_view.gd _apply_focus_background() 2")
 		if "modulate" in item:
-			print("battle_view.gd _apply_focus_background() 3")
-			var tween = item.create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-			tween.tween_property(item, "modulate", Color(order.dim_bg, order.dim_bg, order.dim_bg, 1.0), order.duration)
+			tween_bg.tween_property(item, "modulate", Color(order.dim_bg, order.dim_bg, order.dim_bg, 1.0), order.duration)
 
 func _apply_focus_combatants(order: FocusOrder) -> void:
 	for combatant: CombatantView in get_combatants():
 		combatant.on_focus(order)
+
+func put_projectile(attacker_id: int, projectile: Node2D) -> void:
+	# If I later allow multi-strike concurrency, swap the key to "%s:%s" % [attacker_id, strike_id].
+	_projectiles_by_attacker[int(attacker_id)] = projectile
+
+func take_projectile(attacker_id: int) -> Node2D:
+	var k := int(attacker_id)
+	if !_projectiles_by_attacker.has(k):
+		return null
+	var p: Node2D = _projectiles_by_attacker[k]
+	_projectiles_by_attacker.erase(k)
+	return p
+
+func get_mean_target_position_global(target_ids: Array[int], fallback: Vector2) -> Vector2:
+	if target_ids.is_empty():
+		return fallback
+	var sum := Vector2.ZERO
+	var n := 0
+	for tid in target_ids:
+		var tv := get_combatant(int(tid))
+		if tv != null:
+			sum += tv.global_position
+			n += 1
+	if n <= 0:
+		return fallback
+	return sum / float(n)

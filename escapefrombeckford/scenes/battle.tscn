@@ -64,6 +64,7 @@ offset_top = -94.0
 offset_right = 1828.0
 offset_bottom = 986.0
 scale = Vector2(1.1, 1.1)
+mouse_filter = 2
 texture = ExtResource("4_yhk5m")
 
 [node name="BattleGroupFriendly" parent="Battle_Scene" unique_id=1183869742 instance=ExtResource("5_n2clt")]

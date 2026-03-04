@@ -11,7 +11,7 @@
 [ext_resource type="PackedScene" uid="uid://b5kimimy0ccq0" path="res://scenes/ui/health_bar.tscn" id="9_lwd22"]
 [ext_resource type="Texture2D" uid="uid://dob30qtbj3xk5" path="res://assets/sprites/assorted/block.PNG" id="10_he6ou"]
 [ext_resource type="Theme" uid="uid://1dr1eewpv0jd" path="res://themes/ui_theme.tres" id="11_qbq2w"]
-[ext_resource type="PackedScene" uid="uid://nfe134n0rm1g" path="res://scenes/status_handler/status_grid.tscn" id="12_gbnxn"]
+[ext_resource type="Script" uid="uid://dvv1xhy7j1pvq" path="res://battle_view/status_view_grid.gd" id="12_rluy7"]
 
 [sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_y8vuy"]
 
@@ -94,10 +94,15 @@ label_settings = SubResource("LabelSettings_wjd66")
 horizontal_alignment = 1
 metadata/_edit_use_anchors_ = true
 
-[node name="StatusGrid" parent="." unique_id=762944576 instance=ExtResource("12_gbnxn")]
-offset_top = 39.0
-offset_right = 404.0
-offset_bottom = 171.0
+[node name="StatusViewGrid" type="GridContainer" parent="." unique_id=2029744781]
+offset_top = 36.0
+offset_right = 40.0
+offset_bottom = 76.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+mouse_filter = 0
+columns = 6
+script = ExtResource("12_rluy7")
 
 [node name="CameraFocus" type="Node2D" parent="." unique_id=1148131427]
 
@@ -106,3 +111,4 @@ offset_bottom = 171.0
 [connection signal="input_event" from="TargetArea" to="." method="_on_target_area_input_event"]
 [connection signal="mouse_entered" from="TargetArea" to="." method="_on_target_area_mouse_entered"]
 [connection signal="mouse_exited" from="TargetArea" to="." method="_on_target_area_mouse_exited"]
+[connection signal="gui_input" from="StatusViewGrid" to="StatusViewGrid" method="_on_gui_input"]

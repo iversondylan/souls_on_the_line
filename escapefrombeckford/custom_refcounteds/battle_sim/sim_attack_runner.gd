@@ -70,6 +70,12 @@ static func run(api: SimBattleAPI, ctx: NPCAIContext) -> bool:
 		if api.writer != null:
 			api.writer.emit_targeted(int(ctx.cid), target_ids, mode, s)
 		
+		# ----------------------------
+		# STRIKE_FOLLOWTHROUGH (per strike)
+		# ----------------------------
+		if api.writer != null:
+			api.writer.emit_strike_followthrough(int(ctx.cid), target_ids, mode, targeting, s)
+		
 		var dmg := 0
 		if ctx.params.has(Keys.DAMAGE_MELEE) or ctx.params.has(Keys.DAMAGE_RANGED):
 			var k := Keys.DAMAGE_RANGED if mode == Attack.Mode.RANGED else Keys.DAMAGE_MELEE
@@ -103,11 +109,7 @@ static func run(api: SimBattleAPI, ctx: NPCAIContext) -> bool:
 			if api.writer != null:
 				api.writer.scope_end() # hit
 
-		# ----------------------------
-		# STRIKE_FOLLOWTHROUGH (per strike)
-		# ----------------------------
-		if api.writer != null:
-			api.writer.emit_strike_followthrough(int(ctx.cid), target_ids, mode, targeting, s)
+		
 
 		if api.writer != null:
 			api.writer.scope_end() # strike

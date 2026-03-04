@@ -9,32 +9,36 @@ class_name GroupView extends Node2D
 
 # cid -> view (only those in this group)
 var combatants_by_cid: Dictionary = {}
+var layout_ctx: GroupLayoutOrder
 var _layout_dirty := false
 
-func register_view(v: CombatantView) -> void:
-	if v == null:
-		return
-	combatants_by_cid[int(v.cid)] = v
-	update_layout()
+#func register_view(ctx: GroupLayoutOrder) -> void:#v: CombatantView) -> void:
+	#if ctx.new_combatant == null:
+		#return
+	#combatants_by_cid[int(ctx.new_combatant.cid)] = ctx.new_combatant
+	#update_layout(ctx)
 
 func unregister_cid(cid: int) -> void:
 	combatants_by_cid.erase(int(cid))
-	update_layout()
+	var ctx:= GroupLayoutOrder.new()
+	ctx.animate_to_position = true
+	_mark_layout_dirty(ctx)
 
-func set_order(order: Array) -> void:
+func set_order(ctx: GroupLayoutOrder) -> void:
 	# Reorder child list according to order of cids.
-	for i in range(order.size()):
-		var cid := int(order[i])
+	for i in range(ctx.order.size()):
+		var cid := int(ctx.order[i])
 		var combatant: CombatantView = combatants_by_cid.get(cid, null)
 		if combatant != null and combatant.get_parent() == self:
 			move_child(combatant, i)
-	update_layout()
+	_mark_layout_dirty(ctx)
 
-func register_combatant(c: CombatantView) -> void:
-	combatants_by_cid[int(c.cid)] = c
-	_mark_layout_dirty()
+func register_combatant(ctx: GroupLayoutOrder) -> void:
+	combatants_by_cid[int(ctx.new_combatant.cid)] = ctx.new_combatant
+	_mark_layout_dirty(ctx)
 
-func _mark_layout_dirty() -> void:
+func _mark_layout_dirty(ctx: GroupLayoutOrder) -> void:
+	layout_ctx = ctx
 	if _layout_dirty:
 		return
 	_layout_dirty = true
@@ -42,16 +46,18 @@ func _mark_layout_dirty() -> void:
 
 func _flush_layout() -> void:
 	_layout_dirty = false
-	update_layout()
-
-func update_layout() -> void:
 	var nodes := _get_layout_nodes()
 	var slot := 1.0
 	for n in nodes:
 		var x := _get_x_for_slot(slot, nodes.size())
 		# views are Node2D, just position them
-		n.position = Vector2(x, 0)
+		n.set_anchor_position(Vector2(x, 0), layout_ctx)
+		#n.position = Vector2(x, 0)
 		slot += 1.0
+	layout_ctx = null
+
+#func update_layout() -> void:
+	
 
 func get_window_dist() -> float:
 	return get_viewport_rect().size.x * window_dist_factor
@@ -74,13 +80,15 @@ func _get_x_for_slot(slot: float, layout_count: int) -> float:
 		return 0.0
 	return float(p.right) - float(p.increment) * slot if faces_right else float(p.left) + float(p.increment) * slot
 
-func _get_layout_nodes() -> Array[Node2D]:
-	var out: Array[Node2D] = []
+func _get_layout_nodes() -> Array[CombatantView]:
+	var out: Array[CombatantView] = []
 	for c in get_children():
-		if c is Node2D:
+		if c is CombatantView:
 			out.append(c)
 	return out
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_WM_SIZE_CHANGED:
-		_mark_layout_dirty()
+		var ctx := GroupLayoutOrder.new()
+		ctx.animate_to_position = false
+		_mark_layout_dirty(ctx)

@@ -3,6 +3,8 @@
 [ext_resource type="Script" uid="uid://crlpc0dl0mpvi" path="res://scenes/status_handler/status_grid.gd" id="1_8505g"]
 
 [node name="StatusGrid" type="GridContainer" unique_id=329872789]
+size_flags_horizontal = 3
+size_flags_vertical = 3
 mouse_filter = 0
 columns = 6
 script = ExtResource("1_8505g")

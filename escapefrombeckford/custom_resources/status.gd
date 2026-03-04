@@ -90,9 +90,6 @@ func make_token_ctx_node(owner_node: Node) -> StatusTokenContext:
 	ctx.owner_id = -1
 	return ctx
 
-# THIS SEEMS FREAKIN POINTLESS WHY WOULD I NEED TO TELL THE STATUS WHAT ITS STATE IS?
-# IS IT JUST BECAUSE THE SIM STATUSES ARE SUPPOSED TO BE STATELESS?
-# IF SO I DIDN'T WRITE THOSE METHODS TO CONSIDER THE CONTEXT I DON'T THINK
 func make_token_ctx_state(state, _owner_id: int) -> StatusTokenContext:
 	# `state` can be a StatusState or Dictionary; keep it flexible.
 	var ctx := StatusTokenContext.new()

@@ -75,7 +75,11 @@ func _on_spawned(e: EventPackage) -> void:
 	var spec: Dictionary = e.event.data.get(Keys.SUMMON_SPEC, {})
 	
 	v.apply_spawn_spec(spec)
-	battle_view.set_group_order(g, after_ids)
+	var ctx := GroupLayoutOrder.new()
+	ctx.group_index = g
+	ctx.order = after_ids
+	ctx.animate_to_position = false
+	battle_view.set_group_order(ctx)
 
 func _on_summoned(e: EventPackage) -> void:
 	
@@ -91,42 +95,130 @@ func _on_summoned(e: EventPackage) -> void:
 	var spec: Dictionary = e.event.data.get(Keys.SUMMON_SPEC, {})
 	combatant.apply_spawn_spec(spec)
 	combatant.play_summon_fx()
-	battle_view.set_group_order(g, after_ids)
+	var ctx := GroupLayoutOrder.new()
+	ctx.group_index = g
+	ctx.order = after_ids
+	ctx.animate_to_position = true
+	battle_view.set_group_order(ctx)
 
 func _on_formation_set(e: EventPackage) -> void:
 	# Your payload: {player_id, group_0, group_1}
 	var g0: Array = e.event.data.get(Keys.GROUP_0, [])
 	var g1: Array = e.event.data.get(Keys.GROUP_1, [])
 	#print("battle_event_director.gd _on_formation_set() g0: %s, g1: %s" % [g0, g1])
-	battle_view.set_group_order(0, g0)
-	battle_view.set_group_order(1, g1)
+	var ctx0 := GroupLayoutOrder.new()
+	ctx0.group_index = 0
+	ctx0.order = g0
+	ctx0.animate_to_position = false
+	var ctx1 := GroupLayoutOrder.new()
+	ctx1.group_index = 1
+	ctx1.order = g1
+	ctx1.animate_to_position = false
+	battle_view.set_group_order(ctx0)
+	battle_view.set_group_order(ctx1)
 
 func _on_attack_prep(e: EventPackage) -> void:
 	var src := int(e.event.data.get(Keys.SOURCE_ID, 0))
 	var targets: Array = e.event.data.get(Keys.TARGET_IDS, [])
-
+	
 	var order := FocusOrder.new()
 	order.duration = e.duration
 	order.attacker_id = src
 	order.target_ids = targets
-
+	
 	# tune these later
 	order.dim_bg = 0.6
 	order.dim_uninvolved = 0.55
 	order.scale_involved = 1.08
-	order.scale_uninvolved = 0.96
-	order.drift_involved = 10.0
-
+	order.scale_uninvolved = 1.0
+	order.drift_involved = 20.0
+	
 	battle_view.apply_focus(order)
 
 func _on_attack_wrapup(e: EventPackage) -> void:
-	pass
+	battle_view.clear_focus(e.duration)
+	var src := int(e.event.data.get(Keys.SOURCE_ID, 0))
+	var attacker := battle_view.get_combatant(src)
+	if attacker != null:
+		attacker.clear_strike_pose(e.duration)
 
 func _on_strike_windup(e: EventPackage) -> void:
-	pass
+	var src := int(e.event.data.get(Keys.SOURCE_ID, 0))
+	var targets: Array = e.event.data.get(Keys.TARGET_IDS, [])
+	var attacker := battle_view.get_combatant(src)
+	if attacker == null:
+		return
+
+	var o := StrikeWindupOrder.new()
+	o.duration = e.duration
+	o.attacker_id = src
+	o.target_ids = targets
+
+	o.attack_mode = int(e.event.data.get(Keys.ATTACK_MODE, Attack.Mode.MELEE))
+	o.projectile_scene_path = String(e.event.data.get(Keys.PROJECTILE_SCENE, ""))
+
+	attacker.play_strike_windup(o, battle_view)
 
 func _on_strike_followthrough(e: EventPackage) -> void:
-	pass
+	var src := int(e.event.data.get(Keys.SOURCE_ID, 0))
+	var targets: Array = e.event.data.get(Keys.TARGET_IDS, [])
+	var attacker := battle_view.get_combatant(src)
+	if attacker == null:
+		return
+
+	var o := StrikeFollowthroughOrder.new()
+	o.duration = e.duration
+	o.attacker_id = src
+	o.target_ids = targets
+	o.attack_mode = int(e.event.data.get(Keys.ATTACK_MODE, Attack.Mode.MELEE))
+
+	attacker.play_strike_followthrough(o, battle_view)
+
+#func _on_strike_windup(e: EventPackage) -> void:
+	#var src := int(e.event.data.get(Keys.SOURCE_ID, 0))
+	#var targets_any: Array = e.event.data.get(Keys.TARGET_IDS, [])
+	#var targets: Array[int] = []
+	#for t in targets_any:
+		#targets.append(int(t))
+#
+	#var order := StrikeWindupOrder.new()
+	#order.duration = e.duration
+	#order.attacker_id = src
+	#order.target_ids = targets
+#
+	## tune
+	#order.x_scale = 0.85
+	#order.y_scale = 1.18
+	#order.drift_x = 0.0 # optional if you implement
+#
+	#var attacker := battle_view.get_combatant(src)
+	#if attacker != null:
+		#attacker.apply_strike_windup(order)
+#
+#func _on_strike_followthrough(e: EventPackage) -> void:
+	#var src := int(e.event.data.get(Keys.SOURCE_ID, 0))
+	#var targets_any: Array = e.event.data.get(Keys.TARGET_IDS, [])
+	#var targets: Array[int] = []
+	#for t in targets_any:
+		#targets.append(int(t))
+#
+	#var order := StrikeFollowthroughOrder.new()
+	#order.duration = e.duration
+	#order.attacker_id = src
+	#order.target_ids = targets
+#
+	## tune
+	#order.x_scale = 1.22
+	#order.y_scale = 0.90
+	#order.shake_px = 6.0
+	#order.snap_ratio = 0.25
+#
+	#var attacker := battle_view.get_combatant(src)
+	#if attacker != null:
+		#attacker.apply_strike_followthrough(order)
+#
+	## Optional: also “impact emphasize” the primary target here if you want extra punch.
+	## Your DAMAGE_APPLIED already does play_hit(), so you might keep it there.
 
 func _on_moved(e: EventPackage) -> void:
 	# Current moved event stores before/after orders.
@@ -138,7 +230,11 @@ func _on_moved(e: EventPackage) -> void:
 		arr.resize(after_ids.size())
 		for i in range(after_ids.size()):
 			arr[i] = int(after_ids[i])
-		battle_view.set_group_order(g, arr)
+		var ctx := GroupLayoutOrder.new()
+		ctx.group_index = g
+		ctx.order = arr
+		ctx.animate_to_position = true
+		battle_view.set_group_order(ctx)
 
 func _on_targeted(e: EventPackage) -> void:
 	var src := int(e.event.data.get(Keys.SOURCE_ID, 0))
@@ -167,20 +263,31 @@ func _on_damage_applied(e: EventPackage) -> void:
 		target_combatant.pop_damage_number(amount)
 
 func _on_status_applied(e: EventPackage) -> void:
-	var tid := int(e.event.data.get(Keys.TARGET_ID, 0))
-	var status_id : StringName = e.event.data.get(Keys.STATUS_ID, &"")
-	var target_combatant := battle_view.get_combatant(tid)
-	#print("battle_event_director.gd _on_status_applied() tid: %s, status_id: %s" % [tid, status_id])
-	if target_combatant != null:
-		target_combatant.add_status_icon(status_id)
+	print("battle_event_director.gd _on_status_applied()")
+	var o := StatusAppliedOrder.new()
+	o.duration = e.duration
+	o.source_id = int(e.event.data.get(Keys.SOURCE_ID, 0))
+	o.target_id = int(e.event.data.get(Keys.TARGET_ID, 0))
+	o.status_id = e.event.data.get(Keys.STATUS_ID, &"")
+	o.intensity = int(e.event.data.get(Keys.INTENSITY, 1))
+	o.turns_duration = int(e.event.data.get(Keys.DURATION, 0))
+
+	var target := battle_view.get_combatant(o.target_id)
+	if target != null and target.status_view_grid:
+		target.status_view_grid.apply_status(o)
 
 func _on_status_removed(e: EventPackage) -> void:
-	var tid := int(e.event.data.get(Keys.TARGET_ID, 0))
-	var status_id : StringName = e.event.data.get(Keys.STATUS_ID, &"")
-	var target_combatant := battle_view.get_combatant(tid)
-	#print("battle_event_director.gd _on_status_removed() tid: %s, status_id: %s" % [tid, status_id])
-	if target_combatant != null:
-		target_combatant.remove_status_icon(status_id)
+	var o := StatusRemovedOrder.new()
+	o.duration = e.duration
+	o.source_id = int(e.event.data.get(Keys.SOURCE_ID, 0))
+	o.target_id = int(e.event.data.get(Keys.TARGET_ID, 0))
+	o.status_id = e.event.data.get(Keys.STATUS_ID, &"")
+	o.intensity = int(e.event.data.get(Keys.INTENSITY, 1))
+	o.removed_all = bool(e.event.data.get(Keys.REMOVED_ALL, false))
+
+	var target := battle_view.get_combatant(o.target_id)
+	if target != null and "status_grid" in target:
+		target.status_grid.remove_status(o)
 
 func _on_died(e: EventPackage) -> void:
 	pass

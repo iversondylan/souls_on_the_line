@@ -26,6 +26,7 @@ BattleController="*res://global/battle_controller.gd"
 Shaker="*res://global/shaker.gd"
 MusicPlayer="*res://global/music_player.tscn"
 SFXPlayer="*res://global/sfx_player.tscn"
+FxLibrary="*uid://bvxmtkalwcaf"
 
 [debug]
 

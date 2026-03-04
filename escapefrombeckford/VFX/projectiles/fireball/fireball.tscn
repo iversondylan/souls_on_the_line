@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=3 uid="uid://bxmhi3urqmpfh"]
+[gd_scene format=3 uid="uid://bxmhi3urqmpfh"]
 
 [ext_resource type="Texture2D" uid="uid://d3btpekcp8yn" path="res://VFX/projectiles/fireball/Effects_Fire_0_01.png" id="1_4ypg2"]
 [ext_resource type="Script" uid="uid://brefnb1etgfv4" path="res://VFX/projectiles/fireball/fireball.gd" id="1_xe0ys"]
@@ -8,6 +8,33 @@
 [ext_resource type="Texture2D" uid="uid://c0u5u0do6gcpy" path="res://VFX/projectiles/fireball/Effects_Fire_0_17.png" id="5_xit4n"]
 [ext_resource type="Texture2D" uid="uid://cctnf11ju031w" path="res://VFX/projectiles/fireball/Effects_Fire_0_21.png" id="6_hduqi"]
 [ext_resource type="Texture2D" uid="uid://8ivr8d13lnuy" path="res://VFX/projectiles/fireball/Effects_Fire_0_25.png" id="7_1d5dc"]
+
+[sub_resource type="Animation" id="Animation_ylhx4"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite:scale")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(1, 1)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Sprite:modulate")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Color(1, 1, 1, 1)]
+}
 
 [sub_resource type="Animation" id="Animation_i4yai"]
 resource_name = "grow_in"
@@ -36,33 +63,6 @@ tracks/1/keys = {
 "transitions": PackedFloat32Array(1, 1),
 "update": 0,
 "values": [Color(1, 1, 1, 0), Color(1, 1, 1, 1)]
-}
-
-[sub_resource type="Animation" id="Animation_ylhx4"]
-length = 0.001
-tracks/0/type = "value"
-tracks/0/imported = false
-tracks/0/enabled = true
-tracks/0/path = NodePath("Sprite:scale")
-tracks/0/interp = 1
-tracks/0/loop_wrap = true
-tracks/0/keys = {
-"times": PackedFloat32Array(0),
-"transitions": PackedFloat32Array(1),
-"update": 0,
-"values": [Vector2(1, 1)]
-}
-tracks/1/type = "value"
-tracks/1/imported = false
-tracks/1/enabled = true
-tracks/1/path = NodePath("Sprite:modulate")
-tracks/1/interp = 1
-tracks/1/loop_wrap = true
-tracks/1/keys = {
-"times": PackedFloat32Array(0),
-"transitions": PackedFloat32Array(1),
-"update": 0,
-"values": [Color(1, 1, 1, 1)]
 }
 
 [sub_resource type="Animation" id="Animation_gc87d"]
@@ -118,15 +118,13 @@ frame_5/duration = 1.0
 frame_6/texture = ExtResource("7_1d5dc")
 frame_6/duration = 1.0
 
-[node name="Fireball" type="Node2D"]
+[node name="Fireball" type="Node2D" unique_id=76849131]
 script = ExtResource("1_xe0ys")
 
-[node name="Animation" type="AnimationPlayer" parent="."]
-libraries = {
-&"": SubResource("AnimationLibrary_1hn87")
-}
+[node name="Animation" type="AnimationPlayer" parent="." unique_id=111964158]
+libraries/ = SubResource("AnimationLibrary_1hn87")
 
-[node name="Sprite" type="Sprite2D" parent="."]
+[node name="Sprite" type="Sprite2D" parent="." unique_id=55258302]
 texture = SubResource("AnimatedTexture_gc87d")
 
-[node name="Particles" type="GPUParticles2D" parent="."]
+[node name="Particles" type="GPUParticles2D" parent="." unique_id=182043018]
