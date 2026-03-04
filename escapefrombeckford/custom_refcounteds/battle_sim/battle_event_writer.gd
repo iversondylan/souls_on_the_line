@@ -1,6 +1,8 @@
 # battle_event_writer.gd
 class_name BattleEventWriter extends RefCounted
 
+
+
 var log: BattleEventLog
 var scopes: BattleScopeManager
 
@@ -9,6 +11,16 @@ var group_index: int = -1
 var active_actor_id: int = 0
 
 var allow_unscoped_events: bool = false
+
+var _beat_marker_types := {
+	BattleEvent.Type.ARCANUM_PREP: true,
+	BattleEvent.Type.ARCANUM_WRAPUP: true,
+	BattleEvent.Type.ATTACK_PREP: true,
+	BattleEvent.Type.ATTACK_WRAPUP: true,
+	BattleEvent.Type.STRIKE_WINDUP: true,
+	BattleEvent.Type.STRIKE_FOLLOWTHROUGH: true,
+	# BattleEvent.Type.CARD_PLAYED: true, # optional
+}
 
 func _init(_log: BattleEventLog, _scopes: BattleScopeManager) -> void:
 	log = _log
@@ -32,6 +44,9 @@ func _append(type: int, data: Dictionary = {}) -> int:
 	e.turn_id = turn_id
 	e.group_index = group_index
 	e.active_actor_id = active_actor_id
+	if _beat_marker_types.get(type, false):
+		#print("battle_event_writer.gd _append() making ", BattleEvent.Type.keys()[type], " as defines_beat")
+		e.defines_beat = true
 
 	if scopes != null:
 		e.scope_id = scopes.current_scope_id()
@@ -156,23 +171,21 @@ func emit_arcana_proc(proc: int) -> int:
 		Keys.GROUP_INDEX: int(group_index),
 	})
 
-func emit_arcanum_prep(source_id: int, arcanum_id: StringName, proc: int, target_ids: Array[int], extra := {}) -> void:
+func emit_arcanum_prep(source_id: int, arcanum_id: StringName, proc: int, extra := {}) -> void:
 	var data := {
 		Keys.SOURCE_ID: source_id,
 		Keys.ARCANUM_ID: arcanum_id,
 		Keys.PROC: proc,
-		Keys.TARGET_IDS: target_ids,
 	}
 	for k in extra.keys():
 		data[k] = extra[k]
 	return _append(BattleEvent.Type.ARCANUM_PREP, data)
 
-func emit_arcanum_wrapup(source_id: int, arcanum_id: StringName, proc: int, target_ids: Array[int], extra := {}) -> void:
+func emit_arcanum_wrapup(source_id: int, arcanum_id: StringName, proc: int, extra := {}) -> void:
 	var data := {
 		Keys.SOURCE_ID: source_id,
 		Keys.ARCANUM_ID: arcanum_id,
 		Keys.PROC: proc,
-		Keys.TARGET_IDS: target_ids,
 	}
 	for k in extra.keys():
 		data[k] = extra[k]

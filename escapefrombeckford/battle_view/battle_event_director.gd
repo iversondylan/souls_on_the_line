@@ -59,7 +59,7 @@ func _on_spawned(e: BattleEvent) -> void:
 	var g := int(e.data.get(Keys.GROUP_INDEX, e.group_index))
 	var idx := int(e.data.get(Keys.INSERT_INDEX, -1))
 	var after_ids : PackedInt32Array = e.data.get(Keys.AFTER_ORDER_IDS, PackedInt32Array())
-	print("battle_event_director.gd _on_spawned() cid: %s, group: %s, ind: %s" % [cid, g, idx])
+	#print("battle_event_director.gd _on_spawned() cid: %s, group: %s, ind: %s" % [cid, g, idx])
 	var v := battle_view.get_or_create_combatant_view(cid, g, idx)
 	if v == null:
 		return
@@ -75,7 +75,7 @@ func _on_summoned(e: BattleEvent) -> void:
 	var g := int(e.data.get(Keys.GROUP_INDEX, e.group_index))
 	var idx := int(e.data.get(Keys.INSERT_INDEX, -1))
 	var after_ids : PackedInt32Array = e.data.get(Keys.AFTER_ORDER_IDS, PackedInt32Array())
-	print("battle_event_director.gd _on_summoned() cid: %s, group: %s, ind: %s" % [cid, g, idx])
+	#print("battle_event_director.gd _on_summoned() cid: %s, group: %s, ind: %s" % [cid, g, idx])
 	var combatant := battle_view.get_or_create_combatant_view(cid, g, idx)
 	if combatant == null:
 		return
@@ -89,7 +89,7 @@ func _on_formation_set(e: BattleEvent) -> void:
 	# Your payload: {player_id, group_0, group_1}
 	var g0: Array = e.data.get(Keys.GROUP_0, [])
 	var g1: Array = e.data.get(Keys.GROUP_1, [])
-	print("battle_event_director.gd _on_formation_set() g0: %s, g1: %s" % [g0, g1])
+	#print("battle_event_director.gd _on_formation_set() g0: %s, g1: %s" % [g0, g1])
 	battle_view.set_group_order(0, g0)
 	battle_view.set_group_order(1, g1)
 
@@ -97,7 +97,7 @@ func _on_moved(e: BattleEvent) -> void:
 	# Current moved event stores before/after orders.
 	var after_ids : PackedInt32Array = e.data.get(Keys.AFTER_ORDER_IDS, PackedInt32Array())
 	var g := int(e.group_index)
-	print("battle_event_director.gd _on_moved() after_ids: %s, g: %s" % [after_ids, g])
+	#print("battle_event_director.gd _on_moved() after_ids: %s, g: %s" % [after_ids, g])
 	if after_ids is PackedInt32Array:
 		var arr: Array = []
 		arr.resize(after_ids.size())
@@ -109,7 +109,7 @@ func _on_targeted(e: BattleEvent) -> void:
 	var src := int(e.data.get(Keys.SOURCE_ID, 0))
 	var targets: Array = e.data.get(Keys.TARGET_IDS, [])
 	var combatant := battle_view.get_combatant(src)
-	print("battle_event_director.gd _on_targeted() src: %s, targets: %s" % [src, targets])
+	#print("battle_event_director.gd _on_targeted() src: %s, targets: %s" % [src, targets])
 	if combatant != null:
 		combatant.play_targeting()
 	
@@ -125,7 +125,7 @@ func _on_damage_applied(e: BattleEvent) -> void:
 	var lethal := bool(e.data.get(Keys.WAS_LETHAL, false))
 	var target_combatant := battle_view.get_combatant(tid)
 	var after_health := int(e.data.get(Keys.AFTER_HEALTH, 1))
-	print("battle_event_director.gd _on_damage_applied() src: %s, tid: %s, amount: %s" % [src, tid, amount])
+	#print("battle_event_director.gd _on_damage_applied() src: %s, tid: %s, amount: %s" % [src, tid, amount])
 	if target_combatant != null:
 		target_combatant.play_hit()
 		target_combatant.set_health(after_health, lethal)
@@ -135,7 +135,7 @@ func _on_status_applied(e: BattleEvent) -> void:
 	var tid := int(e.data.get(Keys.TARGET_ID, 0))
 	var status_id : StringName = e.data.get(Keys.STATUS_ID, &"")
 	var target_combatant := battle_view.get_combatant(tid)
-	print("battle_event_director.gd _on_status_applied() tid: %s, status_id: %s" % [tid, status_id])
+	#print("battle_event_director.gd _on_status_applied() tid: %s, status_id: %s" % [tid, status_id])
 	if target_combatant != null:
 		target_combatant.add_status_icon(status_id)
 
@@ -143,7 +143,7 @@ func _on_status_removed(e: BattleEvent) -> void:
 	var tid := int(e.data.get(Keys.TARGET_ID, 0))
 	var status_id : StringName = e.data.get(Keys.STATUS_ID, &"")
 	var target_combatant := battle_view.get_combatant(tid)
-	print("battle_event_director.gd _on_status_removed() tid: %s, status_id: %s" % [tid, status_id])
+	#print("battle_event_director.gd _on_status_removed() tid: %s, status_id: %s" % [tid, status_id])
 	if target_combatant != null:
 		target_combatant.remove_status_icon(status_id)
 
@@ -151,12 +151,12 @@ func _on_died(e: BattleEvent) -> void:
 	pass
 
 func _on_scope_begin(_e: BattleEvent) -> void:
-	print("battle_event_director.gd _on_scope_begin()")
+	#print("battle_event_director.gd _on_scope_begin()")
 	# Later: update “phase title”, camera focus, etc.
 	pass
 
 func _on_scope_end(_e: BattleEvent) -> void:
-	print("battle_event_director.gd _on_scope_end()")
+	#print("battle_event_director.gd _on_scope_end()")
 	pass
 
 func play_beat(beat: Array[BattleEvent]) -> void:

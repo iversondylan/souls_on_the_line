@@ -37,6 +37,8 @@ enum Type {
 	DEBUG
 }
 
+var defines_beat: bool = false
+
 var seq: int = 0					# monotonic per battle
 var battle_tick: int = 0			# optional; can equal seq for now
 

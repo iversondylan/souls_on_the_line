@@ -105,3 +105,6 @@ func _safe_set_any(obj: Object, props: Array[StringName], val) -> bool:
 		if _safe_set(obj, prop, val):
 			return true
 	return false
+
+func get_beats() -> int:
+	return Beats.IN_OUT

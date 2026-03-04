@@ -61,3 +61,6 @@ func _build_summon_data() -> CombatantData:
 	var data := summon_data.duplicate()
 	data.init()
 	return data
+
+func get_beats() -> int:
+	return Beats.IN_OUT

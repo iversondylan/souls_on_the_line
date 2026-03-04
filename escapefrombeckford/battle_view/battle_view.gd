@@ -21,7 +21,7 @@ var _playback_gen: int = 0
 var combatants_by_cid: Dictionary = {}
 
 # Playback knobs
-@export var playback_scale: float = 1.0
+var playback_scale: float = 3.0
 @export var beat_gap_sec: float = 0.12
 @export var scope_gap_sec: float = 0.20
 
@@ -65,7 +65,10 @@ func _playback_loop(gen: int) -> void:
 		if beat.is_empty():
 			await get_tree().process_frame
 			continue
-		
+		print("battle_view.gd _playback_loop() this beat contains : v")
+		for event: BattleEvent in beat:
+			print("battle_view.gd _playback_loop() ", BattleEvent.Type.keys()[event.type])
+		print("battle_view.gd _playback_loop() this beat contained: ^")
 		await event_director.play_beat_async(beat, gen)
 		
 		if !_playing or gen != _playback_gen:
@@ -114,80 +117,34 @@ func get_combatant(cid: int) -> CombatantView:
 	return combatants_by_cid.get(cid, null)
 
 func _gap_for_beat(beat: Array[BattleEvent]) -> float:
+	print("battle_view.gd _gap_for_beat()")
 	if beat.is_empty():
 		return 0.0
-	print("battle_view.gd _gap_for_beat() beat contains the following: ")
-	for event: BattleEvent in beat:
-		print("battle_view.gd _gap_for_beat() scope kind: %s, event type: %s" % [Scope.Kind.keys()[event.scope_kind] , BattleEvent.Type.keys()[event.type]])
-	# Root is usually SCOPE_BEGIN for scoped beats.
-	var root := beat[0]
-	var root_type := int(root.type)
 	
-	# Baseline: give scopes a little more breathing room than single events.
-	var gap := scope_gap_sec if root_type == BattleEvent.Type.SCOPE_BEGIN else beat_gap_sec
-	
-	# If we can read the root scope kind, use it as a pacing hint.
-	# (You set e.scope_kind on every event in writer; root should have it.)
-	var kind := int(root.scope_kind)
-	
-	match kind:
-		Scope.Kind.BATTLE:
-			gap = 0.0
-		Scope.Kind.SETUP:
-			# Setup can be snappy; it's mostly visuals appearing.
-			gap = min(gap, 0.10)
-		Scope.Kind.GROUP_TURN:
-			gap = max(gap, 0.18)
-		Scope.Kind.ACTOR_TURN:
-			gap = max(gap, 0.22)
-		Scope.Kind.ARCANA:
-			gap = max(gap, 0.20)
-		Scope.Kind.ARCANUM:
-			gap = max(gap, 0.24)
-		Scope.Kind.CARD:
-			gap = max(gap, 0.22)
-		Scope.Kind.ATTACK, Scope.Kind.STRIKE, Scope.Kind.HIT, Scope.Kind.DAMAGE:
-			gap = max(gap, 0.16)
-		_:
-			pass
-	
-	# Now scan for specific "read me" events inside the beat and bump the delay.
-	# This lets you pace unscoped beats too.
-	var saw_summon := false
-	var saw_damage := false
-	var saw_death := false
-	var saw_move := false
-	var saw_card := false
-	
+	# find the beat marker inside this beat (usually first non-scope you appended)
+	var marker: BattleEvent = null
 	for e in beat:
-		match int(e.type):
-			BattleEvent.Type.SUMMONED, BattleEvent.Type.SPAWNED:
-				saw_summon = true
-			BattleEvent.Type.DAMAGE_APPLIED:
-				saw_damage = true
-			BattleEvent.Type.DIED:
-				saw_death = true
-			BattleEvent.Type.MOVED, BattleEvent.Type.FORMATION_SET:
-				saw_move = true
-			BattleEvent.Type.CARD_PLAYED:
-				saw_card = true
-			_:
-				pass
+		if e != null and e.defines_beat:
+			marker = e
+			break
+	if marker == null:
+		return 0.0
 	
-	if saw_death:
-		gap = max(gap, 0.35)
-	elif saw_summon:
-		gap = max(gap, 0.28)
-	elif saw_card:
-		gap = max(gap, 0.24)
-	elif saw_damage:
-		# Damage often happens in clusters; keep it readable but not sluggish.
-		gap = max(gap, 0.16)
-	elif saw_move:
-		gap = max(gap, 0.18)
 	
-	# Optional: cap so it never feels like it stalls.
-	print("battle_view.gd _gap_for_beat() gap: ", gap)
-	var gap_time: float = min(gap, 1.0)*playback_scale
-	print("battle_view.gd _gap_for_beat() scaled gap: ", gap_time)
-	return gap_time
+	
+	# defaults by type (for now)
+	match int(marker.type):
+		BattleEvent.Type.ARCANUM_PREP:
+			return 0.10
+		BattleEvent.Type.ARCANUM_WRAPUP:
+			return 0.10
+		BattleEvent.Type.ATTACK_PREP:
+			return 0.10
+		BattleEvent.Type.STRIKE_WINDUP:
+			return 0.10
+		BattleEvent.Type.STRIKE_FOLLOWTHROUGH:
+			return 0.10
+		BattleEvent.Type.ATTACK_WRAPUP:
+			return 0.10
+		_:
+			return 0.0
