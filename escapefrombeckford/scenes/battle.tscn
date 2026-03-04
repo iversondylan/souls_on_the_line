@@ -58,7 +58,7 @@ script = ExtResource("3_lcn8m")
 
 [node name="BattleResolutionRunner" parent="Battle_Scene" unique_id=615590965 instance=ExtResource("4_kl6ie")]
 
-[node name="Background" type="TextureRect" parent="Battle_Scene" unique_id=1487696658]
+[node name="Background" type="TextureRect" parent="Battle_Scene" unique_id=1487696658 groups=["background"]]
 offset_left = -92.0
 offset_top = -94.0
 offset_right = 1828.0

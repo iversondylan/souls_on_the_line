@@ -45,6 +45,7 @@ player=""
 enemies=""
 allies=""
 battle_scene=""
+background=""
 
 [gui]
 

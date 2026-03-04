@@ -22,6 +22,12 @@ var max_mana: int = 3
 #func bind_assets(cache: BattleAssetCache) -> void:
 	#_assets = cache
 
+var tween_move: Tween
+var tween_strike: Tween
+var tween_hit: Tween
+var tween_focus: Tween
+var tween_misc: Tween
+
 func apply_spawn_spec(spec: Dictionary) -> void:
 	_spec = spec.duplicate(true)
 	_apply_visuals_from_spec()
@@ -64,6 +70,12 @@ func _apply_stats_from_spec() -> void:
 	health = int(_spec.get(Keys.HEALTH, 0))
 	# health_bar.update_health_from_numbers(hp, max_hp) # adapt to your API
 	health_bar.update_health_view(max_health, health)
+
+func on_focus(order: FocusOrder) -> void:
+	pass
+
+func clear_focus(duration: float) -> void:
+	pass
 
 func _set_name_label(_nm: String) -> void:
 	# optional: wire to your label if exists

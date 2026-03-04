@@ -21,16 +21,16 @@ var _playback_gen: int = 0
 var combatants_by_cid: Dictionary = {}
 
 # Playback knobs
-var playback_scale: float = 3.0
-@export var beat_gap_sec: float = 0.12
-@export var scope_gap_sec: float = 0.20
+var tempo: float = 130
+#@export var beat_gap_sec: float = 0.12
+#@export var scope_gap_sec: float = 0.20
 
 func _ready() -> void:
 	event_player = BattleEventPlayer.new()
 	event_director = BattleEventDirector.new()
 	event_director.bind(self)
 	transport = BattleTransport.new()
-	transport.playback_scale = playback_scale
+	transport.tempo = tempo
 
 func bind_log(log: BattleEventLog) -> void:
 	event_player.bind_log(log)
@@ -63,22 +63,28 @@ func _playback_loop(gen: int) -> void:
 		
 		var beat := event_player.next_beat()
 		if beat.is_empty():
-			await get_tree().process_frame
+			#await get_tree().process_frame
 			continue
+			
 		print("battle_view.gd _playback_loop() this beat contains : v")
 		for event: BattleEvent in beat:
 			print("battle_view.gd _playback_loop() ", BattleEvent.Type.keys()[event.type])
 		print("battle_view.gd _playback_loop() this beat contained: ^")
-		await event_director.play_beat_async(beat, gen)
+		
+		var note_denom := _note_for_beat(beat)
+		var duration := transport.get_beat_duration(note_denom)
+		
+		var pkg := BeatPackage.new()
+		pkg.beat = beat
+		pkg.gen = gen
+		pkg.duration = duration
+		
+		event_director.play_beat(pkg)
 		
 		if !_playing or gen != _playback_gen:
 			return
-		
-		var gap := _gap_for_beat(beat)
-		if gap > 0.0:
-			await transport.wait_seconds(gap)
-		
-		await get_tree().process_frame
+		if duration > 0.0:
+			await get_tree().create_timer(duration).timeout
 
 func get_or_create_combatant_view(cid: int, group_index: int, insert_index: int) -> CombatantView:
 	if cid <= 0:
@@ -116,7 +122,13 @@ func set_group_order(group_index: int, order: Array) -> void:
 func get_combatant(cid: int) -> CombatantView:
 	return combatants_by_cid.get(cid, null)
 
-func _gap_for_beat(beat: Array[BattleEvent]) -> float:
+func get_combatants() -> Array[CombatantView]:
+	var combatants : Array[CombatantView] = []
+	for key in combatants_by_cid:
+		combatants.push_back(combatants_by_cid[key] as CombatantView)
+	return combatants
+
+func _note_for_beat(beat: Array[BattleEvent]) -> float:
 	print("battle_view.gd _gap_for_beat()")
 	if beat.is_empty():
 		return 0.0
@@ -130,21 +142,46 @@ func _gap_for_beat(beat: Array[BattleEvent]) -> float:
 	if marker == null:
 		return 0.0
 	
-	
-	
 	# defaults by type (for now)
 	match int(marker.type):
 		BattleEvent.Type.ARCANUM_PREP:
-			return 0.10
+			return 4.0
 		BattleEvent.Type.ARCANUM_WRAPUP:
-			return 0.10
+			return 4.0
 		BattleEvent.Type.ATTACK_PREP:
-			return 0.10
+			return 4.0
 		BattleEvent.Type.STRIKE_WINDUP:
-			return 0.10
+			return 4.0
 		BattleEvent.Type.STRIKE_FOLLOWTHROUGH:
-			return 0.10
+			return 4.0
 		BattleEvent.Type.ATTACK_WRAPUP:
-			return 0.10
+			return 4.0
 		_:
 			return 0.0
+
+func apply_focus(order: FocusOrder) -> void:
+	_apply_focus_background(order)
+	_apply_focus_combatants(order)
+
+func clear_focus(duration: float) -> void:
+	for combatant: CombatantView in get_combatants():
+		combatant.clear_focus(duration)
+	var bg: Array[Node] = get_tree().get_nodes_in_group("background")
+	for item in bg:
+		if item.has_method("modulate"):
+			var tween = item.create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+			tween.tween_property(item, "modulate", Color(1, 1, 1, 1.0), duration)
+
+func _apply_focus_background(order: FocusOrder) -> void:
+	print("battle_view.gd _apply_focus_background() 1")
+	var bg = get_tree().get_nodes_in_group("background")
+	for item in bg:
+		print("battle_view.gd _apply_focus_background() 2")
+		if "modulate" in item:
+			print("battle_view.gd _apply_focus_background() 3")
+			var tween = item.create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+			tween.tween_property(item, "modulate", Color(order.dim_bg, order.dim_bg, order.dim_bg, 1.0), order.duration)
+
+func _apply_focus_combatants(order: FocusOrder) -> void:
+	for combatant: CombatantView in get_combatants():
+		combatant.on_focus(order)
