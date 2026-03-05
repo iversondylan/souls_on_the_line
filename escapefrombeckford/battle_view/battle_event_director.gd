@@ -155,7 +155,7 @@ func _on_strike_windup(e: EventPackage) -> void:
 	o.target_ids = targets
 
 	o.attack_mode = int(e.event.data.get(Keys.ATTACK_MODE, Attack.Mode.MELEE))
-	o.projectile_scene_path = String(e.event.data.get(Keys.PROJECTILE_SCENE, ""))
+	o.projectile_scene_path = String(e.event.data.get(Keys.PROJECTILE_SCENE, "res://VFX/projectiles/fireball/fireball.tscn"))
 
 	attacker.play_strike_windup(o, battle_view)
 

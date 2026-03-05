@@ -10,7 +10,7 @@ var target_ids: Array[int] = []
 
 var attack_mode: int = Attack.Mode.MELEE
 var projectile_scene_path: String = "" # only for ranged
-var projectile_spawn_ratio: float = 0.25
+var projectile_spawn_ratio: float = 0.10
 # “tall + skinny”
 var x_scale: float = 0.85
 var y_scale: float = 1.18

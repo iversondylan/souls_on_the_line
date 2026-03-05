@@ -14,6 +14,7 @@ func _ready() -> void:
 		get_scene(p)
 
 func get_scene(path: String) -> PackedScene:
+	print("fx_library.gd get_scene() path: ", path)
 	if path == "":
 		return null
 	if _scenes.has(path):

@@ -35,6 +35,7 @@ var tween_hit: Tween
 var tween_focus: Tween
 var tween_misc: Tween
 
+var _strike_gen: int = 0
 # ---- Base tracking ----
 var _base_art_scale: Vector2 = Vector2.ONE
 var _base_art_pos: Vector2 = Vector2.ZERO
@@ -148,57 +149,60 @@ func apply_strike_windup(order: StrikeWindupOrder) -> void:
 func play_strike_windup(order: StrikeWindupOrder, battle_view: BattleView) -> void:
 	if order == null or battle_view == null:
 		return
-	
-	# pose tween (tall+skinny)
+
+	_strike_gen += 1
+	var gen := _strike_gen
+
 	_apply_windup_pose(order)
-	
+
 	if int(order.attack_mode) != Attack.Mode.RANGED:
 		return
-	
-	# RANGED: spawn projectile at 25% into windup, then travel until windup ends.
+
+	_schedule_projectile_spawn(order, battle_view, gen)
+
+func _schedule_projectile_spawn(order: StrikeWindupOrder, battle_view: BattleView, gen: int) -> void:
 	var spawn_t := clampf(order.duration * float(order.projectile_spawn_ratio), 0.0, order.duration)
 	var travel_t := maxf(order.duration - spawn_t, 0.001)
-	
-	var attacker_id := int(order.attacker_id)
-	var proj_path := String(order.projectile_scene_path)
-	if proj_path == "":
+
+	# Fire-and-forget coroutine
+	_spawn_projectile_async(order, battle_view, gen, spawn_t, travel_t)
+
+func _spawn_projectile_async(order: StrikeWindupOrder, battle_view: BattleView, gen: int, spawn_t: float, travel_t: float) -> void:
+	# wait until spawn time
+	if spawn_t > 0.0:
+		await get_tree().create_timer(spawn_t).timeout
+
+	# cancellation check
+	if !is_instance_valid(self) or gen != _strike_gen:
 		return
-	
-	# schedule spawn + travel (do NOT await; beat timing is controlled externally)
-	if tween_misc:
-		tween_misc.kill()
-	tween_misc = create_tween().set_trans(Tween.TRANS_QUINT).set_ease(Tween.EASE_OUT)
-	
-	tween_misc.tween_interval(spawn_t)
-	tween_misc.tween_callback(func():
-		if !is_instance_valid(self):
-			return
-		
-		var scene : PackedScene = FxLibrary.get_scene(proj_path)
-		if scene == null:
-			return
-		
-		var projectile := scene.instantiate() as Node2D
-		if projectile == null:
-			return
-		
-		battle_view.add_child(projectile)
-		
-		var start_pos := _get_projectile_origin_global()
-		var end_pos := battle_view.get_mean_target_position_global(order.target_ids, start_pos)
-		
-		# optional: inherit facing flip similar to your LIVE logic
-		var group := get_parent()
-		if group is GroupView and !(group as GroupView).faces_right:
-			projectile.scale.x *= -1
-		
-		projectile.global_position = start_pos
-		battle_view.put_projectile(attacker_id, projectile)
-		
-		# travel to target by end of windup
-		var t := projectile.create_tween().set_trans(Tween.TRANS_QUINT).set_ease(Tween.EASE_OUT)
-		t.tween_property(projectile, "global_position", end_pos, travel_t)
-	)
+
+	print("spawn projectile now")
+
+	var proj_path := String(order.projectile_scene_path)
+	var scene: PackedScene = FxLibrary.get_scene(proj_path)
+	if scene == null:
+		push_warning("Missing projectile scene: %s" % proj_path)
+		return
+
+	var projectile := scene.instantiate() as Node2D
+	if projectile == null:
+		return
+
+	battle_view.add_child(projectile)
+
+	var start_pos := _get_projectile_origin_global()
+	var end_pos := battle_view.get_mean_target_position_global(order.target_ids, start_pos)
+	end_pos.y = start_pos.y
+	var group := get_parent()
+	if group is GroupView and !(group as GroupView).faces_right:
+		projectile.scale.x *= -1
+
+	projectile.global_position = start_pos
+	battle_view.put_projectile(int(order.attacker_id), projectile)
+
+	# travel to target
+	var t := projectile.create_tween().set_trans(Tween.TRANS_LINEAR)
+	t.tween_property(projectile, "global_position", end_pos, travel_t)
 
 func _apply_windup_pose(order: StrikeWindupOrder) -> void:
 	if tween_strike:
