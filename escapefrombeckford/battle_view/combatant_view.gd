@@ -1,8 +1,10 @@
 # combatant_view.gd
-class_name CombatantView
-extends Node2D
 
-@onready var character_art: Sprite2D = $CharacterArt
+class_name CombatantView extends Node2D
+
+@onready var character_art: Sprite2D = $ArtParent/CharacterArt
+@onready var art_parent: Node2D = $ArtParent
+
 @onready var camera_focus: Node2D = $CameraFocus
 @onready var intent_container: IntentContainer = $IntentContainer
 @onready var targeted_arrow: Sprite2D = $TargetedArrow
@@ -93,19 +95,19 @@ func on_focus(order: FocusOrder) -> void:
 			if cid == int(tid):
 				involved = true
 				break
-
+	
 	if tween_focus:
 		tween_focus.kill()
-
+	
 	var target_scale := Vector2.ONE * (order.scale_involved if involved else order.scale_uninvolved)
 	var target_dim := 1.0 if involved else order.dim_uninvolved
-
+	
 	# drift: just a small horizontal nudge toward center
 	var drift := 0.0
 	if involved:
 		var sign := 1.0 if (get_parent() as GroupView).faces_right else -1.0
 		drift = sign * order.drift_involved
-
+	
 	tween_focus = create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	tween_focus.tween_property(self, "scale", target_scale, order.duration)
 	var x: float = anchor_position.x + drift
@@ -136,117 +138,115 @@ func set_anchor_position(_position: Vector2, ctx: GroupLayoutOrder) -> void:
 func apply_strike_windup(order: StrikeWindupOrder) -> void:
 	if tween_strike:
 		tween_strike.kill()
-
+	
 	var base_scale := _get_base_art_scale()
 	var target_scale := Vector2(base_scale.x * order.x_scale, base_scale.y * order.y_scale)
-
+	
 	tween_strike = create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-	tween_strike.tween_property(character_art, "scale", target_scale, order.duration)
+	tween_strike.tween_property(art_parent, "scale", target_scale, order.duration)
 
-# combatant_view.gd (add)
 func play_strike_windup(order: StrikeWindupOrder, battle_view: BattleView) -> void:
 	if order == null or battle_view == null:
 		return
-
+	
 	# pose tween (tall+skinny)
 	_apply_windup_pose(order)
-
+	
 	if int(order.attack_mode) != Attack.Mode.RANGED:
 		return
-
+	
 	# RANGED: spawn projectile at 25% into windup, then travel until windup ends.
 	var spawn_t := clampf(order.duration * float(order.projectile_spawn_ratio), 0.0, order.duration)
 	var travel_t := maxf(order.duration - spawn_t, 0.001)
-
+	
 	var attacker_id := int(order.attacker_id)
 	var proj_path := String(order.projectile_scene_path)
 	if proj_path == "":
 		return
-
+	
 	# schedule spawn + travel (do NOT await; beat timing is controlled externally)
 	if tween_misc:
 		tween_misc.kill()
 	tween_misc = create_tween().set_trans(Tween.TRANS_QUINT).set_ease(Tween.EASE_OUT)
-
+	
 	tween_misc.tween_interval(spawn_t)
 	tween_misc.tween_callback(func():
 		if !is_instance_valid(self):
 			return
-
-		var scene := FxLibrary.get_scene(proj_path)
+		
+		var scene : PackedScene = FxLibrary.get_scene(proj_path)
 		if scene == null:
 			return
-
+		
 		var projectile := scene.instantiate() as Node2D
 		if projectile == null:
 			return
-
+		
 		battle_view.add_child(projectile)
-
+		
 		var start_pos := _get_projectile_origin_global()
 		var end_pos := battle_view.get_mean_target_position_global(order.target_ids, start_pos)
-
+		
 		# optional: inherit facing flip similar to your LIVE logic
 		var group := get_parent()
 		if group is GroupView and !(group as GroupView).faces_right:
 			projectile.scale.x *= -1
-
+		
 		projectile.global_position = start_pos
 		battle_view.put_projectile(attacker_id, projectile)
-
+		
 		# travel to target by end of windup
 		var t := projectile.create_tween().set_trans(Tween.TRANS_QUINT).set_ease(Tween.EASE_OUT)
 		t.tween_property(projectile, "global_position", end_pos, travel_t)
 	)
 
-# combatant_view.gd (add)
 func _apply_windup_pose(order: StrikeWindupOrder) -> void:
 	if tween_strike:
 		tween_strike.kill()
 	tween_strike = create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-
+	
 	# drift toward center-ish (cheap): drift depends on facing
 	var drift := order.drift_x
 	var g := get_parent()
 	if g is GroupView and !(g as GroupView).faces_right:
 		drift = -drift
-
-	tween_strike.tween_property(character_art, "scale", Vector2(order.x_scale, order.y_scale), order.duration * 0.6)
-	tween_strike.parallel().tween_property(character_art, "position:x", character_art.position.x + drift, order.duration * 0.6)
+	
+	tween_strike.tween_property(art_parent, "scale", Vector2(order.x_scale, order.y_scale), order.duration * 0.6)
+	tween_strike.parallel().tween_property(art_parent, "position:x", art_parent.position.x + drift, order.duration * 0.6)
 
 func apply_strike_followthrough(order: StrikeFollowthroughOrder) -> void:
 	if tween_strike:
 		tween_strike.kill()
-
+	
 	var base_scale := _get_base_art_scale()
 	var snap_scale := Vector2(base_scale.x * order.x_scale, base_scale.y * order.y_scale)
-
+	
 	var snap_t := maxf(0.001, order.duration * order.snap_ratio)
 	var recover_t := maxf(0.001, order.duration - snap_t)
-
+	
 	tween_strike = create_tween().set_trans(Tween.TRANS_BOUNCE).set_ease(Tween.EASE_OUT)
-	tween_strike.tween_property(character_art, "scale", snap_scale, snap_t)
-
+	tween_strike.tween_property(art_parent, "scale", snap_scale, snap_t)
+	
 	# quick shake: do it on focus_offset (best) or character_art.position (acceptable)
 	# I’ll show character_art.position since you asked “messing with character_art”
-	var base_pos := character_art.position
+	var base_pos := art_parent.position
 	var s := order.shake_px
-
+	
 	# small, fast shake during recover
 	tween_strike.set_trans(Tween.TRANS_LINEAR).set_ease(Tween.EASE_IN_OUT)
-	tween_strike.tween_property(character_art, "position", base_pos + Vector2(s, 0), recover_t * 0.20)
-	tween_strike.tween_property(character_art, "position", base_pos + Vector2(-s, 0), recover_t * 0.20)
-	tween_strike.tween_property(character_art, "position", base_pos + Vector2(s * 0.6, 0), recover_t * 0.20)
-	tween_strike.tween_property(character_art, "position", base_pos, recover_t * 0.40)
-
+	tween_strike.tween_property(art_parent, "position", base_pos + Vector2(s, 0), recover_t * 0.20)
+	tween_strike.tween_property(art_parent, "position", base_pos + Vector2(-s, 0), recover_t * 0.20)
+	tween_strike.tween_property(art_parent, "position", base_pos + Vector2(s * 0.6, 0), recover_t * 0.20)
+	tween_strike.tween_property(art_parent, "position", base_pos, recover_t * 0.40)
+	
 	# recover scale back to base by end
-	tween_strike.parallel().tween_property(character_art, "scale", base_scale, recover_t)
+	tween_strike.parallel().tween_property(art_parent, "scale", base_scale, recover_t)
 
 # combatant_view.gd (add)
 func play_strike_followthrough(order: StrikeFollowthroughOrder, battle_view: BattleView) -> void:
 	if order == null or battle_view == null:
 		return
-
+	
 	# If ranged, trigger projectile impact immediately, and let it self-finish.
 	if int(order.attack_mode) == Attack.Mode.RANGED:
 		var projectile := battle_view.take_projectile(int(order.attacker_id))
@@ -255,7 +255,7 @@ func play_strike_followthrough(order: StrikeFollowthroughOrder, battle_view: Bat
 				projectile.call("play_impact")
 			else:
 				projectile.queue_free()
-
+	
 	# Snap wide + shake + recover
 	_apply_followthrough_pose(order)
 
@@ -263,29 +263,29 @@ func _apply_followthrough_pose(order: StrikeFollowthroughOrder) -> void:
 	if tween_strike:
 		tween_strike.kill()
 	tween_strike = create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-
+	
 	var snap_t := maxf(order.duration * float(order.snap_ratio), 0.01)
 	var recover_t := maxf(order.duration - snap_t, 0.01)
-
-	var base_pos := character_art.position
+	
+	var base_pos := art_parent.position
 	var shake := float(order.shake_px)
-
+	
 	# snap to wide
-	tween_strike.tween_property(character_art, "scale", Vector2(order.x_scale, order.y_scale), snap_t)
-
+	tween_strike.tween_property(art_parent, "scale", Vector2(order.x_scale, order.y_scale), snap_t)
+	
 	# tiny shake (x)
-	tween_strike.parallel().tween_property(character_art, "position", base_pos + Vector2(shake, 0), snap_t * 0.5)
-	tween_strike.tween_property(character_art, "position", base_pos + Vector2(-shake, 0), snap_t * 0.5)
-
+	tween_strike.parallel().tween_property(art_parent, "position", base_pos + Vector2(shake, 0), snap_t * 0.5)
+	tween_strike.tween_property(art_parent, "position", base_pos + Vector2(-shake, 0), snap_t * 0.5)
+	
 	# recover to normal
-	tween_strike.tween_property(character_art, "scale", Vector2.ONE, recover_t).set_ease(Tween.EASE_IN_OUT)
-	tween_strike.parallel().tween_property(character_art, "position", base_pos, recover_t).set_ease(Tween.EASE_IN_OUT)
+	tween_strike.tween_property(art_parent, "scale", Vector2.ONE, recover_t).set_ease(Tween.EASE_IN_OUT)
+	tween_strike.parallel().tween_property(art_parent, "position", base_pos, recover_t).set_ease(Tween.EASE_IN_OUT)
 
 func clear_strike_pose(duration: float) -> void:
 	if tween_strike:
 		tween_strike.kill()
 	tween_strike = create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)
-	tween_strike.tween_property(character_art, "scale", Vector2.ONE, maxf(duration, 0.01))
+	tween_strike.tween_property(art_parent, "scale", Vector2.ONE, maxf(duration, 0.01))
 
 #func clear_strike_pose(duration: float) -> void:
 	#if tween_strike:
@@ -323,8 +323,8 @@ func _cache_base_art_transform_if_needed() -> void:
 	if _base_cached:
 		return
 	_base_cached = true
-	_base_art_scale = character_art.scale
-	_base_art_pos = character_art.position
+	_base_art_scale = art_parent.scale
+	_base_art_pos = art_parent.position
 
 func _get_base_art_scale() -> Vector2:
 	_cache_base_art_transform_if_needed()
@@ -378,5 +378,5 @@ func set_health(new_health: int, was_lethal: bool = false) -> void:
 		pass
 	
 
-func _set_character_art(_uid: String) -> void:
-	character_art.texture = load(_uid) as Texture
+#func _set_character_art(_uid: String) -> void:
+	#character_art.texture = load(_uid) as Texture

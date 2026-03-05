@@ -35,7 +35,9 @@ position = Vector2(0, -20)
 scale = Vector2(0.5222222, 0.31111112)
 texture = ExtResource("2_c2uom")
 
-[node name="CharacterArt" type="Sprite2D" parent="." unique_id=1924670836]
+[node name="ArtParent" type="Node2D" parent="." unique_id=971815167]
+
+[node name="CharacterArt" type="Sprite2D" parent="ArtParent" unique_id=1924670836]
 modulate = Color(1, 1, 1, 0.4745098)
 position = Vector2(0, -135)
 scale = Vector2(2.69, 2.69)
