@@ -281,25 +281,6 @@ func _on_actor_requested(combat_id: int) -> void:
 	if ok:
 		turn_engine.notify_actor_done(combat_id)
 
-#func _on_actor_requested(combat_id: int) -> void:
-	##print("battle.gd _on_actor_requested() awaiting _run_actor_live")
-#
-	## HARD RULE: don’t start an actor while arcana still running.
-	#await _await_arcana_gate_if_any()
-	##print("battle.gd _on_actor_requested() done awaiting _run_actor_live. Asking if it's the player.")
-	#if host.is_player(combat_id):
-		##print("battle.gd _on_actor_requested() it is. Arming end turn button.")
-		#wait_for_anims = false
-		#_arm_end_turn_button(true)
-	#var ok := await _run_actor_live(combat_id)
-	##print("battle.gd _on_actor_requested() _run_actor_live done")
-	#if ok:
-		##print("battle.gd _on_actor_requested() OK, notifying turn engine done")
-		#turn_engine.notify_actor_done(combat_id)
-	
-	##else:
-		##print("battle.gd _on_actor_requested() not OK")
-
 func _run_actor_live(combat_id:int) -> bool:
 	#print("battle.gd _run_actor_live() step 1")
 	var f: Fighter = battle_scene.get_combatant_by_id(combat_id, true)

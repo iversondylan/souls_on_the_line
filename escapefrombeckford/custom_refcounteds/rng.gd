@@ -1,38 +1,73 @@
 # rng.gd
+
 class_name RNG
 extends RefCounted
 
-var seed: int
+var seed: int = 1
 var rolls: int = 0
 
-func _init(_seed: int = 1) -> void:
+var _rng: RandomNumberGenerator
+
+func _init(_seed: int = 1, _rolls: int = 0) -> void:
 	seed = _seed
-
-func _base_rng() -> RandomNumberGenerator:
-	var r := RandomNumberGenerator.new()
-	r.seed = seed
-	return r
-
-# later: store an internal RandomNumberGenerator 
-# and advance it incrementally, but still make it 
-# snapshotable by storing {seed, rolls} and rehydrating 
-# when needed. For now, this is correct and very “debuggable.”
+	rolls = _rolls
+	_rng = RandomNumberGenerator.new()
+	_rng.seed = seed
+	# fast-forward if rehydrated
+	for i in range(rolls):
+		_rng.randi()
 
 func randf() -> float:
-	var r := _base_rng()
-	for i in range(rolls):
-		r.randf()
 	rolls += 1
-	return r.randf()
+	return _rng.randf()
 
 func randi() -> int:
-	var r := _base_rng()
-	for i in range(rolls):
-		r.randi()
 	rolls += 1
-	return r.randi()
+	return _rng.randi()
 
 func clone() -> RNG:
-	var c := RNG.new(seed)
-	c.rolls = rolls
-	return c
+	return RNG.new(seed, rolls)
+
+func snapshot() -> Dictionary:
+	return {"seed": seed, "rolls": rolls}
+
+static func from_snapshot(d: Dictionary) -> RNG:
+	return RNG.new(int(d.get("seed", 1)), int(d.get("rolls", 0))) 
+
+#class_name RNG
+#extends RefCounted
+#
+#var seed: int
+#var rolls: int = 0
+#
+#func _init(_seed: int = 1) -> void:
+	#seed = _seed
+#
+#func _base_rng() -> RandomNumberGenerator:
+	#var r := RandomNumberGenerator.new()
+	#r.seed = seed
+	#return r
+#
+## later: store an internal RandomNumberGenerator 
+## and advance it incrementally, but still make it 
+## snapshotable by storing {seed, rolls} and rehydrating 
+## when needed. For now, this is correct and very “debuggable.”
+#
+#func randf() -> float:
+	#var r := _base_rng()
+	#for i in range(rolls):
+		#r.randf()
+	#rolls += 1
+	#return r.randf()
+#
+#func randi() -> int:
+	#var r := _base_rng()
+	#for i in range(rolls):
+		#r.randi()
+	#rolls += 1
+	#return r.randi()
+#
+#func clone() -> RNG:
+	#var c := RNG.new(seed)
+	#c.rolls = rolls
+	#return c

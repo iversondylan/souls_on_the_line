@@ -291,30 +291,21 @@ func clear_strike_pose(duration: float) -> void:
 	tween_strike = create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)
 	tween_strike.tween_property(art_parent, "scale", Vector2.ONE, maxf(duration, 0.01))
 
-#func clear_strike_pose(duration: float) -> void:
-	#if tween_strike:
-		#tween_strike.kill()
-	#var base_scale := _get_base_art_scale()
-	#var base_pos := _get_base_art_pos()
-	#tween_strike = create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-	#tween_strike.tween_property(character_art, "scale", base_scale, duration)
-	#tween_strike.parallel().tween_property(character_art, "position", base_pos, duration)
-
 func _get_projectile_origin_global() -> Vector2:
 	var height := float(_spec.get(Keys.HEIGHT, 270))
 	var offset := Vector2(0, -(height * 0.67))
 	return global_position + offset
 
-func _get_mean_target_global(target_ids: Array[int]) -> Vector2:
-	if target_ids.is_empty():
-		return global_position
-	var sum := Vector2.ZERO
-	var n := 0
-	for tid in target_ids:
-		var tv := (get_parent() as BattleView).get_mean_target_position_global(target_ids, global_position)
-		#var tv := (get_tree().get_first_node_in_group("battle_view") as Node) # don't do this
-		n += 1
-	return sum / float(maxi(n, 1))
+#func _get_mean_target_global(target_ids: Array[int]) -> Vector2:
+	#if target_ids.is_empty():
+		#return global_position
+	#var sum := Vector2.ZERO
+	#var n := 0
+	#for tid in target_ids:
+		#var tv := (get_parent() as BattleView).get_mean_target_position_global(target_ids, global_position)
+		##var tv := (get_tree().get_first_node_in_group("battle_view") as Node) # don't do this
+		#n += 1
+	#return sum / float(maxi(n, 1))
 
 
 

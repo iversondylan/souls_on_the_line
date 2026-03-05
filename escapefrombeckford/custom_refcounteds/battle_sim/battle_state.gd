@@ -32,10 +32,7 @@ var arcana: ArcanaState = ArcanaState.new()
 var resource: ResourceState = ResourceState.new() 
 
 func init(_battle_seed: int, _run_seed: int) -> void:
-	battle_seed = _battle_seed
-	run_seed = _run_seed
-	rng = RNG.new()
-	rng.seed = battle_seed
+	rng = RNG.new(battle_seed)
 	events = BattleEventLog.new()
 
 func has_unit(id: int) -> bool:
@@ -43,6 +40,12 @@ func has_unit(id: int) -> bool:
 
 func get_unit(id: int) -> CombatantState:
 	return units.get(id, null)
+
+func init_unit_rng_for(id: int) -> void:
+	var s := RNGUtil.mix_seed(battle_seed, id)
+	var u := get_unit(id)
+	if u:
+		u.rng = RNG.new(s)
 
 func add_unit(u: CombatantState, group_index: int, insert_index: int = -1) -> void:
 	if !u:
@@ -53,7 +56,7 @@ func add_unit(u: CombatantState, group_index: int, insert_index: int = -1) -> vo
 	if units.has(u.id):
 		push_warning("BattleState.add_unit: duplicate id %s" % u.id)
 		return
-	
+	init_unit_rng_for(u.id)
 	group_index = clampi(group_index, 0, 1)
 	u.team = group_index
 	units[u.id] = u

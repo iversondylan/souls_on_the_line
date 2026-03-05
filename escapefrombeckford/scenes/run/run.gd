@@ -49,7 +49,7 @@ var arcana_catalog: Arcana
 var starting_deck: CardPile
 var draftable_cards: CardPile
 var deck: Deck
-
+var run_rng: RunRNG
 
 
 func _ready() -> void:
@@ -66,11 +66,12 @@ func _ready() -> void:
 			
 			run_seed = run_startup.run_seed
 			if run_seed == 0:
-				# Create a seed once for this run
 				var rng := RandomNumberGenerator.new()
 				rng.randomize()
-				run_seed = int(rng.randi())  # store it
+				run_seed = int(rng.randi())
 				run_startup.run_seed = run_seed
+
+			run_rng = RunRNG.new(run_seed)
 			
 			player_data = run_startup.player_data.create_instance()
 			player_data.set_health(player_data.max_health)
@@ -151,8 +152,17 @@ func _init_top_bar() -> void:
 	collection_button.pressed.connect(collection_pile_view.show_current_collection_view.bind("Collection"))
 
 func _on_battle_entered(room: Room) -> void:
+	#var battle_seed := RNGUtil.mix_seed(run_seed, rc_hash(room.row, room.column))
+	#battle_scn.run_seed = run_seed
+	#battle_scn.battle_seed = battle_seed
+	var label := "room:%d:%d:battle_seed" % [room.row, room.column]
+	var rng := run_rng.get_stream(label)
+	
+	# simplest: battle_seed is first randi from this room stream
+	var battle_seed := int(rng.randi())
+	run_rng.commit(rng)
+	
 	var battle_scn: Battle = _change_view(BATTLE_SCN) as Battle
-	var battle_seed := RNGUtil.mix_seed(run_seed, rc_hash(room.row, room.column))
 	battle_scn.run_seed = run_seed
 	battle_scn.battle_seed = battle_seed
 	battle_scn.run = self
