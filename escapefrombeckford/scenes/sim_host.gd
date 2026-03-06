@@ -151,21 +151,29 @@ func start_group_turn(group_index: int, start_at_player := false) -> void:
 		turn_engine.player_begin_requested.connect(_on_sim_player_begin_requested)
 		turn_engine.player_end_requested.connect(_on_sim_player_end_requested)
 
-	# NOTE: if you call reset_for_new_battle() here, you’re wiping turn engine “start_of_combat fired” etc.
-	# Keep it if that's what you want; just know it's per-call.
-	turn_engine.reset_for_new_battle()
+	# NOTE: starting at player should only occur on the first turn of the battle
+	# but I don't know if this is the right solution
+	if start_at_player:
+		turn_engine.reset_for_new_battle()
 
 	if main_api != null and main_api.writer != null:
 		main_api.writer.set_turn_context(turn_engine._turn_token, group_index, 0)
 		main_api.writer.scope_begin(Scope.Kind.GROUP_TURN, "group=%d" % group_index, 0)
 		main_api.writer.emit_group_turn_begin(group_index)
+	if main_api != null:
+		main_api.on_group_turn_begin(group_index)
 
 	turn_engine.start_group_turn(group_index, start_at_player)
 
 func _on_sim_group_turn_ended(gi: int) -> void:
+	
+	if main_api != null:
+		main_api.on_group_turn_end(gi)
+	
 	if main_api != null and main_api.writer != null:
 		main_api.writer.emit_group_turn_end(gi)
 		main_api.writer.scope_end() # group_turn
+	
 	if gi == 0:
 		start_group_turn(1, false) # enemy group
 	else:
@@ -182,13 +190,26 @@ func _on_sim_player_begin_requested(token: int) -> void:
 
 	turn_engine.notify_player_begin_done(token)
 
-func _on_sim_player_end_requested(token: int) -> void:
-	# Same idea: no UI wait in headless.
-	if turn_engine_host_sim != null:
-		if sim_host_has_end_player_turn():
-			_call_sim_end_player_turn()
+func request_player_end() -> void:
+	turn_engine.request_player_end()
 
-	turn_engine.notify_player_end_done(token)
+func _on_sim_player_end_requested(token: int) -> void:
+	# 1) end-of-player bookkeeping (discard, etc.)
+	if turn_engine_host_sim != null and sim_host_has_end_player_turn():
+		_call_sim_end_player_turn()
+
+	# 2) END_OF_TURN arcana occurs at player-end resolution
+	var player_id := turn_engine_host_sim.get_player_id()
+	print("[SIM] player_end_requested token=%d -> running END_OF_TURN arcana, then actor_done(player=%d)" % [token, player_id])
+	turn_engine.request_end_of_turn_arcana(func():
+		# IMPORTANT ordering:
+		# - First satisfy the player_end token handshake
+		turn_engine.notify_player_end_done(token)
+
+		# - Then end the actor turn (this advances the queue / group)
+		#   Also closes the actor scope in the event writer.
+		sim_notify_actor_done(player_id)
+	)
 
 
 func sim_host_has_begin_player_turn() -> bool:

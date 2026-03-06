@@ -72,6 +72,7 @@ static func run_turn(api: SimBattleAPI, cid: int) -> void:
 
 	# Execute packages in order
 	for pkg: NPCEffectPackage in action.effect_packages:
+		print("ation_planner.gd doing a pkg()")
 		if pkg == null:
 			continue
 

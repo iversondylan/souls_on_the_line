@@ -654,7 +654,6 @@ func make_player_combatant() -> void:
 	battle_scene.set_player(new_player)
 	player = new_player
 	hand.player = new_player
-	# --- NEW: add to sim (after live has a combat_id) ---
 	sim_host.add_combatant_from_data(player_data, 0, 0, true)
 
 func make_enemies() -> void:
@@ -668,7 +667,6 @@ func make_enemies() -> void:
 		var new_data: CombatantData = enemy_data.duplicate()
 		new_data.init()
 		new_enemy.combatant_data = new_data
-		# --- NEW: add to sim using same id + group/rank ---
 		sim_host.add_combatant_from_data(new_data, 1, new_enemy_index, false)
 
 func _on_end_turn_pressed() -> void:
@@ -778,8 +776,8 @@ func _on_end_turn_button_pressed_live() -> void:
 
 	# tell the turn engine "player wants to end now"
 	# This should cause TurnEngineCore to emit player_end_requested(token).
-	sim_host.sim_notify_actor_done(sim_host.turn_engine_host_sim.get_player_id())
-	turn_engine.request_player_end()
+	sim_host.request_player_end()
+	turn_engine.request_player_end() #<- this calls the LIVE turn engine; nothing to do with SIM
 
 
 func debug_dump_orders_live() -> void:

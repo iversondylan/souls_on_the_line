@@ -115,10 +115,12 @@ func get_targets_for_attack_sequence(ai_ctx) -> Array:
 	#resolve_damage_immediate(ctx)
 
 func resolve_attack(ctx: NPCAIContext) -> bool:
+	print("sim_battle_api.gd resolve_attack()")
 	return SimAttackRunner.run(self, ctx)
 
 # sim_battle_api.gd
 func resolve_damage_immediate(ctx: DamageContext) -> int:
+	print("sim_battle_api.gd resolve_damage_immediate() dmg: ", ctx.base_amount)
 	if !ctx:
 		return 0
 	
@@ -555,3 +557,99 @@ func _rebuild_modifier_cache_for(_id: int) -> void:
 	# Placeholder: this is where you’ll translate StatusState -> ModifierCache.
 	# For now, keep caches empty or rebuild from a simple ruleset.
 	pass
+
+func _fire_opposing_group_start_for(cid: int) -> void:
+	var u: CombatantState = state.get_unit(cid)
+	if u == null or !u.is_alive():
+		return
+	if u.combatant_data == null or u.combatant_data.ai == null:
+		return
+
+	ActionPlanner._ensure_ai_state_initialized(u)
+	u.ai_state[ActionPlanner.FIRST_INTENTS_READY] = true
+
+	# Ensure valid plan BEFORE hook fire
+	var ctx := _make_ai_ctx(u)
+	ActionPlanner.ensure_valid_plan_sim(u.combatant_data.ai, ctx, true)
+
+	# Telegraphed intent-time effects should only commit once per cycle
+	if bool(u.ai_state.get("telegraph_committed", false)):
+		return
+
+	var idx := int(u.ai_state.get(ActionPlanner.KEY_PLANNED_IDX, -1))
+	print("sim_battle_api.gd _fire_opposing_group_start_for( planned cid: %s, idx: %s)" % [cid, idx])
+	var action := ActionPlanner._get_action_by_idx(u.combatant_data.ai, idx)
+	if action == null:
+		return
+
+	for m: IntentLifecycleModel in action.intent_lifecycle_models:
+		if m:
+			m.on_opposing_group_start_sim(ctx)
+
+	u.ai_state["telegraph_committed"] = true
+
+
+func _fire_my_group_end_for(cid: int) -> void:
+	var u: CombatantState = state.get_unit(cid)
+	if u == null:
+		return
+	if u.combatant_data == null or u.combatant_data.ai == null:
+		return
+
+	ActionPlanner._ensure_ai_state_initialized(u)
+	var ctx := _make_ai_ctx(u)
+
+	var idx := int(u.ai_state.get(ActionPlanner.KEY_PLANNED_IDX, -1))
+	var action := ActionPlanner._get_action_by_idx(u.combatant_data.ai, idx)
+	if action == null:
+		return
+
+	for m: IntentLifecycleModel in action.intent_lifecycle_models:
+		if m:
+			m.on_my_group_end_sim(ctx)
+
+
+func _make_ai_ctx(u: CombatantState) -> NPCAIContext:
+	var ctx := NPCAIContext.new()
+	ctx.api = self
+	ctx.cid = int(u.id)
+	ctx.combatant_state = u
+	ctx.combatant_data = u.combatant_data
+	ctx.state = u.ai_state
+	ctx.rng = u.rng
+	ctx.params = {}
+	ctx.forecast = false
+	return ctx
+
+# --------------------------
+# Turn Lifecycle
+# --------------------------
+
+func on_group_turn_begin(group_index: int) -> void:
+	if state == null:
+		return
+
+	# When group X begins, the opposing side experiences "opposing_group_start"
+	var opposing_group := get_opposing_group(group_index)
+
+	# Ensure plans exist BEFORE hooks (your requirement)
+	plan_intents()
+
+	# Fire on_opposing_group_start_sim for units in opposing group
+	for cid in get_combatants_in_group(opposing_group, false):
+		_fire_opposing_group_start_for(int(cid))
+
+
+func on_group_turn_end(group_index: int) -> void:
+	if state == null:
+		return
+
+	# "my group end" for everyone in that group (matches your intent model API)
+	for cid in get_combatants_in_group(group_index, true):
+		_fire_my_group_end_for(int(cid))
+
+	# Also clear telegraph latch for everyone in that group (matches LIVE)
+	for cid in get_combatants_in_group(group_index, true):
+		var u := state.get_unit(int(cid))
+		if u and u.ai_state:
+			u.ai_state["telegraph_committed"] = false
