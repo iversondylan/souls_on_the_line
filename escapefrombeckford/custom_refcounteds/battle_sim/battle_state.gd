@@ -32,6 +32,8 @@ var arcana: ArcanaState = ArcanaState.new()
 var resource: ResourceState = ResourceState.new() 
 
 func init(_battle_seed: int, _run_seed: int) -> void:
+	battle_seed = _battle_seed
+	run_seed = _run_seed
 	rng = RNG.new(battle_seed)
 	events = BattleEventLog.new()
 

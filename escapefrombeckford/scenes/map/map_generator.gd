@@ -1,3 +1,5 @@
+# map_generator.gd
+
 class_name MapGenerator extends Node
 
 const X_DIST := 100
@@ -24,30 +26,54 @@ var map_data: Array[Array]
 #func _ready() -> void:
 	#make_map()
 
-func make_map() -> Array[Array]:
-	map_data = _make_empty_grid()
-	var starting_points := _get_random_starting_points()
+func make_map(rng: RNG) -> Array[Array]:
+	if rng == null:
+		push_error("MapGenerator.make_map: rng is null")
+		return []
+
+	print("[MapGenerator] make_map seed=%d rolls=%d" % [rng.seed, rng.rolls])
+
+	map_data = _make_empty_grid(rng)
+	var starting_points := _get_random_starting_points(rng)
 	for j in starting_points:
 		var current_j := j
 		for i in ENCOUNTERS - 1:
-			current_j = _make_connection(i, current_j)
-	
-	battle_pool.init_weights()
-	
-	_make_boss_room()
+			current_j = _make_connection(rng, i, current_j)
+
+	battle_pool.init_weights(rng)
+
+	_make_boss_room(rng)
 	_make_random_room_weights()
-	_make_room_types()
-	
+	_make_room_types(rng)
+
+	print("[MapGenerator] done seed=%d rolls=%d" % [rng.seed, rng.rolls])
 	return map_data
 
-func _make_empty_grid() -> Array[Array]:
+#func make_map() -> Array[Array]:
+	#map_data = _make_empty_grid()
+	#var starting_points := _get_random_starting_points()
+	#for j in starting_points:
+		#var current_j := j
+		#for i in ENCOUNTERS - 1:
+			#current_j = _make_connection(i, current_j)
+	#
+	#battle_pool.init_weights()
+	#
+	#_make_boss_room()
+	#_make_random_room_weights()
+	#_make_room_types()
+	#
+	#return map_data
+
+func _make_empty_grid(rng: RNG) -> Array[Array]:
 	var grid: Array[Array] = []
 	for i in ENCOUNTERS:
 		var adjacent_rooms: Array[Room] = []
 		
 		for j in MAP_HEIGHT:
 			var current_room := Room.new()
-			var offset := Vector2(randf(), randf()) * PLACEMENT_RANDOMNESS
+			var offset := Vector2(rng.debug_randf("map.offset.x"), rng.debug_randf("map.offset.y")) * PLACEMENT_RANDOMNESS
+			#var offset := Vector2(randf(), randf()) * PLACEMENT_RANDOMNESS
 			current_room.position = Vector2(i * X_DIST, j * Y_DIST) + offset
 			current_room.column = i
 			current_room.row = j
@@ -63,7 +89,7 @@ func _make_empty_grid() -> Array[Array]:
 	
 	return grid
 
-func _get_random_starting_points() -> Array[int]:
+func _get_random_starting_points(rng: RNG) -> Array[int]:
 	var j_coordinates: Array[int]
 	var n_unique_points: int = 0
 	
@@ -72,7 +98,8 @@ func _get_random_starting_points() -> Array[int]:
 		j_coordinates = []
 		
 		for i in PATHS:
-			var starting_point := randi_range(0, MAP_HEIGHT - 1)
+			var starting_point := rng.debug_range_i(0, MAP_HEIGHT - 1, "map.start_point")
+			#var starting_point := randi_range(0, MAP_HEIGHT - 1)
 			if !j_coordinates.has(starting_point):
 				n_unique_points += 1
 			
@@ -80,12 +107,13 @@ func _get_random_starting_points() -> Array[int]:
 	
 	return j_coordinates
 
-func _make_connection(i: int, j: int) -> int:
+func _make_connection(rng: RNG, i: int, j: int) -> int:
 	var next_room: Room = null
 	#print("i: %s, j: %s" % [i, j])
 	var current_room: Room = map_data[i][j] as Room
 	while !next_room or _would_cross_existing_path(i, j, next_room):
-		var random_j := clampi(randi_range(j - 1, j + 1), 0, MAP_HEIGHT - 1)
+		var random_j := clampi(rng.debug_range_i(j - 1, j + 1, "map.conn.row"), 0, MAP_HEIGHT - 1)
+		#var random_j := clampi(randi_range(j - 1, j + 1), 0, MAP_HEIGHT - 1)
 		next_room = map_data[i + 1][random_j]
 	
 	current_room.next_rooms.push_back(next_room)
@@ -116,8 +144,8 @@ func _would_cross_existing_path(i: int, j: int, room: Room) -> bool:
 				return true
 	
 	return false
-
-func _make_boss_room() -> void:
+	
+func _make_boss_room(rng: RNG) -> void:
 	var middle_index := floori(MAP_HEIGHT * 0.5)
 	var boss_room := map_data[ENCOUNTERS - 1][middle_index] as Room
 	
@@ -128,7 +156,7 @@ func _make_boss_room() -> void:
 			current_room.next_rooms.push_back(boss_room)
 	
 	boss_room.type = Room.RoomType.BOSS
-	boss_room.battle_data = battle_pool.get_random_battle_for_tier(2)
+	boss_room.battle_data = battle_pool.get_random_battle_for_tier(rng, 2)
 	
 func _make_random_room_weights() -> void:
 	random_room_type_weights[Room.RoomType.BATTLE] = BATTLE_ROOM_WEIGHT
@@ -137,13 +165,13 @@ func _make_random_room_weights() -> void:
 	
 	random_room_type_total_weight = random_room_type_weights[Room.RoomType.SHOP]
 
-func _make_room_types() -> void:
+func _make_room_types(rng: RNG) -> void:
 	#first room is always a battle
 	for room: Room in map_data[0]:
 		#print("map_generator() _make_room_types() MAKING A COLUMN 0 BATTLE")
 		if room.next_rooms.size() > 0:
 			room.type = Room.RoomType.BATTLE
-			room.battle_data = battle_pool.get_random_battle_for_tier(0)
+			room.battle_data = battle_pool.get_random_battle_for_tier(rng, 0)
 	#9th floor is always a treasure
 	for room: Room in map_data[8]:
 		if room.next_rooms.size() > 0:
@@ -158,9 +186,9 @@ func _make_room_types() -> void:
 		for room: Room in encounter_stage:
 			for next_room: Room in room.next_rooms:
 				if next_room.type == Room.RoomType.NOT_ASSIGNED:
-					_set_weighted_room_type(next_room)
+					_set_weighted_room_type(rng, next_room)
 
-func _set_weighted_room_type(room_to_set: Room) -> void:
+func _set_weighted_room_type(rng: RNG, room_to_set: Room) -> void:
 	var rest_below_4 := true
 	var consecutive_rest := true
 	var consecutive_shop := true
@@ -169,7 +197,8 @@ func _set_weighted_room_type(room_to_set: Room) -> void:
 	var type_candidate: Room.RoomType
 	
 	while rest_below_4 or consecutive_rest or consecutive_shop or rest_on_13:
-		type_candidate = _get_random_room_type_by_weight()
+		type_candidate = _get_random_room_type_by_weight(rng)
+		#type_candidate = _get_random_room_type_by_weight()
 		
 		var is_rest := type_candidate == Room.RoomType.REST
 		var has_rest_parent := _room_has_parent_of_type(room_to_set, Room.RoomType.REST)
@@ -189,7 +218,8 @@ func _set_weighted_room_type(room_to_set: Room) -> void:
 		if room_to_set.column > 2:
 			tier_for_battle_rooms = 1
 		#print("map_generator() _make_room_types() MAKING A GENERIC BATTLE")
-		room_to_set.battle_data = battle_pool.get_random_battle_for_tier(tier_for_battle_rooms)
+		room_to_set.battle_data = battle_pool.get_random_battle_for_tier(rng, tier_for_battle_rooms)
+		#room_to_set.battle_data = battle_pool.get_random_battle_for_tier(tier_for_battle_rooms)
 
 func _room_has_parent_of_type(room: Room, type: Room.RoomType) -> bool:
 	var parents: Array[Room] = []
@@ -215,11 +245,18 @@ func _room_has_parent_of_type(room: Room, type: Room.RoomType) -> bool:
 	
 	return false
 
-func _get_random_room_type_by_weight() -> Room.RoomType:
-	var roll := randf_range(0.0, random_room_type_total_weight)
-	
+func _get_random_room_type_by_weight(rng: RNG) -> Room.RoomType:
+	var roll := rng.debug_range_f(0.0, random_room_type_total_weight, "map.room_type_roll")
 	for type: Room.RoomType in random_room_type_weights:
-		if random_room_type_weights[type] > roll:
+		if float(random_room_type_weights[type]) > roll:
 			return type
-	
 	return Room.RoomType.BATTLE
+
+#func _get_random_room_type_by_weight() -> Room.RoomType:
+	#var roll := randf_range(0.0, random_room_type_total_weight)
+	#
+	#for type: Room.RoomType in random_room_type_weights:
+		#if random_room_type_weights[type] > roll:
+			#return type
+	#
+	#return Room.RoomType.BATTLE

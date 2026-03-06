@@ -15,6 +15,7 @@ var writer: BattleEventWriter
 func _init(_state: BattleState) -> void:
 	state = _state
 
+#var battle_seed: int = 0
 
 # --------------------------
 # Queries / helpers
@@ -279,6 +280,7 @@ func spawn_from_data(combatant_data: CombatantData, group_index: int, insert_ind
 		state.groups[FRIENDLY].player_id = id
 	var u := CombatantState.new()
 	u.id = id
+	u.rng = RNG.new(RNGUtil.mix_seed(state.battle_seed, u.id))
 	u.combatant_data = combatant_data
 	u.init_from_combatant_data(combatant_data)
 	

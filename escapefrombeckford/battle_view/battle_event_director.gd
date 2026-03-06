@@ -148,15 +148,15 @@ func _on_strike_windup(e: EventPackage) -> void:
 	var attacker := battle_view.get_combatant(src)
 	if attacker == null:
 		return
-
+	
 	var o := StrikeWindupOrder.new()
 	o.duration = e.duration
 	o.attacker_id = src
 	o.target_ids = targets
-
+	
 	o.attack_mode = int(e.event.data.get(Keys.ATTACK_MODE, Attack.Mode.MELEE))
 	o.projectile_scene_path = String(e.event.data.get(Keys.PROJECTILE_SCENE, "res://VFX/projectiles/fireball/fireball.tscn"))
-
+	
 	attacker.play_strike_windup(o, battle_view)
 
 func _on_strike_followthrough(e: EventPackage) -> void:
@@ -165,13 +165,13 @@ func _on_strike_followthrough(e: EventPackage) -> void:
 	var attacker := battle_view.get_combatant(src)
 	if attacker == null:
 		return
-
+	
 	var o := StrikeFollowthroughOrder.new()
 	o.duration = e.duration
 	o.attacker_id = src
 	o.target_ids = targets
 	o.attack_mode = int(e.event.data.get(Keys.ATTACK_MODE, Attack.Mode.MELEE))
-
+	
 	attacker.play_strike_followthrough(o, battle_view)
 
 #func _on_strike_windup(e: EventPackage) -> void:

@@ -68,9 +68,9 @@ func _ready() -> void:
 			if run_seed == 0:
 				var rng := RandomNumberGenerator.new()
 				rng.randomize()
-				run_seed = int(rng.randi())
+				run_seed = 1730337072# int(rng.randi())
 				run_startup.run_seed = run_seed
-
+			print("run.gd new run startup seed: ", run_seed)
 			run_rng = RunRNG.new(run_seed)
 			
 			player_data = run_startup.player_data.create_instance()
@@ -96,8 +96,12 @@ func _start_run() -> void:
 	
 	_connect_signals()
 	_init_top_bar()
-	map.generate_new_map()
+	var rng := run_rng.get_stream("map")
+	map.generate_new_map(rng)
+	run_rng.commit(rng)
 	map.unlock_encounter_column(0)
+	#map.generate_new_map()
+	#map.unlock_encounter_column(0)
 
 func _change_view(scene: PackedScene) -> Node:
 	if current_view.get_child_count() > 0:
@@ -109,6 +113,8 @@ func _change_view(scene: PackedScene) -> Node:
 	map.hide_map()
 	
 	return new_view
+
+
 
 func _show_map() -> void:
 	if current_view.get_child_count() > 0:
@@ -161,7 +167,7 @@ func _on_battle_entered(room: Room) -> void:
 	# simplest: battle_seed is first randi from this room stream
 	var battle_seed := int(rng.randi())
 	run_rng.commit(rng)
-	
+	print("[Run] battle_seed for (%d,%d) = %d" % [room.row, room.column, battle_seed])
 	var battle_scn: Battle = _change_view(BATTLE_SCN) as Battle
 	battle_scn.run_seed = run_seed
 	battle_scn.battle_seed = battle_seed
@@ -256,13 +262,13 @@ func _on_modifier_tokens_changed(mod_type: Modifier.Type) -> void:
 	if view.has_method("on_modifier_tokens_changed"):
 		view.on_modifier_tokens_changed(mod_type)
 
-func make_rng(label: String) -> RandomNumberGenerator:
-	var rng := RandomNumberGenerator.new()
-	rng.seed = RNGUtil.seed_from_strings(run_seed, label)
-	return rng
+#func make_rng(label: String) -> RandomNumberGenerator:
+	#var rng := RandomNumberGenerator.new()
+	#rng.seed = RNGUtil.seed_from_strings(run_seed, label)
+	#return rng
 
-static func rc_hash(row: int, col: int) -> int:
-	return ("%d,%d" % [row, col]).hash()
+#static func rc_hash(row: int, col: int) -> int:
+	#return ("%d,%d" % [row, col]).hash()
 
 func _print_tree() -> void:
 	print_tree_pretty()

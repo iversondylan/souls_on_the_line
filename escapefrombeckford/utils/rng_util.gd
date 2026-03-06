@@ -9,8 +9,8 @@ static func mix_seed(a: int, b: int) -> int:
 	x = int(((x >> 16) ^ x) & 0x7fffffff)
 	return x
 
-static func seed_from_strings(run_seed: int, label: String) -> int:
-	return mix_seed(run_seed, label.hash())
+#static func seed_from_strings(run_seed: int, label: String) -> int:
+	#return mix_seed(run_seed, label.hash())
 
 static func fnv1a_32(s: String) -> int:
 	var h: int = 0x811C9DC5

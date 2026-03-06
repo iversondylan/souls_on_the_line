@@ -71,3 +71,29 @@ static func from_snapshot(d: Dictionary) -> RNG:
 	#var c := RNG.new(seed)
 	#c.rolls = rolls
 	#return c
+
+func debug_randf(tag: String = "") -> float:
+	var before := rolls
+	var v := randf()
+	#print("[RNG] %s seed=%d roll=%d -> randf=%s" % [tag, seed, before, str(v)])
+	return v
+
+func debug_randi(tag: String = "") -> int:
+	var before := rolls
+	var v := randi()
+	#print("[RNG] %s seed=%d roll=%d -> randi=%d" % [tag, seed, before, v])
+	return v
+
+func debug_range_i(lo: int, hi: int, tag: String = "") -> int:
+	var before := rolls
+	var v := _rng.randi_range(lo, hi)
+	rolls += 1
+	#print("[RNG] %s seed=%d roll=%d -> randi_range(%d,%d)=%d" % [tag, seed, before, lo, hi, v])
+	return v
+
+func debug_range_f(lo: float, hi: float, tag: String = "") -> float:
+	var before := rolls
+	var v := _rng.randf_range(lo, hi)
+	rolls += 1
+	#print("[RNG] %s seed=%d roll=%d -> randf_range(%s,%s)=%s" % [tag, seed, before, str(lo), str(hi), str(v)])
+	return v

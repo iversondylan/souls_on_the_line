@@ -1,3 +1,5 @@
+# map.gd
+
 class_name Map extends Node2D
 
 const SCROLL_SPEED := 15
@@ -22,9 +24,9 @@ func _ready() -> void:
 
 #do I need to make a new _input method? Maybe I can avoid scrolling
 
-func generate_new_map() -> void:
+func generate_new_map(rng: RNG) -> void:
 	n_encounters_finished = 0
-	map_data = map_generator.make_map()
+	map_data = map_generator.make_map(rng)
 	create_map()
 
 func create_map() -> void:

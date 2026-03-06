@@ -223,6 +223,11 @@ func _on_sim_actor_requested(cid: int) -> void:
 		main_api.writer.set_turn_context(turn_engine._turn_token, turn_engine.active_group_index, cid)
 		main_api.writer.scope_begin(Scope.Kind.ACTOR_TURN, "actor=%d" % cid, cid)
 		main_api.writer.emit_actor_begin(cid)
+		SimNPCAI.run_turn(main_api, main_state, cid) # sync
+		if main_api.writer:
+			main_api.writer.emit_actor_end(cid)
+			main_api.writer.scope_end()
+		turn_engine.notify_actor_done(cid)
 
 	if is_player(cid):
 		player_input_reached.emit()
