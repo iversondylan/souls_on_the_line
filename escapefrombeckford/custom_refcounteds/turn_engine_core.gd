@@ -439,6 +439,9 @@ func _request_arcana(proc: int, resume: Callable) -> void:
 	_resume_after_arcana = resume
 	arcana_proc_requested.emit(proc, _arcana_token)
 
+func request_end_of_turn_arcana(resume: Callable) -> void:
+	_request_arcana(ArcanaProc.END_OF_TURN, resume)
+
 func reset_for_new_battle() -> void:
 	_start_of_combat_fired = false
 	_player_start_of_turn_fired = false

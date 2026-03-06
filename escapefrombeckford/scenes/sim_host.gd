@@ -105,6 +105,8 @@ func start_setup() -> void:
 func end_setup() -> void:
 	main_api.writer.emit_formation_set(main_state.groups[0].order.duplicate(), main_state.groups[1].order.duplicate(), main_state.groups[0].player_id)
 	main_api.writer.scope_end() # setup
+	
+	main_api.plan_intents()
 
 func get_event_log() -> BattleEventLog:
 	return main_state.events
@@ -164,6 +166,10 @@ func _on_sim_group_turn_ended(gi: int) -> void:
 	if main_api != null and main_api.writer != null:
 		main_api.writer.emit_group_turn_end(gi)
 		main_api.writer.scope_end() # group_turn
+	if gi == 0:
+		start_group_turn(1, false) # enemy group
+	else:
+		start_group_turn(0, false)  # friendly group, start at player
 
 func _on_sim_player_begin_requested(token: int) -> void:
 	# In SIM, we don't want to block on UI. Do any bookkeeping, then ACK.
@@ -219,21 +225,24 @@ func sim_notify_actor_done(cid: int) -> void:
 # -------------------------
 
 func _on_sim_actor_requested(cid: int) -> void:
+	print("sim_host() _on_sim_actor_requested() cid: ", cid)
 	if main_api != null and main_api.writer != null:
 		main_api.writer.set_turn_context(turn_engine._turn_token, turn_engine.active_group_index, cid)
 		main_api.writer.scope_begin(Scope.Kind.ACTOR_TURN, "actor=%d" % cid, cid)
 		main_api.writer.emit_actor_begin(cid)
-		SimNPCAI.run_turn(main_api, main_state, cid) # sync
-		if main_api.writer:
-			main_api.writer.emit_actor_end(cid)
-			main_api.writer.scope_end()
-		turn_engine.notify_actor_done(cid)
 
 	if is_player(cid):
 		player_input_reached.emit()
 		return
 
-	# Run AI later, then call sim_notify_actor_done(cid)
+	# NPC SIM turn (sync)
+	ActionPlanner.run_turn(main_api, cid)
+
+	if main_api != null and main_api.writer != null:
+		main_api.writer.emit_actor_end(cid)
+		main_api.writer.scope_end()
+
+	turn_engine.notify_actor_done(cid)
 
 
 # -------------------------

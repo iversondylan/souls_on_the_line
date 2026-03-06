@@ -67,14 +67,14 @@ func _playback_loop(gen: int) -> void:
 			#await get_tree().process_frame
 			continue
 			
-		print("battle_view.gd _playback_loop() this beat contains : v")
-		for event: BattleEvent in beat:
-			print("battle_view.gd _playback_loop() ", BattleEvent.Type.keys()[event.type])
-		print("battle_view.gd _playback_loop() this beat contains: ^")
+		#print("battle_view.gd _playback_loop() this beat contains : v")
+		#for event: BattleEvent in beat:
+			#print("battle_view.gd _playback_loop() ", BattleEvent.Type.keys()[event.type])
+		#print("battle_view.gd _playback_loop() this beat contains: ^")
 		
 		var note_denom := _note_for_beat(beat)
 		var duration := transport.get_beat_duration(note_denom)
-		print("battle_view.gd _playback_loop() allocating time: %ss" % duration)
+		#print("battle_view.gd _playback_loop() allocating time: %ss" % duration)
 		var pkg := BeatPackage.new()
 		pkg.beat = beat
 		pkg.gen = gen

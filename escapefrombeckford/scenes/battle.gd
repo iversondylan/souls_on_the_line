@@ -778,6 +778,7 @@ func _on_end_turn_button_pressed_live() -> void:
 
 	# tell the turn engine "player wants to end now"
 	# This should cause TurnEngineCore to emit player_end_requested(token).
+	sim_host.sim_notify_actor_done(sim_host.turn_engine_host_sim.get_player_id())
 	turn_engine.request_player_end()
 
 

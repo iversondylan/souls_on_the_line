@@ -27,6 +27,7 @@ var statuses: StatusState = StatusState.new()
 var modifiers: ModifierCache = ModifierCache.new()
 
 # AI (data-side)
+var ai_profile: NPCAIProfile
 var ai_state: Dictionary = {}
 
 # the status_dict is newer and possibly replacing StatusState.
@@ -51,11 +52,7 @@ func init_from_combatant_data(data: CombatantData) -> void:
 	max_health = int(data.max_health)
 	health = clampi(int(data.health if data.health >= 0 else data.max_health), 0, max_health)
 	armor = int(data.armor)
-
-	# Mapping requested:
-	# - max_mana becomes mana/max_mana
-	# - apm becomes apm
-	# - apr becomes apr
+	ai_profile = data.ai
 	max_mana = maxi(int(data.max_mana), 0)
 	mana = clampi(int(data.mana), 0, max_mana)
 

@@ -198,7 +198,7 @@ func fade():
 	
 
 func do_turn() -> void:
-	print("fighter.gd do_turn() name: ", name, " cid: ", combat_id)
+	#print("fighter.gd do_turn() name: ", name, " cid: ", combat_id)
 	for behavior: FighterBehavior in my_behaviors:
 		behavior._on_do_turn()
 
@@ -286,7 +286,7 @@ func set_fade_mark(show_it: bool) -> void:
 		fade_mark.hide()
 
 func resolve_action() -> void:
-	print("fighter.gd resolve_action() name=", name, " cid=", combat_id)
+	#print("fighter.gd resolve_action() name=", name, " cid=", combat_id)
 	#print("[should do nothing]")
 	action_resolved.emit(self)
 

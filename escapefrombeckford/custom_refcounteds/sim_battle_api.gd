@@ -245,6 +245,7 @@ func apply_status(ctx: StatusContext) -> void:
 		writer.emit_status_applied(int(ctx.source_id), int(ctx.target_id), ctx.status_id, int(ctx.intensity), int(ctx.duration))
 	
 	_rebuild_modifier_cache_for(ctx.target_id)
+	_on_status_changed(ctx.target_id)
 
 
 func remove_status(ctx: RemoveStatusContext) -> void:
@@ -269,7 +270,11 @@ func remove_status(ctx: RemoveStatusContext) -> void:
 		writer.emit_status_removed(int(ctx.source_id), int(ctx.target_id), ctx.status_id, intensity, bool(ctx.remove_all_intensity))
 	
 	_rebuild_modifier_cache_for(ctx.target_id)
-	_rebuild_modifier_cache_for(ctx.target_id)
+	_on_status_changed(ctx.target_id)
+
+func _on_status_changed(cid: int) -> void:
+	plan_intent(cid)
+
 
 func spawn_from_data(combatant_data: CombatantData, group_index: int, insert_index: int = -1, is_player := false) -> int:
 	if combatant_data == null or state == null:
@@ -322,6 +327,7 @@ func summon(ctx: SummonContext) -> void:
 	
 	var u := CombatantState.new()
 	u.id = id
+	u.rng = RNG.new(RNGUtil.mix_seed(state.battle_seed, u.id))
 	u.combatant_data = ctx.summon_data
 	u.init_from_combatant_data(ctx.summon_data)
 	if ctx.summon_data.resource_path != "":
@@ -354,6 +360,7 @@ func summon(ctx: SummonContext) -> void:
 	#print("[SIM][SUMMON] new_id=%d group=%d idx=%d proto=%s" % [id, g, int(ctx.insert_index), String(u.data_proto_path)])
 	if on_summoned.is_valid():
 		on_summoned.call(id, g)
+	plan_intent(id)
 
 func resolve_move(ctx: MoveContext) -> void:
 	if ctx == null or state == null:
@@ -440,50 +447,25 @@ func modify_damage_amount(ctx: DamageContext, base: int) -> int:
 
 	return amount
 
-#func apply_damage_amount(ctx: DamageContext, amount: int) -> void:
-	#if state == null or ctx == null:
-		#return
-	#var tgt := state.get_unit(ctx.target_id)
-	#if tgt == null or !tgt.is_alive():
-		#return
-	#
-	#var pre_armor := tgt.armor
-	#
-	## Armor-first; adjust to match your live CombatantData.take_damage semantics.
-	#var remaining := amount
-	#var armor_loss := mini(pre_armor, remaining)
-	#tgt.armor = pre_armor - armor_loss
-	#remaining -= armor_loss
-	#
-	#var pre_hp := tgt.health
-	#tgt.health = maxi(pre_hp - remaining, 0)
-	#
-	#ctx.armor_damage = armor_loss
-	#ctx.health_damage = pre_hp - tgt.health
-	#ctx.was_lethal = (tgt.health <= 0)
-#
-	#if writer != null:
-		#writer.emit_damage_applied(
-			#int(ctx.source_id),
-			#int(ctx.target_id),
-			#int(ctx.base_amount),
-			#int(amount),
-			#int(ctx.armor_damage),
-			#int(ctx.health_damage),
-			#bool(ctx.was_lethal),
-			#0,
-			#0
-		#)
-
 func on_damage_applied(ctx: DamageContext) -> void:
 	if state == null or ctx == null:
 		return
-	# Headless hooks go here later:
-	# - status procs on damage
-	# - AI memory
-	# - “on hit” triggers
-	# Keep it empty until you formalize procs.
-	pass
+
+	var tid := int(ctx.target_id)
+	var u: CombatantState = state.get_unit(tid)
+	if u == null or !u.is_alive():
+		return
+	if u.combatant_data == null or u.combatant_data.ai == null:
+		return
+
+	# Update AI memory fields similar to LIVE (optional but helpful for parity)
+	if u.ai_state == null:
+		u.ai_state = {}
+	u.ai_state[ActionPlanner.DMG_SINCE_LAST_TURN] = int(u.ai_state.get(ActionPlanner.DMG_SINCE_LAST_TURN, 0)) + int(ctx.health_damage)
+
+	# If not acting, let it re-evaluate conditions
+	# Later: redo this so damage dirties the state
+	plan_intent(tid)
 
 func on_card_played(ctx: CardActionContextSim) -> void:
 	if ctx == null or ctx.card_data == null:
@@ -512,6 +494,38 @@ func on_card_played(ctx: CardActionContextSim) -> void:
 func on_card_finished(ctx: CardActionContextSim) -> void:
 	if writer != null:
 		writer.scope_end() # card scope
+
+func plan_intent(cid: int) -> void:
+	var u: CombatantState = state.get_unit(int(cid))
+	if u == null or !u.is_alive():
+		return
+	if u.combatant_data == null:
+		return
+	if u.combatant_data.ai == null:
+		return
+
+	ActionPlanner._ensure_ai_state_initialized(u)
+	u.ai_state[ActionPlanner.FIRST_INTENTS_READY] = true
+
+	if bool(u.ai_state.get(ActionPlanner.IS_ACTING, false)):
+		return
+
+	var ctx_ai := NPCAIContext.new()
+	ctx_ai.api = self
+	ctx_ai.cid = int(cid)
+	ctx_ai.combatant_state = u
+	ctx_ai.combatant_data = u.combatant_data
+	ctx_ai.state = u.ai_state
+	ctx_ai.rng = u.rng
+	ctx_ai.params = {}
+	ctx_ai.forecast = false
+
+	ActionPlanner.ensure_valid_plan_sim(u.combatant_data.ai, ctx_ai, true)
+
+func plan_intents() -> void:
+	for cid in state.units.keys():
+		plan_intent(cid)
+	
 
 # --------------------------
 # Internal helpers

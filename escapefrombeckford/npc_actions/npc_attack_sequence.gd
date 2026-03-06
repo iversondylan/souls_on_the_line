@@ -178,3 +178,7 @@ func _get_mean_position(targets: Array[Fighter], fallback: Fighter) -> Vector2:
 		if t:
 			sum += t.global_position
 	return sum / float(targets.size())
+
+func execute_sim(ctx: NPCAIContext) -> void:
+	if ctx and ctx.api:
+		(ctx.api as SimBattleAPI).resolve_attack(ctx)
