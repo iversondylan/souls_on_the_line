@@ -60,6 +60,30 @@ func execute(ctx: NPCAIContext, on_done: Callable) -> void:
 	
 	on_done.call()
 
+#func _resolve_summon_data(value) -> CombatantData:
+	#if value == null:
+		#return null
+	#if value is CombatantData:
+		#return value
+	#if value is String:
+		#var path := str(value)
+		#if path.is_empty():
+			#return null
+		#var res := load(path)
+		#return res if res is CombatantData else null
+	#return null
+
+# -------------------------
+# SIM IMPLEMENTATION
+# -------------------------
+func execute_sim(ctx: NPCAIContext) -> void:
+	if ctx == null or bool(ctx.forecast):
+		return
+	if ctx.api == null or !(ctx.api is SimBattleAPI):
+		push_warning("NPCSummonSequence.execute_sim: ctx.api is not SimBattleAPI")
+		return
+	SimSummonRunner.run(ctx.api as SimBattleAPI, ctx)
+
 func _resolve_summon_data(value) -> CombatantData:
 	if value == null:
 		return null

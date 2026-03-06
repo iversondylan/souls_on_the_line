@@ -119,75 +119,72 @@ func resolve_attack(ctx: NPCAIContext) -> bool:
 	return SimAttackRunner.run(self, ctx)
 
 # sim_battle_api.gd
+# Changes:
+# - Do NOT remove units inside resolve_damage_immediate().
+# - Route lethal through resolve_death(), which uses SimDeathRunner to:
+#   - emit DEATH_WINDUP / DEATH_FOLLOWTHROUGH / DIED
+#   - finalize removal from group order
+# - resolve_death now takes optional killer_id for better logs.
+
 func resolve_damage_immediate(ctx: DamageContext) -> int:
 	print("sim_battle_api.gd resolve_damage_immediate() dmg: ", ctx.base_amount)
-	if !ctx:
+	if ctx == null or state == null:
 		return 0
-	
+
 	# --- PREP / VALIDATION ---
-	if ctx.base_amount <= 0:
+	if int(ctx.base_amount) <= 0:
 		ctx.amount = 0
 		return 0
-	
-	if !state.is_alive(ctx.target_id):
+
+	if !state.is_alive(int(ctx.target_id)):
 		ctx.amount = 0
 		return 0
-	
+
 	ctx.phase = DamageContext.Phase.PRE_MODIFIERS
-	ctx.amount = ctx.base_amount
-	
-	# --- APPLY MODIFIERS (one at a time; cid-based) ---
-	# 1) attacker modifies damage dealt
-	#print("sim_battle_api.gd resolve_damage_immediate() pre dealt amt: ", ctx.amount)
+	ctx.amount = int(ctx.base_amount)
+
+	# --- APPLY MODIFIERS ---
 	ctx.amount = SimModifierResolver.get_modified_value(
 		state,
-		ctx.amount,
+		int(ctx.amount),
 		ctx.deal_modifier_type,
-		ctx.source_id
+		int(ctx.source_id)
 	)
-	#print("sim_battle_api.gd resolve_damage_immediate() pre taken amt: ", ctx.amount)
-	# 2) defender modifies damage taken
 	ctx.amount = SimModifierResolver.get_modified_value(
 		state,
-		ctx.amount,
+		int(ctx.amount),
 		ctx.take_modifier_type,
-		ctx.target_id
+		int(ctx.target_id)
 	)
-	#print("sim_battle_api.gd resolve_damage_immediate() post dealt amt: ", ctx.amount)
-	ctx.amount = maxi(ctx.amount, 0)
+
+	ctx.amount = maxi(int(ctx.amount), 0)
 	ctx.phase = DamageContext.Phase.POST_MODIFIERS
-	
-	# Optional: statuses that care about "final damage about to be applied"
-	# _emit_damage_event(ctx, "post_modifiers")
-	
+
 	# --- APPLY TO STATE ---
-	var tgt := state.get_unit(ctx.target_id)
-	if !tgt:
+	var tgt: CombatantState = state.get_unit(int(ctx.target_id))
+	if tgt == null:
 		ctx.amount = 0
 		return 0
-	
-	var remaining := ctx.amount
-	var before_health := tgt.health
-	# Armor first (if that’s your rule)
-	var armor_damage := mini(remaining, maxi(tgt.armor, 0))
-	tgt.armor -= armor_damage
+
+	var remaining := int(ctx.amount)
+	var before_health := int(tgt.health)
+
+	# Armor first
+	var armor_damage := mini(remaining, maxi(int(tgt.armor), 0))
+	tgt.armor = int(tgt.armor) - armor_damage
 	remaining -= armor_damage
-	
-	var health_damage := mini(remaining, maxi(tgt.health, 0))
-	tgt.health -= health_damage
+
+	var health_damage := mini(remaining, maxi(int(tgt.health), 0))
+	tgt.health = int(tgt.health) - health_damage
 	remaining -= health_damage
-	
+
 	ctx.armor_damage = armor_damage
 	ctx.health_damage = health_damage
-	ctx.was_lethal = (tgt.health <= 0)
-	
-	if ctx.was_lethal:
-		tgt.alive = false
-		# If you keep corpses in units but remove from order:
-		state.remove_unit(ctx.target_id)
-	
+	ctx.was_lethal = (int(tgt.health) <= 0)
+
 	ctx.phase = DamageContext.Phase.APPLIED
-	
+
+	# Emit damage event BEFORE death sequence
 	if writer != null:
 		writer.emit_damage_applied(
 			int(ctx.source_id),
@@ -200,29 +197,139 @@ func resolve_damage_immediate(ctx: DamageContext) -> int:
 			int(before_health),
 			int(tgt.health),
 		)
-	
-	on_damage_applied(ctx)
-	
-	# Optional: reactive statuses (EVENT_BASED) after application
-	# _emit_damage_event(ctx, "applied")
-	
-	return ctx.amount
 
-func resolve_death(combat_id: int, reason := "") -> void:
+	# Hooks (AI memory, status reactions, etc.)
+	on_damage_applied(ctx)
+
+	# --- DEATH PIPELINE ---
+	# IMPORTANT: don't remove from order here; do it through resolve_death/SimDeathRunner
+	if bool(ctx.was_lethal):
+		resolve_death(int(ctx.target_id), "damage", int(ctx.source_id))
+
+	return int(ctx.amount)
+
+
+# Overload-like signature (Godot doesn't support overloads; use defaults)
+func resolve_death(combat_id: int, reason := "", killer_id: int = 0) -> void:
 	if state == null or combat_id <= 0:
 		return
-	var u := state.get_unit(combat_id)
+
+	var u: CombatantState = state.get_unit(combat_id)
 	if u == null:
 		return
-	
-	u.alive = false
-	
-	var g := u.team
-	if g != -1:
-		state.groups[g].remove(combat_id)
-	var after_order_ids = PackedInt32Array(state.groups[g].order)
-	if writer != null:
-		writer.emit_death(combat_id, after_order_ids, String(reason))
+
+	# Idempotent: if already removed from group order, no-op (still "exists" in units dict)
+	if !u.alive:
+		return
+
+	# Run the death sequence (beats + final removal + DIED event)
+	SimDeathRunner.run(self, combat_id, killer_id, String(reason))
+
+## sim_battle_api.gd
+#func resolve_damage_immediate(ctx: DamageContext) -> int:
+	#print("sim_battle_api.gd resolve_damage_immediate() dmg: ", ctx.base_amount)
+	#if !ctx:
+		#return 0
+	#
+	## --- PREP / VALIDATION ---
+	#if ctx.base_amount <= 0:
+		#ctx.amount = 0
+		#return 0
+	#
+	#if !state.is_alive(ctx.target_id):
+		#ctx.amount = 0
+		#return 0
+	#
+	#ctx.phase = DamageContext.Phase.PRE_MODIFIERS
+	#ctx.amount = ctx.base_amount
+	#
+	## --- APPLY MODIFIERS (one at a time; cid-based) ---
+	## 1) attacker modifies damage dealt
+	##print("sim_battle_api.gd resolve_damage_immediate() pre dealt amt: ", ctx.amount)
+	#ctx.amount = SimModifierResolver.get_modified_value(
+		#state,
+		#ctx.amount,
+		#ctx.deal_modifier_type,
+		#ctx.source_id
+	#)
+	##print("sim_battle_api.gd resolve_damage_immediate() pre taken amt: ", ctx.amount)
+	## 2) defender modifies damage taken
+	#ctx.amount = SimModifierResolver.get_modified_value(
+		#state,
+		#ctx.amount,
+		#ctx.take_modifier_type,
+		#ctx.target_id
+	#)
+	##print("sim_battle_api.gd resolve_damage_immediate() post dealt amt: ", ctx.amount)
+	#ctx.amount = maxi(ctx.amount, 0)
+	#ctx.phase = DamageContext.Phase.POST_MODIFIERS
+	#
+	## Optional: statuses that care about "final damage about to be applied"
+	## _emit_damage_event(ctx, "post_modifiers")
+	#
+	## --- APPLY TO STATE ---
+	#var tgt := state.get_unit(ctx.target_id)
+	#if !tgt:
+		#ctx.amount = 0
+		#return 0
+	#
+	#var remaining := ctx.amount
+	#var before_health := tgt.health
+	## Armor first (if that’s your rule)
+	#var armor_damage := mini(remaining, maxi(tgt.armor, 0))
+	#tgt.armor -= armor_damage
+	#remaining -= armor_damage
+	#
+	#var health_damage := mini(remaining, maxi(tgt.health, 0))
+	#tgt.health -= health_damage
+	#remaining -= health_damage
+	#
+	#ctx.armor_damage = armor_damage
+	#ctx.health_damage = health_damage
+	#ctx.was_lethal = (tgt.health <= 0)
+	#
+	#if ctx.was_lethal:
+		#tgt.alive = false
+		## If you keep corpses in units but remove from order:
+		#state.remove_unit(ctx.target_id)
+	#
+	#ctx.phase = DamageContext.Phase.APPLIED
+	#
+	#if writer != null:
+		#writer.emit_damage_applied(
+			#int(ctx.source_id),
+			#int(ctx.target_id),
+			#int(ctx.base_amount),
+			#int(ctx.amount),
+			#int(ctx.armor_damage),
+			#int(ctx.health_damage),
+			#bool(ctx.was_lethal),
+			#int(before_health),
+			#int(tgt.health),
+		#)
+	#
+	#on_damage_applied(ctx)
+	#
+	## Optional: reactive statuses (EVENT_BASED) after application
+	## _emit_damage_event(ctx, "applied")
+	#
+	#return ctx.amount
+#
+#func resolve_death(combat_id: int, reason := "") -> void:
+	#if state == null or combat_id <= 0:
+		#return
+	#var u := state.get_unit(combat_id)
+	#if u == null:
+		#return
+	#
+	#u.alive = false
+	#
+	#var g := u.team
+	#if g != -1:
+		#state.groups[g].remove(combat_id)
+	#var after_order_ids = PackedInt32Array(state.groups[g].order)
+	#if writer != null:
+		#writer.emit_death(combat_id, after_order_ids, String(reason))
 
 
 func apply_status(ctx: StatusContext) -> void:

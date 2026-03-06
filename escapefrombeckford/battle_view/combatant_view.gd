@@ -307,7 +307,52 @@ func _get_projectile_origin_global() -> Vector2:
 		#n += 1
 	#return sum / float(maxi(n, 1))
 
+# combatant_view.gd
 
+func play_death_windup(o: DeathWindupOrder) -> void:
+	if o == null:
+		return
+
+	# Kill misc tween if it exists
+	if tween_misc:
+		tween_misc.kill()
+
+	_cache_base_art_transform_if_needed()
+
+	var dur := maxf(o.duration, 0.01)
+
+	# We fade the ART to black (not the whole node) so UI (health/status) can decide what to do later.
+	# If you want everything to go dark, tween "modulate" on self instead.
+	var to_col := Color(0, 0, 0, 1.0) if o.to_black else Color(1, 1, 1, 1.0)
+
+	# Optional little "slump"
+	var base_pos := _get_base_art_pos()
+	var slump := Vector2(0, float(o.slump_px))
+
+	# Optional small shrink
+	var base_scale := _get_base_art_scale()
+	var shrink_scale := base_scale * float(o.shrink)
+
+	tween_misc = create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+	tween_misc.tween_property(character_art, "modulate", to_col, dur)
+	tween_misc.parallel().tween_property(art_parent, "position", base_pos + slump, dur)
+	tween_misc.parallel().tween_property(art_parent, "scale", shrink_scale, dur)
+
+func on_death_followthrough(duration: float) -> void:
+	# Option: hide UI bits quickly so the corpse doesn't retain bars/intent
+	if intent_container != null:
+		intent_container.visible = false
+	if health_bar != null:
+		health_bar.visible = false
+	if status_view_grid != null:
+		status_view_grid.visible = false
+
+	# Keep the dark sprite visible until DIED queues it free.
+	# If you want it to fade out too, do it here:
+	#if tween_misc:
+		#tween_misc.kill()
+	#tween_misc = create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+	#tween_misc.tween_property(self, "modulate:a", 0.0, maxf(duration, 0.01))
 
 func bind_status_catalog(catalog: StatusCatalog) -> void:
 	_status_catalog = catalog

@@ -14,6 +14,7 @@ metadata/_custom_type_script = "uid://csljslxfgnidf"
 script = ExtResource("3_grdiy")
 name = "Shield Mite"
 character_art = ExtResource("2_adklw")
+character_art_uid = "uid://mduxjrtw74f3"
 facing_right = false
 height = 160
 max_health = 3

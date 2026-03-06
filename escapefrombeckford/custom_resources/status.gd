@@ -77,6 +77,9 @@ func on_damage_taken(_ctx: DamageContext) -> void:
 func affects_intent_legality() -> bool:
 	return false
 
+func on_death(_api: SimBattleAPI, _dead_id: int, _killer_id: int, _reason: String) -> void:
+	pass
+
 # -------------------------------------------------------------------
 # Helpers so callers don't need separate functions for live vs sim
 # -------------------------------------------------------------------

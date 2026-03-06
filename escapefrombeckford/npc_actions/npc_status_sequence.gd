@@ -80,3 +80,11 @@ func execute(ctx: NPCAIContext, on_done: Callable) -> void:
 	api.apply_status(sc)
 
 	on_done.call()
+
+func execute_sim(ctx: NPCAIContext) -> void:
+	if ctx == null or bool(ctx.forecast):
+		return
+	if ctx.api == null or !(ctx.api is SimBattleAPI):
+		push_warning("NPCStatusSequence.execute_sim: ctx.api is not SimBattleAPI")
+		return
+	SimStatusRunner.run(ctx.api as SimBattleAPI, ctx)

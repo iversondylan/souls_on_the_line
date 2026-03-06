@@ -3,7 +3,7 @@ class_name SummonContext extends RefCounted
 
 var group_index: int = 0
 var insert_index: int = 0
-
+var source_id: int = -1
 var summon_data: CombatantData = null
 var bound_card_data: CardData = null
 

@@ -73,6 +73,7 @@ func sync_next_id_at_least(min_next: int) -> void:
 	_next_sim_id = maxi(_next_sim_id, int(min_next))
 
 func remove_unit(id: int) -> void:
+	print("battle_state.gd remove_unit() cid: ", id)
 	if !units.has(id):
 		return
 	var u: CombatantState = units[id]

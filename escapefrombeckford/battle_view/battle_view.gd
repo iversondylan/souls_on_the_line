@@ -159,6 +159,18 @@ func _note_for_beat(beat: Array[BattleEvent]) -> float:
 			return 8.0
 		BattleEvent.Type.ATTACK_WRAPUP:
 			return 8.0
+		BattleEvent.Type.SUMMON_WINDUP:
+			return 8.0
+		BattleEvent.Type.SUMMON_FOLLOWTHROUGH:
+			return 8.0
+		BattleEvent.Type.STATUS_WINDUP:
+			return 8.0
+		BattleEvent.Type.STATUS_FOLLOWTHROUGH:
+			return 8.0
+		BattleEvent.Type.DEATH_WINDUP:
+			return 8.0
+		BattleEvent.Type.DEATH_FOLLOWTHROUGH:
+			return 8.0
 		_:
 			return 0.0
 

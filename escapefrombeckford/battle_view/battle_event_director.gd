@@ -52,6 +52,10 @@ func on_event(e: EventPackage) -> void:
 			_on_status_applied(e)
 		BattleEvent.Type.STATUS_REMOVED:
 			_on_status_removed(e)
+		BattleEvent.Type.DEATH_WINDUP:
+			_on_death_windup(e)
+		BattleEvent.Type.DEATH_FOLLOWTHROUGH:
+			_on_death_followthrough(e)
 		BattleEvent.Type.DIED:
 			_on_died(e)
 		BattleEvent.Type.SCOPE_BEGIN:
@@ -174,52 +178,6 @@ func _on_strike_followthrough(e: EventPackage) -> void:
 	
 	attacker.play_strike_followthrough(o, battle_view)
 
-#func _on_strike_windup(e: EventPackage) -> void:
-	#var src := int(e.event.data.get(Keys.SOURCE_ID, 0))
-	#var targets_any: Array = e.event.data.get(Keys.TARGET_IDS, [])
-	#var targets: Array[int] = []
-	#for t in targets_any:
-		#targets.append(int(t))
-#
-	#var order := StrikeWindupOrder.new()
-	#order.duration = e.duration
-	#order.attacker_id = src
-	#order.target_ids = targets
-#
-	## tune
-	#order.x_scale = 0.85
-	#order.y_scale = 1.18
-	#order.drift_x = 0.0 # optional if you implement
-#
-	#var attacker := battle_view.get_combatant(src)
-	#if attacker != null:
-		#attacker.apply_strike_windup(order)
-#
-#func _on_strike_followthrough(e: EventPackage) -> void:
-	#var src := int(e.event.data.get(Keys.SOURCE_ID, 0))
-	#var targets_any: Array = e.event.data.get(Keys.TARGET_IDS, [])
-	#var targets: Array[int] = []
-	#for t in targets_any:
-		#targets.append(int(t))
-#
-	#var order := StrikeFollowthroughOrder.new()
-	#order.duration = e.duration
-	#order.attacker_id = src
-	#order.target_ids = targets
-#
-	## tune
-	#order.x_scale = 1.22
-	#order.y_scale = 0.90
-	#order.shake_px = 6.0
-	#order.snap_ratio = 0.25
-#
-	#var attacker := battle_view.get_combatant(src)
-	#if attacker != null:
-		#attacker.apply_strike_followthrough(order)
-#
-	## Optional: also “impact emphasize” the primary target here if you want extra punch.
-	## Your DAMAGE_APPLIED already does play_hit(), so you might keep it there.
-
 func _on_moved(e: EventPackage) -> void:
 	# Current moved event stores before/after orders.
 	var after_ids : PackedInt32Array = e.event.data.get(Keys.AFTER_ORDER_IDS, PackedInt32Array())
@@ -290,7 +248,63 @@ func _on_status_removed(e: EventPackage) -> void:
 		target.status_grid.remove_status(o)
 
 func _on_died(e: EventPackage) -> void:
-	pass
+	var dead_id := int(e.event.data.get(Keys.TARGET_ID, 0))
+	if dead_id <= 0:
+		return
+
+	var v := battle_view.get_combatant(dead_id)
+	if v != null:
+		v.queue_free()
+
+	# Remove from BattleView mapping so future lookups fail safely
+	battle_view.combatants_by_cid.erase(dead_id)
+
+func _on_death_windup(e: EventPackage) -> void:
+	var dead_id := int(e.event.data.get(Keys.TARGET_ID, 0))
+	if dead_id <= 0:
+		return
+
+	var target := battle_view.get_combatant(dead_id)
+	if target == null:
+		return
+
+	var o := DeathWindupOrder.new()
+	o.duration = e.duration
+	o.dead_id = dead_id
+	o.to_black = true
+	o.black_amount = 1.0
+	o.shrink = 0.96
+	o.slump_px = 10.0
+
+	target.play_death_windup(o)
+
+func _on_death_followthrough(e: EventPackage) -> void:
+	var dead_id := int(e.event.data.get(Keys.TARGET_ID, 0))
+	var g := int(e.event.data.get(Keys.GROUP_INDEX, e.event.group_index))
+	var after_ids: PackedInt32Array = e.event.data.get(Keys.AFTER_ORDER_IDS, PackedInt32Array())
+
+	# 1) Remove from the visual group registry so layout ignores it
+	var group: GroupView = battle_view.friendly_group if g == 0 else battle_view.enemy_group
+	if group != null:
+		group.unregister_cid(dead_id)
+
+	# 2) Optionally hide or keep visible-but-dark off to the side
+	var dead_view := battle_view.get_combatant(dead_id)
+	if dead_view != null:
+		dead_view.on_death_followthrough(e.duration)
+
+	# 3) Re-layout to after_order_ids
+	if after_ids.size() > 0:
+		var arr: Array = []
+		arr.resize(after_ids.size())
+		for i in range(after_ids.size()):
+			arr[i] = int(after_ids[i])
+
+		var ctx := GroupLayoutOrder.new()
+		ctx.group_index = g
+		ctx.order = arr
+		ctx.animate_to_position = true
+		battle_view.set_group_order(ctx)
 
 func _on_scope_begin(_e: EventPackage) -> void:
 	#print("battle_event_director.gd _on_scope_begin()")

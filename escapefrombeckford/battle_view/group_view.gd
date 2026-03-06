@@ -20,8 +20,10 @@ var _layout_dirty := false
 
 func unregister_cid(cid: int) -> void:
 	combatants_by_cid.erase(int(cid))
-	var ctx:= GroupLayoutOrder.new()
+	var ctx := GroupLayoutOrder.new()
 	ctx.animate_to_position = true
+	# ctx.group_index isn't stored on GroupView, so optional:
+	# ctx.group_index = ??? (BattleEventDirector knows group index anyway)
 	_mark_layout_dirty(ctx)
 
 func set_order(ctx: GroupLayoutOrder) -> void:

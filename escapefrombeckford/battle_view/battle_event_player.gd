@@ -37,7 +37,7 @@ func next_beat() -> Array[BattleEvent]:
 	var out: Array[BattleEvent] = []
 	if _log == null or !_cursor.has_next(_log):
 		return out
-
+	
 	# 1) Collect leading events until the next beat marker.
 	while _cursor.has_next(_log):
 		var p := _cursor.peek(_log)
@@ -46,23 +46,23 @@ func next_beat() -> Array[BattleEvent]:
 		if p.defines_beat:
 			break
 		out.append(_cursor.next(_log))
-
+	
 	# IMPORTANT: if we collected any leading events and the next event is a beat marker,
 	# return the leading chunk as its own beat (prelude). Do NOT consume the marker yet.
 	if !out.is_empty() and _cursor.has_next(_log):
 		var nextp := _cursor.peek(_log)
 		if nextp != null and nextp.defines_beat:
 			return out
-
+	
 	# If EOF and we had only leading events, return them.
 	if !_cursor.has_next(_log):
 		return out
-
+	
 	# 2) Now we are at a beat marker: start the beat at the marker.
 	var marker := _cursor.next(_log)
 	if marker != null:
 		out.append(marker)
-
+	
 	# 3) Consume until the next beat marker (do not consume it).
 	while _cursor.has_next(_log):
 		var n := _cursor.peek(_log)
@@ -71,5 +71,5 @@ func next_beat() -> Array[BattleEvent]:
 		if n.defines_beat:
 			break
 		out.append(_cursor.next(_log))
-
+	
 	return out
