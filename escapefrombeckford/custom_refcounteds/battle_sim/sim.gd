@@ -1,9 +1,11 @@
 # sim.gd
-
 class_name Sim extends RefCounted
 
 var state: BattleState
 var api: SimBattleAPI
+var intent_planner: IntentPlanner
+var checkpoint_processor: CheckpointProcessor
+var resolver: Resolver
 
 var status_catalog: StatusCatalog
 var arcana_catalog: ArcanaCatalog
@@ -24,6 +26,8 @@ func init_from_seeds(battle_seed: int, run_seed: int) -> void:
 	api = SimBattleAPI.new(state)
 	api.status_catalog = status_catalog
 
+	_init_services()
+
 
 func init_from_cloned_state(cloned_state: BattleState) -> void:
 	state = cloned_state
@@ -35,6 +39,14 @@ func init_from_cloned_state(cloned_state: BattleState) -> void:
 
 	api = SimBattleAPI.new(state)
 	api.status_catalog = status_catalog
+
+	_init_services()
+
+
+func _init_services() -> void:
+	intent_planner = IntentPlanner.new()
+	checkpoint_processor = CheckpointProcessor.new()
+	resolver = Resolver.new()
 
 
 func clone_for_preview() -> Sim:
