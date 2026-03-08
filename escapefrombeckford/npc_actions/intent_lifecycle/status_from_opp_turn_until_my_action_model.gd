@@ -51,7 +51,7 @@ func _apply_to_self(ctx: NPCAIContext) -> void:
 	e.status_id = _status_id()
 	e.duration = status.duration
 	e.intensity = status.intensity
-	print("status_from_opp_turn_until_my_action_model.gd _apply_to_self() id: %s, intensity: %s" % [status.get_id(), status.intensity])
+	#print("status_from_opp_turn_until_my_action_model.gd _apply_to_self() id: %s, intensity: %s" % [status.get_id(), status.intensity])
 	e.execute(api)
 
 func _remove_from_self(ctx: NPCAIContext) -> void:
@@ -100,7 +100,7 @@ func _apply_to_self_sim(ctx: NPCAIContext) -> void:
 	sc.status_id = status_id
 	sc.duration = duration
 	sc.intensity = intensity
-	print("status_from_opp_turn_until_my_action_model.gd _apply_to_self_sim() id: %s, intensity: %s" % [sc.status_id, sc.intensity])
+	#print("status_from_opp_turn_until_my_action_model.gd _apply_to_self_sim() id: %s, intensity: %s" % [sc.status_id, sc.intensity])
 	ctx.api.apply_status(sc)
 
 func _remove_from_self_sim(ctx: NPCAIContext) -> void:

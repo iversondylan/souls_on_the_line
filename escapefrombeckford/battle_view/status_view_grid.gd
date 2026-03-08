@@ -148,7 +148,7 @@ func _update_visuals() -> void:
 	position.x = -0.5 * size.x
 
 func get_all_statuses() -> Array[Status]:
-	print("status_view_grid.gd get_all_statuses()")
+	#print("status_view_grid.gd get_all_statuses()")
 	var out: Array[Status] = []
 	if _catalog == null:
 		return out

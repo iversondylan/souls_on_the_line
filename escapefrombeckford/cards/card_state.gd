@@ -1,6 +1,6 @@
 class_name CardState extends Node
 
-var player: Player
+var player_data: PlayerData
 
 enum State {
 	BASE,

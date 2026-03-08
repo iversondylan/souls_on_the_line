@@ -49,7 +49,7 @@ func get_stream(label: String) -> RNG:
 		var s := RNGUtil.seed_from_label(run_seed, label)
 		st = {"seed": s, "rolls": 0}
 		streams[label] = st
-		print("[RunRNG] NEW stream '%s' seed=%d" % [label, s])
+		#print("[RunRNG] NEW stream '%s' seed=%d" % [label, s])
 	#else:
 		#print("[RunRNG] GET stream '%s' seed=%d rolls=%d" % [label, int(st["seed"]), int(st["rolls"])])
 
@@ -70,4 +70,4 @@ func commit(rng: RNG) -> void:
 	var before := int(st.get("rolls", 0))
 	st["rolls"] = rng.rolls
 	streams[label] = st
-	print("[RunRNG] COMMIT '%s' rolls %d -> %d" % [label, before, int(rng.rolls)])
+	#print("[RunRNG] COMMIT '%s' rolls %d -> %d" % [label, before, int(rng.rolls)])

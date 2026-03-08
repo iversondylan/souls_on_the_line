@@ -30,19 +30,21 @@ func on_input(event: InputEvent) -> void:
 		return
 	
 	if player_target and mouse_motion and usable_card.targets.size() > 0:
-		player.show_targeted_arrow()
+		Events.player_targeted_arrow_visible.emit(true)
+		#player.show_targeted_arrow()
 	
 	if player_target and mouse_motion and usable_card.targets.size() == 0:
-		player.hide_targeted_arrow()
+		Events.player_targeted_arrow_visible.emit(false)
+		#player.hide_targeted_arrow()
 	
 	if mouse_motion:
 		#print("card_dragging_state.gd updating position")
 		usable_card.global_position = usable_card.get_global_mouse_position()
 	
 	if cancel:
-		player.targeted_arrow.hide()
+		Events.player_targeted_arrow_visible.emit(false)
 		transition_requested.emit(self, CardState.State.BASE)
 	elif minimum_drag_time_elapsed and confirm:
-		player.targeted_arrow.hide()
+		Events.player_targeted_arrow_visible.emit(false)
 		get_viewport().set_input_as_handled()
 		transition_requested.emit(self, CardState.State.RELEASED)

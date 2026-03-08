@@ -12,7 +12,7 @@ const FIRST_INTENTS_READY := NPCAIBehavior.FIRST_INTENTS_READY
 static var debug := true
 
 static func run_turn(api: SimBattleAPI, cid: int) -> void:
-	print("ation_planner.gd run_turn()")
+	#print("ation_planner.gd run_turn()")
 	if api == null or api.state == null:
 		return
 	if cid <= 0 or !api.is_alive(cid):
@@ -41,12 +41,12 @@ static func run_turn(api: SimBattleAPI, cid: int) -> void:
 	if int(ctx.state.get(KEY_PLANNED_IDX, -1)) < 0:
 		plan_next_intent_sim(profile, ctx, true)
 	
-	print("SIM plan cid=%d planned_idx=%d rolls=%d seed=%d" % [
-		cid,
-		int(ctx.state.get(KEY_PLANNED_IDX, -1)),
-		int(ctx.rng.rolls) if ctx.rng else -1,
-		int(ctx.rng.seed) if ctx.rng else -1
-	])
+	#print("SIM plan cid=%d planned_idx=%d rolls=%d seed=%d" % [
+		#cid,
+		#int(ctx.state.get(KEY_PLANNED_IDX, -1)),
+		#int(ctx.rng.rolls) if ctx.rng else -1,
+		#int(ctx.rng.seed) if ctx.rng else -1
+	#])
 	
 	var idx := int(ctx.state.get(KEY_PLANNED_IDX, -1))
 	var action := _get_action_by_idx(profile, idx)
@@ -72,7 +72,7 @@ static func run_turn(api: SimBattleAPI, cid: int) -> void:
 
 	# Execute packages in order
 	for pkg: NPCEffectPackage in action.effect_packages:
-		print("ation_planner.gd doing a pkg()")
+		#print("ation_planner.gd doing a pkg()")
 		if pkg == null:
 			continue
 
@@ -142,13 +142,13 @@ static func _ensure_ai_state_initialized(u: CombatantState) -> void:
 		s[ACTIONS_TAKEN] = 0
 
 static func ensure_valid_plan_sim(profile: NPCAIProfile, ctx: NPCAIContext, allow_hooks: bool = true) -> void:
-	print("action_planner.gd ensure_valid_plan_sim()")
+	#print("action_planner.gd ensure_valid_plan_sim()")
 	if profile == null or ctx == null:
-		print("null profile or ctx")
+		#print("null profile or ctx")
 		return
 	if bool(ctx.state.get(IS_ACTING, false)):
 		# Same as LIVE: don't replan while acting
-		print("is acting")
+		#print("is acting")
 		return
 
 	# If no plan key, plan
@@ -213,7 +213,7 @@ static func plan_next_intent_sim(profile: NPCAIProfile, ctx: NPCAIContext, allow
 
 	if allow_hooks:
 		_on_planned_intent_changed_sim(profile, prev_idx, new_idx, ctx)
-	print("planning smth indx: ", new_idx)
+	#print("planning smth indx: ", new_idx)
 	state[KEY_PLANNED_IDX] = new_idx
 	_emit_set_intent_sim(profile, ctx, new_idx)
 

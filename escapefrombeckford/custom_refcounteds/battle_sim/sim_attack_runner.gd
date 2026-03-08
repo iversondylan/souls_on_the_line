@@ -3,7 +3,7 @@
 class_name SimAttackRunner extends RefCounted
 
 static func run(api: SimBattleAPI, ctx: NPCAIContext) -> bool:
-	print("sim_attack_runner.gd run()")
+	#print("sim_attack_runner.gd run()")
 	if api == null or ctx == null:
 		return false
 	if ctx.cid <= 0 or !api.is_alive(ctx.cid):
@@ -84,7 +84,7 @@ static func run(api: SimBattleAPI, ctx: NPCAIContext) -> bool:
 		else:
 			dmg = int(ctx.params.get(Keys.DAMAGE, 0))
 		dmg = maxi(dmg, 0)
-		print("sim_attack_runner.gd run() unmod dmg: ", dmg)
+		#print("sim_attack_runner.gd run() unmod dmg: ", dmg)
 		var deal_mod := int(ctx.params.get(Keys.DEAL_MOD_TYPE, Modifier.Type.DMG_DEALT))
 		var take_mod := int(ctx.params.get(Keys.TAKE_MOD_TYPE, Modifier.Type.DMG_TAKEN))
 		

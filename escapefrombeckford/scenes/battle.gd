@@ -31,7 +31,7 @@ const ENEMY := 1
 @onready var selection_prompt: SelectionPrompt = $Battle_UI/SelectionPrompt
 @onready var battle_interaction_handler: BattleInteractionHandler = $BattleInteractionHandler
 
-@onready var hand = $Battle_UI/Hand
+@onready var hand: Hand = $Battle_UI/Hand
 @onready var battle_ui: BattleUI = $Battle_UI
 
 @onready var draw_pile_button: CardPileOpener = %DrawPileButton
@@ -74,7 +74,7 @@ func _ready() -> void:
 	
 	battle_view.sim_host = sim_host
 	battle_view.battle_ui = battle_ui
-	
+	Events.hand_drawn.connect(_arm_end_turn_button.bind(true))
 	
 	#print_tree_pretty()
 	api = LiveBattleAPI.new(battle_scene)
@@ -88,7 +88,7 @@ func _ready() -> void:
 	turn_engine.group_turn_ended.connect(_on_group_turn_ended)
 	turn_engine.pending_view_changed.connect(_on_pending_view_changed)
 	turn_engine.arcana_proc_requested.connect(_on_arcana_proc_requested)
-	turn_engine.player_end_requested.connect(_on_player_end_requested)
+	#turn_engine.player_end_requested.connect(_on_player_end_requested)
 	Events.live_battle_api_created.emit(api)
 	set_process(true)
 	
@@ -110,8 +110,8 @@ func _ready() -> void:
 	Events.hand_drawn.connect(_on_hand_drawn)
 	
 	# Temporary v
-	battle_scene.runner.scope_drained.connect(_on_runner_scope_drained)
-	Events.hand_drawn.connect(simulate_battle)
+	#battle_scene.runner.scope_drained.connect(_on_runner_scope_drained)
+	#Events.hand_drawn.connect(simulate_battle)
 	# Temporary ^
 	
 	Events.summon_reserve_card_released.connect(_on_summon_reserve_card_released)
@@ -120,7 +120,7 @@ func _ready() -> void:
 	#Events.request_activate_arcana_by_type.connect(_on_request_activate_arcana_by_type)
 	#Events.request_enemy_turn.connect(_on_request_enemy_turn)
 	#Events.request_friendly_turn.connect(_on_request_friendly_turn)
-	Events.arcana_activated.connect(_on_arcana_activated)
+	#Events.arcana_activated.connect(_on_arcana_activated)
 	#Events.request_draw_hand.connect(_on_request_hand_draw)
 	
 	draw_pile_button.pressed.connect(draw_pile_view.show_current_draw_view.bind("Draw Pile", true))
@@ -176,10 +176,10 @@ func start_battle():
 	
 	
 	
-	battle_scene.run_seed = run_seed
-	battle_scene.battle_seed = battle_seed
-	if wait_for_anims:
-		return
+	#battle_scene.run_seed = run_seed
+	#battle_scene.battle_seed = battle_seed
+	#if wait_for_anims:
+		#return
 	#BattleController.current_state = BattleController.BattleState.PRE_GAME
 	
 	wait_for_anims = true
@@ -188,10 +188,10 @@ func start_battle():
 	
 	make_player_combatant()
 	make_enemies()
-	Events.battle_reset.emit()
-	battle_scene.build_static_modifiers_from_arcana()
-	Events.initiate_first_intents.emit()
-	_on_player_data_changed()
+	#Events.battle_reset.emit()
+	#battle_scene.build_static_modifiers_from_arcana()
+	#Events.initiate_first_intents.emit()
+	#_on_player_data_changed()
 	hand.empty_hand()
 	deck.reset()
 	deck.make_draw_pile()
@@ -201,22 +201,38 @@ func start_battle():
 	sim_host.end_setup()
 	sim_host.start_group_turn(0, true)
 	#BattleController.current_state = BattleController.BattleState.FRIENDLY_TURN
-	await _apply_group_turn_start_hooks_scoped(0)
-	turn_engine.start_group_turn(0, true)
+	#await _apply_group_turn_start_hooks_scoped(0)
+	#turn_engine.start_group_turn(0, true)
 
-func _on_runner_scope_drained(scope: int) -> void:
-	pass
-	#print("battle.gd _on_runner_scope_drained() scope: ", scope)
+func _on_end_turn_button_pressed_live() -> void:
+	print("battle.gd _on_end_turn_button_pressed_live()")
+	if wait_for_anims:
+		return
+	if !_player_end_turn_armed:
+		return
 
-func _on_request_activate_arcana_by_type(type: Arcanum.Type):
-	pass
-	#if arcana:
-		#arcana.activate_arcana_by_type_async(type, self)
+	_arm_end_turn_button(false)
+	if !Events.hand_discarded.is_connected(_on_hand_discarded_one_shot):
+		Events.hand_discarded.connect(_on_hand_discarded_one_shot, CONNECT_ONE_SHOT)
+	sim_host.request_player_end()
 
+func _on_hand_discarded_one_shot() -> void:
+	#print("battle.gd _on_hand_discarded_one_shot()")
+	sim_host.hand_discarded()
 
-func _on_arcana_activated(type: Arcanum.Type) -> void:
-	#print("battle.gd _on_arcana_activated() type: ", Arcanum.Type.keys()[type])
-	pass
+#func _on_runner_scope_drained(scope: int) -> void:
+	#pass
+	##print("battle.gd _on_runner_scope_drained() scope: ", scope)
+#
+#func _on_request_activate_arcana_by_type(type: Arcanum.Type):
+	#pass
+	##if arcana:
+		##arcana.activate_arcana_by_type_async(type, self)
+#
+#
+#func _on_arcana_activated(type: Arcanum.Type) -> void:
+	##print("battle.gd _on_arcana_activated() type: ", Arcanum.Type.keys()[type])
+	#pass
 
 func _apply_glow_live(active_id: int, pending_ids: PackedInt32Array) -> void:
 	# If nothing active, clear glow (or keep last — but clearing is safer)
@@ -465,33 +481,37 @@ func _await_hand_draw_gate() -> void:
 	while !_wait_hand_drawn_done:
 		await get_tree().process_frame
 
-func end_player_turn_async() -> bool:
-	#print("battle.gd end_player_turn_async()")
-	# Called by TurnEngineCore after it thinks player is "done".
-	# Goal: ensure discard finished, resolve action, and drain runner scope (already handled in _run_actor_live)
-
-	await _await_arcana_gate_if_any()
-
-	# If End Turn triggers discard flow, wait for that to complete.
-	# We treat hand_discarded as the boundary that the player's chosen discard is complete.
-	await _await_hand_discarded_once()
-
-	# Now resolve the player's action (this is what PlayerBehavior used to do)
-	if player and is_instance_valid(player):
-		player.resolve_action()
-	return true
+#func end_player_turn_async() -> bool:
+	##print("battle.gd end_player_turn_async()")
+	## Called by TurnEngineCore after it thinks player is "done".
+	## Goal: ensure discard finished, resolve action, and drain runner scope (already handled in _run_actor_live)
+#
+	#await _await_arcana_gate_if_any()
+#
+	## If End Turn triggers discard flow, wait for that to complete.
+	## We treat hand_discarded as the boundary that the player's chosen discard is complete.
+	#await _await_hand_discarded_once()
+#
+	## Now resolve the player's action (this is what PlayerBehavior used to do)
+	#if player and is_instance_valid(player):
+		#player.resolve_action()
+	#return true
 
 var _wait_hand_discarded_done: bool = false
-func _on_hand_discarded_one_shot() -> void:
-	#print("battle.gd _on_hand_discarded_one_shot()")
-	_wait_hand_discarded_done = true
-func _await_hand_discarded_once() -> void:
-	#print("battle.gd _await_hand_discarded_once()")
-	_wait_hand_discarded_done = false
-	if !Events.hand_discarded.is_connected(_on_hand_discarded_one_shot):
-		Events.hand_discarded.connect(_on_hand_discarded_one_shot, CONNECT_ONE_SHOT)
-	while !_wait_hand_discarded_done:
-		await get_tree().process_frame
+
+
+
+
+	
+	
+	
+#func _await_hand_discarded_once() -> void:
+	##print("battle.gd _await_hand_discarded_once()")
+	#_wait_hand_discarded_done = false
+	#if !Events.hand_discarded.is_connected(_on_hand_discarded_one_shot):
+		#Events.hand_discarded.connect(_on_hand_discarded_one_shot, CONNECT_ONE_SHOT)
+	#while !_wait_hand_discarded_done:
+		#await get_tree().process_frame
 
 var _wait_hand_drawn_done: bool = false
 func _on_hand_drawn_one_shot() -> void:
@@ -649,13 +669,13 @@ func _with_system_scope_async(actor_id: int, work: Callable) -> void:
 	runner.end_scope(sid)
 
 func make_player_combatant() -> void:
-	var new_player: Player = player_scn.instantiate()
-	battle_scene.add_combatant(new_player, 0, 0)
-	new_player.combatant_data = player_data
+	#var new_player: Player = player_scn.instantiate()
+	#battle_scene.add_combatant(new_player, 0, 0)
+	#new_player.combatant_data = player_data
 	player_data.alive = true
-	battle_scene.set_player(new_player)
-	player = new_player
-	hand.player = new_player
+	#battle_scene.set_player(new_player)
+	#player = new_player
+	hand.player_data = player_data
 	sim_host.add_combatant_from_data(player_data, 0, 0, true)
 
 func make_enemies() -> void:
@@ -663,13 +683,13 @@ func make_enemies() -> void:
 		thank_you_box.show()
 		return
 	for enemy_data: CombatantData in battle_data.enemies:
-		var new_enemy: Enemy = enemy_scn.instantiate()
-		var new_enemy_index: int = battle_scene.get_n_combatants_in_group(1)
-		battle_scene.add_combatant(new_enemy, 1, new_enemy_index)
+		#var new_enemy: Enemy = enemy_scn.instantiate()
+		#var new_enemy_index: int = battle_scene.get_n_combatants_in_group(1)
+		#battle_scene.add_combatant(new_enemy, 1, new_enemy_index)
 		var new_data: CombatantData = enemy_data.duplicate()
 		new_data.init()
-		new_enemy.combatant_data = new_data
-		sim_host.add_combatant_from_data(new_data, 1, new_enemy_index, false)
+		#new_enemy.combatant_data = new_data
+		sim_host.add_combatant_from_data(new_data, 1, -1, false)
 
 func _on_end_turn_pressed() -> void:
 	if wait_for_anims:
@@ -764,22 +784,6 @@ func _arm_end_turn_button(armed: bool) -> void:
 	#print("battle.gd _arm_end_turn_button() armed: ", armed)
 	_player_end_turn_armed = armed
 	battle_ui.set_end_turn_enabled(armed)
-
-func _on_end_turn_button_pressed_live() -> void:
-	if wait_for_anims:
-		return
-	if !_player_end_turn_armed:
-		return
-
-	_arm_end_turn_button(false)
-
-	# Trigger your discard UX / cleanup the same way you already do.
-	Events.player_turn_completed.emit()
-
-	# tell the turn engine "player wants to end now"
-	# This should cause TurnEngineCore to emit player_end_requested(token).
-	sim_host.request_player_end()
-	turn_engine.request_player_end() #<- this calls the LIVE turn engine; nothing to do with SIM
 
 
 func debug_dump_orders_live() -> void:
@@ -992,14 +996,14 @@ func _on_player_begin_requested(token: int) -> void:
 	var ok := await begin_player_turn_async()
 	turn_engine.notify_player_begin_done(token)
 
-func _on_player_end_requested(token: int) -> void:
-	# TurnEngine is asking Battle to actually complete the player turn.
-	# This should:
-	# - wait for discard flow to finish
-	# - call player.resolve_action()
-	# - then notify engine so it can continue (arcana / next actor)
-	var ok := await end_player_turn_async()
-	turn_engine.notify_player_end_done(token)
+#func _on_player_end_requested(token: int) -> void:
+	## TurnEngine is asking Battle to actually complete the player turn.
+	## This should:
+	## - wait for discard flow to finish
+	## - call player.resolve_action()
+	## - then notify engine so it can continue (arcana / next actor)
+	#var ok := await end_player_turn_async()
+	#turn_engine.notify_player_end_done(token)
 
 
 func _on_dump_states_button_pressed() -> void:

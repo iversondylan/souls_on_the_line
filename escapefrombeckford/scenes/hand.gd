@@ -34,7 +34,7 @@ var _hand_globally_disabled := false
 #var battle_scene: BattleScene
 var battle_view: BattleView
 var sim_host: SimHost
-var player: Player
+var player_data: PlayerData
 var deck: Deck
 
 var highlighted_card_index_int: int = -1
@@ -112,7 +112,7 @@ func add_card(card: CardData) -> void:
 	var usable_card: UsableCard = usable_card_scn.instantiate()
 	usable_card.card_data = card
 	usable_card.hand = self
-	usable_card.player = player
+	usable_card.player_data = player_data
 	usable_card.battle_view = battle_view
 	usable_card.sim_host = sim_host
 	#usable_card.battle_scene = battle_scene
@@ -470,7 +470,7 @@ func _card_drag_or_aim_ended(card: UsableCard) -> void:
 	_apply_z_order()
 
 func _on_player_turn_completed() -> void:
-	#print("hand.gd _on_player_turn_completed()")
+	print("hand.gd _on_player_turn_completed()")
 	disable_hand_cards()
 	discard_hand(get_hand_cards())
 

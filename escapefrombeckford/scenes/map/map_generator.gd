@@ -31,7 +31,7 @@ func make_map(rng: RNG) -> Array[Array]:
 		push_error("MapGenerator.make_map: rng is null")
 		return []
 
-	print("[MapGenerator] make_map seed=%d rolls=%d" % [rng.seed, rng.rolls])
+	#print("[MapGenerator] make_map seed=%d rolls=%d" % [rng.seed, rng.rolls])
 
 	map_data = _make_empty_grid(rng)
 	var starting_points := _get_random_starting_points(rng)
@@ -46,7 +46,7 @@ func make_map(rng: RNG) -> Array[Array]:
 	_make_random_room_weights()
 	_make_room_types(rng)
 
-	print("[MapGenerator] done seed=%d rolls=%d" % [rng.seed, rng.rolls])
+	#print("[MapGenerator] done seed=%d rolls=%d" % [rng.seed, rng.rolls])
 	return map_data
 
 #func make_map() -> Array[Array]:

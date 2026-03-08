@@ -214,6 +214,9 @@ func _on_sim_player_begin_requested(token: int) -> void:
 	turn_engine.notify_player_begin_done(token)
 
 func request_player_end() -> void:
+	main.api.writer.emit_end_turn_pressed(main.api.get_player_id())
+
+func hand_discarded() -> void:
 	turn_engine.request_player_end()
 
 func _on_sim_player_end_requested(token: int) -> void:
@@ -223,7 +226,7 @@ func _on_sim_player_end_requested(token: int) -> void:
 	
 	# 2) END_OF_TURN arcana occurs at player-end resolution
 	var player_id := turn_engine_host_sim.get_player_id()
-	print("[SIM] player_end_requested token=%d -> running END_OF_TURN arcana, then actor_done(player=%d)" % [token, player_id])
+	#print("[SIM] player_end_requested token=%d -> running END_OF_TURN arcana, then actor_done(player=%d)" % [token, player_id])
 	turn_engine.request_end_of_turn_arcana(func():
 		# IMPORTANT ordering:
 		# - First satisfy the player_end token handshake
@@ -271,7 +274,7 @@ func _call_sim_end_player_turn() -> void:
 # -------------------------
 
 func _on_sim_actor_requested(cid: int) -> void:
-	print("sim_host() _on_sim_actor_requested() cid: ", cid)
+	#print("sim_host() _on_sim_actor_requested() cid: ", cid)
 	if main != null and main.api != null and main.api.writer != null:
 		main.api.writer.set_turn_context(turn_engine._turn_token, turn_engine.active_group_index, cid)
 		main.api.writer.scope_begin(Scope.Kind.ACTOR_TURN, "actor=%d" % cid, cid)
@@ -279,6 +282,8 @@ func _on_sim_actor_requested(cid: int) -> void:
 	if main != null and main.api != null:
 		SimStatusLifecycleRunner.on_actor_turn_begin(main.api, cid)
 	if is_player(cid):
+		if main != null and main.api != null and main.api.writer != null:
+			main.api.writer.emit_player_input_reached(int(cid))
 		player_input_reached.emit()
 		return
 	

@@ -1,6 +1,9 @@
 # events.gd (global: Events)
 
 extends Node
+# the only ones I'm keeping?
+signal player_targeted_arrow_visible(show: bool)
+
 
 ## battle flow events
 signal live_battle_api_created(api: LiveBattleAPI)

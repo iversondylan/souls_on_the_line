@@ -6,7 +6,7 @@ class_name CardStateMachine extends Node
 var current_state: CardState
 var states := {}
 
-var player: Player : set = _set_player
+var player_data: PlayerData : set = _set_player
 
 func init(card: UsableCard) -> void:
 	for child in get_children():
@@ -19,11 +19,11 @@ func init(card: UsableCard) -> void:
 		initial_state.enter()
 		current_state = initial_state
 
-func _set_player(new_player: Player) -> void:
-	player = new_player
+func _set_player(new_player: PlayerData) -> void:
+	player_data = new_player
 	for child in get_children():
 		if child is CardState:
-			child.player = player
+			child.player_data = player_data
 
 func on_input(event: InputEvent) -> void:
 	if current_state:

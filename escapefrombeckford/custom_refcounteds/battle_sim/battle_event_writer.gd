@@ -123,13 +123,14 @@ func scope_end() -> int:
 # “Structural” timeline markers (these scale into animation)
 # -------------------------
 
-func emit_spawned(spawned_id: int, group_idx: int, insert_index: int, after_order: PackedInt32Array, proto: String = "", spec: Dictionary = {}) -> int:
+func emit_spawned(spawned_id: int, group_idx: int, insert_index: int, after_order: PackedInt32Array, proto: String = "", spec: Dictionary = {}, is_player := false) -> int:
 	var data := {
 		Keys.SPAWNED_ID: int(spawned_id),
 		Keys.GROUP_INDEX: int(group_idx),
 		Keys.INSERT_INDEX: int(insert_index),
 		Keys.AFTER_ORDER_IDS: after_order,
 		Keys.PROTO: String(proto),
+		Keys.IS_PLAYER: is_player,
 	}
 	if spec != null and !spec.is_empty():
 		data[Keys.SUMMON_SPEC] = spec
@@ -445,6 +446,16 @@ func emit_card_mutated(card: CardData, reason: String = "", delta: Dictionary = 
 		Keys.CARD_NAME: card.name,
 		Keys.REASON: String(reason),
 		Keys.DELTA: delta,
+	})
+
+func emit_player_input_reached(player_id: int) -> void:
+	return _append(BattleEvent.Type.PLAYER_INPUT_REACHED, {
+		Keys.ACTOR_ID: int(player_id),
+	})
+
+func emit_end_turn_pressed(player_id: int) -> void:
+	return _append(BattleEvent.Type.END_TURN_PRESSED, {
+		Keys.ACTOR_ID: int(player_id),
 	})
 
 func _append_manual(type: int, scope_id: int, parent_scope_id: int, scope_kind: int, data: Dictionary = {}) -> int:

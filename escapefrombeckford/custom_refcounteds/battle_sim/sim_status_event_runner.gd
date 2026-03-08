@@ -5,7 +5,7 @@
 class_name SimStatusEventRunner extends RefCounted
 
 static func on_damage_taken(api: SimBattleAPI, ctx: DamageContext) -> void:
-	print("sim_status_event_runner.gd on_damage_taken() dmg: %s" % [ctx.amount])
+	#print("sim_status_event_runner.gd on_damage_taken() dmg: %s" % [ctx.amount])
 	if api == null or api.state == null or ctx == null:
 		return
 	if int(ctx.target_id) <= 0:

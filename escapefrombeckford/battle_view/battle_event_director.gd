@@ -66,6 +66,18 @@ func on_event(e: EventPackage) -> void:
 			_on_scope_begin(e)
 		BattleEvent.Type.SCOPE_END:
 			_on_scope_end(e)
+		BattleEvent.Type.PLAYER_INPUT_REACHED:
+			# old path: draw hand, enable preview button, etc.
+			Events.request_draw_hand.emit()
+			# optionally: also arm end turn here if you want it fully event-driven
+			# Events.player_input_reached.emit() if you had something like that
+
+		BattleEvent.Type.END_TURN_PRESSED:
+			# old path expects discard and then sim_host.request_player_end() is already called.
+			# If you decide you want event-driven discard instead of Battle button handler:
+			Events.player_turn_completed.emit()
+			
+			#pass
 		_:
 			# ignore for now
 			pass
@@ -74,9 +86,10 @@ func _on_spawned(e: EventPackage) -> void:
 	var cid := int(e.event.data.get(Keys.SPAWNED_ID, 0))
 	var g := int(e.event.data.get(Keys.GROUP_INDEX, e.event.group_index))
 	var idx := int(e.event.data.get(Keys.INSERT_INDEX, -1))
+	var is_player := bool(e.event.data.get(Keys.IS_PLAYER, false))
 	var after_ids : PackedInt32Array = e.event.data.get(Keys.AFTER_ORDER_IDS, PackedInt32Array())
 	#print("battle_event_director.gd _on_spawned() cid: %s, group: %s, ind: %s" % [cid, g, idx])
-	var v := battle_view.get_or_create_combatant_view(cid, g, idx)
+	var v := battle_view.get_or_create_combatant_view(cid, g, idx, is_player)
 	if v == null:
 		return
 	

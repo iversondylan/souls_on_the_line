@@ -20,9 +20,9 @@ func _run() -> void:
 		push_error("Failed to save arcana catalog.")
 		return
 	
-	print("Arcana catalog rebuilt: %d arcana found." % found_arcana.size())
+	#print("Arcana catalog rebuilt: %d arcana found." % found_arcana.size())
 	ResourceSaver.save(catalog, catalog.resource_path)
-	print("Arcana catalog saved.")
+	#print("Arcana catalog saved.")
 
 
 func _load_arcana_recursive(path: String) -> Array[Arcanum]:

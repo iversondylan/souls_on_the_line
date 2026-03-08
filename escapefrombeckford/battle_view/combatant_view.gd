@@ -13,6 +13,9 @@ class_name CombatantView extends Node2D
 @onready var target_area: CombatantTargetArea = $TargetArea
 @onready var area_left: CombatantAreaLeft = $AreaLeft
 
+enum Type {ALLY, ENEMY, PLAYER}
+var type: Type : set = _set_type
+
 var display_name: String = ""
 var cid: int = -1 : set = _set_cid
 var character_art_uid: String
@@ -27,7 +30,7 @@ var max_mana: int = 3
 var anchor_position: Vector2# = Vector2(0, 0)
 var has_anchor_position: bool = false
 #var _assets: BattleAssetCache = null
-
+#var is_player := false : set = _set_is_player
 #func bind_assets(cache: BattleAssetCache) -> void:
 	#_assets = cache
 
@@ -49,6 +52,35 @@ func _set_cid(new_cid: int) -> void:
 		target_area.cid = cid
 	if area_left:
 		area_left.cid = cid
+
+func _set_type(new_type: int) -> void:
+	type = new_type
+	if type == Type.PLAYER:
+		if !Events.player_targeted_arrow_visible.is_connected(show_targeted_arrow):
+			Events.player_targeted_arrow_visible.connect(show_targeted_arrow)
+	if type == Type.PLAYER or type == Type.ALLY:
+		if !is_node_ready():
+			await ready
+		print("combatant_view _set_type() setting area left monitorable/monitoring to true")
+		area_left.monitorable = true
+		area_left.monitoring = true
+
+func _on_target_area_area_entered(area: Area2D) -> void:
+	if area is not CardTargetSelectorArea:
+		return
+	match area.card_target_selector.current_card.card_data.target_type:
+		CardData.TargetType.ALLY_OR_SELF:
+			if type == Type.ALLY or type == Type.PLAYER:
+				show_targeted_arrow(true)
+		CardData.TargetType.ALLY:
+			if type == Type.ALLY:
+				show_targeted_arrow(true)
+		CardData.TargetType.SINGLE_ENEMY:
+			if type == Type.ENEMY:
+				show_targeted_arrow(true)
+
+func _on_target_area_area_exited(_area: Area2D) -> void:
+	show_targeted_arrow(false)
 
 func apply_spawn_spec(spec: Dictionary) -> void:
 	_spec = spec.duplicate(true)
@@ -189,7 +221,7 @@ func _spawn_projectile_async(order: StrikeWindupOrder, battle_view: BattleView, 
 	if !is_instance_valid(self) or gen != _strike_gen:
 		return
 
-	print("spawn projectile now")
+	#print("spawn projectile now")
 
 	var proj_path := String(order.projectile_scene_path)
 	var scene: PackedScene = FxLibrary.get_scene(proj_path)

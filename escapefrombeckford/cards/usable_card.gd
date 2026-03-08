@@ -6,7 +6,7 @@ signal card_fan_requested(which_usable_card: UsableCard)
 signal mouse_entered(usablecard: UsableCard)
 signal mouse_exited(usablecard: UsableCard)
 
-var player: Player : set = _set_player
+var player_data: PlayerData : set = _set_player
 #var battle_scene: BattleScene
 var battle_view: BattleView
 var sim_host: SimHost
@@ -90,11 +90,11 @@ func animate_to_rotation(new_rotation: float, duration: float) -> void:
 	tween = create_tween().set_trans(Tween.TRANS_CIRC).set_ease(Tween.EASE_OUT)
 	tween.tween_property(self, "rotation_degrees", new_rotation,  duration)
 
-func _set_player(new_player: Player) -> void:
-	player = new_player
+func _set_player(new_player: PlayerData) -> void:
+	player_data = new_player
 	if !is_node_ready():
 		await ready
-	card_state_machine.player = player
+	card_state_machine.player_data = player_data
 	
 
 func _set_card_data(_card_data: CardData) -> void:
@@ -182,14 +182,14 @@ func get_cost() -> Array[int]:
 	return [card_data.cost_red, card_data.cost_green, card_data.cost_blue]
 
 func activate() -> bool:
-	if card_data == null or player == null:# or battle_scene == null:
+	if card_data == null or player_data == null:# or battle_scene == null:
 		return false
 
 	var resolved_view := resolve_targets(targets)
 	if resolved_view.fighter_ids.is_empty() and resolved_view.areas.is_empty():
 		return false
 
-	if !player.can_play_card(card_data):
+	if !player_data.can_play_card(card_data):
 		return false
 
 	# SIM commit (source of truth)
@@ -197,7 +197,7 @@ func activate() -> bool:
 		return false
 
 	# Spend mana / discard visuals still live-ui concerns
-	player.spend_mana(card_data)
+	player_data.spend_mana(card_data)
 	Events.card_played.emit(self)
 	_move_to_destination()
 	return true
@@ -209,7 +209,7 @@ func activate_sim_from_resolved_view(resolved_view: CardResolvedTargetView) -> b
 	card_data.ensure_uid()
 
 	var req := CardPlayRequest.new()
-	req.source_id = int(player.combat_id)
+	req.source_id = int(player_data.combat_id)
 	req.card = card_data
 	req.target_ids = resolved_view.fighter_ids
 	req.insert_index = resolved_view.insert_index
@@ -393,7 +393,7 @@ func resolve_targets(new_targets: Array[Node]) -> CardResolvedTargetView:
 	match card_data.target_type:
 		CardData.TargetType.SELF:
 			# Source is the player cid. You already have player.combat_id.
-			var pid := int(player.combat_id)
+			var pid := int(player_data.combat_id)
 			result.fighter_ids.append(pid)
 			var pv := battle_view.get_combatant(pid) if battle_view else null
 			if pv != null:
@@ -486,7 +486,7 @@ func resolve_targets(new_targets: Array[Node]) -> CardResolvedTargetView:
 	#return result
 
 func is_playable() -> bool:
-	if !player.can_play_card(card_data):
+	if !player_data.can_play_card(card_data):
 		return false
 	
 	#for action in card_data.actions:
@@ -568,7 +568,7 @@ func build_action_context_view(resolved_targets: CardResolvedTargetView) -> Card
 	ctx.card_data = card_data
 	#ctx.battle_scene = battle_scene
 	ctx.battle_view = battle_view
-	ctx.source_id = int(player.combat_id)
+	ctx.source_id = int(player_data.combat_id)
 	ctx.resolved = resolved_targets
 	return ctx
 

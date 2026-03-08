@@ -42,7 +42,9 @@ enum Type {
 	
 	DEBUG,
 	SET_INTENT,
-	STATUS_CHANGED
+	STATUS_CHANGED,
+	PLAYER_INPUT_REACHED,
+	END_TURN_PRESSED
 }
 
 var defines_beat: bool = false

@@ -117,7 +117,7 @@ func get_targets_for_attack_sequence(ai_ctx) -> Array:
 	#resolve_damage_immediate(ctx)
 
 func resolve_attack(ctx: NPCAIContext) -> bool:
-	print("sim_battle_api.gd resolve_attack()")
+	#print("sim_battle_api.gd resolve_attack()")
 	return SimAttackRunner.run(self, ctx)
 
 # sim_battle_api.gd
@@ -129,7 +129,7 @@ func resolve_attack(ctx: NPCAIContext) -> bool:
 # - resolve_death now takes optional killer_id for better logs.
 
 func resolve_damage_immediate(ctx: DamageContext) -> int:
-	print("sim_battle_api.gd resolve_damage_immediate() dmg: ", ctx.base_amount)
+	#print("sim_battle_api.gd resolve_damage_immediate() dmg: ", ctx.base_amount)
 	if ctx == null or state == null:
 		return 0
 
@@ -229,7 +229,7 @@ func resolve_death(combat_id: int, reason := "", killer_id: int = 0) -> void:
 	SimDeathRunner.run(self, combat_id, killer_id, String(reason))
 
 func apply_status(ctx: StatusContext) -> void:
-	print("sim_battle_api.gd apply_status() id: ", ctx.status_id)
+	#print("sim_battle_api.gd apply_status() id: ", ctx.status_id)
 	if ctx == null or state == null:
 		return
 	if ctx.target_id <= 0:
@@ -302,8 +302,13 @@ func _on_status_changed(cid: int) -> void:
 	_request_replan(cid)
 	flush_intent_refreshes()
 
+#func emit_status_changed(source_id: int, target_id: int, status_id: StringName, new_intensity: int, new_duration: int) -> void:
+	#if writer == null:
+		#return
+	#writer.emit_status_changed(source_id, target_id, status_id, new_intensity, new_duration)
+
 func _request_replan(cid: int) -> void:
-	print("requesting replan for ", cid)
+	#print("requesting replan for ", cid)
 	var u: CombatantState = state.get_unit(int(cid))
 	if u == null:
 		return
@@ -318,7 +323,7 @@ func _request_replan(cid: int) -> void:
 		#return
 
 	u.ai_state[&"replan_dirty"] = true
-	print("_request_replan cid: %s, replan dirty: %s" % [cid, u.ai_state.get(&"replan_dirty", false)])
+	#print("_request_replan cid: %s, replan dirty: %s" % [cid, u.ai_state.get(&"replan_dirty", false)])
 
 func spawn_from_data(combatant_data: CombatantData, group_index: int, insert_index: int = -1, is_player := false) -> int:
 	if combatant_data == null or state == null:
@@ -337,6 +342,8 @@ func spawn_from_data(combatant_data: CombatantData, group_index: int, insert_ind
 		u.data_proto_path = String(combatant_data.resource_path)
 	
 	var g := clampi(group_index, 0, 1)
+	#if insert_index < 0:
+		#
 	state.add_unit(u, g, int(insert_index))
 	
 	if writer != null:
@@ -355,7 +362,7 @@ func spawn_from_data(combatant_data: CombatantData, group_index: int, insert_ind
 			Keys.COLOR_TINT: combatant_data.color_tint as Color,
 		}
 		var after_order_ids = PackedInt32Array(state.groups[g].order)
-		writer.emit_spawned(id, g, int(insert_index), after_order_ids, proto, spec)
+		writer.emit_spawned(id, g, int(insert_index), after_order_ids, proto, spec, is_player)
 	
 	return id
 
@@ -492,7 +499,7 @@ func modify_damage_amount(ctx: DamageContext, base: int) -> int:
 	return amount
 
 func on_damage_applied(ctx: DamageContext) -> void:
-	print("sim_battle_api.gd on_damage_applied()")
+	#print("sim_battle_api.gd on_damage_applied()")
 	if state == null or ctx == null:
 		return
 
@@ -568,7 +575,7 @@ func plan_intent(cid: int, allow_hooks := true, clear_dirty := true) -> void:
 
 	u.ai_state[&"planning_now"] = false
 	if clear_dirty:
-		print("plan_intent() clearing dirty")
+		#print("plan_intent() clearing dirty")
 		u.ai_state[&"replan_dirty"] = false
 
 #func plan_intent(cid: int, allow_hooks := true) -> void:
@@ -607,7 +614,7 @@ func flush_replans(allow_hooks := true) -> void:
 		if u == null:
 			continue
 		ActionPlanner._ensure_ai_state_initialized(u)
-		print("flush_replans() cid: %s, replan dirty: %s" % [cid, u.ai_state.get(&"replan_dirty", false)])
+		#print("flush_replans() cid: %s, replan dirty: %s" % [cid, u.ai_state.get(&"replan_dirty", false)])
 		if bool(u.ai_state.get(&"replan_dirty", false)):
 			plan_intent(cid, allow_hooks, true)
 
@@ -712,7 +719,7 @@ func _fire_opposing_group_start_for(cid: int) -> void:
 		return
 
 	var idx := int(u.ai_state.get(ActionPlanner.KEY_PLANNED_IDX, -1))
-	print("sim_battle_api.gd _fire_opposing_group_start_for( planned cid: %s, idx: %s)" % [cid, idx])
+	#print("sim_battle_api.gd _fire_opposing_group_start_for( planned cid: %s, idx: %s)" % [cid, idx])
 	var action := ActionPlanner._get_action_by_idx(u.combatant_data.ai, idx)
 	if action == null:
 		return

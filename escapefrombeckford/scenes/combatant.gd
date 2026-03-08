@@ -74,8 +74,6 @@ func info_visible(visibility: bool) -> void:
 	#status_bar.visible = visibility
 	health_bar.visible = visibility
 	status_grid.visible = visibility
-	
-	
 
 func update_data_visuals() -> void:
 	if !is_node_ready():
@@ -109,11 +107,9 @@ func _on_target_area_mouse_entered() -> void:
 	if fighter and fighter.is_alive():
 		Events.combatant_target_hovered.emit(fighter)
 
-
 func _on_target_area_mouse_exited() -> void:
 	if fighter and fighter.is_alive():
 		Events.combatant_target_unhovered.emit(fighter)
-
 
 func _on_target_area_input_event(viewport: Node, event: InputEvent, shape_idx: int) -> void:
 	if event.is_action_pressed("mouse_click"):

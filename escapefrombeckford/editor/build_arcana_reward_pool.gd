@@ -21,7 +21,7 @@ func _run():
 	var err := ResourceSaver.save(pool, POOL_PATH)
 	assert(err == OK, "Failed to save Arcana reward pool")
 	
-	print("Arcana reward pool rebuilt and saved (%d ids)." % new_ids.size())
+	#print("Arcana reward pool rebuilt and saved (%d ids)." % new_ids.size())
 
 
 func _load_all_arcana(path: String) -> Array[Arcanum]:

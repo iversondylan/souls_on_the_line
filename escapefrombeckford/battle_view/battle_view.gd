@@ -88,7 +88,7 @@ func _playback_loop(gen: int) -> void:
 		if duration > 0.0:
 			await get_tree().create_timer(duration).timeout
 
-func get_or_create_combatant_view(cid: int, group_index: int, insert_index: int) -> CombatantView:
+func get_or_create_combatant_view(cid: int, group_index: int, insert_index: int, is_player := false) -> CombatantView:
 	if cid <= 0:
 		return null
 	if combatants_by_cid.has(cid):
@@ -98,7 +98,10 @@ func get_or_create_combatant_view(cid: int, group_index: int, insert_index: int)
 	if combatant == null:
 		push_error("BattleView: combatant_view_scene must instance a CombatantView")
 		return null
-	
+	if is_player:
+		combatant.type = CombatantView.Type.PLAYER
+	else:
+		combatant.type = CombatantView.Type.ALLY if group_index == 0 else CombatantView.Type.ENEMY
 	var group : GroupView = friendly_group if group_index == 0 else enemy_group
 	group.add_child(combatant)
 	
@@ -243,6 +246,6 @@ func get_summon_slot_position(group_index: int, slot_index: int) -> Vector2:
 
 	# summon slots are effectively "insert_index"
 	# insert at 0 means front-most, insert at layout_count means back-most.
-	var slot := float(clampi(slot_index + 1, 1, layout_count + 1))
+	var slot := float(clampf(float(slot_index) + 0.5, 0.5, layout_count + 0.5))
 	var x := group._get_x_for_slot(slot, layout_count)
 	return group.global_position + Vector2(x, 0)
