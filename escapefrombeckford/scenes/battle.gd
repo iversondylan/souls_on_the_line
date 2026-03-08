@@ -126,7 +126,9 @@ func _ready() -> void:
 	draw_pile_button.pressed.connect(draw_pile_view.show_current_draw_view.bind("Draw Pile", true))
 	discard_pile_button.pressed.connect(discard_pile_view.show_current_discard_view.bind("Discard Pile"))
 	
-	hand.battle_scene = battle_scene
+	#hand.battle_scene = battle_scene
+	hand.battle_view = battle_view
+	hand.sim_host = sim_host
 	battle_interaction_handler.setup(self)
 	
 	Events.end_turn_button_pressed.connect(_on_end_turn_button_pressed_live)

@@ -31,7 +31,9 @@ var _top_locked_card: UsableCard = null # drag/aim wins
 var _top_hover_card: UsableCard = null # hover wins if no lock
 var _hand_globally_disabled := false
 
-var battle_scene: BattleScene
+#var battle_scene: BattleScene
+var battle_view: BattleView
+var sim_host: SimHost
 var player: Player
 var deck: Deck
 
@@ -111,7 +113,9 @@ func add_card(card: CardData) -> void:
 	usable_card.card_data = card
 	usable_card.hand = self
 	usable_card.player = player
-	usable_card.battle_scene = battle_scene
+	usable_card.battle_view = battle_view
+	usable_card.sim_host = sim_host
+	#usable_card.battle_scene = battle_scene
 	
 	hand_cards_node.add_child(usable_card)
 	var target_global := draw_anchor.global_position

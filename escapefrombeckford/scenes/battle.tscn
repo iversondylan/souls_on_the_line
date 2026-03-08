@@ -53,6 +53,13 @@ position = Vector2(1449, 384)
 script = ExtResource("5_eivww")
 faces_right = false
 
+[node name="TargetArrow" type="Sprite2D" parent="BattleView" unique_id=1591944441]
+visible = false
+position = Vector2(0, -18)
+scale = Vector2(0.153333, 0.153333)
+texture = ExtResource("8_h4dll")
+script = ExtResource("9_p0caf")
+
 [node name="Battle_Scene" type="Node2D" parent="." unique_id=862417419 groups=["battle_scene"]]
 script = ExtResource("3_lcn8m")
 

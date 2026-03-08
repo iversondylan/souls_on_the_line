@@ -87,36 +87,69 @@ func _on_area_2d_area_exited(area: Area2D) -> void:
 	current_card.targets.erase(area)
 	current_card.update_description()
 	_update_battlefield_arrow()
-	
+
 func _end_targeting():
 	targeting = false
 	card_arc.clear_points()
 	area_2d.position = Vector2.ZERO
 	area_2d.monitoring = false
 	area_2d.monitorable = false
-	
-	if current_card and current_card.battle_scene:
-		current_card.battle_scene.target_arrow.hide_arrow()
-	
-	current_card = null
 
+	if current_card and current_card.battle_view != null and current_card.battle_view.target_arrow != null:
+		current_card.battle_view.target_arrow.hide_arrow()
+
+	current_card = null
+#func _end_targeting():
+	#targeting = false
+	#card_arc.clear_points()
+	#area_2d.position = Vector2.ZERO
+	#area_2d.monitoring = false
+	#area_2d.monitorable = false
+	#
+	#if current_card and current_card.battle_scene:
+		#current_card.battle_scene.target_arrow.hide_arrow()
+	#
+	#current_card = null
 
 func _update_battlefield_arrow():
 	if !current_card or !targeting:
 		return
-	
 	if current_card.card_data.target_type != CardData.TargetType.BATTLEFIELD:
 		return
-	
+	if current_card.battle_view == null or current_card.battle_view.target_arrow == null:
+		return
+
 	var slot_targets: Array[Node] = []
 	for t in current_card.targets:
 		if t is CombatantAreaLeft or t is BattleSceneAreaLeft:
 			slot_targets.append(t)
-	
+
 	if slot_targets.is_empty():
-		current_card.battle_scene.target_arrow.hide_arrow()
+		current_card.battle_view.target_arrow.hide_arrow()
 		return
+
+	var insert_index := slot_targets.size() - 1
+	var pos := current_card.battle_view.get_summon_slot_position(0, insert_index)
+	current_card.battle_view.target_arrow.show_at(pos)
+
+#func _update_battlefield_arrow():
+	#if !current_card or !targeting:
+		#return
+	#
+	#if current_card.card_data.target_type != CardData.TargetType.BATTLEFIELD:
+		#return
+	#
+	#var slot_targets: Array[Node] = []
+	#for t in current_card.targets:
+		#if t is CombatantAreaLeft or t is BattleSceneAreaLeft:
+			#slot_targets.append(t)
 	
-	var slot_index := slot_targets.size() - 1
-	var pos := current_card.battle_scene.get_summon_slot_position(0, slot_index)
-	current_card.battle_scene.target_arrow.show_at(pos)
+	#if slot_targets.is_empty():
+		#current_card.battle_scene.target_arrow.hide_arrow()
+		#return
+	#
+	#var slot_index := slot_targets.size() - 1
+	
+	# PLEASE FOR THE LOVE OF GOD FIX MY POOR SWEET TARGET ARROW
+	#var pos := current_card.battle_scene.get_summon_slot_position(0, slot_index)
+	#current_card.battle_scene.target_arrow.show_at(pos)

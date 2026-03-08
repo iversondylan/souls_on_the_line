@@ -7,7 +7,9 @@ signal mouse_entered(usablecard: UsableCard)
 signal mouse_exited(usablecard: UsableCard)
 
 var player: Player : set = _set_player
-var battle_scene: BattleScene
+#var battle_scene: BattleScene
+var battle_view: BattleView
+var sim_host: SimHost
 var hand: Hand
 var actions: Array[CardAction]
 var card_name_str: String = "Card Name"
@@ -118,60 +120,61 @@ func update_description() -> void:
 	card_visuals.description.set_text(get_description())
 
 func get_description() -> String:
-	var text := card_data.description
-	var resolved := resolve_targets(targets)
-
-	var ctx := CardActionContext.new()
-	ctx.player = player
-	ctx.player_data = player.combatant_data
-	ctx.battle_scene = battle_scene
-	ctx.card_data = card_data
-	ctx.resolved_target = resolved
-
-	for action: CardAction in card_data.actions:
-		var total_slots := TextUtils.count_placeholders(text)
-
-		# If there are no placeholders left, switch to modular append behavior.
-		if total_slots <= 0:
-			var extra := action.get_modular_description(ctx)
-			if extra != null and extra != "":
-				# append with a leading space (as requested)
-				text += " " + extra
-			continue
-
-		var consume := action.description_arity()
-		if consume <= 0:
-			# This action doesn't consume placeholders; leave text unchanged
-			# (modular append happens only when total_slots == 0, handled above)
-			continue
-
-		var values := action.get_description_values(ctx)
-		# You can keep this assert if you want strict authoring:
-		# assert(values.size() == consume)
-
-		# We apply at most the number of placeholders available.
-		# If the action returned MORE values than placeholders, that's the only error case.
-		var apply_n : int = min(values.size(), total_slots)
-		if values.size() > total_slots:
-			push_error(
-				"UsableCard.get_description(): action returned %s values but only %s placeholders remain. Truncating."
-				% [values.size(), total_slots]
-			)
-
-		# Build formatting args: fill remaining slots with "%s" so placeholders persist.
-		var args: Array = []
-		for i in range(apply_n):
-			args.append(values[i])
-
-		for i in range(total_slots - apply_n):
-			args.append("%s")
-
-		text = text % args
-
-	text = text.replace("{percent}", "%")
-	text = TextUtils.percent_to_symbol(text)
-	text = TextUtils.end_with_period(text)
-	return text
+	return("HELP ME OH GOD NO")
+	#var text := card_data.description
+	#var resolved := resolve_targets(targets)
+#
+	#var ctx := CardActionContext.new()
+	#ctx.player = player
+	#ctx.player_data = player.combatant_data
+	#ctx.battle_scene = battle_scene
+	#ctx.card_data = card_data
+	#ctx.resolved_target = resolved
+#
+	#for action: CardAction in card_data.actions:
+		#var total_slots := TextUtils.count_placeholders(text)
+#
+		## If there are no placeholders left, switch to modular append behavior.
+		#if total_slots <= 0:
+			#var extra := action.get_modular_description(ctx)
+			#if extra != null and extra != "":
+				## append with a leading space (as requested)
+				#text += " " + extra
+			#continue
+#
+		#var consume := action.description_arity()
+		#if consume <= 0:
+			## This action doesn't consume placeholders; leave text unchanged
+			## (modular append happens only when total_slots == 0, handled above)
+			#continue
+#
+		#var values := action.get_description_values(ctx)
+		## You can keep this assert if you want strict authoring:
+		## assert(values.size() == consume)
+#
+		## We apply at most the number of placeholders available.
+		## If the action returned MORE values than placeholders, that's the only error case.
+		#var apply_n : int = min(values.size(), total_slots)
+		#if values.size() > total_slots:
+			#push_error(
+				#"UsableCard.get_description(): action returned %s values but only %s placeholders remain. Truncating."
+				#% [values.size(), total_slots]
+			#)
+#
+		## Build formatting args: fill remaining slots with "%s" so placeholders persist.
+		#var args: Array = []
+		#for i in range(apply_n):
+			#args.append(values[i])
+#
+		#for i in range(total_slots - apply_n):
+			#args.append("%s")
+#
+		#text = text % args
+#
+	#text = text.replace("{percent}", "%")
+	#text = TextUtils.percent_to_symbol(text)
+	#text = TextUtils.end_with_period(text)
+	#return text
 
 
 
@@ -179,78 +182,118 @@ func get_cost() -> Array[int]:
 	return [card_data.cost_red, card_data.cost_green, card_data.cost_blue]
 
 func activate() -> bool:
-	# --- basic validation (UI-side) ---
-	if card_data == null or player == null or battle_scene == null:
+	if card_data == null or player == null:# or battle_scene == null:
 		return false
 
-	# Live resolution (what the user pointed at)
-	var resolved_live := resolve_targets(targets)
-	if resolved_live.fighters.is_empty() and resolved_live.areas.is_empty():
+	var resolved_view := resolve_targets(targets)
+	if resolved_view.fighter_ids.is_empty() and resolved_view.areas.is_empty():
 		return false
 
 	if !player.can_play_card(card_data):
 		return false
 
-	# Build SIM target payload from live resolution
-	var resolved_sim := _build_resolved_sim_from_live(resolved_live)
-
-	# Special-case: summon replace / swap partner still driven by UI flow
-	# (we cannot “just do sim + live” if you need extra user choice)
-	var summon_action := _get_first_summon_action()
-	if summon_action != null and summon_action.requires_summon_slot():
-		var needs_replace := battle_scene.get_n_summoned_allies() >= BattleGroupFriendly.MAX_SOULBOUND
-		if needs_replace:
-			# Keep existing UX path; do NOT apply sim/live yet
-			var ctx_live := build_action_context(resolved_live)
-			var effect := summon_action.build_effect(ctx_live)
-			Events.request_summon_replace.emit(self, ctx_live, effect, summon_action)
-			return true
-
-	var swap_action := _get_first_swap_action()
-	if swap_action != null:
-		Events.request_swap_partner.emit(self, build_action_context(resolved_live), resolved_live.fighters[0], swap_action)
-		return true
-
-	# --- Commit ---
-	# You said: “card plays engage sim; sim applies immediately and queues animation events to be shown in live”.
-	# For now we’ll do BOTH:
-	# 1) SIM mutates + logs events
-	# 2) LIVE runs current pipeline (until you switch live to consume event log)
-
-	var ok_sim := activate_sim(resolved_sim)
-	if !ok_sim:
-		# Policy choice: if sim fails, do not do live.
-		# (Keeps source of truth consistent.)
+	# SIM commit (source of truth)
+	if !activate_sim_from_resolved_view(resolved_view):
 		return false
 
-	var ok_live := activate_live(resolved_live)
-	return ok_live
+	# Spend mana / discard visuals still live-ui concerns
+	player.spend_mana(card_data)
+	Events.card_played.emit(self)
+	_move_to_destination()
+	return true
 
-
-func activate_live(resolved_live: CardResolvedTarget) -> bool:
-	var ctx := build_action_context(resolved_live)
-	return commit_play_live(ctx, null, true)
-
-func activate_sim(resolved_sim: CardResolvedTargetSim) -> bool:
-	if battle_scene == null or battle_scene.sim_host == null:
-		# If you want to allow “live-only” in some situations, flip this policy.
-		push_warning("UsableCard.activate_sim: no sim_host on battle_scene")
+func activate_sim_from_resolved_view(resolved_view: CardResolvedTargetView) -> bool:
+	if sim_host == null:
 		return false
 
-	# ensure persistent identity
-	if card_data != null:
-		card_data.ensure_uid()
+	card_data.ensure_uid()
 
 	var req := CardPlayRequest.new()
 	req.source_id = int(player.combat_id)
-	#req.combatant_datas = resolved_sim.combatant_datas
 	req.card = card_data
-	req.target_ids = resolved_sim.fighter_ids
-	req.insert_index = resolved_sim.insert_index
-	# optional
-	# req.params = ...
-	#print("usable_card.gd activate_sim() request combatant_datas: ", req.combatant_datas)
-	return battle_scene.sim_host.apply_player_card(req)
+	req.target_ids = resolved_view.fighter_ids
+	req.insert_index = resolved_view.insert_index
+	return sim_host.apply_player_card(req)
+
+#func activate() -> bool:
+	## --- basic validation (UI-side) ---
+	#if card_data == null or player == null or battle_scene == null:
+		#return false
+#
+	## Live resolution (what the user pointed at)
+	#var resolved_live := resolve_targets(targets)
+	#if resolved_live.fighters.is_empty() and resolved_live.areas.is_empty():
+		#return false
+#
+	#if !player.can_play_card(card_data):
+		#return false
+#
+	## Build SIM target payload from live resolution
+	#var resolved_sim := _build_resolved_sim_from_live(resolved_live)
+#
+	## Special-case: summon replace / swap partner still driven by UI flow
+	## (we cannot “just do sim + live” if you need extra user choice)
+	#var summon_action := _get_first_summon_action()
+	#if summon_action != null and summon_action.requires_summon_slot():
+		#var needs_replace := battle_scene.get_n_summoned_allies() >= BattleGroupFriendly.MAX_SOULBOUND
+		#if needs_replace:
+			## Keep existing UX path; do NOT apply sim/live yet
+			#var ctx_live := build_action_context(resolved_live)
+			#var effect := summon_action.build_effect(ctx_live)
+			#Events.request_summon_replace.emit(self, ctx_live, effect, summon_action)
+			#return true
+#
+	#var swap_action := _get_first_swap_action()
+	#if swap_action != null:
+		#Events.request_swap_partner.emit(self, build_action_context(resolved_live), resolved_live.fighters[0], swap_action)
+		#return true
+#
+	## --- Commit ---
+	## You said: “card plays engage sim; sim applies immediately and queues animation events to be shown in live”.
+	## For now we’ll do BOTH:
+	## 1) SIM mutates + logs events
+	## 2) LIVE runs current pipeline (until you switch live to consume event log)
+#
+	#var ok_sim := activate_sim(resolved_sim)
+	#if !ok_sim:
+		## Policy choice: if sim fails, do not do live.
+		## (Keeps source of truth consistent.)
+		#return false
+#
+	#var ok_live := activate_live(resolved_live)
+	#return ok_live
+
+
+#func activate_live(resolved_live: CardResolvedTarget) -> bool:
+	#var ctx := build_action_context(resolved_live)
+	#return commit_play_live(ctx, null, true)
+
+#func activate_sim(resolved_sim: CardResolvedTargetSim) -> bool:
+	#if battle_scene == null or battle_scene.sim_host == null:
+		## If you want to allow “live-only” in some situations, flip this policy.
+		#push_warning("UsableCard.activate_sim: no sim_host on battle_scene")
+		#return false
+#
+	## ensure persistent identity
+	#if card_data != null:
+		#card_data.ensure_uid()
+#
+	#var req := CardPlayRequest.new()
+	#req.source_id = int(player.combat_id)
+	##req.combatant_datas = resolved_sim.combatant_datas
+	#req.card = card_data
+	#req.target_ids = resolved_sim.fighter_ids
+	#req.insert_index = resolved_sim.insert_index
+	## optional
+	## req.params = ...
+	##print("usable_card.gd activate_sim() request combatant_datas: ", req.combatant_datas)
+	#return battle_scene.sim_host.apply_player_card(req)
+
+func activate_view(_ctx: CardActionContextView) -> bool:
+	# Default: do nothing
+	var cname := _ctx.card_data.name if _ctx and _ctx.card_data else "<no card/ctx>"
+	push_error("%s missing activate_view() (card=%s)" % [get_class(), cname])
+	return false
 
 func _build_resolved_sim_from_live(resolved_live: CardResolvedTarget) -> CardResolvedTargetSim:
 	var out := CardResolvedTargetSim.new()
@@ -342,48 +385,105 @@ func is_mouse_over() -> bool:
 	var extents = shape.extents
 	return abs(local_pos.x) <= extents.x and abs(local_pos.y) <= extents.y
 
-func resolve_targets(new_targets: Array[Node]) -> CardResolvedTarget:
-	
-	var result := CardResolvedTarget.new()
-	
-	if !new_targets:
+func resolve_targets(new_targets: Array[Node]) -> CardResolvedTargetView:
+	var result := CardResolvedTargetView.new()
+	if new_targets == null or new_targets.is_empty() or card_data == null:
 		return result
-	
+
 	match card_data.target_type:
 		CardData.TargetType.SELF:
-			result.fighters = [player] as Array[Fighter]
-		
+			# Source is the player cid. You already have player.combat_id.
+			var pid := int(player.combat_id)
+			result.fighter_ids.append(pid)
+			var pv := battle_view.get_combatant(pid) if battle_view else null
+			if pv != null:
+				result.views.append(pv)
+
 		CardData.TargetType.BATTLEFIELD:
-			#var correct_targets: Array[Fighter] = []
 			result.areas.clear()
-			for target in new_targets:
-				if target is CombatantAreaLeft or target is BattleSceneAreaLeft:
-					result.areas.append(target)
+			for t in new_targets:
+				if t is CombatantAreaLeft or t is BattleSceneAreaLeft:
+					result.areas.append(t)
 			result.insert_index = new_targets.size() - 1
-		
-		CardData.TargetType.ALLY_OR_SELF:
-			#var correct_targets: Array[Fighter] = []
+
+		CardData.TargetType.ALLY_OR_SELF, CardData.TargetType.ALLY, CardData.TargetType.SINGLE_ENEMY:
 			if new_targets[0] is CombatantTargetArea:
-				if new_targets[0].combatant is Player or new_targets[0].combatant is SummonedAlly:
-					result.fighters = [new_targets[0].combatant] as Array[Fighter]
-		
-		CardData.TargetType.ALLY:
-			#var correct_targets: Array[Fighter]  = []
-			if new_targets[0] is CombatantTargetArea:
-				if new_targets[0].combatant is SummonedAlly:
-					result.fighters = [new_targets[0].combatant] as Array[Fighter]
-		
-		CardData.TargetType.SINGLE_ENEMY:
-			if new_targets[0] is CombatantTargetArea:
-				if new_targets[0].combatant is Enemy:
-					result.fighters = [new_targets[0].combatant] as Array[Fighter]
-		
+				var ta := new_targets[0] as CombatantTargetArea
+				if ta.combatant_view != null and ta.cid > 0:
+					# Optional: enforce ally/enemy legality using view’s group/side if you have it.
+					result.views = [ta.combatant_view]
+					result.fighter_ids = PackedInt32Array([ta.cid])
+
 		CardData.TargetType.ALL_ENEMIES:
-			result.fighters = battle_scene.get_combatants_in_group(1) as Array[Fighter]
-		
+			# VIEW side: just collect views and ids from battle_view
+			var ids := sim_host.get_main_api().get_combatants_in_group(1, false) if sim_host else []
+			for id in ids:
+				var cid := int(id)
+				result.fighter_ids.append(cid)
+				var v := battle_view.get_combatant(cid)
+				if v != null:
+					result.views.append(v)
+
 		CardData.TargetType.EVERYONE:
-			result.fighters = battle_scene.get_all_combatants() as Array[Fighter]
+			var ids0 := sim_host.get_main_api().get_combatants_in_group(0, false) if sim_host else []
+			var ids1 := sim_host.get_main_api().get_combatants_in_group(1, false) if sim_host else []
+			for id in ids0:
+				var cid := int(id)
+				result.fighter_ids.append(cid)
+				var v := battle_view.get_combatant(cid)
+				if v != null:
+					result.views.append(v)
+			for id in ids1:
+				var cid := int(id)
+				result.fighter_ids.append(cid)
+				var v := battle_view.get_combatant(cid)
+				if v != null:
+					result.views.append(v)
+
 	return result
+
+#func resolve_targets(new_targets: Array[Node]) -> CardResolvedTarget:
+	#
+	#var result := CardResolvedTarget.new()
+	#
+	#if !new_targets:
+		#return result
+	#
+	#match card_data.target_type:
+		#CardData.TargetType.SELF:
+			#result.fighters = [player] as Array[Fighter]
+		#
+		#CardData.TargetType.BATTLEFIELD:
+			##var correct_targets: Array[Fighter] = []
+			#result.areas.clear()
+			#for target in new_targets:
+				#if target is CombatantAreaLeft or target is BattleSceneAreaLeft:
+					#result.areas.append(target)
+			#result.insert_index = new_targets.size() - 1
+		#
+		#CardData.TargetType.ALLY_OR_SELF:
+			##var correct_targets: Array[Fighter] = []
+			#if new_targets[0] is CombatantTargetArea:
+				#if new_targets[0].combatant is Player or new_targets[0].combatant is SummonedAlly:
+					#result.fighters = [new_targets[0].combatant] as Array[Fighter]
+		#
+		#CardData.TargetType.ALLY:
+			##var correct_targets: Array[Fighter]  = []
+			#if new_targets[0] is CombatantTargetArea:
+				#if new_targets[0].combatant is SummonedAlly:
+					#result.fighters = [new_targets[0].combatant] as Array[Fighter]
+		#
+		#CardData.TargetType.SINGLE_ENEMY:
+			#if new_targets[0] is CombatantTargetArea:
+				#if new_targets[0].combatant is Enemy:
+					#result.fighters = [new_targets[0].combatant] as Array[Fighter]
+		#
+		#CardData.TargetType.ALL_ENEMIES:
+			#result.fighters = battle_scene.get_combatants_in_group(1) as Array[Fighter]
+		#
+		#CardData.TargetType.EVERYONE:
+			#result.fighters = battle_scene.get_all_combatants() as Array[Fighter]
+	#return result
 
 func is_playable() -> bool:
 	if !player.can_play_card(card_data):
@@ -447,13 +547,13 @@ func _kill_pop_tween() -> void:
 	_pop_tween = null
 
 
-func build_action_context(resolved_targets: CardResolvedTarget) -> CardActionContext:
-	var ctx := CardActionContext.new()
-	ctx.player = player
-	ctx.battle_scene = battle_scene
-	ctx.card_data = card_data
-	ctx.resolved_target = resolved_targets
-	return ctx
+#func build_action_context(resolved_targets: CardResolvedTarget) -> CardActionContext:
+	#var ctx := CardActionContext.new()
+	#ctx.player = player
+	#ctx.battle_scene = battle_scene
+	#ctx.card_data = card_data
+	#ctx.resolved_target = resolved_targets
+	#return ctx
 
 func build_action_context_sim(resolved_targets: CardResolvedTargetSim) -> CardActionContextSim:
 	var ctx := CardActionContextSim.new()
@@ -463,6 +563,14 @@ func build_action_context_sim(resolved_targets: CardResolvedTargetSim) -> CardAc
 	ctx.resolved = resolved_targets
 	return ctx
 
+func build_action_context_view(resolved_targets: CardResolvedTargetView) -> CardActionContextView:
+	var ctx := CardActionContextView.new()
+	ctx.card_data = card_data
+	#ctx.battle_scene = battle_scene
+	ctx.battle_view = battle_view
+	ctx.source_id = int(player.combat_id)
+	ctx.resolved = resolved_targets
+	return ctx
 
 func commit_play_live(ctx: CardActionContext, skip_action: CardAction = null, spend_mana: bool = true) -> bool:
 	if spend_mana:

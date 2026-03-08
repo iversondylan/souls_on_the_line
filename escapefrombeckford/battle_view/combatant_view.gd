@@ -10,9 +10,11 @@ class_name CombatantView extends Node2D
 @onready var targeted_arrow: Sprite2D = $TargetedArrow
 @onready var health_bar: HealthBar = $HealthBar
 @onready var status_view_grid: StatusViewGrid = $StatusViewGrid
+@onready var target_area: CombatantTargetArea = $TargetArea
+@onready var area_left: CombatantAreaLeft = $AreaLeft
 
 var display_name: String = ""
-var cid: int = 0
+var cid: int = -1 : set = _set_cid
 var character_art_uid: String
 
 var _status_catalog: StatusCatalog = null
@@ -40,6 +42,13 @@ var _strike_gen: int = 0
 var _base_art_scale: Vector2 = Vector2.ONE
 var _base_art_pos: Vector2 = Vector2.ZERO
 var _base_cached := false
+
+func _set_cid(new_cid: int) -> void:
+	cid = new_cid
+	if target_area:
+		target_area.cid = cid
+	if area_left:
+		area_left.cid = cid
 
 func apply_spawn_spec(spec: Dictionary) -> void:
 	_spec = spec.duplicate(true)
@@ -135,6 +144,10 @@ func set_anchor_position(_position: Vector2, ctx: GroupLayoutOrder) -> void:
 			tween_move.kill()
 		position = anchor_position
 	has_anchor_position = true
+
+func show_targeted_arrow(show_it: bool) -> void:
+	if targeted_arrow != null:
+		targeted_arrow.visible = show_it
 
 func apply_strike_windup(order: StrikeWindupOrder) -> void:
 	if tween_strike:

@@ -6,6 +6,7 @@ class_name BattleView extends Node2D
 
 @onready var friendly_group: GroupView = $Group0
 @onready var enemy_group: GroupView = $Group1
+@onready var target_arrow: BattlefieldTargetArrow = $TargetArrow
 
 var sim_host: SimHost
 var battle_ui: BattleUI
@@ -229,3 +230,19 @@ func get_mean_target_position_global(target_ids: Array[int], fallback: Vector2) 
 	if n <= 0:
 		return fallback
 	return sum / float(n)
+
+func get_summon_slot_position(group_index: int, slot_index: int) -> Vector2:
+	var group: GroupView = friendly_group if group_index == 0 else enemy_group
+	# Policy: battlefield slots live “between” units, so you need a predictable x.
+	# Easiest: reuse GroupView slot math.
+	var nodes := group.get_children()
+	var layout_count := 0
+	for c in nodes:
+		if c is CombatantView:
+			layout_count += 1
+
+	# summon slots are effectively "insert_index"
+	# insert at 0 means front-most, insert at layout_count means back-most.
+	var slot := float(clampi(slot_index + 1, 1, layout_count + 1))
+	var x := group._get_x_for_slot(slot, layout_count)
+	return group.global_position + Vector2(x, 0)
