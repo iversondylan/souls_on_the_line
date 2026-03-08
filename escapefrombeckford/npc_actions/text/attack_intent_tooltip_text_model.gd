@@ -39,3 +39,37 @@ func get_text(ctx: NPCAIContext) -> String:
 	result = result.replace("{damage}", "%d" % damage)
 	
 	return result
+
+func get_text_sim(ctx: NPCAIContext) -> String:
+	if ctx == null:
+		return "error"
+	if ctx.params == null:
+		return text_template
+
+	var result := text_template
+
+	# ---- Attack mode ----
+	var mode_raw := _param_i(ctx, Keys.ATTACK_MODE, -1)
+	var mode_text := ""
+	match mode_raw:
+		Attack.Mode.MELEE:
+			mode_text = "Melee"
+		Attack.Mode.RANGED:
+			mode_text = "Ranged"
+		-1:
+			mode_text = "Standard"
+	result = result.replace("{attack_mode}", mode_text)
+
+	# ---- Strikes ----
+	var strikes := _param_i(ctx, Keys.STRIKES, 1)
+	var strikes_text := ""
+	if strikes >= 2:
+		strikes_text = "%d strikes of " % strikes
+	result = result.replace("{strikes}", strikes_text)
+
+	# ---- Damage ----
+	var damage := _param_i(ctx, Keys.DAMAGE, 0)
+	damage = _modified_sim(ctx, damage, Modifier.Type.DMG_DEALT, int(ctx.cid))
+	result = result.replace("{damage}", "%d" % damage)
+
+	return result

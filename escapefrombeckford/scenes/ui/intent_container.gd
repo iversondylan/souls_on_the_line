@@ -17,3 +17,28 @@ func display_icons(intent_dataz: Array[IntentData]):
 		var intent_display : IntentDisplay = intent_display_scn.instantiate()
 		h_box_container.add_child(intent_display)
 		intent_display.load_icon_data(intent_data)
+
+func apply_intent(planned_idx, icon_uid, icon_ranged_uid, is_ranged, intent_text, tooltip_text) -> void:
+	clear_display()
+	if planned_idx < 0:
+		return
+	var intent_data := IntentData.new()
+	#@export var icon: Texture
+	#@export var icon_uid: String
+	#@export var base_text: String
+	#@export var tooltip: String
+#
+	#var action: NPCAction
+	#var current_text: String
+	#var current_tooltip_text: String
+	if icon_uid and icon_ranged_uid:
+		intent_data.icon_uid = icon_ranged_uid if is_ranged else icon_uid
+	elif icon_ranged_uid:
+		intent_data.icon_uid = icon_ranged_uid
+	else:
+		intent_data.icon_uid = icon_uid
+	intent_data.base_text = intent_text
+	intent_data.tooltip = tooltip_text
+	var intent_display : IntentDisplay = intent_display_scn.instantiate()
+	h_box_container.add_child(intent_display)
+	intent_display.load_icon_data(intent_data)

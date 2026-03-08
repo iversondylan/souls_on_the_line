@@ -66,6 +66,7 @@ func _remove_from_self(ctx: NPCAIContext) -> void:
 	e.execute(api)
 
 func on_opposing_group_start_sim(ctx: NPCAIContext) -> void:
+	#print("uh oh")
 	if !_can_run_sim(ctx):
 		return
 	_apply_to_self_sim(ctx)
@@ -82,7 +83,7 @@ func _can_run_sim(ctx: NPCAIContext) -> bool:
 		return false
 	if !status:
 		return false
-	return ParamModel._actor_id(ctx) > 0
+	return ParamModel._actor_id(ctx) > 0 # <-- infinite recursion stopped here
 
 func _apply_to_self_sim(ctx: NPCAIContext) -> void:
 	var id := ParamModel._actor_id(ctx)

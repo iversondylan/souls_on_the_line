@@ -46,6 +46,7 @@ func init_from_cloned_state(cloned_state: BattleState) -> void:
 func _init_services() -> void:
 	intent_planner = IntentPlanner.new()
 	checkpoint_processor = CheckpointProcessor.new()
+	api.checkpoint_processor = checkpoint_processor
 	resolver = Resolver.new()
 
 

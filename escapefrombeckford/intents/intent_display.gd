@@ -12,7 +12,10 @@ func load_icon_data(_intent_data: IntentData):
 
 func set_icon_values():
 	text.text = intent_data.base_text
-	icon.set_texture(intent_data.icon)
+	if intent_data.icon_uid:
+		icon.set_texture(load(intent_data.icon_uid))
+	else:
+		icon.set_texture(intent_data.icon)
 
 func _on_mouse_entered() -> void:
 	Events.intent_tooltip_show_requested.emit(self as IntentDisplay)

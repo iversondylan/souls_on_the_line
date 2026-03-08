@@ -408,6 +408,34 @@ func emit_status_removed(source_id: int, target_id: int, status_id: StringName, 
 		Keys.REMOVED_ALL: bool(removed_all),
 	})
 
+func emit_status_changed(source_id: int, target_id: int, status_id: StringName, intensity: int, duration: int) -> int:
+	return _append(BattleEvent.Type.STATUS_CHANGED, {
+		Keys.SOURCE_ID: int(source_id),
+		Keys.TARGET_ID: int(target_id),
+		Keys.STATUS_ID: status_id,
+		Keys.INTENSITY: int(intensity),
+		Keys.DURATION: int(duration),
+	})
+
+func emit_set_intent(
+	actor_id: int,
+	planned_idx: int,
+	icon_uid: String = "",
+	icon_ranged_uid: String = "",
+	intent_text: String = "",
+	tooltip_text: String = "",
+	is_ranged: bool = false
+) -> int:
+	return _append(BattleEvent.Type.SET_INTENT, {
+		Keys.ACTOR_ID: int(actor_id),
+		Keys.PLANNED_IDX: int(planned_idx),
+		Keys.INTENT_ICON_UID: String(icon_uid),
+		Keys.INTENT_ICON_RANGED_UID: String(icon_ranged_uid),
+		Keys.INTENT_TEXT: String(intent_text),
+		Keys.TOOLTIP_TEXT: String(tooltip_text),
+		Keys.IS_RANGED: bool(is_ranged),
+	})
+
 func emit_card_mutated(card: CardData, reason: String = "", delta: Dictionary = {}) -> int:
 	if card == null:
 		return 0

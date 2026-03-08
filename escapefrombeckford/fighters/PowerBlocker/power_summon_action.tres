@@ -6,8 +6,7 @@
 [ext_resource type="Script" uid="uid://dtwuyctovqk5r" path="res://custom_resources/intent_lifecycle_model.gd" id="4_4pvic"]
 [ext_resource type="Script" uid="uid://dbd3fjfn7d3ah" path="res://npc_actions/intent_lifecycle/status_from_opp_turn_model.gd" id="5_xd0vb"]
 [ext_resource type="Resource" uid="uid://bfon8dtpvipfp" path="res://statuses/resonance_spike.tres" id="6_n0f2o"]
-[ext_resource type="Script" uid="uid://bjw0tj5rtf8ly" path="res://npc_actions/intent_lifecycle/status_from_opp_turn_until_my_action_model.gd" id="7_fnegv"]
-[ext_resource type="Resource" uid="uid://cyf7n0vefm434" path="res://statuses/stability_status.tres" id="8_0f4b2"]
+[ext_resource type="Resource" uid="uid://egssyhjkm2wq" path="res://fighters/PowerBlocker/5_stability_lifecycle.tres" id="7_2qtp0"]
 [ext_resource type="Resource" uid="uid://ctwocrhb1x5bv" path="res://npc_actions/text/summon_red_intent_text_model.tres" id="9_2qtp0"]
 [ext_resource type="Script" uid="uid://q408gy2b4q6a" path="res://custom_resources/performable_model.gd" id="9_fr0ta"]
 [ext_resource type="Script" uid="uid://bfkcesydr8xy8" path="res://npc_actions/performable/keep_stability_performable_model.gd" id="10_eh7vo"]
@@ -20,11 +19,6 @@ script = ExtResource("5_xd0vb")
 status = ExtResource("6_n0f2o")
 metadata/_custom_type_script = "uid://dbd3fjfn7d3ah"
 
-[sub_resource type="Resource" id="Resource_sm8gt"]
-script = ExtResource("7_fnegv")
-status = ExtResource("8_0f4b2")
-metadata/_custom_type_script = "uid://bjw0tj5rtf8ly"
-
 [sub_resource type="Resource" id="Resource_1t84l"]
 script = ExtResource("10_eh7vo")
 metadata/_custom_type_script = "uid://bfkcesydr8xy8"
@@ -36,10 +30,11 @@ metadata/_custom_type_script = "uid://dg05abl3ms1xi"
 [resource]
 script = ExtResource("11_owhfw")
 effect_packages = Array[ExtResource("1_m4ebu")]([ExtResource("2_2qtp0")])
-intent_lifecycle_models = Array[ExtResource("4_4pvic")]([SubResource("Resource_usgkw"), SubResource("Resource_sm8gt")])
+intent_lifecycle_models = Array[ExtResource("4_4pvic")]([SubResource("Resource_usgkw"), ExtResource("7_2qtp0")])
 choice_type = 0
 performable_models = Array[ExtResource("9_fr0ta")]([SubResource("Resource_1t84l")])
 intent_icon = ExtResource("3_rcqqn")
+intent_icon_uid = "uid://dnor2pbb0nhu"
 intent_text_model = ExtResource("9_2qtp0")
 tooltip_model = SubResource("Resource_4pvic")
 metadata/_custom_type_script = "uid://bcih413oy6v73"

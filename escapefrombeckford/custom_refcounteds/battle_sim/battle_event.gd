@@ -40,7 +40,9 @@ enum Type {
 	DEATH_FOLLOWTHROUGH,
 	CARD_MUTATED,
 	
-	DEBUG
+	DEBUG,
+	SET_INTENT,
+	STATUS_CHANGED
 }
 
 var defines_beat: bool = false

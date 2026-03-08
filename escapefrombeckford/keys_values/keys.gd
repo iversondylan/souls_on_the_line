@@ -110,6 +110,7 @@ const STATUS_ID := &"status_id"
 const INTENSITY := &"intensity"
 const DURATION := &"duration"
 const REMOVED_ALL := &"removed_all"
+const STABILITY_BROKEN := &"stability_broken"
 
 # Move (formation)
 const MOVE_TYPE := &"move_type"
@@ -166,3 +167,12 @@ const COOLDOWN_1 := &"cooldown_1"
 const CHANCE_ADD := &"chance_add"        # float, default 0.0
 const CHANCE_MULT := &"chance_mult"      # float, default 1.0
 const CHANCE_DISABLED := &"chance_disabled"  # bool, default false
+
+# Intent
+# keys.gd
+const PLANNED_IDX := &"planned_idx"
+const INTENT_ICON_UID := &"intent_icon_uid"
+const INTENT_ICON_RANGED_UID := &"intent_icon_ranged_uid"
+const INTENT_TEXT := &"intent_text"
+const TOOLTIP_TEXT := &"tooltip_text"
+const IS_RANGED := &"is_ranged"

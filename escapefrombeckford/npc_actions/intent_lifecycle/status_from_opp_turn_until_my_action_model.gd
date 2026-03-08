@@ -3,6 +3,9 @@ class_name StatusFromOppTurnUntilMyActionModel
 extends IntentLifecycleModel
 
 @export var status: Status
+@export var status_id: StringName
+@export var intensity := 0
+@export var duration := 0
 
 func on_opposing_group_start(ctx: NPCAIContext) -> void:
 	if !_can_run(ctx):
@@ -48,6 +51,7 @@ func _apply_to_self(ctx: NPCAIContext) -> void:
 	e.status_id = _status_id()
 	e.duration = status.duration
 	e.intensity = status.intensity
+	print("status_from_opp_turn_until_my_action_model.gd _apply_to_self() id: %s, intensity: %s" % [status.get_id(), status.intensity])
 	e.execute(api)
 
 func _remove_from_self(ctx: NPCAIContext) -> void:
@@ -87,15 +91,16 @@ func _can_run_sim(ctx: NPCAIContext) -> bool:
 	return ParamModel._actor_id(ctx) > 0
 
 func _apply_to_self_sim(ctx: NPCAIContext) -> void:
-	var id := ParamModel._actor_id(ctx)
-	if id <= 0:
+	#var id := ParamModel._actor_id(ctx)
+	if ctx.cid <= 0:
 		return
 	var sc := StatusContext.new()
-	sc.source_id = id
-	sc.target_id = id
-	sc.status_id = _status_id()
-	sc.duration = int(status.duration)
-	sc.intensity = int(status.intensity)
+	sc.source_id = ctx.cid
+	sc.target_id = ctx.cid
+	sc.status_id = status_id
+	sc.duration = duration
+	sc.intensity = intensity
+	print("status_from_opp_turn_until_my_action_model.gd _apply_to_self_sim() id: %s, intensity: %s" % [sc.status_id, sc.intensity])
 	ctx.api.apply_status(sc)
 
 func _remove_from_self_sim(ctx: NPCAIContext) -> void:

@@ -94,6 +94,7 @@ static func run_turn(api: SimBattleAPI, cid: int) -> void:
 
 	# Finish (match LIVE semantics)
 	ctx.state[KEY_PLANNED_IDX] = -1
+	_emit_set_intent_sim(profile, ctx, -1)
 	ctx.state[IS_ACTING] = false
 	ctx.state[STABILITY_BROKEN] = false
 	ctx.state[ACTIONS_TAKEN] = int(ctx.state.get(ACTIONS_TAKEN, 0)) + 1
@@ -121,7 +122,8 @@ static func _ensure_ai_state_initialized(u: CombatantState) -> void:
 	if u.ai_state == null:
 		u.ai_state = {}
 	var s := u.ai_state
-
+	#s[&"replan_dirty"] = false
+	s[&"planning_now"] = false
 	if !s.has(HP_AT_TURN_START):
 		s[HP_AT_TURN_START] = int(u.health)
 	if !s.has(DMG_SINCE_LAST_TURN):
@@ -179,6 +181,7 @@ static func plan_next_intent_sim(profile: NPCAIProfile, ctx: NPCAIContext, allow
 		if allow_hooks:
 			_on_planned_intent_changed_sim(profile, prev_idx, cond_idx, ctx)
 		state[KEY_PLANNED_IDX] = cond_idx
+		_emit_set_intent_sim(profile, ctx, cond_idx)
 		return
 
 	# 2) cannot change plan while acting
@@ -196,10 +199,13 @@ static func plan_next_intent_sim(profile: NPCAIProfile, ctx: NPCAIContext, allow
 	var new_idx := _roll_chance_idx_sim(profile, ctx)
 	if new_idx == -1:
 		if prev_idx == -1:
+			# If you want “null intent events” even when already null:
+			_emit_set_intent_sim(profile, ctx, -1)
 			return
 		if allow_hooks:
 			_on_planned_intent_changed_sim(profile, prev_idx, -1, ctx)
 		state[KEY_PLANNED_IDX] = -1
+		_emit_set_intent_sim(profile, ctx, -1)
 		return
 
 	if prev_idx == new_idx:
@@ -209,6 +215,7 @@ static func plan_next_intent_sim(profile: NPCAIProfile, ctx: NPCAIContext, allow
 		_on_planned_intent_changed_sim(profile, prev_idx, new_idx, ctx)
 	print("planning smth indx: ", new_idx)
 	state[KEY_PLANNED_IDX] = new_idx
+	_emit_set_intent_sim(profile, ctx, new_idx)
 
 static func _can_cancel_intent_sim(state: Dictionary) -> bool:
 	if bool(state.get(IS_ACTING, false)):
@@ -283,3 +290,121 @@ static func _on_planned_intent_changed_sim(profile: NPCAIProfile, prev_idx: int,
 static func _dbg(msg: String) -> void:
 	if debug:
 		print(msg)
+
+static func _emit_set_intent_sim(profile: NPCAIProfile, ctx: NPCAIContext, new_idx: int) -> void:
+	if ctx == null or ctx.api == null:
+		return
+	if !(ctx.api is SimBattleAPI):
+		return
+
+	var api: SimBattleAPI = ctx.api
+	if api.writer == null:
+		return
+
+	var actor_id := int(ctx.cid)
+
+	# null intent
+	if new_idx < 0:
+		api.writer.emit_set_intent(actor_id, -1, "", "", "", "", false)
+		return
+
+	var action := _get_action_by_idx(profile, new_idx)
+	if action == null:
+		api.writer.emit_set_intent(actor_id, -1, "", "", "", "", false)
+		return
+
+	# --- Compute intent params like LIVE (_build_intent_from_action uses _change_params_only) ---
+	_change_params_only_sim(action, ctx)
+
+	var is_ranged := false
+	if ctx.params != null and ctx.params.has(Keys.ATTACK_MODE):
+		is_ranged = int(ctx.params.get(Keys.ATTACK_MODE, Attack.Mode.MELEE)) == Attack.Mode.RANGED
+
+	# UIDs authored on action
+	var uid := String(action.intent_icon_uid)
+	var uid_ranged := String(action.intent_icon_ranged_uid)
+
+	# Optional resolved text
+	var intent_text := ""
+	var tooltip_text := ""
+	if action.intent_text_model:
+		intent_text = String(action.intent_text_model.get_text_sim(ctx)) if action.intent_text_model.has_method("get_text_sim") else String(action.intent_text_model.get_text(ctx))
+	if action.tooltip_model:
+		tooltip_text = String(action.tooltip_model.get_text_sim(ctx)) if action.tooltip_model.has_method("get_text_sim") else String(action.tooltip_model.get_text(ctx))
+
+	api.writer.emit_set_intent(actor_id, new_idx, uid, uid_ranged, intent_text, tooltip_text, is_ranged)
+
+	# IMPORTANT: do NOT leave params “dirty” for later code that expects empty params.
+	# Planning uses ctx.params as scratch. Clear after emission to avoid surprising callers.
+	if ctx.params != null:
+		ctx.params.clear()
+
+static func _change_params_only_sim(action: NPCAction, ctx: NPCAIContext) -> void:
+	if action == null or ctx == null:
+		return
+	# IMPORTANT: planning-time params must be clean
+	if ctx.params == null:
+		ctx.params = {}
+	else:
+		ctx.params.clear()
+
+	for pkg: NPCEffectPackage in action.effect_packages:
+		if pkg == null:
+			continue
+		for model: ParamModel in pkg.param_models:
+			if model == null:
+				continue
+			# ParamModels must not have side effects; they must only write ctx.params.
+			model.change_params_sim(ctx)
+
+static func emit_current_intent_sim(api: SimBattleAPI, cid: int) -> void:
+	if api == null or api.state == null or api.writer == null:
+		return
+
+	var u: CombatantState = api.state.get_unit(cid)
+	if u == null or !u.is_alive() or u.combatant_data == null:
+		return
+
+	var profile: NPCAIProfile = u.combatant_data.ai
+	if profile == null:
+		# no AI: emit null intent
+		api.writer.emit_set_intent(cid, -1, "", "", "", "", false)
+		return
+
+	_ensure_ai_state_initialized(u)
+
+	var idx := int(u.ai_state.get(KEY_PLANNED_IDX, -1))
+	var ctx := _make_context(api, u)
+
+	# Null intent: clear display
+	if idx < 0:
+		api.writer.emit_set_intent(cid, -1, "", "", "", "", false)
+		return
+
+	var action := _get_action_by_idx(profile, idx)
+	if action == null:
+		api.writer.emit_set_intent(cid, -1, "", "", "", "", false)
+		return
+
+	# IMPORTANT: rebuild params the same way LIVE does (_change_params_only)
+	ctx.params.clear()
+	for pkg in action.effect_packages:
+		if pkg == null:
+			continue
+		for pm: ParamModel in pkg.param_models:
+			if pm:
+				pm.change_params_sim(ctx)
+
+	var is_ranged := int(ctx.params.get(Keys.ATTACK_MODE, Attack.Mode.MELEE)) == Attack.Mode.RANGED
+
+	var uid := String(action.intent_icon_uid)
+	var uid_ranged := String(action.intent_icon_ranged_uid)
+
+	var intent_text := ""
+	var tooltip_text := ""
+	if action.intent_text_model:
+		intent_text = String(action.intent_text_model.get_text_sim(ctx))
+	if action.tooltip_model:
+		tooltip_text = String(action.tooltip_model.get_text_sim(ctx))
+
+	api.writer.emit_set_intent(cid, idx, uid, uid_ranged, intent_text, tooltip_text, is_ranged)

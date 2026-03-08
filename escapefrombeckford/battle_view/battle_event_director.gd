@@ -52,12 +52,16 @@ func on_event(e: EventPackage) -> void:
 			_on_status_applied(e)
 		BattleEvent.Type.STATUS_REMOVED:
 			_on_status_removed(e)
+		BattleEvent.Type.STATUS_CHANGED:
+			_on_status_changed(e)
 		BattleEvent.Type.DEATH_WINDUP:
 			_on_death_windup(e)
 		BattleEvent.Type.DEATH_FOLLOWTHROUGH:
 			_on_death_followthrough(e)
 		BattleEvent.Type.DIED:
 			_on_died(e)
+		BattleEvent.Type.SET_INTENT:
+			_on_set_intent(e)
 		BattleEvent.Type.SCOPE_BEGIN:
 			_on_scope_begin(e)
 		BattleEvent.Type.SCOPE_END:
@@ -242,20 +246,51 @@ func _on_status_removed(e: EventPackage) -> void:
 	o.status_id = e.event.data.get(Keys.STATUS_ID, &"")
 	o.intensity = int(e.event.data.get(Keys.INTENSITY, 1))
 	o.removed_all = bool(e.event.data.get(Keys.REMOVED_ALL, false))
-
+	
 	var target := battle_view.get_combatant(o.target_id)
-	if target != null and "status_grid" in target:
-		target.status_grid.remove_status(o)
+	if target != null and target.status_view_grid:
+		target.status_view_grid.remove_status(o)
+
+func _on_status_changed(e: EventPackage) -> void:
+	var o := StatusAppliedOrder.new()
+	o.duration = e.duration
+	o.source_id = int(e.event.data.get(Keys.SOURCE_ID, 0))
+	o.target_id = int(e.event.data.get(Keys.TARGET_ID, 0))
+	o.status_id = e.event.data.get(Keys.STATUS_ID, &"")
+	o.intensity = int(e.event.data.get(Keys.INTENSITY, 1))
+	o.turns_duration = int(e.event.data.get(Keys.DURATION, 0))
+	
+	var target := battle_view.get_combatant(o.target_id)
+	if target != null and target.status_view_grid:
+		# you probably want a dedicated method, but this works if apply_status updates if present
+		target.status_view_grid.apply_status(o)
+
+func _on_set_intent(e: EventPackage) -> void:
+	var cid := int(e.event.data.get(Keys.ACTOR_ID, e.event.active_actor_id))
+	var planned_idx := int(e.event.data.get(Keys.PLANNED_IDX, -1))
+	var icon_uid := String(e.event.data.get(Keys.INTENT_ICON_UID, ""))
+	var icon_ranged_uid := String(e.event.data.get(Keys.INTENT_ICON_RANGED_UID, ""))
+	var intent_text := String(e.event.data.get(Keys.INTENT_TEXT, ""))
+	var tooltip_text := String(e.event.data.get(Keys.TOOLTIP_TEXT, ""))
+	var is_ranged := bool(e.event.data.get(Keys.IS_RANGED, false))
+	
+	var cv := battle_view.get_combatant(cid)
+	if cv == null:
+		return
+	
+	# You decide where the UI actually lives. This is the cleanest:
+	if cv.intent_container != null:
+		cv.intent_container.apply_intent(planned_idx, icon_uid, icon_ranged_uid, is_ranged, intent_text, tooltip_text)
 
 func _on_died(e: EventPackage) -> void:
 	var dead_id := int(e.event.data.get(Keys.TARGET_ID, 0))
 	if dead_id <= 0:
 		return
-
+	
 	var v := battle_view.get_combatant(dead_id)
 	if v != null:
 		v.queue_free()
-
+	
 	# Remove from BattleView mapping so future lookups fail safely
 	battle_view.combatants_by_cid.erase(dead_id)
 
@@ -263,11 +298,11 @@ func _on_death_windup(e: EventPackage) -> void:
 	var dead_id := int(e.event.data.get(Keys.TARGET_ID, 0))
 	if dead_id <= 0:
 		return
-
+	
 	var target := battle_view.get_combatant(dead_id)
 	if target == null:
 		return
-
+	
 	var o := DeathWindupOrder.new()
 	o.duration = e.duration
 	o.dead_id = dead_id
@@ -275,31 +310,31 @@ func _on_death_windup(e: EventPackage) -> void:
 	o.black_amount = 1.0
 	o.shrink = 0.96
 	o.slump_px = 10.0
-
+	
 	target.play_death_windup(o)
 
 func _on_death_followthrough(e: EventPackage) -> void:
 	var dead_id := int(e.event.data.get(Keys.TARGET_ID, 0))
 	var g := int(e.event.data.get(Keys.GROUP_INDEX, e.event.group_index))
 	var after_ids: PackedInt32Array = e.event.data.get(Keys.AFTER_ORDER_IDS, PackedInt32Array())
-
+	
 	# 1) Remove from the visual group registry so layout ignores it
 	var group: GroupView = battle_view.friendly_group if g == 0 else battle_view.enemy_group
 	if group != null:
 		group.unregister_cid(dead_id)
-
+	
 	# 2) Optionally hide or keep visible-but-dark off to the side
 	var dead_view := battle_view.get_combatant(dead_id)
 	if dead_view != null:
 		dead_view.on_death_followthrough(e.duration)
-
+	
 	# 3) Re-layout to after_order_ids
 	if after_ids.size() > 0:
 		var arr: Array = []
 		arr.resize(after_ids.size())
 		for i in range(after_ids.size()):
 			arr[i] = int(after_ids[i])
-
+		
 		var ctx := GroupLayoutOrder.new()
 		ctx.group_index = g
 		ctx.order = arr

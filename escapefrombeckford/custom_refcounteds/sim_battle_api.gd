@@ -5,7 +5,9 @@ class_name SimBattleAPI extends BattleAPI
 const FRIENDLY := 0
 const ENEMY := 1
 
+#var status_catalog: StatusCatalog
 var state: BattleState
+var checkpoint_processor: CheckpointProcessor
 #var alloc_id: Callable = Callable() # () -> int
 var on_summoned: Callable = Callable() # (summoned_id: int, group_index: int) -> void
 
@@ -200,7 +202,8 @@ func resolve_damage_immediate(ctx: DamageContext) -> int:
 
 	# Hooks (AI memory, status reactions, etc.)
 	on_damage_applied(ctx)
-
+	
+	
 	# --- DEATH PIPELINE ---
 	# IMPORTANT: don't remove from order here; do it through resolve_death/SimDeathRunner
 	if bool(ctx.was_lethal):
@@ -225,114 +228,8 @@ func resolve_death(combat_id: int, reason := "", killer_id: int = 0) -> void:
 	# Run the death sequence (beats + final removal + DIED event)
 	SimDeathRunner.run(self, combat_id, killer_id, String(reason))
 
-## sim_battle_api.gd
-#func resolve_damage_immediate(ctx: DamageContext) -> int:
-	#print("sim_battle_api.gd resolve_damage_immediate() dmg: ", ctx.base_amount)
-	#if !ctx:
-		#return 0
-	#
-	## --- PREP / VALIDATION ---
-	#if ctx.base_amount <= 0:
-		#ctx.amount = 0
-		#return 0
-	#
-	#if !state.is_alive(ctx.target_id):
-		#ctx.amount = 0
-		#return 0
-	#
-	#ctx.phase = DamageContext.Phase.PRE_MODIFIERS
-	#ctx.amount = ctx.base_amount
-	#
-	## --- APPLY MODIFIERS (one at a time; cid-based) ---
-	## 1) attacker modifies damage dealt
-	##print("sim_battle_api.gd resolve_damage_immediate() pre dealt amt: ", ctx.amount)
-	#ctx.amount = SimModifierResolver.get_modified_value(
-		#state,
-		#ctx.amount,
-		#ctx.deal_modifier_type,
-		#ctx.source_id
-	#)
-	##print("sim_battle_api.gd resolve_damage_immediate() pre taken amt: ", ctx.amount)
-	## 2) defender modifies damage taken
-	#ctx.amount = SimModifierResolver.get_modified_value(
-		#state,
-		#ctx.amount,
-		#ctx.take_modifier_type,
-		#ctx.target_id
-	#)
-	##print("sim_battle_api.gd resolve_damage_immediate() post dealt amt: ", ctx.amount)
-	#ctx.amount = maxi(ctx.amount, 0)
-	#ctx.phase = DamageContext.Phase.POST_MODIFIERS
-	#
-	## Optional: statuses that care about "final damage about to be applied"
-	## _emit_damage_event(ctx, "post_modifiers")
-	#
-	## --- APPLY TO STATE ---
-	#var tgt := state.get_unit(ctx.target_id)
-	#if !tgt:
-		#ctx.amount = 0
-		#return 0
-	#
-	#var remaining := ctx.amount
-	#var before_health := tgt.health
-	## Armor first (if that’s your rule)
-	#var armor_damage := mini(remaining, maxi(tgt.armor, 0))
-	#tgt.armor -= armor_damage
-	#remaining -= armor_damage
-	#
-	#var health_damage := mini(remaining, maxi(tgt.health, 0))
-	#tgt.health -= health_damage
-	#remaining -= health_damage
-	#
-	#ctx.armor_damage = armor_damage
-	#ctx.health_damage = health_damage
-	#ctx.was_lethal = (tgt.health <= 0)
-	#
-	#if ctx.was_lethal:
-		#tgt.alive = false
-		## If you keep corpses in units but remove from order:
-		#state.remove_unit(ctx.target_id)
-	#
-	#ctx.phase = DamageContext.Phase.APPLIED
-	#
-	#if writer != null:
-		#writer.emit_damage_applied(
-			#int(ctx.source_id),
-			#int(ctx.target_id),
-			#int(ctx.base_amount),
-			#int(ctx.amount),
-			#int(ctx.armor_damage),
-			#int(ctx.health_damage),
-			#bool(ctx.was_lethal),
-			#int(before_health),
-			#int(tgt.health),
-		#)
-	#
-	#on_damage_applied(ctx)
-	#
-	## Optional: reactive statuses (EVENT_BASED) after application
-	## _emit_damage_event(ctx, "applied")
-	#
-	#return ctx.amount
-#
-#func resolve_death(combat_id: int, reason := "") -> void:
-	#if state == null or combat_id <= 0:
-		#return
-	#var u := state.get_unit(combat_id)
-	#if u == null:
-		#return
-	#
-	#u.alive = false
-	#
-	#var g := u.team
-	#if g != -1:
-		#state.groups[g].remove(combat_id)
-	#var after_order_ids = PackedInt32Array(state.groups[g].order)
-	#if writer != null:
-		#writer.emit_death(combat_id, after_order_ids, String(reason))
-
-
 func apply_status(ctx: StatusContext) -> void:
+	print("sim_battle_api.gd apply_status() id: ", ctx.status_id)
 	if ctx == null or state == null:
 		return
 	if ctx.target_id <= 0:
@@ -354,6 +251,15 @@ func apply_status(ctx: StatusContext) -> void:
 		writer.emit_status_applied(int(ctx.source_id), int(ctx.target_id), ctx.status_id, int(ctx.intensity), int(ctx.duration))
 	
 	_rebuild_modifier_cache_for(ctx.target_id)
+	
+	var proto := _get_status_proto(ctx.status_id)
+
+	# If this status is an aura (affects other units), refresh everyone impacted
+	if _is_aura_proto(proto):
+		_request_intent_refresh_targets_for_aura(int(ctx.target_id), proto)
+	else:
+		_request_intent_refresh(int(ctx.target_id))
+	
 	_on_status_changed(ctx.target_id)
 
 
@@ -369,7 +275,7 @@ func remove_status(ctx: RemoveStatusContext) -> void:
 		return
 	
 	var intensity := maxi(int(ctx.intensity if ("intensity" in ctx) else 1), 1)
-	
+	var proto := _get_status_proto(ctx.status_id)
 	if ctx.remove_all_intensity:
 		u.statuses.remove(ctx.status_id, true)
 	else:
@@ -379,11 +285,40 @@ func remove_status(ctx: RemoveStatusContext) -> void:
 		writer.emit_status_removed(int(ctx.source_id), int(ctx.target_id), ctx.status_id, intensity, bool(ctx.remove_all_intensity))
 	
 	_rebuild_modifier_cache_for(ctx.target_id)
+	if _is_aura_proto(proto):
+		_request_intent_refresh_targets_for_aura(int(ctx.target_id), proto)
+	else:
+		_request_intent_refresh(int(ctx.target_id))
 	_on_status_changed(ctx.target_id)
 
-func _on_status_changed(cid: int) -> void:
-	plan_intent(cid)
+func _request_intent_refresh_all() -> void:
+	if state == null:
+		return
+	for k in state.units.keys():
+		var cid := int(k)
+		_request_intent_refresh(cid)
 
+func _on_status_changed(cid: int) -> void:
+	_request_replan(cid)
+	flush_intent_refreshes()
+
+func _request_replan(cid: int) -> void:
+	print("requesting replan for ", cid)
+	var u: CombatantState = state.get_unit(int(cid))
+	if u == null:
+		return
+	ActionPlanner._ensure_ai_state_initialized(u)
+
+	## Don’t recurse while planning/acting.
+	#if bool(u.ai_state.get(ActionPlanner.IS_ACTING, false)):
+		#u.ai_state[&"replan_dirty"] = true
+		#return
+	#if bool(u.ai_state.get(&"planning_now", false)):
+		#u.ai_state[&"replan_dirty"] = true
+		#return
+
+	u.ai_state[&"replan_dirty"] = true
+	print("_request_replan cid: %s, replan dirty: %s" % [cid, u.ai_state.get(&"replan_dirty", false)])
 
 func spawn_from_data(combatant_data: CombatantData, group_index: int, insert_index: int = -1, is_player := false) -> int:
 	if combatant_data == null or state == null:
@@ -557,13 +492,21 @@ func modify_damage_amount(ctx: DamageContext, base: int) -> int:
 	return amount
 
 func on_damage_applied(ctx: DamageContext) -> void:
+	print("sim_battle_api.gd on_damage_applied()")
 	if state == null or ctx == null:
 		return
 
 	var tid := int(ctx.target_id)
 	var u: CombatantState = state.get_unit(tid)
-	if u == null or !u.is_alive():
+	if u == null:
 		return
+	
+	# NEW temporary hack: event-based status reactions (SIM)
+	SimStatusEventRunner.on_damage_taken(self, ctx)
+	
+	if !u.is_alive():
+		return
+	
 	if u.combatant_data == null or u.combatant_data.ai == null:
 		return
 
@@ -574,7 +517,7 @@ func on_damage_applied(ctx: DamageContext) -> void:
 
 	# If not acting, let it re-evaluate conditions
 	# Later: redo this so damage dirties the state
-	plan_intent(tid)
+	_request_replan(tid)
 
 func on_card_played(ctx: CardActionContextSim) -> void:
 	if ctx == null or ctx.card_data == null:
@@ -604,37 +547,122 @@ func on_card_finished(ctx: CardActionContextSim) -> void:
 	if writer != null:
 		writer.scope_end() # card scope
 
-func plan_intent(cid: int) -> void:
+func plan_intent(cid: int, allow_hooks := true, clear_dirty := true) -> void:
 	var u: CombatantState = state.get_unit(int(cid))
 	if u == null or !u.is_alive():
 		return
-	if u.combatant_data == null:
-		return
-	if u.combatant_data.ai == null:
+	if u.combatant_data == null or u.combatant_data.ai == null:
 		return
 
 	ActionPlanner._ensure_ai_state_initialized(u)
 	u.ai_state[ActionPlanner.FIRST_INTENTS_READY] = true
 
-	if bool(u.ai_state.get(ActionPlanner.IS_ACTING, false)):
+	if bool(u.ai_state.get(&"planning_now", false)) or bool(u.ai_state.get(ActionPlanner.IS_ACTING, false)):
+		u.ai_state[&"replan_dirty"] = true
 		return
 
-	var ctx_ai := NPCAIContext.new()
-	ctx_ai.api = self
-	ctx_ai.cid = int(cid)
-	ctx_ai.combatant_state = u
-	ctx_ai.combatant_data = u.combatant_data
-	ctx_ai.state = u.ai_state
-	ctx_ai.rng = u.rng
-	ctx_ai.params = {}
-	ctx_ai.forecast = false
+	u.ai_state[&"planning_now"] = true
 
-	ActionPlanner.ensure_valid_plan_sim(u.combatant_data.ai, ctx_ai, true)
+	var ctx_ai := _make_ai_ctx(u)
+	ActionPlanner.ensure_valid_plan_sim(u.combatant_data.ai, ctx_ai, allow_hooks)
+
+	u.ai_state[&"planning_now"] = false
+	if clear_dirty:
+		print("plan_intent() clearing dirty")
+		u.ai_state[&"replan_dirty"] = false
+
+#func plan_intent(cid: int, allow_hooks := true) -> void:
+	#var u: CombatantState = state.get_unit(int(cid))
+	#if u == null or !u.is_alive():
+		#return
+	#if u.combatant_data == null:
+		#return
+	#if u.combatant_data.ai == null:
+		#return
+#
+	#ActionPlanner._ensure_ai_state_initialized(u)
+	#u.ai_state[ActionPlanner.FIRST_INTENTS_READY] = true
+	#
+	#if bool(u.ai_state.get(&"planning_now", false)):
+		#u.ai_state[&"replan_dirty"] = true
+		#return
+	#if bool(u.ai_state.get(ActionPlanner.IS_ACTING, false)):
+		#u.ai_state[&"replan_dirty"] = true
+		#return
+	#
+	#u.ai_state[&"planning_now"] = true
+	#
+	#var ctx_ai := _make_ai_ctx(u)
+	#ActionPlanner.ensure_valid_plan_sim(u.combatant_data.ai, ctx_ai, true)
+	#
+	#u.ai_state[&"planning_now"] = false
+	#u.ai_state[&"replan_dirty"] = false
+
+func flush_replans(allow_hooks := true) -> void:
+	if state == null:
+		return
+	for k in state.units.keys():
+		var cid := int(k)
+		var u: CombatantState = state.get_unit(cid)
+		if u == null:
+			continue
+		ActionPlanner._ensure_ai_state_initialized(u)
+		print("flush_replans() cid: %s, replan dirty: %s" % [cid, u.ai_state.get(&"replan_dirty", false)])
+		if bool(u.ai_state.get(&"replan_dirty", false)):
+			plan_intent(cid, allow_hooks, true)
+
+#func flush_replans(allow_hooks := true) -> void:
+	#print("flush_replans()")
+	#if state == null:
+		#return
+	#for k in state.units.keys():
+		#var cid := int(k)
+		#print("checking if dirty: ", cid)
+		#var u: CombatantState = state.get_unit(cid)
+		#if u == null:
+			#continue
+		#ActionPlanner._ensure_ai_state_initialized(u)
+		#
+		#if bool(u.ai_state.get(&"replan_dirty", false)):
+			#print("replan dirty, replanning")
+			#plan_intent(cid, allow_hooks)
 
 func plan_intents() -> void:
 	for cid in state.units.keys():
 		plan_intent(cid)
 	
+func _request_intent_refresh(cid: int) -> void:
+	var u: CombatantState = state.get_unit(cid)
+	if u == null:
+		return
+	ActionPlanner._ensure_ai_state_initialized(u)
+	u.ai_state[&"intent_dirty"] = true
+
+func flush_intent_refreshes() -> void:
+	if state == null:
+		return
+
+	for k in state.units.keys():
+		var cid := int(k)
+		var u: CombatantState = state.get_unit(cid)
+		if u == null or !u.is_alive():
+			continue
+		ActionPlanner._ensure_ai_state_initialized(u)
+
+		if !bool(u.ai_state.get(&"intent_dirty", false)):
+			continue
+
+		u.ai_state[&"intent_dirty"] = false
+
+		# Only update if intents are “enabled”
+		if !bool(u.ai_state.get(ActionPlanner.FIRST_INTENTS_READY, false)):
+			continue
+		if bool(u.ai_state.get(ActionPlanner.IS_ACTING, false)):
+			# don’t fight the clear/display logic mid-action
+			continue
+
+		# Re-emit SET_INTENT using current modifiers + current params
+		ActionPlanner.emit_current_intent_sim(self, cid)
 
 # --------------------------
 # Internal helpers
@@ -736,27 +764,98 @@ func on_group_turn_begin(group_index: int) -> void:
 	if state == null:
 		return
 
-	# When group X begins, the opposing side experiences "opposing_group_start"
+	SimStatusLifecycleRunner.on_group_turn_begin(self, group_index)
+
+	# keep your opposing-group start flow (but remove the plan_intents/flush_replans here; see section 4)
 	var opposing_group := get_opposing_group(group_index)
 
-	# Ensure plans exist BEFORE hooks (your requirement)
-	plan_intents()
+	# Ensure plans exist BEFORE hooks for the opposing group
+	for cid in get_combatants_in_group(opposing_group, false):
+		plan_intent(int(cid), true, false) # allow_hooks=true, clear_dirty=false
 
-	# Fire on_opposing_group_start_sim for units in opposing group
 	for cid in get_combatants_in_group(opposing_group, false):
 		_fire_opposing_group_start_for(int(cid))
 
+#func on_group_turn_begin(group_index: int) -> void:
+	#if state == null:
+		#return
+#
+	## When group X begins, the opposing side experiences "opposing_group_start"
+	#var opposing_group := get_opposing_group(group_index)
+#
+	#flush_replans(false) # no hooks while stabilizing state
+	#plan_intents()       # or remove this and rely on dirty+initial seeding
+	#flush_replans(false)
+#
+	## Fire on_opposing_group_start_sim for units in opposing group
+	#for cid in get_combatants_in_group(opposing_group, false):
+		#_fire_opposing_group_start_for(int(cid))
 
 func on_group_turn_end(group_index: int) -> void:
 	if state == null:
 		return
 
-	# "my group end" for everyone in that group (matches your intent model API)
+	SimStatusLifecycleRunner.on_group_turn_end(self, group_index)
+
 	for cid in get_combatants_in_group(group_index, true):
 		_fire_my_group_end_for(int(cid))
 
-	# Also clear telegraph latch for everyone in that group (matches LIVE)
 	for cid in get_combatants_in_group(group_index, true):
 		var u := state.get_unit(int(cid))
 		if u and u.ai_state:
 			u.ai_state["telegraph_committed"] = false
+
+#func on_group_turn_end(group_index: int) -> void:
+	#if state == null:
+		#return
+#
+	## "my group end" for everyone in that group (matches your intent model API)
+	#for cid in get_combatants_in_group(group_index, true):
+		#_fire_my_group_end_for(int(cid))
+#
+	## Also clear telegraph latch for everyone in that group (matches LIVE)
+	#for cid in get_combatants_in_group(group_index, true):
+		#var u := state.get_unit(int(cid))
+		#if u and u.ai_state:
+			#u.ai_state["telegraph_committed"] = false
+
+# sim_battle_api.gd
+
+func _get_status_proto(id: StringName) -> Status:
+	# Prefer API catalog (you said it exists on the parent BattleAPI)
+	if status_catalog != null:
+		return status_catalog.get_proto(id)
+
+	# Fallback: state catalog (helps preview clones if needed)
+	if state != null and state.status_catalog != null:
+		return state.status_catalog.get_proto(id)
+
+	return null
+
+
+func _is_aura_proto(proto: Status) -> bool:
+	if proto == null:
+		return false
+	# If Aura extends Status, this is the simplest / strongest check.
+	if proto is Aura:
+		return true
+	# Backstop: “affects others” semantics
+	if proto.affects_others():
+		return true
+	# Another backstop: contributes modifier tokens that are aura-scoped
+	if proto.contributes_modifier():
+		var types := proto.get_contributed_modifier_types()
+		for t in types:
+			# If it contributes anything, and you’ve authored it as an Aura-like status, treat as aura
+			# (optional; remove if you want ONLY Aura subclass)
+			pass
+	return false
+
+
+
+
+
+func _request_intent_refresh_targets_for_aura(source_id: int, proto: Status) -> void:
+	# Conservative + correct: refresh all (fast to implement, correct output)
+	# If you later want it tighter, replace this with tag-based routing.
+	_request_intent_refresh_all()

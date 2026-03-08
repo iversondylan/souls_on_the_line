@@ -8,6 +8,7 @@ func is_performable(ctx: NPCAIContext) -> bool:
 	return !bool(ctx.state.get(NPCAIBehavior.STABILITY_BROKEN, false))
 
 func is_performable_sim(ctx: NPCAIContext) -> bool:
-	if !ctx or !ctx.state:
+	if !ctx or !ctx.combatant_state or !ctx.combatant_state.ai_state:
 		return true
-	return !bool(ctx.state.get(NPCAIBehavior.STABILITY_BROKEN, false))
+	print("stability broken: ", ctx.combatant_state.ai_state.get(Keys.STABILITY_BROKEN, false))
+	return !bool(ctx.combatant_state.ai_state.get(Keys.STABILITY_BROKEN, false))

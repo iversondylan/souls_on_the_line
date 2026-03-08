@@ -137,10 +137,10 @@ func apply_damage_amount(ctx: DamageContext, amount: int) -> void:
 	# Numeric only, fill ctx results
 	if !ctx.target or !ctx.target.combatant_data:
 		return
-
+	
 	var pre_armor := ctx.target.combatant_data.armor
 	var health_loss := ctx.target.combatant_data.take_damage(amount)
-
+	
 	ctx.health_damage = health_loss
 	ctx.armor_damage = maxi(mini(amount, pre_armor), 0)
 	ctx.was_lethal = !ctx.target.combatant_data.is_alive()
@@ -151,7 +151,7 @@ func on_damage_applied(ctx: DamageContext) -> void:
 		ctx.target.damage_taken.emit(ctx)
 		if ctx.target.status_system:
 			ctx.target.status_system.on_damage_taken(ctx)
-
+	
 	# Presentation (live-only)
 	if ctx.target:
 		Shaker.shake(ctx.target, 16, 0.15)

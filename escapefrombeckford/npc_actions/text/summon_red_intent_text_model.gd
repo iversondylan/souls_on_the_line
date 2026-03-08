@@ -25,3 +25,21 @@ func get_text(ctx: NPCAIContext) -> String:
 		return "error"
 	
 	return "%s/%s" % [red, hp]
+
+func get_text_sim(ctx: NPCAIContext) -> String:
+	if ctx == null:
+		return "error"
+
+	var fallback: CombatantData = load(SummonEffect.DEFAULT_SUMMON_DATA)
+	var data: CombatantData = _param_v(ctx, Keys.SUMMON_DATA, fallback)
+
+	if data == null:
+		return "error"
+
+	var red := int(data.apr)
+	var hp := int(data.max_health)
+
+	if red < 0 or hp <= 0:
+		return "error"
+
+	return "%s/%s" % [red, hp]

@@ -17,5 +17,6 @@ metadata/_custom_type_script = "uid://cgyx5yvchgfsk"
 script = ExtResource("7_n6odd")
 effect_packages = Array[ExtResource("1_vk75x")]([ExtResource("2_nw5jf")])
 intent_icon = ExtResource("3_jar83")
+intent_icon_uid = "uid://c54dbo8n7r3g"
 intent_text_model = SubResource("Resource_cq6h8")
 metadata/_custom_type_script = "uid://bcih413oy6v73"

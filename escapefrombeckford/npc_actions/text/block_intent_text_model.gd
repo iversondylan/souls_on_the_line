@@ -12,3 +12,12 @@ func get_text(ctx: NPCAIContext) -> String:
 		return "error"
 
 	return "%s" % armor
+
+func get_text_sim(ctx: NPCAIContext) -> String:
+	if ctx == null:
+		return "error"
+
+	var armor := _param_i(ctx, Keys.ARMOR_AMOUNT, 0)
+	if armor < 0:
+		return "error"
+	return "%s" % armor

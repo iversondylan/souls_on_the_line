@@ -178,34 +178,6 @@ func get_description() -> String:
 func get_cost() -> Array[int]:
 	return [card_data.cost_red, card_data.cost_green, card_data.cost_blue]
 
-#func activate() -> bool:
-	#var resolved_targets := resolve_targets(targets)
-	#if resolved_targets.fighters.is_empty() and resolved_targets.areas.is_empty():
-		#return false
-#
-	#if !player.can_play_card(card_data):
-		#return false
-#
-	#var ctx := build_action_context(resolved_targets)
-#
-	## detect summon replace need
-	#var summon_action := _get_first_summon_action()
-	#if summon_action != null and summon_action.requires_summon_slot():
-		#var needs_replace := battle_scene.get_n_summoned_allies() >= BattleGroupFriendly.MAX_SOULBOUND
-		#if needs_replace:
-			#var effect := summon_action.build_effect(ctx)
-			#Events.request_summon_replace.emit(self, ctx, effect, summon_action)
-			#return true
-	#
-	#var swap_action := _get_first_swap_action()
-	#if swap_action != null:
-		## We require an initial target (actor) via your targeting rules.
-		#Events.request_swap_partner.emit(self, ctx, resolved_targets.fighters[0], swap_action)
-		#return true
-	#
-	## normal commit path
-	#return commit_play(ctx, null, true)
-
 func activate() -> bool:
 	# --- basic validation (UI-side) ---
 	if card_data == null or player == null or battle_scene == null:

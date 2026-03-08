@@ -204,6 +204,9 @@ func _on_sim_group_turn_ended(gi: int) -> void:
 		start_group_turn(0, false)  # friendly group, start at player
 
 func _on_sim_player_begin_requested(token: int) -> void:
+	var player_id := turn_engine_host_sim.get_player_id()
+	if main != null and main.api != null and player_id > 0:
+		SimStatusLifecycleRunner.on_actor_turn_begin(main.api, player_id)
 	if turn_engine_host_sim != null:
 		if sim_host_has_begin_player_turn():
 			_call_sim_begin_player_turn()
@@ -228,6 +231,10 @@ func _on_sim_player_end_requested(token: int) -> void:
 		
 		# - Then end the actor turn (this advances the queue / group)
 		#   Also closes the actor scope in the event writer.
+		if main != null and main.api != null:
+			SimStatusLifecycleRunner.on_actor_turn_end(main.api, player_id)
+			main.api.flush_replans(true)
+			main.api.flush_intent_refreshes()
 		sim_notify_actor_done(player_id)
 	)
 
@@ -269,7 +276,8 @@ func _on_sim_actor_requested(cid: int) -> void:
 		main.api.writer.set_turn_context(turn_engine._turn_token, turn_engine.active_group_index, cid)
 		main.api.writer.scope_begin(Scope.Kind.ACTOR_TURN, "actor=%d" % cid, cid)
 		main.api.writer.emit_actor_begin(cid)
-	
+	if main != null and main.api != null:
+		SimStatusLifecycleRunner.on_actor_turn_begin(main.api, cid)
 	if is_player(cid):
 		player_input_reached.emit()
 		return
@@ -284,7 +292,12 @@ func _on_sim_actor_requested(cid: int) -> void:
 	if main != null and main.api != null and main.api.writer != null:
 		main.api.writer.emit_actor_end(cid)
 		main.api.writer.scope_end()
-	
+	if main != null and main.api != null:
+		SimStatusLifecycleRunner.on_actor_turn_end(main.api, cid)
+		# Flush replans right after action resolution (see section 4)
+		
+		main.api.flush_replans(true)
+		main.api.flush_intent_refreshes()
 	turn_engine.notify_actor_done(cid)
 
 func get_main_api() -> SimBattleAPI:
@@ -374,19 +387,6 @@ func _on_sim_arcana_proc_requested(proc: int, token: int) -> void:
 		main.api.writer.scope_end() # arcana
 	
 	turn_engine.notify_arcana_proc_done(token)
-
-#func _on_sim_arcana_proc_requested(proc: int, token: int) -> void:
-	#if main != null and main.api != null and main.api.writer != null:
-		#main.api.writer.scope_begin(Scope.Kind.ARCANA, "proc=%d" % int(proc), 0)
-		#main.api.writer.emit_arcana_proc(proc)
-	#if arcana_resolver == null:
-		#if arcana_catalog == null:
-			#push_warning("SimHost: no arcana_catalog; cannot run arcana")
-		#else:
-			#arcana_resolver = ArcanaResolver.new(self, arcana_catalog)
-	#if arcana_resolver != null:
-		#arcana_resolver.run_proc(proc)
-	#turn_engine.notify_arcana_proc_done(token)
 
 func _proc_to_arcanum_type(proc: int) -> int:
 	match proc:

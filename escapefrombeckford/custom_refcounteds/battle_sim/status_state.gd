@@ -50,3 +50,12 @@ func clone() -> StatusState:
 		if s:
 			st.by_id[k] = s.clone()
 	return st
+
+func set_stack(id: StringName, intensity: int, duration: int) -> bool:
+	var s: StatusStack = by_id.get(id, null)
+	if s == null:
+		return false
+	var changed := (s.intensity != intensity) or (s.duration != duration)
+	s.intensity = intensity
+	s.duration = duration
+	return changed

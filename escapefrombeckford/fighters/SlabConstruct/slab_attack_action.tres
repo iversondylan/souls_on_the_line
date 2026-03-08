@@ -14,6 +14,7 @@
 script = ExtResource("4_u8onn")
 effect_packages = Array[ExtResource("1_d0vgo")]([ExtResource("2_44bx1")])
 intent_icon = ExtResource("3_cerd5")
+intent_icon_uid = "uid://c54dbo8n7r3g"
 intent_text_model = ExtResource("5_h5mot")
 tooltip_model = ExtResource("9_e84wf")
 metadata/_custom_type_script = "uid://bcih413oy6v73"
