@@ -3,7 +3,10 @@
 extends Node
 # the only ones I'm keeping?
 signal player_targeted_arrow_visible(show: bool)
-
+signal combatant_view_clicked(combatant: CombatantView)
+signal combatant_view_hovered(combatant: CombatantView)
+signal combatant_view_unhovered(combatant: CombatantView)
+signal request_summon_replace(card: UsableCard, req: CardPlayRequest, preview: SummonPreview)#ctx: CardActionContext, effect: SummonEffect, skip_action: CardAction)
 
 ## battle flow events
 signal live_battle_api_created(api: LiveBattleAPI)
@@ -49,10 +52,10 @@ signal hand_card_added(usable_card: UsableCard)
 signal card_selection_toggled(card: UsableCard, is_selected: bool)
 
 ## summon replace events
-signal combatant_target_clicked(fighter: Fighter)
-signal combatant_target_hovered(fighter: Fighter)
-signal combatant_target_unhovered(fighter: Fighter)
-signal request_summon_replace(card: UsableCard, ctx: CardActionContext, effect: SummonEffect, skip_action: CardAction)
+#signal combatant_target_clicked(fighter: Fighter)
+#signal combatant_target_hovered(fighter: Fighter)
+#signal combatant_target_unhovered(fighter: Fighter)
+#signal request_summon_replace(card: UsableCard, ctx: CardActionContext, effect: SummonEffect, skip_action: CardAction)
 signal request_swap_partner(card: UsableCard, ctx: CardActionContext, actor: Fighter, skip_action: CardAction)
 signal request_discard_cards(ctx: DiscardContext)
 signal discard_selection_started(ctx: DiscardContext)
