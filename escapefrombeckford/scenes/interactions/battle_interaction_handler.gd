@@ -28,7 +28,7 @@ func _ready() -> void:
 
 func setup(_battle: Battle) -> void:
 	battle = _battle
-	battle_scene = battle.battle_scene
+	#battle_scene = battle.battle_scene
 	hand = battle.hand
 	battle_ui = battle.battle_ui
 	prompt = battle.selection_prompt

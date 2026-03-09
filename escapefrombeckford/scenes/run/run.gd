@@ -175,7 +175,7 @@ func _on_battle_entered(room: Room) -> void:
 	battle_scn.player_data = player_data
 	battle_scn.deck = deck
 	battle_scn.battle_data = room.battle_data
-	battle_scn.arcana = arcana_container.system
+	#battle_scn.arcana = arcana_container.system
 	battle_scn.my_arcana = arcana_system.get_my_arcana()
 	battle_scn.start_battle()
 

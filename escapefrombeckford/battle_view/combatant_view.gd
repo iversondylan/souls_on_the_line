@@ -14,8 +14,9 @@ class_name CombatantView extends Node2D
 @onready var area_left: CombatantAreaLeft = $AreaLeft
 
 enum Type {ALLY, ENEMY, PLAYER}
+enum Mortality {MORTAL, SOULBOUND, DEPLETE}
 var type: Type : set = _set_type
-
+var mortality: Mortality = Mortality.MORTAL
 var display_name: String = ""
 var cid: int = -1 : set = _set_cid
 var character_art_uid: String
@@ -121,6 +122,7 @@ func _apply_visuals_from_spec() -> void:
 func _apply_stats_from_spec() -> void:
 	# Use spec values for initial UI.
 	# Later, you can add dedicated events for health changes etc.
+	mortality = int(_spec.get(Keys.MORTALITY, CombatantView.Mortality.MORTAL))
 	max_health = int(_spec.get(Keys.MAX_HEALTH, 0))
 	health = int(_spec.get(Keys.HEALTH, 0))
 	# health_bar.update_health_from_numbers(hp, max_hp) # adapt to your API

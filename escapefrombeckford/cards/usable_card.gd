@@ -557,6 +557,7 @@ func _kill_pop_tween() -> void:
 
 func build_action_context_sim(resolved_targets: CardResolvedTargetSim) -> CardActionContextSim:
 	var ctx := CardActionContextSim.new()
+	ctx.source_id = player_data.combat_id
 	#ctx.player = player
 	#ctx.battle_scene = battle_scene
 	ctx.card_data = card_data

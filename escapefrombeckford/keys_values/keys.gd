@@ -11,6 +11,7 @@ const MODE_SIM := &"sim"
 
 const PLAYER_ID := &"player_id"
 const IS_PLAYER := &"is_player"
+const MORTALITY := &"mortality"
 const SOURCE_ID := &"source_id"
 const SPAWNED_ID := &"spawned_id"
 const ORDER_IDS := &"order_ids"

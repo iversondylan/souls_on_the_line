@@ -210,7 +210,7 @@ func _on_sim_player_begin_requested(token: int) -> void:
 	if turn_engine_host_sim != null:
 		if sim_host_has_begin_player_turn():
 			_call_sim_begin_player_turn()
-
+	
 	turn_engine.notify_player_begin_done(token)
 
 func request_player_end() -> void:

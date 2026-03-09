@@ -360,6 +360,7 @@ func spawn_from_data(combatant_data: CombatantData, group_index: int, insert_ind
 			Keys.ART_FACES_RIGHT: bool(combatant_data.facing_right),
 			Keys.HEIGHT: int(combatant_data.height),
 			Keys.COLOR_TINT: combatant_data.color_tint as Color,
+			Keys.MORTALITY: CombatantView.Mortality.MORTAL,
 		}
 		var after_order_ids = PackedInt32Array(state.groups[g].order)
 		writer.emit_spawned(id, g, int(insert_index), after_order_ids, proto, spec, is_player)
@@ -401,6 +402,7 @@ func summon(ctx: SummonContext) -> void:
 			Keys.ART_FACES_RIGHT: bool(ctx.summon_data.facing_right),
 			Keys.HEIGHT: int(ctx.summon_data.height),
 			Keys.COLOR_TINT: ctx.summon_data.color_tint as Color,
+			Keys.MORTALITY: CombatantView.Mortality.SOULBOUND,
 		}
 	var after_order_ids = PackedInt32Array(state.groups[g].order)
 	if writer != null:
