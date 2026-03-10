@@ -10,6 +10,7 @@ var battle : Battle = null
 var hand : Hand = null
 var deck : Deck = null
 
+var actually_discarded : int
 # callback: func(chosen_uids: Array[String]) -> void
 var on_done: Callable = Callable()
 

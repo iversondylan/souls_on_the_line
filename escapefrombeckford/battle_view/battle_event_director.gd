@@ -80,6 +80,17 @@ func on_event(e: EventPackage) -> void:
 			_on_discard_requested(e)
 		BattleEvent.Type.DISCARD_RESOLVED:
 			pass
+		BattleEvent.Type.FADE_WINDUP:
+			_on_fade_windup(e)
+		BattleEvent.Type.FADED:
+			_on_faded(e)
+
+		BattleEvent.Type.SUMMON_WINDUP:
+			_on_summon_windup(e)
+		BattleEvent.Type.SUMMONED:
+			_on_summoned(e) # keep, but make it “spawn-only”
+		BattleEvent.Type.SUMMON_FOLLOWTHROUGH:
+			_on_summon_followthrough(e)
 		_:
 			# ignore for now
 			pass
@@ -91,7 +102,7 @@ func _on_spawned(e: EventPackage) -> void:
 	var is_player := bool(e.event.data.get(Keys.IS_PLAYER, false))
 	var after_ids : PackedInt32Array = e.event.data.get(Keys.AFTER_ORDER_IDS, PackedInt32Array())
 	#print("battle_event_director.gd _on_spawned() cid: %s, group: %s, ind: %s" % [cid, g, idx])
-	var v := battle_view.get_or_create_combatant_view(cid, g, idx, is_player)
+	var v := battle_view.get_or_create_combatant_view(cid, g, idx, false, is_player)
 	if v == null:
 		return
 	
@@ -104,25 +115,25 @@ func _on_spawned(e: EventPackage) -> void:
 	ctx.animate_to_position = false
 	battle_view.set_group_order(ctx)
 
-func _on_summoned(e: EventPackage) -> void:
-	
-	var cid := int(e.event.data.get(Keys.SUMMONED_ID, 0))
-	var g := int(e.event.data.get(Keys.GROUP_INDEX, e.event.group_index))
-	var idx := int(e.event.data.get(Keys.INSERT_INDEX, -1))
-	var after_ids : PackedInt32Array = e.event.data.get(Keys.AFTER_ORDER_IDS, PackedInt32Array())
-	#print("battle_event_director.gd _on_summoned() cid: %s, group: %s, ind: %s" % [cid, g, idx])
-	var combatant := battle_view.get_or_create_combatant_view(cid, g, idx)
-	if combatant == null:
-		return
-	
-	var spec: Dictionary = e.event.data.get(Keys.SUMMON_SPEC, {})
-	combatant.apply_spawn_spec(spec)
-	combatant.play_summon_fx()
-	var ctx := GroupLayoutOrder.new()
-	ctx.group_index = g
-	ctx.order = after_ids
-	ctx.animate_to_position = true
-	battle_view.set_group_order(ctx)
+#func _on_summoned(e: EventPackage) -> void:
+	#
+	#var cid := int(e.event.data.get(Keys.SUMMONED_ID, 0))
+	#var g := int(e.event.data.get(Keys.GROUP_INDEX, e.event.group_index))
+	#var idx := int(e.event.data.get(Keys.INSERT_INDEX, -1))
+	#var after_ids : PackedInt32Array = e.event.data.get(Keys.AFTER_ORDER_IDS, PackedInt32Array())
+	##print("battle_event_director.gd _on_summoned() cid: %s, group: %s, ind: %s" % [cid, g, idx])
+	#var combatant := battle_view.get_or_create_combatant_view(cid, g, idx)
+	#if combatant == null:
+		#return
+	#
+	#var spec: Dictionary = e.event.data.get(Keys.SUMMON_SPEC, {})
+	#combatant.apply_spawn_spec(spec)
+	#combatant.play_summon_fx()
+	#var ctx := GroupLayoutOrder.new()
+	#ctx.group_index = g
+	#ctx.order = after_ids
+	#ctx.animate_to_position = true
+	#battle_view.set_group_order(ctx)
 
 func _on_formation_set(e: EventPackage) -> void:
 	# Your payload: {player_id, group_0, group_1}
@@ -240,7 +251,7 @@ func _on_damage_applied(e: EventPackage) -> void:
 		target_combatant.pop_damage_number(amount)
 
 func _on_status_applied(e: EventPackage) -> void:
-	print("battle_event_director.gd _on_status_applied()")
+	#print("battle_event_director.gd _on_status_applied()")
 	var o := StatusAppliedOrder.new()
 	o.duration = e.duration
 	o.source_id = int(e.event.data.get(Keys.SOURCE_ID, 0))
@@ -381,6 +392,138 @@ func _on_discard_requested(e: EventPackage) -> void:
 		api.resolve_player_discard(chosen_uids)
 
 	Events.request_discard_cards.emit(ctx)
+
+func _on_fade_windup(e: EventPackage) -> void:
+	var tid := int(e.event.data.get(Keys.TARGET_ID, 0))
+	if tid <= 0:
+		return
+
+	var v := battle_view.get_combatant(tid)
+	if v == null:
+		return
+
+	# Mark dead-for-interaction / targeting
+	v.is_alive = false
+	if v.target_area:
+		v.target_area.monitorable = false
+		v.target_area.monitoring = false
+	if v.area_left:
+		v.area_left.monitorable = false
+		v.area_left.monitoring = false
+
+	# Fade OUT only during windup
+	if v.tween_misc:
+		v.tween_misc.kill()
+	v.tween_misc = v.create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+	if v.character_art != null:
+		v.tween_misc.tween_property(v.character_art, "modulate:a", 0.0, maxf(e.duration, 0.01))
+
+
+func _on_faded(e: EventPackage) -> void:
+	# Non-beat semantic “removed without death triggers”
+	var tid := int(e.event.data.get(Keys.TARGET_ID, 0))
+	if tid <= 0:
+		return
+
+	var v := battle_view.get_combatant(tid)
+	if v == null:
+		# still ensure mapping is clean
+		battle_view.combatants_by_cid.erase(tid)
+		return
+
+	# Remove from group registry (so layout ignores it)
+	var g := int(e.event.data.get(Keys.GROUP_INDEX, v.group_index))
+	var group: GroupView = battle_view.friendly_group if g == 0 else battle_view.enemy_group
+	if group != null:
+		group.unregister_cid(tid)
+
+	# Remove from BattleView mapping, then free
+	battle_view.combatants_by_cid.erase(tid)
+	v.queue_free()
+
+
+func _on_summon_windup(e: EventPackage) -> void:
+	# Fade IN the new unit at the ghost slot position.
+	# This assumes SUMMONED already happened earlier in the same card (often same beat or earlier beat),
+	# OR that the unit exists in battle_view by the time this runs.
+	var summoned_id := int(e.event.data.get(Keys.SUMMONED_ID, 0)) # add this to the event (see below)
+	var g := int(e.event.data.get(Keys.GROUP_INDEX, e.event.group_index))
+	var insert_index := int(e.event.data.get(Keys.INSERT_INDEX, -1))
+	if summoned_id <= 0:
+		return
+
+	var v := battle_view.get_combatant(summoned_id)
+	if v == null:
+		return
+
+	# Ensure it's targetable again
+	v.is_alive = true
+
+	# Place at ghost slot (global -> group local)
+	var group: GroupView = battle_view.friendly_group if g == 0 else battle_view.enemy_group
+	if group != null:
+		var slot_global := battle_view.get_summon_slot_position(g, insert_index)
+		v.position = group.to_local(slot_global)
+		v.anchor_position = v.position
+		v.has_anchor_position = true
+
+	# Start invisible, then fade in during windup
+	if v.character_art != null:
+		var c := v.character_art.modulate
+		c.a = 0.0
+		v.character_art.modulate = c
+
+	if v.tween_misc:
+		v.tween_misc.kill()
+	v.tween_misc = v.create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	if v.character_art != null:
+		v.tween_misc.tween_property(v.character_art, "modulate:a", 1.0, maxf(e.duration, 0.01))
+
+
+func _on_summoned(e: EventPackage) -> void:
+	# Spawn-only: create the view, apply spec, BUT do not do the fancy fade/move here.
+	var cid := int(e.event.data.get(Keys.SUMMONED_ID, 0))
+	var g := int(e.event.data.get(Keys.GROUP_INDEX, e.event.group_index))
+	var idx := int(e.event.data.get(Keys.INSERT_INDEX, -1))
+	if cid <= 0:
+		return
+
+	var v := battle_view.get_or_create_combatant_view(cid, g, idx, true)
+	if v == null:
+		return
+
+	var spec: Dictionary = e.event.data.get(Keys.SUMMON_SPEC, {})
+	v.apply_spawn_spec(spec)
+
+	# Let windup handler decide where it appears + alpha.
+	# Safe default: keep it invisible until SUMMON_WINDUP arrives.
+	if v.character_art != null:
+		v.character_art.modulate.a = 0.0
+		#v.character_art.modulate = c
+		if v.tween_misc:
+			v.tween_misc.kill()
+		v.tween_misc = v.create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+		v.tween_misc.tween_property(v.character_art, "modulate:a", 1, maxf(e.duration, 0.01))
+
+
+func _on_summon_followthrough(e: EventPackage) -> void:
+	# “All that happens is the new combatant appears moves into place”
+	# => just re-layout to AFTER_ORDER_IDS with animate=true.
+	var g := int(e.event.data.get(Keys.GROUP_INDEX, e.event.group_index))
+	var after_ids: PackedInt32Array = e.event.data.get(Keys.AFTER_ORDER_IDS, PackedInt32Array())
+	if after_ids.is_empty():
+		return
+
+	var arr: Array = []
+	arr.resize(after_ids.size())
+	for i in range(after_ids.size()):
+		arr[i] = int(after_ids[i])
+
+	var ctx := GroupLayoutOrder.new()
+	ctx.group_index = g
+	ctx.order = arr
+	ctx.animate_to_position = true
+	battle_view.set_group_order(ctx)
 
 func _on_scope_begin(_e: EventPackage) -> void:
 	#print("battle_event_director.gd _on_scope_begin()")

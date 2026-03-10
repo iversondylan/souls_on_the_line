@@ -61,6 +61,10 @@ func _build_clone_data(ctx: CardActionContext) -> CombatantData:
 func description_arity() -> int:
 	return 3
 
+func get_preview_summon_data() -> CombatantData:
+	print("summon_action.gd get_preview_summon_data()")
+	return summon_data
+
 func get_description_values(ctx: CardActionContext) -> Array:
 	var data := summon_data.duplicate()
 	data.init()

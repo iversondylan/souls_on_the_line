@@ -168,7 +168,6 @@ func start_group_turn(group_index: int, start_at_player := false) -> void:
 
 	if turn_engine == null:
 		turn_engine = TurnEngineCore.new(turn_engine_host_sim)
-		turn_engine.sim = true
 		turn_engine.group_turn_ended.connect(_on_sim_group_turn_ended)
 		turn_engine.arcana_proc_requested.connect(_on_sim_arcana_proc_requested)
 		turn_engine.actor_requested.connect(_on_sim_actor_requested)

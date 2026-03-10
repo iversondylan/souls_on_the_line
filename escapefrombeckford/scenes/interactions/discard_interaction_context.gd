@@ -115,22 +115,26 @@ func _on_card_selection_toggled(card: UsableCard, is_selected: bool) -> void:
 	
 	_update_prompt()
 
-func _commit_selected() -> void:
-	_resolving = true
-	handler.prompt_set_enabled(false)
-	
-	# stop enrolling added cards mid-resolution
-	if Events.hand_card_added.is_connected(_on_hand_card_added):
-		Events.hand_card_added.disconnect(_on_hand_card_added)
-	
-	# Remove + discard
-	Events.hand_discard_animation_finished.connect(_on_discard_done, CONNECT_ONE_SHOT)
-	var removed := discard_ctx.hand.remove_cards_by_entities(_selected)
-	discard_ctx.actually_discarded = removed.size()
-	
-	discard_ctx.hand.discard_cards(removed)
+#func _commit_selected() -> void:
+	#_resolving = true
+	#handler.prompt_set_enabled(false)
+	#
+	## stop enrolling added cards mid-resolution
+	#if Events.hand_card_added.is_connected(_on_hand_card_added):
+		#Events.hand_card_added.disconnect(_on_hand_card_added)
+	#
+	## Remove + discard
+	#Events.hand_discard_animation_finished.connect(_on_discard_done, CONNECT_ONE_SHOT)
+	#var removed := discard_ctx.hand.remove_cards_by_entities(_selected)
+	#discard_ctx.actually_discarded = removed.size()
+	#
+	#discard_ctx.hand.discard_cards(removed)
 
-func _on_discard_done() -> void:
+func _on_discard_done(chosen_uids: Array[String]) -> void:
+	# Route back to SIM first (this unblocks the SIM request)
+	if discard_ctx != null and discard_ctx.on_done.is_valid():
+		discard_ctx.on_done.call(chosen_uids)
+
 	Events.discard_finished.emit(discard_ctx)
 	handler.end_active_context()
 
@@ -138,9 +142,21 @@ func _auto_discard_all() -> void:
 	_resolving = true
 	handler.prompt_show("Discarding %s card(s)." % _cards.size(), "OK")
 	handler.prompt_set_enabled(false)
-	
+
+	# Build uids from _cards
+	var chosen_uids: Array[String] = []
+	for c in _cards:
+		if c != null and is_instance_valid(c) and c.card_data != null:
+			c.card_data.ensure_uid()
+			chosen_uids.append(String(c.card_data.uid))
+
+	Events.hand_discard_animation_finished.connect(
+		func():
+			_on_discard_done(chosen_uids),
+		CONNECT_ONE_SHOT
+	)
+
 	var removed := discard_ctx.hand.remove_cards_by_entities(_cards)
-	Events.hand_discard_animation_finished.connect(_on_discard_done, CONNECT_ONE_SHOT)
 	discard_ctx.actually_discarded = removed.size()
 	discard_ctx.hand.discard_cards(removed)
 
@@ -199,3 +215,34 @@ func _finish_discard(chosen_cards: Array[UsableCard]) -> void:
 	if Events.hand_discard_animation_finished.is_connected(done):
 		Events.hand_discard_animation_finished.disconnect(done)
 	Events.hand_discard_animation_finished.connect(done, CONNECT_ONE_SHOT)
+
+func _get_selected_uids() -> Array[String]:
+	var out: Array[String] = []
+	for c in _selected:
+		if c == null or !is_instance_valid(c):
+			continue
+		if c.card_data == null:
+			continue
+		c.card_data.ensure_uid()
+		out.append(String(c.card_data.uid))
+	return out
+
+func _commit_selected() -> void:
+	_resolving = true
+	handler.prompt_set_enabled(false)
+
+	if Events.hand_card_added.is_connected(_on_hand_card_added):
+		Events.hand_card_added.disconnect(_on_hand_card_added)
+
+	# Capture choice deterministically BEFORE we remove/free anything
+	var chosen_uids := _get_selected_uids()
+
+	Events.hand_discard_animation_finished.connect(
+		func():
+			_on_discard_done(chosen_uids),
+		CONNECT_ONE_SHOT
+	)
+
+	var removed := discard_ctx.hand.remove_cards_by_entities(_selected)
+	discard_ctx.actually_discarded = removed.size()
+	discard_ctx.hand.discard_cards(removed)

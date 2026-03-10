@@ -31,7 +31,7 @@ func enter() -> void:
 			candidates.append(v)
 
 	handler.prompt_show("Choose a summon to replace.", "Cancel")
-
+	print("summon_replace_interaction_context.gd enter() candidates: ", candidates)
 	if preview != null:
 		ghost = handler.make_summon_ghost(preview)
 		bv.show_summon_preview_ghost(ghost, int(preview.insert_index), 0)
@@ -44,6 +44,8 @@ func exit() -> void:
 	if bv != null:
 		bv.clear_summon_preview_ghost()
 
+	if ghost != null and is_instance_valid(ghost):
+		ghost.queue_free()
 	ghost = null
 
 	for v in candidates:
@@ -54,9 +56,10 @@ func exit() -> void:
 	handler.unlock_from_modal()
 
 func on_primary() -> void:
+	# Cancel button
 	if resolving:
 		return
-	# cancel => handler ends context
+	handler.end_active_context()
 
 func on_hover(v: CombatantView) -> void:
 	if _can_target(v):
@@ -82,26 +85,32 @@ func _set_candidate_mark(v: CombatantView, on: bool) -> void:
 	if v.has_method("set_fade_mark"):
 		v.set_fade_mark(on)
 
+# summon_replace_interaction_context.gd
+# Change: NO tween fade here anymore. SIM events drive visuals.
+
 func _confirm(chosen: CombatantView) -> void:
+	if resolving:
+		return
+	if chosen == null or !is_instance_valid(chosen):
+		return
 	resolving = true
+
 	for v in candidates:
 		_set_candidate_mark(v, false)
 
-	var t := handler.create_tween()
-	t.tween_property(chosen.character_art, "modulate:a", 0.0, 0.18)
-	t.finished.connect(func(): _finish_confirm(chosen), CONNECT_ONE_SHOT)
+	_finish_confirm(chosen)
 
 func _finish_confirm(chosen: CombatantView) -> void:
 	if chosen == null or !is_instance_valid(chosen):
 		handler.end_active_context()
 		return
 
-	# 1) SIM: fade chosen (no death triggers)
+	# 1) SIM: fade chosen (no death triggers) -> will emit FADE_WINDUP + FADED
 	var api := handler.battle.sim_host.get_main_api()
 	if api != null:
 		api.fade_unit(int(chosen.cid), "summon_replace")
 
-	# 2) SIM: apply the summon request
+	# 2) SIM: apply the summon request -> should emit SUMMON_WINDUP / SUMMONED / SUMMON_FOLLOWTHROUGH
 	var ok := handler.battle.sim_host.apply_player_card(req)
 	if !ok:
 		handler.end_active_context()
@@ -114,3 +123,36 @@ func _finish_confirm(chosen: CombatantView) -> void:
 		card._move_to_destination()
 
 	handler.end_active_context()
+
+#func _confirm(chosen: CombatantView) -> void:
+	#resolving = true
+	#for v in candidates:
+		#_set_candidate_mark(v, false)
+#
+	#var t := handler.create_tween()
+	#t.tween_property(chosen.character_art, "modulate:a", 0.0, 0.18)
+	#t.finished.connect(func(): _finish_confirm(chosen), CONNECT_ONE_SHOT)
+#
+#func _finish_confirm(chosen: CombatantView) -> void:
+	#if chosen == null or !is_instance_valid(chosen):
+		#handler.end_active_context()
+		#return
+#
+	#var api := handler.battle.sim_host.get_main_api()
+	#if api != null:
+		#api.fade_unit(int(chosen.cid), "summon_replace")
+#
+	#var ok := handler.battle.sim_host.apply_player_card(req)
+	#if !ok:
+		## Roll back the visual fade we applied
+		#if is_instance_valid(chosen) and chosen.character_art != null:
+			#chosen.character_art.modulate.a = 1.0
+		#handler.end_active_context()
+		#return
+#
+	#if card != null and is_instance_valid(card):
+		#card.player_data.spend_mana(card.card_data)
+		#Events.card_played.emit(card)
+		#card._move_to_destination()
+#
+	#handler.end_active_context()

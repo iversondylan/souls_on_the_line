@@ -202,6 +202,12 @@ func reserve_summon_card(usable_card: UsableCard) -> void:
 func discard_card(usable_card: UsableCard) -> void:
 	if usable_card == null or !is_instance_valid(usable_card):
 		return
+	if deck == null:
+		push_error("Hand.discard_card(): Hand.deck is NULL (card=%s uid=%s)" % [
+			usable_card.card_data.name if usable_card.card_data else "<no card_data>",
+			str(usable_card.card_data.uid) if usable_card.card_data else "<no uid>"
+		])
+		return
 	deck.add_card_to_discard(usable_card.card_data)
 	usable_card.queue_free()
 	reposition_hand_cards()
@@ -527,10 +533,10 @@ func _clear_hover_visuals() -> void:
 		card.reset_visuals()
 	currently_selected_card_index = -1
 
-func _get_selected_uids() -> Array[String]:
-	var out: Array[String] = []
-	if selected_card == null or !is_instance_valid(selected_card) or selected_card.card_data == null:
-		return []
-	selected_card.card_data.ensure_uid()
-	out.append(String(selected_card.card_data.uid))
-	return out
+#func _get_selected_uids() -> Array[String]:
+	#var out: Array[String] = []
+	#if selected_card == null or !is_instance_valid(selected_card) or selected_card.card_data == null:
+		#return []
+	#selected_card.card_data.ensure_uid()
+	#out.append(String(selected_card.card_data.uid))
+	#return out

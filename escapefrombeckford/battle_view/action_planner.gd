@@ -9,7 +9,7 @@ const IS_ACTING := NPCAIBehavior.IS_ACTING
 const ACTIONS_TAKEN := NPCAIBehavior.ACTIONS_TAKEN
 const FIRST_INTENTS_READY := NPCAIBehavior.FIRST_INTENTS_READY
 
-static var debug := true
+static var debug := false
 
 static func run_turn(api: SimBattleAPI, cid: int) -> void:
 	#print("ation_planner.gd run_turn()")
@@ -166,7 +166,7 @@ static func ensure_valid_plan_sim(profile: NPCAIProfile, ctx: NPCAIContext, allo
 		plan_next_intent_sim(profile, ctx, allow_hooks)
 
 static func plan_next_intent_sim(profile: NPCAIProfile, ctx: NPCAIContext, allow_hooks: bool = false) -> void:
-	print("action_planner.gd plan_next_intent_sim()")
+	#print("action_planner.gd plan_next_intent_sim()")
 	if profile == null or ctx == null:
 		return
 

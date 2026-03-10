@@ -72,7 +72,7 @@ func _on_battlefield_aim_ended(_card: UsableCard) -> void:
 	_end_targeting()
 
 func _on_area_2d_area_entered(area: Area2D) -> void:
-	print("card_target_selector.gd _on_area_2d_area_entered()")
+	#print("card_target_selector.gd _on_area_2d_area_entered()")
 	if !current_card or !targeting:
 		return
 	
@@ -83,7 +83,7 @@ func _on_area_2d_area_entered(area: Area2D) -> void:
 		_update_battlefield_arrow()
 
 func _on_area_2d_area_exited(area: Area2D) -> void:
-	print("card_target_selector.gd _on_area_2d_area_exited()")
+	#print("card_target_selector.gd _on_area_2d_area_exited()")
 	if !current_card or !targeting:
 		return
 	

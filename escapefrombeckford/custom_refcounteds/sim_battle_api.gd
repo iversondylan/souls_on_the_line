@@ -218,15 +218,15 @@ func resolve_damage_immediate(ctx: DamageContext) -> int:
 func resolve_death(combat_id: int, reason := "", killer_id: int = 0) -> void:
 	if state == null or combat_id <= 0:
 		return
-
+	
 	var u: CombatantState = state.get_unit(combat_id)
 	if u == null:
 		return
-
+	
 	# Idempotent: if already removed from group order, no-op (still "exists" in units dict)
 	if !u.alive:
 		return
-
+	
 	# Run the death sequence (beats + final removal + DIED event)
 	SimDeathRunner.run(self, combat_id, killer_id, String(reason))
 
@@ -249,62 +249,52 @@ func count_summons_in_group(group_index: int) -> int:
 	return n
 
 func fade_unit(combat_id: int, reason: String = "fade") -> void:
-	#if state == null or combat_id <= 0:
-		#return
-	##var u: CombatantState = state.get_unit(combat_id)
-	#if u == null or !u.is_alive():
-		#return
-
-	# Remove from order immediately, mark not alive.
-	#var g := int(u.team)
-	#var before := PackedInt32Array(state.groups[g].order)
-	#state.groups[g].remove(combat_id)
-	#u.alive = false
-	#var after := PackedInt32Array(state.groups[g].order)
-	###########
 	var u: CombatantState = state.get_unit(combat_id)
-	if u == null:
+	if u == null or !u.alive:
 		return
-	if !u.alive:
-		return
-	
+
 	var g := int(u.team)
 	var before := PackedInt32Array(state.groups[g].order)
-	# Beat 1: target goes dark
+
 	if writer != null:
 		writer.scope_begin(Scope.Kind.FADE, "fade_unit", combat_id)
-		writer.emit_fade_windup(combat_id, reason)
-	
-	# Finalize removal before followthrough (so layout can use new order)
+		writer.emit_fade_windup(combat_id, reason, g)
 
-
-	# Beat 2: group re-layout
-	if writer != null:
-		writer.emit_fade_followthrough(combat_id, reason)
-	
-		u.alive = false
+	# Remove from order now (so SUMMON_FOLLOWTHROUGH can lay out the final order later)
+	u.alive = false
 	if g != -1:
 		state.groups[g].remove(combat_id)
-
 	var after_order_ids := PackedInt32Array(state.groups[g].order) if g != -1 else PackedInt32Array()
-	# Non-beat: actual "DIED" semantic marker
+
 	if writer != null:
 		writer.emit_faded(combat_id, before, after_order_ids, reason, g)
 		writer.scope_end()
-	## Optional but recommended: emit a specific event type so VIEW can animate fade.
-	#if writer != null:
-		## If you don’t want a new event type yet, you can use DEBUG with tags.
-		#writer.scope_begin(Scope.Kind.FADE, "fade_unit", combat_id)
-		#writer._append(BattleEvent.Type.DEBUG, {
-			#Keys.TARGET_ID: int(combat_id),
-			#Keys.GROUP_INDEX: int(g),
-			#Keys.REASON: String(reason),
-			#Keys.BEFORE_ORDER_IDS: before,
-			#Keys.AFTER_ORDER_IDS: after,
-		#})
-		#writer.scope_end()
 
-	# Important: do NOT call resolve_death() / SimDeathRunner.
+#func fade_unit(combat_id: int, reason: String = "fade") -> void:
+	#var u: CombatantState = state.get_unit(combat_id)
+	#if u == null:
+		#return
+	#if !u.alive:
+		#return
+	#
+	#var g := int(u.team)
+	#var before := PackedInt32Array(state.groups[g].order)
+	#
+	#if writer != null:
+		#writer.scope_begin(Scope.Kind.FADE, "fade_unit", combat_id)
+		#writer.emit_fade_windup(combat_id, reason, g)
+	#
+	## Finalize removal before followthrough (so layout can use new order)
+	#u.alive = false
+	#if g != -1:
+		#state.groups[g].remove(combat_id)
+	#
+	#var after_order_ids := PackedInt32Array(state.groups[g].order) if g != -1 else PackedInt32Array()
+	#
+	#if writer != null:
+		#writer.emit_fade_followthrough(combat_id, reason, g, after_order_ids)
+		#writer.emit_faded(combat_id, before, after_order_ids, reason, g)
+		#writer.scope_end()
 
 func apply_status(ctx: StatusContext) -> void:
 	#print("sim_battle_api.gd apply_status() id: ", ctx.status_id)
@@ -331,7 +321,7 @@ func apply_status(ctx: StatusContext) -> void:
 	_rebuild_modifier_cache_for(ctx.target_id)
 	
 	var proto := _get_status_proto(ctx.status_id)
-
+	
 	# If this status is an aura (affects other units), refresh everyone impacted
 	if _is_aura_proto(proto):
 		_request_intent_refresh_targets_for_aura(int(ctx.target_id), proto)
@@ -441,16 +431,37 @@ func spawn_from_data(combatant_data: CombatantData, group_index: int, insert_ind
 	
 	return id
 
+# sim_battle_api.gd
+
 func summon(ctx: SummonContext) -> void:
 	if ctx == null or state == null:
 		return
 	if ctx.summon_data == null:
 		push_warning("SimBattleAPI.summon: missing summon_data")
 		return
-	
+
+	var g := clampi(ctx.group_index, 0, 1)
+	var source_id := int(ctx.source_id) if ("source_id" in ctx) else 0
+
+	# Snapshot for WINDUP positioning:
+	# - If caller provided windup_order_ids, use it (summon-replace case).
+	# - Else use current order (normal summon case).
+	var windup_order := ctx.windup_order_ids
+	if windup_order == null or windup_order.is_empty():
+		windup_order = PackedInt32Array(state.groups[g].order)
+
+	# --- Beat 1: SUMMON_WINDUP ---
+	if writer != null:
+		writer.emit_summon_windup(source_id, g, int(ctx.insert_index), 1, {
+			Keys.BEFORE_ORDER_IDS: windup_order,      # <= critical
+			Keys.WINDUP_LAYOUT_COUNT: windup_order.size(),
+			Keys.REASON: String(ctx.reason) if ("reason" in ctx) else ""
+		})
+
+	# Allocate + add unit
 	var id := state.alloc_id()
 	ctx.summon_data.combat_id = id
-	
+
 	var u := CombatantState.new()
 	u.id = id
 	u.rng = RNG.new(RNGUtil.mix_seed(state.battle_seed, u.id))
@@ -458,15 +469,13 @@ func summon(ctx: SummonContext) -> void:
 	u.init_from_combatant_data(ctx.summon_data)
 	if ctx.summon_data.resource_path != "":
 		u.data_proto_path = String(ctx.summon_data.resource_path)
-	
-	var g := clampi(ctx.group_index, 0, 1)
-	u.type = CombatantView.Type.ALLY if ctx.group_index == 0 else CombatantView.Type.ENEMY
+
+	u.type = CombatantView.Type.ALLY if g == 0 else CombatantView.Type.ENEMY
 	u.mortality = ctx.mortality
 	state.add_unit(u, g, int(ctx.insert_index))
-	var proto := String(u.data_proto_path)
-	var spec := {}
-	if ctx.summon_data != null:
-		spec = {
+
+	if writer != null:
+		var spec := {
 			Keys.COMBATANT_NAME: String(ctx.summon_data.name),
 			Keys.MAX_HEALTH: int(ctx.summon_data.max_health),
 			Keys.HEALTH: int(ctx.summon_data.health),
@@ -480,16 +489,133 @@ func summon(ctx: SummonContext) -> void:
 			Keys.COLOR_TINT: ctx.summon_data.color_tint as Color,
 			Keys.MORTALITY: u.mortality,
 		}
-	var after_order_ids = PackedInt32Array(state.groups[g].order)
-	if writer != null:
-		writer.emit_summoned(id, g, int(ctx.insert_index), after_order_ids, proto, spec)
-	
+
+		var after_order_ids := PackedInt32Array(state.groups[g].order)
+
+		writer.emit_summoned(id, g, int(ctx.insert_index), after_order_ids, String(u.data_proto_path), spec)
+
+		writer.emit_summon_followthrough(source_id, g, int(ctx.insert_index), 1, {
+			Keys.SUMMONED_ID: int(id),
+			Keys.AFTER_ORDER_IDS: after_order_ids,
+		})
+
 	ctx.summoned_id = id
-	ctx.summoned_fighter = null # headless
-	#print("[SIM][SUMMON] new_id=%d group=%d idx=%d proto=%s" % [id, g, int(ctx.insert_index), String(u.data_proto_path)])
 	if on_summoned.is_valid():
 		on_summoned.call(id, g)
 	plan_intent(id)
+
+#func summon(ctx: SummonContext) -> void:
+	#if ctx == null or state == null:
+		#return
+	#if ctx.summon_data == null:
+		#push_warning("SimBattleAPI.summon: missing summon_data")
+		#return
+#
+	#var g := clampi(ctx.group_index, 0, 1)
+	#var source_id := int(ctx.source_id) if ("source_id" in ctx) else 0
+#
+	## --- Beat 1: SUMMON_WINDUP (new fades in at ghost slot) ---
+	#if writer != null:
+		#writer.emit_summon_windup(source_id, g, int(ctx.insert_index), 1, {
+			## optional, but useful if you want the director to know intent
+			#Keys.REASON: String(ctx.reason) if ("reason" in ctx) else ""
+		#})
+#
+	## Allocate + add unit
+	#var id := state.alloc_id()
+	#ctx.summon_data.combat_id = id
+#
+	#var u := CombatantState.new()
+	#u.id = id
+	#u.rng = RNG.new(RNGUtil.mix_seed(state.battle_seed, u.id))
+	#u.combatant_data = ctx.summon_data
+	#u.init_from_combatant_data(ctx.summon_data)
+	#if ctx.summon_data.resource_path != "":
+		#u.data_proto_path = String(ctx.summon_data.resource_path)
+#
+	#u.type = CombatantView.Type.ALLY if g == 0 else CombatantView.Type.ENEMY
+	#u.mortality = ctx.mortality
+	#state.add_unit(u, g, int(ctx.insert_index))
+#
+	## Emit SUMMONED (structural)
+	#if writer != null:
+		#var spec := {
+			#Keys.COMBATANT_NAME: String(ctx.summon_data.name),
+			#Keys.MAX_HEALTH: int(ctx.summon_data.max_health),
+			#Keys.HEALTH: int(ctx.summon_data.health),
+			#Keys.MAX_MANA: int(ctx.summon_data.max_mana),
+			#Keys.APM: int(ctx.summon_data.apm),
+			#Keys.APR: int(ctx.summon_data.apr),
+			#Keys.PROTO_PATH: String(ctx.summon_data.resource_path),
+			#Keys.ART_UID: String(ctx.summon_data.character_art_uid),
+			#Keys.ART_FACES_RIGHT: bool(ctx.summon_data.facing_right),
+			#Keys.HEIGHT: int(ctx.summon_data.height),
+			#Keys.COLOR_TINT: ctx.summon_data.color_tint as Color,
+			#Keys.MORTALITY: u.mortality,
+		#}
+		#var after_order_ids := PackedInt32Array(state.groups[g].order)
+		#writer.emit_summoned(id, g, int(ctx.insert_index), after_order_ids, String(u.data_proto_path), spec)
+#
+		## --- Beat 2: SUMMON_FOLLOWTHROUGH (layout moves into place) ---
+		#writer.emit_summon_followthrough(source_id, g, int(ctx.insert_index), 1, {
+			#Keys.SUMMONED_ID: int(id),               # so director can fade-in the correct view
+			#Keys.AFTER_ORDER_IDS: after_order_ids,   # so director can animate layout here
+		#})
+#
+	#ctx.summoned_id = id
+	#if on_summoned.is_valid():
+		#on_summoned.call(id, g)
+	#plan_intent(id)
+
+#func summon(ctx: SummonContext) -> void:
+	#if ctx == null or state == null:
+		#return
+	#if ctx.summon_data == null:
+		#push_warning("SimBattleAPI.summon: missing summon_data")
+		#return
+	#
+	#var id := state.alloc_id()
+	#ctx.summon_data.combat_id = id
+	#
+	#var u := CombatantState.new()
+	#u.id = id
+	#u.rng = RNG.new(RNGUtil.mix_seed(state.battle_seed, u.id))
+	#u.combatant_data = ctx.summon_data
+	#u.init_from_combatant_data(ctx.summon_data)
+	#if ctx.summon_data.resource_path != "":
+		#u.data_proto_path = String(ctx.summon_data.resource_path)
+	#
+	#var g := clampi(ctx.group_index, 0, 1)
+	#u.type = CombatantView.Type.ALLY if ctx.group_index == 0 else CombatantView.Type.ENEMY
+	#u.mortality = ctx.mortality
+	#state.add_unit(u, g, int(ctx.insert_index))
+	#var proto := String(u.data_proto_path)
+	#var spec := {}
+	#if ctx.summon_data != null:
+		#spec = {
+			#Keys.COMBATANT_NAME: String(ctx.summon_data.name),
+			#Keys.MAX_HEALTH: int(ctx.summon_data.max_health),
+			#Keys.HEALTH: int(ctx.summon_data.health),
+			#Keys.MAX_MANA: int(ctx.summon_data.max_mana),
+			#Keys.APM: int(ctx.summon_data.apm),
+			#Keys.APR: int(ctx.summon_data.apr),
+			#Keys.PROTO_PATH: String(ctx.summon_data.resource_path),
+			#Keys.ART_UID: String(ctx.summon_data.character_art_uid),
+			#Keys.ART_FACES_RIGHT: bool(ctx.summon_data.facing_right),
+			#Keys.HEIGHT: int(ctx.summon_data.height),
+			#Keys.COLOR_TINT: ctx.summon_data.color_tint as Color,
+			#Keys.MORTALITY: u.mortality,
+		#}
+	#var after_order_ids = PackedInt32Array(state.groups[g].order)
+	#if writer != null:
+		#writer.emit_summoned(id, g, int(ctx.insert_index), after_order_ids, proto, spec)
+	#
+	#ctx.summoned_id = id
+	#ctx.summoned_fighter = null # headless
+	##print("[SIM][SUMMON] new_id=%d group=%d idx=%d proto=%s" % [id, g, int(ctx.insert_index), String(u.data_proto_path)])
+	#if on_summoned.is_valid():
+		#on_summoned.call(id, g)
+	#plan_intent(id)
 
 
 func count_soulbound_in_group(group_index: int) -> int:
@@ -502,7 +628,7 @@ func count_soulbound_in_group(group_index: int) -> int:
 		var u: CombatantState = state.get_unit(int(id))
 		if u == null or !u.is_alive():
 			continue
-		
+		print("sim_battle_api.gd count_soulbound_in_group() cid: %s, mortality: %s" % [id, CombatantView.Mortality.keys()[u.mortality]])
 		if u.mortality == CombatantView.Mortality.SOULBOUND:
 			n += 1
 	return n

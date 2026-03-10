@@ -105,6 +105,7 @@ const ART_FACES_RIGHT := &"art_faces_right"
 const HEIGHT := &"height"
 const COLOR_TINT := &"color_tint"
 const PROTO_PATH := &"proto_path"
+const WINDUP_LAYOUT_COUNT := &"windup_layout_count"
 
 # Card mutated
 const REASON := &"reason"

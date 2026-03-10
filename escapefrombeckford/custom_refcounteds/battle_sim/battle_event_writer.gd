@@ -24,6 +24,8 @@ var _beat_marker_types := {
 	BattleEvent.Type.STATUS_FOLLOWTHROUGH: true,
 	BattleEvent.Type.DEATH_WINDUP: true,
 	BattleEvent.Type.DEATH_FOLLOWTHROUGH: true,
+	BattleEvent.Type.FADE_WINDUP: true,
+	#BattleEvent.Type.FADE_FOLLOWTHROUGH: true,
 }
 
 func _init(_log: BattleEventLog, _scopes: BattleScopeManager) -> void:
@@ -309,6 +311,28 @@ func emit_summon_followthrough(source_id: int, group_idx: int, insert_index: int
 		data[k] = extra[k]
 	return _append(BattleEvent.Type.SUMMON_FOLLOWTHROUGH, data)
 
+#func emit_summon_windup(source_id: int, group_idx: int, insert_index: int, count: int, extra := {}) -> int:
+	#var data := {
+		#Keys.SOURCE_ID: int(source_id),
+		#Keys.GROUP_INDEX: int(group_idx),
+		#Keys.INSERT_INDEX: int(insert_index),
+		#Keys.SUMMON_COUNT: int(count),
+	#}
+	#for k in extra.keys():
+		#data[k] = extra[k]
+	#return _append(BattleEvent.Type.SUMMON_WINDUP, data)
+#
+#func emit_summon_followthrough(source_id: int, group_idx: int, insert_index: int, count: int, extra := {}) -> int:
+	#var data := {
+		#Keys.SOURCE_ID: int(source_id),
+		#Keys.GROUP_INDEX: int(group_idx),
+		#Keys.INSERT_INDEX: int(insert_index),
+		#Keys.SUMMON_COUNT: int(count),
+	#}
+	#for k in extra.keys():
+		#data[k] = extra[k]
+	#return _append(BattleEvent.Type.SUMMON_FOLLOWTHROUGH, data)
+
 func emit_status_windup(source_id: int, target_id: int, status_id: StringName, intensity: int, duration: int, extra := {}) -> int:
 	var data := {
 		Keys.SOURCE_ID: int(source_id),
@@ -367,6 +391,37 @@ func emit_died(killer_id: int, dead_id: int, after_order: PackedInt32Array, reas
 	for k in extra.keys():
 		data[k] = extra[k]
 	return _append(BattleEvent.Type.DIED, data)
+
+func emit_fade_windup(target_id: int, reason: String = "fade", group_idx: int = -1) -> int:
+	return _append(BattleEvent.Type.FADE_WINDUP, {
+		Keys.TARGET_ID: int(target_id),
+		Keys.REASON: String(reason),
+		Keys.GROUP_INDEX: int(group_idx if group_idx != -1 else group_index),
+	})
+
+func emit_fade_followthrough(target_id: int, reason: String = "fade", group_idx: int = -1, after_order: PackedInt32Array = PackedInt32Array()) -> int:
+	return _append(BattleEvent.Type.FADE_FOLLOWTHROUGH, {
+		Keys.TARGET_ID: int(target_id),
+		Keys.REASON: String(reason),
+		Keys.GROUP_INDEX: int(group_idx if group_idx != -1 else group_index),
+		Keys.AFTER_ORDER_IDS: after_order,
+	})
+
+func emit_faded(
+	target_id: int,
+	before_order: PackedInt32Array,
+	after_order: PackedInt32Array,
+	reason: String = "fade",
+	group_idx: int = -1
+) -> int:
+	# Non-beat semantic marker that the unit is gone without death triggers.
+	return _append(BattleEvent.Type.FADED, {
+		Keys.TARGET_ID: int(target_id),
+		Keys.REASON: String(reason),
+		Keys.GROUP_INDEX: int(group_idx if group_idx != -1 else group_index),
+		Keys.BEFORE_ORDER_IDS: before_order,
+		Keys.AFTER_ORDER_IDS: after_order,
+	})
 
 func emit_summoned(summoned_id: int, group_idx: int, insert_index: int, after_order: PackedInt32Array, proto: String = "", spec: Dictionary = {}) -> int:
 	var data := {

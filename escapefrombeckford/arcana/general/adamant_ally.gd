@@ -41,10 +41,10 @@ func build_effect_live(ctx: ArcanumContext) -> SummonEffect:
 
 func build_effect_sim(ctx: ArcanumContext, player_id: int) -> SummonEffect:
 	var effect := SummonEffect.new()
-
+	
 	# default: summon into friendly group
 	effect.group_index = int(ctx.params.get(Keys.GROUP_INDEX, 0))
-
+	
 	# default insert_index: player’s index (requires BattleAPI helper)
 	var insert_index := int(ctx.params.get(Keys.INSERT_INDEX, -1))
 	if insert_index < 0:
@@ -52,7 +52,7 @@ func build_effect_sim(ctx: ArcanumContext, player_id: int) -> SummonEffect:
 		insert_index = ctx.api.get_rank_in_group(player_id)
 		if insert_index < 0:
 			insert_index = 0
-
+	effect.mortality = CombatantView.Mortality.SOULBOUND
 	effect.insert_index = insert_index
 	effect.summon_data = _build_summon_data()
 	return effect

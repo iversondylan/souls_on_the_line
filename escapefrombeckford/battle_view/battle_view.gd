@@ -88,7 +88,7 @@ func _playback_loop(gen: int) -> void:
 		if duration > 0.0:
 			await get_tree().create_timer(duration).timeout
 
-func get_or_create_combatant_view(cid: int, group_index: int, insert_index: int, is_player := false) -> CombatantView:
+func get_or_create_combatant_view(cid: int, group_index: int, insert_index: int, animate := false, is_player := false) -> CombatantView:
 	if cid <= 0:
 		return null
 	if combatants_by_cid.has(cid):
@@ -121,6 +121,7 @@ func get_or_create_combatant_view(cid: int, group_index: int, insert_index: int,
 	var ctx := GroupLayoutOrder.new()
 	ctx.group_index = group_index
 	ctx.new_combatant = combatant
+	ctx.animate_to_position = animate
 	group.register_combatant(ctx) # triggers layout
 	return combatant
 
@@ -165,9 +166,9 @@ func _note_for_beat(beat: Array[BattleEvent]) -> float:
 		BattleEvent.Type.ATTACK_WRAPUP:
 			return 8.0
 		BattleEvent.Type.SUMMON_WINDUP:
-			return 8.0
+			return 16.0
 		BattleEvent.Type.SUMMON_FOLLOWTHROUGH:
-			return 8.0
+			return 16.0
 		BattleEvent.Type.STATUS_WINDUP:
 			return 8.0
 		BattleEvent.Type.STATUS_FOLLOWTHROUGH:
@@ -176,6 +177,10 @@ func _note_for_beat(beat: Array[BattleEvent]) -> float:
 			return 8.0
 		BattleEvent.Type.DEATH_FOLLOWTHROUGH:
 			return 8.0
+		BattleEvent.Type.FADE_WINDUP:
+			return 0.0
+		BattleEvent.Type.FADE_FOLLOWTHROUGH:
+			return 0.0
 		_:
 			return 0.0
 

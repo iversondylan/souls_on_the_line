@@ -26,6 +26,7 @@ var _spec: Dictionary = {}
 
 var health : int = 1
 var max_health: int = 2
+var is_alive := true
 var mana: int = 3
 var max_mana: int = 3
 var anchor_position: Vector2# = Vector2(0, 0)
@@ -67,7 +68,7 @@ func _set_type(new_type: int) -> void:
 	if type == Type.PLAYER or type == Type.ALLY:
 		if !is_node_ready():
 			await ready
-		print("combatant_view _set_type() setting area left monitorable/monitoring to true")
+		#print("combatant_view _set_type() setting area left monitorable/monitoring to true")
 		area_left.monitorable = true
 		area_left.monitoring = true
 
@@ -468,7 +469,13 @@ func set_health(new_health: int, was_lethal: bool = false) -> void:
 	if was_lethal:
 		# later: death animation
 		pass
-	
 
 #func _set_character_art(_uid: String) -> void:
 	#character_art.texture = load(_uid) as Texture
+
+func _on_target_area_input_event(viewport: Node, event: InputEvent, shape_idx: int) -> void:
+	if event.is_action_pressed("mouse_click"):
+		# combatant_view.gd (wherever you emit clicked/hover)
+		if !is_alive:
+			return
+		Events.combatant_view_clicked.emit(self)

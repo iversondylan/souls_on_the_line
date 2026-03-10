@@ -85,7 +85,7 @@ func _get_x_for_slot(slot: float, layout_count: int) -> float:
 func _get_layout_nodes() -> Array[CombatantView]:
 	var out: Array[CombatantView] = []
 	for c in get_children():
-		if c is CombatantView:
+		if c is CombatantView and (c as CombatantView).is_alive:
 			out.append(c)
 	return out
 

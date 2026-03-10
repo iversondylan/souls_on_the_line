@@ -16,7 +16,7 @@ var prompt: SelectionPrompt
 func _ready() -> void:
 	Events.request_summon_replace.connect(on_request_summon_replace)
 	Events.request_discard_cards.connect(on_request_discard_cards)
-
+	
 	Events.combatant_view_clicked.connect(on_combatant_view_clicked)
 	Events.combatant_view_hovered.connect(on_combatant_view_hovered)
 	Events.combatant_view_unhovered.connect(on_combatant_view_unhovered)
@@ -136,9 +136,14 @@ func on_prompt_button_pressed() -> void:
 
 	active.on_primary()
 
-	# If context didn’t end itself, end it here.
-	if active != null:
-		end_active_context()
+	# These manage their own ending (either async or explicit)
+	# But I think actually all of them do
+	
+	#if mode == Mode.DISCARD or mode == Mode.SUMMON_REPLACE:
+		#return
+#
+	#if active != null:
+		#end_active_context()
 
 
 
@@ -228,8 +233,8 @@ func on_prompt_button_pressed() -> void:
 #func prompt_hide() -> void:
 	#prompt.hide_prompt()
 #
-#func prompt_set_enabled(on: bool) -> void:
-	#prompt.set_button_enabled(on)
+func prompt_set_enabled(on: bool) -> void:
+	prompt.set_button_enabled(on)
 #
 #
 ## ------------------------------------------------------------

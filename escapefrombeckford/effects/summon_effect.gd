@@ -6,6 +6,7 @@ const DEFAULT_SUMMON_DATA := "res://fighters/BasicClone/basic_clone_data.tres"
 var group_index: int = 0
 var insert_index: int = 0
 
+
 var summon_data: CombatantData
 var bound_card_data: CardData
 var mortality: CombatantView.Mortality

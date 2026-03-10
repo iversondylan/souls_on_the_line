@@ -199,6 +199,7 @@ func activate() -> bool:
 		var api := sim_host.get_main_api() if sim_host else null
 		if api != null:
 			var n := api.count_soulbound_in_group(0)
+			print("usable_card.gd activate() soulbound in group %s: %s" % [0, n])
 			if n >= MAX_SOULBOUND:
 				# Build the CardPlayRequest, but DO NOT submit it yet.
 				card_data.ensure_uid()
@@ -230,8 +231,7 @@ func _get_summon_preview_data() -> CombatantData:
 	# Preferred: ask the summon action for preview data
 	for a in card_data.actions:
 		if a is SummonAction:
-			if a.has_method("get_preview_summon_data"):
-				return a.get_preview_summon_data()
+			return a.get_preview_summon_data()
 	# Fallback: null => ghost will just be empty
 	return null
 

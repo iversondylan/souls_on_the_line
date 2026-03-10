@@ -50,6 +50,7 @@ background=""
 
 [gui]
 
+theme/default_font_multichannel_signed_distance_field=true
 theme/custom="uid://d2wc7fposrlqs"
 
 [input]
