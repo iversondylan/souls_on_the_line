@@ -66,6 +66,9 @@ const CARD_TYPE_S := &"card_type_s"
 const CARD_TARGET_TYPE_S := &"card_target_type_s"
 const TARGETS := &"targets"
 
+const AMOUNT := &"amount"
+const CHOSEN_UIDS := &"chosen_uids"
+
 # Arcana
 const ARCANUM_ID := &"arcanum_id"
 const PROC := &"proc"

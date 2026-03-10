@@ -11,6 +11,8 @@ var checkpoint_processor: CheckpointProcessor
 #var alloc_id: Callable = Callable() # () -> int
 var on_summoned: Callable = Callable() # (summoned_id: int, group_index: int) -> void
 
+var pending_discard: DiscardRequest = null
+
 var scopes: BattleScopeManager
 var writer: BattleEventWriter
 
@@ -228,6 +230,82 @@ func resolve_death(combat_id: int, reason := "", killer_id: int = 0) -> void:
 	# Run the death sequence (beats + final removal + DIED event)
 	SimDeathRunner.run(self, combat_id, killer_id, String(reason))
 
+
+# sim_battle_api.gd
+
+func count_summons_in_group(group_index: int) -> int:
+	if state == null:
+		return 0
+	group_index = clampi(group_index, 0, 1)
+
+	var n := 0
+	for id in state.groups[group_index].order:
+		var u: CombatantState = state.get_unit(int(id))
+		if u == null or !u.is_alive():
+			continue
+		# Match your old convention: team==1 means summon
+		if u.combatant_data != null and int(u.combatant_data.team) == 1:
+			n += 1
+	return n
+
+func fade_unit(combat_id: int, reason: String = "fade") -> void:
+	#if state == null or combat_id <= 0:
+		#return
+	##var u: CombatantState = state.get_unit(combat_id)
+	#if u == null or !u.is_alive():
+		#return
+
+	# Remove from order immediately, mark not alive.
+	#var g := int(u.team)
+	#var before := PackedInt32Array(state.groups[g].order)
+	#state.groups[g].remove(combat_id)
+	#u.alive = false
+	#var after := PackedInt32Array(state.groups[g].order)
+	###########
+	var u: CombatantState = state.get_unit(combat_id)
+	if u == null:
+		return
+	if !u.alive:
+		return
+	
+	var g := int(u.team)
+	var before := PackedInt32Array(state.groups[g].order)
+	# Beat 1: target goes dark
+	if writer != null:
+		writer.scope_begin(Scope.Kind.FADE, "fade_unit", combat_id)
+		writer.emit_fade_windup(combat_id, reason)
+	
+	# Finalize removal before followthrough (so layout can use new order)
+
+
+	# Beat 2: group re-layout
+	if writer != null:
+		writer.emit_fade_followthrough(combat_id, reason)
+	
+		u.alive = false
+	if g != -1:
+		state.groups[g].remove(combat_id)
+
+	var after_order_ids := PackedInt32Array(state.groups[g].order) if g != -1 else PackedInt32Array()
+	# Non-beat: actual "DIED" semantic marker
+	if writer != null:
+		writer.emit_faded(combat_id, before, after_order_ids, reason, g)
+		writer.scope_end()
+	## Optional but recommended: emit a specific event type so VIEW can animate fade.
+	#if writer != null:
+		## If you don’t want a new event type yet, you can use DEBUG with tags.
+		#writer.scope_begin(Scope.Kind.FADE, "fade_unit", combat_id)
+		#writer._append(BattleEvent.Type.DEBUG, {
+			#Keys.TARGET_ID: int(combat_id),
+			#Keys.GROUP_INDEX: int(g),
+			#Keys.REASON: String(reason),
+			#Keys.BEFORE_ORDER_IDS: before,
+			#Keys.AFTER_ORDER_IDS: after,
+		#})
+		#writer.scope_end()
+
+	# Important: do NOT call resolve_death() / SimDeathRunner.
+
 func apply_status(ctx: StatusContext) -> void:
 	#print("sim_battle_api.gd apply_status() id: ", ctx.status_id)
 	if ctx == null or state == null:
@@ -314,16 +392,7 @@ func _request_replan(cid: int) -> void:
 		return
 	ActionPlanner._ensure_ai_state_initialized(u)
 
-	## Don’t recurse while planning/acting.
-	#if bool(u.ai_state.get(ActionPlanner.IS_ACTING, false)):
-		#u.ai_state[&"replan_dirty"] = true
-		#return
-	#if bool(u.ai_state.get(&"planning_now", false)):
-		#u.ai_state[&"replan_dirty"] = true
-		#return
-
 	u.ai_state[&"replan_dirty"] = true
-	#print("_request_replan cid: %s, replan dirty: %s" % [cid, u.ai_state.get(&"replan_dirty", false)])
 
 func spawn_from_data(combatant_data: CombatantData, group_index: int, insert_index: int = -1, is_player := false) -> int:
 	if combatant_data == null or state == null:
@@ -333,6 +402,11 @@ func spawn_from_data(combatant_data: CombatantData, group_index: int, insert_ind
 	if is_player:
 		state.groups[FRIENDLY].player_id = id
 	var u := CombatantState.new()
+	if is_player:
+		u.type = CombatantView.Type.PLAYER
+	else:
+		u.type = CombatantView.Type.ALLY if group_index == 0 else CombatantView.Type.ENEMY
+	u.mortality = CombatantView.Mortality.MORTAL
 	u.id = id
 	u.rng = RNG.new(RNGUtil.mix_seed(state.battle_seed, u.id))
 	u.combatant_data = combatant_data
@@ -360,7 +434,7 @@ func spawn_from_data(combatant_data: CombatantData, group_index: int, insert_ind
 			Keys.ART_FACES_RIGHT: bool(combatant_data.facing_right),
 			Keys.HEIGHT: int(combatant_data.height),
 			Keys.COLOR_TINT: combatant_data.color_tint as Color,
-			Keys.MORTALITY: CombatantView.Mortality.MORTAL,
+			Keys.MORTALITY: int(u.mortality),
 		}
 		var after_order_ids = PackedInt32Array(state.groups[g].order)
 		writer.emit_spawned(id, g, int(insert_index), after_order_ids, proto, spec, is_player)
@@ -386,6 +460,8 @@ func summon(ctx: SummonContext) -> void:
 		u.data_proto_path = String(ctx.summon_data.resource_path)
 	
 	var g := clampi(ctx.group_index, 0, 1)
+	u.type = CombatantView.Type.ALLY if ctx.group_index == 0 else CombatantView.Type.ENEMY
+	u.mortality = ctx.mortality
 	state.add_unit(u, g, int(ctx.insert_index))
 	var proto := String(u.data_proto_path)
 	var spec := {}
@@ -402,7 +478,7 @@ func summon(ctx: SummonContext) -> void:
 			Keys.ART_FACES_RIGHT: bool(ctx.summon_data.facing_right),
 			Keys.HEIGHT: int(ctx.summon_data.height),
 			Keys.COLOR_TINT: ctx.summon_data.color_tint as Color,
-			Keys.MORTALITY: CombatantView.Mortality.SOULBOUND,
+			Keys.MORTALITY: u.mortality,
 		}
 	var after_order_ids = PackedInt32Array(state.groups[g].order)
 	if writer != null:
@@ -414,6 +490,22 @@ func summon(ctx: SummonContext) -> void:
 	if on_summoned.is_valid():
 		on_summoned.call(id, g)
 	plan_intent(id)
+
+
+func count_soulbound_in_group(group_index: int) -> int:
+	if state == null:
+		return 0
+	group_index = clampi(group_index, 0, 1)
+	
+	var n := 0
+	for id in state.groups[group_index].order:
+		var u: CombatantState = state.get_unit(int(id))
+		if u == null or !u.is_alive():
+			continue
+		
+		if u.mortality == CombatantView.Mortality.SOULBOUND:
+			n += 1
+	return n
 
 func resolve_move(ctx: MoveContext) -> void:
 	if ctx == null or state == null:
@@ -672,6 +764,38 @@ func flush_intent_refreshes() -> void:
 
 		# Re-emit SET_INTENT using current modifiers + current params
 		ActionPlanner.emit_current_intent_sim(self, cid)
+
+func has_pending_discard() -> bool:
+	return pending_discard != null
+
+func request_player_discard(req: DiscardRequest) -> void:
+	if req == null:
+		return
+	# If one is already pending, do NOT stack silently.
+	# Either ignore or overwrite; I recommend ignore + warn during dev.
+	if pending_discard != null:
+		push_warning("SimBattleAPI.request_player_discard(): discard already pending")
+		return
+
+	pending_discard = req
+
+	# Emit an event so VIEW can open the discard modal.
+	# You already have a DISCARD mode in the handler, so add an event type:
+	if writer != null:
+		writer.emit_discard_requested(req)
+
+func resolve_player_discard(selected_card_uids: Array[String]) -> void:
+	if pending_discard == null:
+		push_warning("SimBattleAPI.resolve_player_discard(): no pending discard")
+		return
+
+	var req := pending_discard
+	pending_discard = null
+
+	# TODO: mutate SIM hand/deck state here (whatever your SIM model is).
+	# For now, just emit a resolution event so playback is deterministic.
+	if writer != null:
+		writer.emit_discard_resolved(req, selected_card_uids)
 
 # --------------------------
 # Internal helpers

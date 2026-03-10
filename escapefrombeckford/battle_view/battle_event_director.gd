@@ -76,8 +76,10 @@ func on_event(e: EventPackage) -> void:
 			# old path expects discard and then sim_host.request_player_end() is already called.
 			# If you decide you want event-driven discard instead of Battle button handler:
 			Events.player_turn_completed.emit()
-			
-			#pass
+		BattleEvent.Type.DISCARD_REQUESTED:
+			_on_discard_requested(e)
+		BattleEvent.Type.DISCARD_RESOLVED:
+			pass
 		_:
 			# ignore for now
 			pass
@@ -353,6 +355,32 @@ func _on_death_followthrough(e: EventPackage) -> void:
 		ctx.order = arr
 		ctx.animate_to_position = true
 		battle_view.set_group_order(ctx)
+
+# battle_event_director.gd (add)
+func _on_discard_requested(e: EventPackage) -> void:
+	if e == null:
+		return
+	var d : Dictionary = e.event.data if e.event.data != null else {}
+	
+	var ctx := DiscardContext.new()
+	ctx.source_id = int(d.get(Keys.SOURCE_ID, 0))
+	ctx.amount = int(d.get(Keys.AMOUNT, 0))
+	ctx.card_uid = String(d.get(Keys.CARD_UID, ""))
+
+	# Completion callback routes back to SIM.
+	# NOTE: this stays VIEW-side; it just calls SIM API when user finishes.
+	var sim_host : SimHost = battle_view.sim_host if battle_view != null else null
+	ctx.on_done = func(chosen_uids: Array[String]) -> void:
+		if sim_host == null:
+			push_warning("DiscardContext.on_done: missing sim_host")
+			return
+		var api := sim_host.get_main_api()
+		if api == null:
+			push_warning("DiscardContext.on_done: missing sim api")
+			return
+		api.resolve_player_discard(chosen_uids)
+
+	Events.request_discard_cards.emit(ctx)
 
 func _on_scope_begin(_e: EventPackage) -> void:
 	#print("battle_event_director.gd _on_scope_begin()")

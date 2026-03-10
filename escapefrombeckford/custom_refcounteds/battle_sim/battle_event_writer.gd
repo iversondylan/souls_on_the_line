@@ -458,6 +458,23 @@ func emit_end_turn_pressed(player_id: int) -> void:
 		Keys.ACTOR_ID: int(player_id),
 	})
 
+func emit_discard_requested(req: DiscardRequest) -> int:
+	return _append(BattleEvent.Type.DISCARD_REQUESTED, {
+		Keys.SOURCE_ID: int(req.source_id),
+		Keys.AMOUNT: int(req.amount),
+		Keys.REASON: String(req.reason),
+		Keys.CARD_UID: String(req.card_uid),
+	})
+
+func emit_discard_resolved(req: DiscardRequest, chosen_uids: Array[String]) -> int:
+	return _append(BattleEvent.Type.DISCARD_RESOLVED, {
+		Keys.SOURCE_ID: int(req.source_id),
+		Keys.AMOUNT: int(req.amount),
+		Keys.REASON: String(req.reason),
+		Keys.CARD_UID: String(req.card_uid),
+		Keys.CHOSEN_UIDS: chosen_uids,
+	})
+
 func _append_manual(type: int, scope_id: int, parent_scope_id: int, scope_kind: int, data: Dictionary = {}) -> int:
 	if log == null:
 		return 0

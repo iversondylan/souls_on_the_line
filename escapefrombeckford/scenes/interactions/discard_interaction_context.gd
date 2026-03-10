@@ -145,8 +145,6 @@ func _auto_discard_all() -> void:
 	Events.hand_discard_animation_finished.connect(_on_discard_done, CONNECT_ONE_SHOT)
 	discard_ctx.actually_discarded = removed.size()
 	discard_ctx.hand.discard_cards(removed)
-	
-	
 
 func _on_hand_card_added(card: UsableCard) -> void:
 	if _resolving:
@@ -159,10 +157,10 @@ func _on_hand_card_added(card: UsableCard) -> void:
 	# If we already have it, ignore
 	if _cards.has(card):
 		return
-
+	
 	_cards.append(card)
 	_enroll_card(card)
-
+	
 	# Optional: if a draw pushes us to <= amount, you could auto-discard-all,
 	# but for Decisive Choice you want selection, so just update prompt.
 	_update_prompt()
@@ -177,3 +175,29 @@ func _enroll_card(card: UsableCard) -> void:
 	card.unhighlight()
 	card.selected = false
 	card.card_state_machine.request_state(CardState.State.SELECTION)
+
+# discard_interaction_context.gd (inside "confirm/finish" path)
+func _finish_discard(chosen_cards: Array[UsableCard]) -> void:
+	# 1) Convert to uids (deterministic identity)
+	var chosen_uids: Array[String] = []
+	for c in chosen_cards:
+		if c != null and is_instance_valid(c) and c.card_data != null:
+			c.card_data.ensure_uid()
+			chosen_uids.append(String(c.card_data.uid))
+	
+	# 2) Run UI discard animation / move cards to discard pile
+	# (You likely already do this)
+	handler.hand.discard_cards(chosen_cards)
+
+	# 3) When animation completes, call SIM callback then end context.
+	# If you already use Events.hand_discard_animation_finished, hook it.
+	var done := func():
+		if discard_ctx != null and discard_ctx.on_done.is_valid():
+			discard_ctx.on_done.call(chosen_uids)
+		handler.end_active_context()
+
+	# If your discard is instantaneous, just call done().
+	# Otherwise wait for the animation-finished signal.
+	if Events.hand_discard_animation_finished.is_connected(done):
+		Events.hand_discard_animation_finished.disconnect(done)
+	Events.hand_discard_animation_finished.connect(done, CONNECT_ONE_SHOT)

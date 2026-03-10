@@ -1,149 +1,116 @@
 # summon_replace_interaction_context.gd
-class_name SummonReplaceInteractionContext
-extends EscrowCardInteractionContext
-# EscrowCardInteractionContext provides:
-#   var card: UsableCard
-#   var card_ctx: CardActionContext
-#   var effect: Effect
 
-var skip_action: CardAction
+class_name SummonReplaceInteractionContext
+extends InteractionContext
+
+var card: UsableCard
+var req: CardPlayRequest
+var preview: SummonPreview
 
 var ghost: Node2D
-var candidates: Array[SummonedAlly] = []
+var candidates: Array[CombatantView] = []
 var resolving := false
-var insert_index := 0
-
 
 func enter() -> void:
 	resolving = false
+	handler.lock_for_modal()
 
-	# Safety: require a SummonEffect
-	var summon_effect := effect as SummonEffect
-	if summon_effect == null:
-		push_warning("SummonReplaceInteractionContext.enter(): effect is not SummonEffect")
-		# Bail safely
+	candidates.clear()
+	var bv := handler.battle.battle_view
+	if bv == null:
 		handler.end_active_context()
 		return
 
-	insert_index = summon_effect.insert_index
+	# Candidates: friendly SOULBOUND only
+	for v in bv.get_combatant_views_for_group(0):
+		if v == null or !is_instance_valid(v):
+			continue
+		if int(v.type) == int(CombatantView.Type.PLAYER):
+			continue
+		if int(v.mortality) == int(CombatantView.Mortality.SOULBOUND):
+			candidates.append(v)
 
-	handler.lock_for_modal()
-
-	# Candidates: summoned allies only
-	candidates.clear()
-	for f in handler.battle_scene.get_combatants_in_group(0):
-		if f is SummonedAlly and f.is_alive():
-			candidates.append(f)
-
-	# Single-button prompt: Cancel
 	handler.prompt_show("Choose a summon to replace.", "Cancel")
 
-	# Preview ghost + preview slot
-	ghost = handler.make_summon_ghost(summon_effect)
-	(handler.battle_scene.groups[0] as BattleGroupFriendly).set_preview(ghost, insert_index)
+	if preview != null:
+		ghost = handler.make_summon_ghost(preview)
+		bv.show_summon_preview_ghost(ghost, int(preview.insert_index), 0)
 
-	for a in candidates:
-		handler.set_candidate_selectable_visuals(a, true)
-
+	for v in candidates:
+		_set_candidate_mark(v, true)
 
 func exit() -> void:
-	# Clean preview + visuals
-	var friendly := handler.battle_scene.groups[0] as BattleGroupFriendly
-	friendly.clear_preview()
+	var bv := handler.battle.battle_view
+	if bv != null:
+		bv.clear_summon_preview_ghost()
 
-	if ghost != null and is_instance_valid(ghost):
-		ghost.queue_free()
 	ghost = null
 
-	for a in candidates:
-		handler.set_candidate_selectable_visuals(a, false)
+	for v in candidates:
+		_set_candidate_mark(v, false)
 	candidates.clear()
 
 	resolving = false
 	handler.unlock_from_modal()
 
-	# Restore pending glow after messing with fade marks
-	friendly._update_pending_turn_glow()
-
-
-# Called by BattleInteractionHandler when the single prompt button is pressed in this mode.
 func on_primary() -> void:
-	# If we're already resolving, ignore cancel.
-	# (Handler will still end the context if active != null; we prevent that by leaving active intact.)
 	if resolving:
 		return
-	# Do nothing else; handler will call end_active_context() after this.
+	# cancel => handler ends context
 
+func on_hover(v: CombatantView) -> void:
+	if _can_target(v):
+		v.show_targeted_arrow(true)
 
-func can_target(f: Fighter) -> bool:
-	return (f is SummonedAlly) and candidates.has(f)
+func on_unhover(v: CombatantView) -> void:
+	if _can_target(v):
+		v.show_targeted_arrow(false)
 
-
-func on_hover(f: Fighter) -> void:
-	if can_target(f):
-		f.show_targeted_arrow()
-
-
-func on_unhover(f: Fighter) -> void:
-	if can_target(f):
-		f.hide_targeted_arrow()
-
-
-func on_click(f: Fighter) -> void:
+func on_click(v: CombatantView) -> void:
 	if resolving:
 		return
-	if !can_target(f):
+	if !_can_target(v):
 		return
-	confirm(f as SummonedAlly)
+	_confirm(v)
 
+func _can_target(v: CombatantView) -> bool:
+	return v != null and is_instance_valid(v) and candidates.has(v)
 
-func confirm(chosen: SummonedAlly) -> void:
-	if chosen == null or !is_instance_valid(chosen):
+func _set_candidate_mark(v: CombatantView, on: bool) -> void:
+	if v == null or !is_instance_valid(v):
 		return
+	if v.has_method("set_fade_mark"):
+		v.set_fade_mark(on)
 
+func _confirm(chosen: CombatantView) -> void:
 	resolving = true
+	for v in candidates:
+		_set_candidate_mark(v, false)
 
-	# Turn off selectable visuals now
-	for a in candidates:
-		handler.set_candidate_selectable_visuals(a, false)
+	var t := handler.create_tween()
+	t.tween_property(chosen.character_art, "modulate:a", 0.0, 0.18)
+	t.finished.connect(func(): _finish_confirm(chosen), CONNECT_ONE_SHOT)
 
-	# Fade chosen out, then finish
-	var tween := handler.create_tween()
-	# If you ever rename this sprite, update here.
-	tween.tween_property(chosen.combatant.character_sprite, "modulate:a", 0.0, 0.18)
-	tween.finished.connect(func(): _finish_confirm(chosen), CONNECT_ONE_SHOT)
-
-
-func _finish_confirm(chosen: SummonedAlly) -> void:
+func _finish_confirm(chosen: CombatantView) -> void:
 	if chosen == null or !is_instance_valid(chosen):
-		# Something removed it mid-animation; just bail out cleanly.
 		handler.end_active_context()
 		return
-	
-	var friendly := handler.battle_scene.groups[0] as BattleGroupFriendly
-	
-	# Remove chosen via fade-path (not die())
-	friendly.combatant_faded(chosen)
-	
-	# Clear preview ghost so layout count stays correct
-	friendly.clear_preview()
-	if ghost != null and is_instance_valid(ghost):
-		ghost.queue_free()
-	ghost = null
 
-	# Execute summon effect + apply to card context
-	var summon_effect := effect as SummonEffect
-	if summon_effect != null:
-		summon_effect.execute(handler.battle_scene.api)
-		summon_effect.apply_to_card_context(card_ctx)
-	else:
-		push_warning("SummonReplaceInteractionContext._finish_confirm(): effect lost SummonEffect type")
+	# 1) SIM: fade chosen (no death triggers)
+	var api := handler.battle.sim_host.get_main_api()
+	if api != null:
+		api.fade_unit(int(chosen.cid), "summon_replace")
 
-	# Commit the rest of the card play (your preferred reusable path in UsableCard)
-	# Assumes you implemented this helper:
-	#   commit_play(ctx: CardActionContext, skip_action: CardAction, already_spent_mana: bool)
+	# 2) SIM: apply the summon request
+	var ok := handler.battle.sim_host.apply_player_card(req)
+	if !ok:
+		handler.end_active_context()
+		return
+
+	# 3) UI: spend mana + move card
 	if card != null and is_instance_valid(card):
-		card.commit_play(card_ctx, skip_action, true)
+		card.player_data.spend_mana(card.card_data)
+		Events.card_played.emit(card)
+		card._move_to_destination()
 
-	# Exit modal
 	handler.end_active_context()

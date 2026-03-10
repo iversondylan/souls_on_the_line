@@ -6,7 +6,8 @@ var id: int
 var combatant_data: CombatantData
 var team: int  # 0 friendly, 1 enemy
 var alive: bool = true
-
+var type: CombatantView.Type
+var mortality: CombatantView.Mortality
 # Stats (data-only)
 var name: String = ""
 var max_health: int = 0

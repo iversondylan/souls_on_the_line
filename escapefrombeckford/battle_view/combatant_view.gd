@@ -47,6 +47,11 @@ var _base_art_scale: Vector2 = Vector2.ONE
 var _base_art_pos: Vector2 = Vector2.ZERO
 var _base_cached := false
 
+var group_index: int = -1 # 0 friendly, 1 enemy
+
+func is_soulbound() -> bool:
+	return int(mortality) == int(Mortality.SOULBOUND)
+
 func _set_cid(new_cid: int) -> void:
 	cid = new_cid
 	if target_area:

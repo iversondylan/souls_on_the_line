@@ -11,9 +11,9 @@ func exit() -> void: pass
 func on_primary() -> void: pass
 
 # Optional hooks (safe no-ops)
-func on_hover(_f: Fighter) -> void: pass
-func on_unhover(_f: Fighter) -> void: pass
-func on_click(_f: Fighter) -> void: pass
+func on_hover(_f: CombatantView) -> void: pass
+func on_unhover(_f: CombatantView) -> void: pass
+func on_click(_f: CombatantView) -> void: pass
 
 func needs_more_selections() -> bool:
 	return true

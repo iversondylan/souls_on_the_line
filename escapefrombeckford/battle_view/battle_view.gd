@@ -20,7 +20,7 @@ var _playing := false
 var _playback_gen: int = 0
 
 var _projectiles_by_attacker: Dictionary = {} # int attacker_id -> Node2D projectile
-
+var _summon_preview_ghost: Node2D = null
 var combatants_by_cid: Dictionary = {}
 
 # Playback knobs
@@ -107,6 +107,7 @@ func get_or_create_combatant_view(cid: int, group_index: int, insert_index: int,
 	
 	#var cv := combatant as CombatantView
 	combatant.cid = cid
+	combatant.group_index = group_index
 	#cv.bind_assets(_assets)
 	combatant.bind_status_catalog(status_catalog)
 	# Optional insert
@@ -249,3 +250,36 @@ func get_summon_slot_position(group_index: int, slot_index: int) -> Vector2:
 	var slot := float(clampf(float(slot_index) + 0.5, 0.5, layout_count + 0.5))
 	var x := group._get_x_for_slot(slot, layout_count)
 	return group.global_position + Vector2(x, 0)
+
+func get_all_combatant_views() -> Array[CombatantView]:
+	var out: Array[CombatantView] = []
+	for k in combatants_by_cid.keys():
+		var v: CombatantView = combatants_by_cid[k]
+		if v != null and is_instance_valid(v):
+			out.append(v)
+	return out
+
+func get_combatant_views_for_group(group_index: int) -> Array[CombatantView]:
+	var out: Array[CombatantView] = []
+	for v in get_all_combatant_views():
+		if v != null and is_instance_valid(v) and int(v.group_index) == int(group_index):
+			out.append(v)
+	return out
+
+func show_summon_preview_ghost(ghost: Node2D, insert_index: int, group_index: int = 0) -> void:
+	clear_summon_preview_ghost()
+
+	if ghost == null or !is_instance_valid(ghost):
+		return
+
+	_summon_preview_ghost = ghost
+	add_child(_summon_preview_ghost)
+
+	# Position it using your slot math
+	var p := get_summon_slot_position(int(group_index), int(insert_index))
+	_summon_preview_ghost.global_position = p
+
+func clear_summon_preview_ghost() -> void:
+	if _summon_preview_ghost != null and is_instance_valid(_summon_preview_ghost):
+		_summon_preview_ghost.queue_free()
+	_summon_preview_ghost = null

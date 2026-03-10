@@ -7,19 +7,19 @@ static func run(api: SimBattleAPI, dead_id: int, killer_id: int = 0, reason: Str
 		return
 	if dead_id <= 0:
 		return
-
+	
 	var u: CombatantState = api.state.get_unit(dead_id)
 	if u == null:
 		return
 	if !u.alive:
 		return
-
+	
 	var g := int(u.team)
-
+	
 	# Beat 1: target goes dark
 	if api.writer != null:
 		api.writer.emit_death_windup(killer_id, dead_id, reason, g)
-
+	
 	# Finalize removal before followthrough (so layout can use new order)
 	u.alive = false
 	if g != -1:

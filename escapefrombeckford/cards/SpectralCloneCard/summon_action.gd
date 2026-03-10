@@ -9,6 +9,7 @@ func build_effect(ctx: CardActionContext) -> SummonEffect:
 	#effect.battle_scene = ctx.battle_scene
 	effect.insert_index = ctx.resolved_target.insert_index
 	effect.summon_data = _build_clone_data(ctx)
+	effect.mortality = CombatantView.Mortality.SOULBOUND
 	effect.sound = sound
 	if ctx.card_data and not ctx.card_data.deplete:
 		effect.bound_card_data = ctx.card_data
@@ -39,6 +40,7 @@ func activate_sim(ctx: CardActionContextSim) -> bool:
 	sctx.group_index = 0 # friendly
 	sctx.insert_index = insert_index
 	sctx.summon_data = _build_clone_data_sim() # same duplicate/init
+	sctx.mortality = CombatantView.Mortality.SOULBOUND
 	ctx.api.summon(sctx)
 
 	if sctx.summoned_id > 0:

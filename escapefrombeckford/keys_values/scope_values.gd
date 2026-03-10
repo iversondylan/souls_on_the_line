@@ -16,5 +16,7 @@ enum Kind {
 	ARCANA,
 	ARCANUM,
 	STRIKE,
-	HIT
+	HIT,
+	DEATH,
+	FADE,
 }

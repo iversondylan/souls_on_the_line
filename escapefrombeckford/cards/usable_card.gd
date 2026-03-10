@@ -2,6 +2,8 @@
 
 class_name UsableCard extends Node2D
 
+const MAX_SOULBOUND := 3
+
 signal card_fan_requested(which_usable_card: UsableCard)
 signal mouse_entered(usablecard: UsableCard)
 signal mouse_exited(usablecard: UsableCard)
@@ -182,7 +184,7 @@ func get_cost() -> Array[int]:
 	return [card_data.cost_red, card_data.cost_green, card_data.cost_blue]
 
 func activate() -> bool:
-	if card_data == null or player_data == null:# or battle_scene == null:
+	if card_data == null or player_data == null:
 		return false
 
 	var resolved_view := resolve_targets(targets)
@@ -192,15 +194,46 @@ func activate() -> bool:
 	if !player_data.can_play_card(card_data):
 		return false
 
-	# SIM commit (source of truth)
+	# --- Summon cap gate (SIM/VIEW) ---
+	if int(card_data.card_type) == int(CardData.CardType.SUMMON):
+		var api := sim_host.get_main_api() if sim_host else null
+		if api != null:
+			var n := api.count_soulbound_in_group(0)
+			if n >= MAX_SOULBOUND:
+				# Build the CardPlayRequest, but DO NOT submit it yet.
+				card_data.ensure_uid()
+
+				var req := CardPlayRequest.new()
+				req.source_id = int(player_data.combat_id)
+				req.card = card_data
+				req.target_ids = resolved_view.fighter_ids
+				req.insert_index = resolved_view.insert_index
+
+				# Build preview info for the modal (ghost visuals + insert idx).
+				var preview := SummonPreview.new()
+				preview.insert_index = int(resolved_view.insert_index)
+				preview.summon_data = _get_summon_preview_data() # implement from your SummonAction/card authoring
+
+				Events.request_summon_replace.emit(self, req, preview)
+				return true
+
+	# --- Normal path: commit to SIM immediately ---
 	if !activate_sim_from_resolved_view(resolved_view):
 		return false
 
-	# Spend mana / discard visuals still live-ui concerns
 	player_data.spend_mana(card_data)
 	Events.card_played.emit(self)
 	_move_to_destination()
 	return true
+
+func _get_summon_preview_data() -> CombatantData:
+	# Preferred: ask the summon action for preview data
+	for a in card_data.actions:
+		if a is SummonAction:
+			if a.has_method("get_preview_summon_data"):
+				return a.get_preview_summon_data()
+	# Fallback: null => ghost will just be empty
+	return null
 
 func activate_sim_from_resolved_view(resolved_view: CardResolvedTargetView) -> bool:
 	if sim_host == null:
@@ -214,6 +247,40 @@ func activate_sim_from_resolved_view(resolved_view: CardResolvedTargetView) -> b
 	req.target_ids = resolved_view.fighter_ids
 	req.insert_index = resolved_view.insert_index
 	return sim_host.apply_player_card(req)
+
+#func activate() -> bool:
+	#if card_data == null or player_data == null:# or battle_scene == null:
+		#return false
+#
+	#var resolved_view := resolve_targets(targets)
+	#if resolved_view.fighter_ids.is_empty() and resolved_view.areas.is_empty():
+		#return false
+#
+	#if !player_data.can_play_card(card_data):
+		#return false
+#
+	## SIM commit (source of truth)
+	#if !activate_sim_from_resolved_view(resolved_view):
+		#return false
+#
+	## Spend mana / discard visuals still live-ui concerns
+	#player_data.spend_mana(card_data)
+	#Events.card_played.emit(self)
+	#_move_to_destination()
+	#return true
+#
+#func activate_sim_from_resolved_view(resolved_view: CardResolvedTargetView) -> bool:
+	#if sim_host == null:
+		#return false
+#
+	#card_data.ensure_uid()
+#
+	#var req := CardPlayRequest.new()
+	#req.source_id = int(player_data.combat_id)
+	#req.card = card_data
+	#req.target_ids = resolved_view.fighter_ids
+	#req.insert_index = resolved_view.insert_index
+	#return sim_host.apply_player_card(req)
 
 #func activate() -> bool:
 	## --- basic validation (UI-side) ---
