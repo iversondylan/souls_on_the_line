@@ -129,8 +129,6 @@ func _commit_selected() -> void:
 	discard_ctx.actually_discarded = removed.size()
 	
 	discard_ctx.hand.discard_cards(removed)
-	
-	
 
 func _on_discard_done() -> void:
 	Events.discard_finished.emit(discard_ctx)

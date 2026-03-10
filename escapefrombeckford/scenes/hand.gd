@@ -526,3 +526,11 @@ func _clear_hover_visuals() -> void:
 		card.selected = false
 		card.reset_visuals()
 	currently_selected_card_index = -1
+
+func _get_selected_uids() -> Array[String]:
+	var out: Array[String] = []
+	if selected_card == null or !is_instance_valid(selected_card) or selected_card.card_data == null:
+		return []
+	selected_card.card_data.ensure_uid()
+	out.append(String(selected_card.card_data.uid))
+	return out

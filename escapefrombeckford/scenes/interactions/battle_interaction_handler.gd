@@ -1,3 +1,5 @@
+# battle_interaction_handler.gd
+
 class_name BattleInteractionHandler
 extends Node
 
@@ -13,11 +15,11 @@ var prompt: SelectionPrompt
 
 func _ready() -> void:
 	Events.request_summon_replace.connect(on_request_summon_replace)
-	#Events.request_discard_cards.connect(on_request_discard_cards)
+	Events.request_discard_cards.connect(on_request_discard_cards)
+
 	Events.combatant_view_clicked.connect(on_combatant_view_clicked)
 	Events.combatant_view_hovered.connect(on_combatant_view_hovered)
 	Events.combatant_view_unhovered.connect(on_combatant_view_unhovered)
-
 	Events.selection_prompt_button_pressed.connect(on_prompt_button_pressed)
 
 func setup(_battle: Battle) -> void:
@@ -84,6 +86,22 @@ func make_summon_ghost(preview: SummonPreview) -> Node2D:
 	ghost.z_index = 5
 	return ghost
 
+func on_request_discard_cards(ctx: DiscardContext) -> void:
+	if mode != Mode.NORMAL:
+		return
+	if ctx == null:
+		return
+
+	# Fill in refs the DiscardInteractionContext expects
+	ctx.hand = hand
+	# If you keep deck on Battle and you need it later:
+	ctx.deck = battle.deck
+	ctx.battle = battle
+
+	var c := DiscardInteractionContext.new()
+	c.discard_ctx = ctx
+	begin(c, Mode.DISCARD)
+
 func on_request_summon_replace(card: UsableCard, req: CardPlayRequest, preview: SummonPreview) -> void:
 	if mode != Mode.NORMAL:
 		return
@@ -121,6 +139,8 @@ func on_prompt_button_pressed() -> void:
 	# If context didn’t end itself, end it here.
 	if active != null:
 		end_active_context()
+
+
 
 ## battle_interaction_handler.gd
 #class_name BattleInteractionHandler
