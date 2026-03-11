@@ -43,16 +43,22 @@ var _player_id: int = 0
 var _cursor_cid: int = 0
 var _player_start_of_turn_fired: bool = false
 var _start_of_combat_fired: bool = false
+var _friendly_post_enemy: bool = false
+var ended_friendly_post_enemy: bool = false
 
 var dbg := false
 
 func _init(_host: TurnEngineHost) -> void:
 	host = _host
 
-func start_group_turn(group_index: int, start_at_player := false) -> void:
-	if dbg: print("turn_engine_core.gd start_group_turn() group index: %s, " % [group_index])
+func start_group_turn(group_index: int, start_at_player := false, friendly_post_enemy := false) -> void:
+	if dbg: print("turn_engine_core.gd start_group_turn() group=%s start_at_player=%s post_enemy=%s" % [group_index, start_at_player, friendly_post_enemy])
+
 	active_group_index = group_index
 	_start_at_player = start_at_player
+	_friendly_post_enemy = friendly_post_enemy
+	ended_friendly_post_enemy = false
+
 	_turn_token += 1
 
 	phase = Phase.IDLE
@@ -78,6 +84,36 @@ func start_group_turn(group_index: int, start_at_player := false) -> void:
 			return
 
 	_advance_to_next_actor()
+
+#func start_group_turn(group_index: int, start_at_player := false) -> void:
+	#if dbg: print("turn_engine_core.gd start_group_turn() group index: %s, " % [group_index])
+	#active_group_index = group_index
+	#_start_at_player = start_at_player
+	#_turn_token += 1
+#
+	#phase = Phase.IDLE
+	#current_actor_id = 0
+	#_running_actor = false
+#
+	#_queue = PackedInt32Array()
+	#_turns_taken.clear()
+	#_restore_allowed.clear()
+	#_queue_dirty = true
+	#_cursor_cid = 0
+#
+	#if active_group_index == 0:
+		#_player_id = host.get_player_id()
+		#_player_start_of_turn_fired = false
+#
+		## Only once per fight
+		#if _start_at_player and !_start_of_combat_fired:
+			#_start_of_combat_fired = true
+			#_request_arcana(ArcanaProc.START_OF_COMBAT, func():
+				#_advance_to_next_actor()
+			#)
+			#return
+#
+	#_advance_to_next_actor()
 
 func notify_actor_done(combat_id: int) -> void:
 	if dbg: print("turn_engine_core.gd notify_actor_done() cid: %s" % [combat_id])
@@ -269,8 +305,11 @@ func _reset() -> void:
 	_cursor_cid = 0
 
 func _end_group_turn() -> void:
-	if dbg: print("turn_engine_core.gd _end_group_turn()")
 	var idx := active_group_index
+	if idx == 0:
+		ended_friendly_post_enemy = _friendly_post_enemy
+	else:
+		ended_friendly_post_enemy = false
 	_reset()
 	group_turn_ended.emit(idx)
 
@@ -357,15 +396,15 @@ func _get_desired_order_ids(group_index: int) -> PackedInt32Array:
 
 		var out := PackedInt32Array()
 
-		if _start_at_player:
-			# Player + everyone behind
+		if !_friendly_post_enemy:
 			out.append(p)
 			for i in range(player_idx + 1, order.size()):
 				out.append(order[i])
-		else:
-			for i in range(0, order.size()):
-				out.append(order[i])
+			return out
 
+		# Post-enemy: everyone in front of player
+		for i in range(0, player_idx):
+			out.append(order[i])
 		return out
 
 	# Enemy: optionally cursor-based (ID-based)

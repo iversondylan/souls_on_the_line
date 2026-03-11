@@ -12,9 +12,11 @@ class_name CombatantView extends Node2D
 @onready var status_view_grid: StatusViewGrid = $StatusViewGrid
 @onready var target_area: CombatantTargetArea = $TargetArea
 @onready var area_left: CombatantAreaLeft = $AreaLeft
+@onready var pending_turn_glow: Sprite2D = $PendingTurnGlow
 
 enum Type {ALLY, ENEMY, PLAYER}
 enum Mortality {MORTAL, SOULBOUND, DEPLETE}
+enum TurnStatus { NONE, TURN_PENDING, TURN_ACTIVE }
 var type: Type : set = _set_type
 var mortality: Mortality = Mortality.MORTAL
 var display_name: String = ""
@@ -134,7 +136,20 @@ func _apply_stats_from_spec() -> void:
 	# health_bar.update_health_from_numbers(hp, max_hp) # adapt to your API
 	health_bar.update_health_view(max_health, health)
 
+func set_pending_turn_glow(status: TurnStatus) -> void:
+	match status:
+		TurnStatus.TURN_ACTIVE:
+			pending_turn_glow.show()
+			# Unmodulated
+			pending_turn_glow.modulate = Color(1.0, 0.65, 0.25)
 
+		TurnStatus.TURN_PENDING:
+			pending_turn_glow.show()
+			# Cool it toward blue while preserving intensity
+			pending_turn_glow.modulate = Color(0.45, 0.65, 1.0)
+
+		TurnStatus.NONE:
+			pending_turn_glow.hide()
 
 func on_focus(order: FocusOrder) -> void:
 	var involved := false

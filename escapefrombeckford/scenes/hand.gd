@@ -192,13 +192,6 @@ func _draw_first_hand_with_summon_guarantee(n_cards: int) -> void:
 	_is_drawing = false
 	Events.hand_drawn.emit()
 
-func reserve_summon_card(usable_card: UsableCard) -> void:
-	if usable_card == null or !is_instance_valid(usable_card):
-		return
-	usable_card.queue_free()
-	# no discard addition for reserve
-	reposition_hand_cards()
-
 func discard_card(usable_card: UsableCard) -> void:
 	if usable_card == null or !is_instance_valid(usable_card):
 		return
@@ -533,10 +526,13 @@ func _clear_hover_visuals() -> void:
 		card.reset_visuals()
 	currently_selected_card_index = -1
 
-#func _get_selected_uids() -> Array[String]:
-	#var out: Array[String] = []
-	#if selected_card == null or !is_instance_valid(selected_card) or selected_card.card_data == null:
-		#return []
-	#selected_card.card_data.ensure_uid()
-	#out.append(String(selected_card.card_data.uid))
-	#return out
+func reserve_summon_card(usable_card: UsableCard) -> void:
+	if usable_card == null or !is_instance_valid(usable_card):
+		return
+
+	# NEW: stash CardData in deck reserve
+	if deck != null and usable_card.card_data != null:
+		deck.reserve_summon_card(usable_card.card_data)
+
+	usable_card.queue_free()
+	reposition_hand_cards()

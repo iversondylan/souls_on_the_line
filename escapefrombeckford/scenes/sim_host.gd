@@ -102,7 +102,11 @@ func init_from_seeds(battle_seed: int, run_seed: int) -> void:
 	main.api.on_summoned = func(summoned_id: int, group_index: int) -> void:
 		if turn_engine != null:
 			turn_engine.notify_summon_added(int(summoned_id), int(group_index))
-
+	main.api.on_unit_removed = func(cid: int, group_index: int, reason: String) -> void:
+		if turn_engine != null:
+			turn_engine.notify_actor_removed(int(cid))
+			# optional: you can also force a pending publish immediately
+			# turn_engine._publish_pending_view()  # if you expose a method; otherwise let notify_actor_removed handle it
 	main_state_initialized.emit()
 
 func ensure_initialized() -> void:
@@ -163,7 +167,7 @@ func seed_arcana_from_ids(ids: Array[StringName]) -> void:
 			#str(main_state.arcana.list.map(func(e): return String(e.id)))
 		#])
 
-func start_group_turn(group_index: int, start_at_player := false) -> void:
+func start_group_turn(group_index: int, start_at_player := false, friendly_post_enemy := false) -> void:
 	ensure_initialized()
 
 	if turn_engine == null:
@@ -173,34 +177,54 @@ func start_group_turn(group_index: int, start_at_player := false) -> void:
 		turn_engine.actor_requested.connect(_on_sim_actor_requested)
 		turn_engine.player_begin_requested.connect(_on_sim_player_begin_requested)
 		turn_engine.player_end_requested.connect(_on_sim_player_end_requested)
+		turn_engine.pending_view_changed.connect(_on_pending_view_changed)
 
 	# NOTE: starting at player should only occur on the first turn of the battle
 	# but I don't know if this is the right solution
 	if start_at_player:
 		turn_engine.reset_for_new_battle()
-	
+
 	if main != null and main.api != null and main.api.writer != null:
 		main.api.writer.set_turn_context(turn_engine._turn_token, group_index, 0)
 		main.api.writer.scope_begin(Scope.Kind.GROUP_TURN, "group=%d" % group_index, 0)
 		main.api.writer.emit_group_turn_begin(group_index)
+
 	if main != null and main.api != null:
 		main.api.on_group_turn_begin(group_index)
-	
-	turn_engine.start_group_turn(group_index, start_at_player)
+
+	turn_engine.start_group_turn(group_index, start_at_player, friendly_post_enemy)
 
 func _on_sim_group_turn_ended(gi: int) -> void:
-	
 	if main != null and main.api != null:
 		main.api.on_group_turn_end(gi)
 
 	if main != null and main.api != null and main.api.writer != null:
 		main.api.writer.emit_group_turn_end(gi)
 		main.api.writer.scope_end() # group_turn
-	
+
+	# --- NEW ROUND SCHEDULING ---
 	if gi == 0:
-		start_group_turn(1, false) # enemy group
-	else:
-		start_group_turn(0, false)  # friendly group, start at player
+		# Friendly ended. Decide whether we just finished pre or post.
+		var finished_post : bool = (turn_engine != null and turn_engine.ended_friendly_post_enemy)
+
+		if !finished_post:
+			# finished friendly PRE -> go to enemies
+			start_group_turn(1, false)
+		else:
+			# finished friendly POST -> start next round friendly PRE
+			start_group_turn(0, false, false)
+		return
+
+	# gi == 1 (enemy ended) -> go to friendly POST
+	start_group_turn(0, false, true)
+
+func _on_pending_view_changed(active_id: int, pending_ids: PackedInt32Array) -> void:
+	if main == null or main.api == null or main.api.writer == null:
+		return
+	# Make sure the writer's context is up-to-date for group/turn.
+	# (It should be, but this is cheap & safe.)
+	main.api.writer.set_turn_context(turn_engine._turn_token, turn_engine.active_group_index, int(active_id))
+	main.api.writer.emit_turn_status(int(active_id), pending_ids, int(turn_engine.active_group_index))
 
 func _on_sim_player_begin_requested(token: int) -> void:
 	var player_id := turn_engine_host_sim.get_player_id()

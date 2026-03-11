@@ -18,6 +18,8 @@ const ORDER_IDS := &"order_ids"
 const GROUPS := &"groups" # maybe
 const GROUP_0 := &"group_0"
 const GROUP_1 := &"group_1"
+const ACTIVE_ID := &"active_id"
+const PENDING_IDS := &"pending_ids"
 
 # for single instances of damage and HITS:
 const TARGET_ID := &"target_id"
@@ -106,6 +108,8 @@ const HEIGHT := &"height"
 const COLOR_TINT := &"color_tint"
 const PROTO_PATH := &"proto_path"
 const WINDUP_LAYOUT_COUNT := &"windup_layout_count"
+const WINDUP_ORDER_IDS := &"windup_order_ids"
+const REPLACED_ID := &"replaced_id" # optional, useful for director FX pairing
 
 # Card mutated
 const REASON := &"reason"

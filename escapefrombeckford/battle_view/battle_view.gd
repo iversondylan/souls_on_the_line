@@ -284,6 +284,13 @@ func show_summon_preview_ghost(ghost: Node2D, insert_index: int, group_index: in
 	var p := get_summon_slot_position(int(group_index), int(insert_index))
 	_summon_preview_ghost.global_position = p
 
+func get_summon_slot_position_for_layout_count(group_index: int, insert_index: int, layout_count: int) -> Vector2:
+	var group: GroupView = friendly_group if group_index == 0 else enemy_group
+
+	var slot := float(clampf(float(insert_index) + 0.5, 0.5, float(layout_count) + 0.5))
+	var x := group._get_x_for_slot(slot, layout_count)
+	return group.global_position + Vector2(x, 0)
+
 func clear_summon_preview_ghost() -> void:
 	if _summon_preview_ghost != null and is_instance_valid(_summon_preview_ghost):
 		_summon_preview_ghost.queue_free()

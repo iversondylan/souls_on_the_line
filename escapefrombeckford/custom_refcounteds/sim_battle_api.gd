@@ -10,7 +10,7 @@ var state: BattleState
 var checkpoint_processor: CheckpointProcessor
 #var alloc_id: Callable = Callable() # () -> int
 var on_summoned: Callable = Callable() # (summoned_id: int, group_index: int) -> void
-
+var on_unit_removed: Callable = Callable() # (combat_id: int, group_index: int, reason: String) -> void
 var pending_discard: DiscardRequest = null
 
 var scopes: BattleScopeManager
@@ -227,8 +227,10 @@ func resolve_death(combat_id: int, reason := "", killer_id: int = 0) -> void:
 	if !u.alive:
 		return
 	
+	_maybe_release_soulbound_reserve(u, "fade:" + reason)
 	# Run the death sequence (beats + final removal + DIED event)
 	SimDeathRunner.run(self, combat_id, killer_id, String(reason))
+	
 
 
 # sim_battle_api.gd
@@ -252,7 +254,7 @@ func fade_unit(combat_id: int, reason: String = "fade") -> void:
 	var u: CombatantState = state.get_unit(combat_id)
 	if u == null or !u.alive:
 		return
-
+	_maybe_release_soulbound_reserve(u, "fade:" + reason)
 	var g := int(u.team)
 	var before := PackedInt32Array(state.groups[g].order)
 
@@ -260,41 +262,31 @@ func fade_unit(combat_id: int, reason: String = "fade") -> void:
 		writer.scope_begin(Scope.Kind.FADE, "fade_unit", combat_id)
 		writer.emit_fade_windup(combat_id, reason, g)
 
-	# Remove from order now (so SUMMON_FOLLOWTHROUGH can lay out the final order later)
+	# Mutate state immediately (VIEW will animate against events)
 	u.alive = false
 	if g != -1:
 		state.groups[g].remove(combat_id)
+	if on_unit_removed.is_valid():
+		on_unit_removed.call(int(combat_id), int(g), "fade:" + String(reason))
 	var after_order_ids := PackedInt32Array(state.groups[g].order) if g != -1 else PackedInt32Array()
 
 	if writer != null:
+		writer.emit_fade_followthrough(combat_id, reason, g, after_order_ids)
 		writer.emit_faded(combat_id, before, after_order_ids, reason, g)
 		writer.scope_end()
 
-#func fade_unit(combat_id: int, reason: String = "fade") -> void:
-	#var u: CombatantState = state.get_unit(combat_id)
-	#if u == null:
-		#return
-	#if !u.alive:
-		#return
-	#
-	#var g := int(u.team)
-	#var before := PackedInt32Array(state.groups[g].order)
-	#
-	#if writer != null:
-		#writer.scope_begin(Scope.Kind.FADE, "fade_unit", combat_id)
-		#writer.emit_fade_windup(combat_id, reason, g)
-	#
-	## Finalize removal before followthrough (so layout can use new order)
-	#u.alive = false
-	#if g != -1:
-		#state.groups[g].remove(combat_id)
-	#
-	#var after_order_ids := PackedInt32Array(state.groups[g].order) if g != -1 else PackedInt32Array()
-	#
-	#if writer != null:
-		#writer.emit_fade_followthrough(combat_id, reason, g, after_order_ids)
-		#writer.emit_faded(combat_id, before, after_order_ids, reason, g)
-		#writer.scope_end()
+func _maybe_release_soulbound_reserve(u: CombatantState, reason: String) -> void:
+	if u == null:
+		return
+	if int(u.mortality) != int(CombatantView.Mortality.SOULBOUND):
+		return
+	var uid := String(u.bound_card_uid) if ("bound_card_uid" in u) else ""
+	if uid == "":
+		return
+	if writer != null:
+		writer.emit_summon_reserve_released(int(u.id), uid, reason)
+	# prevent double-release
+	u.bound_card_uid = ""
 
 func apply_status(ctx: StatusContext) -> void:
 	#print("sim_battle_api.gd apply_status() id: ", ctx.status_id)
@@ -449,18 +441,21 @@ func summon(ctx: SummonContext) -> void:
 	var windup_order := ctx.windup_order_ids
 	if windup_order == null or windup_order.is_empty():
 		windup_order = PackedInt32Array(state.groups[g].order)
-
+		
+	# Allocate + add unit
+	var id := state.alloc_id()
+	ctx.summon_data.combat_id = id
+	
 	# --- Beat 1: SUMMON_WINDUP ---
 	if writer != null:
 		writer.emit_summon_windup(source_id, g, int(ctx.insert_index), 1, {
+			Keys.SUMMONED_ID: int(id),
 			Keys.BEFORE_ORDER_IDS: windup_order,      # <= critical
 			Keys.WINDUP_LAYOUT_COUNT: windup_order.size(),
 			Keys.REASON: String(ctx.reason) if ("reason" in ctx) else ""
 		})
 
-	# Allocate + add unit
-	var id := state.alloc_id()
-	ctx.summon_data.combat_id = id
+	
 
 	var u := CombatantState.new()
 	u.id = id
@@ -469,7 +464,8 @@ func summon(ctx: SummonContext) -> void:
 	u.init_from_combatant_data(ctx.summon_data)
 	if ctx.summon_data.resource_path != "":
 		u.data_proto_path = String(ctx.summon_data.resource_path)
-
+	
+	u.bound_card_uid = String(ctx.bound_card_uid)
 	u.type = CombatantView.Type.ALLY if g == 0 else CombatantView.Type.ENEMY
 	u.mortality = ctx.mortality
 	state.add_unit(u, g, int(ctx.insert_index))
@@ -503,120 +499,6 @@ func summon(ctx: SummonContext) -> void:
 	if on_summoned.is_valid():
 		on_summoned.call(id, g)
 	plan_intent(id)
-
-#func summon(ctx: SummonContext) -> void:
-	#if ctx == null or state == null:
-		#return
-	#if ctx.summon_data == null:
-		#push_warning("SimBattleAPI.summon: missing summon_data")
-		#return
-#
-	#var g := clampi(ctx.group_index, 0, 1)
-	#var source_id := int(ctx.source_id) if ("source_id" in ctx) else 0
-#
-	## --- Beat 1: SUMMON_WINDUP (new fades in at ghost slot) ---
-	#if writer != null:
-		#writer.emit_summon_windup(source_id, g, int(ctx.insert_index), 1, {
-			## optional, but useful if you want the director to know intent
-			#Keys.REASON: String(ctx.reason) if ("reason" in ctx) else ""
-		#})
-#
-	## Allocate + add unit
-	#var id := state.alloc_id()
-	#ctx.summon_data.combat_id = id
-#
-	#var u := CombatantState.new()
-	#u.id = id
-	#u.rng = RNG.new(RNGUtil.mix_seed(state.battle_seed, u.id))
-	#u.combatant_data = ctx.summon_data
-	#u.init_from_combatant_data(ctx.summon_data)
-	#if ctx.summon_data.resource_path != "":
-		#u.data_proto_path = String(ctx.summon_data.resource_path)
-#
-	#u.type = CombatantView.Type.ALLY if g == 0 else CombatantView.Type.ENEMY
-	#u.mortality = ctx.mortality
-	#state.add_unit(u, g, int(ctx.insert_index))
-#
-	## Emit SUMMONED (structural)
-	#if writer != null:
-		#var spec := {
-			#Keys.COMBATANT_NAME: String(ctx.summon_data.name),
-			#Keys.MAX_HEALTH: int(ctx.summon_data.max_health),
-			#Keys.HEALTH: int(ctx.summon_data.health),
-			#Keys.MAX_MANA: int(ctx.summon_data.max_mana),
-			#Keys.APM: int(ctx.summon_data.apm),
-			#Keys.APR: int(ctx.summon_data.apr),
-			#Keys.PROTO_PATH: String(ctx.summon_data.resource_path),
-			#Keys.ART_UID: String(ctx.summon_data.character_art_uid),
-			#Keys.ART_FACES_RIGHT: bool(ctx.summon_data.facing_right),
-			#Keys.HEIGHT: int(ctx.summon_data.height),
-			#Keys.COLOR_TINT: ctx.summon_data.color_tint as Color,
-			#Keys.MORTALITY: u.mortality,
-		#}
-		#var after_order_ids := PackedInt32Array(state.groups[g].order)
-		#writer.emit_summoned(id, g, int(ctx.insert_index), after_order_ids, String(u.data_proto_path), spec)
-#
-		## --- Beat 2: SUMMON_FOLLOWTHROUGH (layout moves into place) ---
-		#writer.emit_summon_followthrough(source_id, g, int(ctx.insert_index), 1, {
-			#Keys.SUMMONED_ID: int(id),               # so director can fade-in the correct view
-			#Keys.AFTER_ORDER_IDS: after_order_ids,   # so director can animate layout here
-		#})
-#
-	#ctx.summoned_id = id
-	#if on_summoned.is_valid():
-		#on_summoned.call(id, g)
-	#plan_intent(id)
-
-#func summon(ctx: SummonContext) -> void:
-	#if ctx == null or state == null:
-		#return
-	#if ctx.summon_data == null:
-		#push_warning("SimBattleAPI.summon: missing summon_data")
-		#return
-	#
-	#var id := state.alloc_id()
-	#ctx.summon_data.combat_id = id
-	#
-	#var u := CombatantState.new()
-	#u.id = id
-	#u.rng = RNG.new(RNGUtil.mix_seed(state.battle_seed, u.id))
-	#u.combatant_data = ctx.summon_data
-	#u.init_from_combatant_data(ctx.summon_data)
-	#if ctx.summon_data.resource_path != "":
-		#u.data_proto_path = String(ctx.summon_data.resource_path)
-	#
-	#var g := clampi(ctx.group_index, 0, 1)
-	#u.type = CombatantView.Type.ALLY if ctx.group_index == 0 else CombatantView.Type.ENEMY
-	#u.mortality = ctx.mortality
-	#state.add_unit(u, g, int(ctx.insert_index))
-	#var proto := String(u.data_proto_path)
-	#var spec := {}
-	#if ctx.summon_data != null:
-		#spec = {
-			#Keys.COMBATANT_NAME: String(ctx.summon_data.name),
-			#Keys.MAX_HEALTH: int(ctx.summon_data.max_health),
-			#Keys.HEALTH: int(ctx.summon_data.health),
-			#Keys.MAX_MANA: int(ctx.summon_data.max_mana),
-			#Keys.APM: int(ctx.summon_data.apm),
-			#Keys.APR: int(ctx.summon_data.apr),
-			#Keys.PROTO_PATH: String(ctx.summon_data.resource_path),
-			#Keys.ART_UID: String(ctx.summon_data.character_art_uid),
-			#Keys.ART_FACES_RIGHT: bool(ctx.summon_data.facing_right),
-			#Keys.HEIGHT: int(ctx.summon_data.height),
-			#Keys.COLOR_TINT: ctx.summon_data.color_tint as Color,
-			#Keys.MORTALITY: u.mortality,
-		#}
-	#var after_order_ids = PackedInt32Array(state.groups[g].order)
-	#if writer != null:
-		#writer.emit_summoned(id, g, int(ctx.insert_index), after_order_ids, proto, spec)
-	#
-	#ctx.summoned_id = id
-	#ctx.summoned_fighter = null # headless
-	##print("[SIM][SUMMON] new_id=%d group=%d idx=%d proto=%s" % [id, g, int(ctx.insert_index), String(u.data_proto_path)])
-	#if on_summoned.is_valid():
-		#on_summoned.call(id, g)
-	#plan_intent(id)
-
 
 func count_soulbound_in_group(group_index: int) -> int:
 	if state == null:
@@ -798,33 +680,6 @@ func plan_intent(cid: int, allow_hooks := true, clear_dirty := true) -> void:
 		#print("plan_intent() clearing dirty")
 		u.ai_state[&"replan_dirty"] = false
 
-#func plan_intent(cid: int, allow_hooks := true) -> void:
-	#var u: CombatantState = state.get_unit(int(cid))
-	#if u == null or !u.is_alive():
-		#return
-	#if u.combatant_data == null:
-		#return
-	#if u.combatant_data.ai == null:
-		#return
-#
-	#ActionPlanner._ensure_ai_state_initialized(u)
-	#u.ai_state[ActionPlanner.FIRST_INTENTS_READY] = true
-	#
-	#if bool(u.ai_state.get(&"planning_now", false)):
-		#u.ai_state[&"replan_dirty"] = true
-		#return
-	#if bool(u.ai_state.get(ActionPlanner.IS_ACTING, false)):
-		#u.ai_state[&"replan_dirty"] = true
-		#return
-	#
-	#u.ai_state[&"planning_now"] = true
-	#
-	#var ctx_ai := _make_ai_ctx(u)
-	#ActionPlanner.ensure_valid_plan_sim(u.combatant_data.ai, ctx_ai, true)
-	#
-	#u.ai_state[&"planning_now"] = false
-	#u.ai_state[&"replan_dirty"] = false
-
 func flush_replans(allow_hooks := true) -> void:
 	if state == null:
 		return
@@ -837,22 +692,6 @@ func flush_replans(allow_hooks := true) -> void:
 		#print("flush_replans() cid: %s, replan dirty: %s" % [cid, u.ai_state.get(&"replan_dirty", false)])
 		if bool(u.ai_state.get(&"replan_dirty", false)):
 			plan_intent(cid, allow_hooks, true)
-
-#func flush_replans(allow_hooks := true) -> void:
-	#print("flush_replans()")
-	#if state == null:
-		#return
-	#for k in state.units.keys():
-		#var cid := int(k)
-		#print("checking if dirty: ", cid)
-		#var u: CombatantState = state.get_unit(cid)
-		#if u == null:
-			#continue
-		#ActionPlanner._ensure_ai_state_initialized(u)
-		#
-		#if bool(u.ai_state.get(&"replan_dirty", false)):
-			#print("replan dirty, replanning")
-			#plan_intent(cid, allow_hooks)
 
 func plan_intents() -> void:
 	for cid in state.units.keys():
@@ -1035,21 +874,6 @@ func on_group_turn_begin(group_index: int) -> void:
 	for cid in get_combatants_in_group(opposing_group, false):
 		_fire_opposing_group_start_for(int(cid))
 
-#func on_group_turn_begin(group_index: int) -> void:
-	#if state == null:
-		#return
-#
-	## When group X begins, the opposing side experiences "opposing_group_start"
-	#var opposing_group := get_opposing_group(group_index)
-#
-	#flush_replans(false) # no hooks while stabilizing state
-	#plan_intents()       # or remove this and rely on dirty+initial seeding
-	#flush_replans(false)
-#
-	## Fire on_opposing_group_start_sim for units in opposing group
-	#for cid in get_combatants_in_group(opposing_group, false):
-		#_fire_opposing_group_start_for(int(cid))
-
 func on_group_turn_end(group_index: int) -> void:
 	if state == null:
 		return
@@ -1063,22 +887,6 @@ func on_group_turn_end(group_index: int) -> void:
 		var u := state.get_unit(int(cid))
 		if u and u.ai_state:
 			u.ai_state["telegraph_committed"] = false
-
-#func on_group_turn_end(group_index: int) -> void:
-	#if state == null:
-		#return
-#
-	## "my group end" for everyone in that group (matches your intent model API)
-	#for cid in get_combatants_in_group(group_index, true):
-		#_fire_my_group_end_for(int(cid))
-#
-	## Also clear telegraph latch for everyone in that group (matches LIVE)
-	#for cid in get_combatants_in_group(group_index, true):
-		#var u := state.get_unit(int(cid))
-		#if u and u.ai_state:
-			#u.ai_state["telegraph_committed"] = false
-
-# sim_battle_api.gd
 
 func _get_status_proto(id: StringName) -> Status:
 	# Prefer API catalog (you said it exists on the parent BattleAPI)

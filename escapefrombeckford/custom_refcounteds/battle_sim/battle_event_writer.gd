@@ -157,6 +157,14 @@ func emit_group_turn_end(group_idx: int) -> int:
 		Keys.TURN_ID: int(turn_id),
 	})
 
+func emit_turn_status(active_id: int, pending_ids: PackedInt32Array, group_idx: int) -> int:
+	return _append(BattleEvent.Type.TURN_STATUS, {
+		Keys.ACTIVE_ID: int(active_id),
+		Keys.PENDING_IDS: pending_ids,
+		Keys.GROUP_INDEX: int(group_idx),
+		Keys.TURN_ID: int(turn_id),
+	})
+
 func emit_actor_begin(actor_id: int) -> int:
 	return _append(BattleEvent.Type.ACTOR_BEGIN, {
 		Keys.ACTOR_ID: int(actor_id),
@@ -311,28 +319,6 @@ func emit_summon_followthrough(source_id: int, group_idx: int, insert_index: int
 		data[k] = extra[k]
 	return _append(BattleEvent.Type.SUMMON_FOLLOWTHROUGH, data)
 
-#func emit_summon_windup(source_id: int, group_idx: int, insert_index: int, count: int, extra := {}) -> int:
-	#var data := {
-		#Keys.SOURCE_ID: int(source_id),
-		#Keys.GROUP_INDEX: int(group_idx),
-		#Keys.INSERT_INDEX: int(insert_index),
-		#Keys.SUMMON_COUNT: int(count),
-	#}
-	#for k in extra.keys():
-		#data[k] = extra[k]
-	#return _append(BattleEvent.Type.SUMMON_WINDUP, data)
-#
-#func emit_summon_followthrough(source_id: int, group_idx: int, insert_index: int, count: int, extra := {}) -> int:
-	#var data := {
-		#Keys.SOURCE_ID: int(source_id),
-		#Keys.GROUP_INDEX: int(group_idx),
-		#Keys.INSERT_INDEX: int(insert_index),
-		#Keys.SUMMON_COUNT: int(count),
-	#}
-	#for k in extra.keys():
-		#data[k] = extra[k]
-	#return _append(BattleEvent.Type.SUMMON_FOLLOWTHROUGH, data)
-
 func emit_status_windup(source_id: int, target_id: int, status_id: StringName, intensity: int, duration: int, extra := {}) -> int:
 	var data := {
 		Keys.SOURCE_ID: int(source_id),
@@ -392,35 +378,44 @@ func emit_died(killer_id: int, dead_id: int, after_order: PackedInt32Array, reas
 		data[k] = extra[k]
 	return _append(BattleEvent.Type.DIED, data)
 
-func emit_fade_windup(target_id: int, reason: String = "fade", group_idx: int = -1) -> int:
-	return _append(BattleEvent.Type.FADE_WINDUP, {
+func emit_fade_windup(target_id: int, reason: String, group_idx: int, extra := {}) -> int:
+	var data := {
 		Keys.TARGET_ID: int(target_id),
 		Keys.REASON: String(reason),
-		Keys.GROUP_INDEX: int(group_idx if group_idx != -1 else group_index),
-	})
+		Keys.GROUP_INDEX: int(group_idx),
+	}
+	for k in extra.keys():
+		data[k] = extra[k]
+	return _append(BattleEvent.Type.FADE_WINDUP, data)
 
-func emit_fade_followthrough(target_id: int, reason: String = "fade", group_idx: int = -1, after_order: PackedInt32Array = PackedInt32Array()) -> int:
-	return _append(BattleEvent.Type.FADE_FOLLOWTHROUGH, {
+func emit_fade_followthrough(target_id: int, reason: String, group_idx: int, after_order: PackedInt32Array, extra := {}) -> int:
+	var data := {
 		Keys.TARGET_ID: int(target_id),
 		Keys.REASON: String(reason),
-		Keys.GROUP_INDEX: int(group_idx if group_idx != -1 else group_index),
+		Keys.GROUP_INDEX: int(group_idx),
 		Keys.AFTER_ORDER_IDS: after_order,
-	})
+	}
+	for k in extra.keys():
+		data[k] = extra[k]
+	return _append(BattleEvent.Type.FADE_FOLLOWTHROUGH, data)
 
-func emit_faded(
-	target_id: int,
-	before_order: PackedInt32Array,
-	after_order: PackedInt32Array,
-	reason: String = "fade",
-	group_idx: int = -1
-) -> int:
-	# Non-beat semantic marker that the unit is gone without death triggers.
-	return _append(BattleEvent.Type.FADED, {
+func emit_faded(target_id: int, before_order: PackedInt32Array, after_order: PackedInt32Array, reason: String, group_idx: int, extra := {}) -> int:
+	var data := {
 		Keys.TARGET_ID: int(target_id),
-		Keys.REASON: String(reason),
-		Keys.GROUP_INDEX: int(group_idx if group_idx != -1 else group_index),
 		Keys.BEFORE_ORDER_IDS: before_order,
 		Keys.AFTER_ORDER_IDS: after_order,
+		Keys.REASON: String(reason),
+		Keys.GROUP_INDEX: int(group_idx),
+	}
+	for k in extra.keys():
+		data[k] = extra[k]
+	return _append(BattleEvent.Type.FADED, data)
+
+func emit_summon_reserve_released(summoned_id: int, card_uid: String, reason: String = "") -> int:
+	return _append(BattleEvent.Type.SUMMON_RESERVE_RELEASED, {
+		Keys.SUMMONED_ID: int(summoned_id),
+		Keys.CARD_UID: String(card_uid),
+		Keys.REASON: String(reason),
 	})
 
 func emit_summoned(summoned_id: int, group_idx: int, insert_index: int, after_order: PackedInt32Array, proto: String = "", spec: Dictionary = {}) -> int:
@@ -529,6 +524,8 @@ func emit_discard_resolved(req: DiscardRequest, chosen_uids: Array[String]) -> i
 		Keys.CARD_UID: String(req.card_uid),
 		Keys.CHOSEN_UIDS: chosen_uids,
 	})
+
+
 
 func _append_manual(type: int, scope_id: int, parent_scope_id: int, scope_kind: int, data: Dictionary = {}) -> int:
 	if log == null:

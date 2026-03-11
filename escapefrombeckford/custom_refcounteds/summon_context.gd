@@ -16,6 +16,7 @@ var summoned_fighter: Fighter = null
 #var before_order_ids: Array[int] = []
 #var after_order_ids: Array[int] = []
 
+var bound_card_uid: String = ""
 # Optional snapshot used ONLY for windup positioning.
 # For normal summon: leave empty.
 # For summon-replace: set this to the order BEFORE the replaced unit was removed in SIM.

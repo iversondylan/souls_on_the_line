@@ -1,3 +1,5 @@
+# perspective_card.gd
+
 class_name PerspectiveCard extends Node2D
 
 var up_left: Vector2 = Vector2(0,0)
@@ -6,15 +8,12 @@ var down_right: Vector2 = Vector2(1,1)
 var down_left: Vector2 = Vector2(0,1)
 var squeeze: float = 0
 var tween_time: float = 0.55
-var point_a_old: Vector2 = Vector2(200.0,200.0)
-var point_b_old: Vector2 = Vector2(1000.0,600.0)
+#var point_a_old: Vector2 = Vector2(200.0,200.0)
+#var point_b_old: Vector2 = Vector2(1000.0,600.0)
 @onready var sprite_2d: Sprite2D = $Sprite2D
 
-
-# Called when the node enters the scene tree for the first time.
 #func _ready() -> void:
 	#zoom_card(point_a_old, point_b_old)
-
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(_delta: float) -> void:

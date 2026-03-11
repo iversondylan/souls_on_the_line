@@ -12,6 +12,8 @@ var first_shuffle: bool = true
 var first_hand_drawn: bool = false
 var first_hand_summon_guarantee: bool = true # TODO: later wire to settings
 
+var summon_reserve_by_uid: Dictionary = {} # String uid -> CardData
+
 func add_card(card_data: CardData):
 	card_data.id = id_counter
 	card_collection.add_back(card_data)
@@ -95,3 +97,19 @@ func shuffle() -> void:
 func clear() -> void:
 	draw_pile.clear()
 	draw_pile_size_changed.emit(draw_pile.cards.size())
+
+func reserve_summon_card(card_data: CardData) -> void:
+	if card_data == null:
+		return
+	card_data.ensure_uid()
+	summon_reserve_by_uid[String(card_data.uid)] = card_data
+
+func discard_reserved_summon_card(card_uid: String) -> void:
+	if card_uid == "":
+		return
+	if !summon_reserve_by_uid.has(card_uid):
+		push_warning("Deck.discard_reserved_summon_card(): missing uid=%s" % card_uid)
+		return
+	var cd: CardData = summon_reserve_by_uid[card_uid]
+	summon_reserve_by_uid.erase(card_uid)
+	add_card_to_discard(cd)

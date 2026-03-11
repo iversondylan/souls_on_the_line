@@ -105,18 +105,34 @@ func _finish_confirm(chosen: CombatantView) -> void:
 		handler.end_active_context()
 		return
 
-	# 1) SIM: fade chosen (no death triggers) -> will emit FADE_WINDUP + FADED
 	var api := handler.battle.sim_host.get_main_api()
-	if api != null:
-		api.fade_unit(int(chosen.cid), "summon_replace")
+	if api == null:
+		handler.end_active_context()
+		return
 
-	# 2) SIM: apply the summon request -> should emit SUMMON_WINDUP / SUMMONED / SUMMON_FOLLOWTHROUGH
+	# Snapshot BEFORE we remove anything in SIM
+	var before_ids_arr: Array[int] = api.get_combatants_in_group(0, true) # allow_dead true ok; your SIM uses alive anyway
+	var before := PackedInt32Array()
+	before.resize(before_ids_arr.size())
+	for i in range(before_ids_arr.size()):
+		before[i] = int(before_ids_arr[i])
+
+	# Thread snapshot through the card request into SummonAction.activate_sim
+	if req.params == null:
+		req.params = {}
+	req.params[Keys.WINDUP_ORDER_IDS] = before
+	req.params[Keys.REPLACED_ID] = int(chosen.cid)
+
+	# 1) SIM fade (emits FADE_WINDUP/FADE_FOLLOWTHROUGH/FADED)
+	api.fade_unit(int(chosen.cid), "summon_replace")
+
+	# 2) SIM summon card (SummonAction will read ctx.params[WINDUP_ORDER_IDS])
 	var ok := handler.battle.sim_host.apply_player_card(req)
 	if !ok:
 		handler.end_active_context()
 		return
 
-	# 3) UI: spend mana + move card
+	# 3) UI spend + move card
 	if card != null and is_instance_valid(card):
 		card.player_data.spend_mana(card.card_data)
 		Events.card_played.emit(card)

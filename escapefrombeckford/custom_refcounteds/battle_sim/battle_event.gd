@@ -50,6 +50,8 @@ enum Type {
 	FADED,
 	DISCARD_REQUESTED,
 	DISCARD_RESOLVED,
+	SUMMON_RESERVE_RELEASED,
+	TURN_STATUS,
 }
 
 var defines_beat: bool = false

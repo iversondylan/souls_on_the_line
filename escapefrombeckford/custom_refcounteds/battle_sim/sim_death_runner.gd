@@ -26,7 +26,8 @@ static func run(api: SimBattleAPI, dead_id: int, killer_id: int = 0, reason: Str
 		api.state.groups[g].remove(dead_id)
 
 	var after_order_ids := PackedInt32Array(api.state.groups[g].order) if g != -1 else PackedInt32Array()
-
+	if api.on_unit_removed.is_valid():
+		api.on_unit_removed.call(int(dead_id), int(g), "death:" + reason)
 	# Beat 2: group re-layout
 	if api.writer != null:
 		api.writer.emit_death_followthrough(killer_id, dead_id, reason, g, after_order_ids)

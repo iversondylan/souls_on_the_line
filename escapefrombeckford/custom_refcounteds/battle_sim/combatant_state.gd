@@ -14,11 +14,13 @@ var max_health: int = 0
 var health: int = 0
 var armor: int = 0
 
-# New: unified mana + attack powers
+# mana + attack powers
 var max_mana: int = 0
 var mana: int = 0
 var apm: int = 0 # attack power melee
 var apr: int = 0 # attack power ranged
+
+var bound_card_uid: String = ""
 
 # Authoring refs
 var data_proto_path: String = "" # optional for reconstruction

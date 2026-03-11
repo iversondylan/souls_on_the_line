@@ -58,7 +58,6 @@ func _ready() -> void:
 
 	Events.hand_drawn.connect(_arm_end_turn_button.bind(true))
 	Events.hand_drawn.connect(_on_hand_done_drawing)
-
 	Events.dead_combatant_data.connect(_on_dead_combatant_data)
 	Events.request_defeat.connect(_on_request_defeat)
 	Events.request_victory.connect(_on_request_victory)
@@ -193,11 +192,25 @@ func _on_dead_combatant_data(combatant_data: CombatantData) -> void:
 	if player_data != null and combatant_data == player_data:
 		Events.request_defeat.emit()
 
-func _on_summon_reserve_card_released(_summoned_ally) -> void:
-	# If you still have a view-side summon reserve card release path, keep it.
-	# Otherwise you can delete this handler.
-	# (Left as no-op-safe.)
-	pass
+func _on_summon_reserve_card_released(summoned_id: int, card_uid: String) -> void:
+	# 1) Move reserved card into discard pile (data truth for your deck UI)
+	if deck != null:
+		deck.discard_reserved_summon_card(card_uid)
+
+	# 2) Animate the “card flies to discard pile”
+	var v := battle_view.get_combatant(summoned_id) if battle_view != null else null
+	if v == null or discard_pile_button == null:
+		return
+
+	var perspective_card: PerspectiveCard = perspective_card_scn.instantiate()
+	battle_ui.add_child(perspective_card)
+
+	# Start point: unit art top-ish
+	var start := v.global_position
+	start.y -= 200.0 # or use height if you want
+
+	var end := discard_pile_button.global_position
+	perspective_card.zoom_card(start, end)
 
 func _on_request_defeat() -> void:
 	Events.battle_over_screen_requested.emit("YOU DIED", BattleOverPanel.Outcome.LOSE)

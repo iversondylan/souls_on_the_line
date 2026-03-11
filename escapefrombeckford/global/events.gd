@@ -6,7 +6,7 @@ signal player_targeted_arrow_visible(show: bool)
 signal combatant_view_clicked(combatant: CombatantView)
 signal combatant_view_hovered(combatant: CombatantView)
 signal combatant_view_unhovered(combatant: CombatantView)
-
+signal summon_reserve_card_released(summoned_id: int, card_uid: String)
 
 
 ## battle flow events
@@ -40,7 +40,7 @@ signal card_drag_ended(usable_card: UsableCard)
 signal card_played(usable_card: UsableCard)
 signal n_combatants_changed()
 signal focused_gained(status: Status)
-signal summon_reserve_card_released(summoned_ally: SummonedAlly)
+#signal summon_reserve_card_released(summoned_ally: SummonedAlly)
 signal player_combatant_data_changed()
 signal player_modifier_changed()
 signal dead_combatant_data(combatant_data: CombatantData)

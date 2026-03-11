@@ -31,16 +31,28 @@ func activate_sim(ctx: CardActionContextSim) -> bool:
 	if ctx == null or ctx.api == null:
 		return false
 
-	# Determine insert index
 	var insert_index := ctx.resolved.insert_index
 	if insert_index < 0:
 		insert_index = 0
 
 	var sctx := SummonContext.new()
-	sctx.group_index = 0 # friendly
+	sctx.group_index = 0
 	sctx.insert_index = insert_index
-	sctx.summon_data = _build_clone_data_sim() # same duplicate/init
+	sctx.source_id = int(ctx.source_id)
+	sctx.summon_data = _build_clone_data_sim()
 	sctx.mortality = CombatantView.Mortality.SOULBOUND
+
+	# NEW: bind summon reserve to this summoned unit
+	if ctx.card_data != null and !ctx.card_data.deplete:
+		ctx.card_data.ensure_uid()
+		sctx.bound_card_uid = String(ctx.card_data.uid)
+
+	# (keep your windup snapshot threading too)
+	if ctx.params != null and ctx.params.has(Keys.WINDUP_ORDER_IDS):
+		var snap = ctx.params[Keys.WINDUP_ORDER_IDS]
+		if snap is PackedInt32Array:
+			sctx.windup_order_ids = snap
+
 	ctx.api.summon(sctx)
 
 	if sctx.summoned_id > 0:
