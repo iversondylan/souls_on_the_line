@@ -144,11 +144,11 @@ func enqueue_apply_status(ctx: StatusContext) -> void:
 		push_warning("RUNNER WARN enqueue with scope=0 op=apply_status (no active scope)")
 	_enqueue_item({"op":"apply_status","ctx":ctx,"scope":s})
 
-func enqueue_remove_status(ctx: RemoveStatusContext) -> void:
-	var s := current_scope()
-	if s == 0:
-		push_warning("RUNNER WARN enqueue with scope=0 op=remove_status (no active scope)")
-	_enqueue_item({"op":"remove_status","ctx":ctx,"scope":s})
+#func enqueue_remove_status(ctx: RemoveStatusContext) -> void:
+	#var s := current_scope()
+	#if s == 0:
+		#push_warning("RUNNER WARN enqueue with scope=0 op=remove_status (no active scope)")
+	#_enqueue_item({"op":"remove_status","ctx":ctx,"scope":s})
 
 func enqueue_status_proc(target_id: int, proc_type: int) -> void:
 	var s := current_scope()
@@ -227,10 +227,10 @@ func _run() -> void:
 					var ctx: StatusContext = item.get("ctx", null)
 					if api and ctx:
 						await api._run_apply_status_op(ctx)
-				"remove_status":
-					var ctx: RemoveStatusContext = item.get("ctx", null)
-					if api and ctx:
-						await api._run_remove_status_op(ctx)
+				#"remove_status":
+					#var ctx: RemoveStatusContext = item.get("ctx", null)
+					#if api and ctx:
+						#await api._run_remove_status_op(ctx)
 				"status_proc":
 					var cid := int(item.get("id", -1))
 					var proc := int(item.get("proc", -1))

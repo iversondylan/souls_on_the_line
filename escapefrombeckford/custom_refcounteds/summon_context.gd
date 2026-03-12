@@ -15,7 +15,7 @@ var summoned_id: int = 0
 var summoned_fighter: Fighter = null
 #var before_order_ids: Array[int] = []
 #var after_order_ids: Array[int] = []
-
+var reason: String = ""
 var bound_card_uid: String = ""
 # Optional snapshot used ONLY for windup positioning.
 # For normal summon: leave empty.

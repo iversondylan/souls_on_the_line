@@ -38,14 +38,14 @@ static func run(api: SimBattleAPI, ctx: NPCAIContext) -> void:
 	if n_existing + count > MAX_UNITS_PER_GROUP:
 		return
 
-	# Beat markers FIRST (summon happens during beat 2)
-	if api.writer != null:
-		api.writer.emit_summon_windup(source_id, group_index, insert_index, count, {
-			Keys.PROTO: String(summon_data_orig.resource_path),
-		})
-		api.writer.emit_summon_followthrough(source_id, group_index, insert_index, count, {
-			Keys.PROTO: String(summon_data_orig.resource_path),
-		})
+	## Beat markers FIRST (summon happens during beat 2)
+	#if api.writer != null:
+		#api.writer.emit_summon_windup(source_id, group_index, insert_index, count, {
+			#Keys.PROTO: String(summon_data_orig.resource_path),
+		#})
+		#api.writer.emit_summon_followthrough(source_id, group_index, insert_index, count, {
+			#Keys.PROTO: String(summon_data_orig.resource_path),
+		#})
 
 	# Apply summons after followthrough (part of beat 2)
 	for i in range(count):

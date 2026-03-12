@@ -81,11 +81,11 @@ func apply_status(ctx: StatusContext) -> void:
 	if runner:
 		runner.enqueue_apply_status(ctx)
 
-func remove_status(ctx: RemoveStatusContext) -> void:
-	if !ctx:
-		return
-	if runner:
-		runner.enqueue_remove_status(ctx)
+#func remove_status(ctx: RemoveStatusContext) -> void:
+	#if !ctx:
+		#return
+	#if runner:
+		#runner.enqueue_remove_status(ctx)
 
 func run_status_proc(target_id: int, proc_type: Status.ProcType) -> void:
 	#print("live_battle_api.gd run_status_proc()")
@@ -327,47 +327,47 @@ func _run_apply_status_op(ctx: StatusContext) -> void:
 
 
 
-func _run_remove_status_op(ctx: RemoveStatusContext) -> void:
-	if !ctx:
-		return
-
-	# hydrate nodes from ids if needed
-	if !ctx.target and ctx.target_id != 0:
-		ctx.target = battle_scene.get_combatant_by_id(ctx.target_id, true)
-	if !ctx.source and ctx.source_id != 0:
-		ctx.source = battle_scene.get_combatant_by_id(ctx.source_id, true)
-
-	var f := ctx.target
-	if !f or !is_instance_valid(f):
-		return
-	if runner and runner.is_removed(f.combat_id):
-		return
-
-	if !f.combatant or !f.combatant.status_grid:
-		return
-	if ctx.status_id == &"":
-		return
-
-	# You decide whether removing from dead units is allowed:
-	# if !f.is_alive(): return
-
-	# Call ONE canonical StatusGrid API (see note below)
-	# Example:
-	var removed_count := 0
-	if f.status_system.has_method("remove_status"):
-		removed_count = f.status_system.remove_status(ctx.status_id, ctx.remove_all_intensity)
-	elif f.status_system.has_method("remove_status_by_id"):
-		# fallback for your older name
-		removed_count = f.status_system.remove_status_by_id(String(ctx.status_id))
-	else:
-		push_warning("StatusGrid has no remove method")
-		return
-
-	ctx.removed_count = int(removed_count)
-	ctx.removed = ctx.removed_count > 0
-
-	# optional ordering yield
-	await battle_scene.get_tree().process_frame
+#func _run_remove_status_op(ctx: RemoveStatusContext) -> void:
+	#if !ctx:
+		#return
+#
+	## hydrate nodes from ids if needed
+	#if !ctx.target and ctx.target_id != 0:
+		#ctx.target = battle_scene.get_combatant_by_id(ctx.target_id, true)
+	#if !ctx.source and ctx.source_id != 0:
+		#ctx.source = battle_scene.get_combatant_by_id(ctx.source_id, true)
+#
+	#var f := ctx.target
+	#if !f or !is_instance_valid(f):
+		#return
+	#if runner and runner.is_removed(f.combat_id):
+		#return
+#
+	#if !f.combatant or !f.combatant.status_grid:
+		#return
+	#if ctx.status_id == &"":
+		#return
+#
+	## You decide whether removing from dead units is allowed:
+	## if !f.is_alive(): return
+#
+	## Call ONE canonical StatusGrid API (see note below)
+	## Example:
+	#var removed_count := 0
+	#if f.status_system.has_method("remove_status"):
+		#removed_count = f.status_system.remove_status(ctx.status_id, ctx.remove_all_intensity)
+	#elif f.status_system.has_method("remove_status_by_id"):
+		## fallback for your older name
+		#removed_count = f.status_system.remove_status_by_id(String(ctx.status_id))
+	#else:
+		#push_warning("StatusGrid has no remove method")
+		#return
+#
+	#ctx.removed_count = int(removed_count)
+	#ctx.removed = ctx.removed_count > 0
+#
+	## optional ordering yield
+	#await battle_scene.get_tree().process_frame
 
 func _run_status_proc_op(target_id: int, proc_type: Status.ProcType) -> void:
 	#print("live_battle_api.gd _run_status_proc_op()")

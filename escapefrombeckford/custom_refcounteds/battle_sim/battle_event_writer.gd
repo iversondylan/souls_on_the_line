@@ -12,20 +12,14 @@ var active_actor_id: int = 0
 var allow_unscoped_events: bool = false
 
 var _beat_marker_types := {
-	BattleEvent.Type.ARCANUM_PREP: true,
-	BattleEvent.Type.ARCANUM_WRAPUP: true,
-	BattleEvent.Type.ATTACK_PREP: true,
-	BattleEvent.Type.ATTACK_WRAPUP: true,
-	BattleEvent.Type.STRIKE_WINDUP: true,
-	BattleEvent.Type.STRIKE_FOLLOWTHROUGH: true,
-	BattleEvent.Type.SUMMON_WINDUP: true,
-	BattleEvent.Type.SUMMON_FOLLOWTHROUGH: true,
-	BattleEvent.Type.STATUS_WINDUP: true,
-	BattleEvent.Type.STATUS_FOLLOWTHROUGH: true,
-	BattleEvent.Type.DEATH_WINDUP: true,
-	BattleEvent.Type.DEATH_FOLLOWTHROUGH: true,
-	BattleEvent.Type.FADE_WINDUP: true,
-	#BattleEvent.Type.FADE_FOLLOWTHROUGH: true,
+	BattleEvent.Type.ARCANUM_PROC: true,
+	BattleEvent.Type.STRIKE: true,
+	BattleEvent.Type.SUMMONED: true,
+	BattleEvent.Type.STATUS: true,
+	BattleEvent.Type.DIED: true,
+	BattleEvent.Type.FADED: true,
+	BattleEvent.Type.ACTOR_BEGIN: true,
+	BattleEvent.Type.ACTOR_END: true,
 }
 
 func _init(_log: BattleEventLog, _scopes: BattleScopeManager) -> void:
@@ -186,25 +180,35 @@ func emit_arcana_proc(proc: int) -> int:
 		Keys.GROUP_INDEX: int(group_index),
 	})
 
-func emit_arcanum_prep(source_id: int, arcanum_id: StringName, proc: int, extra := {}) -> void:
+func emit_arcanum_proc(source_id: int, arcanum_id: StringName, proc: int, extra := {}) -> int:
 	var data := {
-		Keys.SOURCE_ID: source_id,
+		Keys.SOURCE_ID: int(source_id),
 		Keys.ARCANUM_ID: arcanum_id,
-		Keys.PROC: proc,
+		Keys.PROC: int(proc),
 	}
 	for k in extra.keys():
 		data[k] = extra[k]
-	return _append(BattleEvent.Type.ARCANUM_PREP, data)
+	return _append(BattleEvent.Type.ARCANUM_PROC, data)
 
-func emit_arcanum_wrapup(source_id: int, arcanum_id: StringName, proc: int, extra := {}) -> void:
-	var data := {
-		Keys.SOURCE_ID: source_id,
-		Keys.ARCANUM_ID: arcanum_id,
-		Keys.PROC: proc,
-	}
-	for k in extra.keys():
-		data[k] = extra[k]
-	return _append(BattleEvent.Type.ARCANUM_WRAPUP, data)
+#func emit_arcanum_prep(source_id: int, arcanum_id: StringName, proc: int, extra := {}) -> void:
+	#var data := {
+		#Keys.SOURCE_ID: source_id,
+		#Keys.ARCANUM_ID: arcanum_id,
+		#Keys.PROC: proc,
+	#}
+	#for k in extra.keys():
+		#data[k] = extra[k]
+	#return _append(BattleEvent.Type.ARCANUM_PREP, data)
+
+#func emit_arcanum_wrapup(source_id: int, arcanum_id: StringName, proc: int, extra := {}) -> void:
+	#var data := {
+		#Keys.SOURCE_ID: source_id,
+		#Keys.ARCANUM_ID: arcanum_id,
+		#Keys.PROC: proc,
+	#}
+	#for k in extra.keys():
+		#data[k] = extra[k]
+	#return _append(BattleEvent.Type.ARCANUM_WRAPUP, data)
 
 # -------------------------
 # Gameplay events
@@ -250,166 +254,293 @@ func emit_damage_applied(source_id: int, target_id: int, base: int, final_amount
 		Keys.AFTER_HEALTH: int(after_health),
 	})
 
-func emit_targeted(attacker_id: int, target_ids: Array[int], attack_mode: int, strike_index: int, extra := {}) -> void:
+#func emit_targeted(attacker_id: int, target_ids: Array[int], attack_mode: int, strike_index: int, extra := {}) -> void:
+	#var data := {
+		#Keys.SOURCE_ID: attacker_id,
+		#Keys.TARGET_IDS: target_ids,
+		#Keys.ATTACK_MODE: attack_mode,
+		#Keys.STRIKE_INDEX: strike_index
+	#}
+	#for k in extra.keys():
+		#data[k] = extra[k]
+	#return _append(BattleEvent.Type.TARGETED, data)
+
+#func emit_attack_prep(attacker_id: int, target_ids: Array[int], attack_mode: int, target_type: int, strikes: int) -> int:
+	#return _append(BattleEvent.Type.ATTACK_PREP, {
+		#Keys.SOURCE_ID: int(attacker_id),
+		#Keys.TARGET_IDS: target_ids, # <-- REQUIRED BY YOU
+		#Keys.ATTACK_MODE: int(attack_mode),
+		#Keys.TARGET_TYPE: int(target_type),
+		#Keys.STRIKES: int(strikes),
+	#})
+#
+#func emit_attack_wrapup(attacker_id: int, attack_mode: int, target_type: int, strikes: int) -> int:
+	#return _append(BattleEvent.Type.ATTACK_WRAPUP, {
+		#Keys.SOURCE_ID: int(attacker_id),
+		#Keys.ATTACK_MODE: int(attack_mode),
+		#Keys.TARGET_TYPE: int(target_type),
+		#Keys.STRIKES: int(strikes),
+	#})
+
+func emit_strike(
+	attacker_id: int,
+	target_ids: Array[int],
+	attack_mode: int,
+	target_type: int,
+	strike_index: int,
+	strikes_total: int = 1,
+	projectile_scene: String = "",
+	extra := {}
+) -> int:
 	var data := {
-		Keys.SOURCE_ID: attacker_id,
-		Keys.TARGET_IDS: target_ids,
-		Keys.ATTACK_MODE: attack_mode,
-		Keys.STRIKE_INDEX: strike_index
-	}
-	for k in extra.keys():
-		data[k] = extra[k]
-	return _append(BattleEvent.Type.TARGETED, data)
-
-func emit_attack_prep(attacker_id: int, target_ids: Array[int], attack_mode: int, target_type: int, strikes: int) -> int:
-	return _append(BattleEvent.Type.ATTACK_PREP, {
-		Keys.SOURCE_ID: int(attacker_id),
-		Keys.TARGET_IDS: target_ids, # <-- REQUIRED BY YOU
-		Keys.ATTACK_MODE: int(attack_mode),
-		Keys.TARGET_TYPE: int(target_type),
-		Keys.STRIKES: int(strikes),
-	})
-
-func emit_attack_wrapup(attacker_id: int, attack_mode: int, target_type: int, strikes: int) -> int:
-	return _append(BattleEvent.Type.ATTACK_WRAPUP, {
-		Keys.SOURCE_ID: int(attacker_id),
-		Keys.ATTACK_MODE: int(attack_mode),
-		Keys.TARGET_TYPE: int(target_type),
-		Keys.STRIKES: int(strikes),
-	})
-
-
-func emit_strike_windup(attacker_id: int, target_ids: Array[int], attack_mode: int, target_type: int, strike_index: int) -> int:
-	return _append(BattleEvent.Type.STRIKE_WINDUP, {
 		Keys.SOURCE_ID: int(attacker_id),
 		Keys.TARGET_IDS: target_ids,
 		Keys.ATTACK_MODE: int(attack_mode),
 		Keys.TARGET_TYPE: int(target_type),
 		Keys.STRIKE_INDEX: int(strike_index),
-	})
-
-func emit_strike_followthrough(attacker_id: int, target_ids: Array[int], attack_mode: int, target_type: int, strike_index: int) -> int:
-	return _append(BattleEvent.Type.STRIKE_FOLLOWTHROUGH, {
-		Keys.SOURCE_ID: int(attacker_id),
-		Keys.TARGET_IDS: target_ids,
-		Keys.ATTACK_MODE: int(attack_mode),
-		Keys.TARGET_TYPE: int(target_type),
-		Keys.STRIKE_INDEX: int(strike_index),
-	})
-
-func emit_summon_windup(source_id: int, group_idx: int, insert_index: int, count: int, extra := {}) -> int:
-	var data := {
-		Keys.SOURCE_ID: int(source_id),
-		Keys.GROUP_INDEX: int(group_idx),
-		Keys.INSERT_INDEX: int(insert_index),
-		Keys.SUMMON_COUNT: int(count),
+		Keys.STRIKES: int(strikes_total),
 	}
+	if projectile_scene != "":
+		data[Keys.PROJECTILE_SCENE] = String(projectile_scene)
 	for k in extra.keys():
 		data[k] = extra[k]
-	return _append(BattleEvent.Type.SUMMON_WINDUP, data)
+	return _append(BattleEvent.Type.STRIKE, data)
 
-func emit_summon_followthrough(source_id: int, group_idx: int, insert_index: int, count: int, extra := {}) -> int:
+
+#func emit_strike_windup(attacker_id: int, target_ids: Array[int], attack_mode: int, target_type: int, strike_index: int) -> int:
+	#return _append(BattleEvent.Type.STRIKE_WINDUP, {
+		#Keys.SOURCE_ID: int(attacker_id),
+		#Keys.TARGET_IDS: target_ids,
+		#Keys.ATTACK_MODE: int(attack_mode),
+		#Keys.TARGET_TYPE: int(target_type),
+		#Keys.STRIKE_INDEX: int(strike_index),
+	#})
+#
+#func emit_strike_followthrough(attacker_id: int, target_ids: Array[int], attack_mode: int, target_type: int, strike_index: int) -> int:
+	#return _append(BattleEvent.Type.STRIKE_FOLLOWTHROUGH, {
+		#Keys.SOURCE_ID: int(attacker_id),
+		#Keys.TARGET_IDS: target_ids,
+		#Keys.ATTACK_MODE: int(attack_mode),
+		#Keys.TARGET_TYPE: int(target_type),
+		#Keys.STRIKE_INDEX: int(strike_index),
+	#})
+
+func emit_summoned(
+	summoned_id: int,
+	group_idx: int,
+	insert_index: int,
+	before_order: PackedInt32Array,
+	after_order: PackedInt32Array,
+	proto: String = "",
+	spec: Dictionary = {},
+	reason: String = "",
+	bound_card_uid: String = "",
+	extra := {}
+) -> int:
 	var data := {
-		Keys.SOURCE_ID: int(source_id),
+		Keys.SUMMONED_ID: int(summoned_id),
 		Keys.GROUP_INDEX: int(group_idx),
 		Keys.INSERT_INDEX: int(insert_index),
-		Keys.SUMMON_COUNT: int(count),
+		Keys.BEFORE_ORDER_IDS: before_order,
+		Keys.AFTER_ORDER_IDS: after_order,
 	}
+	if proto != "":
+		data[Keys.PROTO] = String(proto)
+	if spec != null and !spec.is_empty():
+		data[Keys.SUMMON_SPEC] = spec
+	if reason != "":
+		data[Keys.REASON] = String(reason)
+	if bound_card_uid != "":
+		data[Keys.CARD_UID] = String(bound_card_uid)
 	for k in extra.keys():
 		data[k] = extra[k]
-	return _append(BattleEvent.Type.SUMMON_FOLLOWTHROUGH, data)
+	return _append(BattleEvent.Type.SUMMONED, data)
 
-func emit_status_windup(source_id: int, target_id: int, status_id: StringName, intensity: int, duration: int, extra := {}) -> int:
+#func emit_summon_windup(source_id: int, group_idx: int, insert_index: int, count: int, extra := {}) -> int:
+	#var data := {
+		#Keys.SOURCE_ID: int(source_id),
+		#Keys.GROUP_INDEX: int(group_idx),
+		#Keys.INSERT_INDEX: int(insert_index),
+		#Keys.SUMMON_COUNT: int(count),
+	#}
+	#for k in extra.keys():
+		#data[k] = extra[k]
+	#return _append(BattleEvent.Type.SUMMON_WINDUP, data)
+#
+#func emit_summon_followthrough(source_id: int, group_idx: int, insert_index: int, count: int, extra := {}) -> int:
+	#var data := {
+		#Keys.SOURCE_ID: int(source_id),
+		#Keys.GROUP_INDEX: int(group_idx),
+		#Keys.INSERT_INDEX: int(insert_index),
+		#Keys.SUMMON_COUNT: int(count),
+	#}
+	#for k in extra.keys():
+		#data[k] = extra[k]
+	#return _append(BattleEvent.Type.SUMMON_FOLLOWTHROUGH, data)
+
+func emit_status(
+	source_id: int,
+	target_id: int,
+	status_id: StringName,
+	op: int,
+	intensity: int = 0,
+	duration: int = 0,
+	extra := {},
+) -> int:
+	
+	# enum OP {APPLY, REMOVE, CHANGE}
+	# APPLY: add new status only
+	# REMOVE: remove a status entirely
+	# CHANGE: increase or decrease INTENSITY/DURATION...
+	# ...either by re-application (add intensity/duration) or a direct
+	# change effect (add/remove intensity/duration stacks)
+	var status_op := 0
+	if Status.OP.values().has(op):
+		status_op = op
 	var data := {
 		Keys.SOURCE_ID: int(source_id),
 		Keys.TARGET_ID: int(target_id),
 		Keys.STATUS_ID: status_id,
+		Keys.OP: status_op,
 		Keys.INTENSITY: int(intensity),
 		Keys.DURATION: int(duration),
 	}
+	
 	for k in extra.keys():
 		data[k] = extra[k]
-	return _append(BattleEvent.Type.STATUS_WINDUP, data)
+	return _append(BattleEvent.Type.STATUS, data)
 
-func emit_status_followthrough(source_id: int, target_id: int, status_id: StringName, intensity: int, duration: int, extra := {}) -> int:
-	var data := {
-		Keys.SOURCE_ID: int(source_id),
-		Keys.TARGET_ID: int(target_id),
-		Keys.STATUS_ID: status_id,
-		Keys.INTENSITY: int(intensity),
-		Keys.DURATION: int(duration),
-	}
-	for k in extra.keys():
-		data[k] = extra[k]
-	return _append(BattleEvent.Type.STATUS_FOLLOWTHROUGH, data)
+#func emit_status_windup(source_id: int, target_id: int, status_id: StringName, intensity: int, duration: int, extra := {}) -> int:
+	#var data := {
+		#Keys.SOURCE_ID: int(source_id),
+		#Keys.TARGET_ID: int(target_id),
+		#Keys.STATUS_ID: status_id,
+		#Keys.INTENSITY: int(intensity),
+		#Keys.DURATION: int(duration),
+	#}
+	#for k in extra.keys():
+		#data[k] = extra[k]
+	#return _append(BattleEvent.Type.STATUS_WINDUP, data)
 
-func emit_death_windup(killer_id: int, dead_id: int, reason: String = "", group_idx: int = -1, extra := {}) -> int:
+#func emit_status_followthrough(source_id: int, target_id: int, status_id: StringName, intensity: int, duration: int, extra := {}) -> int:
+	#var data := {
+		#Keys.SOURCE_ID: int(source_id),
+		#Keys.TARGET_ID: int(target_id),
+		#Keys.STATUS_ID: status_id,
+		#Keys.INTENSITY: int(intensity),
+		#Keys.DURATION: int(duration),
+	#}
+	#for k in extra.keys():
+		#data[k] = extra[k]
+	#return _append(BattleEvent.Type.STATUS_FOLLOWTHROUGH, data)
+
+#func emit_death_windup(killer_id: int, dead_id: int, reason: String = "", group_idx: int = -1, extra := {}) -> int:
+	#var data := {
+		#Keys.SOURCE_ID: int(killer_id),
+		#Keys.TARGET_ID: int(dead_id),
+		#Keys.DEATH_REASON: String(reason),
+		#Keys.GROUP_INDEX: int(group_idx),
+	#}
+	#for k in extra.keys():
+		#data[k] = extra[k]
+	#return _append(BattleEvent.Type.DEATH_WINDUP, data)
+
+#func emit_death_followthrough(killer_id: int, dead_id: int, reason: String = "", group_idx: int = -1, after_order: PackedInt32Array = PackedInt32Array(), extra := {}) -> int:
+	#var data := {
+		#Keys.SOURCE_ID: int(killer_id),
+		#Keys.TARGET_ID: int(dead_id),
+		#Keys.DEATH_REASON: String(reason),
+		#Keys.GROUP_INDEX: int(group_idx),
+		#Keys.AFTER_ORDER_IDS: after_order,
+	#}
+	#for k in extra.keys():
+		#data[k] = extra[k]
+	#return _append(BattleEvent.Type.DEATH_FOLLOWTHROUGH, data)
+
+func emit_died(
+	killer_id: int,
+	dead_id: int,
+	group_idx: int,
+	before_order: PackedInt32Array,
+	after_order: PackedInt32Array,
+	reason: String = "",
+	extra := {}
+) -> int:
 	var data := {
 		Keys.SOURCE_ID: int(killer_id),
 		Keys.TARGET_ID: int(dead_id),
-		Keys.DEATH_REASON: String(reason),
 		Keys.GROUP_INDEX: int(group_idx),
-	}
-	for k in extra.keys():
-		data[k] = extra[k]
-	return _append(BattleEvent.Type.DEATH_WINDUP, data)
-
-func emit_death_followthrough(killer_id: int, dead_id: int, reason: String = "", group_idx: int = -1, after_order: PackedInt32Array = PackedInt32Array(), extra := {}) -> int:
-	var data := {
-		Keys.SOURCE_ID: int(killer_id),
-		Keys.TARGET_ID: int(dead_id),
-		Keys.DEATH_REASON: String(reason),
-		Keys.GROUP_INDEX: int(group_idx),
+		Keys.BEFORE_ORDER_IDS: before_order,
 		Keys.AFTER_ORDER_IDS: after_order,
-	}
-	for k in extra.keys():
-		data[k] = extra[k]
-	return _append(BattleEvent.Type.DEATH_FOLLOWTHROUGH, data)
-
-func emit_died(killer_id: int, dead_id: int, after_order: PackedInt32Array, reason: String = "", group_idx: int = -1, extra := {}) -> int:
-	var data := {
-		Keys.SOURCE_ID: int(killer_id),
-		Keys.TARGET_ID: int(dead_id),
 		Keys.DEATH_REASON: String(reason),
-		Keys.AFTER_ORDER_IDS: after_order,
-		Keys.GROUP_INDEX: int(group_idx),
 	}
 	for k in extra.keys():
 		data[k] = extra[k]
 	return _append(BattleEvent.Type.DIED, data)
 
-func emit_fade_windup(target_id: int, reason: String, group_idx: int, extra := {}) -> int:
-	var data := {
-		Keys.TARGET_ID: int(target_id),
-		Keys.REASON: String(reason),
-		Keys.GROUP_INDEX: int(group_idx),
-	}
-	for k in extra.keys():
-		data[k] = extra[k]
-	return _append(BattleEvent.Type.FADE_WINDUP, data)
+#func emit_died(killer_id: int, dead_id: int, after_order: PackedInt32Array, reason: String = "", group_idx: int = -1, extra := {}) -> int:
+	#var data := {
+		#Keys.SOURCE_ID: int(killer_id),
+		#Keys.TARGET_ID: int(dead_id),
+		#Keys.DEATH_REASON: String(reason),
+		#Keys.AFTER_ORDER_IDS: after_order,
+		#Keys.GROUP_INDEX: int(group_idx),
+	#}
+	#for k in extra.keys():
+		#data[k] = extra[k]
+	#return _append(BattleEvent.Type.DIED, data)
 
-func emit_fade_followthrough(target_id: int, reason: String, group_idx: int, after_order: PackedInt32Array, extra := {}) -> int:
-	var data := {
-		Keys.TARGET_ID: int(target_id),
-		Keys.REASON: String(reason),
-		Keys.GROUP_INDEX: int(group_idx),
-		Keys.AFTER_ORDER_IDS: after_order,
-	}
-	for k in extra.keys():
-		data[k] = extra[k]
-	return _append(BattleEvent.Type.FADE_FOLLOWTHROUGH, data)
+#func emit_fade_windup(target_id: int, reason: String, group_idx: int, extra := {}) -> int:
+	#var data := {
+		#Keys.TARGET_ID: int(target_id),
+		#Keys.REASON: String(reason),
+		#Keys.GROUP_INDEX: int(group_idx),
+	#}
+	#for k in extra.keys():
+		#data[k] = extra[k]
+	#return _append(BattleEvent.Type.FADE_WINDUP, data)
 
-func emit_faded(target_id: int, before_order: PackedInt32Array, after_order: PackedInt32Array, reason: String, group_idx: int, extra := {}) -> int:
+#func emit_fade_followthrough(target_id: int, reason: String, group_idx: int, after_order: PackedInt32Array, extra := {}) -> int:
+	#var data := {
+		#Keys.TARGET_ID: int(target_id),
+		#Keys.REASON: String(reason),
+		#Keys.GROUP_INDEX: int(group_idx),
+		#Keys.AFTER_ORDER_IDS: after_order,
+	#}
+	#for k in extra.keys():
+		#data[k] = extra[k]
+	#return _append(BattleEvent.Type.FADE_FOLLOWTHROUGH, data)
+
+func emit_faded(
+	target_id: int,
+	group_idx: int,
+	before_order: PackedInt32Array,
+	after_order: PackedInt32Array,
+	reason: String = "",
+	extra := {}
+) -> int:
 	var data := {
 		Keys.TARGET_ID: int(target_id),
+		Keys.GROUP_INDEX: int(group_idx),
 		Keys.BEFORE_ORDER_IDS: before_order,
 		Keys.AFTER_ORDER_IDS: after_order,
 		Keys.REASON: String(reason),
-		Keys.GROUP_INDEX: int(group_idx),
 	}
 	for k in extra.keys():
 		data[k] = extra[k]
 	return _append(BattleEvent.Type.FADED, data)
+
+#func emit_faded(target_id: int, before_order: PackedInt32Array, after_order: PackedInt32Array, reason: String, group_idx: int, extra := {}) -> int:
+	#var data := {
+		#Keys.TARGET_ID: int(target_id),
+		#Keys.BEFORE_ORDER_IDS: before_order,
+		#Keys.AFTER_ORDER_IDS: after_order,
+		#Keys.REASON: String(reason),
+		#Keys.GROUP_INDEX: int(group_idx),
+	#}
+	#for k in extra.keys():
+		#data[k] = extra[k]
+	#return _append(BattleEvent.Type.FADED, data)
 
 func emit_summon_reserve_released(summoned_id: int, card_uid: String, reason: String = "") -> int:
 	return _append(BattleEvent.Type.SUMMON_RESERVE_RELEASED, {
@@ -418,17 +549,17 @@ func emit_summon_reserve_released(summoned_id: int, card_uid: String, reason: St
 		Keys.REASON: String(reason),
 	})
 
-func emit_summoned(summoned_id: int, group_idx: int, insert_index: int, after_order: PackedInt32Array, proto: String = "", spec: Dictionary = {}) -> int:
-	var data := {
-		Keys.SUMMONED_ID: int(summoned_id),
-		Keys.GROUP_INDEX: int(group_idx),
-		Keys.INSERT_INDEX: int(insert_index),
-		Keys.AFTER_ORDER_IDS: after_order,
-		Keys.PROTO: String(proto),
-	}
-	if spec != null and !spec.is_empty():
-		data[Keys.SUMMON_SPEC] = spec
-	return _append(BattleEvent.Type.SUMMONED, data)
+#func emit_summoned(summoned_id: int, group_idx: int, insert_index: int, after_order: PackedInt32Array, proto: String = "", spec: Dictionary = {}) -> int:
+	#var data := {
+		#Keys.SUMMONED_ID: int(summoned_id),
+		#Keys.GROUP_INDEX: int(group_idx),
+		#Keys.INSERT_INDEX: int(insert_index),
+		#Keys.AFTER_ORDER_IDS: after_order,
+		#Keys.PROTO: String(proto),
+	#}
+	#if spec != null and !spec.is_empty():
+		#data[Keys.SUMMON_SPEC] = spec
+	#return _append(BattleEvent.Type.SUMMONED, data)
 
 func emit_moved(actor_id: int, move_type: int, before_order: PackedInt32Array, after_order: PackedInt32Array, extra: Dictionary = {}) -> int:
 	var data := {
@@ -441,32 +572,32 @@ func emit_moved(actor_id: int, move_type: int, before_order: PackedInt32Array, a
 		data[k] = extra[k]
 	return _append(BattleEvent.Type.MOVED, data)
 
-func emit_status_applied(source_id: int, target_id: int, status_id: StringName, intensity: int, duration: int) -> int:
-	return _append(BattleEvent.Type.STATUS_APPLIED, {
-		Keys.SOURCE_ID: int(source_id),
-		Keys.TARGET_ID: int(target_id),
-		Keys.STATUS_ID: status_id,
-		Keys.INTENSITY: int(intensity),
-		Keys.DURATION: int(duration),
-	})
-
-func emit_status_removed(source_id: int, target_id: int, status_id: StringName, intensity: int, removed_all: bool) -> int:
-	return _append(BattleEvent.Type.STATUS_REMOVED, {
-		Keys.SOURCE_ID: int(source_id),
-		Keys.TARGET_ID: int(target_id),
-		Keys.STATUS_ID: status_id,
-		Keys.INTENSITY: int(intensity),
-		Keys.REMOVED_ALL: bool(removed_all),
-	})
-
-func emit_status_changed(source_id: int, target_id: int, status_id: StringName, intensity: int, duration: int) -> int:
-	return _append(BattleEvent.Type.STATUS_CHANGED, {
-		Keys.SOURCE_ID: int(source_id),
-		Keys.TARGET_ID: int(target_id),
-		Keys.STATUS_ID: status_id,
-		Keys.INTENSITY: int(intensity),
-		Keys.DURATION: int(duration),
-	})
+#func emit_status_applied(source_id: int, target_id: int, status_id: StringName, intensity: int, duration: int) -> int:
+	#return _append(BattleEvent.Type.STATUS_APPLIED, {
+		#Keys.SOURCE_ID: int(source_id),
+		#Keys.TARGET_ID: int(target_id),
+		#Keys.STATUS_ID: status_id,
+		#Keys.INTENSITY: int(intensity),
+		#Keys.DURATION: int(duration),
+	#})
+#
+#func emit_status_removed(source_id: int, target_id: int, status_id: StringName, intensity: int, removed_all: bool) -> int:
+	#return _append(BattleEvent.Type.STATUS_REMOVED, {
+		#Keys.SOURCE_ID: int(source_id),
+		#Keys.TARGET_ID: int(target_id),
+		#Keys.STATUS_ID: status_id,
+		#Keys.INTENSITY: int(intensity),
+		#Keys.REMOVED_ALL: bool(removed_all),
+	#})
+#
+#func emit_status_changed(source_id: int, target_id: int, status_id: StringName, intensity: int, duration: int) -> int:
+	#return _append(BattleEvent.Type.STATUS_CHANGED, {
+		#Keys.SOURCE_ID: int(source_id),
+		#Keys.TARGET_ID: int(target_id),
+		#Keys.STATUS_ID: status_id,
+		#Keys.INTENSITY: int(intensity),
+		#Keys.DURATION: int(duration),
+	#})
 
 func emit_set_intent(
 	actor_id: int,

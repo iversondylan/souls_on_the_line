@@ -260,7 +260,6 @@ func fade_unit(combat_id: int, reason: String = "fade") -> void:
 
 	if writer != null:
 		writer.scope_begin(Scope.Kind.FADE, "fade_unit", combat_id)
-		writer.emit_fade_windup(combat_id, reason, g)
 
 	# Mutate state immediately (VIEW will animate against events)
 	u.alive = false
@@ -271,8 +270,7 @@ func fade_unit(combat_id: int, reason: String = "fade") -> void:
 	var after_order_ids := PackedInt32Array(state.groups[g].order) if g != -1 else PackedInt32Array()
 
 	if writer != null:
-		writer.emit_fade_followthrough(combat_id, reason, g, after_order_ids)
-		writer.emit_faded(combat_id, before, after_order_ids, reason, g)
+		writer.emit_faded(combat_id, g, before, after_order_ids, reason)
 		writer.scope_end()
 
 func _maybe_release_soulbound_reserve(u: CombatantState, reason: String) -> void:
@@ -289,41 +287,59 @@ func _maybe_release_soulbound_reserve(u: CombatantState, reason: String) -> void
 	u.bound_card_uid = ""
 
 func apply_status(ctx: StatusContext) -> void:
-	#print("sim_battle_api.gd apply_status() id: ", ctx.status_id)
 	if ctx == null or state == null:
 		return
+
+	ctx.hydrate_ids()
 	if ctx.target_id <= 0:
 		return
+
 	var u := state.get_unit(ctx.target_id)
 	if u == null or !u.is_alive():
 		return
+
 	if ctx.status_id == &"":
 		return
-	
-	# Default intensity policy (so callers can omit it)
+
+	# Default intensity if omitted
 	if int(ctx.intensity) == 0:
 		ctx.intensity = 1
-	
-	u.statuses.add_or_reapply(ctx.status_id, ctx.intensity, ctx.duration)
-	ctx.applied = true
-	
-	if writer != null:
-		writer.emit_status_applied(int(ctx.source_id), int(ctx.target_id), ctx.status_id, int(ctx.intensity), int(ctx.duration))
-	
+
+	# IMPORTANT: let StatusState decide APPLY vs CHANGE
+	var changed := u.statuses.add_or_reapply_ctx(ctx)
+	ctx.applied = changed or (ctx.op == Status.OP.APPLY)
+
+	# If nothing changed, you can choose to not emit anything.
+	# I recommend: emit only if APPLY or actual change.
+	if writer != null and (ctx.op == Status.OP.APPLY or changed):
+		writer.emit_status(
+			int(ctx.source_id),
+			int(ctx.target_id),
+			ctx.status_id,
+			int(ctx.op),
+			int(ctx.intensity), # request (or requested delta)
+			int(ctx.duration),  # request (or requested delta)
+			{
+				Keys.DELTA_INTENSITY: int(ctx.delta_intensity),
+				Keys.DELTA_DURATION: int(ctx.delta_duration),
+				Keys.BEFORE_INTENSITY: int(ctx.before_intensity),
+				Keys.BEFORE_DURATION: int(ctx.before_duration),
+				Keys.AFTER_INTENSITY: int(ctx.after_intensity),
+				Keys.AFTER_DURATION: int(ctx.after_duration),
+			}
+		)
+
 	_rebuild_modifier_cache_for(ctx.target_id)
-	
+
 	var proto := _get_status_proto(ctx.status_id)
-	
-	# If this status is an aura (affects other units), refresh everyone impacted
 	if _is_aura_proto(proto):
 		_request_intent_refresh_targets_for_aura(int(ctx.target_id), proto)
 	else:
 		_request_intent_refresh(int(ctx.target_id))
-	
 	_on_status_changed(ctx.target_id)
 
 
-func remove_status(ctx: RemoveStatusContext) -> void:
+func remove_status(ctx: StatusContext) -> void:
 	if ctx == null or state == null:
 		return
 	if ctx.target_id <= 0:
@@ -334,15 +350,11 @@ func remove_status(ctx: RemoveStatusContext) -> void:
 	if ctx.status_id == &"":
 		return
 	
-	var intensity := maxi(int(ctx.intensity if ("intensity" in ctx) else 1), 1)
 	var proto := _get_status_proto(ctx.status_id)
-	if ctx.remove_all_intensity:
-		u.statuses.remove(ctx.status_id, true)
-	else:
-		u.statuses.remove(ctx.status_id, false, intensity)
+	u.statuses.remove_ctx(ctx)
 	
 	if writer != null:
-		writer.emit_status_removed(int(ctx.source_id), int(ctx.target_id), ctx.status_id, intensity, bool(ctx.remove_all_intensity))
+		writer.emit_status(int(ctx.source_id), int(ctx.target_id), ctx.status_id, Status.OP.REMOVE, 0, 0)
 	
 	_rebuild_modifier_cache_for(ctx.target_id)
 	if _is_aura_proto(proto):
@@ -446,17 +458,17 @@ func summon(ctx: SummonContext) -> void:
 	var id := state.alloc_id()
 	ctx.summon_data.combat_id = id
 	
-	# --- Beat 1: SUMMON_WINDUP ---
-	if writer != null:
-		writer.emit_summon_windup(source_id, g, int(ctx.insert_index), 1, {
-			Keys.SUMMONED_ID: int(id),
-			Keys.BEFORE_ORDER_IDS: windup_order,      # <= critical
-			Keys.WINDUP_LAYOUT_COUNT: windup_order.size(),
-			Keys.REASON: String(ctx.reason) if ("reason" in ctx) else ""
-		})
-
+	## --- Beat 1: SUMMON_WINDUP ---
+	#if writer != null:
+		#writer.emit_summon_windup(source_id, g, int(ctx.insert_index), 1, {
+			#Keys.SUMMONED_ID: int(id),
+			#Keys.BEFORE_ORDER_IDS: windup_order,      # <= critical
+			#Keys.WINDUP_LAYOUT_COUNT: windup_order.size(),
+			#Keys.REASON: String(ctx.reason)
+		#})
 	
-
+	
+	
 	var u := CombatantState.new()
 	u.id = id
 	u.rng = RNG.new(RNGUtil.mix_seed(state.battle_seed, u.id))
@@ -469,7 +481,7 @@ func summon(ctx: SummonContext) -> void:
 	u.type = CombatantView.Type.ALLY if g == 0 else CombatantView.Type.ENEMY
 	u.mortality = ctx.mortality
 	state.add_unit(u, g, int(ctx.insert_index))
-
+	
 	if writer != null:
 		var spec := {
 			Keys.COMBATANT_NAME: String(ctx.summon_data.name),
@@ -485,15 +497,15 @@ func summon(ctx: SummonContext) -> void:
 			Keys.COLOR_TINT: ctx.summon_data.color_tint as Color,
 			Keys.MORTALITY: u.mortality,
 		}
-
+		
 		var after_order_ids := PackedInt32Array(state.groups[g].order)
-
-		writer.emit_summoned(id, g, int(ctx.insert_index), after_order_ids, String(u.data_proto_path), spec)
-
-		writer.emit_summon_followthrough(source_id, g, int(ctx.insert_index), 1, {
-			Keys.SUMMONED_ID: int(id),
-			Keys.AFTER_ORDER_IDS: after_order_ids,
-		})
+		
+		writer.emit_summoned(id, g, int(ctx.insert_index), windup_order, after_order_ids, u.data_proto_path, spec, ctx.reason, ctx.bound_card_uid)
+		#
+		#writer.emit_summon_followthrough(source_id, g, int(ctx.insert_index), 1, {
+			#Keys.SUMMONED_ID: int(id),
+			#Keys.AFTER_ORDER_IDS: after_order_ids,
+		#})
 
 	ctx.summoned_id = id
 	if on_summoned.is_valid():

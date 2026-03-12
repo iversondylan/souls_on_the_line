@@ -61,7 +61,6 @@ func _remove_from_self(ctx: NPCAIContext) -> void:
 	e.targets = [ctx.combatant]
 	e.source = ctx.combatant
 	e.status_id = _status_id()
-	e.remove_all_intensity = true
 	# e.sound = remove_sound
 	e.execute(api)
 
@@ -103,10 +102,9 @@ func _remove_from_self_sim(ctx: NPCAIContext) -> void:
 	if id <= 0:
 		return
 
-	var rc := RemoveStatusContext.new()
+	var rc := StatusContext.new()
 	rc.source_id = id
 	rc.target_id = id
 	rc.status_id = _status_id()
-	rc.remove_all_intensity = true
 	# rc.intensity_delta default handled in API
 	ctx.api.remove_status(rc)

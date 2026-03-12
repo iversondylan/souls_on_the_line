@@ -59,10 +59,12 @@ func run_proc(proc: int) -> void:
 		ctx.params[Keys.SOURCE_ID] = host.main.state.groups[0].player_id
 		ctx.params[Keys.GROUP_INDEX] = 0
 		
-		if writer != null and proto.wants_in_beat():
-			writer.emit_arcanum_prep(player_id, id, proc)
-		if writer != null and proto.wants_out_beat():
-			writer.emit_arcanum_wrapup(player_id, id, proc)
+		if ctx.api.writer != null:
+			ctx.api.writer.emit_arcanum_proc(ctx.params[Keys.SOURCE_ID], id, proc)
+		#if writer != null and proto.wants_in_beat():
+			#writer.emit_arcanum_prep(player_id, id, proc)
+		#if writer != null and proto.wants_out_beat():
+			#writer.emit_arcanum_wrapup(player_id, id, proc)
 		var r = proto.activate_arcanum(ctx)
 		
 		# policy: headless arcana must be sync

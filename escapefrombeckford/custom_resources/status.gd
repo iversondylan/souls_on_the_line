@@ -14,7 +14,7 @@ enum ExpirationPolicy {
 	GROUP_TURN_END,  # expires at end of affected's group turn
 	EVENT_OR_NEVER,  # expires when something external says so or permanent
 }
-
+enum OP {APPLY, REMOVE, CHANGE}
 @export_group("Status Data")
 
 @export var proc_type: ProcType

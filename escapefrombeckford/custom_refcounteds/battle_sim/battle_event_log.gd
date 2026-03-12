@@ -45,6 +45,8 @@ func read_range(start_index: int, end_index: int) -> Array[BattleEvent]:
 		k += 1
 	return out
 
+# battle_event_log.gd (or wherever you keep your printer)
+
 static func print_event_log(
 	log: BattleEventLog,
 	last_n: int = -1,
@@ -52,7 +54,13 @@ static func print_event_log(
 	sleep_ms: float = 50.0,
 	show_data: bool = true,
 	show_empty_data: bool = false,
-	extra_keys: Array[StringName] = []
+	extra_keys: Array[StringName] = [],
+	# new knobs:
+	show_ctx: bool = true,
+	show_scope_path: bool = false,          # show nested scope labels
+	abbrev_arrays_over: int = 10,
+	abbrev_string_over: int = 80,
+	print_unknown_data_keys: bool = false   # dump keys you didn't whitelist
 ) -> void:
 	if log == null:
 		return
@@ -69,33 +77,39 @@ static func print_event_log(
 	var indent := 0
 	var printed := 0
 
-	# Only show these common keys if they exist in e.data.
-	# (You can add/remove freely; this is just the “useful defaults” set.)
+	# “useful defaults” – add Keys.OP here for your STATUS change
 	var base_keys: Array[StringName] = [
+		# scope metadata
 		Keys.SCOPE_ID,
 		Keys.PARENT_SCOPE_ID,
 		Keys.SCOPE_KIND,
 		Keys.SCOPE_LABEL,
 
+		# identity / routing
 		Keys.ACTOR_ID,
 		Keys.SOURCE_ID,
 		Keys.TARGET_ID,
 		Keys.TARGET_IDS,
-
 		Keys.GROUP_INDEX,
 		Keys.TURN_ID,
 
+		# cards
 		Keys.CARD_UID,
 		Keys.CARD_NAME,
+		Keys.INSERT_INDEX,
 
+		# status
 		Keys.STATUS_ID,
+		Keys.OP,                # IMPORTANT for your new STATUS event
 		Keys.INTENSITY,
 		Keys.DURATION,
 
+		# intent
 		Keys.PLANNED_IDX,
 		Keys.INTENT_TEXT,
 		Keys.IS_RANGED,
 
+		# damage
 		Keys.BEFORE_HEALTH,
 		Keys.AFTER_HEALTH,
 		Keys.BASE_AMOUNT,
@@ -104,94 +118,109 @@ static func print_event_log(
 		Keys.ARMOR_DAMAGE,
 		Keys.WAS_LETHAL,
 
-		Keys.INSERT_INDEX,
-		Keys.AFTER_ORDER_IDS,
+		# formation / layout
 		Keys.BEFORE_ORDER_IDS,
+		Keys.AFTER_ORDER_IDS,
 		Keys.MOVE_TYPE,
-		Keys.REMOVED_ALL,
-		Keys.DEATH_REASON,
+
+		# arcana
 		Keys.PROC,
+		Keys.ARCANUM_ID,
+
+		# misc reasons
+		Keys.REASON,
+		Keys.DEATH_REASON,
+		Keys.PROTO,
+		Keys.SUMMONED_ID,
+		Keys.SPAWNED_ID,
+		Keys.ACTIVE_ID,
+		Keys.PENDING_IDS,
 	]
 
-	# Append caller-provided keys (if any)
 	for k in extra_keys:
 		if k != null and !base_keys.has(k):
 			base_keys.append(k)
+
+	# Track scope labels for optional "path" printing
+	var scope_label_stack: Array[String] = []
 
 	for i in range(start, total):
 		var e := log.get_event(i)
 		if e == null:
 			continue
 
-		# Update indent BEFORE printing SCOPE_END
 		var etype := int(e.type)
+
+		# Indent BEFORE printing SCOPE_END
 		if etype == BattleEvent.Type.SCOPE_END:
 			indent = maxi(indent - 1, 0)
+			if scope_label_stack.size() > 0:
+				scope_label_stack.pop_back()
 
+		# Names
 		var type_name := str(etype)
 		if etype >= 0 and etype < BattleEvent.Type.size():
 			type_name = BattleEvent.Type.keys()[etype]
 
-		# Safe scope kind name
 		var kind_name := str(int(e.scope_kind))
 		if int(e.scope_kind) >= 0 and int(e.scope_kind) < Scope.Kind.size():
 			kind_name = Scope.Kind.keys()[int(e.scope_kind)]
 
-		# Padding
+		# Pad
 		var pad := ""
 		for _k in range(indent):
 			pad += "\t"
 
-		# Header: only what actually exists as fields (these always exist on BattleEvent in your writer)
-		# Keep it compact.
+		# Header
 		var header := "%s[%04d] %s" % [pad, int(e.seq), type_name]
 
-		# Only print ctx fields if they’re meaningful (avoid spam like g=-1 / a=0)
-		var ctx_bits: Array[String] = []
-		if int(e.turn_id) != 0:
-			ctx_bits.append("t=%d" % int(e.turn_id))
-		if int(e.group_index) != -1:
-			ctx_bits.append("g=%d" % int(e.group_index))
-		if int(e.active_actor_id) != 0:
-			ctx_bits.append("a=%d" % int(e.active_actor_id))
+		# Compact ctx fields
+		if show_ctx:
+			var ctx_bits: Array[String] = []
+			# These are "context on event", not necessarily duplicated in data
+			if int(e.turn_id) != 0:
+				ctx_bits.append("t=%d" % int(e.turn_id))
+			if int(e.group_index) != -1:
+				ctx_bits.append("g=%d" % int(e.group_index))
+			if int(e.active_actor_id) != 0:
+				ctx_bits.append("a=%d" % int(e.active_actor_id))
+			if int(e.scope_id) != 0:
+				ctx_bits.append("kind=%s" % kind_name)
+			if ctx_bits.size() > 0:
+				header += " " + " ".join(ctx_bits)
 
-		# Scope kind is nice, but only if you’re actually scoped
-		if int(e.scope_id) != 0:
-			ctx_bits.append("kind=%s" % kind_name)
+		# Optional scope path (nice when you're debugging your scopes changing t/g/a)
+		if show_scope_path and scope_label_stack.size() > 0:
+			header += " path=" + "/".join(scope_label_stack)
 
-		if ctx_bits.size() > 0:
-			header += " " + " ".join(ctx_bits)
-
-		# Data printing: only keys that exist, in a stable order
+		# Data
+		var d: Dictionary = e.data if e.data is Dictionary else {}
+		var has_any_data := (d != null and !d.is_empty())
 		var data_bits: Array[String] = []
-		var d : Dictionary = e.data if e.data is Dictionary else null
 
 		if show_data and d != null:
 			for k in base_keys:
-				if d.has(k):
-					var v = d[k]
-					# keep arrays compact
-					if v is PackedInt32Array:
-						var arr := Array(v)
-						if arr.size() > 12:
-							data_bits.append("%s=[%s…](n=%d)" % [str(k), str(arr.slice(0, 12)), arr.size()])
-						else:
-							data_bits.append("%s=%s" % [str(k), str(arr)])
-					elif v is Array:
-						if (v as Array).size() > 12:
-							data_bits.append("%s=[%s…](n=%d)" % [str(k), str((v as Array).slice(0, 12)), (v as Array).size()])
-						else:
-							data_bits.append("%s=%s" % [str(k), str(v)])
-					# big nested dicts: don’t explode output
-					elif v is Dictionary:
-						var dk := (v as Dictionary).keys()
-						data_bits.append("%s={keys:%d}" % [str(k), dk.size()])
-					else:
-						data_bits.append("%s=%s" % [str(k), str(v)])
+				if !d.has(k):
+					continue
+				var v = d[k]
+				data_bits.append("%s=%s" % [str(k), _fmt_value(v, abbrev_arrays_over, abbrev_string_over)])
 
-		# If data exists but nothing matched our keys, don’t dump the whole dict by default.
-		# (That’s what was killing you.)
-		var has_any_data : bool = (d != null and !d.is_empty())
+			# Optionally show keys not in base_keys (sorted, but compact)
+			if print_unknown_data_keys and has_any_data:
+				var unknown: Array[String] = []
+				for kk in d.keys():
+					var sk := String(kk)
+					# Keys are StringName usually, but keep robust
+					if kk is StringName and base_keys.has(kk):
+						continue
+					if kk is String and base_keys.has(StringName(kk)):
+						continue
+					# ignore extremely noisy nested specs by default
+					unknown.append(sk)
+				unknown.sort()
+				if unknown.size() > 0:
+					data_bits.append("extra_keys=%s" % _fmt_value(unknown, abbrev_arrays_over, abbrev_string_over))
+
 		if show_data:
 			if data_bits.size() > 0:
 				header += " data{" + ", ".join(data_bits) + "}"
@@ -200,11 +229,77 @@ static func print_event_log(
 
 		print(header)
 
-		# Update indent AFTER printing SCOPE_BEGIN
+		# Indent AFTER printing SCOPE_BEGIN, and track labels
 		if etype == BattleEvent.Type.SCOPE_BEGIN:
 			indent += 1
+			# Try to capture a nice label to show in path
+			var lbl := ""
+			if d != null and d.has(Keys.SCOPE_LABEL):
+				lbl = String(d[Keys.SCOPE_LABEL])
+			if lbl == "":
+				lbl = "scope"
+			scope_label_stack.append(lbl)
 
 		printed += 1
 		if sleep_ms_every > 0 and (printed % sleep_ms_every) == 0:
-			# ~50ms pause to avoid output overflow / editor hang
 			await Engine.get_main_loop().create_timer(maxf(sleep_ms / 1000.0, 0.001)).timeout
+
+
+static func _fmt_value(v, abbrev_arrays_over: int, abbrev_string_over: int) -> String:
+	if v == null:
+		return "null"
+
+	# Packed arrays
+	if v is PackedInt32Array:
+		var arr := Array(v)
+		return _fmt_array(arr, abbrev_arrays_over)
+
+	# Generic arrays
+	if v is Array:
+		return _fmt_array(v as Array, abbrev_arrays_over)
+
+	# Dicts (don’t explode)
+	if v is Dictionary:
+		var dd := v as Dictionary
+		# Special-case: spec dicts can be huge; show key count + maybe a few keys
+		var ks := dd.keys()
+		var ksn: Array[String] = []
+		for k in ks:
+			ksn.append(String(k))
+		ksn.sort()
+		if ksn.size() > 8:
+			return "{keys:%d [%s…]}" % [ksn.size(), ", ".join(ksn.slice(0, 8))]
+		return "{keys:%d [%s]}" % [ksn.size(), ", ".join(ksn)]
+
+	# String / StringName
+	if v is String:
+		var s := v as String
+		if s.length() > abbrev_string_over:
+			return "\"%s…\"(len=%d)" % [s.substr(0, abbrev_string_over), s.length()]
+		return "\"%s\"" % s
+
+	if v is StringName:
+		return String(v)
+
+	# Enums: optionally pretty-print Status.OP if you’re passing it
+	# (only if you use Keys.OP and store ints)
+	if v is int:
+		return str(int(v))
+
+	if v is bool:
+		return "true" if bool(v) else "false"
+
+	if v is float:
+		# avoid long float spam
+		return "%.3f" % float(v)
+
+	return str(v)
+
+
+static func _fmt_array(arr: Array, abbrev_arrays_over: int) -> String:
+	var n := arr.size()
+	if n == 0:
+		return "[]"
+	if n > abbrev_arrays_over:
+		return "[%s…](n=%d)" % [", ".join(arr.slice(0, abbrev_arrays_over).map(func(x): return str(x))), n]
+	return "[%s]" % ", ".join(arr.map(func(x): return str(x)))

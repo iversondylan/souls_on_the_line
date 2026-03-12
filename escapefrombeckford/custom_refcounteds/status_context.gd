@@ -13,6 +13,18 @@ var status_id: StringName = &""
 var duration: int = 0
 var intensity: int = 0
 
+
+
+# "what happened"
+var op := Status.OP.APPLY
+var delta_intensity := 0 # relevant only for CHANGED
+var delta_duration := 0 # relevant only for CHANGED
+
+var before_intensity := 0
+var before_duration := 0
+var after_intensity := 0
+var after_duration := 0
+
 # optional tags
 var tags: Array[StringName] = []
 

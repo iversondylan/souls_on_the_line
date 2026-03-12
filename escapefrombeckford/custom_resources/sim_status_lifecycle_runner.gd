@@ -48,11 +48,10 @@ static func _expire_unit_by_policy(api: SimBattleAPI, cid: int, policy: int) -> 
 			to_remove.append(sid)
 
 	for sid in to_remove:
-		var rc := RemoveStatusContext.new()
+		var rc := StatusContext.new()
 		rc.source_id = cid
 		rc.target_id = cid
 		rc.status_id = sid
-		rc.remove_all_intensity = true
 		api.remove_status(rc)
 
 static func _tick_duration_for_proc(api: SimBattleAPI, actor_id: int, proc_type: int) -> void:
@@ -104,11 +103,10 @@ static func _tick_duration_for_proc(api: SimBattleAPI, actor_id: int, proc_type:
 
 	# Remove expired (STATUS_REMOVED + replan dirtied inside remove_status())
 	for sid in expired:
-		var rc := RemoveStatusContext.new()
+		var rc := StatusContext.new()
 		rc.source_id = actor_id
 		rc.target_id = actor_id
 		rc.status_id = sid
-		rc.remove_all_intensity = true
 		api.remove_status(rc)
 
 static func _get_proto(api: SimBattleAPI, sid: StringName) -> Status:

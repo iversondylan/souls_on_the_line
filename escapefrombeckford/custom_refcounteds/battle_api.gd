@@ -50,7 +50,7 @@ func resolve_death(_combat_id: int, _reason := "") -> void:
 func apply_status(_ctx: StatusContext) -> void:
 	pass
 
-func remove_status(_ctx: RemoveStatusContext) -> void:
+func remove_status(_ctx: StatusContext) -> void:
 	pass
 
 func summon(_ctx: SummonContext) -> void:

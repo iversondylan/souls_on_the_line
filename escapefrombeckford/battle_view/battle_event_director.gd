@@ -12,17 +12,6 @@ var battle_view: BattleView
 func bind(new_battle_view: BattleView) -> void:
 	battle_view = new_battle_view
 
-#func play_beat_async(beat: Array[BattleEvent], gen: int) -> void:
-	#if battle_view == null or beat.is_empty():
-		#return
-	#
-	#for e in beat:
-		## cancellation check
-		#if !battle_view._playing or gen != battle_view._playback_gen:
-			#return
-		#
-		#on_event(e)
-
 func on_event(e: EventPackage) -> void:
 	if e == null or e.event == null or battle_view == null:
 		return
@@ -69,14 +58,8 @@ func on_event(e: EventPackage) -> void:
 		BattleEvent.Type.TURN_STATUS:
 			_on_turn_status(e)
 		BattleEvent.Type.PLAYER_INPUT_REACHED:
-			# old path: draw hand, enable preview button, etc.
 			Events.request_draw_hand.emit()
-			# optionally: also arm end turn here if you want it fully event-driven
-			# Events.player_input_reached.emit() if you had something like that
-
 		BattleEvent.Type.END_TURN_PRESSED:
-			# old path expects discard and then sim_host.request_player_end() is already called.
-			# If you decide you want event-driven discard instead of Battle button handler:
 			Events.player_turn_completed.emit()
 		BattleEvent.Type.DISCARD_REQUESTED:
 			_on_discard_requested(e)
@@ -88,11 +71,10 @@ func on_event(e: EventPackage) -> void:
 			_on_fade_followthrough(e)
 		BattleEvent.Type.FADED:
 			_on_faded(e)
-
 		BattleEvent.Type.SUMMON_WINDUP:
 			_on_summon_windup(e)
 		BattleEvent.Type.SUMMONED:
-			_on_summoned(e) # keep, but make it “spawn-only”
+			_on_summoned(e)
 		BattleEvent.Type.SUMMON_FOLLOWTHROUGH:
 			_on_summon_followthrough(e)
 		BattleEvent.Type.SUMMON_RESERVE_RELEASED:
@@ -119,26 +101,6 @@ func _on_spawned(e: EventPackage) -> void:
 	ctx.order = after_ids
 	ctx.animate_to_position = false
 	battle_view.set_group_order(ctx)
-
-#func _on_summoned(e: EventPackage) -> void:
-	#
-	#var cid := int(e.event.data.get(Keys.SUMMONED_ID, 0))
-	#var g := int(e.event.data.get(Keys.GROUP_INDEX, e.event.group_index))
-	#var idx := int(e.event.data.get(Keys.INSERT_INDEX, -1))
-	#var after_ids : PackedInt32Array = e.event.data.get(Keys.AFTER_ORDER_IDS, PackedInt32Array())
-	##print("battle_event_director.gd _on_summoned() cid: %s, group: %s, ind: %s" % [cid, g, idx])
-	#var combatant := battle_view.get_or_create_combatant_view(cid, g, idx)
-	#if combatant == null:
-		#return
-	#
-	#var spec: Dictionary = e.event.data.get(Keys.SUMMON_SPEC, {})
-	#combatant.apply_spawn_spec(spec)
-	#combatant.play_summon_fx()
-	#var ctx := GroupLayoutOrder.new()
-	#ctx.group_index = g
-	#ctx.order = after_ids
-	#ctx.animate_to_position = true
-	#battle_view.set_group_order(ctx)
 
 func _on_turn_status(e: EventPackage) -> void:
 	var d := e.event.data if e.event.data != null else {}
@@ -300,7 +262,6 @@ func _on_status_removed(e: EventPackage) -> void:
 	o.target_id = int(e.event.data.get(Keys.TARGET_ID, 0))
 	o.status_id = e.event.data.get(Keys.STATUS_ID, &"")
 	o.intensity = int(e.event.data.get(Keys.INTENSITY, 1))
-	o.removed_all = bool(e.event.data.get(Keys.REMOVED_ALL, false))
 	
 	var target := battle_view.get_combatant(o.target_id)
 	if target != null and target.status_view_grid:
@@ -474,137 +435,6 @@ func _on_faded(e: EventPackage) -> void:
 		v.queue_free()
 	battle_view.combatants_by_cid.erase(dead_id)
 
-#func _on_fade_windup(e: EventPackage) -> void:
-	#var tid := int(e.event.data.get(Keys.TARGET_ID, 0))
-	#if tid <= 0:
-		#return
-#
-	#var v := battle_view.get_combatant(tid)
-	#if v == null:
-		#return
-#
-	## Mark dead-for-interaction / targeting
-	#v.is_alive = false
-	#if v.target_area:
-		#v.target_area.monitorable = false
-		#v.target_area.monitoring = false
-	#if v.area_left:
-		#v.area_left.monitorable = false
-		#v.area_left.monitoring = false
-#
-	## Fade OUT only during windup
-	#if v.tween_misc:
-		#v.tween_misc.kill()
-	#v.tween_misc = v.create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
-	#if v.character_art != null:
-		#v.tween_misc.tween_property(v.character_art, "modulate:a", 0.0, maxf(e.duration, 0.01))
-#
-#
-#func _on_faded(e: EventPackage) -> void:
-	## Non-beat semantic “removed without death triggers”
-	#var tid := int(e.event.data.get(Keys.TARGET_ID, 0))
-	#if tid <= 0:
-		#return
-#
-	#var v := battle_view.get_combatant(tid)
-	#if v == null:
-		## still ensure mapping is clean
-		#battle_view.combatants_by_cid.erase(tid)
-		#return
-#
-	## Remove from group registry (so layout ignores it)
-	#var g := int(e.event.data.get(Keys.GROUP_INDEX, v.group_index))
-	#var group: GroupView = battle_view.friendly_group if g == 0 else battle_view.enemy_group
-	#if group != null:
-		#group.unregister_cid(tid)
-#
-	## Remove from BattleView mapping, then free
-	#battle_view.combatants_by_cid.erase(tid)
-	#v.queue_free()
-
-#func _on_summon_windup(e: EventPackage) -> void:
-	#var d := e.event.data if e.event.data != null else {}
-#
-	#var g := int(d.get(Keys.GROUP_INDEX, e.event.group_index))
-	#var insert_index := int(d.get(Keys.INSERT_INDEX, -1))
-	#var summoned_id := int(d.get(Keys.SUMMONED_ID, 0)) # if you don’t have this at windup time, see note below
-#
-	## Prefer BEFORE_ORDER_IDS (exact), else fallback to WINDUP_LAYOUT_COUNT, else fallback to current view count.
-	#var before_order: PackedInt32Array = d.get(Keys.BEFORE_ORDER_IDS, PackedInt32Array())
-	#var layout_count := int(d.get(Keys.WINDUP_LAYOUT_COUNT, 0))
-	#if layout_count <= 0 and before_order != null and before_order.size() > 0:
-		#layout_count = before_order.size()
-	#if layout_count <= 0:
-		## last resort (normal summons)
-		#layout_count = battle_view.get_combatant_views_for_group(g).size()
-#
-	#if summoned_id <= 0:
-		## If your event stream doesn’t know summoned_id at windup time,
-		## you can still do nothing here and let the SUMMONED handler set alpha=0;
-		## then do the “place at ghost slot + fade in” in _on_summoned instead.
-		#return
-#
-	#var v := battle_view.get_combatant(summoned_id)
-	#if v == null:
-		#return
-#
-	## Place at the ghost slot position computed with the *windup* layout count
-	#var slot_global : Vector2 = battle_view.get_summon_slot_position_for_layout_count(g, insert_index, layout_count)
-	#var group: GroupView = battle_view.friendly_group if g == 0 else battle_view.enemy_group
-	#v.position = group.to_local(slot_global)
-	#v.anchor_position = v.position
-	#v.has_anchor_position = true
-#
-	## Fade in during windup
-	#v.is_alive = true
-	#if v.character_art != null:
-		#var c := v.character_art.modulate
-		#c.a = 0.0
-		#v.character_art.modulate = c
-#
-	#if v.tween_misc:
-		#v.tween_misc.kill()
-	#v.tween_misc = v.create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-	#if v.character_art != null:
-		#v.tween_misc.tween_property(v.character_art, "modulate:a", 1.0, maxf(e.duration, 0.01))
-
-#func _on_summon_windup(e: EventPackage) -> void:
-	## Fade IN the new unit at the ghost slot position.
-	## This assumes SUMMONED already happened earlier in the same card (often same beat or earlier beat),
-	## OR that the unit exists in battle_view by the time this runs.
-	#var summoned_id := int(e.event.data.get(Keys.SUMMONED_ID, 0)) # add this to the event (see below)
-	#var g := int(e.event.data.get(Keys.GROUP_INDEX, e.event.group_index))
-	#var insert_index := int(e.event.data.get(Keys.INSERT_INDEX, -1))
-	#if summoned_id <= 0:
-		#return
-#
-	#var v := battle_view.get_combatant(summoned_id)
-	#if v == null:
-		#return
-#
-	## Ensure it's targetable again
-	#v.is_alive = true
-#
-	## Place at ghost slot (global -> group local)
-	#var group: GroupView = battle_view.friendly_group if g == 0 else battle_view.enemy_group
-	#if group != null:
-		#var slot_global := battle_view.get_summon_slot_position(g, insert_index)
-		#v.position = group.to_local(slot_global)
-		#v.anchor_position = v.position
-		#v.has_anchor_position = true
-#
-	## Start invisible, then fade in during windup
-	#if v.character_art != null:
-		#var c := v.character_art.modulate
-		#c.a = 0.0
-		#v.character_art.modulate = c
-#
-	#if v.tween_misc:
-		#v.tween_misc.kill()
-	#v.tween_misc = v.create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-	#if v.character_art != null:
-		#v.tween_misc.tween_property(v.character_art, "modulate:a", 1.0, maxf(e.duration, 0.01))
-
 func _on_summon_windup(e: EventPackage) -> void:
 	var d := e.event.data if e.event.data != null else {}
 
@@ -708,25 +538,6 @@ func _on_summon_reserve_released(e: EventPackage) -> void:
 	if summoned_id <= 0 or card_uid == "":
 		return
 	Events.summon_reserve_card_released.emit(summoned_id, card_uid)
-
-#func _on_summon_followthrough(e: EventPackage) -> void:
-	## “All that happens is the new combatant appears moves into place”
-	## => just re-layout to AFTER_ORDER_IDS with animate=true.
-	#var g := int(e.event.data.get(Keys.GROUP_INDEX, e.event.group_index))
-	#var after_ids: PackedInt32Array = e.event.data.get(Keys.AFTER_ORDER_IDS, PackedInt32Array())
-	#if after_ids.is_empty():
-		#return
-#
-	#var arr: Array = []
-	#arr.resize(after_ids.size())
-	#for i in range(after_ids.size()):
-		#arr[i] = int(after_ids[i])
-#
-	#var ctx := GroupLayoutOrder.new()
-	#ctx.group_index = g
-	#ctx.order = arr
-	#ctx.animate_to_position = true
-	#battle_view.set_group_order(ctx)
 
 func _on_scope_begin(_e: EventPackage) -> void:
 	#print("battle_event_director.gd _on_scope_begin()")

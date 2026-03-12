@@ -39,9 +39,9 @@ static func run(api: SimBattleAPI, ctx: NPCAIContext) -> void:
 	var source_id := int(params.get(Keys.SOURCE_ID, target_id))
 
 	# Beat markers FIRST (application happens during beat 2)
-	if api.writer != null:
-		api.writer.emit_status_windup(source_id, target_id, status_id, intensity, duration)
-		api.writer.emit_status_followthrough(source_id, target_id, status_id, intensity, duration)
+	#if api.writer != null:
+		#api.writer.emit_status_windup(source_id, target_id, status_id, intensity, duration)
+		#api.writer.emit_status_followthrough(source_id, target_id, status_id, intensity, duration)
 
 	var sc := StatusContext.new()
 	sc.source_id = source_id
