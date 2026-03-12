@@ -1,14 +1,8 @@
 # battle_transport.gd
 class_name BattleTransport extends RefCounted
 
-var tempo: float = 130.0
+var tempo_bpm: float = 120.0
 
-# Later I add:
-# func wait_beats(beats: float) -> void
-# and in there I quantize against BPM + audio playback position
-
-func get_beat_duration(note_denom: float) -> float:
-	if note_denom >= 1.0 and note_denom <= 128.0:
-		var duration: float = 240.0/(tempo * note_denom)
-		return duration
-	return 0
+func seconds_for_quarters(q: float) -> float:
+	# q = number of quarter notes
+	return maxf(0.0, (60.0 / tempo_bpm) * q)

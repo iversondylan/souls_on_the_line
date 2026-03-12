@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="Sound" format=3 uid="uid://cbs38uf5bi3y"]
+
+[ext_resource type="Script" uid="uid://bjedhaqsbwou7" path="res://custom_resources/sound.gd" id="1_5sajy"]
+[ext_resource type="AudioStream" uid="uid://b7h1macqi2nno" path="res://assets/music/tamborine_120bpm_4-4time_301beats_VIATzd.mp3" id="2_di25l"]
+
+[resource]
+script = ExtResource("1_5sajy")
+stream = ExtResource("2_di25l")
+volume_db = -19.872
+metadata/_custom_type_script = "uid://bjedhaqsbwou7"

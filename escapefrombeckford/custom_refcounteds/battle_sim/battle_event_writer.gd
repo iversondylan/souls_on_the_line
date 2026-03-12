@@ -15,11 +15,8 @@ var _beat_marker_types := {
 	BattleEvent.Type.ARCANUM_PROC: true,
 	BattleEvent.Type.STRIKE: true,
 	BattleEvent.Type.SUMMONED: true,
-	BattleEvent.Type.STATUS: true,
 	BattleEvent.Type.DIED: true,
 	BattleEvent.Type.FADED: true,
-	BattleEvent.Type.ACTOR_BEGIN: true,
-	BattleEvent.Type.ACTOR_END: true,
 }
 
 func _init(_log: BattleEventLog, _scopes: BattleScopeManager) -> void:
@@ -174,7 +171,7 @@ func emit_actor_end(actor_id: int) -> int:
 	})
 
 func emit_arcana_proc(proc: int) -> int:
-	return _append(BattleEvent.Type.DEBUG, { # if you later add ARCANA_PROC type, switch to it
+	return _append(BattleEvent.Type.ARCANA_PROC, { # if you later add ARCANA_PROC type, switch to it
 		Keys.PROC: int(proc),
 		Keys.TURN_ID: int(turn_id),
 		Keys.GROUP_INDEX: int(group_index),

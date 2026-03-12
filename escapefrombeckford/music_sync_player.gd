@@ -1,8 +1,22 @@
-# sound_player.gd
+# music_sync_player.gd
 extends Node
 
-@export var bus := "SFX"
 @onready var metronome_player: AudioStreamPlayer = $MetronomePlayer
+
+@export var bus := "Music"
+@export var metronome_sound: Sound # drag your 120bpm Sound resource here
+
+var clock: BattleClock
+
+func _ready() -> void:
+	# ... your existing setup ...
+	var p := MusicPlayer.metronome_player
+	p.stream = metronome_sound.stream
+	p.bus = "Music"
+	p.volume_db = metronome_sound.volume_db
+	p.pitch_scale = metronome_sound.pitch
+
+	clock = MetronomeClock.new(p, 120.0, 0.0) # offset_sec tweak later
 
 func play(sound, single := false, runtime_volume_db := 0.0, runtime_pitch := 0.0) -> void:
 	if not sound:

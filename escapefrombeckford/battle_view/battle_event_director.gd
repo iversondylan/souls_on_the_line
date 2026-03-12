@@ -3,7 +3,7 @@
 class_name BattleEventDirector extends RefCounted
 
 var battle_view: BattleView
-
+var click: Sound
 
 @export var spawn_pause_sec: float = 0.04
 @export var summon_pause_sec: float = 0.06
@@ -11,6 +11,7 @@ var battle_view: BattleView
 
 func bind(new_battle_view: BattleView) -> void:
 	battle_view = new_battle_view
+	click = battle_view.click_sound
 
 func on_event(e: EventPackage) -> void:
 	if e == null or e.event == null or battle_view == null:
@@ -27,26 +28,26 @@ func on_event(e: EventPackage) -> void:
 			_on_moved(e)
 		BattleEvent.Type.TARGETED:
 			_on_targeted(e)
-		BattleEvent.Type.ATTACK_PREP:
-			_on_attack_prep(e)
-		BattleEvent.Type.ATTACK_WRAPUP:
-			_on_attack_wrapup(e)
-		BattleEvent.Type.STRIKE_WINDUP:
-			_on_strike_windup(e)
-		BattleEvent.Type.STRIKE_FOLLOWTHROUGH:
-			_on_strike_followthrough(e)
+		#BattleEvent.Type.ATTACK_PREP:
+			#_on_attack_prep(e)
+		#BattleEvent.Type.ATTACK_WRAPUP:
+			#_on_attack_wrapup(e)
+		#BattleEvent.Type.STRIKE_WINDUP:
+			#_on_strike_windup(e)
+		#BattleEvent.Type.STRIKE_FOLLOWTHROUGH:
+			#_on_strike_followthrough(e)
 		BattleEvent.Type.DAMAGE_APPLIED:
 			_on_damage_applied(e)
-		BattleEvent.Type.STATUS_APPLIED:
-			_on_status_applied(e)
-		BattleEvent.Type.STATUS_REMOVED:
-			_on_status_removed(e)
+		#BattleEvent.Type.STATUS_APPLIED:
+			#_on_status_applied(e)
+		#BattleEvent.Type.STATUS_REMOVED:
+			#_on_status_removed(e)
 		BattleEvent.Type.STATUS_CHANGED:
 			_on_status_changed(e)
-		BattleEvent.Type.DEATH_WINDUP:
-			_on_death_windup(e)
-		BattleEvent.Type.DEATH_FOLLOWTHROUGH:
-			_on_death_followthrough(e)
+		#BattleEvent.Type.DEATH_WINDUP:
+			#_on_death_windup(e)
+		#BattleEvent.Type.DEATH_FOLLOWTHROUGH:
+			#_on_death_followthrough(e)
 		BattleEvent.Type.DIED:
 			_on_died(e)
 		BattleEvent.Type.SET_INTENT:
@@ -65,18 +66,18 @@ func on_event(e: EventPackage) -> void:
 			_on_discard_requested(e)
 		BattleEvent.Type.DISCARD_RESOLVED:
 			pass
-		BattleEvent.Type.FADE_WINDUP:
-			_on_fade_windup(e)
-		BattleEvent.Type.FADE_FOLLOWTHROUGH:
-			_on_fade_followthrough(e)
+		#BattleEvent.Type.FADE_WINDUP:
+			#_on_fade_windup(e)
+		#BattleEvent.Type.FADE_FOLLOWTHROUGH:
+			#_on_fade_followthrough(e)
 		BattleEvent.Type.FADED:
 			_on_faded(e)
-		BattleEvent.Type.SUMMON_WINDUP:
-			_on_summon_windup(e)
+		#BattleEvent.Type.SUMMON_WINDUP:
+			#_on_summon_windup(e)
 		BattleEvent.Type.SUMMONED:
 			_on_summoned(e)
-		BattleEvent.Type.SUMMON_FOLLOWTHROUGH:
-			_on_summon_followthrough(e)
+		#BattleEvent.Type.SUMMON_FOLLOWTHROUGH:
+			#_on_summon_followthrough(e)
 		BattleEvent.Type.SUMMON_RESERVE_RELEASED:
 			_on_summon_reserve_released(e)
 		_:
@@ -549,19 +550,17 @@ func _on_scope_end(_e: EventPackage) -> void:
 	pass
 
 func play_beat(pkg: BeatPackage) -> void:
+	if pkg.wait_quarters > 0.0:
+		SFXPlayer.play(click)
 	if battle_view == null or pkg.beat.is_empty():
 		return
 	if !battle_view._playing or pkg.gen != battle_view._playback_gen:
 		return
-
-	# Optional: find marker for routing decisions
-	#var marker := _find_marker(pkg.beat)
-
+	
 	for e in pkg.beat:
-		# cancellation check
 		if !battle_view._playing or pkg.gen != battle_view._playback_gen:
 			return
 		var epkg := EventPackage.new()
 		epkg.event = e
-		epkg.duration = pkg.duration
+		epkg.duration = pkg.duration_sec
 		on_event(epkg)

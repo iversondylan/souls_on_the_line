@@ -5,14 +5,6 @@ class_name BattleEventPlayer extends RefCounted
 var _log: BattleEventLog
 var _cursor: BattleEventCursor = BattleEventCursor.new()
 
-# These scope kinds define "presentation units" that should be consumed as whole subtrees.
-# DO NOT include GROUP_TURN.
-var _sticky_scope_kinds := PackedInt32Array([
-	Scope.Kind.SETUP,	 # optional: setup as one chunk
-	Scope.Kind.ARCANA,	 # each proc scope is a beat
-	Scope.Kind.STRIKE,	 # each strike is a beat
-	Scope.Kind.CARD,	 # later, when you add card scopes
-])
 
 func bind_log(log: BattleEventLog) -> void:
 	_log = log

@@ -14,6 +14,10 @@ var battle_ui: BattleUI
 var event_player: BattleEventPlayer
 var event_director: BattleEventDirector
 var transport: BattleTransport
+var scheduler: BeatScheduler
+var clock: BattleClock
+
+
 var status_catalog: StatusCatalog = null
 
 var _playing := false
@@ -28,12 +32,24 @@ var tempo: float = 110
 
 var tween_bg: Tween
 
+@export var metronome_sound: Sound # drag your 120bpm Sound resource here
+@export var click_sound: Sound
+
 func _ready() -> void:
+	transport = BattleTransport.new()
+	transport.tempo_bpm = tempo
+	scheduler = BeatScheduler.new()
 	event_player = BattleEventPlayer.new()
 	event_director = BattleEventDirector.new()
 	event_director.bind(self)
-	transport = BattleTransport.new()
-	transport.tempo = tempo
+	
+	var p : AudioStreamPlayer = MusicPlayer.metronome_player
+	p.stream = metronome_sound.stream
+	p.bus = "Music"
+	p.volume_db = metronome_sound.volume_db
+	p.pitch_scale = metronome_sound.pitch
+	#p.play()
+	clock = MetronomeClock.new(p, 120.0, 0.0, get_tree()) # offset_sec tweak later
 
 func bind_log(log: BattleEventLog) -> void:
 	event_player.bind_log(log)
@@ -41,52 +57,59 @@ func bind_log(log: BattleEventLog) -> void:
 func start_playback() -> void:
 	if _playing:
 		return
+	var p : AudioStreamPlayer = MusicPlayer.metronome_player
+	p.play()
 	_playing = true
 	_playback_gen += 1
-	_playback_loop(_playback_gen) # fire-and-forget coroutine
+	if clock != null:
+		clock.start()
+	_playback_loop(_playback_gen)
 
 func stop_playback() -> void:
 	_playing = false
-	_playback_gen += 1 # invalidates any running loop
+	_playback_gen += 1
+	if clock != null:
+		clock.stop()
 
 func _playback_loop(gen: int) -> void:
+	# music timeline anchor: when this loop started
+	var next_t := clock.now_sec() if clock != null else 0.0
+
 	while _playing and gen == _playback_gen and event_player != null:
-		# If we reached end-of-log, wait for more events to arrive.
 		while _playing and gen == _playback_gen and !event_player.has_next():
-			var log := event_player._log # or add a getter; see note below
+			var log := event_player.get_log()
 			if log == null:
 				_playing = false
 				return
 			await log.appended
-			await get_tree().process_frame
-		
+			# NOTE: you can remove this if you truly want zero frame sync.
+			# It's only to avoid tight loops if appended fires multiple times in the same frame.
+			# await get_tree().process_frame
+
 		if !_playing or gen != _playback_gen:
 			return
-		
+
 		var beat := event_player.next_beat()
 		if beat.is_empty():
-			#await get_tree().process_frame
 			continue
-			
-		#print("battle_view.gd _playback_loop() this beat contains : v")
-		#for event: BattleEvent in beat:
-			#print("battle_view.gd _playback_loop() ", BattleEvent.Type.keys()[event.type])
-		#print("battle_view.gd _playback_loop() this beat contains: ^")
 		
-		var note_denom := _note_for_beat(beat)
-		var duration := transport.get_beat_duration(note_denom)
-		#print("battle_view.gd _playback_loop() allocating time: %ss" % duration)
+		var wait_q := scheduler.quarters_for_beat(beat)
 		var pkg := BeatPackage.new()
 		pkg.beat = beat
 		pkg.gen = gen
-		pkg.duration = duration
-		
+		pkg.wait_quarters = wait_q
+
+		# play immediately (this beat "owns" [next_t, next_t+dur])
 		event_director.play_beat(pkg)
 		
-		if !_playing or gen != _playback_gen:
-			return
-		if duration > 0.0:
-			await get_tree().create_timer(duration).timeout
+		# advance the timeline and await exactly once
+		if wait_q > 0.0 and clock != null:
+			next_t += wait_q * clock.seconds_per_quarter()
+			print("beat contains v next_t: ", next_t)
+			for event in beat:
+				print("event type: ", BattleEvent.Type.keys()[event.type])
+			print("beat contains ^")
+			await clock.wait_until(next_t)
 
 func get_or_create_combatant_view(cid: int, group_index: int, insert_index: int, animate := false, is_player := false) -> CombatantView:
 	if cid <= 0:
@@ -137,52 +160,6 @@ func get_combatants() -> Array[CombatantView]:
 	for key in combatants_by_cid:
 		combatants.push_back(combatants_by_cid[key] as CombatantView)
 	return combatants
-
-func _note_for_beat(beat: Array[BattleEvent]) -> float:
-	if beat.is_empty():
-		return 0.0
-	
-	# find the beat marker inside this beat (usually first non-scope you appended)
-	var marker: BattleEvent = null
-	for e in beat:
-		if e != null and e.defines_beat:
-			marker = e
-			break
-	if marker == null:
-		return 0.0
-	
-	# defaults by type (for now)
-	match int(marker.type):
-		BattleEvent.Type.ARCANUM_PREP:
-			return 8.0
-		BattleEvent.Type.ARCANUM_WRAPUP:
-			return 8.0
-		BattleEvent.Type.ATTACK_PREP:
-			return 8.0
-		BattleEvent.Type.STRIKE_WINDUP:
-			return 8.0
-		BattleEvent.Type.STRIKE_FOLLOWTHROUGH:
-			return 8.0
-		BattleEvent.Type.ATTACK_WRAPUP:
-			return 8.0
-		BattleEvent.Type.SUMMON_WINDUP:
-			return 16.0
-		BattleEvent.Type.SUMMON_FOLLOWTHROUGH:
-			return 16.0
-		BattleEvent.Type.STATUS_WINDUP:
-			return 8.0
-		BattleEvent.Type.STATUS_FOLLOWTHROUGH:
-			return 8.0
-		BattleEvent.Type.DEATH_WINDUP:
-			return 8.0
-		BattleEvent.Type.DEATH_FOLLOWTHROUGH:
-			return 8.0
-		BattleEvent.Type.FADE_WINDUP:
-			return 0.0
-		BattleEvent.Type.FADE_FOLLOWTHROUGH:
-			return 0.0
-		_:
-			return 0.0
 
 func apply_focus(order: FocusOrder) -> void:
 	_apply_focus_background(order)
