@@ -2,25 +2,53 @@
 
 class_name BeatScheduler extends RefCounted
 
-# Defaults in quarter-notes
-var defaults := {
-	BattleEvent.Type.ARCANUM_PROC: 1.0,
-	BattleEvent.Type.STRIKE: 0.5,
-	BattleEvent.Type.DAMAGE_APPLIED: 0.0,
-	BattleEvent.Type.STATUS: 0.0,
+enum Mode { FREE, RELATIVE, GRID }
+
+# Relative durations in quarter-notes (used when Mode.RELATIVE)
+var rel_defaults := {
+	BattleEvent.Type.STRIKE: 1.0,
 	BattleEvent.Type.SUMMONED: 1.0,
 	BattleEvent.Type.DIED: 1.0,
-	BattleEvent.Type.FADED: 0.5,
-	BattleEvent.Type.ACTOR_BEGIN: 0.0,
-	BattleEvent.Type.ACTOR_END: 0.0,
-	BattleEvent.Type.TURN_STATUS: 0.0,
-	BattleEvent.Type.CARD_PLAYED: 0.0,
+	BattleEvent.Type.FADED: 1.0,
+	BattleEvent.Type.ARCANUM_PROC: 1.0,
 }
 
-# Optional per-id overrides:
-# eg scheduler.override_by_arcanum_id[&"unruly_pyric_wraps"] = 0.5
-var override_by_arcanum_id: Dictionary = {} # StringName -> float
-var override_by_card_name: Dictionary = {}  # String -> float
+# You can override per arcanum/card later (same as you started)
+var override_by_arcanum_id: Dictionary = {}
+var override_by_card_name: Dictionary = {}
+
+# Decide timing mode for this *package*
+func mode_for_beat(beat: Array[BattleEvent], is_player_turn: bool, is_player_actor: bool) -> int:
+	if beat == null or beat.is_empty():
+		return Mode.FREE
+
+	# If we’re waiting on player input, we definitely cannot advance on music time.
+	if _contains_type(beat, BattleEvent.Type.PLAYER_INPUT_REACHED):
+		return Mode.FREE
+
+	# During the player’s actor turn:
+	# - everything caused by card play should be punchy and NOT grid-locked
+	if is_player_turn and is_player_actor:
+		# If this beat starts with a STRIKE/SUMMONED/etc caused by the player, keep it relative.
+		if _contains_type(beat, BattleEvent.Type.CARD_PLAYED) or _contains_type(beat, BattleEvent.Type.END_TURN_PRESSED):
+			return Mode.FREE
+		# If it’s player-caused combat events (STRIKE etc), prefer RELATIVE, not GRID
+		if _contains_any(beat, [BattleEvent.Type.STRIKE, BattleEvent.Type.SUMMONED, BattleEvent.Type.DIED, BattleEvent.Type.FADED, BattleEvent.Type.STATUS, BattleEvent.Type.DAMAGE_APPLIED]):
+			return Mode.RELATIVE
+
+	# When a NON-player ACTOR_BEGIN arrives (NPC starts acting),
+	# this is where we want to re-lock to the beat grid.
+	if _contains_type(beat, BattleEvent.Type.ACTOR_BEGIN) and !is_player_actor:
+		return Mode.GRID
+
+	# Arcana procs often feel best on-grid too (optional)
+	if _contains_type(beat, BattleEvent.Type.ARCANUM_PROC) and !is_player_turn:
+		return Mode.GRID
+
+	# Otherwise, default:
+	# - if not player actor, you can keep most NPC action beats RELATIVE or GRID depending on taste.
+	# I’d do RELATIVE unless it’s an explicit “start acting” marker.
+	return Mode.RELATIVE
 
 func quarters_for_beat(beat: Array[BattleEvent]) -> float:
 	if beat == null or beat.is_empty():
@@ -30,16 +58,14 @@ func quarters_for_beat(beat: Array[BattleEvent]) -> float:
 	if marker == null:
 		return 0.0
 
-	# type-based default
-	var q := float(defaults.get(int(marker.type), 0.0))
+	var q := float(rel_defaults.get(int(marker.type), 0.0))
 
-	# example: arcanum overrides
+	# Optional overrides
 	if int(marker.type) == BattleEvent.Type.ARCANUM_PROC:
-		var aid : StringName = marker.data.get(Keys.ARCANUM_ID, &"") if marker.data else &""
+		var aid: StringName = marker.data.get(Keys.ARCANUM_ID, &"") if marker.data else &""
 		if aid != &"" and override_by_arcanum_id.has(aid):
 			q = float(override_by_arcanum_id[aid])
 
-	# example: card overrides
 	if int(marker.type) == BattleEvent.Type.CARD_PLAYED:
 		var cname := String(marker.data.get(Keys.CARD_NAME, "")) if marker.data else ""
 		if cname != "" and override_by_card_name.has(cname):
@@ -52,3 +78,17 @@ func _find_marker(beat: Array[BattleEvent]) -> BattleEvent:
 		if e != null and e.defines_beat:
 			return e
 	return null
+
+func _contains_type(beat: Array[BattleEvent], t: int) -> bool:
+	for e in beat:
+		if e != null and int(e.type) == t:
+			return true
+	return false
+
+func _contains_any(beat: Array[BattleEvent], types: Array[int]) -> bool:
+	for e in beat:
+		if e == null:
+			continue
+		if types.has(int(e.type)):
+			return true
+	return false

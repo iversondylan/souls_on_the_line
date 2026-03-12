@@ -14,6 +14,7 @@ var battle_ui: BattleUI
 var event_player: BattleEventPlayer
 var event_director: BattleEventDirector
 var transport: BattleTransport
+var planner: SchedulePlanner
 var scheduler: BeatScheduler
 var clock: BattleClock
 
@@ -39,6 +40,7 @@ func _ready() -> void:
 	transport = BattleTransport.new()
 	transport.tempo_bpm = tempo
 	scheduler = BeatScheduler.new()
+	planner = SchedulePlanner.new()
 	event_player = BattleEventPlayer.new()
 	event_director = BattleEventDirector.new()
 	event_director.bind(self)
@@ -72,19 +74,18 @@ func stop_playback() -> void:
 		clock.stop()
 
 func _playback_loop(gen: int) -> void:
-	# music timeline anchor: when this loop started
-	var next_t := clock.now_sec() if clock != null else 0.0
+	var spq := clock.seconds_per_quarter()
+	var schedule_t := clock.now_sec() # schedule cursor (when the next beat should start)
+	var grid_locked := false
 
 	while _playing and gen == _playback_gen and event_player != null:
+		# wait for events
 		while _playing and gen == _playback_gen and !event_player.has_next():
 			var log := event_player.get_log()
 			if log == null:
 				_playing = false
 				return
 			await log.appended
-			# NOTE: you can remove this if you truly want zero frame sync.
-			# It's only to avoid tight loops if appended fires multiple times in the same frame.
-			# await get_tree().process_frame
 
 		if !_playing or gen != _playback_gen:
 			return
@@ -92,24 +93,93 @@ func _playback_loop(gen: int) -> void:
 		var beat := event_player.next_beat()
 		if beat.is_empty():
 			continue
-		
+
+		# ----- derive actor context for scheduler -----
+		var player_id := 0
+		if sim_host != null and sim_host.get_main_api() != null:
+			player_id = int(sim_host.get_main_api().get_player_id())
+
+		var actor_begin_id := _actor_begin_id_in_beat(beat)
+		var is_player_actor := (actor_begin_id != 0 and actor_begin_id == player_id)
+
+		# TODO: replace with your real “is player turn” test
+		var is_player_turn := true
+
+		# ----- decide mode + duration in quarters -----
+		var mode := scheduler.mode_for_beat(beat, is_player_turn, is_player_actor)
 		var wait_q := scheduler.quarters_for_beat(beat)
+		var wait_sec := wait_q * spq
+
+		# ----- compute t_start / t_next -----
+		var now := clock.now_sec()
+		var t_start := now
+		var t_next := now
+
+		match mode:
+			BeatScheduler.Mode.FREE:
+				# immediate; treat duration as “0 until next starts”
+				# (you can optionally set t_next = now + small epsilon if you want)
+				t_start = now
+				t_next = now
+
+				# Also: if we were grid-locked and we hit a FREE beat (eg player input),
+				# unlock + snap schedule cursor to now so we don't "catch up" later.
+				grid_locked = false
+				schedule_t = now
+
+			BeatScheduler.Mode.RELATIVE:
+				# start aligned to schedule cursor, but never in the past
+				t_start = maxf(schedule_t, now)
+				t_next = t_start + wait_sec
+				schedule_t = t_next
+
+			BeatScheduler.Mode.GRID:
+				# once NPC begins, we lock to the grid
+				grid_locked = true
+
+				# ensure schedule cursor isn't behind wall-clock
+				schedule_t = maxf(schedule_t, now)
+
+				# snap START to the next grid line
+				t_start = clock.next_grid_time(schedule_t, 1.0) # 1.0 quarter grid
+
+				# next start is duration later; for now assume your durations are grid-compatible
+				t_next = t_start + wait_sec
+
+				# If you later allow non-grid durations but still want starts on-grid,
+				# snap t_next too:
+				# t_next = clock.next_grid_time(t_next, 1.0)
+
+				schedule_t = t_next
+
+		# ----- start-aligned wait (this is the whole point) -----
+		now = clock.now_sec()
+		if t_start > now:
+			await clock.wait_until(t_start)
+
+		if !_playing or gen != _playback_gen:
+			return
+
+		# ----- play with duration = time until following beat starts -----
 		var pkg := BeatPackage.new()
 		pkg.beat = beat
 		pkg.gen = gen
 		pkg.wait_quarters = wait_q
+		pkg.t_start_sec = t_start
+		pkg.t_next_sec = t_next
+		pkg.duration_sec = maxf(0.0, t_next - t_start)
 
-		# play immediately (this beat "owns" [next_t, next_t+dur])
 		event_director.play_beat(pkg)
-		
-		# advance the timeline and await exactly once
-		if wait_q > 0.0 and clock != null:
-			next_t += wait_q * clock.seconds_per_quarter()
-			print("beat contains v next_t: ", next_t)
-			for event in beat:
-				print("event type: ", BattleEvent.Type.keys()[event.type])
-			print("beat contains ^")
-			await clock.wait_until(next_t)
+
+		# no extra await here — next loop iteration will await its own t_start if needed
+
+
+func _actor_begin_id_in_beat(beat: Array[BattleEvent]) -> int:
+	for e in beat:
+		if e != null and int(e.type) == BattleEvent.Type.ACTOR_BEGIN:
+			if e.data != null and e.data.has(Keys.ACTOR_ID):
+				return int(e.data[Keys.ACTOR_ID])
+	return 0
 
 func get_or_create_combatant_view(cid: int, group_index: int, insert_index: int, animate := false, is_player := false) -> CombatantView:
 	if cid <= 0:
