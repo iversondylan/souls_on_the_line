@@ -50,8 +50,8 @@ func read_range(start_index: int, end_index: int) -> Array[BattleEvent]:
 static func print_event_log(
 	log: BattleEventLog,
 	last_n: int = -1,
-	sleep_ms_every: int = 50,
-	sleep_ms: float = 50.0,
+	sleep_ms_every: int = 100,
+	sleep_ms: float = 100.0,
 	show_data: bool = true,
 	show_empty_data: bool = false,
 	extra_keys: Array[StringName] = [],

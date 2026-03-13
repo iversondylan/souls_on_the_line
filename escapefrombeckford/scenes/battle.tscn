@@ -3,13 +3,13 @@
 [ext_resource type="Script" uid="uid://dixfcu6jmx0kd" path="res://scenes/battle.gd" id="1_dd63g"]
 [ext_resource type="Script" uid="uid://8txpx232aks0" path="res://scenes/sim_host.gd" id="3_1m01a"]
 [ext_resource type="Script" uid="uid://0a8baesyqdot" path="res://scenes/battle_scene.gd" id="3_lcn8m"]
-[ext_resource type="Resource" uid="uid://cbs38uf5bi3y" path="res://audio/metronome_120bpm.tres" id="4_eivww"]
 [ext_resource type="PackedScene" uid="uid://co7q6uigpt8n4" path="res://scenes/battle_resolution_runner.tscn" id="4_kl6ie"]
 [ext_resource type="Script" uid="uid://cyefuqg3i2y7o" path="res://battle_view/battle_view.gd" id="4_lv4so"]
+[ext_resource type="Resource" uid="uid://cbs38uf5bi3y" path="res://audio/metronome_120bpm.tres" id="4_rwtbh"]
 [ext_resource type="Texture2D" uid="uid://jml4obgrdfeg" path="res://assets/backgrounds/flat-forestred-dark.png" id="4_yhk5m"]
 [ext_resource type="Script" uid="uid://chqthfo2t83me" path="res://battle_view/group_view.gd" id="5_eivww"]
+[ext_resource type="Resource" uid="uid://cgyjpqj83r2ln" path="res://audio/lil_click.tres" id="5_f0g0v"]
 [ext_resource type="PackedScene" uid="uid://gmxev02ltcly" path="res://scenes/battle_groups/battle_group_friendly.tscn" id="5_n2clt"]
-[ext_resource type="Resource" uid="uid://cgyjpqj83r2ln" path="res://audio/lil_click.tres" id="5_rwtbh"]
 [ext_resource type="PackedScene" uid="uid://0jk65n5vl1s7" path="res://scenes/battle_groups/battle_group_enemy.tscn" id="6_xn15y"]
 [ext_resource type="Script" uid="uid://b4bb2s8x838ip" path="res://scenes/battle_scene_area_left.gd" id="7_rgwlw"]
 [ext_resource type="Theme" uid="uid://d2wc7fposrlqs" path="res://themes/wizard_theme.tres" id="8_2tyvl"]
@@ -43,8 +43,8 @@ script = ExtResource("3_1m01a")
 [node name="BattleView" type="Node2D" parent="." unique_id=1276052910]
 z_index = 1
 script = ExtResource("4_lv4so")
-metronome_sound = ExtResource("4_eivww")
-click_sound = ExtResource("5_rwtbh")
+metronome_sound = ExtResource("4_rwtbh")
+click_sound = ExtResource("5_f0g0v")
 
 [node name="Group0" type="Node2D" parent="BattleView" unique_id=479709658]
 position = Vector2(480, 748)

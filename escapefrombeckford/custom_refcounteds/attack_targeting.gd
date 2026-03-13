@@ -2,33 +2,6 @@
 
 class_name AttackTargeting extends RefCounted
 
-#static func _get_base_targets(api: BattleAPI, attacker_id: int, params: Dictionary) -> Array[int]:
-	#var target_type := String(params.get(Keys.TARGET_TYPE, NPCAttackSequence.TARGET_STANDARD))
-#
-	#match target_type:
-		#NPCAttackSequence.TARGET_STANDARD:
-			#var enemy_group := api.get_opposing_group(api.get_group(attacker_id))
-			#var front_id := api.get_front_combatant_id(enemy_group)
-			#return [front_id] as Array[int] if front_id > 0 else [] as Array[int]
-#
-		#NPCAttackSequence.TARGET_OPPONENTS:
-			#return api.get_enemies_of(attacker_id)
-#
-		#NPCAttackSequence.TARGET_ALL:
-			## If you want this, add api.get_all_combatant_ids().
-			## For now: concat both groups.
-			#var g0 := api.get_combatants_in_group(0, false)
-			#var g1 := api.get_combatants_in_group(1, false)
-			#return g0 + g1
-#
-	#return []
-
-
-#static func _is_single_target(params: Dictionary) -> bool:
-	#var target_type := String(params.get(Keys.TARGET_TYPE, NPCAttackSequence.TARGET_STANDARD))
-	#return target_type == NPCAttackSequence.TARGET_STANDARD
-
-
 static func _apply_target_modifiers(
 	api: BattleAPI,
 	attacker_id: int,

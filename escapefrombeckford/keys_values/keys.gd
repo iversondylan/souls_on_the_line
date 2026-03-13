@@ -20,7 +20,7 @@ const GROUP_0 := &"group_0"
 const GROUP_1 := &"group_1"
 const ACTIVE_ID := &"active_id"
 const PENDING_IDS := &"pending_ids"
-
+const PRIMARY_ACTION_KIND := &"primary_action_kind"
 # for single instances of damage and HITS:
 const TARGET_ID := &"target_id"
 # an attacker's STRIKE may result in multiple HITS on its targets.

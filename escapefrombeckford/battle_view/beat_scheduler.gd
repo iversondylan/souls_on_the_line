@@ -10,44 +10,33 @@ var rel_defaults := {
 	BattleEvent.Type.SUMMONED: 1.0,
 	BattleEvent.Type.DIED: 1.0,
 	BattleEvent.Type.FADED: 1.0,
-	BattleEvent.Type.ARCANUM_PROC: 1.0,
+	BattleEvent.Type.STATUS: 1.0,
 }
 
 # You can override per arcanum/card later (same as you started)
 var override_by_arcanum_id: Dictionary = {}
 var override_by_card_name: Dictionary = {}
 
-# Decide timing mode for this *package*
-func mode_for_beat(beat: Array[BattleEvent], is_player_turn: bool, is_player_actor: bool) -> int:
+func mode_for_beat(beat: Array, is_player_turn: bool, is_player_actor: bool) -> int:
 	if beat == null or beat.is_empty():
 		return Mode.FREE
 
-	# If we’re waiting on player input, we definitely cannot advance on music time.
 	if _contains_type(beat, BattleEvent.Type.PLAYER_INPUT_REACHED):
 		return Mode.FREE
 
-	# During the player’s actor turn:
-	# - everything caused by card play should be punchy and NOT grid-locked
 	if is_player_turn and is_player_actor:
-		# If this beat starts with a STRIKE/SUMMONED/etc caused by the player, keep it relative.
 		if _contains_type(beat, BattleEvent.Type.CARD_PLAYED) or _contains_type(beat, BattleEvent.Type.END_TURN_PRESSED):
 			return Mode.FREE
-		# If it’s player-caused combat events (STRIKE etc), prefer RELATIVE, not GRID
 		if _contains_any(beat, [BattleEvent.Type.STRIKE, BattleEvent.Type.SUMMONED, BattleEvent.Type.DIED, BattleEvent.Type.FADED, BattleEvent.Type.STATUS, BattleEvent.Type.DAMAGE_APPLIED]):
 			return Mode.RELATIVE
 
-	# When a NON-player ACTOR_BEGIN arrives (NPC starts acting),
-	# this is where we want to re-lock to the beat grid.
 	if _contains_type(beat, BattleEvent.Type.ACTOR_BEGIN) and !is_player_actor:
 		return Mode.GRID
 
-	# Arcana procs often feel best on-grid too (optional)
-	if _contains_type(beat, BattleEvent.Type.ARCANUM_PROC) and !is_player_turn:
-		return Mode.GRID
+	var marker := _find_marker(beat)
+	if marker == null:
+		return Mode.FREE
 
-	# Otherwise, default:
-	# - if not player actor, you can keep most NPC action beats RELATIVE or GRID depending on taste.
-	# I’d do RELATIVE unless it’s an explicit “start acting” marker.
 	return Mode.RELATIVE
 
 func quarters_for_beat(beat: Array[BattleEvent]) -> float:
