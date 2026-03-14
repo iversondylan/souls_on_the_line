@@ -27,7 +27,8 @@ func _ready() -> void:
 	cam.make_current()
 	_cache_home()
 	
-	Events.fighter_entered_turn.connect(_on_fighter_entered_turn)
+	## FIX ME
+	#Events.fighter_entered_turn.connect(_on_fighter_entered_turn)
 	Events.hand_drawn.connect(_on_hand_drawn)
 
 
@@ -154,16 +155,16 @@ func _focus_joystick(focus_world: Vector2, duration: float) -> void:
 	_tween_focus(target_pos, zoom_in, duration)
 
 
-func _on_fighter_entered_turn(fighter: Fighter) -> void:
+func _on_fighter_entered_turn(fighter: CombatantView) -> void:
 	if !fighter or !is_instance_valid(fighter):
 		return
-	if !fighter.is_alive():
+	if !fighter.is_alive:
 		return
 	
 	# Player turn: neutralize
-	if fighter is Player:
-		reset()
-		return
+	#if fighter is Player:
+		#reset()
+		#return
 	
 	var focus_node: Node2D = fighter.camera_focus
 	if !focus_node or !is_instance_valid(focus_node):

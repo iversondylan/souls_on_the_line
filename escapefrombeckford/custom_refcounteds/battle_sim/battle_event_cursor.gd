@@ -10,19 +10,18 @@ func reset() -> void:
 func has_next(log: BattleEventLog) -> bool:
 	if log == null:
 		return false
-	return index < log._events.size()
+	return index < log.size()
 
 func peek(log: BattleEventLog) -> BattleEvent:
-	if log == null:
+	if log == null or index < 0 or index >= log.size():
 		return null
 	return log.get_event(index)
 
 func next(log: BattleEventLog) -> BattleEvent:
-	if log == null:
+	if log == null or index < 0 or index >= log.size():
 		return null
 	var e := log.get_event(index)
-	if e != null:
-		index += 1
+	index += 1
 	return e
 
 func drain(log: BattleEventLog, max_n: int = 999999) -> Array[BattleEvent]:

@@ -2,7 +2,7 @@
 
 class_name CombatantTargetArea extends Area2D
 
-var combatant: Fighter
+#var combatant: Fighter
 var combatant_view: CombatantView
 var cid: int = -1
 

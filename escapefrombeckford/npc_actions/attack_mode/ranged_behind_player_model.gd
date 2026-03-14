@@ -2,19 +2,19 @@
 
 class_name RangedBehindPlayerModel extends ParamModel
 
-func change_params(ctx: NPCAIContext) -> NPCAIContext:
-	if !ctx or !ctx.api:
-		return ctx
-	var id := ctx.combatant.combat_id if ctx.combatant else (ctx.combatant_data.combat_id if ctx.combatant_data else 0)
-	if id <= 0:
-		return ctx
-	
-	var delta := ctx.api.get_player_pos_delta(id)
-	if delta > 0:
-		ctx.params[Keys.ATTACK_MODE] = Attack.Mode.RANGED
-	elif delta < 0:
-		ctx.params[Keys.ATTACK_MODE] = Attack.Mode.MELEE
-	return ctx
+#func change_params(ctx: NPCAIContext) -> NPCAIContext:
+	#if !ctx or !ctx.api:
+		#return ctx
+	#var id := ctx.combatant.combat_id if ctx.combatant else (ctx.combatant_data.combat_id if ctx.combatant_data else 0)
+	#if id <= 0:
+		#return ctx
+	#
+	#var delta := ctx.api.get_player_pos_delta(id)
+	#if delta > 0:
+		#ctx.params[Keys.ATTACK_MODE] = Attack.Mode.RANGED
+	#elif delta < 0:
+		#ctx.params[Keys.ATTACK_MODE] = Attack.Mode.MELEE
+	#return ctx
 
 func change_params_sim(ctx: NPCAIContext) -> NPCAIContext:
 	if !ctx or !ctx.api:

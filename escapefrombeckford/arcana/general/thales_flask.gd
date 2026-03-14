@@ -10,10 +10,10 @@ const ID := &"thales_flask"
 	#print("arcanum.gd initialize_arcanum(): This happens once when arcanum is acquired.")
 
 func activate_arcanum(ctx: ArcanumContext) -> Variant:
-	var player := ctx.arcanum_display.get_tree().get_first_node_in_group("player") as Player
-	if player:
-		player.heal(n_heal)
-		arcanum_display.flash()
+	#var player := ctx.arcanum_display.get_tree().get_first_node_in_group("player") as Player
+	#if player:
+		#player.heal(n_heal)
+		#arcanum_display.flash()
 	return null
 
 func get_id() -> StringName:

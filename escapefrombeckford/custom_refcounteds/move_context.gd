@@ -13,10 +13,10 @@ enum MoveType {
 
 var move_type: int = MoveType.MOVE_TO_FRONT
 
-var actor: Fighter = null
+#var actor: Fighter = null
 var actor_id: int = 0
 
-var target: Fighter = null
+#var target: Fighter = null
 var target_id: int = 0
 
 # for INSERT_AT_INDEX

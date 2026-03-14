@@ -14,12 +14,12 @@ func activate_arcanum(ctx: ArcanumContext) -> Variant:
 	if !ctx.api:
 		push_warning("adamant_ally.gd error: no api")
 		return null
-
-	# LIVE PATH (unchanged)
-	if ctx.battle_scene and ctx.player:
-		var effect := build_effect_live(ctx)
-		effect.execute(ctx.api)
-		return null
+#
+	## LIVE PATH (unchanged)
+	#if ctx.battle_scene and ctx.player:
+		#var effect := build_effect_live(ctx)
+		#effect.execute(ctx.api)
+		#return null
 
 	# SIM PATH
 	var player_id := int(ctx.params.get(Keys.PLAYER_ID, 0))

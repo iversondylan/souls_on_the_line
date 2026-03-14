@@ -252,6 +252,7 @@ func emit_strike(
 	return _append(BattleEvent.Type.STRIKE, data)
 
 func emit_summoned(
+	source_id: int,
 	summoned_id: int,
 	group_idx: int,
 	insert_index: int,
@@ -264,6 +265,7 @@ func emit_summoned(
 	extra := {}
 ) -> int:
 	var data := {
+		Keys.SOURCE_ID: int(source_id), # NEW
 		Keys.SUMMONED_ID: int(summoned_id),
 		Keys.GROUP_INDEX: int(group_idx),
 		Keys.INSERT_INDEX: int(insert_index),
@@ -313,6 +315,34 @@ func emit_status(
 	for k in extra.keys():
 		data[k] = extra[k]
 	return _append(BattleEvent.Type.STATUS, data)
+
+func emit_status_apply(
+	source_id: int,
+	target_id: int,
+	status_id: StringName,
+	intensity: int,
+	duration: int,
+	extra := {}
+) -> int:
+	return emit_status(source_id, target_id, status_id, int(Status.OP.APPLY), intensity, duration, extra)
+
+func emit_status_change(
+	source_id: int,
+	target_id: int,
+	status_id: StringName,
+	delta_intensity: int,
+	delta_duration: int,
+	extra := {}
+) -> int:
+	return emit_status(source_id, target_id, status_id, int(Status.OP.CHANGE), delta_intensity, delta_duration, extra)
+
+func emit_status_remove(
+	source_id: int,
+	target_id: int,
+	status_id: StringName,
+	extra := {}
+) -> int:
+	return emit_status(source_id, target_id, status_id, int(Status.OP.REMOVE), 0, 0, extra)
 
 func emit_died(
 	killer_id: int,

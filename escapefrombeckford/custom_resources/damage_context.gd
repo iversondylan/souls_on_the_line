@@ -8,10 +8,10 @@ enum Phase {
 	APPLIED
 }
 var api: BattleAPI
-var source: Fighter = null
+#var source: Fighter = null
 var source_id: int = 0
 
-var target: Fighter = null
+#var target: Fighter = null
 var target_id: int = 0
 
 # What we *intend* to do

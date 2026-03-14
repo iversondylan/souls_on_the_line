@@ -11,29 +11,29 @@ func get_id() -> StringName:
 
 
 func activate_arcanum(ctx: ArcanumContext) -> Variant:
-	
-	if ctx == null or ctx.api == null:
-		return null
-	var is_sim : bool = (ctx.params != null and ctx.params.get(Keys.MODE, &"") == Keys.MODE_SIM)
-	# -------------------------
-	# LIVE PATH (scene tree)
-	# -------------------------
-	if !is_sim and arcanum_display != null and is_instance_valid(arcanum_display):
-		var enemies: Array[Fighter] = []
-		for node: Node in arcanum_display.get_tree().get_nodes_in_group("enemies"):
-			if node is Fighter:
-				enemies.push_back(node)
-			else:
-				push_warning("unruly_pyric_wraps.gd error: node is not Fighter")
-
-		var damage_effect := DamageEffect.new()
-		damage_effect.targets = enemies
-		damage_effect.n_damage = damage
-		damage_effect.modifier_type = Modifier.Type.NO_MODIFIER
-		damage_effect.execute(ctx.api)
-
-		arcanum_display.flash()
-		return null
+	#
+	#if ctx == null or ctx.api == null:
+		#return null
+	#var is_sim : bool = (ctx.params != null and ctx.params.get(Keys.MODE, &"") == Keys.MODE_SIM)
+	## -------------------------
+	## LIVE PATH (scene tree)
+	## -------------------------
+	#if !is_sim and arcanum_display != null and is_instance_valid(arcanum_display):
+		#var enemies: Array[Fighter] = []
+		#for node: Node in arcanum_display.get_tree().get_nodes_in_group("enemies"):
+			#if node is Fighter:
+				#enemies.push_back(node)
+			#else:
+				#push_warning("unruly_pyric_wraps.gd error: node is not Fighter")
+#
+		#var damage_effect := DamageEffect.new()
+		#damage_effect.targets = enemies
+		#damage_effect.n_damage = damage
+		#damage_effect.modifier_type = Modifier.Type.NO_MODIFIER
+		#damage_effect.execute(ctx.api)
+#
+		#arcanum_display.flash()
+		#return null
 
 	# -------------------------
 	# HEADLESS PATH (sim)
@@ -55,17 +55,17 @@ func activate_arcanum(ctx: ArcanumContext) -> Variant:
 
 
 func _get_source_id(ctx: ArcanumContext) -> int:
-	if ctx.player != null and is_instance_valid(ctx.player):
-		if ctx.player.combatant_data != null:
-			return int(ctx.player.combatant_data.combat_id)
+	#if ctx.player != null and is_instance_valid(ctx.player):
+		#if ctx.player.combatant_data != null:
+			#return int(ctx.player.combatant_data.combat_id)
+	return ctx.api.get_player_id()
+	#if ctx.params != null:
+		#if ctx.params.has(Keys.SOURCE_ID):
+			#return int(ctx.params[Keys.SOURCE_ID])
+		#if ctx.params.has("source_id"):
+			#return int(ctx.params["source_id"])
 
-	if ctx.params != null:
-		if ctx.params.has(Keys.SOURCE_ID):
-			return int(ctx.params[Keys.SOURCE_ID])
-		if ctx.params.has("source_id"):
-			return int(ctx.params["source_id"])
-
-	return 0
+	#return 0
 
 
 func _apply_damage_headless(api: BattleAPI, source_id: int, target_id: int, amount: int) -> void:

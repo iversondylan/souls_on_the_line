@@ -10,11 +10,12 @@ func get_id() -> StringName:
 	return ID
 
 func activate_arcanum(ctx: ArcanumContext) -> Variant:
-	_add_mana(ctx.arcanum_display)
+	#_add_mana(ctx.arcanum_display)
 	return null
 
 func _add_mana(arcanum_display: ArcanumDisplay) -> void:
-	arcanum_display.flash()
-	var player := arcanum_display.get_tree().get_first_node_in_group("player") as Player
-	if player:
-		player.combatant_data.add_mana(1)
+	#arcanum_display.flash()
+	#var player := arcanum_display.get_tree().get_first_node_in_group("player") as Player
+	#if player:
+		#player.combatant_data.add_mana(1)
+	pass

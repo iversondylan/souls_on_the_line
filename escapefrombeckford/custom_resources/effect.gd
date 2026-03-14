@@ -2,7 +2,7 @@
 
 class_name Effect extends RefCounted
 
-var targets: Array[Fighter]
+var targets: PackedInt32Array = []
 var sound: Sound
 
 func execute(_api: BattleAPI) -> void:

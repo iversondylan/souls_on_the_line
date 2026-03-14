@@ -8,7 +8,7 @@ class_name StatusDisplay extends Control
 @onready var duration: Label = $Duration
 @onready var stacks: Label = $Stacks
 
-var status_parent: Fighter : set = _set_status_parent
+var status_parent: CombatantView : set = _set_status_parent
 
 func _ready() -> void:
 	Events.focused_gained.connect(_on_focused_gained)
@@ -33,7 +33,7 @@ func _set_status(new_status) -> void:
 	
 	_on_status_changed()
 
-func _set_status_parent(new_status_parent: Fighter) -> void:
+func _set_status_parent(new_status_parent: CombatantView) -> void:
 	status_parent = new_status_parent
 	status.status_parent = status_parent
 

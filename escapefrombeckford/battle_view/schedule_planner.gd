@@ -45,7 +45,10 @@ func _build_one_measure_plan(
 ) -> void:
 	var q := total_sec / 4.0
 	var primary_kind := int(action_units[0].get("action_kind", DirectorAction.ActionKind.GENERIC))
-	var attack_info := _build_attack_presentation_info(action_units, DirectorAction.Phase.FOLLOWTHROUGH)
+	var attack_info: AttackPresentationInfo = null
+	if primary_kind == DirectorAction.ActionKind.MELEE_STRIKE \
+	or primary_kind == DirectorAction.ActionKind.RANGED_STRIKE:
+		attack_info = _build_attack_presentation_info(action_units, DirectorAction.Phase.FOLLOWTHROUGH)
 
 	var focus_payload: Array = turn_events
 	var windup_payload: Array = [action_units[0].get("marker")]
@@ -121,7 +124,10 @@ func _build_multi_measure_plan(
 	var total_beats := measures * 4
 	var beat_sec := total_sec / float(total_beats)
 	var primary_kind := int(action_units[0].get("action_kind", DirectorAction.ActionKind.GENERIC))
-	var attack_info := _build_attack_presentation_info(action_units, DirectorAction.Phase.FOLLOWTHROUGH)
+	var attack_info: AttackPresentationInfo = null
+	if primary_kind == DirectorAction.ActionKind.MELEE_STRIKE \
+	or primary_kind == DirectorAction.ActionKind.RANGED_STRIKE:
+		attack_info = _build_attack_presentation_info(action_units, DirectorAction.Phase.FOLLOWTHROUGH)
 
 	var actions: Array[DirectorAction] = []
 
@@ -247,7 +253,8 @@ func _extract_action_units(turn_events: Array) -> Array[Dictionary]:
 		or t == BattleEvent.Type.ACTOR_END:
 			continue
 
-		if t == BattleEvent.Type.STRIKE or t == BattleEvent.Type.SUMMONED:
+		if t == BattleEvent.Type.STRIKE \
+		or t == BattleEvent.Type.SUMMONED:
 			if !current.is_empty():
 				out.append(current)
 			current = {
@@ -286,11 +293,17 @@ func _build_attack_presentation_info(action_units: Array[Dictionary], phase: int
 		return info
 
 	var first_marker: BattleEvent = action_units[0].get("marker")
-	if first_marker != null and first_marker.data != null:
-		info.attacker_id = int(first_marker.data.get(Keys.SOURCE_ID, first_marker.data.get(Keys.ACTOR_ID, 0)))
-		info.attack_mode = int(first_marker.data.get(Keys.ATTACK_MODE, Attack.Mode.MELEE))
-		info.projectile_scene_path = String(first_marker.data.get(Keys.PROJECTILE_SCENE, ""))
+	if first_marker == null or first_marker.data == null:
+		return info
 
+	info.attacker_id = int(first_marker.data.get(Keys.SOURCE_ID, first_marker.data.get(Keys.ACTOR_ID, 0)))
+	info.attack_mode = int(first_marker.data.get(Keys.ATTACK_MODE, Attack.Mode.MELEE))
+	info.projectile_scene_path = String(first_marker.data.get(Keys.PROJECTILE_SCENE, ""))
+
+	# If this is not actually a strike action, just return minimal info.
+	if int(first_marker.type) != int(BattleEvent.Type.STRIKE):
+		return info
+	
 	info.strike_count = action_units.size()
 
 	var n := action_units.size()

@@ -362,25 +362,25 @@ func activate_view(_ctx: CardActionContextView) -> bool:
 	push_error("%s missing activate_view() (card=%s)" % [get_class(), cname])
 	return false
 
-func _build_resolved_sim_from_live(resolved_live: CardResolvedTarget) -> CardResolvedTargetSim:
-	var out := CardResolvedTargetSim.new()
-
-	# Fighters -> ids
-	if resolved_live.fighters != null:
-		for f: Fighter in resolved_live.fighters:
-			if f != null and is_instance_valid(f):
-				#print("usable_card.gd _build_resolved_sim_from_live() appending %s to combatant_datas and fighter_ids" % f.name)
-				#out.combatant_datas.append(f.combatant_data)
-				out.fighter_ids.append(int(f.combat_id))
-
-	# Battlefield insert index
-	out.insert_index = int(resolved_live.insert_index) if ("insert_index" in resolved_live) else -1
-
-	# If you care later:
-	# out.group_index = ...
-	# out.area_index = ...
-	#print("usable_card.gd _build_resolved_sim_from_live() out combatant_data: ", out.combatant_datas)
-	return out
+#func _build_resolved_sim_from_live(resolved_live: CardResolvedTarget) -> CardResolvedTargetSim:
+	#var out := CardResolvedTargetSim.new()
+#
+	## Fighters -> ids
+	#if resolved_live.fighters != null:
+		#for f: Fighter in resolved_live.fighters:
+			#if f != null and is_instance_valid(f):
+				##print("usable_card.gd _build_resolved_sim_from_live() appending %s to combatant_datas and fighter_ids" % f.name)
+				##out.combatant_datas.append(f.combatant_data)
+				#out.fighter_ids.append(int(f.combat_id))
+#
+	## Battlefield insert index
+	#out.insert_index = int(resolved_live.insert_index) if ("insert_index" in resolved_live) else -1
+#
+	## If you care later:
+	## out.group_index = ...
+	## out.area_index = ...
+	##print("usable_card.gd _build_resolved_sim_from_live() out combatant_data: ", out.combatant_datas)
+	#return out
 
 
 func _get_first_summon_action() -> SummonAction:
@@ -563,13 +563,13 @@ func is_playable() -> bool:
 	#
 	return true
 
-func get_fighters(new_targets: Array[Node]) -> Array[Fighter]:
-	var attack_targets: Array[Fighter]
-	for target in new_targets:
-		if target is CombatantTargetArea:
-			if target.combatant is Fighter:
-				attack_targets.push_back(target.combatant)
-	return attack_targets
+#func get_fighters(new_targets: Array[Node]) -> Array[Fighter]:
+	#var attack_targets: Array[Fighter]
+	#for target in new_targets:
+		#if target is CombatantTargetArea:
+			#if target.combatant is Fighter:
+				#attack_targets.push_back(target.combatant)
+	#return attack_targets
 
 func _cache_home() -> void:
 	if _home_cached or strictly_visuals == null:
@@ -640,21 +640,21 @@ func build_action_context_view(resolved_targets: CardResolvedTargetView) -> Card
 	ctx.resolved = resolved_targets
 	return ctx
 
-func commit_play_live(ctx: CardActionContext, skip_action: CardAction = null, spend_mana: bool = true) -> bool:
-	if spend_mana:
-		ctx.player.spend_mana(ctx.card_data)
-
-	var any_action_executed := false
-	for action: CardAction in ctx.card_data.actions:
-		if skip_action != null and action == skip_action:
-			continue
-		if action != null and action.activate_live(ctx):
-			any_action_executed = true
-
-	Events.card_played.emit(self)
-	flush_pending_summons.call_deferred(ctx)
-	_move_to_destination()
-	return true
+#func commit_play_live(ctx: CardActionContext, skip_action: CardAction = null, spend_mana: bool = true) -> bool:
+	#if spend_mana:
+		#ctx.player.spend_mana(ctx.card_data)
+#
+	#var any_action_executed := false
+	#for action: CardAction in ctx.card_data.actions:
+		#if skip_action != null and action == skip_action:
+			#continue
+		#if action != null and action.activate_live(ctx):
+			#any_action_executed = true
+#
+	#Events.card_played.emit(self)
+	#flush_pending_summons.call_deferred(ctx)
+	#_move_to_destination()
+	#return true
 
 
 #func commit_play(ctx: CardActionContext, skip_action: CardAction = null, spend_mana: bool = true) -> bool:
@@ -689,10 +689,10 @@ func _move_to_destination() -> void:
 	else:
 		hand.discard_card(hand.remove_card_by_entity(self))
 
-func flush_pending_summons(ctx: CardActionContext) -> void:
-	if !ctx:
-		return
-	for e in ctx.pending_summon_effects:
-		if e:
-			e.apply_to_card_context(ctx)
-	ctx.pending_summon_effects.clear()
+#func flush_pending_summons(ctx: CardActionContext) -> void:
+	#if !ctx:
+		#return
+	#for e in ctx.pending_summon_effects:
+		#if e:
+			#e.apply_to_card_context(ctx)
+	#ctx.pending_summon_effects.clear()

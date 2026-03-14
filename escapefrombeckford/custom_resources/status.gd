@@ -30,7 +30,7 @@ enum OP {APPLY, REMOVE, CHANGE}
 
 
 #var id: String = ""
-var status_parent: Fighter
+var status_parent: CombatantView
 #var battle_scene: BattleScene
 
 func get_id() -> StringName:

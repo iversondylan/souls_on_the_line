@@ -1,13 +1,13 @@
 # action_planner.gd
 class_name ActionPlanner extends RefCounted
 
-const KEY_PLANNED_IDX := NPCAIBehavior.KEY_PLANNED_IDX
-const HP_AT_TURN_START := NPCAIBehavior.HP_AT_TURN_START
-const DMG_SINCE_LAST_TURN := NPCAIBehavior.DMG_SINCE_LAST_TURN
-const STABILITY_BROKEN := NPCAIBehavior.STABILITY_BROKEN
-const IS_ACTING := NPCAIBehavior.IS_ACTING
-const ACTIONS_TAKEN := NPCAIBehavior.ACTIONS_TAKEN
-const FIRST_INTENTS_READY := NPCAIBehavior.FIRST_INTENTS_READY
+const KEY_PLANNED_IDX := &"key_planned_index"#NPCAIBehavior.KEY_PLANNED_IDX
+const HP_AT_TURN_START := &"hp_at_turn_start"#NPCAIBehavior.HP_AT_TURN_START
+const DMG_SINCE_LAST_TURN := &"dmg_since_last_turn"#NPCAIBehavior.DMG_SINCE_LAST_TURN
+const STABILITY_BROKEN := &"stability_broken"#NPCAIBehavior.STABILITY_BROKEN
+const IS_ACTING := &"is_acting"#NPCAIBehavior.IS_ACTING
+const ACTIONS_TAKEN := &"actions_taken"#NPCAIBehavior.ACTIONS_TAKEN
+const FIRST_INTENTS_READY := &"first_intent_ready"#NPCAIBehavior.FIRST_INTENTS_READY
 
 static var debug := false
 

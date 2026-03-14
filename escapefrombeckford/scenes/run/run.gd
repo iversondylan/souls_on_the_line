@@ -231,27 +231,27 @@ func _on_map_exited(room: Room) -> void:
 		Room.RoomType.BOSS:
 			_on_battle_entered(room)
 	
-func get_modifier_tokens_for(target: Node) -> Array[ModifierToken]:
-	#print("run.gd get_modifier_tokens()")
-	var tokens: Array[ModifierToken] = []
-	
-	# 1. Arcana (global, persistent)
-	tokens.append_array(arcana_container.get_modifier_tokens_for(target))
-	# (or arcana_system.get_modifier_tokens_for, both work)
+#func get_modifier_tokens_for(target: Node) -> Array[ModifierToken]:
+	##print("run.gd get_modifier_tokens()")
+	#var tokens: Array[ModifierToken] = []
+	#
+	## 1. Arcana (global, persistent)
+	#tokens.append_array(arcana_container.get_modifier_tokens_for(target))
+	## (or arcana_system.get_modifier_tokens_for, both work)
+#
+	#
+	## 2. Combat-only tokens (if in battle)
+	##var battle_scene := _get_active_battle_scene()
+	##if battle_scene and target is Fighter:
+		##tokens.append_array(battle_scene.get_modifier_tokens_for(target))
+	#
+	#return tokens
 
-	
-	# 2. Combat-only tokens (if in battle)
-	var battle_scene := _get_active_battle_scene()
-	if battle_scene and target is Fighter:
-		tokens.append_array(battle_scene.get_modifier_tokens_for(target))
-	
-	return tokens
-
-func _get_active_battle_scene() -> BattleScene:
-	var view: Node = current_view.get_child(0)
-	if view is Battle:
-		return view.battle_scene
-	return null
+#func _get_active_battle_scene() -> BattleScene:
+	#var view: Node = current_view.get_child(0)
+	#if view is Battle:
+		#return view.battle_scene
+	#return null
 	
 func _on_modifier_tokens_changed(mod_type: Modifier.Type) -> void:
 	if current_view.get_child_count() == 0:

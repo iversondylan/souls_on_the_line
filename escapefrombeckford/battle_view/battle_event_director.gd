@@ -43,13 +43,19 @@ func _make_epkg_from_event(event: BattleEvent, duration: float) -> EventPackage:
 	return epkg
 
 func _make_status_applied_order(e: EventPackage) -> StatusAppliedOrder:
+	var d := e.event.data if e.event != null and e.event.data != null else {}
+
 	var o := StatusAppliedOrder.new()
 	o.duration = e.duration
-	o.source_id = int(e.event.data.get(Keys.SOURCE_ID, 0))
-	o.target_id = int(e.event.data.get(Keys.TARGET_ID, 0))
-	o.status_id = e.event.data.get(Keys.STATUS_ID, &"")
-	o.intensity = int(e.event.data.get(Keys.INTENSITY, 1))
-	o.turns_duration = int(e.event.data.get(Keys.DURATION, 0))
+	o.source_id = int(d.get(Keys.SOURCE_ID, 0))
+	o.target_id = int(d.get(Keys.TARGET_ID, 0))
+	o.status_id = d.get(Keys.STATUS_ID, &"")
+
+	# IMPORTANT:
+	# APPLY/CHANGE should drive the view from resolved post-SIM state when available.
+	o.intensity = int(d.get(Keys.AFTER_INTENSITY, d.get(Keys.INTENSITY, 1)))
+	o.turns_duration = int(d.get(Keys.AFTER_DURATION, d.get(Keys.DURATION, 0)))
+
 	return o
 
 
@@ -102,7 +108,7 @@ func _play_focus_action(a: DirectorAction) -> void:
 
 		DirectorAction.ActionKind.SUMMON, DirectorAction.ActionKind.STATUS:
 			if a.event != null:
-				_on_attack_prep(_make_epkg_from_event(a.event, a.duration_sec))
+				_on_action_focus(_make_epkg_from_event(a.event, a.duration_sec))
 				return
 
 
@@ -125,7 +131,7 @@ func _play_windup_action(a: DirectorAction) -> void:
 
 		DirectorAction.ActionKind.STATUS:
 			if a.event != null:
-				_on_attack_prep(_make_epkg_from_event(a.event, a.duration_sec))
+				_on_action_focus(_make_epkg_from_event(a.event, a.duration_sec))
 				return
 
 
@@ -139,17 +145,49 @@ func _play_followthrough_action(a: DirectorAction) -> void:
 		DirectorAction.ActionKind.MELEE_STRIKE, DirectorAction.ActionKind.RANGED_STRIKE:
 			if attack_info != null:
 				_on_strike_followthrough_from_info(attack_info, a.duration_sec)
+				_apply_trailing_followthrough_payload(a.payload, attack_info, a.duration_sec)
 				_on_attack_wrapup_from_info(attack_info, minf(a.duration_sec, 0.15))
 				return
 
 		DirectorAction.ActionKind.SUMMON:
 			if a.event != null:
 				_on_summon_followthrough(_make_epkg_from_event(a.event, a.duration_sec))
+
+				# replay trailing updates like TURN_STATUS / SET_INTENT
+				for e in a.payload:
+					var be := e as BattleEvent
+					if be == null:
+						continue
+					var epkg := _make_epkg_from_event(be, a.duration_sec)
+					match int(be.type):
+						BattleEvent.Type.STATUS:
+							_on_status_changed(epkg)
+						BattleEvent.Type.SET_INTENT:
+							_on_set_intent(epkg)
+						BattleEvent.Type.TURN_STATUS:
+							_on_turn_status(epkg)
+						BattleEvent.Type.MOVED:
+							_on_moved(epkg)
 				return
 
 		DirectorAction.ActionKind.STATUS:
 			if a.event != null:
 				_on_status_changed(_make_epkg_from_event(a.event, a.duration_sec))
+
+				for e in a.payload:
+					var be := e as BattleEvent
+					if be == null or be == a.event:
+						continue
+					var epkg := _make_epkg_from_event(be, a.duration_sec)
+					match int(be.type):
+						BattleEvent.Type.STATUS:
+							_on_status_changed(epkg)
+						BattleEvent.Type.SET_INTENT:
+							_on_set_intent(epkg)
+						BattleEvent.Type.TURN_STATUS:
+							_on_turn_status(epkg)
+						BattleEvent.Type.MOVED:
+							_on_moved(epkg)
 				return
 
 	# fallback old payload behavior if needed
@@ -316,10 +354,39 @@ func _on_formation_set(e: EventPackage) -> void:
 	battle_view.set_group_order(ctx0)
 	battle_view.set_group_order(ctx1)
 
+func _on_action_focus(e: EventPackage) -> void:
+	if e == null or e.event == null:
+		return
+
+	var d := e.event.data if e.event.data != null else {}
+
+	var src := int(d.get(Keys.SOURCE_ID, d.get(Keys.ACTOR_ID, 0)))
+	var targets: Array[int] = _coerce_int_array(d.get(Keys.TARGET_IDS, []))
+	if targets.is_empty():
+		var single_target := int(d.get(Keys.TARGET_ID, 0))
+		if single_target > 0:
+			targets.append(single_target)
+
+	var order := FocusOrder.new()
+	order.duration = e.duration
+	order.attacker_id = src
+	order.target_ids = targets
+	order.dim_bg = 0.6
+	order.dim_uninvolved = 0.55
+	order.scale_involved = 1.08
+	order.scale_uninvolved = 1.0
+	order.drift_involved = 20.0
+
+	battle_view.apply_focus(order)
 
 func _on_attack_prep(e: EventPackage) -> void:
-	var src := int(e.event.data.get(Keys.SOURCE_ID, 0))
-	var targets: Array = e.event.data.get(Keys.TARGET_IDS, [])
+	var d := e.event.data if e != null and e.event != null and e.event.data != null else {}
+	var src := int(d.get(Keys.SOURCE_ID, 0))
+	var targets: Array[int] = _coerce_int_array(d.get(Keys.TARGET_IDS, []))
+	if targets.is_empty():
+		var single_target := int(d.get(Keys.TARGET_ID, 0))
+		if single_target > 0:
+			targets.append(single_target)
 
 	var order := FocusOrder.new()
 	order.duration = e.duration
@@ -440,7 +507,7 @@ func _on_status_changed(e: EventPackage) -> void:
 		target.status_view_grid.remove_status(ro)
 		return
 
-	# APPLY and CHANGE both update the view to the resolved SIM state.
+	# APPLY and CHANGE both use resolved SIM state.
 	var ao := _make_status_applied_order(e)
 	target.status_view_grid.apply_status(ao)
 
@@ -702,7 +769,7 @@ func _on_attack_prep_from_info(info: AttackPresentationInfo, duration: float) ->
 	var order := FocusOrder.new()
 	order.duration = duration
 	order.attacker_id = info.attacker_id
-	order.target_ids = info.get_all_target_ids()
+	order.target_ids = _coerce_int_array(info.get_all_target_ids())
 	order.dim_bg = 0.6
 	order.dim_uninvolved = 0.55
 	order.scale_involved = 1.08
@@ -833,3 +900,100 @@ func _on_attack_wrapup_from_info(info: AttackPresentationInfo, duration: float) 
 			var projectile := battle_view.take_projectile(key)
 			if projectile != null and is_instance_valid(projectile):
 				projectile.queue_free()
+
+func _coerce_int_array(value) -> Array[int]:
+	var out: Array[int] = []
+
+	if value is PackedInt32Array:
+		for x in value:
+			out.append(int(x))
+		return out
+
+	if value is Array:
+		for x in value:
+			out.append(int(x))
+		return out
+
+	return out
+
+func _event_matches_hit_in_info(info: AttackPresentationInfo, be: BattleEvent) -> bool:
+	if info == null or be == null or be.data == null:
+		return false
+
+	var t := int(be.type)
+
+	if t == BattleEvent.Type.DAMAGE_APPLIED:
+		var target_id := int(be.data.get(Keys.TARGET_ID, 0))
+		for s in info.strikes:
+			if s == null:
+				continue
+			for h in s.hits:
+				if h != null and int(h.target_id) == target_id:
+					return true
+		return false
+
+	if t == BattleEvent.Type.DIED or t == BattleEvent.Type.FADED:
+		var target_id2 := int(be.data.get(Keys.TARGET_ID, 0))
+		for s2 in info.strikes:
+			if s2 == null:
+				continue
+			for h2 in s2.hits:
+				if h2 == null:
+					continue
+				if int(h2.target_id) == target_id2:
+					return true
+		return false
+
+	if t == BattleEvent.Type.STATUS:
+		var status_target := int(be.data.get(Keys.TARGET_ID, 0))
+		for s3 in info.strikes:
+			if s3 == null:
+				continue
+			for h3 in s3.hits:
+				if h3 == null:
+					continue
+				if int(h3.target_id) == status_target:
+					return true
+		return false
+
+	return false
+
+
+func _is_trailing_followthrough_event(be: BattleEvent) -> bool:
+	if be == null:
+		return false
+
+	match int(be.type):
+		BattleEvent.Type.STATUS, BattleEvent.Type.SET_INTENT, BattleEvent.Type.TURN_STATUS, BattleEvent.Type.MOVED:
+			return true
+		_:
+			return false
+
+
+func _apply_trailing_followthrough_payload(payload: Array, info: AttackPresentationInfo, duration: float) -> void:
+	if payload == null or payload.is_empty():
+		return
+
+	for e in payload:
+		var be := e as BattleEvent
+		if be == null:
+			continue
+
+		if !_is_trailing_followthrough_event(be):
+			continue
+
+		# Skip hit-bound status events; those are already applied during hit playback.
+		if int(be.type) == BattleEvent.Type.STATUS and _event_matches_hit_in_info(info, be):
+			continue
+
+		var epkg := _make_epkg_from_event(be, duration)
+
+		match int(be.type):
+			BattleEvent.Type.STATUS:
+				_on_status_changed(epkg)
+			BattleEvent.Type.SET_INTENT:
+				_on_set_intent(epkg)
+			BattleEvent.Type.TURN_STATUS:
+				_on_turn_status(epkg)
+			BattleEvent.Type.MOVED:
+				_on_moved(epkg)

@@ -1,5 +1,4 @@
 # sim_status_lifecycle_runner.gd
-
 class_name SimStatusLifecycleRunner extends RefCounted
 
 static func on_group_turn_begin(api: SimBattleAPI, group_index: int) -> void:
@@ -22,12 +21,8 @@ static func on_actor_turn_end(api: SimBattleAPI, actor_id: int) -> void:
 		return
 	_tick_duration_for_proc(api, actor_id, Status.ProcType.END_OF_TURN)
 
-# -------------------------
-# Internals
-# -------------------------
-
 static func _expire_by_policy(api: SimBattleAPI, group_index: int, policy: int) -> void:
-	var ids := api.get_combatants_in_group(group_index, true) # include dead if you want cleanup; fine either way
+	var ids := api.get_combatants_in_group(group_index, true)
 	for cid in ids:
 		_expire_unit_by_policy(api, int(cid), policy)
 
@@ -61,8 +56,7 @@ static func _tick_duration_for_proc(api: SimBattleAPI, actor_id: int, proc_type:
 	if u.statuses.by_id.is_empty():
 		return
 
-	# Collect changes first (don’t mutate dict while iterating)
-	var changed: Array = [] # [{sid, new_dur, intensity}]
+	var changed: Array[Dictionary] = []
 	var expired: Array[StringName] = []
 
 	for sid in u.statuses.by_id.keys():
@@ -74,34 +68,54 @@ static func _tick_duration_for_proc(api: SimBattleAPI, actor_id: int, proc_type:
 		if proto == null:
 			continue
 
-		# Only DURATION policy ticks
 		if int(proto.expiration_policy) != Status.ExpirationPolicy.DURATION:
 			continue
-
-		# Decide WHEN it ticks: START_OF_TURN vs END_OF_TURN
 		if int(proto.proc_type) != proc_type:
 			continue
 
-		var dur := int(stack.duration)
-		if dur <= 0:
-			# already expired in theory; treat as expired
+		var before_i := int(stack.intensity)
+		var before_d := int(stack.duration)
+
+		if before_d <= 0:
 			expired.append(sid)
 			continue
 
-		dur -= 1
-		stack.duration = dur
+		var after_d := before_d - 1
+		stack.duration = after_d
 
-		if dur <= 0:
+		if after_d <= 0:
 			expired.append(sid)
 		else:
-			changed.append({ "sid": sid, "dur": dur, "intensity": int(stack.intensity) })
+			changed.append({
+				"sid": sid,
+				"before_intensity": before_i,
+				"before_duration": before_d,
+				"after_intensity": before_i,
+				"after_duration": after_d,
+				"delta_intensity": 0,
+				"delta_duration": -1,
+			})
 
-	# Emit changes (STATUS_CHANGED)
 	if api.writer != null:
 		for item in changed:
-			api.writer.emit_status_changed(actor_id, actor_id, item.sid, int(item.intensity), int(item.dur))
+			api.writer.emit_status(
+				actor_id,
+				actor_id,
+				item.sid,
+				int(Status.OP.CHANGE),
+				int(item.delta_intensity),
+				int(item.delta_duration),
+				{
+					Keys.BEFORE_INTENSITY: int(item.before_intensity),
+					Keys.BEFORE_DURATION: int(item.before_duration),
+					Keys.AFTER_INTENSITY: int(item.after_intensity),
+					Keys.AFTER_DURATION: int(item.after_duration),
+					Keys.DELTA_INTENSITY: int(item.delta_intensity),
+					Keys.DELTA_DURATION: int(item.delta_duration),
+					Keys.REASON: "duration_tick",
+				}
+			)
 
-	# Remove expired (STATUS_REMOVED + replan dirtied inside remove_status())
 	for sid in expired:
 		var rc := StatusContext.new()
 		rc.source_id = actor_id

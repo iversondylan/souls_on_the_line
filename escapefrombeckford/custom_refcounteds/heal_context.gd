@@ -8,10 +8,8 @@ enum Phase {
 	APPLIED
 }
 
-var source: Fighter = null
 var source_id: int = 0
 
-var target: Fighter = null
 var target_id: int = 0
 
 # Inputs
@@ -26,9 +24,9 @@ var healed_amount: int = 0
 var tags: Array[StringName] = []
 var phase: Phase = Phase.PRE_MODIFIERS
 
-func _init(_source: Fighter, _target: Fighter, _flat: int, _of_total: float, _of_missing: float) -> void:
-	source = _source
-	target = _target
+func _init(_source_id: int, _target_id: int, _flat: int, _of_total: float, _of_missing: float) -> void:
+	source_id = _source_id
+	target_id = _target_id
 	flat_amount = _flat
 	of_total = _of_total
 	of_missing = _of_missing

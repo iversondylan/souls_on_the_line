@@ -10,13 +10,13 @@ signal summon_reserve_card_released(summoned_id: int, card_uid: String)
 
 
 ## battle flow events
-signal live_battle_api_created(api: LiveBattleAPI)
+#signal live_battle_api_created(api: LiveBattleAPI)
 signal battle_reset() #1-way signal to fighters, immediately followed by arcanum call
 signal initiate_first_intents()
 signal first_friendly_turn_started() #called after start of battle arcana in battle.gd
 signal request_activate_arcana_by_type(type: Arcanum.Type)
 signal arcana_activated(type: Arcanum.Type)
-signal fighter_entered_turn(fighter: Fighter)
+#signal fighter_entered_turn(fighter: Fighter)
 signal request_draw_hand()
 signal hand_drawn()
 signal end_turn_button_pressed()
@@ -44,7 +44,7 @@ signal focused_gained(status: Status)
 signal player_combatant_data_changed()
 signal player_modifier_changed()
 signal dead_combatant_data(combatant_data: CombatantData)
-signal battle_group_empty(battle_group: BattleGroup)
+#signal battle_group_empty(battle_group: BattleGroup)
 signal mouse_entered_card(usable_card: UsableCard)
 signal mouse_exited_card(usable_card: UsableCard)
 signal request_draw_cards(ctx: DrawContext)
@@ -56,13 +56,13 @@ signal card_selection_toggled(card: UsableCard, is_selected: bool)
 #signal combatant_target_clicked(fighter: Fighter)
 #signal combatant_target_hovered(fighter: Fighter)
 #signal combatant_target_unhovered(fighter: Fighter)
-signal request_summon_replace(card: UsableCard, ctx: CardActionContext, effect: SummonEffect, skip_action: CardAction)
-signal request_swap_partner(card: UsableCard, ctx: CardActionContext, actor: Fighter, skip_action: CardAction)
+#signal request_summon_replace(card: UsableCard, ctx: CardActionContext, effect: SummonEffect, skip_action: CardAction)
+#signal request_swap_partner(card: UsableCard, ctx: CardActionContext, actor: Fighter, skip_action: CardAction)
 signal request_discard_cards(ctx: DiscardContext)
 signal discard_selection_started(ctx: DiscardContext)
 signal discard_finished(ctx: DiscardContext)
 signal hand_discard_animation_finished()
-#signal request_summon_replace
+signal request_summon_replace
 #signal combatant_target_clicked
 #signal summon_replace_cancel_requested
 signal hand_card_clicked(card: UsableCard)

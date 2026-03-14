@@ -290,7 +290,7 @@ func apply_status(ctx: StatusContext) -> void:
 	if ctx == null or state == null:
 		return
 
-	ctx.hydrate_ids()
+	#ctx.hydrate_ids()
 	if ctx.target_id <= 0:
 		return
 
@@ -344,18 +344,42 @@ func remove_status(ctx: StatusContext) -> void:
 		return
 	if ctx.target_id <= 0:
 		return
+
 	var u := state.get_unit(ctx.target_id)
 	if u == null:
 		return
 	if ctx.status_id == &"":
 		return
-	
+
 	var proto := _get_status_proto(ctx.status_id)
+	var old_stack: StatusStack = u.statuses.get_status_stack(ctx.status_id)
+
+	var before_i := 0
+	var before_d := 0
+	if old_stack != null:
+		before_i = int(old_stack.intensity)
+		before_d = int(old_stack.duration)
+
 	u.statuses.remove_ctx(ctx)
-	
+
 	if writer != null:
-		writer.emit_status(int(ctx.source_id), int(ctx.target_id), ctx.status_id, Status.OP.REMOVE, 0, 0)
-	
+		writer.emit_status(
+			int(ctx.source_id),
+			int(ctx.target_id),
+			ctx.status_id,
+			int(Status.OP.REMOVE),
+			0,
+			0,
+			{
+				Keys.BEFORE_INTENSITY: before_i,
+				Keys.BEFORE_DURATION: before_d,
+				Keys.AFTER_INTENSITY: 0,
+				Keys.AFTER_DURATION: 0,
+				Keys.DELTA_INTENSITY: -before_i,
+				Keys.DELTA_DURATION: -before_d,
+			}
+		)
+
 	_rebuild_modifier_cache_for(ctx.target_id)
 	if _is_aura_proto(proto):
 		_request_intent_refresh_targets_for_aura(int(ctx.target_id), proto)
@@ -500,7 +524,7 @@ func summon(ctx: SummonContext) -> void:
 		
 		var after_order_ids := PackedInt32Array(state.groups[g].order)
 		
-		writer.emit_summoned(id, g, int(ctx.insert_index), windup_order, after_order_ids, u.data_proto_path, spec, ctx.reason, ctx.bound_card_uid)
+		writer.emit_summoned(source_id, id, g, int(ctx.insert_index), windup_order, after_order_ids, u.data_proto_path, spec, ctx.reason, ctx.bound_card_uid)
 		#
 		#writer.emit_summon_followthrough(source_id, g, int(ctx.insert_index), 1, {
 			#Keys.SUMMONED_ID: int(id),

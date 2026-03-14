@@ -11,6 +11,9 @@ var rel_defaults := {
 	BattleEvent.Type.DIED: 1.0,
 	BattleEvent.Type.FADED: 1.0,
 	BattleEvent.Type.STATUS: 1.0,
+
+	# NEW
+	BattleEvent.Type.DAMAGE_APPLIED: 1.0,
 }
 
 # You can override per arcanum/card later (same as you started)

@@ -10,11 +10,11 @@ var system: ArcanaSystem = ArcanaSystem.new()
 
 func _ready() -> void:
 	arcana_row.child_exiting_tree.connect(_on_arcanum_display_exiting_tree)
-	Events.live_battle_api_created.connect(_on_live_battle_api_created)
+	#Events.live_battle_api_created.connect(_on_live_battle_api_created)
 
-func _on_live_battle_api_created(new_api: LiveBattleAPI) -> void:
-	if new_api:
-		system.set_api(new_api)
+#func _on_live_battle_api_created(new_api: LiveBattleAPI) -> void:
+	#if new_api:
+		#system.set_api(new_api)
 
 # --- Convenience wrappers (so call sites barely change) ---
 

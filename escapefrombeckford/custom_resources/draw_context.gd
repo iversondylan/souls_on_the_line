@@ -3,7 +3,7 @@
 class_name DrawContext extends RefCounted
 
 
-var source: Fighter
+var source_id: int
 var battle: Battle
 var hand: Hand
 var deck: Deck

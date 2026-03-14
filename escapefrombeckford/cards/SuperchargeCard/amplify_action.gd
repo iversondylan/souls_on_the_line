@@ -4,25 +4,25 @@ extends CardAction
 @export var amplify_duration: int = 2
 @export var amplify_sound: Sound = preload("res://audio/supercharge_application.tres")
 
-func activate(ctx: CardActionContext) -> bool:
-	var targets := ctx.resolved_target.fighters
-	if targets.is_empty():
-		return false
-
-	var effect := StatusEffect.new()
-	effect.targets = targets
-	effect.sound = amplify_sound
-
-	# ID-based request
-	effect.status_id = AmplifyStatus.ID
-	effect.duration = amplify_duration
-	# (optional) effect.intensity = 1
-
-	# (optional) source is nice for logs / procs
-	effect.source = ctx.player if ctx and ctx.player else null
-
-	effect.execute(ctx.battle_scene.api)
-	return true
+#func activate(ctx: CardActionContext) -> bool:
+	#var targets := ctx.resolved_target.fighters
+	#if targets.is_empty():
+		#return false
+#
+	#var effect := StatusEffect.new()
+	#effect.targets = targets
+	#effect.sound = amplify_sound
+#
+	## ID-based request
+	#effect.status_id = AmplifyStatus.ID
+	#effect.duration = amplify_duration
+	## (optional) effect.intensity = 1
+#
+	## (optional) source is nice for logs / procs
+	#effect.source = ctx.player if ctx and ctx.player else null
+#
+	#effect.execute(ctx.battle_scene.api)
+	#return true
 
 func activate_sim(ctx: CardActionContextSim) -> bool:
 	if ctx == null or ctx.api == null or ctx.resolved == null:
@@ -58,5 +58,5 @@ func activate_sim(ctx: CardActionContextSim) -> bool:
 func description_arity() -> int:
 	return 2
 
-func get_description_values(_ctx: CardActionContext) -> Array:
-	return [floori(AmplifyStatus.MULT_VALUE * 100), amplify_duration]
+#func get_description_values(_ctx: CardActionContext) -> Array:
+	#return [floori(AmplifyStatus.MULT_VALUE * 100), amplify_duration]

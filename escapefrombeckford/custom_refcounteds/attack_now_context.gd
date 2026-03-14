@@ -2,7 +2,7 @@
 class_name AttackNowContext
 extends RefCounted
 
-var attacker: Fighter = null
+#var attacker: Fighter = null
 var attacker_id: int = 0
 
 var strikes: int = 1

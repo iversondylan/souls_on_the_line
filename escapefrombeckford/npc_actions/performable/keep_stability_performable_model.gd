@@ -2,10 +2,10 @@
 class_name KeepStabilityPerformableModel
 extends PerformableModel
 
-func is_performable(ctx: NPCAIContext) -> bool:
-	if !ctx or !ctx.state:
-		return true
-	return !bool(ctx.state.get(NPCAIBehavior.STABILITY_BROKEN, false))
+#func is_performable(ctx: NPCAIContext) -> bool:
+	#if !ctx or !ctx.state:
+		#return true
+	#return !bool(ctx.state.get(NPCAIBehavior.STABILITY_BROKEN, false))
 
 func is_performable_sim(ctx: NPCAIContext) -> bool:
 	if !ctx or !ctx.combatant_state or !ctx.combatant_state.ai_state:

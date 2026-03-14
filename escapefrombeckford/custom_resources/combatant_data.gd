@@ -21,7 +21,7 @@ signal combatant_data_changed()
 @export var apr: int = 3
 @export var apm: int = 3
 @export var max_mana: int = 3
-@export var behaviors: Array[FighterBehavior]
+#@export var behaviors: Array[FighterBehavior]
 @export var ai: NPCAIProfile
 
 @export_group("Audio")

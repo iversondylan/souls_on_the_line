@@ -2,15 +2,11 @@
 
 [ext_resource type="Script" uid="uid://dixfcu6jmx0kd" path="res://scenes/battle.gd" id="1_dd63g"]
 [ext_resource type="Script" uid="uid://8txpx232aks0" path="res://scenes/sim_host.gd" id="3_1m01a"]
-[ext_resource type="Script" uid="uid://0a8baesyqdot" path="res://scenes/battle_scene.gd" id="3_lcn8m"]
-[ext_resource type="PackedScene" uid="uid://co7q6uigpt8n4" path="res://scenes/battle_resolution_runner.tscn" id="4_kl6ie"]
 [ext_resource type="Script" uid="uid://cyefuqg3i2y7o" path="res://battle_view/battle_view.gd" id="4_lv4so"]
 [ext_resource type="Resource" uid="uid://cbs38uf5bi3y" path="res://audio/metronome_120bpm.tres" id="4_rwtbh"]
 [ext_resource type="Texture2D" uid="uid://jml4obgrdfeg" path="res://assets/backgrounds/flat-forestred-dark.png" id="4_yhk5m"]
 [ext_resource type="Script" uid="uid://chqthfo2t83me" path="res://battle_view/group_view.gd" id="5_eivww"]
 [ext_resource type="Resource" uid="uid://cgyjpqj83r2ln" path="res://audio/lil_click.tres" id="5_f0g0v"]
-[ext_resource type="PackedScene" uid="uid://gmxev02ltcly" path="res://scenes/battle_groups/battle_group_friendly.tscn" id="5_n2clt"]
-[ext_resource type="PackedScene" uid="uid://0jk65n5vl1s7" path="res://scenes/battle_groups/battle_group_enemy.tscn" id="6_xn15y"]
 [ext_resource type="Script" uid="uid://b4bb2s8x838ip" path="res://scenes/battle_scene_area_left.gd" id="7_rgwlw"]
 [ext_resource type="Theme" uid="uid://d2wc7fposrlqs" path="res://themes/wizard_theme.tres" id="8_2tyvl"]
 [ext_resource type="Texture2D" uid="uid://deopg8hjud5es" path="res://assets/sprites/assorted/arrow_down.png" id="8_h4dll"]
@@ -46,6 +42,15 @@ script = ExtResource("4_lv4so")
 metronome_sound = ExtResource("4_rwtbh")
 click_sound = ExtResource("5_f0g0v")
 
+[node name="Background" type="TextureRect" parent="BattleView" unique_id=1487696658 groups=["background"]]
+offset_left = -92.0
+offset_top = -94.0
+offset_right = 1828.0
+offset_bottom = 986.0
+scale = Vector2(1.1, 1.1)
+mouse_filter = 2
+texture = ExtResource("4_yhk5m")
+
 [node name="Group0" type="Node2D" parent="BattleView" unique_id=479709658]
 position = Vector2(480, 748)
 script = ExtResource("5_eivww")
@@ -62,53 +67,20 @@ scale = Vector2(0.153333, 0.153333)
 texture = ExtResource("8_h4dll")
 script = ExtResource("9_p0caf")
 
-[node name="Battle_Scene" type="Node2D" parent="." unique_id=862417419 groups=["battle_scene"]]
-script = ExtResource("3_lcn8m")
+[node name="CameraRig" type="Node2D" parent="BattleView" unique_id=1612841384]
+position = Vector2(960, 540)
+script = ExtResource("10_dd63g")
 
-[node name="BattleResolutionRunner" parent="Battle_Scene" unique_id=615590965 instance=ExtResource("4_kl6ie")]
+[node name="Camera2D" type="Camera2D" parent="BattleView/CameraRig" unique_id=1968275134]
 
-[node name="Background" type="TextureRect" parent="Battle_Scene" unique_id=1487696658 groups=["background"]]
-offset_left = -92.0
-offset_top = -94.0
-offset_right = 1828.0
-offset_bottom = 986.0
-scale = Vector2(1.1, 1.1)
-mouse_filter = 2
-texture = ExtResource("4_yhk5m")
-
-[node name="BattleGroupFriendly" parent="Battle_Scene" unique_id=1183869742 instance=ExtResource("5_n2clt")]
-position = Vector2(480, 748)
-
-[node name="BattleGroupEnemy" parent="Battle_Scene" unique_id=2120926567 instance=ExtResource("6_xn15y")]
-position = Vector2(1440, 748)
-faces_right = false
-
-[node name="BattleSceneAreaLeft" type="Area2D" parent="Battle_Scene" unique_id=366013195]
+[node name="BattleSceneAreaLeft" type="Area2D" parent="BattleView" unique_id=366013195]
 position = Vector2(969, 698)
 collision_layer = 8
 script = ExtResource("7_rgwlw")
 
-[node name="CollisionShapeLeft" type="CollisionShape2D" parent="Battle_Scene/BattleSceneAreaLeft" unique_id=1587785464]
+[node name="CollisionShapeLeft" type="CollisionShape2D" parent="BattleView/BattleSceneAreaLeft" unique_id=1587785464]
 position = Vector2(-600, -50)
 shape = SubResource("RectangleShape2D_eb6dy")
-
-[node name="TargetArrow" type="Sprite2D" parent="Battle_Scene" unique_id=1896918255]
-visible = false
-position = Vector2(0, -18)
-scale = Vector2(0.153333, 0.153333)
-texture = ExtResource("8_h4dll")
-script = ExtResource("9_p0caf")
-
-[node name="CameraRig" type="Node2D" parent="Battle_Scene" unique_id=1612841384]
-position = Vector2(960, 540)
-script = ExtResource("10_dd63g")
-zoom_in = null
-max_offset_px = null
-movement_duration = null
-offset_deadzone = null
-world_bounds = null
-
-[node name="Camera2D" type="Camera2D" parent="Battle_Scene/CameraRig" unique_id=1968275134]
 
 [node name="Debug_UI" type="CanvasLayer" parent="." unique_id=1870619922]
 

@@ -5,7 +5,7 @@ signal modifier_tokens_changed(mod_type: Modifier.Type)
 
 const ARCANUM_APPLY_INTERVAL := 0.5
 
-var api: LiveBattleAPI = null
+var api: SimBattleAPI = null
 
 # Ordered list (for display ordering)
 var _arcana: Array[Arcanum] = []
@@ -16,8 +16,8 @@ var _by_id: Dictionary = {}
 # id -> WeakRef(ArcanumDisplay)
 var _display_by_id: Dictionary = {}
 
-func set_api(new_api: LiveBattleAPI) -> void:
-	api = new_api
+#func set_api(new_api: LiveBattleAPI) -> void:
+	#api = new_api
 
 func bind_display(arcanum_id: String, display: Node) -> void:
 	if arcanum_id == "" or display == null:
@@ -88,30 +88,30 @@ func get_modifier_tokens_for(target: Node) -> Array[ModifierToken]:
 			tokens.append_array(a.get_modifier_tokens_for(target))
 	return tokens
 
-func activate_arcana_by_type_async(type: Arcanum.Type, host: Node) -> Signal:
-	# host no longer needed; keep signature for now so callsites don’t explode
-	#print("arcanum_system.gd activate_arcana_by_type_async() type: ", Arcanum.Type.keys()[type])
-	if type == Arcanum.Type.EVENT_BASED:
-		return Signal()
-
-	if !api or !api.runner:
-		# No runner => just do immediate (or emit nothing). For now, no-op safely.
-		return Signal()
-
-	var queue: Array[Arcanum] = []
-	for a in _arcana:
-		if a and a.type == type:
-			queue.push_back(a)
-
-	if queue.is_empty():
-		return Signal()
-
-	for a in queue:
-		var d := _get_display(a.get_id()) # may be null
-		api.enqueue_arcanum_activate(a, d)
-		api.enqueue_wait(ARCANUM_APPLY_INTERVAL)
-
-	return Signal()
+#func activate_arcana_by_type_async(type: Arcanum.Type, host: Node) -> Signal:
+	## host no longer needed; keep signature for now so callsites don’t explode
+	##print("arcanum_system.gd activate_arcana_by_type_async() type: ", Arcanum.Type.keys()[type])
+	#if type == Arcanum.Type.EVENT_BASED:
+		#return Signal()
+#
+	#if !api or !api.runner:
+		## No runner => just do immediate (or emit nothing). For now, no-op safely.
+		#return Signal()
+#
+	#var queue: Array[Arcanum] = []
+	#for a in _arcana:
+		#if a and a.type == type:
+			#queue.push_back(a)
+#
+	#if queue.is_empty():
+		#return Signal()
+#
+	#for a in queue:
+		#var d := _get_display(a.get_id()) # may be null
+		#api.enqueue_arcanum_activate(a, d)
+		#api.enqueue_wait(ARCANUM_APPLY_INTERVAL)
+#
+	#return Signal()
 
 func activate_arcana_by_type(type: Arcanum.Type, host: Node) -> void:
 	# host is required to create tweens / intervals.
