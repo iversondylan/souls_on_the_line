@@ -45,6 +45,7 @@ func _build_one_measure_plan(
 ) -> void:
 	var q := total_sec / 4.0
 	var primary_kind := int(action_units[0].get("action_kind", DirectorAction.ActionKind.GENERIC))
+	var attack_info := _build_attack_presentation_info(action_units, DirectorAction.Phase.FOLLOWTHROUGH)
 
 	var focus_payload: Array = turn_events
 	var windup_payload: Array = [action_units[0].get("marker")]
@@ -57,8 +58,10 @@ func _build_one_measure_plan(
 			var be := e as BattleEvent
 			if be == null:
 				continue
+
+			# deaths now belong to followthrough, not resolve
 			if int(be.type) == BattleEvent.Type.DIED or int(be.type) == BattleEvent.Type.FADED:
-				resolve_payload.append(be)
+				follow_payload.append(be)
 			else:
 				follow_payload.append(be)
 
@@ -71,6 +74,7 @@ func _build_one_measure_plan(
 		"focus"
 	)
 	a_focus.event = _make_focus_event_from_payload(primary_kind, focus_payload)
+	a_focus.presentation = attack_info
 
 	var a_windup := _make_phase_action(
 		DirectorAction.Phase.WINDUP,
@@ -81,6 +85,7 @@ func _build_one_measure_plan(
 		"windup"
 	)
 	a_windup.event = _make_windup_event_from_unit(action_units[0])
+	a_windup.presentation = attack_info
 
 	var a_follow := _make_phase_action(
 		DirectorAction.Phase.FOLLOWTHROUGH,
@@ -91,6 +96,7 @@ func _build_one_measure_plan(
 		"followthrough"
 	)
 	a_follow.event = _make_followthrough_event_from_unit(action_units[0])
+	a_follow.presentation = attack_info
 
 	var a_resolve := _make_phase_action(
 		DirectorAction.Phase.RESOLVE,
@@ -115,6 +121,7 @@ func _build_multi_measure_plan(
 	var total_beats := measures * 4
 	var beat_sec := total_sec / float(total_beats)
 	var primary_kind := int(action_units[0].get("action_kind", DirectorAction.ActionKind.GENERIC))
+	var attack_info := _build_attack_presentation_info(action_units, DirectorAction.Phase.FOLLOWTHROUGH)
 
 	var actions: Array[DirectorAction] = []
 
@@ -127,6 +134,7 @@ func _build_multi_measure_plan(
 		"focus"
 	)
 	a_focus.event = _make_focus_event_from_payload(primary_kind, turn_events)
+	a_focus.presentation = attack_info
 	actions.append(a_focus)
 
 	var a_windup := _make_phase_action(
@@ -138,54 +146,27 @@ func _build_multi_measure_plan(
 		"windup"
 	)
 	a_windup.event = _make_windup_event_from_unit(action_units[0])
+	a_windup.presentation = attack_info
 	actions.append(a_windup)
 
 	var follow_slots := total_beats - 5
 	if follow_slots < 1:
 		follow_slots = 1
 
-	var clusters := _cluster_units(action_units, follow_slots)
-	for i in range(clusters.size()):
-		var cluster: Array = clusters[i]
-		if cluster.is_empty():
-			continue
-
-		var payload: Array = []
-		for unit in cluster:
-			var unit_events: Array = unit.get("events", [])
-			for e in unit_events:
-				var be := e as BattleEvent
-				if be == null:
-					continue
-				if int(be.type) == BattleEvent.Type.DIED or int(be.type) == BattleEvent.Type.FADED:
-					continue
-				payload.append(be)
-
-		if payload.is_empty():
-			continue
-
-		var slot_t := float(4 + i) * beat_sec
-		var cluster_kind := int(cluster[0].get("action_kind", primary_kind))
-		var a_follow := _make_phase_action(
-			DirectorAction.Phase.FOLLOWTHROUGH,
-			cluster_kind,
-			slot_t,
-			beat_sec,
-			payload,
-			"follow_%d" % i
-		)
-		a_follow.event = _make_followthrough_event_from_unit(cluster[0])
-		actions.append(a_follow)
-
 	var resolve_payload: Array = []
-	for unit in action_units:
-		var unit_events: Array = unit.get("events", [])
-		for e in unit_events:
-			var be := e as BattleEvent
-			if be == null:
-				continue
-			if int(be.type) == BattleEvent.Type.DIED or int(be.type) == BattleEvent.Type.FADED:
-				resolve_payload.append(be)
+
+	# deaths now stay in followthrough payload space
+	var a_follow := _make_phase_action(
+		DirectorAction.Phase.FOLLOWTHROUGH,
+		primary_kind,
+		4.0 * beat_sec,
+		float(follow_slots) * beat_sec,
+		[],
+		"followthrough"
+	)
+	a_follow.event = _make_followthrough_event_from_unit(action_units[0])
+	a_follow.presentation = attack_info
+	actions.append(a_follow)
 
 	var a_resolve := _make_phase_action(
 		DirectorAction.Phase.RESOLVE,
@@ -299,6 +280,115 @@ func _extract_action_units(turn_events: Array) -> Array[Dictionary]:
 
 	return out
 
+func _build_attack_presentation_info(action_units: Array[Dictionary], phase: int) -> AttackPresentationInfo:
+	var info := AttackPresentationInfo.new()
+	if action_units.is_empty():
+		return info
+
+	var first_marker: BattleEvent = action_units[0].get("marker")
+	if first_marker != null and first_marker.data != null:
+		info.attacker_id = int(first_marker.data.get(Keys.SOURCE_ID, first_marker.data.get(Keys.ACTOR_ID, 0)))
+		info.attack_mode = int(first_marker.data.get(Keys.ATTACK_MODE, Attack.Mode.MELEE))
+		info.projectile_scene_path = String(first_marker.data.get(Keys.PROJECTILE_SCENE, ""))
+
+	info.strike_count = action_units.size()
+
+	var n := action_units.size()
+	for i in range(n):
+		var unit := action_units[i]
+		var strike := _build_strike_presentation_info(unit)
+		strike.strike_index = i
+
+		var marker: BattleEvent = unit.get("marker")
+		if marker != null and marker.data != null:
+			if info.projectile_scene_path == "":
+				info.projectile_scene_path = String(marker.data.get(Keys.PROJECTILE_SCENE, ""))
+
+		var t0 := 0.0
+		var t1 := 1.0
+		if n > 0:
+			t0 = float(i) / float(n)
+			t1 = float(i + 1) / float(n)
+
+		strike.t0_ratio = t0
+		strike.t1_ratio = t1
+
+		info.strikes.append(strike)
+		info.total_hit_count += strike.hit_count
+		if strike.has_lethal_hit:
+			info.has_lethal_hit = true
+
+	info.t0_ratio = 0.0
+	info.t1_ratio = 1.0
+
+	if info.projectile_scene_path == "" and int(info.attack_mode) == int(Attack.Mode.RANGED):
+		info.projectile_scene_path = "res://VFX/projectiles/fireball/fireball.tscn"
+
+	return info
+
+
+func _build_strike_presentation_info(unit: Dictionary) -> StrikePresentationInfo:
+	var out := StrikePresentationInfo.new()
+	if unit.is_empty():
+		return out
+
+	var marker: BattleEvent = unit.get("marker")
+	var events: Array = unit.get("events", [])
+
+	if marker != null and marker.data != null:
+		out.target_ids = []
+		var raw_targets: Array = marker.data.get(Keys.TARGET_IDS, [])
+		for tid in raw_targets:
+			out.target_ids.append(int(tid))
+
+	out.strike_index = 0 # caller may overwrite if desired
+
+	var hits_by_target := {}
+
+	for e in events:
+		var be := e as BattleEvent
+		if be == null:
+			continue
+
+		match int(be.type):
+			BattleEvent.Type.DAMAGE_APPLIED:
+				var h := HitPresentationInfo.new()
+				h.target_id = int(be.data.get(Keys.TARGET_ID, 0))
+				h.amount = int(be.data.get(Keys.FINAL_AMOUNT, be.data.get(Keys.AMOUNT, 0)))
+				h.before_health = int(be.data.get(Keys.BEFORE_HEALTH, 0))
+				h.after_health = int(be.data.get(Keys.AFTER_HEALTH, 0))
+				h.was_lethal = bool(be.data.get(Keys.WAS_LETHAL, false))
+
+				hits_by_target[h.target_id] = h
+				out.hits.append(h)
+				out.hit_count += 1
+
+				if h.was_lethal:
+					out.has_lethal_hit = true
+
+			BattleEvent.Type.STATUS:
+				var status_target := int(be.data.get(Keys.TARGET_ID, 0))
+				if hits_by_target.has(status_target):
+					var hit: HitPresentationInfo = hits_by_target[status_target]
+					hit.status_events.append(be)
+
+			BattleEvent.Type.DIED:
+				var dead_id := int(be.data.get(Keys.TARGET_ID, 0))
+				if hits_by_target.has(dead_id):
+					var hit2: HitPresentationInfo = hits_by_target[dead_id]
+					hit2.died_event = be
+					hit2.was_lethal = true
+					out.has_lethal_hit = true
+
+			BattleEvent.Type.FADED:
+				var faded_id := int(be.data.get(Keys.TARGET_ID, 0))
+				if hits_by_target.has(faded_id):
+					var hit3: HitPresentationInfo = hits_by_target[faded_id]
+					hit3.faded_event = be
+					hit3.was_lethal = true
+					out.has_lethal_hit = true
+
+	return out
 
 func _action_kind_for_marker(e: BattleEvent) -> int:
 	if e == null:

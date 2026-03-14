@@ -72,7 +72,6 @@ func remove_status(order: StatusRemovedOrder) -> void:
 		_update_visuals()
 		return
 
-	# Partial remove: decrease intensity.
 	var st: Dictionary = _states_by_id[id]
 	var cur := maxi(int(st.get("intensity", 1)), 1)
 	var dec := maxi(int(order.intensity), 1)

@@ -74,6 +74,46 @@ func _set_type(new_type: int) -> void:
 		area_left.monitorable = true
 		area_left.monitoring = true
 
+func play_strike_followthrough(order: StrikeFollowthroughOrder, battle_view: BattleView) -> void:
+	if order == null or battle_view == null:
+		return
+
+	#if int(order.attack_mode) == Attack.Mode.RANGED:
+		#if order.attack_info != null:
+			#for i in range(order.attack_info.strikes.size()):
+				#var key := int(battle_view.make_projectile_key(int(order.attacker_id), i))
+				#var projectile := battle_view.take_projectile(key)
+				#if projectile != null and is_instance_valid(projectile):
+					#if projectile.has_method("play_impact"):
+						#projectile.call("play_impact")
+					#else:
+						#projectile.queue_free()
+		#else:
+			#var projectile := battle_view.take_projectile(battle_view.make_projectile_key(int(order.attacker_id), 0))
+			#if projectile != null and is_instance_valid(projectile):
+				#if projectile.has_method("play_impact"):
+					#projectile.call("play_impact")
+				#else:
+					#projectile.queue_free()
+
+	_apply_followthrough_pose(order)
+
+
+
+func play_projectile_impact_for_strike(attacker_id: int, strike_index: int, battle_view: BattleView) -> void:
+	if battle_view == null:
+		return
+
+	var key := battle_view.make_projectile_key(int(attacker_id), int(strike_index))
+	var projectile := battle_view.take_projectile(key)
+	if projectile == null or !is_instance_valid(projectile):
+		return
+
+	if projectile.has_method("play_impact"):
+		projectile.call("play_impact")
+	else:
+		projectile.queue_free()
+
 func _on_target_area_area_entered(area: Area2D) -> void:
 	if area is not CardTargetSelectorArea:
 		return
@@ -229,24 +269,50 @@ func play_strike_windup(order: StrikeWindupOrder, battle_view: BattleView) -> vo
 	_schedule_projectile_spawn(order, battle_view, gen)
 
 func _schedule_projectile_spawn(order: StrikeWindupOrder, battle_view: BattleView, gen: int) -> void:
-	var spawn_t := clampf(order.duration * float(order.projectile_spawn_ratio), 0.0, order.duration)
-	var travel_t := maxf(order.duration - spawn_t, 0.001)
+	if order.attack_info == null or order.attack_info.strikes.is_empty():
+		var spawn_t := clampf(order.duration * float(order.projectile_spawn_ratio), 0.0, order.duration)
+		var travel_t := maxf(order.duration - spawn_t, 0.001)
+		_spawn_projectile_async(order, battle_view, gen, spawn_t, travel_t, 0, order.target_ids)
+		return
 
-	# Fire-and-forget coroutine
-	_spawn_projectile_async(order, battle_view, gen, spawn_t, travel_t)
+	for i in range(order.attack_info.strikes.size()):
+		var s := (order.attack_info.strikes[i])
+		if s == null:
+			continue
 
-func _spawn_projectile_async(order: StrikeWindupOrder, battle_view: BattleView, gen: int, spawn_t: float, travel_t: float) -> void:
-	# wait until spawn time
+		var spawn_t := clampf(order.duration * s.t0_ratio, 0.0, order.duration)
+		var end_t := clampf(order.duration * s.t1_ratio, spawn_t, order.duration)
+		var travel_t := maxf(end_t - spawn_t, 0.001)
+
+		_spawn_projectile_async(
+			order,
+			battle_view,
+			gen,
+			spawn_t,
+			travel_t,
+			i,
+			s.target_ids
+		)
+
+func _spawn_projectile_async(
+	order: StrikeWindupOrder,
+	battle_view: BattleView,
+	gen: int,
+	spawn_t: float,
+	travel_t: float,
+	strike_index: int,
+	target_ids: Array[int]
+) -> void:
 	if spawn_t > 0.0:
 		await get_tree().create_timer(spawn_t).timeout
 
-	# cancellation check
 	if !is_instance_valid(self) or gen != _strike_gen:
 		return
 
-	#print("spawn projectile now")
-
 	var proj_path := String(order.projectile_scene_path)
+	if proj_path == "":
+		proj_path = "res://VFX/projectiles/fireball/fireball.tscn"
+
 	var scene: PackedScene = FxLibrary.get_scene(proj_path)
 	if scene == null:
 		push_warning("Missing projectile scene: %s" % proj_path)
@@ -259,16 +325,18 @@ func _spawn_projectile_async(order: StrikeWindupOrder, battle_view: BattleView, 
 	battle_view.add_child(projectile)
 
 	var start_pos := _get_projectile_origin_global()
-	var end_pos := battle_view.get_mean_target_position_global(order.target_ids, start_pos)
+	var end_pos := battle_view.get_mean_target_position_global(target_ids, start_pos)
 	end_pos.y = start_pos.y
+
 	var group := get_parent()
 	if group is GroupView and !(group as GroupView).faces_right:
 		projectile.scale.x *= -1
 
 	projectile.global_position = start_pos
-	battle_view.put_projectile(int(order.attacker_id), projectile)
 
-	# travel to target
+	var key := battle_view.make_projectile_key(int(order.attacker_id), int(strike_index))
+	battle_view.put_projectile(key, projectile)
+
 	var t := projectile.create_tween().set_trans(Tween.TRANS_LINEAR)
 	t.tween_property(projectile, "global_position", end_pos, travel_t)
 
@@ -314,42 +382,49 @@ func apply_strike_followthrough(order: StrikeFollowthroughOrder) -> void:
 	# recover scale back to base by end
 	tween_strike.parallel().tween_property(art_parent, "scale", base_scale, recover_t)
 
-func play_strike_followthrough(order: StrikeFollowthroughOrder, battle_view: BattleView) -> void:
-	if order == null or battle_view == null:
-		return
-	
-	# If ranged, trigger projectile impact immediately, and let it self-finish.
-	if int(order.attack_mode) == Attack.Mode.RANGED:
-		var projectile := battle_view.take_projectile(int(order.attacker_id))
-		if projectile != null and is_instance_valid(projectile):
-			if projectile.has_method("play_impact"):
-				projectile.call("play_impact")
-			else:
-				projectile.queue_free()
-	
-	# Snap wide + shake + recover
-	_apply_followthrough_pose(order)
-
 func _apply_followthrough_pose(order: StrikeFollowthroughOrder) -> void:
 	if tween_strike:
 		tween_strike.kill()
+
 	tween_strike = create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-	
+
+	var base_scale := _get_base_art_scale()
+	var base_pos := _get_base_art_pos()
+
+	var strike_mult := maxi(1, order.strike_count)
+	var hit_mult := maxi(1, order.total_hit_count)
+
+	var snap_scale_x := order.x_scale + 0.04 * float(strike_mult - 1)
+	var snap_scale_y := order.y_scale - 0.02 * float(strike_mult - 1)
+	var shake := order.shake_px + 1.5 * float(hit_mult - 1)
+
+	if order.has_lethal_hit:
+		shake += 2.0
+
+	var snap_scale := Vector2(
+		base_scale.x * snap_scale_x,
+		base_scale.y * snap_scale_y
+	)
+
 	var snap_t := maxf(order.duration * float(order.snap_ratio), 0.01)
 	var recover_t := maxf(order.duration - snap_t, 0.01)
-	
-	var base_pos := art_parent.position
-	var shake := float(order.shake_px)
-	
-	# snap to wide
-	tween_strike.tween_property(art_parent, "scale", Vector2(order.x_scale, order.y_scale), snap_t)
-	
-	# tiny shake (x)
-	tween_strike.parallel().tween_property(art_parent, "position", base_pos + Vector2(shake, 0), snap_t * 0.5)
-	tween_strike.tween_property(art_parent, "position", base_pos + Vector2(-shake, 0), snap_t * 0.5)
-	
-	# recover to normal
-	tween_strike.tween_property(art_parent, "scale", Vector2.ONE, recover_t).set_ease(Tween.EASE_IN_OUT)
+
+	tween_strike.tween_property(art_parent, "scale", snap_scale, snap_t)
+
+	tween_strike.parallel().tween_property(
+		art_parent,
+		"position",
+		base_pos + Vector2(shake, 0),
+		snap_t * 0.5
+	)
+	tween_strike.tween_property(
+		art_parent,
+		"position",
+		base_pos + Vector2(-shake, 0),
+		snap_t * 0.5
+	)
+
+	tween_strike.tween_property(art_parent, "scale", base_scale, recover_t).set_ease(Tween.EASE_IN_OUT)
 	tween_strike.parallel().tween_property(art_parent, "position", base_pos, recover_t).set_ease(Tween.EASE_IN_OUT)
 
 func clear_strike_pose(duration: float) -> void:

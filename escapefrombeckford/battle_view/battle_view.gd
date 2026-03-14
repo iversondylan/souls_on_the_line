@@ -317,101 +317,6 @@ func _debug_payload_summary(payload: Array) -> String:
 
 	return " | ".join(parts)
 
-#func _playback_loop(gen: int) -> void:
-	#var schedule_t := clock.now_sec()
-#
-	#while _playing and gen == _playback_gen and event_player != null:
-		#while _playing and gen == _playback_gen and !event_player.has_next():
-			#var log := event_player.get_log()
-			#if log == null:
-				#_playing = false
-				#return
-			#await log.appended
-#
-		#if !_playing or gen != _playback_gen:
-			#return
-#
-		#var player_id := 0
-		#if sim_host != null and sim_host.get_main_api() != null:
-			#player_id = int(sim_host.get_main_api().get_player_id())
-#
-		#var now := clock.now_sec()
-#
-		#if event_player.peek_is_npc_actor_turn(player_id):
-			#var actor_turn := await event_player.await_complete_actor_turn_chunk()
-			#if actor_turn.is_empty():
-				#continue
-#
-			#var unit_q := _unit_quarters_for_speed_mode()
-			#var t_start := clock.next_grid_time(maxf(schedule_t, now), unit_q)
-#
-			#if t_start > now:
-				#await clock.wait_until(t_start)
-#
-			#if !_playing or gen != _playback_gen:
-				#return
-#
-			#var plan := planner.make_npc_turn_plan(
-				#clock,
-				#actor_turn,
-				#playback_speed_mode,
-				#t_start
-			#)
-#
-			#await _play_schedule_plan(plan, gen)
-			#schedule_t = plan.t_end
-			#continue
-#
-		#var chunk := event_player.next_raw_chunk(player_id)
-		#if chunk.is_empty():
-			#continue
-#
-		#var actor_begin_id := _chunk_actor_id(chunk)
-		#var is_player_actor := (actor_begin_id != 0 and actor_begin_id == player_id)
-		#var is_player_turn := is_player_actor
-#
-		#var mode := scheduler.mode_for_beat(chunk, is_player_turn, is_player_actor)
-		#var wait_q := scheduler.quarters_for_beat(chunk)
-		#var wait_sec := wait_q * clock.seconds_per_quarter()
-#
-		#var t_start2 := now
-		#var t_next := now
-#
-		#match mode:
-			#BeatScheduler.Mode.FREE:
-				#t_start2 = now
-				#t_next = now
-				#schedule_t = now
-#
-			#BeatScheduler.Mode.RELATIVE:
-				#t_start2 = maxf(schedule_t, now)
-				#t_next = t_start2 + wait_sec
-				#schedule_t = t_next
-#
-			#BeatScheduler.Mode.GRID:
-				#var unit_q2 := _unit_quarters_for_speed_mode()
-				#t_start2 = clock.next_grid_time(maxf(schedule_t, now), unit_q2)
-				#t_next = t_start2 + wait_sec
-				#schedule_t = t_next
-#
-		#now = clock.now_sec()
-		#if t_start2 > now:
-			#await clock.wait_until(t_start2)
-#
-		#if !_playing or gen != _playback_gen:
-			#return
-#
-		#var pkg := BeatPackage.new()
-		#pkg.beat = chunk
-		#pkg.gen = gen
-		#pkg.wait_quarters = wait_q
-		#pkg.t_start_sec = t_start2
-		#pkg.t_next_sec = t_next
-		#pkg.duration_sec = maxf(0.0, t_next - t_start2)
-#
-		#event_director.play_raw_chunk(pkg)
-
-
 func _play_schedule_plan(plan: SchedulePlan, gen: int) -> void:
 	if plan == null:
 		return
@@ -429,7 +334,16 @@ func _play_schedule_plan(plan: SchedulePlan, gen: int) -> void:
 
 		if !_playing or gen != _playback_gen:
 			return
-		print("PLAN action ", a.label, " fire_t=", fire_t, " now=", clock.now_sec(), " dur=", a.duration_sec)
+		print(
+			"[ACT] phase=%s label=%s fire=%.3f now=%.3f dur=%.3f %s" % [
+				str(a.phase),
+				a.label,
+				fire_t,
+				clock.now_sec(),
+				a.duration_sec,
+				_debug_action_presentation_summary(a),
+			]
+		)
 		event_director.on_director_action(a, gen)
 
 	var now2 := clock.now_sec()
@@ -564,18 +478,21 @@ func _apply_focus_combatants(order: FocusOrder) -> void:
 	for combatant: CombatantView in get_combatants():
 		combatant.on_focus(order)
 
+func put_projectile(key: int, projectile: Node2D) -> void:
+	_projectiles_by_attacker[int(key)] = projectile
 
-func put_projectile(attacker_id: int, projectile: Node2D) -> void:
-	_projectiles_by_attacker[int(attacker_id)] = projectile
 
-
-func take_projectile(attacker_id: int) -> Node2D:
-	var k := int(attacker_id)
+func take_projectile(key: int) -> Node2D:
+	var k := int(key)
 	if !_projectiles_by_attacker.has(k):
 		return null
 	var p: Node2D = _projectiles_by_attacker[k]
 	_projectiles_by_attacker.erase(k)
 	return p
+
+
+func make_projectile_key(attacker_id: int, strike_index: int) -> int:
+	return int(attacker_id) * 1000 + int(strike_index)
 
 
 func get_mean_target_position_global(target_ids: Array[int], fallback: Vector2) -> Vector2:
@@ -648,3 +565,20 @@ func clear_summon_preview_ghost() -> void:
 	if _summon_preview_ghost != null and is_instance_valid(_summon_preview_ghost):
 		_summon_preview_ghost.queue_free()
 	_summon_preview_ghost = null
+
+func _debug_action_presentation_summary(a: DirectorAction) -> String:
+	if a == null or a.presentation == null:
+		return "presentation=<null>"
+
+	var attack := a.presentation as AttackPresentationInfo
+	if attack == null:
+		return "presentation=%s" % [a.presentation.get_class()]
+
+	return "atk=%s mode=%s strikes=%s hits=%s lethal=%s targets=%s" % [
+		attack.attacker_id,
+		attack.attack_mode,
+		attack.strike_count,
+		attack.total_hit_count,
+		attack.has_lethal_hit,
+		attack.get_all_target_ids(),
+	]
