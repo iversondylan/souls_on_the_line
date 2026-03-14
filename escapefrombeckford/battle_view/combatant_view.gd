@@ -314,7 +314,6 @@ func apply_strike_followthrough(order: StrikeFollowthroughOrder) -> void:
 	# recover scale back to base by end
 	tween_strike.parallel().tween_property(art_parent, "scale", base_scale, recover_t)
 
-# combatant_view.gd (add)
 func play_strike_followthrough(order: StrikeFollowthroughOrder, battle_view: BattleView) -> void:
 	if order == null or battle_view == null:
 		return
@@ -374,8 +373,6 @@ func _get_projectile_origin_global() -> Vector2:
 		##var tv := (get_tree().get_first_node_in_group("battle_view") as Node) # don't do this
 		#n += 1
 	#return sum / float(maxi(n, 1))
-
-# combatant_view.gd
 
 func play_death_windup(o: DeathWindupOrder) -> void:
 	if o == null:

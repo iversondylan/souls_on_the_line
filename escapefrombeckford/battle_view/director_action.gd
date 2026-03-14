@@ -22,7 +22,7 @@ var action_kind: int = ActionKind.NONE
 
 var t_rel_sec: float = 0.0
 var duration_sec: float = 0.0
-
+var presentation: RefCounted = null
 var event: BattleEvent = null
 
 # IMPORTANT: untyped Array, not Array[BattleEvent]

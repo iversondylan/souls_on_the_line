@@ -80,33 +80,16 @@ func stop_playback() -> void:
 
 func _playback_loop(gen: int) -> void:
 	var schedule_t := clock.now_sec()
-	var loop_iter := 0
 
 	while _playing and gen == _playback_gen and event_player != null:
-		loop_iter += 1
-		print("\n========== PLAYBACK LOOP ITER ", loop_iter, " ==========")
-		print("loop start now=", clock.now_sec(), " schedule_t=", schedule_t, " gen=", gen, " playing=", _playing)
-
 		while _playing and gen == _playback_gen and !event_player.has_next():
 			var log := event_player.get_log()
 			if log == null:
-				print("playback_loop: log is null, stopping playback")
 				_playing = false
 				return
-
-			var empty_wait_start := Time.get_ticks_msec()
-			print("playback_loop: no next event, awaiting log.appended ...")
 			await log.appended
-			var empty_wait_end := Time.get_ticks_msec()
-			print(
-				"playback_loop: log.appended resumed after ",
-				(empty_wait_end - empty_wait_start) / 1000.0,
-				" sec; now=",
-				clock.now_sec()
-			)
 
 		if !_playing or gen != _playback_gen:
-			print("playback_loop: aborted after empty-wait gate; playing=", _playing, " gen=", gen, " playback_gen=", _playback_gen)
 			return
 
 		var player_id := 0
@@ -114,16 +97,7 @@ func _playback_loop(gen: int) -> void:
 			player_id = int(sim_host.get_main_api().get_player_id())
 
 		var now := clock.now_sec()
-		var peek_e := event_player.peek()
 
-		print("player_id=", player_id, " now=", now, " schedule_t=", schedule_t)
-		if peek_e == null:
-			print("peek: null")
-		else:
-			print("peek: ", _debug_event_short(peek_e))
-
-		#var is_npc_actor_turn := event_player.peek_is_npc_actor_turn(player_id)
-		#print("peek_is_npc_actor_turn=", is_npc_actor_turn)
 		if event_player.peek_is_npc_actor_turn(player_id):
 			var actor_turn := await event_player.await_complete_actor_turn_chunk()
 			if actor_turn.is_empty():
@@ -136,20 +110,8 @@ func _playback_loop(gen: int) -> void:
 			if t_start < now - late_tolerance_sec:
 				t_start = clock.next_grid_time(now, unit_q)
 
-			print("NPC planning inputs: unit_q=", unit_q,
-				" start_now=", now,
-				" schedule_t=", schedule_t,
-				" chosen_t_start=", t_start,
-				" pre-plan wait=", maxf(0.0, t_start - now))
-
 			if t_start > now:
-				var raw_wait_start := Time.get_ticks_msec()
-				print("awaiting clock.wait_until(t_start) ...")
 				await clock.wait_until(t_start)
-				var raw_wait_actual := float(Time.get_ticks_msec() - raw_wait_start) / 1000.0
-				print("pre-plan wait resumed; expected=", maxf(0.0, t_start - now),
-					" actual=", raw_wait_actual,
-					" now=", clock.now_sec())
 
 			if !_playing or gen != _playback_gen:
 				return
@@ -161,151 +123,14 @@ func _playback_loop(gen: int) -> void:
 				t_start
 			)
 
-			var plan_wait_start := Time.get_ticks_msec()
-			print("awaiting _play_schedule_plan(...) ...")
+			print(_debug_schedule_plan_line(plan, actor_turn, clock.now_sec(), schedule_t))
+
 			await _play_schedule_plan(plan, gen)
-			var plan_wait_actual := float(Time.get_ticks_msec() - plan_wait_start) / 1000.0
-			print("_play_schedule_plan resumed; expected total plan dur=", plan.t_end - plan.t_start,
-				" actual awaited=", plan_wait_actual,
-				" now=", clock.now_sec())
-
 			schedule_t = plan.t_end
-			print("NPC path complete; new schedule_t=", schedule_t)
 			continue
-		#if is_npc_actor_turn:
-			#print("--- NPC ACTOR TURN PATH ---")
-#
-			#var collect_start_ms := Time.get_ticks_msec()
-			#print("awaiting complete actor-turn chunk ...")
-			#var actor_turn := await event_player.await_complete_actor_turn_chunk()
-			#var collect_end_ms := Time.get_ticks_msec()
-#
-			#print(
-				#"actor-turn chunk collected in ",
-				#(collect_end_ms - collect_start_ms) / 1000.0,
-				#" sec"
-			#)
-			#print("actor-turn chunk size=", actor_turn.size())
-			#print("actor-turn chunk summary=", _debug_chunk_summary(actor_turn))
-#
-			#if actor_turn.is_empty():
-				#print("actor-turn chunk empty; continuing")
-				#continue
-#
-			#var unit_q := _unit_quarters_for_speed_mode()
-			#var t_start := _choose_npc_plan_start(now, schedule_t, unit_q)
-			#var planned_wait_sec := maxf(0.0, t_start - now)
-#
-			#print(
-				#"NPC planning inputs: unit_q=",
-				#unit_q,
-				#" start_now=",
-				#now,
-				#" schedule_t=",
-				#schedule_t,
-				#" chosen_t_start=",
-				#t_start,
-				#" pre-plan wait=",
-				#planned_wait_sec
-			#)
-#
-			#if t_start > now:
-				#var prewait_start_ms := Time.get_ticks_msec()
-				#print("awaiting clock.wait_until(t_start) ...")
-				#await clock.wait_until(t_start)
-				#var prewait_end_ms := Time.get_ticks_msec()
-				#print(
-					#"pre-plan wait resumed; expected=",
-					#planned_wait_sec,
-					#" actual=",
-					#(prewait_end_ms - prewait_start_ms) / 1000.0,
-					#" now=",
-					#clock.now_sec()
-				#)
-#
-			#if !_playing or gen != _playback_gen:
-				#print("playback_loop: aborted after NPC prewait")
-				#return
-#
-			#var plan := planner.make_npc_turn_plan(
-				#clock,
-				#actor_turn,
-				#playback_speed_mode,
-				#t_start
-			#)
-#
-			#if plan == null:
-				#print("planner returned null plan")
-				#continue
-#
-			#print(
-				#"plan made: t_start=",
-				#plan.t_start,
-				#" t_end=",
-				#plan.t_end,
-				#" total_dur=",
-				#plan.t_end - plan.t_start,
-				#" measures=",
-				#plan.measures,
-				#" n_actions=",
-				#plan.actions.size()
-			#)
-#
-			#for i in range(plan.actions.size()):
-				#var a: DirectorAction = plan.actions[i]
-				#if a == null:
-					#print("	action[", i, "] = null")
-					#continue
-#
-				#var payload_summary := _debug_payload_summary(a.payload)
-				#print(
-					#"	action[", i, "] label=",
-					#a.label,
-					#" phase=",
-					#a.phase,
-					#" kind=",
-					#a.action_kind,
-					#" t_rel=",
-					#a.t_rel_sec,
-					#" dur=",
-					#a.duration_sec,
-					#" payload=",
-					#payload_summary
-				#)
-#
-			#var plan_wait_start_ms := Time.get_ticks_msec()
-			#print("awaiting _play_schedule_plan(...) ...")
-			#await _play_schedule_plan(plan, gen)
-			#var plan_wait_end_ms := Time.get_ticks_msec()
-#
-			#print(
-				#"_play_schedule_plan resumed; expected total plan dur=",
-				#plan.t_end - plan.t_start,
-				#" actual awaited=",
-				#(plan_wait_end_ms - plan_wait_start_ms) / 1000.0,
-				#" now=",
-				#clock.now_sec()
-			#)
-#
-			#schedule_t = plan.t_end
-			#print("NPC path complete; new schedule_t=", schedule_t)
-			#continue
 
-		print("--- RAW PATH ---")
-		var raw_collect_start_ms := Time.get_ticks_msec()
 		var chunk := event_player.next_raw_chunk(player_id)
-		var raw_collect_end_ms := Time.get_ticks_msec()
-
-		print(
-			"raw chunk collected in ",
-			(raw_collect_end_ms - raw_collect_start_ms) / 1000.0,
-			" sec"
-		)
-		print("raw chunk size=", chunk.size())
-		print("raw chunk summary=", _debug_chunk_summary(chunk))
-
 		if chunk.is_empty():
-			print("raw chunk empty; continuing")
 			continue
 
 		var actor_begin_id := _chunk_actor_id(chunk)
@@ -336,45 +161,10 @@ func _playback_loop(gen: int) -> void:
 				t_next = t_start2 + wait_sec
 				schedule_t = t_next
 
-		print(
-			"raw scheduling: actor_begin_id=",
-			actor_begin_id,
-			" is_player_actor=",
-			is_player_actor,
-			" is_player_turn=",
-			is_player_turn,
-			" mode=",
-			mode,
-			" wait_q=",
-			wait_q,
-			" wait_sec=",
-			wait_sec,
-			" t_start2=",
-			t_start2,
-			" t_next=",
-			t_next,
-			" new schedule_t=",
-			schedule_t
-		)
-
-		now = clock.now_sec()
 		if t_start2 > now:
-			var raw_wait_expected := t_start2 - now
-			var raw_wait_start_ms := Time.get_ticks_msec()
-			print("awaiting raw clock.wait_until(t_start2) ...")
 			await clock.wait_until(t_start2)
-			var raw_wait_end_ms := Time.get_ticks_msec()
-			print(
-				"raw wait resumed; expected=",
-				raw_wait_expected,
-				" actual=",
-				(raw_wait_end_ms - raw_wait_start_ms) / 1000.0,
-				" now=",
-				clock.now_sec()
-			)
 
 		if !_playing or gen != _playback_gen:
-			print("playback_loop: aborted after raw wait")
 			return
 
 		var pkg := BeatPackage.new()
@@ -385,27 +175,71 @@ func _playback_loop(gen: int) -> void:
 		pkg.t_next_sec = t_next
 		pkg.duration_sec = maxf(0.0, t_next - t_start2)
 
-		print(
-			"dispatching raw chunk: pkg.duration_sec=",
-			pkg.duration_sec,
-			" pkg.wait_quarters=",
-			pkg.wait_quarters,
-			" pkg.t_start_sec=",
-			pkg.t_start_sec,
-			" pkg.t_next_sec=",
-			pkg.t_next_sec
-		)
+		print(_debug_beat_package_line(pkg, mode, actor_begin_id, is_player_actor, clock.now_sec(), schedule_t))
 
-		var raw_dispatch_start_ms := Time.get_ticks_msec()
 		event_director.play_raw_chunk(pkg)
-		var raw_dispatch_end_ms := Time.get_ticks_msec()
 
-		print(
-			"raw chunk dispatched in ",
-			(raw_dispatch_end_ms - raw_dispatch_start_ms) / 1000.0,
-			" sec; loop now=",
-			clock.now_sec()
-		)
+func _debug_schedule_plan_line(plan: SchedulePlan, actor_turn: Array[BattleEvent], now_sec: float, prior_schedule_t: float) -> String:
+	if plan == null:
+		return "[PLAN] <null>"
+
+	var actor_id := _chunk_actor_id(actor_turn)
+	var measures := plan.measures
+	var n_actions := plan.actions.size()
+	var total_dur := plan.t_end - plan.t_start
+	var start_slip := now_sec - plan.t_start
+	var summary := _debug_chunk_summary(actor_turn)
+
+	return "[PLAN] actor=%d measures=%d actions=%d start=%.3f end=%.3f dur=%.3f now=%.3f slip=%.3f prev_sched=%.3f events=%s" % [
+		actor_id,
+		measures,
+		n_actions,
+		plan.t_start,
+		plan.t_end,
+		total_dur,
+		now_sec,
+		start_slip,
+		prior_schedule_t,
+		summary,
+	]
+
+
+func _debug_beat_package_line(
+	pkg: BeatPackage,
+	mode: int,
+	actor_begin_id: int,
+	is_player_actor: bool,
+	now_sec: float,
+	current_schedule_t: float
+) -> String:
+	if pkg == null:
+		return "[BEAT] <null>"
+
+	var mode_name := "FREE"
+	match mode:
+		BeatScheduler.Mode.FREE:
+			mode_name = "FREE"
+		BeatScheduler.Mode.RELATIVE:
+			mode_name = "RELATIVE"
+		BeatScheduler.Mode.GRID:
+			mode_name = "GRID"
+
+	var kind := _debug_chunk_summary(pkg.beat)
+	var start_slip := now_sec - pkg.t_start_sec
+
+	return "[BEAT] mode=%s actor=%d player=%s start=%.3f next=%.3f dur=%.3f wait_q=%.2f now=%.3f slip=%.3f sched=%.3f events=%s" % [
+		mode_name,
+		actor_begin_id,
+		str(is_player_actor),
+		pkg.t_start_sec,
+		pkg.t_next_sec,
+		pkg.duration_sec,
+		pkg.wait_quarters,
+		now_sec,
+		start_slip,
+		current_schedule_t,
+		kind,
+	]
 
 func _choose_npc_plan_start(now: float, schedule_t: float, unit_q: float) -> float:
 	var late_tolerance_sec := 0.05
