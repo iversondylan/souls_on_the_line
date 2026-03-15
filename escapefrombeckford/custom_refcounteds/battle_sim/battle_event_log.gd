@@ -143,6 +143,7 @@ static func print_event_log(
 		Keys.SPAWNED_ID,
 		Keys.ACTIVE_ID,
 		Keys.PENDING_IDS,
+		Keys.SUMMON_COUNT,
 	]
 
 	for k in extra_keys:

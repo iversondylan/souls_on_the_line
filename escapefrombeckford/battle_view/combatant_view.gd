@@ -263,12 +263,61 @@ func play_strike_windup(order: StrikeWindupOrder, battle_view: BattleView) -> vo
 	_strike_gen += 1
 	var gen := _strike_gen
 
+	if int(order.attack_mode) == int(Attack.Mode.RANGED):
+		_play_ranged_windup_pulses(order, battle_view, gen)
+		return
+
 	_apply_windup_pose(order)
 
 	if int(order.attack_mode) != Attack.Mode.RANGED:
 		return
 
 	_schedule_projectile_spawn(order, battle_view, gen)
+
+func _play_ranged_windup_pulses(order: StrikeWindupOrder, battle_view: BattleView, gen: int) -> void:
+	if order.attack_info == null or order.attack_info.strikes.is_empty():
+		_apply_single_ranged_pulse(order, 0.0, order.duration)
+		_spawn_projectile_async(order, battle_view, gen, order.duration * 0.5, maxf(order.duration * 0.5, 0.001), 0, order.target_ids)
+		return
+
+	for i in range(order.attack_info.strikes.size()):
+		var s := order.attack_info.strikes[i]
+		if s == null:
+			continue
+
+		var t0 := clampf(order.duration * s.t0_ratio, 0.0, order.duration)
+		var t1 := clampf(order.duration * s.t1_ratio, t0, order.duration)
+		var seg_dur := maxf(t1 - t0, 0.06)
+
+		_apply_single_ranged_pulse(order, t0, seg_dur)
+		_spawn_projectile_async(order, battle_view, gen, t0 + seg_dur * 0.45, maxf(seg_dur * 0.55, 0.001), i, s.target_ids)
+
+func _apply_single_ranged_pulse(order: StrikeWindupOrder, delay_sec: float, seg_dur: float) -> void:
+	var my_gen := _strike_gen
+	_apply_ranged_pulse_async(order, delay_sec, seg_dur, my_gen)
+
+func _apply_ranged_pulse_async(order: StrikeWindupOrder, delay_sec: float, seg_dur: float, gen: int) -> void:
+	if delay_sec > 0.0:
+		await get_tree().create_timer(delay_sec).timeout
+
+	if !is_instance_valid(self) or gen != _strike_gen:
+		return
+
+	if tween_strike:
+		tween_strike.kill()
+
+	var base_scale := _get_base_art_scale()
+	var base_pos := _get_base_art_pos()
+
+	var up_scale := Vector2(base_scale.x * 0.94, base_scale.y * 1.08)
+	var recover_t := seg_dur * 0.5
+	var bump_t := seg_dur * 0.5
+
+	tween_strike = create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	tween_strike.tween_property(art_parent, "scale", up_scale, bump_t)
+	tween_strike.parallel().tween_property(art_parent, "position", base_pos + Vector2(0, -6), bump_t)
+	tween_strike.tween_property(art_parent, "scale", base_scale, recover_t)
+	tween_strike.parallel().tween_property(art_parent, "position", base_pos, recover_t)
 
 func _schedule_projectile_spawn(order: StrikeWindupOrder, battle_view: BattleView, gen: int) -> void:
 	if order.attack_info == null or order.attack_info.strikes.is_empty():

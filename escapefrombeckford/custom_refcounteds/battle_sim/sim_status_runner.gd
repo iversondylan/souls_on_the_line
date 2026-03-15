@@ -16,7 +16,7 @@ static func run(api: SimBattleAPI, ctx: NPCAIContext) -> void:
 	if target_id <= 0:
 		return
 
-	# Resolve status_id (same rules as your LIVE sequence)
+	# Resolve status_id (same rules as LIVE)
 	var status_id: StringName = &""
 	if params.has(Keys.STATUS_ID):
 		var v = params[Keys.STATUS_ID]
@@ -36,12 +36,27 @@ static func run(api: SimBattleAPI, ctx: NPCAIContext) -> void:
 	var intensity := int(params.get(Keys.STATUS_INTENSITY, 0))
 	var duration := int(params.get(Keys.STATUS_DURATION, 0))
 
-	var source_id := int(params.get(Keys.SOURCE_ID, target_id))
+	# Who is “performing” the action?
+	var actor_id := int(ctx.cid)
+	var source_id := int(params.get(Keys.SOURCE_ID, actor_id))
+	if source_id <= 0:
+		source_id = actor_id
 
-	# Beat markers FIRST (application happens during beat 2)
-	#if api.writer != null:
-		#api.writer.emit_status_windup(source_id, target_id, status_id, intensity, duration)
-		#api.writer.emit_status_followthrough(source_id, target_id, status_id, intensity, duration)
+	# ---- NEW: action scope so logs show “NPC action = apply status X” ----
+	if api.writer != null:
+		api.writer.scope_begin(
+			Scope.Kind.STATUS_ACTION,
+			"id=%s tgt=%d" % [String(status_id), int(target_id)],
+			actor_id,
+			{
+				Keys.ACTOR_ID: int(actor_id),
+				Keys.SOURCE_ID: int(source_id),
+				Keys.TARGET_ID: int(target_id),
+				Keys.STATUS_ID: status_id,
+				Keys.INTENSITY: int(intensity),
+				Keys.DURATION: int(duration),
+			}
+		)
 
 	var sc := StatusContext.new()
 	sc.source_id = source_id
@@ -50,3 +65,6 @@ static func run(api: SimBattleAPI, ctx: NPCAIContext) -> void:
 	sc.intensity = intensity
 	sc.duration = duration
 	api.apply_status(sc)
+
+	if api.writer != null:
+		api.writer.scope_end()

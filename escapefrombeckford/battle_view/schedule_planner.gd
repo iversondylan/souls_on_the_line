@@ -2,8 +2,29 @@
 
 class_name SchedulePlanner extends RefCounted
 
+# ------------------------------------------------------------------------------
+# Purpose
+# ------------------------------------------------------------------------------
+# Converts one resolved NPC actor turn into a SchedulePlan.
+#
+# Core idea:
+# - Prefer explicit action scopes over event-type guessing.
+# - ATTACK scope    -> attack action unit
+# - SUMMON_ACTION   -> summon action unit
+# - STATUS_ACTION   -> status action unit
+#
+# This makes status actions safe to support without confusing them with:
+# - intent lifecycle cleanup
+# - reactive status changes from damage
+# - group-turn bookkeeping statuses
+# ------------------------------------------------------------------------------
+
 var beats_per_bar: int = 4
 
+
+# ------------------------------------------------------------------------------
+# Public entry point
+# ------------------------------------------------------------------------------
 
 func make_npc_turn_plan(
 	clock: BattleClock,
@@ -37,6 +58,10 @@ func make_npc_turn_plan(
 	return plan
 
 
+# ------------------------------------------------------------------------------
+# Plan builders
+# ------------------------------------------------------------------------------
+
 func _build_one_measure_plan(
 	plan: SchedulePlan,
 	turn_events: Array[BattleEvent],
@@ -44,44 +69,26 @@ func _build_one_measure_plan(
 	total_sec: float
 ) -> void:
 	var q := total_sec / 4.0
-	var primary_kind := int(action_units[0].get("action_kind", DirectorAction.ActionKind.GENERIC))
-	var attack_info: AttackPresentationInfo = null
-	var action_timeline: ActionTimelinePresentationInfo = null
-
-	if primary_kind == DirectorAction.ActionKind.MELEE_STRIKE \
-	or primary_kind == DirectorAction.ActionKind.RANGED_STRIKE:
-		attack_info = _build_attack_presentation_info(action_units, DirectorAction.Phase.FOLLOWTHROUGH)
-	else:
-		action_timeline = _build_action_timeline_presentation_info(action_units)
+	var primary_kind := _primary_action_kind(action_units)
+	var presentation = _build_presentation_for_primary_kind(primary_kind, action_units)
 
 	var focus_payload: Array = turn_events
 	var windup_payload: Array = [action_units[0].get("marker")]
 	var follow_payload: Array = []
 	var resolve_payload: Array = []
 
-	for unit in action_units:
-		var unit_events: Array = unit.get("events", [])
-		for e in unit_events:
-			var be := e as BattleEvent
-			if be == null:
-				continue
-
-			# deaths now belong to followthrough, not resolve
-			if int(be.type) == BattleEvent.Type.DIED or int(be.type) == BattleEvent.Type.FADED:
-				follow_payload.append(be)
-			else:
-				follow_payload.append(be)
+	_append_unit_events_to_follow_payload(action_units, follow_payload)
 
 	var a_focus := _make_phase_action(
 		DirectorAction.Phase.FOCUS,
 		primary_kind,
 		0.0,
-		q,
+		_focus_duration_for_window(q),
 		focus_payload,
 		"focus"
 	)
 	a_focus.event = _make_focus_event_from_payload(primary_kind, focus_payload)
-	a_focus.presentation = attack_info if attack_info != null else action_timeline
+	a_focus.presentation = presentation
 
 	var a_windup := _make_phase_action(
 		DirectorAction.Phase.WINDUP,
@@ -92,7 +99,7 @@ func _build_one_measure_plan(
 		"windup"
 	)
 	a_windup.event = _make_windup_event_from_unit(action_units[0])
-	a_windup.presentation = attack_info if attack_info != null else action_timeline
+	a_windup.presentation = presentation
 
 	var a_follow := _make_phase_action(
 		DirectorAction.Phase.FOLLOWTHROUGH,
@@ -103,13 +110,13 @@ func _build_one_measure_plan(
 		"followthrough"
 	)
 	a_follow.event = _make_followthrough_event_from_unit(action_units[0])
-	a_follow.presentation = attack_info if attack_info != null else action_timeline
+	a_follow.presentation = presentation
 
 	var a_resolve := _make_phase_action(
 		DirectorAction.Phase.RESOLVE,
 		_resolve_kind(resolve_payload, primary_kind),
 		3.0 * q,
-		q,
+		_resolve_duration_for_window(q),
 		resolve_payload,
 		"resolve"
 	)
@@ -125,33 +132,23 @@ func _build_multi_measure_plan(
 	total_sec: float,
 	measures: int
 ) -> void:
-	var total_beats := measures * 4
+	var total_beats := measures * beats_per_bar
 	var beat_sec := total_sec / float(total_beats)
-	var primary_kind := int(action_units[0].get("action_kind", DirectorAction.ActionKind.GENERIC))
-	var attack_info: AttackPresentationInfo = null
-	var action_timeline: ActionTimelinePresentationInfo = null
+	var primary_kind := _primary_action_kind(action_units)
+	var presentation = _build_presentation_for_primary_kind(primary_kind, action_units)
 
-	if primary_kind == DirectorAction.ActionKind.MELEE_STRIKE \
-	or primary_kind == DirectorAction.ActionKind.RANGED_STRIKE:
-		attack_info = _build_attack_presentation_info(action_units, DirectorAction.Phase.FOLLOWTHROUGH)
-	else:
-		action_timeline = _build_action_timeline_presentation_info(action_units)
-	
-	
-	
-	
 	var actions: Array[DirectorAction] = []
 
 	var a_focus := _make_phase_action(
 		DirectorAction.Phase.FOCUS,
 		primary_kind,
 		0.0,
-		beat_sec,
+		_focus_duration_for_window(beat_sec),
 		turn_events,
 		"focus"
 	)
 	a_focus.event = _make_focus_event_from_payload(primary_kind, turn_events)
-	a_focus.presentation = attack_info if attack_info != null else action_timeline
+	a_focus.presentation = presentation
 	actions.append(a_focus)
 
 	var a_windup := _make_phase_action(
@@ -163,7 +160,7 @@ func _build_multi_measure_plan(
 		"windup"
 	)
 	a_windup.event = _make_windup_event_from_unit(action_units[0])
-	a_windup.presentation = attack_info if attack_info != null else action_timeline
+	a_windup.presentation = presentation
 	actions.append(a_windup)
 
 	var follow_slots := total_beats - 5
@@ -172,7 +169,6 @@ func _build_multi_measure_plan(
 
 	var resolve_payload: Array = []
 
-	# deaths now stay in followthrough payload space
 	var a_follow := _make_phase_action(
 		DirectorAction.Phase.FOLLOWTHROUGH,
 		primary_kind,
@@ -182,14 +178,14 @@ func _build_multi_measure_plan(
 		"followthrough"
 	)
 	a_follow.event = _make_followthrough_event_from_unit(action_units[0])
-	a_follow.presentation = attack_info if attack_info != null else action_timeline
+	a_follow.presentation = presentation
 	actions.append(a_follow)
 
 	var a_resolve := _make_phase_action(
 		DirectorAction.Phase.RESOLVE,
 		_resolve_kind(resolve_payload, primary_kind),
 		float(total_beats - 1) * beat_sec,
-		beat_sec,
+		_resolve_duration_for_window(beat_sec),
 		resolve_payload,
 		"resolve"
 	)
@@ -216,6 +212,10 @@ func _make_phase_action(
 	a.label = label
 	return a
 
+
+# ------------------------------------------------------------------------------
+# Timing heuristics
+# ------------------------------------------------------------------------------
 
 func _unit_quarters_for_speed(speed_mode: int) -> float:
 	match speed_mode:
@@ -247,7 +247,176 @@ func _measures_for_action_units(n_units: int, action_units: Array[Dictionary]) -
 	return 4
 
 
+func _primary_action_kind(action_units: Array[Dictionary]) -> int:
+	if action_units.is_empty():
+		return DirectorAction.ActionKind.GENERIC
+	return int(action_units[0].get("action_kind", DirectorAction.ActionKind.GENERIC))
+
+
+# ------------------------------------------------------------------------------
+# Action unit extraction
+# ------------------------------------------------------------------------------
+
+# Preferred model:
+# each explicit action scope becomes exactly one action unit.
+#
+# Unit shape:
+# {
+#	"marker": BattleEvent,
+#	"events": Array[BattleEvent],
+#	"action_kind": int,
+#	"has_death": bool,
+#	"scope_kind": int,
+# }
 func _extract_action_units(turn_events: Array) -> Array[Dictionary]:
+	var out: Array[Dictionary] = []
+
+	var i := 0
+	while i < turn_events.size():
+		var e := turn_events[i] as BattleEvent
+		if e == null:
+			i += 1
+			continue
+
+		# Explicit action scopes are the source of truth.
+		if _is_action_scope_begin(e):
+			var scope_events: Array[BattleEvent] = []
+			i = _collect_scope_events(turn_events, i, scope_events)
+
+			var unit := _build_action_unit_from_scope(scope_events)
+			if !unit.is_empty():
+				out.append(unit)
+			continue
+
+		i += 1
+
+	# Fallback for malformed / legacy logs with no explicit action scopes.
+	if out.is_empty():
+		return _extract_action_units_legacy(turn_events)
+
+	return out
+
+
+func _is_action_scope_begin(e: BattleEvent) -> bool:
+	if e == null:
+		return false
+	if int(e.type) != int(BattleEvent.Type.SCOPE_BEGIN):
+		return false
+
+	match int(e.scope_kind):
+		Scope.Kind.ATTACK, Scope.Kind.SUMMON_ACTION, Scope.Kind.STATUS_ACTION:
+			return true
+		_:
+			return false
+
+
+func _collect_scope_events(
+	turn_events: Array,
+	start_index: int,
+	out_scope_events: Array[BattleEvent]
+) -> int:
+	var root := turn_events[start_index] as BattleEvent
+	if root == null:
+		return start_index + 1
+
+	var depth := 0
+	var i := start_index
+
+	while i < turn_events.size():
+		var e := turn_events[i] as BattleEvent
+		i += 1
+
+		if e == null:
+			continue
+
+		out_scope_events.append(e)
+
+		if int(e.type) == int(BattleEvent.Type.SCOPE_BEGIN):
+			depth += 1
+		elif int(e.type) == int(BattleEvent.Type.SCOPE_END):
+			depth -= 1
+			if depth <= 0:
+				break
+
+	return i
+
+
+func _build_action_unit_from_scope(scope_events: Array[BattleEvent]) -> Dictionary:
+	var unit := {}
+
+	if scope_events.is_empty():
+		return unit
+
+	var root := scope_events[0]
+	if root == null:
+		return unit
+
+	var marker := _find_primary_marker_in_scope(scope_events, int(root.scope_kind))
+	if marker == null:
+		return unit
+
+	var action_kind := _action_kind_for_scope_or_marker(int(root.scope_kind), marker)
+	var has_death := false
+	var events: Array = []
+
+	for e in scope_events:
+		var be := e as BattleEvent
+		if be == null:
+			continue
+
+		# Omit structural wrapper events from the action payload.
+		if int(be.type) == int(BattleEvent.Type.SCOPE_BEGIN) or int(be.type) == int(BattleEvent.Type.SCOPE_END):
+			continue
+		if int(be.type) == int(BattleEvent.Type.ACTOR_BEGIN) or int(be.type) == int(BattleEvent.Type.ACTOR_END):
+			continue
+
+		events.append(be)
+
+		if int(be.type) == int(BattleEvent.Type.DIED) or int(be.type) == int(BattleEvent.Type.FADED):
+			has_death = true
+
+	unit["marker"] = marker
+	unit["events"] = events
+	unit["action_kind"] = action_kind
+	unit["has_death"] = has_death
+	unit["scope_kind"] = int(root.scope_kind)
+
+	return unit
+
+
+func _find_primary_marker_in_scope(scope_events: Array[BattleEvent], scope_kind: int) -> BattleEvent:
+	match scope_kind:
+		Scope.Kind.ATTACK:
+			for e in scope_events:
+				if e != null and int(e.type) == int(BattleEvent.Type.STRIKE):
+					return e
+
+		Scope.Kind.SUMMON_ACTION:
+			for e in scope_events:
+				if e != null and int(e.type) == int(BattleEvent.Type.SUMMONED):
+					return e
+
+		Scope.Kind.STATUS_ACTION:
+			for e in scope_events:
+				if e != null and int(e.type) == int(BattleEvent.Type.STATUS):
+					return e
+
+		_:
+			pass
+
+	# Fallback: first non-structural event inside the scope.
+	for e in scope_events:
+		if e == null:
+			continue
+		if int(e.type) == int(BattleEvent.Type.SCOPE_BEGIN) or int(e.type) == int(BattleEvent.Type.SCOPE_END):
+			continue
+		return e
+
+	return null
+
+
+# Legacy fallback: marker-based grouping without action scopes.
+func _extract_action_units_legacy(turn_events: Array) -> Array[Dictionary]:
 	var out: Array[Dictionary] = []
 	var current: Dictionary = {}
 
@@ -265,27 +434,24 @@ func _extract_action_units(turn_events: Array) -> Array[Dictionary]:
 			continue
 
 		if t == BattleEvent.Type.STRIKE \
-		or t == BattleEvent.Type.SUMMONED:
+		or t == BattleEvent.Type.SUMMONED \
+		or t == BattleEvent.Type.STATUS:
 			if !current.is_empty():
 				out.append(current)
+
 			current = {
 				"marker": be,
 				"events": [be],
 				"action_kind": _action_kind_for_marker(be),
 				"has_death": false,
+				"scope_kind": -1,
 			}
 			continue
 
 		if current.is_empty():
 			continue
 
-		if t == BattleEvent.Type.DAMAGE_APPLIED \
-		or t == BattleEvent.Type.STATUS \
-		or t == BattleEvent.Type.SET_INTENT \
-		or t == BattleEvent.Type.TURN_STATUS \
-		or t == BattleEvent.Type.MOVED \
-		or t == BattleEvent.Type.DIED \
-		or t == BattleEvent.Type.FADED:
+		if _belongs_to_current_action_unit(be):
 			var arr: Array = current.get("events", [])
 			arr.append(be)
 			current["events"] = arr
@@ -298,7 +464,51 @@ func _extract_action_units(turn_events: Array) -> Array[Dictionary]:
 
 	return out
 
-func _build_attack_presentation_info(action_units: Array[Dictionary], phase: int) -> AttackPresentationInfo:
+
+func _belongs_to_current_action_unit(be: BattleEvent) -> bool:
+	if be == null:
+		return false
+
+	match int(be.type):
+		BattleEvent.Type.DAMAGE_APPLIED, \
+		BattleEvent.Type.STATUS, \
+		BattleEvent.Type.SET_INTENT, \
+		BattleEvent.Type.TURN_STATUS, \
+		BattleEvent.Type.MOVED, \
+		BattleEvent.Type.DIED, \
+		BattleEvent.Type.FADED:
+			return true
+		_:
+			return false
+
+
+func _append_unit_events_to_follow_payload(action_units: Array[Dictionary], follow_payload: Array) -> void:
+	for unit in action_units:
+		var unit_events: Array = unit.get("events", [])
+		for e in unit_events:
+			var be := e as BattleEvent
+			if be == null:
+				continue
+			follow_payload.append(be)
+
+
+# ------------------------------------------------------------------------------
+# Presentation selection
+# ------------------------------------------------------------------------------
+
+func _build_presentation_for_primary_kind(primary_kind: int, action_units: Array[Dictionary]) -> Variant:
+	if primary_kind == DirectorAction.ActionKind.MELEE_STRIKE \
+	or primary_kind == DirectorAction.ActionKind.RANGED_STRIKE:
+		return _build_attack_presentation_info(action_units)
+
+	return _build_action_timeline_presentation_info(action_units)
+
+
+# ------------------------------------------------------------------------------
+# Attack presentation
+# ------------------------------------------------------------------------------
+
+func _build_attack_presentation_info(action_units: Array[Dictionary]) -> AttackPresentationInfo:
 	var info := AttackPresentationInfo.new()
 	if action_units.is_empty():
 		return info
@@ -307,14 +517,13 @@ func _build_attack_presentation_info(action_units: Array[Dictionary], phase: int
 	if first_marker == null or first_marker.data == null:
 		return info
 
-	info.attacker_id = int(first_marker.data.get(Keys.SOURCE_ID, first_marker.data.get(Keys.ACTOR_ID, 0)))
+	info.attacker_id = _event_actor_or_source_id(first_marker)
 	info.attack_mode = int(first_marker.data.get(Keys.ATTACK_MODE, Attack.Mode.MELEE))
 	info.projectile_scene_path = String(first_marker.data.get(Keys.PROJECTILE_SCENE, ""))
 
-	# If this is not actually a strike action, just return minimal info.
 	if int(first_marker.type) != int(BattleEvent.Type.STRIKE):
 		return info
-	
+
 	info.strike_count = action_units.size()
 
 	var n := action_units.size()
@@ -324,18 +533,11 @@ func _build_attack_presentation_info(action_units: Array[Dictionary], phase: int
 		strike.strike_index = i
 
 		var marker: BattleEvent = unit.get("marker")
-		if marker != null and marker.data != null:
-			if info.projectile_scene_path == "":
-				info.projectile_scene_path = String(marker.data.get(Keys.PROJECTILE_SCENE, ""))
+		if marker != null and marker.data != null and info.projectile_scene_path == "":
+			info.projectile_scene_path = String(marker.data.get(Keys.PROJECTILE_SCENE, ""))
 
-		var t0 := 0.0
-		var t1 := 1.0
-		if n > 0:
-			t0 = float(i) / float(n)
-			t1 = float(i + 1) / float(n)
-
-		strike.t0_ratio = t0
-		strike.t1_ratio = t1
+		strike.t0_ratio = float(i) / float(n)
+		strike.t1_ratio = float(i + 1) / float(n)
 
 		info.strikes.append(strike)
 		info.total_hit_count += strike.hit_count
@@ -360,12 +562,9 @@ func _build_strike_presentation_info(unit: Dictionary) -> StrikePresentationInfo
 	var events: Array = unit.get("events", [])
 
 	if marker != null and marker.data != null:
-		out.target_ids = []
-		var raw_targets: Array = marker.data.get(Keys.TARGET_IDS, [])
-		for tid in raw_targets:
-			out.target_ids.append(int(tid))
+		out.target_ids = _extract_target_ids_from_event(marker)
 
-	out.strike_index = 0 # caller may overwrite if desired
+	out.strike_index = 0
 
 	var hits_by_target := {}
 
@@ -414,6 +613,79 @@ func _build_strike_presentation_info(unit: Dictionary) -> StrikePresentationInfo
 
 	return out
 
+
+# ------------------------------------------------------------------------------
+# Generic action timeline presentation
+# ------------------------------------------------------------------------------
+
+func _build_action_timeline_presentation_info(action_units: Array[Dictionary]) -> ActionTimelinePresentationInfo:
+	var info := ActionTimelinePresentationInfo.new()
+	if action_units.is_empty():
+		return info
+
+	var first_marker: BattleEvent = action_units[0].get("marker")
+	if first_marker != null and first_marker.data != null:
+		info.actor_id = _event_actor_or_source_id(first_marker)
+		info.action_kind = int(action_units[0].get("action_kind", DirectorAction.ActionKind.GENERIC))
+
+	var n := action_units.size()
+	for i in range(n):
+		var unit := action_units[i]
+		var marker: BattleEvent = unit.get("marker")
+		var events: Array = unit.get("events", [])
+
+		var step := ActionStepPresentationInfo.new()
+		step.marker = marker
+		step.events = []
+
+		if marker != null:
+			step.step_kind = int(unit.get("action_kind", DirectorAction.ActionKind.GENERIC))
+			if marker.data != null:
+				step.actor_id = _event_actor_or_source_id(marker)
+				step.target_ids = _extract_target_ids_from_event(marker)
+
+		for e in events:
+			var be := e as BattleEvent
+			if be != null:
+				step.events.append(be)
+
+		step.t0_ratio = float(i) / float(n)
+		step.t1_ratio = float(i + 1) / float(n)
+
+		info.steps.append(step)
+
+	return info
+
+func _focus_duration_for_window(window_sec: float) -> float:
+	return minf(window_sec * 0.35, 0.12)
+
+
+func _resolve_duration_for_window(window_sec: float) -> float:
+	return window_sec
+
+# ------------------------------------------------------------------------------
+# Classification helpers
+# ------------------------------------------------------------------------------
+
+func _action_kind_for_scope_or_marker(scope_kind: int, marker: BattleEvent) -> int:
+	match scope_kind:
+		Scope.Kind.ATTACK:
+			if marker != null and marker.data != null:
+				var mode := int(marker.data.get(Keys.ATTACK_MODE, Attack.Mode.MELEE))
+				if mode == int(Attack.Mode.RANGED):
+					return DirectorAction.ActionKind.RANGED_STRIKE
+			return DirectorAction.ActionKind.MELEE_STRIKE
+
+		Scope.Kind.SUMMON_ACTION:
+			return DirectorAction.ActionKind.SUMMON
+
+		Scope.Kind.STATUS_ACTION:
+			return DirectorAction.ActionKind.STATUS
+
+		_:
+			return _action_kind_for_marker(marker)
+
+
 func _action_kind_for_marker(e: BattleEvent) -> int:
 	if e == null:
 		return DirectorAction.ActionKind.GENERIC
@@ -432,23 +704,9 @@ func _action_kind_for_marker(e: BattleEvent) -> int:
 			return DirectorAction.ActionKind.GENERIC
 
 
-func _cluster_units(action_units: Array[Dictionary], slots: int) -> Array:
-	var out: Array = []
-	out.resize(slots)
-	for i in range(slots):
-		out[i] = []
-
-	if slots <= 0:
-		return out
-
-	for i in range(action_units.size()):
-		var idx := clampi(i, 0, slots - 1)
-		var bucket: Array = out[idx]
-		bucket.append(action_units[i])
-		out[idx] = bucket
-
-	return out
-
+# ------------------------------------------------------------------------------
+# Resolve / synthetic phase events
+# ------------------------------------------------------------------------------
 
 func _resolve_kind(resolve_payload: Array, fallback_kind: int) -> int:
 	for e in resolve_payload:
@@ -470,15 +728,10 @@ func _make_focus_event_from_payload(primary_kind: int, payload: Array) -> Battle
 			continue
 
 		if src == 0:
-			if be.data.has(Keys.SOURCE_ID):
-				src = int(be.data[Keys.SOURCE_ID])
-			elif be.data.has(Keys.ACTOR_ID):
-				src = int(be.data[Keys.ACTOR_ID])
+			src = _event_actor_or_source_id(be)
 
-		if target_ids.is_empty() and be.data.has(Keys.TARGET_IDS):
-			var raw: Array = be.data[Keys.TARGET_IDS]
-			for tid in raw:
-				target_ids.append(int(tid))
+		if target_ids.is_empty():
+			target_ids = _extract_target_ids_from_event(be)
 
 	var ev := BattleEvent.new(BattleEvent.Type.TARGETED)
 	ev.data = {
@@ -494,15 +747,14 @@ func _make_windup_event_from_unit(unit: Dictionary) -> BattleEvent:
 	if marker == null:
 		return null
 
-	var t := int(marker.type)
 	var ev_type := BattleEvent.Type.TARGETED
-
-	if t == BattleEvent.Type.STRIKE:
-		ev_type = BattleEvent.Type.STRIKE
-	elif t == BattleEvent.Type.SUMMONED:
-		ev_type = BattleEvent.Type.SUMMONED
-	elif t == BattleEvent.Type.STATUS:
-		ev_type = BattleEvent.Type.STATUS
+	match int(marker.type):
+		BattleEvent.Type.STRIKE:
+			ev_type = BattleEvent.Type.STRIKE
+		BattleEvent.Type.SUMMONED:
+			ev_type = BattleEvent.Type.SUMMONED
+		BattleEvent.Type.STATUS:
+			ev_type = BattleEvent.Type.STATUS
 
 	var ev := BattleEvent.new(ev_type)
 	ev.data = marker.data.duplicate(true) if marker.data != null else {}
@@ -535,45 +787,10 @@ func _make_resolve_event(resolve_payload: Array, primary_kind: int) -> BattleEve
 	}
 	return ev
 
-func _build_action_timeline_presentation_info(action_units: Array[Dictionary]) -> ActionTimelinePresentationInfo:
-	var info := ActionTimelinePresentationInfo.new()
-	if action_units.is_empty():
-		return info
 
-	var first_marker: BattleEvent = action_units[0].get("marker")
-	if first_marker != null and first_marker.data != null:
-		info.actor_id = int(first_marker.data.get(Keys.SOURCE_ID, first_marker.data.get(Keys.ACTOR_ID, 0)))
-		info.action_kind = int(action_units[0].get("action_kind", DirectorAction.ActionKind.GENERIC))
-
-	var n := action_units.size()
-	for i in range(n):
-		var unit := action_units[i]
-		var marker: BattleEvent = unit.get("marker")
-		var events: Array = unit.get("events", [])
-
-		var step := ActionStepPresentationInfo.new()
-		step.marker = marker
-		step.events = []
-
-		if marker != null:
-			step.step_kind = _action_kind_for_marker(marker)
-			if marker.data != null:
-				step.actor_id = int(marker.data.get(Keys.SOURCE_ID, marker.data.get(Keys.ACTOR_ID, 0)))
-				step.target_ids = _extract_target_ids_from_event(marker)
-
-		for e in events:
-			var be := e as BattleEvent
-			if be != null:
-				step.events.append(be)
-
-		if n > 0:
-			step.t0_ratio = float(i) / float(n)
-			step.t1_ratio = float(i + 1) / float(n)
-
-		info.steps.append(step)
-
-	return info
-
+# ------------------------------------------------------------------------------
+# Event-data helpers
+# ------------------------------------------------------------------------------
 
 func _extract_target_ids_from_event(e: BattleEvent) -> Array[int]:
 	var out: Array[int] = []
@@ -584,6 +801,37 @@ func _extract_target_ids_from_event(e: BattleEvent) -> Array[int]:
 		for tid in e.data.get(Keys.TARGET_IDS, []):
 			out.append(int(tid))
 	elif e.data.has(Keys.TARGET_ID):
-		out.append(int(e.data.get(Keys.TARGET_ID, 0)))
+		var tid := int(e.data.get(Keys.TARGET_ID, 0))
+		if tid > 0:
+			out.append(tid)
+
+	return out
+
+
+func _event_actor_or_source_id(e: BattleEvent) -> int:
+	if e == null or e.data == null:
+		return 0
+	return int(e.data.get(Keys.SOURCE_ID, e.data.get(Keys.ACTOR_ID, 0)))
+
+
+# ------------------------------------------------------------------------------
+# Currently unused helper
+# ------------------------------------------------------------------------------
+
+func _cluster_units(action_units: Array[Dictionary], slots: int) -> Array:
+	var out: Array = []
+	out.resize(slots)
+
+	for i in range(slots):
+		out[i] = []
+
+	if slots <= 0:
+		return out
+
+	for i in range(action_units.size()):
+		var idx := clampi(i, 0, slots - 1)
+		var bucket: Array = out[idx]
+		bucket.append(action_units[i])
+		out[idx] = bucket
 
 	return out

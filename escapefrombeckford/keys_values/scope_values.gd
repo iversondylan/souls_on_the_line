@@ -19,4 +19,6 @@ enum Kind {
 	HIT,
 	DEATH,
 	FADE,
+	SUMMON_ACTION,
+	STATUS_ACTION,
 }
