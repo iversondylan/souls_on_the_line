@@ -78,23 +78,10 @@ func play_strike_followthrough(order: StrikeFollowthroughOrder, battle_view: Bat
 	if order == null or battle_view == null:
 		return
 
-	#if int(order.attack_mode) == Attack.Mode.RANGED:
-		#if order.attack_info != null:
-			#for i in range(order.attack_info.strikes.size()):
-				#var key := int(battle_view.make_projectile_key(int(order.attacker_id), i))
-				#var projectile := battle_view.take_projectile(key)
-				#if projectile != null and is_instance_valid(projectile):
-					#if projectile.has_method("play_impact"):
-						#projectile.call("play_impact")
-					#else:
-						#projectile.queue_free()
-		#else:
-			#var projectile := battle_view.take_projectile(battle_view.make_projectile_key(int(order.attacker_id), 0))
-			#if projectile != null and is_instance_valid(projectile):
-				#if projectile.has_method("play_impact"):
-					#projectile.call("play_impact")
-				#else:
-					#projectile.queue_free()
+	if int(order.attack_mode) == int(Attack.Mode.RANGED):
+		var count := maxi(1, order.strike_count)
+		for i in range(count):
+			play_projectile_impact_for_strike(order.attacker_id, i, battle_view)
 
 	_apply_followthrough_pose(order)
 
@@ -265,32 +252,34 @@ func play_strike_windup(order: StrikeWindupOrder, battle_view: BattleView) -> vo
 
 	if int(order.attack_mode) == int(Attack.Mode.RANGED):
 		_play_ranged_windup_pulses(order, battle_view, gen)
+		_schedule_projectile_spawn(order, battle_view, gen)
 		return
 
 	_apply_windup_pose(order)
 
-	if int(order.attack_mode) != Attack.Mode.RANGED:
-		return
-
-	_schedule_projectile_spawn(order, battle_view, gen)
-
 func _play_ranged_windup_pulses(order: StrikeWindupOrder, battle_view: BattleView, gen: int) -> void:
-	if order.attack_info == null or order.attack_info.strikes.is_empty():
-		_apply_single_ranged_pulse(order, 0.0, order.duration)
-		_spawn_projectile_async(order, battle_view, gen, order.duration * 0.5, maxf(order.duration * 0.5, 0.001), 0, order.target_ids)
-		return
+	var count := maxi(1, order.strike_count)
 
-	for i in range(order.attack_info.strikes.size()):
-		var s := order.attack_info.strikes[i]
-		if s == null:
-			continue
+	for i in range(count):
+		var seg_dur := order.duration / float(count)
+		var t0 := float(i) * seg_dur
 
-		var t0 := clampf(order.duration * s.t0_ratio, 0.0, order.duration)
-		var t1 := clampf(order.duration * s.t1_ratio, t0, order.duration)
-		var seg_dur := maxf(t1 - t0, 0.06)
+		var strike_targets: Array[int] = order.target_ids
+		if order.attack_info != null and i < order.attack_info.strikes.size():
+			var s = order.attack_info.strikes[i]
+			if s != null and !s.target_ids.is_empty():
+				strike_targets = s.target_ids
 
 		_apply_single_ranged_pulse(order, t0, seg_dur)
-		_spawn_projectile_async(order, battle_view, gen, t0 + seg_dur * 0.45, maxf(seg_dur * 0.55, 0.001), i, s.target_ids)
+		_spawn_projectile_async(
+			order,
+			battle_view,
+			gen,
+			t0 + seg_dur * 0.45,
+			maxf(seg_dur * 0.55, 0.001),
+			i,
+			strike_targets
+		)
 
 func _apply_single_ranged_pulse(order: StrikeWindupOrder, delay_sec: float, seg_dur: float) -> void:
 	var my_gen := _strike_gen
@@ -320,20 +309,18 @@ func _apply_ranged_pulse_async(order: StrikeWindupOrder, delay_sec: float, seg_d
 	tween_strike.parallel().tween_property(art_parent, "position", base_pos, recover_t)
 
 func _schedule_projectile_spawn(order: StrikeWindupOrder, battle_view: BattleView, gen: int) -> void:
-	if order.attack_info == null or order.attack_info.strikes.is_empty():
-		var spawn_t := clampf(order.duration * float(order.projectile_spawn_ratio), 0.0, order.duration)
-		var travel_t := maxf(order.duration - spawn_t, 0.001)
-		_spawn_projectile_async(order, battle_view, gen, spawn_t, travel_t, 0, order.target_ids)
-		return
+	var count := maxi(1, order.strike_count)
+	var seg_dur := order.duration / float(count)
 
-	for i in range(order.attack_info.strikes.size()):
-		var s := (order.attack_info.strikes[i])
-		if s == null:
-			continue
+	for i in range(count):
+		var strike_targets: Array[int] = order.target_ids
+		if order.attack_info != null and i < order.attack_info.strikes.size():
+			var s := order.attack_info.strikes[i]
+			if s != null and !s.target_ids.is_empty():
+				strike_targets = s.target_ids
 
-		var spawn_t := clampf(order.duration * s.t0_ratio, 0.0, order.duration)
-		var end_t := clampf(order.duration * s.t1_ratio, spawn_t, order.duration)
-		var travel_t := maxf(end_t - spawn_t, 0.001)
+		var spawn_t := float(i) * seg_dur + seg_dur * 0.45
+		var travel_t := maxf(seg_dur * 0.55, 0.001)
 
 		_spawn_projectile_async(
 			order,
@@ -342,7 +329,7 @@ func _schedule_projectile_spawn(order: StrikeWindupOrder, battle_view: BattleVie
 			spawn_t,
 			travel_t,
 			i,
-			s.target_ids
+			strike_targets
 		)
 
 func _spawn_projectile_async(

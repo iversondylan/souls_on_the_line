@@ -2,9 +2,7 @@
 
 [ext_resource type="Script" uid="uid://b8d5j6ne4mt88" path="res://custom_resources/param_model.gd" id="1_3q3rh"]
 [ext_resource type="Script" uid="uid://c4bdbfkkrojcr" path="res://npc_actions/npc_attack_sequence.gd" id="1_ekux4"]
-[ext_resource type="Resource" uid="uid://ddrxex8lotgxn" path="res://audio/melee_impact.tres" id="1_g1c4o"]
 [ext_resource type="Script" uid="uid://3jde7uhq2yho" path="res://custom_resources/npc_effect_package.gd" id="2_fkvwt"]
-[ext_resource type="Resource" uid="uid://c6myiupet7ros" path="res://audio/fireball_impact.tres" id="2_vhqw7"]
 [ext_resource type="Script" uid="uid://cuj4qvyx6dedj" path="res://custom_resources/state_model.gd" id="3_ekux4"]
 [ext_resource type="Script" uid="uid://db3rq0sfeqpw1" path="res://npc_actions/damage/flat_damage_model.gd" id="3_kwlb0"]
 

@@ -1,3 +1,5 @@
+# battle_event_director.gd
+
 class_name BattleEventDirector extends RefCounted
 
 var battle_view: BattleView
@@ -141,12 +143,33 @@ func _play_followthrough_action(a: DirectorAction) -> void:
 	var attack_info := _as_attack_info(a)
 	if attack_info != null:
 		_on_strike_followthrough_from_info(attack_info, a.duration_sec)
-		_on_attack_wrapup_from_info(attack_info, minf(a.duration_sec, 0.15))
+		_apply_payload_events(
+			a.payload,
+			a.duration_sec,
+			{
+				BattleEvent.Type.DAMAGE_APPLIED: true,
+				BattleEvent.Type.STATUS: true,
+				BattleEvent.Type.DIED: true,
+				BattleEvent.Type.FADED: true,
+				BattleEvent.Type.SUMMONED: true,
+			}
+		)
 		return
 
 	var action_timeline := _as_action_timeline(a)
 	if action_timeline != null:
 		_on_action_followthrough_from_timeline(action_timeline, a.duration_sec)
+		_apply_payload_events(
+			a.payload,
+			a.duration_sec,
+			{
+				BattleEvent.Type.DAMAGE_APPLIED: true,
+				BattleEvent.Type.STATUS: true,
+				BattleEvent.Type.DIED: true,
+				BattleEvent.Type.FADED: true,
+				BattleEvent.Type.SUMMONED: true,
+			}
+		)
 		return
 
 	_apply_payload_events(
@@ -155,9 +178,9 @@ func _play_followthrough_action(a: DirectorAction) -> void:
 		{
 			BattleEvent.Type.DAMAGE_APPLIED: true,
 			BattleEvent.Type.STATUS: true,
-			BattleEvent.Type.SET_INTENT: true,
-			BattleEvent.Type.TURN_STATUS: true,
-			BattleEvent.Type.MOVED: true,
+			BattleEvent.Type.DIED: true,
+			BattleEvent.Type.FADED: true,
+			BattleEvent.Type.SUMMONED: true,
 		}
 	)
 
@@ -171,8 +194,16 @@ func _play_resolve_action(a: DirectorAction) -> void:
 		a.duration_sec,
 		{
 			BattleEvent.Type.STATUS: true,
+			BattleEvent.Type.SET_INTENT: true,
+			BattleEvent.Type.TURN_STATUS: true,
+			BattleEvent.Type.MOVED: true,
 		}
 	)
+
+	var attack_info := _as_attack_info(a)
+	if attack_info != null:
+		_on_attack_wrapup_from_info(attack_info, a.duration_sec)
+		return
 
 	battle_view.clear_focus(a.duration_sec)
 
@@ -330,24 +361,6 @@ func _make_status_removed_order(e: EventPackage) -> StatusRemovedOrder:
 	return o
 
 
-func _action_kind_for_event(e: BattleEvent) -> int:
-	if e == null:
-		return DirectorAction.ActionKind.GENERIC
-
-	match int(e.type):
-		BattleEvent.Type.SUMMONED:
-			return DirectorAction.ActionKind.SUMMON
-		BattleEvent.Type.STATUS:
-			return DirectorAction.ActionKind.STATUS
-		BattleEvent.Type.STRIKE:
-			var mode := int(e.data.get(Keys.ATTACK_MODE, Attack.Mode.MELEE)) if e.data != null else Attack.Mode.MELEE
-			if mode == int(Attack.Mode.RANGED):
-				return DirectorAction.ActionKind.RANGED_STRIKE
-			return DirectorAction.ActionKind.MELEE_STRIKE
-		_:
-			return DirectorAction.ActionKind.GENERIC
-
-
 # ------------------------------------------------------------------------------
 # Raw event handlers
 # ------------------------------------------------------------------------------
@@ -403,7 +416,7 @@ func _on_action_focus(e: EventPackage) -> void:
 		return
 
 	battle_view.apply_focus(
-		_make_focus_order(_source_id(e), _target_ids(e), _focus_tween_duration(e.duration))
+		_make_focus_order(_source_id(e), _target_ids(e), e.duration)
 	)
 
 
@@ -412,7 +425,7 @@ func _on_attack_prep(e: EventPackage) -> void:
 		return
 
 	battle_view.apply_focus(
-		_make_focus_order(_source_id(e), _target_ids(e), _focus_tween_duration(e.duration))
+		_make_focus_order(_source_id(e), _target_ids(e), e.duration)
 	)
 
 
@@ -423,9 +436,13 @@ func _on_attack_wrapup(e: EventPackage) -> void:
 	if attacker != null:
 		attacker.clear_strike_pose(e.duration)
 
-	var projectile := battle_view.take_projectile(_source_id(e))
-	if projectile != null and is_instance_valid(projectile):
-		projectile.queue_free()
+	if int(_data(e).get(Keys.ATTACK_MODE, Attack.Mode.MELEE)) == int(Attack.Mode.RANGED):
+		var strike_count := int(_data(e).get(Keys.STRIKE_COUNT, 1))
+		for i in range(strike_count):
+			var key := int(battle_view.make_projectile_key(_source_id(e), i))
+			var projectile := battle_view.take_projectile(key)
+			if projectile != null and is_instance_valid(projectile):
+				projectile.queue_free()
 
 
 func _on_strike_windup(e: EventPackage) -> void:
@@ -440,6 +457,7 @@ func _on_strike_windup(e: EventPackage) -> void:
 	o.target_ids = _target_ids(e)
 	o.attack_mode = int(d.get(Keys.ATTACK_MODE, Attack.Mode.MELEE))
 	o.projectile_scene_path = String(d.get(Keys.PROJECTILE_SCENE, "res://VFX/projectiles/fireball/fireball.tscn"))
+	o.strike_count = int(d.get(Keys.STRIKE_COUNT, 1))
 
 	attacker.play_strike_windup(o, battle_view)
 
@@ -455,6 +473,9 @@ func _on_strike_followthrough(e: EventPackage) -> void:
 	o.attacker_id = _source_id(e)
 	o.target_ids = _target_ids(e)
 	o.attack_mode = int(d.get(Keys.ATTACK_MODE, Attack.Mode.MELEE))
+	o.strike_count = int(d.get(Keys.STRIKE_COUNT, 1))
+	o.total_hit_count = int(d.get(Keys.TOTAL_HIT_COUNT, 1))
+	o.has_lethal_hit = bool(d.get(Keys.HAS_LETHAL_HIT, false))
 
 	attacker.play_strike_followthrough(o, battle_view)
 
@@ -745,7 +766,7 @@ func _on_attack_prep_from_info(info: AttackPresentationInfo, duration: float) ->
 		_make_focus_order(
 			info.attacker_id,
 			_coerce_int_array(info.get_all_target_ids()),
-			_focus_tween_duration(duration)
+			duration
 		)
 	)
 
@@ -764,8 +785,6 @@ func _on_strike_windup_from_info(info: AttackPresentationInfo, duration: float) 
 	o.target_ids = info.get_all_target_ids()
 	o.attack_mode = info.attack_mode
 	o.projectile_scene_path = info.projectile_scene_path
-	if o.projectile_scene_path == "" and int(o.attack_mode) == int(Attack.Mode.RANGED):
-		o.projectile_scene_path = "res://VFX/projectiles/fireball/fireball.tscn"
 	o.strike_count = info.strike_count
 	o.total_hit_count = info.total_hit_count
 	o.attack_info = info
@@ -792,163 +811,19 @@ func _on_strike_followthrough_from_info(info: AttackPresentationInfo, duration: 
 	o.attack_info = info
 
 	attacker.play_strike_followthrough(o, battle_view)
-	_play_attack_followthrough_steps_async(info, duration)
-
-
-func _play_attack_followthrough_steps_async(info: AttackPresentationInfo, duration: float) -> void:
-	var start_msec := Time.get_ticks_msec()
-
-	for s in info.strikes:
-		if s == null:
-			continue
-
-		var elapsed := float(Time.get_ticks_msec() - start_msec) / 1000.0
-		var strike_t := clampf(float(s.t0_ratio) * duration, 0.0, duration)
-		var wait_t := strike_t - elapsed
-		if wait_t > 0.0:
-			await battle_view.get_tree().create_timer(wait_t).timeout
-
-		_apply_single_strike_followthrough(info, s, duration)
-
-	_apply_trailing_followthrough_payload([], info, duration)
-
-
-func _apply_single_strike_followthrough(info: AttackPresentationInfo, s: StrikePresentationInfo, duration: float) -> void:
-	if info == null or s == null:
-		return
-
-	if int(info.attack_mode) == int(Attack.Mode.RANGED):
-		var attacker := battle_view.get_combatant(info.attacker_id)
-		if attacker != null:
-			attacker.play_projectile_impact_for_strike(info.attacker_id, s.strike_index, battle_view)
-
-	for h in s.hits:
-		if h == null:
-			continue
-
-		var dmg := BattleEvent.new(BattleEvent.Type.DAMAGE_APPLIED)
-		dmg.data = {
-			Keys.TARGET_ID: h.target_id,
-			Keys.FINAL_AMOUNT: h.amount,
-			Keys.AFTER_HEALTH: h.after_health,
-			Keys.WAS_LETHAL: h.was_lethal,
-			Keys.BEFORE_HEALTH: h.before_health,
-		}
-		_on_damage_applied(_make_epkg_from_event(dmg, duration))
-
-		for se in h.status_events:
-			if se != null:
-				_on_status_changed(_make_epkg_from_event(se, duration))
-
-		if h.was_lethal:
-			if h.died_event != null:
-				_on_death_windup(_make_epkg_from_event(h.died_event, duration))
-				_on_death_followthrough(_make_epkg_from_event(h.died_event, duration))
-				_on_died(_make_epkg_from_event(h.died_event, duration))
-			elif h.faded_event != null:
-				_on_fade_windup(_make_epkg_from_event(h.faded_event, duration))
-				_on_fade_followthrough(_make_epkg_from_event(h.faded_event, duration))
-				_on_faded(_make_epkg_from_event(h.faded_event, duration))
 
 
 func _on_attack_wrapup_from_info(info: AttackPresentationInfo, duration: float) -> void:
 	if info == null:
 		return
 
-	battle_view.clear_focus(duration)
-
-	var attacker := battle_view.get_combatant(info.attacker_id)
-	if attacker != null:
-		attacker.clear_strike_pose(duration)
-
-	if int(info.attack_mode) == int(Attack.Mode.RANGED):
-		for i in range(info.strikes.size()):
-			var key := int(battle_view.make_projectile_key(info.attacker_id, i))
-			var projectile := battle_view.take_projectile(key)
-			if projectile != null and is_instance_valid(projectile):
-				projectile.queue_free()
-
-
-func _event_matches_hit_in_info(info: AttackPresentationInfo, be: BattleEvent) -> bool:
-	if info == null or be == null or be.data == null:
-		return false
-
-	var t := int(be.type)
-
-	if t == BattleEvent.Type.DAMAGE_APPLIED:
-		var target_id := int(be.data.get(Keys.TARGET_ID, 0))
-		for s in info.strikes:
-			if s == null:
-				continue
-			for h in s.hits:
-				if h != null and int(h.target_id) == target_id:
-					return true
-		return false
-
-	if t == BattleEvent.Type.DIED or t == BattleEvent.Type.FADED:
-		var target_id2 := int(be.data.get(Keys.TARGET_ID, 0))
-		for s2 in info.strikes:
-			if s2 == null:
-				continue
-			for h2 in s2.hits:
-				if h2 == null:
-					continue
-				if int(h2.target_id) == target_id2:
-					return true
-		return false
-
-	if t == BattleEvent.Type.STATUS:
-		var status_target := int(be.data.get(Keys.TARGET_ID, 0))
-		for s3 in info.strikes:
-			if s3 == null:
-				continue
-			for h3 in s3.hits:
-				if h3 == null:
-					continue
-				if int(h3.target_id) == status_target:
-					return true
-		return false
-
-	return false
-
-
-func _is_trailing_followthrough_event(be: BattleEvent) -> bool:
-	if be == null:
-		return false
-
-	match int(be.type):
-		BattleEvent.Type.STATUS, BattleEvent.Type.SET_INTENT, BattleEvent.Type.TURN_STATUS, BattleEvent.Type.MOVED:
-			return true
-		_:
-			return false
-
-
-func _apply_trailing_followthrough_payload(payload: Array, info: AttackPresentationInfo, duration: float) -> void:
-	if payload == null or payload.is_empty():
-		return
-
-	for e in payload:
-		var be := e as BattleEvent
-		if be == null:
-			continue
-
-		if !_is_trailing_followthrough_event(be):
-			continue
-
-		if int(be.type) == BattleEvent.Type.STATUS and _event_matches_hit_in_info(info, be):
-			continue
-
-		var epkg := _make_epkg_from_event(be, duration)
-
-		match int(be.type):
-			BattleEvent.Type.STATUS:
-				_on_status_changed(epkg)
-			BattleEvent.Type.SET_INTENT:
-				_on_set_intent(epkg)
-			BattleEvent.Type.TURN_STATUS:
-				_on_turn_status(epkg)
-			BattleEvent.Type.MOVED:
-				_on_moved(epkg)
+	var e := BattleEvent.new(BattleEvent.Type.STRIKE)
+	e.data = {
+		Keys.SOURCE_ID: info.attacker_id,
+		Keys.ATTACK_MODE: info.attack_mode,
+		Keys.STRIKE_COUNT: info.strike_count,
+	}
+	_on_attack_wrapup(_make_epkg_from_event(e, duration))
 
 
 # ------------------------------------------------------------------------------
@@ -963,7 +838,7 @@ func _on_action_focus_from_timeline(info: ActionTimelinePresentationInfo, durati
 		_make_focus_order(
 			info.actor_id,
 			_coerce_int_array(info.get_all_target_ids()),
-			_focus_tween_duration(duration)
+			duration
 		)
 	)
 
@@ -987,68 +862,9 @@ func _on_action_followthrough_from_timeline(info: ActionTimelinePresentationInfo
 	if info == null:
 		return
 
-	_play_action_timeline_steps_async(info, duration)
-
-
-func _play_action_timeline_steps_async(info: ActionTimelinePresentationInfo, duration: float) -> void:
-	var start_msec := Time.get_ticks_msec()
-
 	for step in info.steps:
-		if step == null:
+		if step == null or step.marker == null:
 			continue
 
-		var elapsed := float(Time.get_ticks_msec() - start_msec) / 1000.0
-		var step_t := clampf(float(step.t0_ratio) * duration, 0.0, duration)
-		var wait_t := step_t - elapsed
-		if wait_t > 0.0:
-			await battle_view.get_tree().create_timer(wait_t).timeout
-
-		var step_duration := maxf(0.01, (step.t1_ratio - step.t0_ratio) * duration)
-		_apply_action_timeline_step(step, step_duration)
-
-	battle_view.clear_focus(minf(duration, 0.15))
-
-
-func _apply_action_timeline_step(step: ActionStepPresentationInfo, duration: float) -> void:
-	if step == null:
-		return
-
-	var is_summon_step := (
-		step.marker != null
-		and int(step.marker.type) == int(BattleEvent.Type.SUMMONED)
-	)
-
-	if is_summon_step:
-		_on_summon_followthrough(_make_epkg_from_event(step.marker, duration))
-
-	for be in step.events:
-		if be == null:
-			continue
-
-		var epkg := _make_epkg_from_event(be, duration)
-
-		match int(be.type):
-			BattleEvent.Type.STATUS:
-				_on_status_changed(epkg)
-			BattleEvent.Type.SUMMONED:
-				pass
-			BattleEvent.Type.DAMAGE_APPLIED:
-				_on_damage_applied(epkg)
-			BattleEvent.Type.TURN_STATUS:
-				_on_turn_status(epkg)
-			BattleEvent.Type.SET_INTENT:
-				_on_set_intent(epkg)
-			BattleEvent.Type.MOVED:
-				if !is_summon_step:
-					_on_moved(epkg)
-			BattleEvent.Type.DIED:
-				_on_death_windup(epkg)
-				_on_death_followthrough(epkg)
-				_on_died(epkg)
-			BattleEvent.Type.FADED:
-				_on_fade_windup(epkg)
-				_on_fade_followthrough(epkg)
-				_on_faded(epkg)
-
-func _focus_tween_duration(duration: float) -> float:
-	return minf(duration, 0.12)
+		if int(step.marker.type) == int(BattleEvent.Type.SUMMONED):
+			_on_summon_followthrough(_make_epkg_from_event(step.marker, duration))

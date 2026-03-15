@@ -445,11 +445,13 @@ func get_combatants() -> Array[CombatantView]:
 
 
 func apply_focus(order: FocusOrder) -> void:
+	print("battle_view.gd apply_focus() time: ", clock.now_sec(), " duration: ", order.duration)
 	_apply_focus_background(order)
 	_apply_focus_combatants(order)
 
 
 func clear_focus(duration: float) -> void:
+	print("battle_view.gd clear_focus() time: ", clock.now_sec(), " duration: ", duration)
 	for combatant: CombatantView in get_combatants():
 		combatant.clear_focus(duration)
 

@@ -24,7 +24,9 @@ const PRIMARY_ACTION_KIND := &"primary_action_kind"
 # for single instances of damage and HITS:
 const TARGET_ID := &"target_id"
 # an attacker's STRIKE may result in multiple HITS on its targets.
-
+const STRIKE_COUNT := &"strike_count"
+const TOTAL_HIT_COUNT := &"total_hit_count"
+const HAS_LETHAL_HIT := &"has_lethal_hit"
 #for the targets of attacks (often size = 1) and STRIKES:
 const TARGET_IDS := &"target_ids"
 const ACTOR_ID := &"actor_id"
