@@ -523,7 +523,7 @@ func summon(ctx: SummonContext) -> void:
 		}
 		
 		var after_order_ids := PackedInt32Array(state.groups[g].order)
-		
+		#print("sim_battle_api.gd summon() art uid: ", ctx.summon_data.character_art_uid)
 		writer.emit_summoned(source_id, id, g, int(ctx.insert_index), windup_order, after_order_ids, u.data_proto_path, spec, ctx.reason, ctx.bound_card_uid)
 		#
 		#writer.emit_summon_followthrough(source_id, g, int(ctx.insert_index), 1, {

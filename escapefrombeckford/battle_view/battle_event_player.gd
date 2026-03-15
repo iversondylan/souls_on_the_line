@@ -78,13 +78,13 @@ func await_complete_actor_turn_chunk() -> Array[BattleEvent]:
 
 
 func next_raw_chunk(player_id: int = 0) -> Array[BattleEvent]:
-	if _log != null:
-		print(
-			"next_raw_chunk start cursor=%d next=%s" % [
-				_cursor.index,
-				_debug_event_short(_cursor.peek(_log)) if _cursor.has_next(_log) else "<none>"
-			]
-		)
+	#if _log != null:
+		#print(
+			#"next_raw_chunk start cursor=%d next=%s" % [
+				#_cursor.index,
+				#_debug_event_short(_cursor.peek(_log)) if _cursor.has_next(_log) else "<none>"
+			#]
+		#)
 
 	var out: Array[BattleEvent] = []
 	if _log == null or !_cursor.has_next(_log):
@@ -100,25 +100,25 @@ func next_raw_chunk(player_id: int = 0) -> Array[BattleEvent]:
 	if _is_actor_turn_scope_begin(first):
 		var actor_id := int(first.data.get(Keys.ACTOR_ID, 0)) if first.data != null else 0
 		if actor_id > 0 and actor_id != player_id:
-			print(
-				"next_raw_chunk return size=%d first=%s last=%s cursor=%d" % [
-					out.size(),
-					_debug_event_short(out[0]) if out.size() > 0 else "<empty>",
-					_debug_event_short(out[out.size() - 1]) if out.size() > 0 else "<empty>",
-					_cursor.index
-				]
-			)
+			#print(
+				#"next_raw_chunk return size=%d first=%s last=%s cursor=%d" % [
+					#out.size(),
+					#_debug_event_short(out[0]) if out.size() > 0 else "<empty>",
+					#_debug_event_short(out[out.size() - 1]) if out.size() > 0 else "<empty>",
+					#_cursor.index
+				#]
+			#)
 			return out
 
 		out = _drain_actor_turn_scope()
-		print(
-			"next_raw_chunk return size=%d first=%s last=%s cursor=%d" % [
-				out.size(),
-				_debug_event_short(out[0]) if out.size() > 0 else "<empty>",
-				_debug_event_short(out[out.size() - 1]) if out.size() > 0 else "<empty>",
-				_cursor.index
-			]
-		)
+		#print(
+			#"next_raw_chunk return size=%d first=%s last=%s cursor=%d" % [
+				#out.size(),
+				#_debug_event_short(out[0]) if out.size() > 0 else "<empty>",
+				#_debug_event_short(out[out.size() - 1]) if out.size() > 0 else "<empty>",
+				#_cursor.index
+			#]
+		#)
 		return out
 
 	while _cursor.has_next(_log):
@@ -137,14 +137,14 @@ func next_raw_chunk(player_id: int = 0) -> Array[BattleEvent]:
 				break
 
 			out = _drain_actor_turn_scope()
-			print(
-				"next_raw_chunk return size=%d first=%s last=%s cursor=%d" % [
-					out.size(),
-					_debug_event_short(out[0]) if out.size() > 0 else "<empty>",
-					_debug_event_short(out[out.size() - 1]) if out.size() > 0 else "<empty>",
-					_cursor.index
-				]
-			)
+			#print(
+				#"next_raw_chunk return size=%d first=%s last=%s cursor=%d" % [
+					#out.size(),
+					#_debug_event_short(out[0]) if out.size() > 0 else "<empty>",
+					#_debug_event_short(out[out.size() - 1]) if out.size() > 0 else "<empty>",
+					#_cursor.index
+				#]
+			#)
 			return out
 
 		# If we've already started accumulating, stop BEFORE major structural boundaries
@@ -159,14 +159,14 @@ func next_raw_chunk(player_id: int = 0) -> Array[BattleEvent]:
 		if _is_stop_event(e):
 			break
 
-	print(
-		"next_raw_chunk return size=%d first=%s last=%s cursor=%d" % [
-			out.size(),
-			_debug_event_short(out[0]) if out.size() > 0 else "<empty>",
-			_debug_event_short(out[out.size() - 1]) if out.size() > 0 else "<empty>",
-			_cursor.index
-		]
-	)
+	#print(
+		#"next_raw_chunk return size=%d first=%s last=%s cursor=%d" % [
+			#out.size(),
+			#_debug_event_short(out[0]) if out.size() > 0 else "<empty>",
+			#_debug_event_short(out[out.size() - 1]) if out.size() > 0 else "<empty>",
+			#_cursor.index
+		#]
+	#)
 	return out
 
 

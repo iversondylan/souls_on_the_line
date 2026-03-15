@@ -123,7 +123,7 @@ func _playback_loop(gen: int) -> void:
 				t_start
 			)
 
-			print(_debug_schedule_plan_line(plan, actor_turn, clock.now_sec(), schedule_t))
+			#print(_debug_schedule_plan_line(plan, actor_turn, clock.now_sec(), schedule_t))
 
 			await _play_schedule_plan(plan, gen)
 			schedule_t = plan.t_end
@@ -175,7 +175,7 @@ func _playback_loop(gen: int) -> void:
 		pkg.t_next_sec = t_next
 		pkg.duration_sec = maxf(0.0, t_next - t_start2)
 
-		print(_debug_beat_package_line(pkg, mode, actor_begin_id, is_player_actor, clock.now_sec(), schedule_t))
+		#print(_debug_beat_package_line(pkg, mode, actor_begin_id, is_player_actor, clock.now_sec(), schedule_t))
 
 		event_director.play_raw_chunk(pkg)
 
@@ -334,16 +334,16 @@ func _play_schedule_plan(plan: SchedulePlan, gen: int) -> void:
 
 		if !_playing or gen != _playback_gen:
 			return
-		print(
-			"[ACT] phase=%s label=%s fire=%.3f now=%.3f dur=%.3f %s" % [
-				str(a.phase),
-				a.label,
-				fire_t,
-				clock.now_sec(),
-				a.duration_sec,
-				_debug_action_presentation_summary(a),
-			]
-		)
+		#print(
+			#"[ACT] phase=%s label=%s fire=%.3f now=%.3f dur=%.3f %s" % [
+				#str(a.phase),
+				#a.label,
+				#fire_t,
+				#clock.now_sec(),
+				#a.duration_sec,
+				#_debug_action_presentation_summary(a),
+			#]
+		#)
 		event_director.on_director_action(a, gen)
 
 	var now2 := clock.now_sec()

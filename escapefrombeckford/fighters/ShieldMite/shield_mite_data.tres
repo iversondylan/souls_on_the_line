@@ -2,13 +2,7 @@
 
 [ext_resource type="Resource" uid="uid://om0vi82jpkvd" path="res://fighters/ShieldMite/shield_mite_ai.tres" id="1_rj3us"]
 [ext_resource type="Texture2D" uid="uid://mduxjrtw74f3" path="res://assets/character_visuals/shield_mite/shield_mite.PNG" id="2_adklw"]
-[ext_resource type="Script" uid="uid://03807i8cp3r3" path="res://scenes/turn_takers/behaviors/fighter_behavior.gd" id="2_m7adl"]
 [ext_resource type="Script" uid="uid://cfatj0ryn8uv3" path="res://custom_resources/combatant_data.gd" id="3_grdiy"]
-[ext_resource type="Script" uid="uid://csljslxfgnidf" path="res://scenes/turn_takers/behaviors/npcai_behavior.gd" id="3_j3ckf"]
-
-[sub_resource type="Resource" id="Resource_uhg8y"]
-script = ExtResource("3_j3ckf")
-metadata/_custom_type_script = "uid://csljslxfgnidf"
 
 [resource]
 script = ExtResource("3_grdiy")
@@ -18,6 +12,5 @@ character_art_uid = "uid://mduxjrtw74f3"
 facing_right = false
 height = 160
 max_health = 3
-behaviors = Array[ExtResource("2_m7adl")]([SubResource("Resource_uhg8y")])
 ai = ExtResource("1_rj3us")
 metadata/_custom_type_script = "uid://cfatj0ryn8uv3"

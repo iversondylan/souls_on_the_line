@@ -146,10 +146,12 @@ func _apply_visuals_from_spec() -> void:
 	character_art.modulate = tint
 	
 	var uid := String(_spec.get(Keys.ART_UID, ""))
+	#print("combatant_view.gd _apply_visuals_from_spec() art uid: ", uid)
 	if uid == "":
 		uid = String(_spec.get(Keys.PROTO_PATH, "")) # fallback if you want
 	var tex := load(uid) as Texture2D #_assets.get_texture(uid) if _assets != null else (load(uid) as Texture2D)
 	if tex != null:
+		#print("applying texture")
 		character_art.texture = tex
 	
 	var height := int(_spec.get(Keys.HEIGHT, 365))

@@ -20,7 +20,7 @@ func on_director_action(a: DirectorAction, gen: int) -> void:
 		return
 	if !battle_view._playing or gen != battle_view._playback_gen:
 		return
-	print("DIRECTOR ", a.label, " at ", battle_view.clock.now_sec())
+	#print("DIRECTOR ", a.label, " at ", battle_view.clock.now_sec())
 	match a.phase:
 		DirectorAction.Phase.FOCUS:
 			_play_focus_action(a)
@@ -99,17 +99,18 @@ func _play_focus_action(a: DirectorAction) -> void:
 		return
 
 	var attack_info := _as_attack_info(a)
+	var action_timeline := _as_action_timeline(a)
 
-	match a.action_kind:
-		DirectorAction.ActionKind.MELEE_STRIKE, DirectorAction.ActionKind.RANGED_STRIKE:
-			if attack_info != null:
-				_on_attack_prep_from_info(attack_info, a.duration_sec)
-				return
+	if attack_info != null:
+		_on_attack_prep_from_info(attack_info, a.duration_sec)
+		return
 
-		DirectorAction.ActionKind.SUMMON, DirectorAction.ActionKind.STATUS:
-			if a.event != null:
-				_on_action_focus(_make_epkg_from_event(a.event, a.duration_sec))
-				return
+	if action_timeline != null:
+		_on_action_focus_from_timeline(action_timeline, a.duration_sec)
+		return
+
+	if a.event != null:
+		_on_action_focus(_make_epkg_from_event(a.event, a.duration_sec))
 
 
 func _play_windup_action(a: DirectorAction) -> void:
@@ -117,22 +118,18 @@ func _play_windup_action(a: DirectorAction) -> void:
 		return
 
 	var attack_info := _as_attack_info(a)
+	var action_timeline := _as_action_timeline(a)
 
-	match a.action_kind:
-		DirectorAction.ActionKind.MELEE_STRIKE, DirectorAction.ActionKind.RANGED_STRIKE:
-			if attack_info != null:
-				_on_strike_windup_from_info(attack_info, a.duration_sec)
-				return
+	if attack_info != null:
+		_on_strike_windup_from_info(attack_info, a.duration_sec)
+		return
 
-		DirectorAction.ActionKind.SUMMON:
-			if a.event != null:
-				_on_summon_windup(_make_epkg_from_event(a.event, a.duration_sec))
-				return
+	if action_timeline != null:
+		_on_action_windup_from_timeline(action_timeline, a.duration_sec)
+		return
 
-		DirectorAction.ActionKind.STATUS:
-			if a.event != null:
-				_on_action_focus(_make_epkg_from_event(a.event, a.duration_sec))
-				return
+	if a.event != null:
+		_on_action_focus(_make_epkg_from_event(a.event, a.duration_sec))
 
 
 func _play_followthrough_action(a: DirectorAction) -> void:
@@ -140,57 +137,17 @@ func _play_followthrough_action(a: DirectorAction) -> void:
 		return
 
 	var attack_info := _as_attack_info(a)
+	var action_timeline := _as_action_timeline(a)
 
-	match a.action_kind:
-		DirectorAction.ActionKind.MELEE_STRIKE, DirectorAction.ActionKind.RANGED_STRIKE:
-			if attack_info != null:
-				_on_strike_followthrough_from_info(attack_info, a.duration_sec)
-				_apply_trailing_followthrough_payload(a.payload, attack_info, a.duration_sec)
-				_on_attack_wrapup_from_info(attack_info, minf(a.duration_sec, 0.15))
-				return
+	if attack_info != null:
+		_on_strike_followthrough_from_info(attack_info, a.duration_sec)
+		_on_attack_wrapup_from_info(attack_info, minf(a.duration_sec, 0.15))
+		return
 
-		DirectorAction.ActionKind.SUMMON:
-			if a.event != null:
-				_on_summon_followthrough(_make_epkg_from_event(a.event, a.duration_sec))
+	if action_timeline != null:
+		_on_action_followthrough_from_timeline(action_timeline, a.duration_sec)
+		return
 
-				# replay trailing updates like TURN_STATUS / SET_INTENT
-				for e in a.payload:
-					var be := e as BattleEvent
-					if be == null:
-						continue
-					var epkg := _make_epkg_from_event(be, a.duration_sec)
-					match int(be.type):
-						BattleEvent.Type.STATUS:
-							_on_status_changed(epkg)
-						BattleEvent.Type.SET_INTENT:
-							_on_set_intent(epkg)
-						BattleEvent.Type.TURN_STATUS:
-							_on_turn_status(epkg)
-						BattleEvent.Type.MOVED:
-							_on_moved(epkg)
-				return
-
-		DirectorAction.ActionKind.STATUS:
-			if a.event != null:
-				_on_status_changed(_make_epkg_from_event(a.event, a.duration_sec))
-
-				for e in a.payload:
-					var be := e as BattleEvent
-					if be == null or be == a.event:
-						continue
-					var epkg := _make_epkg_from_event(be, a.duration_sec)
-					match int(be.type):
-						BattleEvent.Type.STATUS:
-							_on_status_changed(epkg)
-						BattleEvent.Type.SET_INTENT:
-							_on_set_intent(epkg)
-						BattleEvent.Type.TURN_STATUS:
-							_on_turn_status(epkg)
-						BattleEvent.Type.MOVED:
-							_on_moved(epkg)
-				return
-
-	# fallback old payload behavior if needed
 	if a.payload.is_empty():
 		return
 
@@ -305,7 +262,14 @@ func _on_spawned(e: EventPackage) -> void:
 
 	var spec: Dictionary = e.event.data.get(Keys.SUMMON_SPEC, {})
 	v.apply_spawn_spec(spec)
-
+	
+	#if v.character_art != null:
+		#v.character_art.modulate.a = 0.0
+		#if v.tween_misc:
+			#v.tween_misc.kill()
+		#v.tween_misc = v.create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+		#v.tween_misc.tween_property(v.character_art, "modulate:a", 1.0, maxf(e.duration, 0.01))
+	
 	var ctx := GroupLayoutOrder.new()
 	ctx.group_index = g
 	ctx.order = after_ids
@@ -997,3 +961,138 @@ func _apply_trailing_followthrough_payload(payload: Array, info: AttackPresentat
 				_on_turn_status(epkg)
 			BattleEvent.Type.MOVED:
 				_on_moved(epkg)
+
+func _as_action_timeline(a: DirectorAction) -> ActionTimelinePresentationInfo:
+	if a == null:
+		return null
+	return a.presentation as ActionTimelinePresentationInfo
+
+func _on_action_focus_from_timeline(info: ActionTimelinePresentationInfo, duration: float) -> void:
+	if info == null:
+		return
+
+	var order := FocusOrder.new()
+	order.duration = duration
+	order.attacker_id = info.actor_id
+	order.target_ids = _coerce_int_array(info.get_all_target_ids())
+	order.dim_bg = 0.6
+	order.dim_uninvolved = 0.55
+	order.scale_involved = 1.08
+	order.scale_uninvolved = 1.0
+	order.drift_involved = 20.0
+
+	battle_view.apply_focus(order)
+
+
+func _on_action_windup_from_timeline(info: ActionTimelinePresentationInfo, duration: float) -> void:
+	if info == null:
+		return
+
+	for step in info.steps:
+		if step == null or step.marker == null:
+			continue
+
+		if int(step.marker.type) == int(BattleEvent.Type.SUMMONED):
+			_prepare_summon_for_timeline_step(_make_epkg_from_event(step.marker, duration))
+
+
+func _on_action_followthrough_from_timeline(info: ActionTimelinePresentationInfo, duration: float) -> void:
+	if info == null:
+		return
+
+	_play_action_timeline_steps_async(info, duration)
+
+
+func _play_action_timeline_steps_async(info: ActionTimelinePresentationInfo, duration: float) -> void:
+	var start_msec := Time.get_ticks_msec()
+
+	for step in info.steps:
+		if step == null:
+			continue
+
+		var elapsed := float(Time.get_ticks_msec() - start_msec) / 1000.0
+		var step_t := clampf(float(step.t0_ratio) * duration, 0.0, duration)
+		var wait_t := step_t - elapsed
+		if wait_t > 0.0:
+			await battle_view.get_tree().create_timer(wait_t).timeout
+
+		var step_duration := maxf(0.01, (step.t1_ratio - step.t0_ratio) * duration)
+		_apply_action_timeline_step(step, step_duration)
+
+	battle_view.clear_focus(minf(duration, 0.15))
+
+func _apply_action_timeline_step(step: ActionStepPresentationInfo, duration: float) -> void:
+	if step == null:
+		return
+
+	if step.marker != null and int(step.marker.type) == int(BattleEvent.Type.SUMMONED):
+		_on_summon_followthrough(_make_epkg_from_event(step.marker, duration))
+
+	for be in step.events:
+		if be == null:
+			continue
+
+		var epkg := _make_epkg_from_event(be, duration)
+
+		match int(be.type):
+			BattleEvent.Type.STATUS:
+				_on_status_changed(epkg)
+			BattleEvent.Type.SUMMONED:
+				# already handled as the step marker
+				pass
+			BattleEvent.Type.DAMAGE_APPLIED:
+				_on_damage_applied(epkg)
+			BattleEvent.Type.TURN_STATUS:
+				_on_turn_status(epkg)
+			BattleEvent.Type.SET_INTENT:
+				_on_set_intent(epkg)
+			BattleEvent.Type.MOVED:
+				_on_moved(epkg)
+			BattleEvent.Type.DIED:
+				_on_death_windup(epkg)
+				_on_death_followthrough(epkg)
+				_on_died(epkg)
+			BattleEvent.Type.FADED:
+				_on_fade_windup(epkg)
+				_on_fade_followthrough(epkg)
+				_on_faded(epkg)
+
+func _prepare_summon_for_timeline_step(e: EventPackage) -> void:
+	if e == null or e.event == null or e.event.data == null:
+		return
+	
+	var d := e.event.data
+	var cid := int(d.get(Keys.SUMMONED_ID, 0))
+	var g := int(d.get(Keys.GROUP_INDEX, e.event.group_index))
+	var idx := int(d.get(Keys.INSERT_INDEX, -1))
+	if cid <= 0:
+		return
+	
+	var v := battle_view.get_or_create_combatant_view(cid, g, idx, true)
+	if v == null:
+		return
+	
+	var spec: Dictionary = d.get(Keys.SUMMON_SPEC, {})
+	v.apply_spawn_spec(spec)
+	v.is_alive = false
+	if v.character_art != null:
+		v.character_art.modulate.a = 0.0
+		if v.tween_misc:
+			v.tween_misc.kill()
+		v.tween_misc = v.create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+		v.tween_misc.tween_property(v.character_art, "modulate:a", 1.0, maxf(e.duration, 0.01))
+	var before_order: PackedInt32Array = d.get(Keys.BEFORE_ORDER_IDS, PackedInt32Array())
+	var layout_count := before_order.size()
+	if layout_count <= 0:
+		layout_count = battle_view.get_combatant_views_for_group(g).size()
+	
+	var slot_global := battle_view.get_summon_slot_position_for_layout_count(g, idx, layout_count)
+	var group: GroupView = battle_view.friendly_group if g == 0 else battle_view.enemy_group
+	v.position = group.to_local(slot_global)
+	v.anchor_position = v.position
+	v.has_anchor_position = true
+	
+	if v.character_art != null:
+		var c := v.character_art.modulate
+		c.a = 0.0
+		v.character_art.modulate = c
