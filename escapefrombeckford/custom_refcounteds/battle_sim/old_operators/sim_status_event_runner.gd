@@ -81,3 +81,4 @@ static func on_damage_taken(api: SimBattleAPI, ctx: DamageContext) -> void:
 		
 		# Overeager reaction: replan now (unless acting guard blocks it)
 		api._request_replan(tid)
+		api._request_intent_refresh(tid)

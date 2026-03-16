@@ -242,6 +242,7 @@ func request_player_end() -> void:
 func hand_discarded() -> void:
 	turn_engine.request_player_end()
 
+## vvv TO BE MOVED TO CHECKPOINT PROCESSOR vvv
 func _on_sim_player_end_requested(token: int) -> void:
 	# 1) end-of-player bookkeeping (discard, etc.)
 	if turn_engine_host_sim != null and sim_host_has_end_player_turn():
@@ -259,8 +260,8 @@ func _on_sim_player_end_requested(token: int) -> void:
 		#   Also closes the actor scope in the event writer.
 		if main != null and main.api != null:
 			SimStatusLifecycleRunner.on_actor_turn_end(main.api, player_id)
-			main.api.flush_replans(true)
-			main.api.flush_intent_refreshes()
+			if main.checkpoint_processor != null:
+				main.checkpoint_processor.flush(CheckpointProcessor.Kind.AFTER_ACTOR_TURN, main, true)
 		sim_notify_actor_done(player_id)
 	)
 
@@ -296,6 +297,8 @@ func _call_sim_end_player_turn() -> void:
 # Stuff that happens
 # -------------------------
 
+
+## vvv TO BE MOVED TO CHECKPOINT PROCESSOR vvv
 func _on_sim_actor_requested(cid: int) -> void:
 	#print("sim_host() _on_sim_actor_requested() cid: ", cid)
 	if main != null and main.api != null and main.api.writer != null:
@@ -322,10 +325,6 @@ func _on_sim_actor_requested(cid: int) -> void:
 		main.api.writer.scope_end()
 	if main != null and main.api != null:
 		SimStatusLifecycleRunner.on_actor_turn_end(main.api, cid)
-		# Flush replans right after action resolution (see section 4)
-		
-		main.api.flush_replans(true)
-		main.api.flush_intent_refreshes()
 	turn_engine.notify_actor_done(cid)
 
 func get_main_api() -> SimBattleAPI:

@@ -123,7 +123,7 @@ static func run(api: SimBattleAPI, ctx: NPCAIContext) -> bool:
 				api.writer.scope_end() # hit
 
 		
-		api.flush_replans()
+		#api.flush_replans() DEFER REPLANS UNTIL A CHECKPOINT FLUSH
 		if api.writer != null:
 			api.writer.scope_end() # strike
 

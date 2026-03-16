@@ -39,6 +39,7 @@ func ensure_valid_plans(api: SimBattleAPI, allow_hooks: bool = true) -> void:
 		ensure_valid_plan_for(api, int(cid), allow_hooks)
 
 func flush(api: SimBattleAPI, allow_hooks: bool = true) -> void:
+	print("intent_planner.gd flush() dirty_all=%s dirty_ids=%s" % [str(dirty_all), str(dirty_ids.keys())])
 	if api == null or api.state == null:
 		clear_dirty()
 		return

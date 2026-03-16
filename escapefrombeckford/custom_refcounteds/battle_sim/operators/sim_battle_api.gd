@@ -377,6 +377,10 @@ func remove_status(ctx: StatusContext) -> void:
 	_on_status_changed(ctx.target_id)
 
 func _request_intent_refresh_all() -> void:
+	if checkpoint_processor != null:
+		checkpoint_processor.request_intent_refresh_all()
+		return
+
 	if state == null:
 		return
 	for k in state.units.keys():
@@ -385,20 +389,17 @@ func _request_intent_refresh_all() -> void:
 
 func _on_status_changed(cid: int) -> void:
 	_request_replan(cid)
-	flush_intent_refreshes()
-
-#func emit_status_changed(source_id: int, target_id: int, status_id: StringName, new_intensity: int, new_duration: int) -> void:
-	#if writer == null:
-		#return
-	#writer.emit_status_changed(source_id, target_id, status_id, new_intensity, new_duration)
 
 func _request_replan(cid: int) -> void:
-	#print("requesting replan for ", cid)
+	if checkpoint_processor != null:
+		checkpoint_processor.request_replan(int(cid))
+		return
+
+	# Fallback during migration
 	var u: CombatantState = state.get_unit(int(cid))
 	if u == null:
 		return
 	ActionPlanner._ensure_ai_state_initialized(u)
-
 	u.ai_state[&"replan_dirty"] = true
 
 func spawn_from_data(combatant_data: CombatantData, group_index: int, insert_index: int = -1, is_player := false) -> int:
@@ -704,15 +705,16 @@ func plan_intent(cid: int, allow_hooks := true, clear_dirty := true) -> void:
 		u.ai_state[&"replan_dirty"] = false
 
 func flush_replans(allow_hooks := true) -> void:
+	print("sim_battle_api.gd flush_replans() STOP USING THIS IT'S DEPRECATED")
 	if state == null:
 		return
+
 	for k in state.units.keys():
 		var cid := int(k)
 		var u: CombatantState = state.get_unit(cid)
 		if u == null:
 			continue
 		ActionPlanner._ensure_ai_state_initialized(u)
-		#print("flush_replans() cid: %s, replan dirty: %s" % [cid, u.ai_state.get(&"replan_dirty", false)])
 		if bool(u.ai_state.get(&"replan_dirty", false)):
 			plan_intent(cid, allow_hooks, true)
 
@@ -721,6 +723,10 @@ func plan_intents() -> void:
 		plan_intent(cid)
 	
 func _request_intent_refresh(cid: int) -> void:
+	if checkpoint_processor != null:
+		checkpoint_processor.request_intent_refresh(int(cid))
+		return
+
 	var u: CombatantState = state.get_unit(cid)
 	if u == null:
 		return

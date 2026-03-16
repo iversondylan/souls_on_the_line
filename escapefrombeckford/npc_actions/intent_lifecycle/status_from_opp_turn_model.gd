@@ -6,63 +6,8 @@ extends IntentLifecycleModel
 ## NOTE: intent-lifecycle statuses must be unique by id per fighter.
 @export var status: Status
 
-# Optional: if you want audio for this lifecycle status, add:
-# @export var apply_sound: Sound
-# @export var remove_sound: Sound
-#
-#func on_opposing_group_start(ctx: NPCAIContext) -> void:
-	#if !_can_run(ctx):
-		#return
-	#_apply_to_self(ctx)
-#
-#func on_intent_canceled(ctx: NPCAIContext) -> void:
-	#if !_can_run(ctx):
-		#return
-	#_remove_from_self(ctx)
-#
-#func _can_run(ctx: NPCAIContext) -> bool:
-	#if !ctx or bool(ctx.forecast):
-		#return false
-	#if !ctx.combatant or !is_instance_valid(ctx.combatant):
-		#return false
-	#if !status:
-		#return false
-	#return true
-#
-#func _resolve_api(ctx: NPCAIContext) -> BattleAPI:
-	#var api: BattleAPI = ctx.api
-	#if !api and ctx.battle_scene:
-		#api = ctx.battle_scene.api
-	#return api
-#
 func _status_id() -> StringName:
 	return StringName(status.get_id())
-#
-#func _apply_to_self(ctx: NPCAIContext) -> void:
-	#var api := _resolve_api(ctx)
-	#if !api:
-		#return
-#
-	#var e := StatusEffect.new()
-	#e.targets = [ctx.combatant]
-	#e.source = ctx.combatant
-	#e.status_id = _status_id()
-	#e.duration = status.duration
-	#e.intensity = status.intensity
-	## e.sound = apply_sound
-	#e.execute(api)
-#
-#func _remove_from_self(ctx: NPCAIContext) -> void:
-	#var api := _resolve_api(ctx)
-	#if !api:
-		#return
-#
-	#var e := RemoveStatusEffect.new()
-	#e.targets = [ctx.combatant]
-	#e.source = ctx.combatant
-	#e.status_id = _status_id()
-	## e.sound = remove_sound
-	#e.execute(api)
 
 func on_opposing_group_start_sim(ctx: NPCAIContext) -> void:
 	#print("uh oh")
