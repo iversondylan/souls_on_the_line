@@ -14,7 +14,7 @@ func execute(ctx: NPCAIContext, on_done: Callable) -> void:
 		return
 
 	# Resolve API
-	var api: BattleAPI = ctx.api
+	var api: SimBattleAPI = ctx.api
 	if !api and ctx.battle_scene:
 		api = ctx.battle_scene.api
 	if !api:

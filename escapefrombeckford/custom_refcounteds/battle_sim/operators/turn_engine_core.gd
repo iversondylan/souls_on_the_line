@@ -26,7 +26,7 @@ var _resume_after_arcana: Callable = Callable()
 
 const MAX_TURNS_PER_FIGHTER_PER_GROUP_TURN := 3
 
-var host: TurnEngineHost
+var host: TurnEngineHostSim
 
 var active_group_index: int = -1
 var current_actor_id: int = 0
@@ -48,7 +48,7 @@ var ended_friendly_post_enemy: bool = false
 
 var dbg := false
 
-func _init(_host: TurnEngineHost) -> void:
+func _init(_host: TurnEngineHostSim) -> void:
 	host = _host
 
 func start_group_turn(group_index: int, start_at_player := false, friendly_post_enemy := false) -> void:

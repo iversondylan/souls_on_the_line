@@ -3,7 +3,7 @@
 class_name AttackTargeting extends RefCounted
 
 static func _apply_target_modifiers(
-	api: BattleAPI,
+	api: SimBattleAPI,
 	attacker_id: int,
 	params: Dictionary,
 	is_single_target_intent: bool,
@@ -24,7 +24,7 @@ static func _apply_target_modifiers(
 	if final_targets.size() == 1 and final_targets[0] != redirect_id:
 		final_targets[0] = redirect_id
 
-static func get_target_ids(api: BattleAPI, attacker_id: int, params: Dictionary) -> Array[int]:
+static func get_target_ids(api: SimBattleAPI, attacker_id: int, params: Dictionary) -> Array[int]:
 	if !api or attacker_id <= 0 or !api.is_alive(attacker_id):
 		return []
 
@@ -45,7 +45,7 @@ static func get_target_ids(api: BattleAPI, attacker_id: int, params: Dictionary)
 	return final
 
 
-static func _get_base_target_ids(api: BattleAPI, attacker_id: int, params: Dictionary) -> Array[int]:
+static func _get_base_target_ids(api: SimBattleAPI, attacker_id: int, params: Dictionary) -> Array[int]:
 	#print("attack_targeting.gd _get_base_target_ids() attacker_id: %s, params: %s" % [attacker_id, params])
 	var target_type := int(params.get(Keys.TARGET_TYPE, Attack.Targeting.STANDARD))
 

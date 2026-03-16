@@ -2,7 +2,7 @@
 
 class_name AttackTargetContext extends RefCounted
 
-var api: BattleAPI
+var api: SimBattleAPI
 var source_id: int = 0
 var params: Dictionary = {}
 

@@ -7,7 +7,7 @@ extends RefCounted
 	#POST_MODIFIERS,
 	#APPLIED
 #}
-var api: BattleAPI
+var api: SimBattleAPI
 var source: Fighter = null
 var target: Fighter = null
 

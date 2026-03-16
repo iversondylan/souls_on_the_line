@@ -2,7 +2,7 @@
 class_name NPCAIContext extends RefCounted
 
 # stable
-var api: BattleAPI
+var api: SimBattleAPI
 #var combatant: Fighter
 var cid: int = -1
 var combatant_state: CombatantState

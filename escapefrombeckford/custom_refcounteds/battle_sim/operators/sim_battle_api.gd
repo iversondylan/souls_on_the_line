@@ -1,10 +1,11 @@
 # sim_battle_api.gd
 
-class_name SimBattleAPI extends BattleAPI
+class_name SimBattleAPI extends RefCounted
 
 const FRIENDLY := 0
 const ENEMY := 1
 
+var status_catalog: StatusCatalog
 #var status_catalog: StatusCatalog
 var state: BattleState
 var checkpoint_processor: CheckpointProcessor
@@ -122,14 +123,6 @@ func resolve_attack(ctx: NPCAIContext) -> bool:
 	#print("sim_battle_api.gd resolve_attack()")
 	return SimAttackRunner.run(self, ctx)
 
-# sim_battle_api.gd
-# Changes:
-# - Do NOT remove units inside resolve_damage_immediate().
-# - Route lethal through resolve_death(), which uses SimDeathRunner to:
-#   - emit DEATH_WINDUP / DEATH_FOLLOWTHROUGH / DIED
-#   - finalize removal from group order
-# - resolve_death now takes optional killer_id for better logs.
-
 func resolve_damage_immediate(ctx: DamageContext) -> int:
 	#print("sim_battle_api.gd resolve_damage_immediate() dmg: ", ctx.base_amount)
 	if ctx == null or state == null:
@@ -230,10 +223,6 @@ func resolve_death(combat_id: int, reason := "", killer_id: int = 0) -> void:
 	_maybe_release_soulbound_reserve(u, "fade:" + reason)
 	# Run the death sequence (beats + final removal + DIED event)
 	SimDeathRunner.run(self, combat_id, killer_id, String(reason))
-	
-
-
-# sim_battle_api.gd
 
 func count_summons_in_group(group_index: int) -> int:
 	if state == null:
@@ -459,8 +448,6 @@ func spawn_from_data(combatant_data: CombatantData, group_index: int, insert_ind
 	
 	return id
 
-# sim_battle_api.gd
-
 func summon(ctx: SummonContext) -> void:
 	if ctx == null or state == null:
 		return
@@ -546,7 +533,7 @@ func count_soulbound_in_group(group_index: int) -> int:
 		var u: CombatantState = state.get_unit(int(id))
 		if u == null or !u.is_alive():
 			continue
-		print("sim_battle_api.gd count_soulbound_in_group() cid: %s, mortality: %s" % [id, CombatantView.Mortality.keys()[u.mortality]])
+		#print("sim_battle_api.gd count_soulbound_in_group() cid: %s, mortality: %s" % [id, CombatantView.Mortality.keys()[u.mortality]])
 		if u.mortality == CombatantView.Mortality.SOULBOUND:
 			n += 1
 	return n
@@ -962,3 +949,39 @@ func _request_intent_refresh_targets_for_aura(source_id: int, proto: Status) -> 
 	# Conservative + correct: refresh all (fast to implement, correct output)
 	# If you later want it tighter, replace this with tag-based routing.
 	_request_intent_refresh_all()
+
+func get_n_combatants_in_group(group_index: int, allow_dead := false) -> int:
+	return get_combatants_in_group(group_index, allow_dead).size()
+
+func run_status_proc(_target_id: int, _proc_type: Status.ProcType) -> void:
+	pass
+
+# --------------------------
+# Core verbs (queued in live)
+# --------------------------
+
+func resolve_heal(_ctx: HealContext) -> void:
+	pass
+
+func resolve_attack_now(_ctx: AttackNowContext) -> void:
+	pass
+
+
+# --------------------------
+# DamageResolver hooks
+# --------------------------
+
+func apply_damage_amount(_ctx: DamageContext, _amount: int) -> void:
+	pass
+
+func play_sfx(sound: Sound) -> void:
+	if sound:
+		SFXPlayer.play(sound)
+
+func get_status_intensity(combat_id: int, status_id: StringName) -> int:
+	return -1
+
+func get_player_pos_delta(combat_id: int) -> int:
+	# live: use battle_scene.get_player_pos_delta(fighter)
+	# sim: compute based on rank relative to player id
+	return 0

@@ -6,7 +6,7 @@ var amount: int = 1
 var source: Fighter
 var reason: String = ""
 
-func execute(_api: BattleAPI) -> void:
+func execute(_api: SimBattleAPI) -> void:
 	var ctx := DrawContext.new()
 	ctx.source = source
 	ctx.amount = amount

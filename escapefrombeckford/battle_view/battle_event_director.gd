@@ -143,14 +143,14 @@ func _play_followthrough_action(a: DirectorAction) -> void:
 	var attack_info := _as_attack_info(a)
 	if attack_info != null:
 		_on_strike_followthrough_from_info(attack_info, a.duration_sec)
+
+		# Only non-structural, non-delete raw events here
 		_apply_payload_events(
 			a.payload,
 			a.duration_sec,
 			{
 				BattleEvent.Type.DAMAGE_APPLIED: true,
 				BattleEvent.Type.STATUS: true,
-				BattleEvent.Type.DIED: true,
-				BattleEvent.Type.FADED: true,
 				BattleEvent.Type.SUMMONED: true,
 			}
 		)
@@ -165,8 +165,6 @@ func _play_followthrough_action(a: DirectorAction) -> void:
 			{
 				BattleEvent.Type.DAMAGE_APPLIED: true,
 				BattleEvent.Type.STATUS: true,
-				BattleEvent.Type.DIED: true,
-				BattleEvent.Type.FADED: true,
 				BattleEvent.Type.SUMMONED: true,
 			}
 		)
@@ -178,8 +176,6 @@ func _play_followthrough_action(a: DirectorAction) -> void:
 		{
 			BattleEvent.Type.DAMAGE_APPLIED: true,
 			BattleEvent.Type.STATUS: true,
-			BattleEvent.Type.DIED: true,
-			BattleEvent.Type.FADED: true,
 			BattleEvent.Type.SUMMONED: true,
 		}
 	)
@@ -189,16 +185,21 @@ func _play_resolve_action(a: DirectorAction) -> void:
 	if a == null:
 		return
 
+	# Structural / board-state events belong here
 	_apply_payload_events(
 		a.payload,
 		a.duration_sec,
 		{
+			BattleEvent.Type.DIED: true,
+			BattleEvent.Type.FADED: true,
 			BattleEvent.Type.STATUS: true,
 			BattleEvent.Type.SET_INTENT: true,
 			BattleEvent.Type.TURN_STATUS: true,
 			BattleEvent.Type.MOVED: true,
 		}
 	)
+
+	_relayout_groups_after_resolve()
 
 	var attack_info := _as_attack_info(a)
 	if attack_info != null:
@@ -360,6 +361,15 @@ func _make_status_removed_order(e: EventPackage) -> StatusRemovedOrder:
 
 	return o
 
+func _relayout_groups_after_resolve() -> void:
+	if battle_view == null:
+		return
+
+	if battle_view.friendly_group != null:
+		battle_view.friendly_group.relayout_alive_immediate(true)
+
+	if battle_view.enemy_group != null:
+		battle_view.enemy_group.relayout_alive_immediate(true)
 
 # ------------------------------------------------------------------------------
 # Raw event handlers
@@ -797,20 +807,22 @@ func _on_strike_followthrough_from_info(info: AttackPresentationInfo, duration: 
 		return
 
 	var attacker := battle_view.get_combatant(info.attacker_id)
-	if attacker == null:
-		return
+	if attacker != null:
+		var o := StrikeFollowthroughOrder.new()
+		o.duration = duration
+		o.attacker_id = info.attacker_id
+		o.target_ids = info.get_all_target_ids()
+		o.attack_mode = info.attack_mode
+		o.strike_count = info.strike_count
+		o.total_hit_count = info.total_hit_count
+		o.has_lethal_hit = info.has_lethal_hit
+		o.attack_info = info
+		attacker.play_strike_followthrough(o, battle_view)
 
-	var o := StrikeFollowthroughOrder.new()
-	o.duration = duration
-	o.attacker_id = info.attacker_id
-	o.target_ids = info.get_all_target_ids()
-	o.attack_mode = info.attack_mode
-	o.strike_count = info.strike_count
-	o.total_hit_count = info.total_hit_count
-	o.has_lethal_hit = info.has_lethal_hit
-	o.attack_info = info
-
-	attacker.play_strike_followthrough(o, battle_view)
+	for tid in info.get_all_target_ids():
+		var target := battle_view.get_combatant(int(tid))
+		if target != null:
+			target.play_attack_received_followthrough(info, duration)
 
 
 func _on_attack_wrapup_from_info(info: AttackPresentationInfo, duration: float) -> void:

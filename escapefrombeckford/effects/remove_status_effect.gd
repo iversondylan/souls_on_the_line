@@ -5,7 +5,7 @@ extends Effect
 var status_id: StringName
 var source: Fighter = null
 
-func execute(api: BattleAPI) -> void:
+func execute(api: SimBattleAPI) -> void:
 	if !api:
 		return
 

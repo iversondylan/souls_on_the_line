@@ -1,5 +1,5 @@
 # turn_engine_host_sim.gd
-class_name TurnEngineHostSim extends TurnEngineHost
+class_name TurnEngineHostSim extends RefCounted
 
 var sim_host: SimHost
 
@@ -80,3 +80,10 @@ func end_player_turn_async() -> void:
 			sim_host.end_player_turn()
 
 	await _coroutine_marker()
+
+func _coroutine_marker() -> void:
+	# This makes the function a coroutine in Godot 4.x without actually yielding.
+	if false:
+		var tree := Engine.get_main_loop() as SceneTree
+		if tree != null:
+			await tree.process_frame

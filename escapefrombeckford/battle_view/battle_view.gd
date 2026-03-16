@@ -445,13 +445,13 @@ func get_combatants() -> Array[CombatantView]:
 
 
 func apply_focus(order: FocusOrder) -> void:
-	print("battle_view.gd apply_focus() time: ", clock.now_sec(), " duration: ", order.duration)
+	#print("battle_view.gd apply_focus() time: ", clock.now_sec(), " duration: ", order.duration)
 	_apply_focus_background(order)
 	_apply_focus_combatants(order)
 
 
 func clear_focus(duration: float) -> void:
-	print("battle_view.gd clear_focus() time: ", clock.now_sec(), " duration: ", duration)
+	#print("battle_view.gd clear_focus() time: ", clock.now_sec(), " duration: ", duration)
 	for combatant: CombatantView in get_combatants():
 		combatant.clear_focus(duration)
 
@@ -459,7 +459,7 @@ func clear_focus(duration: float) -> void:
 	if tween_bg:
 		tween_bg.kill()
 	if bg:
-		tween_bg = self.create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+		tween_bg = self.create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	for item in bg:
 		if "modulate" in item:
 			tween_bg.tween_property(item, "modulate", Color(1, 1, 1, 1.0), duration)

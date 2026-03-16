@@ -12,7 +12,7 @@ var bound_card_data: CardData
 var mortality: CombatantView.Mortality
 var summon_ctx: SummonContext = null
 
-func execute(api: BattleAPI) -> void:
+func execute(api: SimBattleAPI) -> void:
 	if !api:
 		return
 	

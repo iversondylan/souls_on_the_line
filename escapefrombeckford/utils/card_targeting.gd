@@ -1,7 +1,7 @@
 # card_targeting.gd
 class_name CardTargeting extends RefCounted
 
-static func resolve(api: BattleAPI, card: CardData, req: CardPlayRequest) -> CardResolvedTargetSim:
+static func resolve(api: SimBattleAPI, card: CardData, req: CardPlayRequest) -> CardResolvedTargetSim:
 	var out := CardResolvedTargetSim.new()
 
 	match card.target_type:

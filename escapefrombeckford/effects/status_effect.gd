@@ -7,7 +7,7 @@ var source: Fighter = null # optional, but nice for procs/logging
 var duration: int = 0
 var intensity: int = 0
 
-func execute(api: BattleAPI) -> void:
+func execute(api: SimBattleAPI) -> void:
 	if !api:
 		return
 

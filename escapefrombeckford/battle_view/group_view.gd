@@ -39,6 +39,17 @@ func register_combatant(ctx: GroupLayoutOrder) -> void:
 	combatants_by_cid[int(ctx.new_combatant.cid)] = ctx.new_combatant
 	_mark_layout_dirty(ctx)
 
+func relayout_alive(animate: bool = true) -> void:
+	var ctx := GroupLayoutOrder.new()
+	ctx.animate_to_position = animate
+	_mark_layout_dirty(ctx)
+
+func relayout_alive_immediate(animate: bool = true) -> void:
+	var ctx := GroupLayoutOrder.new()
+	ctx.animate_to_position = animate
+	layout_ctx = ctx
+	_flush_layout()
+
 func _mark_layout_dirty(ctx: GroupLayoutOrder) -> void:
 	layout_ctx = ctx
 	if _layout_dirty:
@@ -48,14 +59,14 @@ func _mark_layout_dirty(ctx: GroupLayoutOrder) -> void:
 
 func _flush_layout() -> void:
 	_layout_dirty = false
+
 	var nodes := _get_layout_nodes()
 	var slot := 1.0
 	for n in nodes:
 		var x := _get_x_for_slot(slot, nodes.size())
-		# views are Node2D, just position them
 		n.set_anchor_position(Vector2(x, 0), layout_ctx)
-		#n.position = Vector2(x, 0)
 		slot += 1.0
+
 	layout_ctx = null
 
 #func update_layout() -> void:

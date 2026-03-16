@@ -68,7 +68,7 @@ func _get_source_id(ctx: ArcanumContext) -> int:
 	#return 0
 
 
-func _apply_damage_headless(api: BattleAPI, source_id: int, target_id: int, amount: int) -> void:
+func _apply_damage_headless(api: SimBattleAPI, source_id: int, target_id: int, amount: int) -> void:
 	if api == null or target_id <= 0:
 		return
 	var d := DamageContext.new()

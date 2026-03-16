@@ -24,7 +24,7 @@ var index: int = -1
 # may be re-added to acting_fighters if moved to a "future" slot.
 var can_restore_turn: bool = false
 
-func execute(api: BattleAPI) -> void:
+func execute(api: SimBattleAPI) -> void:
 	if !api or !actor:
 		return
 

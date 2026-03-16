@@ -1,7 +1,7 @@
 # damage_resolver.gd
 class_name DamageResolver extends RefCounted
 
-static func resolve(api: BattleAPI, ctx: DamageContext) -> void:
+static func resolve(api: SimBattleAPI, ctx: DamageContext) -> void:
 	if !api or !ctx:
 		return
 

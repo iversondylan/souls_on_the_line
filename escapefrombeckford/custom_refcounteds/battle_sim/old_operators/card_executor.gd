@@ -3,7 +3,7 @@ class_name CardExecutor extends RefCounted
 
 #var card_catalog: CardCatalog
 
-func play_card(api: BattleAPI, req: CardPlayRequest) -> bool:
+func play_card(api: SimBattleAPI, req: CardPlayRequest) -> bool:
 	if api == null or req == null or req.card == null:
 		return false
 	

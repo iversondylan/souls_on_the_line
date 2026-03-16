@@ -577,11 +577,16 @@ func _split_unit_events_into_follow_and_resolve(
 
 			match int(be.type):
 				BattleEvent.Type.DAMAGE_APPLIED, \
-				BattleEvent.Type.DIED, \
-				BattleEvent.Type.FADED, \
 				BattleEvent.Type.SUMMONED, \
 				BattleEvent.Type.STATUS:
 					follow_payload.append(be)
+
+				BattleEvent.Type.DIED, \
+				BattleEvent.Type.FADED, \
+				BattleEvent.Type.SET_INTENT, \
+				BattleEvent.Type.TURN_STATUS, \
+				BattleEvent.Type.MOVED:
+					resolve_payload.append(be)
 
 				BattleEvent.Type.SET_INTENT, \
 				BattleEvent.Type.TURN_STATUS, \
