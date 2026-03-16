@@ -275,9 +275,10 @@ func _extract_action_units(turn_events: Array) -> Array[Dictionary]:
 			var scope_events: Array[BattleEvent] = []
 			i = _collect_scope_events(turn_events, i, scope_events)
 
-			var unit := _build_action_unit_from_scope(scope_events)
-			if !unit.is_empty():
-				out.append(unit)
+			var units := _build_action_units_from_scope(scope_events)
+			for unit in units:
+				if !unit.is_empty():
+					out.append(unit)
 			continue
 
 		i += 1
@@ -287,6 +288,33 @@ func _extract_action_units(turn_events: Array) -> Array[Dictionary]:
 
 	return out
 
+func _build_action_units_from_scope(scope_events: Array[BattleEvent]) -> Array[Dictionary]:
+	var out: Array[Dictionary] = []
+
+	if scope_events.is_empty():
+		return out
+
+	var root := scope_events[0]
+	if root == null:
+		return out
+
+	var scope_kind := int(root.scope_kind)
+
+	match scope_kind:
+		Scope.Kind.ATTACK:
+			return _build_attack_units_from_scope(scope_events)
+
+		Scope.Kind.SUMMON_ACTION, Scope.Kind.STATUS_ACTION:
+			var unit := _build_single_action_unit_from_scope(scope_events)
+			if !unit.is_empty():
+				out.append(unit)
+			return out
+
+		_:
+			var fallback_unit := _build_single_action_unit_from_scope(scope_events)
+			if !fallback_unit.is_empty():
+				out.append(fallback_unit)
+			return out
 
 func _is_action_scope_begin(e: BattleEvent) -> bool:
 	if e == null:
@@ -331,8 +359,73 @@ func _collect_scope_events(
 
 	return i
 
+func _build_attack_units_from_scope(scope_events: Array[BattleEvent]) -> Array[Dictionary]:
+	var out: Array[Dictionary] = []
 
-func _build_action_unit_from_scope(scope_events: Array[BattleEvent]) -> Dictionary:
+	var i := 0
+	while i < scope_events.size():
+		var e := scope_events[i] as BattleEvent
+		if e == null:
+			i += 1
+			continue
+
+		var is_strike_scope_begin := (
+			int(e.type) == int(BattleEvent.Type.SCOPE_BEGIN)
+			and int(e.scope_kind) == int(Scope.Kind.STRIKE)
+		)
+
+		if !is_strike_scope_begin:
+			i += 1
+			continue
+
+		var strike_scope_events: Array[BattleEvent] = []
+		i = _collect_scope_events(scope_events, i, strike_scope_events)
+
+		var unit := _build_strike_unit_from_scope(strike_scope_events)
+		if !unit.is_empty():
+			out.append(unit)
+
+	return out
+
+func _build_strike_unit_from_scope(scope_events: Array[BattleEvent]) -> Dictionary:
+	var unit := {}
+	if scope_events.is_empty():
+		return unit
+
+	var marker: BattleEvent = null
+	var has_death := false
+	var events: Array = []
+
+	for e in scope_events:
+		var be := e as BattleEvent
+		if be == null:
+			continue
+		
+		if int(be.type) == int(BattleEvent.Type.STRIKE):
+			marker = be
+		
+		if int(be.type) == int(BattleEvent.Type.SCOPE_BEGIN) or int(be.type) == int(BattleEvent.Type.SCOPE_END):
+			continue
+		if int(be.type) == int(BattleEvent.Type.ACTOR_BEGIN) or int(be.type) == int(BattleEvent.Type.ACTOR_END):
+			continue
+		
+		events.append(be)
+		
+		if int(be.type) == int(BattleEvent.Type.DIED) or int(be.type) == int(BattleEvent.Type.FADED):
+			has_death = true
+	
+	if marker == null:
+		return unit
+
+	unit["marker"] = marker
+	unit["events"] = events
+	unit["action_kind"] = _action_kind_for_marker(marker)
+	unit["has_death"] = has_death
+	unit["scope_kind"] = int(Scope.Kind.STRIKE)
+
+	return unit
+
+func _build_single_action_unit_from_scope(scope_events: Array[BattleEvent]) -> Dictionary:
 	var unit := {}
 
 	if scope_events.is_empty():

@@ -82,6 +82,7 @@ func play_strike_followthrough(order: StrikeFollowthroughOrder, battle_view: Bat
 		var count := maxi(1, order.strike_count)
 		for i in range(count):
 			play_projectile_impact_for_strike(order.attacker_id, i, battle_view)
+		return
 
 	_apply_followthrough_pose(order)
 
@@ -244,6 +245,7 @@ func apply_strike_windup(order: StrikeWindupOrder) -> void:
 	tween_strike.tween_property(art_parent, "scale", target_scale, order.duration)
 
 func play_strike_windup(order: StrikeWindupOrder, battle_view: BattleView) -> void:
+	print("combatant_view.gd play_strike_windup() strike_dount: ", order.strike_count)
 	if order == null or battle_view == null:
 		return
 
@@ -260,32 +262,37 @@ func play_strike_windup(order: StrikeWindupOrder, battle_view: BattleView) -> vo
 func _play_ranged_windup_pulses(order: StrikeWindupOrder, battle_view: BattleView, gen: int) -> void:
 	var count := maxi(1, order.strike_count)
 
-	for i in range(count):
-		var seg_dur := order.duration / float(count)
-		var t0 := float(i) * seg_dur
+	var launch_times: Array[float] = _get_ranged_launch_times(order.duration, count)
 
-		var strike_targets: Array[int] = order.target_ids
-		if order.attack_info != null and i < order.attack_info.strikes.size():
-			var s = order.attack_info.strikes[i]
-			if s != null and !s.target_ids.is_empty():
-				strike_targets = s.target_ids
+	for i in range(launch_times.size()):
+		var launch_t := launch_times[i]
+		var pulse_up_t := 0.06
+		var pulse_down_t := 0.05
+		var pulse_start := maxf(0.0, launch_t - pulse_up_t)
 
-		_apply_single_ranged_pulse(order, t0, seg_dur)
-		_spawn_projectile_async(
+		_apply_single_ranged_pulse(
 			order,
-			battle_view,
-			gen,
-			t0 + seg_dur * 0.45,
-			maxf(seg_dur * 0.55, 0.001),
-			i,
-			strike_targets
+			pulse_start,
+			pulse_up_t,
+			pulse_down_t
 		)
 
-func _apply_single_ranged_pulse(order: StrikeWindupOrder, delay_sec: float, seg_dur: float) -> void:
+func _apply_single_ranged_pulse(
+	order: StrikeWindupOrder,
+	delay_sec: float,
+	up_t: float,
+	down_t: float
+) -> void:
 	var my_gen := _strike_gen
-	_apply_ranged_pulse_async(order, delay_sec, seg_dur, my_gen)
+	_apply_ranged_pulse_async(order, delay_sec, up_t, down_t, my_gen)
 
-func _apply_ranged_pulse_async(order: StrikeWindupOrder, delay_sec: float, seg_dur: float, gen: int) -> void:
+func _apply_ranged_pulse_async(
+	order: StrikeWindupOrder,
+	delay_sec: float,
+	up_t: float,
+	down_t: float,
+	gen: int
+) -> void:
 	if delay_sec > 0.0:
 		await get_tree().create_timer(delay_sec).timeout
 
@@ -298,39 +305,51 @@ func _apply_ranged_pulse_async(order: StrikeWindupOrder, delay_sec: float, seg_d
 	var base_scale := _get_base_art_scale()
 	var base_pos := _get_base_art_pos()
 
-	var up_scale := Vector2(base_scale.x * 0.94, base_scale.y * 1.08)
-	var recover_t := seg_dur * 0.5
-	var bump_t := seg_dur * 0.5
+	var peak_scale := Vector2(base_scale.x * 0.90, base_scale.y * 1.12)
+	var peak_pos := base_pos + Vector2(0, -8)
 
 	tween_strike = create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-	tween_strike.tween_property(art_parent, "scale", up_scale, bump_t)
-	tween_strike.parallel().tween_property(art_parent, "position", base_pos + Vector2(0, -6), bump_t)
-	tween_strike.tween_property(art_parent, "scale", base_scale, recover_t)
-	tween_strike.parallel().tween_property(art_parent, "position", base_pos, recover_t)
+	tween_strike.tween_property(art_parent, "scale", peak_scale, maxf(up_t, 0.01))
+	tween_strike.parallel().tween_property(art_parent, "position", peak_pos, maxf(up_t, 0.01))
+	tween_strike.tween_property(art_parent, "scale", base_scale, maxf(down_t, 0.01)).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+	tween_strike.parallel().tween_property(art_parent, "position", base_pos, maxf(down_t, 0.01)).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
 
 func _schedule_projectile_spawn(order: StrikeWindupOrder, battle_view: BattleView, gen: int) -> void:
 	var count := maxi(1, order.strike_count)
-	var seg_dur := order.duration / float(count)
+	var launch_times: Array[float] = _get_ranged_launch_times(order.duration, count)
+	var travel_t := 0.3
 
-	for i in range(count):
+	for i in range(launch_times.size()):
 		var strike_targets: Array[int] = order.target_ids
 		if order.attack_info != null and i < order.attack_info.strikes.size():
 			var s := order.attack_info.strikes[i]
 			if s != null and !s.target_ids.is_empty():
 				strike_targets = s.target_ids
 
-		var spawn_t := float(i) * seg_dur + seg_dur * 0.45
-		var travel_t := maxf(seg_dur * 0.55, 0.001)
-
 		_spawn_projectile_async(
 			order,
 			battle_view,
 			gen,
-			spawn_t,
+			launch_times[i],
 			travel_t,
 			i,
 			strike_targets
 		)
+
+func _get_ranged_launch_times(windup_duration: float, count: int) -> Array[float]:
+	var out: Array[float] = []
+
+	var travel_t := 0.3
+	var first_launch := maxf(0.0, windup_duration - travel_t)
+
+	if count <= 1:
+		out.append(first_launch)
+		return out
+
+	for i in range(count):
+		out.append(first_launch + 0.15 * float(i))
+
+	return out
 
 func _spawn_projectile_async(
 	order: StrikeWindupOrder,
@@ -381,16 +400,24 @@ func _spawn_projectile_async(
 func _apply_windup_pose(order: StrikeWindupOrder) -> void:
 	if tween_strike:
 		tween_strike.kill()
+
 	tween_strike = create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-	
-	# drift toward center-ish (cheap): drift depends on facing
+
+	var base_scale := _get_base_art_scale()
+	var base_pos := _get_base_art_pos()
+
 	var drift := order.drift_x
 	var g := get_parent()
 	if g is GroupView and !(g as GroupView).faces_right:
 		drift = -drift
-	
-	tween_strike.tween_property(art_parent, "scale", Vector2(order.x_scale, order.y_scale), order.duration * 0.6)
-	tween_strike.parallel().tween_property(art_parent, "position:x", art_parent.position.x + drift, order.duration * 0.6)
+
+	var windup_scale := Vector2(base_scale.x * 0.88, base_scale.y * 1.16)
+	var windup_pos := base_pos + Vector2(drift, -4)
+
+	var snap_t := maxf(order.duration * 0.42, 0.05)
+
+	tween_strike.tween_property(art_parent, "scale", windup_scale, snap_t)
+	tween_strike.parallel().tween_property(art_parent, "position", windup_pos, snap_t)
 
 func apply_strike_followthrough(order: StrikeFollowthroughOrder) -> void:
 	if tween_strike:
@@ -424,7 +451,7 @@ func _apply_followthrough_pose(order: StrikeFollowthroughOrder) -> void:
 	if tween_strike:
 		tween_strike.kill()
 
-	tween_strike = create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	tween_strike = create_tween()
 
 	var base_scale := _get_base_art_scale()
 	var base_pos := _get_base_art_pos()
@@ -432,9 +459,9 @@ func _apply_followthrough_pose(order: StrikeFollowthroughOrder) -> void:
 	var strike_mult := maxi(1, order.strike_count)
 	var hit_mult := maxi(1, order.total_hit_count)
 
-	var snap_scale_x := order.x_scale + 0.04 * float(strike_mult - 1)
-	var snap_scale_y := order.y_scale - 0.02 * float(strike_mult - 1)
-	var shake := order.shake_px + 1.5 * float(hit_mult - 1)
+	var snap_scale_x := 1.16 + 0.03 * float(strike_mult - 1)
+	var snap_scale_y := 0.84 - 0.02 * float(strike_mult - 1)
+	var shake := 8.0 + 1.5 * float(hit_mult - 1)
 
 	if order.has_lethal_hit:
 		shake += 2.0
@@ -444,26 +471,21 @@ func _apply_followthrough_pose(order: StrikeFollowthroughOrder) -> void:
 		base_scale.y * snap_scale_y
 	)
 
-	var snap_t := maxf(order.duration * float(order.snap_ratio), 0.01)
-	var recover_t := maxf(order.duration - snap_t, 0.01)
+	var snap_t := maxf(order.duration * 0.18, 0.04)
+	var recover_t := maxf(order.duration - snap_t, 0.06)
 
+	tween_strike.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	tween_strike.tween_property(art_parent, "scale", snap_scale, snap_t)
-
 	tween_strike.parallel().tween_property(
 		art_parent,
 		"position",
 		base_pos + Vector2(shake, 0),
-		snap_t * 0.5
-	)
-	tween_strike.tween_property(
-		art_parent,
-		"position",
-		base_pos + Vector2(-shake, 0),
-		snap_t * 0.5
+		snap_t
 	)
 
-	tween_strike.tween_property(art_parent, "scale", base_scale, recover_t).set_ease(Tween.EASE_IN_OUT)
-	tween_strike.parallel().tween_property(art_parent, "position", base_pos, recover_t).set_ease(Tween.EASE_IN_OUT)
+	tween_strike.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)
+	tween_strike.tween_property(art_parent, "scale", base_scale, recover_t)
+	tween_strike.parallel().tween_property(art_parent, "position", base_pos, recover_t)
 
 func clear_strike_pose(duration: float) -> void:
 	if tween_strike:
