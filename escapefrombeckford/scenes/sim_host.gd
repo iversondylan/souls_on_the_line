@@ -230,67 +230,39 @@ func start_group_turn(group_index: int, start_at_player := false, friendly_post_
 		turn_engine.player_end_requested.connect(_on_sim_player_end_requested)
 		turn_engine.pending_view_changed.connect(_on_pending_view_changed)
 
-	# NOTE: starting at player should only occur on the first turn of the battle
-	# but I don't know if this is the right solution
 	if start_at_player:
 		turn_engine.reset_for_new_battle()
 
-	var writer := get_main_writer()
-	if writer != null:
-		writer.set_turn_context(turn_engine._turn_token, group_index, 0)
-		writer.scope_begin(Scope.Kind.GROUP_TURN, "group=%d" % group_index, 0)
-		writer.emit_group_turn_begin(group_index)
-
-	if has_main():
-		main.api.on_group_turn_begin(group_index)
+	if main != null and main.runtime != null:
+		main.runtime.handle_group_turn_started(group_index)
 
 	turn_engine.start_group_turn(group_index, start_at_player, friendly_post_enemy)
 
 func _on_sim_group_turn_ended(gi: int) -> void:
-	if has_main():
-		main.api.on_group_turn_end(gi)
+	if main != null and main.runtime != null:
+		main.runtime.handle_group_turn_ended(gi)
 
-	var writer := get_main_writer()
-	if writer != null:
-		writer.emit_group_turn_end(gi)
-		writer.scope_end() # group_turn
-
-	# --- NEW ROUND SCHEDULING ---
+	# --- ROUND SCHEDULING ---
 	if gi == 0:
-		# Friendly ended. Decide whether we just finished pre or post.
 		var finished_post := (turn_engine != null and turn_engine.ended_friendly_post_enemy)
 
 		if !finished_post:
-			# finished friendly PRE -> go to enemies
 			start_group_turn(1, false)
 		else:
-			# finished friendly POST -> start next round friendly PRE
 			start_group_turn(0, false, false)
 		return
 
-	# gi == 1 (enemy ended) -> go to friendly POST
 	start_group_turn(0, false, true)
 
 func _on_pending_view_changed(active_id: int, pending_ids: PackedInt32Array) -> void:
-	var writer := get_main_writer()
-	if writer == null or turn_engine == null:
+	if main == null or main.runtime == null:
 		return
-
-	# Make sure the writer's context is up-to-date for group/turn.
-	# (It should be, but this is cheap & safe.)
-	writer.set_turn_context(turn_engine._turn_token, turn_engine.active_group_index, int(active_id))
-	writer.emit_turn_status(int(active_id), pending_ids, int(turn_engine.active_group_index))
+	main.runtime.handle_pending_view_changed(active_id, pending_ids)
 
 func _on_sim_player_begin_requested(token: int) -> void:
-	var player_id := turn_engine_host_sim.get_player_id()
-
-	if has_main() and player_id > 0:
-		SimStatusLifecycleRunner.on_actor_turn_begin(main.api, player_id)
-
-	if turn_engine_host_sim != null and sim_host_has_begin_player_turn():
-		_call_sim_begin_player_turn()
-
-	turn_engine.notify_player_begin_done(token)
+	if main == null or main.runtime == null:
+		return
+	main.runtime.handle_player_begin_requested(token)
 
 func request_player_end() -> void:
 	var writer := get_main_writer()
@@ -303,35 +275,9 @@ func hand_discarded() -> void:
 		turn_engine.request_player_end()
 
 func _on_sim_player_end_requested(token: int) -> void:
-	# 1) end-of-player bookkeeping (discard, etc.)
-	if turn_engine_host_sim != null and sim_host_has_end_player_turn():
-		_call_sim_end_player_turn()
-
-	# 2) END_OF_TURN arcana occurs at player-end resolution
-	var player_id := turn_engine_host_sim.get_player_id()
-	turn_engine.request_end_of_turn_arcana(func():
-		# IMPORTANT ordering:
-		# - First satisfy the player_end token handshake
-		turn_engine.notify_player_end_done(token)
-
-		# - Then end the actor turn (this advances the queue / group)
-		#   Also closes the actor scope in the event writer.
-		if has_main():
-			SimStatusLifecycleRunner.on_actor_turn_end(main.api, player_id)
-			if main.checkpoint_processor != null:
-				main.checkpoint_processor.flush(CheckpointProcessor.Kind.AFTER_ACTOR_TURN, main, true)
-		sim_notify_actor_done(player_id)
-	)
-
-func sim_notify_actor_done(cid: int) -> void:
-	var writer := get_main_writer()
-	if writer != null:
-		writer.emit_actor_end(cid)
-		writer.scope_end() # actor_turn
-
-	if turn_engine != null:
-		turn_engine.notify_actor_done(cid)
-
+	if main == null or main.runtime == null:
+		return
+	main.runtime.handle_player_end_requested(token)
 
 # -------------------------
 # Player turn bridge hooks
@@ -370,25 +316,9 @@ func _on_sim_actor_requested(cid: int) -> void:
 	main.runtime.handle_actor_requested(cid)
 
 func _on_sim_arcana_proc_requested(proc: int, token: int) -> void:
-	var writer := get_main_writer()
-	if writer != null:
-		writer.scope_begin(Scope.Kind.ARCANA, "proc=%d" % int(proc), 0)
-		writer.emit_arcana_proc(proc)
-
-	if arcana_resolver == null:
-		if arcana_catalog == null:
-			push_warning("SimHost: no arcana_catalog; cannot run arcana")
-		else:
-			arcana_resolver = ArcanaResolver.new(self, arcana_catalog)
-
-	if main != null and main.resolver != null and arcana_resolver != null:
-		main.resolver.resolve_arcana_proc(main, proc, arcana_resolver)
-
-	if writer != null:
-		writer.scope_end() # arcana
-
-	if turn_engine != null:
-		turn_engine.notify_arcana_proc_done(token)
+	if main == null or main.runtime == null:
+		return
+	main.runtime.handle_arcana_proc_requested(proc, token)
 
 func _proc_to_arcanum_type(proc: int) -> int:
 	match proc:

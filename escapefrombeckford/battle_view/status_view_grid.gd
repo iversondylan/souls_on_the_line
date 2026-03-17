@@ -128,6 +128,8 @@ func _remove_display(id: StringName, duration: float) -> void:
 	if !_displays_by_id.has(id):
 		return
 	var d: StatusDisplay = _displays_by_id[id]
+	d.duration.text = "0"
+	d.stacks.text = "0"
 	_displays_by_id.erase(id)
 
 	if d == null or !is_instance_valid(d):
