@@ -23,9 +23,12 @@ func start_group_turn(group_index: int, start_at_player := false, friendly_post_
 	host.start_group_turn(group_index, start_at_player, friendly_post_enemy)
 
 func request_player_end() -> void:
-	if host == null or host.turn_engine == null:
+	if sim == null or sim.api == null:
 		return
-	host.turn_engine.request_player_end()
+
+	var writer := sim.api.writer
+	if writer != null:
+		writer.emit_end_turn_pressed(sim.api.get_player_id())
 
 func add_combatant_from_data(data: CombatantData, group_index: int, insert_index: int = -1, is_player := false) -> int:
 	if sim == null or sim.api == null:

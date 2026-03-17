@@ -1,6 +1,34 @@
-# turn_engine_core.gd
+# turn_engine_coree.gd
 
 class_name TurnEngineCore extends RefCounted
+
+# ============================================================================
+# TurnEngineCore (SIM only)
+# ----------------------------------------------------------------------------
+# Responsibilities:
+# - own intra-group actor queueing
+# - request player begin / player end handshakes
+# - request arcana timing hooks
+# - emit actor_requested / group_turn_ended / pending_view_changed
+#
+# Friendly phase semantics in THIS FILE:
+# - POST-Player Friendlies:
+#		player, then friendlies behind player
+# - PRE-Player Friendlies:
+#		friendlies in front of player
+#
+# Compatibility note:
+# - The existing external flag name `friendly_post_enemy` is preserved so other
+#	scripts do not break.
+# - But semantically:
+#		friendly_post_enemy == false -> POST-Player Friendlies
+#		friendly_post_enemy == true	-> PRE-Player Friendlies
+# ============================================================================
+
+
+# -------------------------
+# Signals
+# -------------------------
 
 signal actor_requested(combat_id: int)
 signal group_turn_ended(group_index: int)
@@ -10,23 +38,42 @@ signal pending_view_changed(active_id: int, pending_ids: PackedInt32Array)
 signal player_begin_requested(token: int)
 signal player_end_requested(token: int)
 
-var _waiting_for_player_begin: bool = false
-var _waiting_for_player_end: bool = false
-var _player_token: int = 0
 
-var _resume_after_player_begin: Callable = Callable()
-var _resume_after_player_end: Callable = Callable()
+# -------------------------
+# Enums
+# -------------------------
 
-enum Phase { IDLE, ACTOR_START, WAITING_FOR_ACTION, ACTOR_END }
-enum ArcanaProc { START_OF_COMBAT, START_OF_TURN, END_OF_TURN }
+enum Phase {
+	IDLE,
+	ACTOR_START,
+	WAITING_FOR_ACTION,
+	ACTOR_END,
+}
 
-var _waiting_for_arcana: bool = false
-var _arcana_token: int = 0
-var _resume_after_arcana: Callable = Callable()
+enum ArcanaProc {
+	START_OF_COMBAT,
+	START_OF_TURN,
+	END_OF_TURN,
+}
+
+
+# -------------------------
+# Constants
+# -------------------------
 
 const MAX_TURNS_PER_FIGHTER_PER_GROUP_TURN := 3
 
+
+# -------------------------
+# External host
+# -------------------------
+
 var host: TurnEngineHostSim
+
+
+# -------------------------
+# Runtime state
+# -------------------------
 
 var active_group_index: int = -1
 var current_actor_id: int = 0
@@ -38,25 +85,77 @@ var _queue: PackedInt32Array = PackedInt32Array()
 var _turns_taken: Dictionary = {}		# int combat_id -> int
 var _restore_allowed: Dictionary = {}	# int combat_id -> bool
 var _queue_dirty: bool = false
+
 var _start_at_player: bool = false
 var _player_id: int = 0
 var _cursor_cid: int = 0
+
 var _player_start_of_turn_fired: bool = false
 var _start_of_combat_fired: bool = false
+
+# Compatibility name retained.
+# Semantic translation:
+#	false -> POST-Player Friendlies
+#	true	-> PRE-Player Friendlies
 var _friendly_post_enemy: bool = false
+
+# Used externally by scheduling code after a friendly group turn ends.
+# Meaning:
+#	true  -> the just-finished friendly phase was PRE-Player Friendlies
+#	false -> otherwise
 var ended_friendly_post_enemy: bool = false
 
+
+# -------------------------
+# Player handshake state
+# -------------------------
+
+var _waiting_for_player_begin: bool = false
+var _waiting_for_player_end: bool = false
+var _player_token: int = 0
+
+var _resume_after_player_begin: Callable = Callable()
+var _resume_after_player_end: Callable = Callable()
+
+
+# -------------------------
+# Arcana handshake state
+# -------------------------
+
+var _waiting_for_arcana: bool = false
+var _arcana_token: int = 0
+var _resume_after_arcana: Callable = Callable()
+
+
+# -------------------------
+# Debug
+# -------------------------
+
 var dbg := false
+
+
+# ============================================================================
+# Init
+# ============================================================================
 
 func _init(_host: TurnEngineHostSim) -> void:
 	host = _host
 
-func start_group_turn(group_index: int, start_at_player := false, friendly_post_enemy := false) -> void:
-	if dbg: print("turn_engine_core.gd start_group_turn() group=%s start_at_player=%s post_enemy=%s" % [group_index, start_at_player, friendly_post_enemy])
 
-	active_group_index = group_index
-	_start_at_player = start_at_player
-	_friendly_post_enemy = friendly_post_enemy
+# ============================================================================
+# Public API
+# ============================================================================
+
+func start_group_turn(group_index: int, start_at_player := false, friendly_post_enemy := false) -> void:
+	if dbg:
+		print(
+			"TurnEngineCore.start_group_turn() group=%s start_at_player=%s pre_player_friendlies=%s"
+			% [group_index, start_at_player, friendly_post_enemy]
+		)
+
+	active_group_index = int(group_index)
+	_start_at_player = bool(start_at_player)
+	_friendly_post_enemy = bool(friendly_post_enemy)
 	ended_friendly_post_enemy = false
 
 	_turn_token += 1
@@ -75,7 +174,7 @@ func start_group_turn(group_index: int, start_at_player := false, friendly_post_
 		_player_id = host.get_player_id()
 		_player_start_of_turn_fired = false
 
-		# Only once per fight
+		# Only once per battle, and only when explicitly starting at player.
 		if _start_at_player and !_start_of_combat_fired:
 			_start_of_combat_fired = true
 			_request_arcana(ArcanaProc.START_OF_COMBAT, func():
@@ -85,52 +184,27 @@ func start_group_turn(group_index: int, start_at_player := false, friendly_post_
 
 	_advance_to_next_actor()
 
-#func start_group_turn(group_index: int, start_at_player := false) -> void:
-	#if dbg: print("turn_engine_core.gd start_group_turn() group index: %s, " % [group_index])
-	#active_group_index = group_index
-	#_start_at_player = start_at_player
-	#_turn_token += 1
-#
-	#phase = Phase.IDLE
-	#current_actor_id = 0
-	#_running_actor = false
-#
-	#_queue = PackedInt32Array()
-	#_turns_taken.clear()
-	#_restore_allowed.clear()
-	#_queue_dirty = true
-	#_cursor_cid = 0
-#
-	#if active_group_index == 0:
-		#_player_id = host.get_player_id()
-		#_player_start_of_turn_fired = false
-#
-		## Only once per fight
-		#if _start_at_player and !_start_of_combat_fired:
-			#_start_of_combat_fired = true
-			#_request_arcana(ArcanaProc.START_OF_COMBAT, func():
-				#_advance_to_next_actor()
-			#)
-			#return
-#
-	#_advance_to_next_actor()
 
 func notify_actor_done(combat_id: int) -> void:
-	if dbg: print("turn_engine_core.gd notify_actor_done() cid: %s" % [combat_id])
-	if combat_id != current_actor_id:
+	if dbg:
+		print("TurnEngineCore.notify_actor_done() cid=%s current=%s" % [combat_id, current_actor_id])
+
+	if int(combat_id) != current_actor_id:
 		return
 
 	_running_actor = false
-	_mark_turn_taken(combat_id)
-	_restore_allowed.erase(combat_id)
+	_mark_turn_taken(int(combat_id))
+	_restore_allowed.erase(int(combat_id))
 	_queue_dirty = true
 	phase = Phase.IDLE
 	_advance_to_next_actor()
 
+
 func notify_actor_removed(combat_id: int) -> void:
-	#print("TE notify_actor_removed cid=", combat_id, " current=", current_actor_id, " running=", _running_actor)
-	if dbg: print("turn_engine_core.gd notify_actor_removed() cid: %s" % [combat_id])
-	if combat_id == current_actor_id:
+	if dbg:
+		print("TurnEngineCore.notify_actor_removed() cid=%s current=%s" % [combat_id, current_actor_id])
+
+	if int(combat_id) == current_actor_id:
 		current_actor_id = 0
 		phase = Phase.IDLE
 		_queue_dirty = true
@@ -139,16 +213,22 @@ func notify_actor_removed(combat_id: int) -> void:
 	else:
 		_queue_dirty = true
 
+
 func notify_summon_added(combat_id: int, group_index: int) -> void:
-	if dbg: print("turn_engine_core.gd notify_summon_added() cid: group_idx: %s" % [combat_id, group_index])
-	if group_index != active_group_index:
+	if dbg:
+		print("TurnEngineCore.notify_summon_added() cid=%s group=%s" % [combat_id, group_index])
+
+	if int(group_index) != active_group_index:
 		return
+
 	_queue_dirty = true
 	_publish_pending_view()
 
+
 func notify_move_executed(ctx) -> void:
-	if dbg: print("turn_engine_core.gd notify_move_executed()")
-	# ctx should be "data only": actor_id, target_id, can_restore_turn, before_order_ids, after_order_ids
+	if dbg:
+		print("TurnEngineCore.notify_move_executed()")
+
 	if ctx == null or !ctx.can_restore_turn:
 		return
 	if active_group_index < 0:
@@ -156,7 +236,7 @@ func notify_move_executed(ctx) -> void:
 	if current_actor_id <= 0:
 		return
 
-	# Only consider if the move affects the active group
+	# Only consider moves that affect the active group.
 	if host.get_group_index_of(current_actor_id) != active_group_index:
 		return
 
@@ -164,37 +244,130 @@ func notify_move_executed(ctx) -> void:
 		return
 
 	var anchor_id := current_actor_id
-	var before_anchor : int = ctx.before_order_ids.find(anchor_id)
-	var after_anchor : int = ctx.after_order_ids.find(anchor_id)
+	var before_anchor: int = ctx.before_order_ids.find(anchor_id)
+	var after_anchor: int = ctx.after_order_ids.find(anchor_id)
+
 	if before_anchor == -1 or after_anchor == -1:
 		return
 
 	var granted := false
+
 	if _crossed_behind(int(ctx.actor_id), ctx, before_anchor, after_anchor):
 		_restore_allowed[int(ctx.actor_id)] = true
 		granted = true
+
 	if _crossed_behind(int(ctx.target_id), ctx, before_anchor, after_anchor):
 		_restore_allowed[int(ctx.target_id)] = true
 		granted = true
 
 	if granted:
 		_queue_dirty = true
+
 	_publish_pending_view()
 
-func _crossed_behind(cid: int, ctx, before_anchor: int, after_anchor: int) -> bool:
-	if dbg: print("turn_engine_core.gd _crossed_behind(")
-	if cid <= 0:
-		return false
-	var b : int = ctx.before_order_ids.find(cid)
-	var a : int = ctx.after_order_ids.find(cid)
-	if b == -1 or a == -1:
-		return false
-	return (b <= before_anchor) and (a > after_anchor)
+
+func request_player_end() -> void:
+	if dbg:
+		print("TurnEngineCore.request_player_end()")
+
+	# Safety: only valid during the player's actor turn.
+	if active_group_index != 0:
+		return
+	if !host.is_player(current_actor_id):
+		return
+
+	_request_player_end(func():
+		pass
+	)
+
+
+func notify_player_begin_done(token: int) -> void:
+	if dbg:
+		print("TurnEngineCore.notify_player_begin_done() token=%s" % token)
+
+	if !_waiting_for_player_begin:
+		return
+	if int(token) != _player_token:
+		return
+
+	_waiting_for_player_begin = false
+
+	var resume := _resume_after_player_begin
+	_resume_after_player_begin = Callable()
+
+	if !resume.is_null():
+		resume.call()
+
+
+func notify_player_end_done(token: int) -> void:
+	if dbg:
+		print("TurnEngineCore.notify_player_end_done() token=%s" % token)
+
+	if !_waiting_for_player_end:
+		return
+	if int(token) != _player_token:
+		return
+
+	_waiting_for_player_end = false
+
+	var resume := _resume_after_player_end
+	_resume_after_player_end = Callable()
+
+	if !resume.is_null():
+		resume.call()
+
+
+func notify_arcana_proc_done(token: int) -> void:
+	if dbg:
+		print("TurnEngineCore.notify_arcana_proc_done() token=%s" % token)
+
+	if !_waiting_for_arcana:
+		return
+	if int(token) != _arcana_token:
+		return
+
+	_waiting_for_arcana = false
+	_arcana_token = 0
+
+	var resume := _resume_after_arcana
+	_resume_after_arcana = Callable()
+
+	if !resume.is_null():
+		resume.call()
+
+
+func request_end_of_turn_arcana(resume: Callable) -> void:
+	_request_arcana(ArcanaProc.END_OF_TURN, resume)
+
+
+func reset_for_new_battle() -> void:
+	_start_of_combat_fired = false
+	_player_start_of_turn_fired = false
+
+	_waiting_for_arcana = false
+	_arcana_token = 0
+	_resume_after_arcana = Callable()
+
+	_waiting_for_player_begin = false
+	_waiting_for_player_end = false
+	_player_token = 0
+	_resume_after_player_begin = Callable()
+	_resume_after_player_end = Callable()
+
+	_reset()
+
+
+# ============================================================================
+# Core progression
+# ============================================================================
 
 func _advance_to_next_actor() -> void:
-	if dbg: print("turn_engine_core.gd _advance_to_next_actor()")
+	if dbg:
+		print("TurnEngineCore._advance_to_next_actor()")
+
 	if _running_actor:
 		return
+
 	if active_group_index < 0:
 		_reset()
 		return
@@ -207,151 +380,88 @@ func _advance_to_next_actor() -> void:
 		return
 
 	var actor_id := int(_queue[0])
+
 	if !host.is_alive(actor_id):
 		_queue.remove_at(0)
 		_queue_dirty = true
 		_advance_to_next_actor()
 		return
 
-	# PLAYER SPECIAL CASE
+	# Player special case:
+	# On POST-Player Friendly phase, first hit player_begin, then START_OF_TURN arcana,
+	# then continue into actor request.
 	if active_group_index == 0 and host.is_player(actor_id):
 		if !_player_start_of_turn_fired:
 			_player_start_of_turn_fired = true
 			_request_player_begin(func():
 				_request_arcana(ArcanaProc.START_OF_TURN, func():
 					_advance_to_next_actor()
-				))
+				)
+			)
 			return
-
-		# If already fired, fall through and request actor like normal.
 
 	current_actor_id = actor_id
 	_running_actor = true
 	_cursor_cid = actor_id
+	phase = Phase.ACTOR_START
+
 	_publish_pending_view()
 	actor_requested.emit(actor_id)
 
-func _request_player_begin(resume: Callable) -> void:
-	if dbg: print("turn_engine_core.gd _request_player_begin()")
-	if _waiting_for_player_begin:
-		return
-	_waiting_for_player_begin = true
-	_player_token += 1
-	_resume_after_player_begin = resume
-	player_begin_requested.emit(_player_token)
 
-func notify_player_begin_done(token: int) -> void:
-	if dbg: print("turn_engine_core.gd notify_player_begin_done()")
-	if !_waiting_for_player_begin:
-		return
-	if token != _player_token:
-		return
-	_waiting_for_player_begin = false
-	var resume := _resume_after_player_begin
-	_resume_after_player_begin = Callable()
-	if !resume.is_null():
-		resume.call()
+func _end_group_turn() -> void:
+	var ended_group := active_group_index
 
-func _request_player_end(resume: Callable) -> void:
-	if dbg: print("turn_engine_core.gd _request_player_end()")
+	if ended_group == 0:
+		ended_friendly_post_enemy = _is_pre_player_friendlies()
+	else:
+		ended_friendly_post_enemy = false
 
-	# If you want to be strict, warn instead of silently returning.
-	if _waiting_for_player_end:
-		push_warning("TurnEngineCore: player_end already pending; ignoring request")
-		return
+	_reset()
+	group_turn_ended.emit(ended_group)
 
-	_waiting_for_player_end = true
-	_player_token += 1
-	_resume_after_player_end = resume
-	player_end_requested.emit(_player_token)
-
-func request_player_end() -> void:
-	if dbg: print("turn_engine_core.gd request_player_end()")
-	# Only valid if the current actor is the player (safety)
-	if active_group_index != 0:
-		return
-	if !host.is_player(current_actor_id):
-		return
-
-	_request_player_end(func():
-		# After Battle finishes end_player_turn_async and calls notify_player_end_done(token),
-		# the engine's resume will run (whatever you set there).
-		pass
-	)
-
-func notify_player_end_done(token: int) -> void:
-	if dbg: print("turn_engine_core.gd notify_player_end_done()")
-
-	if !_waiting_for_player_end:
-		return
-	if token != _player_token:
-		return
-
-	_waiting_for_player_end = false
-	var resume := _resume_after_player_end
-	_resume_after_player_end = Callable()
-	if !resume.is_null():
-		resume.call()
 
 func _reset() -> void:
-	if dbg: print("turn_engine_core.gd _reset()")
+	if dbg:
+		print("TurnEngineCore._reset()")
+
 	active_group_index = -1
 	current_actor_id = 0
 	phase = Phase.IDLE
+
 	_queue = PackedInt32Array()
 	_turns_taken.clear()
 	_restore_allowed.clear()
 	_queue_dirty = false
+
 	_cursor_cid = 0
+	_running_actor = false
 
-func _end_group_turn() -> void:
-	var idx := active_group_index
-	if idx == 0:
-		ended_friendly_post_enemy = _friendly_post_enemy
-	else:
-		ended_friendly_post_enemy = false
-	_reset()
-	group_turn_ended.emit(idx)
 
-func _mark_turn_taken(combat_id: int) -> void:
-	if dbg: print("turn_engine_core.gd _mark_turn_taken()")
-	var n := int(_turns_taken.get(combat_id, 0))
-	_turns_taken[combat_id] = n + 1
-
-func _turns_left(combat_id: int) -> int:
-	#print("turn_engine_core.gd _turns_left()")
-	if !host.is_alive(combat_id):
-		return 0
-	if active_group_index == 0 and host.is_player(combat_id):
-		return 1 - int(_turns_taken.get(combat_id, 0))
-	return MAX_TURNS_PER_FIGHTER_PER_GROUP_TURN - int(_turns_taken.get(combat_id, 0))
-
-func _call_hook(h: Callable) -> Signal:
-	if h.is_null():
-		return Signal()
-	var r = h.call()
-	if r is Signal and !(r as Signal).is_null():
-		return r
-	# If you ever return a GDScriptFunctionState in 4.6, you can keep your class-name check here too.
-	return Signal()
+# ============================================================================
+# Queue construction
+# ============================================================================
 
 func _rebuild_queue() -> void:
-	if dbg: print("turn_engine_core.gd _rebuild_queue()")
+	if dbg:
+		print("TurnEngineCore._rebuild_queue()")
+
 	_queue_dirty = false
 	_queue = PackedInt32Array()
 
 	var desired := _get_desired_order_ids(active_group_index)
 
-	# Normal pass
+	# Normal pass.
 	for cid in desired:
 		var id := int(cid)
+
 		if !host.is_alive(id):
 			continue
-
 		if _turns_left(id) <= 0:
 			continue
 
 		var taken := int(_turns_taken.get(id, 0))
+
 		if taken == 0:
 			_queue.append(id)
 		else:
@@ -361,9 +471,10 @@ func _rebuild_queue() -> void:
 				_queue.append(id)
 				_restore_allowed.erase(id)
 
-	# Restore pass (no lookups needed; ids already known)
+	# Restore pass for any remaining granted restores.
 	for k in _restore_allowed.keys():
 		var id := int(k)
+
 		if !host.is_alive(id):
 			continue
 		if host.get_group_index_of(id) != active_group_index:
@@ -375,15 +486,16 @@ func _rebuild_queue() -> void:
 		if !_queue.has(id):
 			_queue.append(id)
 
-func _get_desired_order_ids(group_index: int) -> PackedInt32Array:
-	if dbg: print("turn_engine_core.gd _get_desired_order_ids()")
-	var order := host.get_group_order_ids(group_index)
-	#print("TE _get_desired_order_ids group=", group_index, " raw_order=", order, " cursor=", _cursor_cid, " player_id=", _player_id)
 
+func _get_desired_order_ids(group_index: int) -> PackedInt32Array:
+	if dbg:
+		print("TurnEngineCore._get_desired_order_ids() group=%s" % group_index)
+
+	var order := host.get_group_order_ids(group_index)
 	if order.is_empty():
 		return PackedInt32Array()
 
-	# Friendly: player + everyone behind
+	# Friendly phases are partitioned around the player.
 	if group_index == 0:
 		var p := _player_id
 		if p == 0:
@@ -396,18 +508,23 @@ func _get_desired_order_ids(group_index: int) -> PackedInt32Array:
 
 		var out := PackedInt32Array()
 
-		if !_friendly_post_enemy:
+		if _is_post_player_friendlies():
+			# POST-Player Friendlies:
+			# player, then everyone behind the player
 			out.append(p)
 			for i in range(player_idx + 1, order.size()):
 				out.append(order[i])
 			return out
 
-		# Post-enemy: everyone in front of player
+		# PRE-Player Friendlies:
+		# everyone in front of the player
 		for i in range(0, player_idx):
 			out.append(order[i])
 		return out
 
-	# Enemy: optionally cursor-based (ID-based)
+	# Enemy phase:
+	# walk forward from the cursor so re-entry after completed actions/moves
+	# remains stable.
 	var start_idx := 0
 	if _cursor_cid != 0:
 		var idx := order.find(_cursor_cid)
@@ -417,11 +534,13 @@ func _get_desired_order_ids(group_index: int) -> PackedInt32Array:
 	var out := PackedInt32Array()
 	for i in range(start_idx, order.size()):
 		out.append(order[i])
+
 	return out
 
+
 func _publish_pending_view() -> void:
-	#print("turn_engine_core.gd _publish_pending_view")
 	var active_id := 0
+
 	if _running_actor and current_actor_id > 0:
 		active_id = current_actor_id
 	elif !_queue.is_empty():
@@ -430,7 +549,6 @@ func _publish_pending_view() -> void:
 	var pending := PackedInt32Array()
 
 	if active_id == 0:
-		# best effort: show queue
 		pending = _queue.duplicate()
 	else:
 		var desired := _get_desired_order_ids(active_group_index)
@@ -439,6 +557,7 @@ func _publish_pending_view() -> void:
 
 		for i in range(start_i, desired.size()):
 			var id := int(desired[i])
+
 			if !host.is_alive(id):
 				continue
 			if _turns_left(id) <= 0:
@@ -452,44 +571,115 @@ func _publish_pending_view() -> void:
 					continue
 				if bool(_restore_allowed.get(id, false)):
 					pending.append(id)
-	#print("turn_engine_core.gd _publish_pending_view about to emit pending_view_changed")
+
 	pending_view_changed.emit(active_id, pending)
 
-func notify_arcana_proc_done(token: int) -> void:
-	if dbg: print("turn_engine_core.gd notify_arcana_proc_done()")
-	if !_waiting_for_arcana:
+
+# ============================================================================
+# Turn accounting
+# ============================================================================
+
+func _mark_turn_taken(combat_id: int) -> void:
+	var n := int(_turns_taken.get(combat_id, 0))
+	_turns_taken[combat_id] = n + 1
+
+
+func _turns_left(combat_id: int) -> int:
+	if !host.is_alive(combat_id):
+		return 0
+
+	if active_group_index == 0 and host.is_player(combat_id):
+		return 1 - int(_turns_taken.get(combat_id, 0))
+
+	return MAX_TURNS_PER_FIGHTER_PER_GROUP_TURN - int(_turns_taken.get(combat_id, 0))
+
+
+# ============================================================================
+# Restore-turn move support
+# ============================================================================
+
+func _crossed_behind(cid: int, ctx, before_anchor: int, after_anchor: int) -> bool:
+	if cid <= 0:
+		return false
+
+	var b: int = ctx.before_order_ids.find(cid)
+	var a: int = ctx.after_order_ids.find(cid)
+
+	if b == -1 or a == -1:
+		return false
+
+	return (b <= before_anchor) and (a > after_anchor)
+
+
+# ============================================================================
+# Handshake requests
+# ============================================================================
+
+func _request_player_begin(resume: Callable) -> void:
+	if dbg:
+		print("TurnEngineCore._request_player_begin()")
+
+	if _waiting_for_player_begin:
 		return
-	if token != _arcana_token:
+
+	_waiting_for_player_begin = true
+	_player_token += 1
+	_resume_after_player_begin = resume
+	player_begin_requested.emit(_player_token)
+
+
+func _request_player_end(resume: Callable) -> void:
+	if dbg:
+		print("TurnEngineCore._request_player_end()")
+
+	if _waiting_for_player_end:
+		push_warning("TurnEngineCore: player_end already pending; ignoring request")
 		return
-	_waiting_for_arcana = false
-	_arcana_token = 0
-	var resume := _resume_after_arcana
-	_resume_after_arcana = Callable()
-	if !resume.is_null():
-		resume.call()
+
+	_waiting_for_player_end = true
+	_player_token += 1
+	_resume_after_player_end = resume
+	player_end_requested.emit(_player_token)
+
 
 func _request_arcana(proc: int, resume: Callable) -> void:
-	if dbg: print("turn_engine_core.gd _request_arcana(), proc: %s" % [ArcanaProc.keys()[proc]])
+	if dbg:
+		print("TurnEngineCore._request_arcana() proc=%s" % ArcanaProc.keys()[proc])
+
 	if _waiting_for_arcana:
-		push_error("_request_arcana _waiting_for_arcana")
-		return # or push/queue, but "return" is fine while you debug
+		push_error("TurnEngineCore: arcana request while another arcana request is pending")
+		return
+
 	_waiting_for_arcana = true
 	_arcana_token += 1
 	_resume_after_arcana = resume
 	arcana_proc_requested.emit(proc, _arcana_token)
 
-func request_end_of_turn_arcana(resume: Callable) -> void:
-	_request_arcana(ArcanaProc.END_OF_TURN, resume)
 
-func reset_for_new_battle() -> void:
-	_start_of_combat_fired = false
-	_player_start_of_turn_fired = false
-	_waiting_for_arcana = false
-	_arcana_token = 0
-	_resume_after_arcana = Callable()
-	_reset()
+# ============================================================================
+# Semantic helpers
+# ============================================================================
 
-#func allow_restore_turn(combat_id: int) -> void:
-	#_restore_allowed[combat_id] = true
-	#_queue_dirty = true
-	#_publish_pending_view()
+func _is_pre_player_friendlies() -> bool:
+	# Compatibility mapping:
+	# old name "friendly_post_enemy" now semantically means PRE-Player Friendlies
+	return _friendly_post_enemy
+
+
+func _is_post_player_friendlies() -> bool:
+	return !_friendly_post_enemy
+
+
+# ============================================================================
+# Legacy utility kept for compatibility
+# ============================================================================
+
+func _call_hook(h: Callable) -> Signal:
+	if h.is_null():
+		return Signal()
+
+	var r = h.call()
+	if r is Signal and !(r as Signal).is_null():
+		return r
+
+	return Signal()

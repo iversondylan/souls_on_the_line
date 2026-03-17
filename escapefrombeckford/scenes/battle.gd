@@ -102,8 +102,6 @@ func initialize_card_pile_ui() -> void:
 	discard_pile_view.deck = deck
 
 func start_battle() -> void:
-	# Seeds: take them from wherever you're currently authoring them.
-	# If you still store them in Run/BattleData, swap these lines accordingly.
 	var battle_seed := 0
 	var run_seed := 0
 	if run != null:
@@ -111,33 +109,30 @@ func start_battle() -> void:
 			battle_seed = int(run.battle_seed)
 		if "run_seed" in run:
 			run_seed = int(run.run_seed)
-	
+
 	sim_host.init_from_seeds(battle_seed, run_seed)
-	
-	# ids are the .get_id()'s of currently owned arcana
 	sim_host.seed_arcana_from_ids(my_arcana)
-	
-	# VIEW follows event log playback
+
 	battle_view.bind_log(sim_host.get_event_log())
 	battle_view.start_playback()
-	
+
 	sim_host.start_setup()
-	
+
 	wait_for_anims = true
-	
+
 	_spawn_from_battle_data()
-	
+
 	hand.empty_hand()
 	deck.reset()
 	deck.make_draw_pile()
 	MusicPlayer.play(music, true)
 	initialize_card_pile_ui()
-	
-	# NOTE: "Huge success."
-	# SIM is authoritative; VIEW follows BattleEventLog playback.
-	# Live Fighters are out of the loop (RIP).
+
 	sim_host.end_setup()
-	sim_host.start_group_turn(0, true)
+
+	var runtime := sim_host.get_main_runtime()
+	if runtime != null:
+		runtime.start_group_turn(0, true)
 
 func _spawn_from_battle_data() -> void:
 	if player_data != null:
@@ -162,7 +157,6 @@ func _on_end_turn_pressed() -> void:
 	Events.end_turn_button_pressed.emit()
 
 func _on_end_turn_button_pressed() -> void:
-	# UI pressed End Turn; drive SIM.
 	if wait_for_anims:
 		return
 	if !_player_end_turn_armed:
@@ -170,16 +164,16 @@ func _on_end_turn_button_pressed() -> void:
 
 	_arm_end_turn_button(false)
 
-	# Hand discard is a UX animation; notify SIM when it's done.
 	if !Events.hand_discarded.is_connected(_on_hand_discarded_one_shot):
 		Events.hand_discarded.connect(_on_hand_discarded_one_shot, CONNECT_ONE_SHOT)
 
-	# Ask SIM to end the player's turn (TurnEngineCore lives in SimHost now).
-	sim_host.request_player_end_main()
+	var runtime := sim_host.get_main_runtime()
+	if runtime != null:
+		runtime.request_player_end()
 
 func _on_hand_discarded_one_shot() -> void:
 	# Your SimHost already has the hook (per your earlier code)
-	sim_host.hand_discarded()
+	sim_host.notify_player_discard_animation_finished()
 
 func _on_hand_done_drawing() -> void:
 	wait_for_anims = false

@@ -44,6 +44,10 @@ func get_main_writer() -> BattleEventWriter:
 		return null
 	return main.api.writer
 
+func get_main_runtime() -> SimRuntime:
+	if main == null:
+		return null
+	return main.runtime
 
 # -------------------------
 # Structural wiring
@@ -253,14 +257,7 @@ func _on_sim_player_begin_requested(token: int) -> void:
 		return
 	main.runtime.handle_player_begin_requested(token)
 
-# This request is Battle-facing because it responds to button press
-func request_player_end_main() -> void:
-	var writer := get_main_writer()
-	if writer == null or !has_main():
-		return
-	writer.emit_end_turn_pressed(main.api.get_player_id())
-
-func hand_discarded() -> void:
+func notify_player_discard_animation_finished() -> void:
 	if turn_engine != null:
 		turn_engine.request_player_end()
 
