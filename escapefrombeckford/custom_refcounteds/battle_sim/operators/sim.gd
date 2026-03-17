@@ -1,4 +1,5 @@
 # sim.gd
+
 class_name Sim extends RefCounted
 
 var state: BattleState
@@ -6,6 +7,7 @@ var api: SimBattleAPI
 var intent_planner: IntentPlanner
 var checkpoint_processor: CheckpointProcessor
 var resolver: Resolver
+var runtime: SimRuntime
 
 var status_catalog: StatusCatalog
 var arcana_catalog: ArcanaCatalog
@@ -48,6 +50,7 @@ func _init_services() -> void:
 	checkpoint_processor = CheckpointProcessor.new()
 	api.checkpoint_processor = checkpoint_processor
 	resolver = Resolver.new()
+	runtime = SimRuntime.new(self, null)
 
 
 func clone_for_preview() -> Sim:

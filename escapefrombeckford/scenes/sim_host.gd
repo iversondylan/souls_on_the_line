@@ -66,6 +66,9 @@ func _set_main(new_sim: Sim) -> void:
 	if main.api:
 		main.api.status_catalog = status_catalog
 
+	if main.runtime != null:
+		main.runtime.bind(main, self)
+
 func _set_status_catalog(catalog: StatusCatalog) -> void:
 	status_catalog = catalog
 
@@ -115,6 +118,9 @@ func init_from_seeds(battle_seed: int, run_seed: int) -> void:
 	main.is_preview = false
 	main.init_from_seeds(int(battle_seed), int(run_seed))
 
+	if main.runtime != null:
+		main.runtime.bind(main, self)
+
 	var scopes := BattleScopeManager.new()
 	scopes.reset()
 	main.api.scopes = scopes
@@ -128,13 +134,9 @@ func init_from_seeds(battle_seed: int, run_seed: int) -> void:
 	main.api.on_summoned = func(summoned_id: int, group_index: int) -> void:
 		if turn_engine != null:
 			turn_engine.notify_summon_added(int(summoned_id), int(group_index))
-
 	main.api.on_unit_removed = func(cid: int, group_index: int, reason: String) -> void:
 		if turn_engine != null:
 			turn_engine.notify_actor_removed(int(cid))
-			# optional: you can also force a pending publish immediately
-			# turn_engine._publish_pending_view()  # if you expose a method; otherwise let notify_actor_removed handle it
-
 	main_state_initialized.emit()
 
 func ensure_initialized() -> void:
@@ -363,34 +365,9 @@ func _call_sim_end_player_turn() -> void:
 # -------------------------
 
 func _on_sim_actor_requested(cid: int) -> void:
-	var writer := get_main_writer()
-	if writer != null and turn_engine != null:
-		writer.set_turn_context(turn_engine._turn_token, turn_engine.active_group_index, cid)
-		writer.scope_begin(Scope.Kind.ACTOR_TURN, "actor=%d" % cid, cid)
-		writer.emit_actor_begin(cid)
-
-	if has_main():
-		SimStatusLifecycleRunner.on_actor_turn_begin(main.api, cid)
-
-	if is_player(cid):
-		if writer != null:
-			writer.emit_player_input_reached(int(cid))
-		player_input_reached.emit()
+	if main == null or main.runtime == null:
 		return
-
-	# NPC SIM turn (sync)
-	if main != null and main.resolver != null:
-		main.resolver.resolve_npc_turn(main, cid)
-
-	if writer != null:
-		writer.emit_actor_end(cid)
-		writer.scope_end()
-
-	if has_main():
-		SimStatusLifecycleRunner.on_actor_turn_end(main.api, cid)
-
-	if turn_engine != null:
-		turn_engine.notify_actor_done(cid)
+	main.runtime.handle_actor_requested(cid)
 
 func _on_sim_arcana_proc_requested(proc: int, token: int) -> void:
 	var writer := get_main_writer()
