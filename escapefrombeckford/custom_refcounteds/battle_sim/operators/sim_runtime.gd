@@ -5,6 +5,9 @@ class_name SimRuntime extends RefCounted
 var sim: Sim
 var host: SimHost
 
+var arcana_resolver: ArcanaResolver
+var card_executor: CardExecutor
+
 func _init(_sim: Sim = null, _host: SimHost = null) -> void:
 	sim = _sim
 	host = _host
@@ -14,6 +17,20 @@ func bind(_sim: Sim, _host: SimHost) -> void:
 	sim = _sim
 	host = _host
 
+func start_group_turn(group_index: int, start_at_player := false, friendly_post_enemy := false) -> void:
+	if host == null:
+		return
+	host.start_group_turn(group_index, start_at_player, friendly_post_enemy)
+
+func request_player_end() -> void:
+	if host == null or host.turn_engine == null:
+		return
+	host.turn_engine.request_player_end()
+
+func add_combatant_from_data(data: CombatantData, group_index: int, insert_index: int = -1, is_player := false) -> int:
+	if sim == null or sim.api == null:
+		return 0
+	return sim.api.spawn_from_data(data, group_index, insert_index, is_player)
 
 func handle_group_turn_started(group_index: int) -> void:
 	if sim == null or sim.api == null:
@@ -39,8 +56,23 @@ func handle_group_turn_ended(group_index: int) -> void:
 	var writer := sim.api.writer
 	if writer != null:
 		writer.emit_group_turn_end(group_index)
-		writer.scope_end() # group_turn
+		writer.scope_end()
 
+	_schedule_next_group_turn(group_index)
+
+func _schedule_next_group_turn(group_index: int) -> void:
+	if host == null or host.turn_engine == null:
+		return
+
+	if group_index == 0:
+		var finished_post := bool(host.turn_engine.ended_friendly_post_enemy)
+		if !finished_post:
+			host.start_group_turn(1, false)
+		else:
+			host.start_group_turn(0, false, false)
+		return
+
+	host.start_group_turn(0, false, true)
 
 func handle_pending_view_changed(active_id: int, pending_ids: PackedInt32Array) -> void:
 	if sim == null or sim.api == null:
@@ -147,20 +179,37 @@ func handle_arcana_proc_requested(proc: int, token: int) -> void:
 		writer.scope_begin(Scope.Kind.ARCANA, "proc=%d" % int(proc), 0)
 		writer.emit_arcana_proc(proc)
 
-	if host.arcana_resolver == null:
+	if arcana_resolver == null:
 		if host.arcana_catalog == null:
-			push_warning("SimHost: no arcana_catalog; cannot run arcana")
+			push_warning("SimRuntime: no arcana_catalog; cannot run arcana")
 		else:
-			host.arcana_resolver = ArcanaResolver.new(host, host.arcana_catalog)
+			arcana_resolver = ArcanaResolver.new(host, host.arcana_catalog)
 
-	if sim.resolver != null and host.arcana_resolver != null:
-		sim.resolver.resolve_arcana_proc(sim, proc, host.arcana_resolver)
+	if sim.resolver != null and arcana_resolver != null:
+		sim.resolver.resolve_arcana_proc(sim, proc, arcana_resolver)
 
 	if writer != null:
 		writer.scope_end() # arcana
 
 	if host.turn_engine != null:
 		host.turn_engine.notify_arcana_proc_done(token)
+
+
+func apply_player_card(req: CardPlayRequest) -> bool:
+	if sim == null or sim.api == null:
+		return false
+	if sim.resolver == null:
+		return false
+
+	if card_executor == null:
+		card_executor = CardExecutor.new()
+
+	return sim.resolver.resolve_player_card(sim, req, card_executor)
+
+
+func reset_runtime_state() -> void:
+	arcana_resolver = null
+	card_executor = null
 
 
 func _notify_actor_done(cid: int) -> void:

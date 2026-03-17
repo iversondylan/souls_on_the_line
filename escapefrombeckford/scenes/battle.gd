@@ -175,7 +175,7 @@ func _on_end_turn_button_pressed() -> void:
 		Events.hand_discarded.connect(_on_hand_discarded_one_shot, CONNECT_ONE_SHOT)
 
 	# Ask SIM to end the player's turn (TurnEngineCore lives in SimHost now).
-	sim_host.request_player_end()
+	sim_host.request_player_end_main()
 
 func _on_hand_discarded_one_shot() -> void:
 	# Your SimHost already has the hook (per your earlier code)

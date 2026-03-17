@@ -23,8 +23,6 @@ const ENEMY := 1
 # Long-term candidate to move into a per-sim runtime/orchestrator object.
 var turn_engine: TurnEngineCore
 var turn_engine_host_sim: TurnEngineHostSim
-var arcana_resolver: ArcanaResolver
-var card_executor: CardExecutor
 
 var status_catalog: StatusCatalog : set = _set_status_catalog
 var arcana_catalog: ArcanaCatalog : set = _set_arcana_catalog
@@ -105,11 +103,11 @@ func _set_arcana_catalog(catalog: ArcanaCatalog) -> void:
 # -------------------------
 
 func reset() -> void:
+	if main != null and main.runtime != null:
+		main.runtime.reset_runtime_state()
 	main = null
 	preview = null
 	turn_engine = null
-	arcana_resolver = null
-	card_executor = null
 
 func init_from_seeds(battle_seed: int, run_seed: int) -> void:
 	main = Sim.new()
@@ -146,9 +144,19 @@ func ensure_initialized() -> void:
 	if !has_main():
 		init_from_seeds(0, 0)
 
-	if arcana_resolver == null and arcana_catalog != null:
-		arcana_resolver = ArcanaResolver.new(self, arcana_catalog)
+func _ensure_turn_engine() -> void:
+	if turn_engine != null:
+		return
+	if turn_engine_host_sim == null:
+		turn_engine_host_sim = TurnEngineHostSim.new(self)
 
+	turn_engine = TurnEngineCore.new(turn_engine_host_sim)
+	turn_engine.group_turn_ended.connect(_on_sim_group_turn_ended)
+	turn_engine.arcana_proc_requested.connect(_on_sim_arcana_proc_requested)
+	turn_engine.actor_requested.connect(_on_sim_actor_requested)
+	turn_engine.player_begin_requested.connect(_on_sim_player_begin_requested)
+	turn_engine.player_end_requested.connect(_on_sim_player_end_requested)
+	turn_engine.pending_view_changed.connect(_on_pending_view_changed)
 
 # -------------------------
 # Setup / seeding
@@ -220,15 +228,7 @@ func is_player(combat_id: int) -> bool:
 
 func start_group_turn(group_index: int, start_at_player := false, friendly_post_enemy := false) -> void:
 	ensure_initialized()
-
-	if turn_engine == null:
-		turn_engine = TurnEngineCore.new(turn_engine_host_sim)
-		turn_engine.group_turn_ended.connect(_on_sim_group_turn_ended)
-		turn_engine.arcana_proc_requested.connect(_on_sim_arcana_proc_requested)
-		turn_engine.actor_requested.connect(_on_sim_actor_requested)
-		turn_engine.player_begin_requested.connect(_on_sim_player_begin_requested)
-		turn_engine.player_end_requested.connect(_on_sim_player_end_requested)
-		turn_engine.pending_view_changed.connect(_on_pending_view_changed)
+	_ensure_turn_engine()
 
 	if start_at_player:
 		turn_engine.reset_for_new_battle()
@@ -239,20 +239,9 @@ func start_group_turn(group_index: int, start_at_player := false, friendly_post_
 	turn_engine.start_group_turn(group_index, start_at_player, friendly_post_enemy)
 
 func _on_sim_group_turn_ended(gi: int) -> void:
-	if main != null and main.runtime != null:
-		main.runtime.handle_group_turn_ended(gi)
-
-	# --- ROUND SCHEDULING ---
-	if gi == 0:
-		var finished_post := (turn_engine != null and turn_engine.ended_friendly_post_enemy)
-
-		if !finished_post:
-			start_group_turn(1, false)
-		else:
-			start_group_turn(0, false, false)
+	if main == null or main.runtime == null:
 		return
-
-	start_group_turn(0, false, true)
+	main.runtime.handle_group_turn_ended(gi)
 
 func _on_pending_view_changed(active_id: int, pending_ids: PackedInt32Array) -> void:
 	if main == null or main.runtime == null:
@@ -264,7 +253,8 @@ func _on_sim_player_begin_requested(token: int) -> void:
 		return
 	main.runtime.handle_player_begin_requested(token)
 
-func request_player_end() -> void:
+# This request is Battle-facing because it responds to button press
+func request_player_end_main() -> void:
 	var writer := get_main_writer()
 	if writer == null or !has_main():
 		return
@@ -344,17 +334,9 @@ func add_combatant_from_data(data: CombatantData, group_index: int, insert_index
 
 func apply_player_card(req: CardPlayRequest) -> bool:
 	ensure_initialized()
-	if !has_main():
+	if main == null or main.runtime == null:
 		return false
-
-	if card_executor == null:
-		card_executor = CardExecutor.new()
-
-	if main.resolver == null:
-		return false
-
-	return main.resolver.resolve_player_card(main, req, card_executor)
-
+	return main.runtime.apply_player_card(req)
 
 # -------------------------
 # Preview management
