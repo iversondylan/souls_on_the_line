@@ -127,7 +127,7 @@ func _finish_confirm(chosen: CombatantView) -> void:
 	api.fade_unit(int(chosen.cid), "summon_replace")
 
 	# 2) SIM summon card (SummonAction will read ctx.params[WINDUP_ORDER_IDS])
-	var ok := handler.battle.sim_host.apply_player_card(req)
+	var ok := handler.battle._runtime().apply_player_card(req)
 	if !ok:
 		handler.end_active_context()
 		return

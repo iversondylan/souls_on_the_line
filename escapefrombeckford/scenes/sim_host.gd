@@ -2,14 +2,14 @@
 
 class_name SimHost extends Node
 
-# SimHost currently serves two roles:
-# 1) structural host for main/preview sims
-# 2) temporary runtime orchestrator for the MAIN sim
+# SimHost is the structural owner of:
+# - the main Sim
+# - the preview Sim
+# - shared catalogs
+# - host-side bridge methods used by runtimes
 #
-# Long-term direction:
-# - keep SimHost as structural/preview owner
-# - move per-sim runtime orchestration (turn flow, actor begin/end, arcana boundaries)
-#   into a dedicated per-sim runtime object owned by Sim
+# Runtime execution belongs to SimRuntime.
+# SimHost should not own TurnEngineCore or TurnEngineHostSim.
 
 signal main_state_initialized()
 signal preview_state_cloned()
@@ -19,15 +19,9 @@ signal player_input_reached()
 const FRIENDLY := 0
 const ENEMY := 1
 
-# Temporary runtime orchestration state for MAIN sim only.
-# Long-term candidate to move into a per-sim runtime/orchestrator object.
-var turn_engine: TurnEngineCore
-var turn_engine_host_sim: TurnEngineHostSim
-
 var status_catalog: StatusCatalog : set = _set_status_catalog
 var arcana_catalog: ArcanaCatalog : set = _set_arcana_catalog
 
-# Firm structural elements for sim architecture
 var main: Sim : set = _set_main
 var preview: Sim
 
@@ -39,15 +33,18 @@ var preview: Sim
 func has_main() -> bool:
 	return main != null and main.state != null and main.api != null
 
+
 func get_main_writer() -> BattleEventWriter:
 	if main == null or main.api == null:
 		return null
 	return main.api.writer
 
+
 func get_main_runtime() -> SimRuntime:
 	if main == null:
 		return null
 	return main.runtime
+
 
 # -------------------------
 # Structural wiring
@@ -61,44 +58,46 @@ func _set_main(new_sim: Sim) -> void:
 	main.status_catalog = status_catalog
 	main.arcana_catalog = arcana_catalog
 
-	if main.state:
+	if main.state != null:
 		main.state.status_catalog = status_catalog
 		main.state.arcana_catalog = arcana_catalog
 
-	if main.api:
+	if main.api != null:
 		main.api.status_catalog = status_catalog
 
 	if main.runtime != null:
 		main.runtime.bind(main, self)
+
 
 func _set_status_catalog(catalog: StatusCatalog) -> void:
 	status_catalog = catalog
 
 	if main != null:
 		main.status_catalog = catalog
-		if main.state:
+		if main.state != null:
 			main.state.status_catalog = catalog
-		if main.api:
+		if main.api != null:
 			main.api.status_catalog = catalog
 
 	if preview != null:
 		preview.status_catalog = catalog
-		if preview.state:
+		if preview.state != null:
 			preview.state.status_catalog = catalog
-		if preview.api:
+		if preview.api != null:
 			preview.api.status_catalog = catalog
+
 
 func _set_arcana_catalog(catalog: ArcanaCatalog) -> void:
 	arcana_catalog = catalog
 
 	if main != null:
 		main.arcana_catalog = catalog
-		if main.state:
+		if main.state != null:
 			main.state.arcana_catalog = catalog
 
 	if preview != null:
 		preview.arcana_catalog = catalog
-		if preview.state:
+		if preview.state != null:
 			preview.state.arcana_catalog = catalog
 
 
@@ -109,58 +108,46 @@ func _set_arcana_catalog(catalog: ArcanaCatalog) -> void:
 func reset() -> void:
 	if main != null and main.runtime != null:
 		main.runtime.reset_runtime_state()
+
 	main = null
 	preview = null
-	turn_engine = null
+
 
 func init_from_seeds(battle_seed: int, run_seed: int) -> void:
-	main = Sim.new()
-	main.status_catalog = status_catalog
-	main.arcana_catalog = arcana_catalog
-	main.is_preview = false
-	main.init_from_seeds(int(battle_seed), int(run_seed))
+	reset()
+
+	var s := Sim.new()
+	s.status_catalog = status_catalog
+	s.arcana_catalog = arcana_catalog
+	s.is_preview = false
+	s.init_from_seeds(int(battle_seed), int(run_seed))
+
+	main = s
 
 	if main.runtime != null:
 		main.runtime.bind(main, self)
 
 	var scopes := BattleScopeManager.new()
 	scopes.reset()
+
 	main.api.scopes = scopes
 	main.api.writer = BattleEventWriter.new(main.state.events, scopes)
 	main.api.writer.allow_unscoped_events = false
 
-	# Root scope: battle
 	main.api.writer.set_turn_context(0, -1, 0)
 	main.api.writer.scope_begin(Scope.Kind.BATTLE, "battle_seed=%d run_seed=%d" % [battle_seed, run_seed], 0)
 
-	main.api.on_summoned = func(summoned_id: int, group_index: int) -> void:
-		if turn_engine != null:
-			turn_engine.notify_summon_added(int(summoned_id), int(group_index))
-	main.api.on_unit_removed = func(cid: int, group_index: int, reason: String) -> void:
-		if turn_engine != null:
-			turn_engine.notify_actor_removed(int(cid))
+	if main.runtime != null:
+		main.api.on_summoned = Callable(main.runtime, "on_summoned")
+		main.api.on_unit_removed = Callable(main.runtime, "on_unit_removed")
+
 	main_state_initialized.emit()
 
-func ensure_initialized() -> void:
-	if turn_engine_host_sim == null:
-		turn_engine_host_sim = TurnEngineHostSim.new(self)
 
+func ensure_initialized() -> void:
 	if !has_main():
 		init_from_seeds(0, 0)
 
-func _ensure_turn_engine() -> void:
-	if turn_engine != null:
-		return
-	if turn_engine_host_sim == null:
-		turn_engine_host_sim = TurnEngineHostSim.new(self)
-
-	turn_engine = TurnEngineCore.new(turn_engine_host_sim)
-	turn_engine.group_turn_ended.connect(_on_sim_group_turn_ended)
-	turn_engine.arcana_proc_requested.connect(_on_sim_arcana_proc_requested)
-	turn_engine.actor_requested.connect(_on_sim_actor_requested)
-	turn_engine.player_begin_requested.connect(_on_sim_player_begin_requested)
-	turn_engine.player_end_requested.connect(_on_sim_player_end_requested)
-	turn_engine.pending_view_changed.connect(_on_pending_view_changed)
 
 # -------------------------
 # Setup / seeding
@@ -171,6 +158,7 @@ func start_setup() -> void:
 	if writer == null:
 		return
 	writer.scope_begin(Scope.Kind.SETUP, "setup", 0)
+
 
 func end_setup() -> void:
 	var writer := get_main_writer()
@@ -186,6 +174,7 @@ func end_setup() -> void:
 
 	if main.intent_planner != null:
 		main.intent_planner.ensure_valid_plans(main.api, true)
+
 
 func seed_arcana_from_ids(ids: Array[StringName]) -> void:
 	if !has_main():
@@ -210,130 +199,21 @@ func get_event_log() -> BattleEventLog:
 		return null
 	return main.state.events
 
+
 func get_main_api() -> SimBattleAPI:
 	return main.api if main != null else null
+
 
 func get_preview_api() -> SimBattleAPI:
 	return preview.api if preview != null else null
 
+
 func get_main_state() -> BattleState:
 	return main.state if main != null else null
 
+
 func get_preview_state() -> BattleState:
 	return preview.state if preview != null else null
-
-func is_player(combat_id: int) -> bool:
-	return turn_engine_host_sim != null and turn_engine_host_sim.is_player(combat_id)
-
-
-# -------------------------
-# Turn flow orchestration (temporary here)
-# -------------------------
-
-func start_group_turn(group_index: int, start_at_player := false, friendly_post_enemy := false) -> void:
-	ensure_initialized()
-	_ensure_turn_engine()
-
-	if start_at_player:
-		turn_engine.reset_for_new_battle()
-
-	if main != null and main.runtime != null:
-		main.runtime.handle_group_turn_started(group_index)
-
-	turn_engine.start_group_turn(group_index, start_at_player, friendly_post_enemy)
-
-func _on_sim_group_turn_ended(gi: int) -> void:
-	if main == null or main.runtime == null:
-		return
-	main.runtime.handle_group_turn_ended(gi)
-
-func _on_pending_view_changed(active_id: int, pending_ids: PackedInt32Array) -> void:
-	if main == null or main.runtime == null:
-		return
-	main.runtime.handle_pending_view_changed(active_id, pending_ids)
-
-func _on_sim_player_begin_requested(token: int) -> void:
-	if main == null or main.runtime == null:
-		return
-	main.runtime.handle_player_begin_requested(token)
-
-func notify_player_discard_animation_finished() -> void:
-	if turn_engine != null:
-		turn_engine.request_player_end()
-
-func _on_sim_player_end_requested(token: int) -> void:
-	if main == null or main.runtime == null:
-		return
-	main.runtime.handle_player_end_requested(token)
-
-# -------------------------
-# Player turn bridge hooks
-# -------------------------
-
-func sim_host_has_begin_player_turn() -> bool:
-	return has_method("begin_player_turn_sim") or has_method("begin_player_turn_headless") or has_method("begin_player_turn")
-
-func sim_host_has_end_player_turn() -> bool:
-	return has_method("end_player_turn_sim") or has_method("end_player_turn_headless") or has_method("end_player_turn")
-
-func _call_sim_begin_player_turn() -> void:
-	if has_method("begin_player_turn_sim"):
-		call("begin_player_turn_sim")
-	elif has_method("begin_player_turn_headless"):
-		call("begin_player_turn_headless")
-	elif has_method("begin_player_turn"):
-		call("begin_player_turn")
-
-func _call_sim_end_player_turn() -> void:
-	if has_method("end_player_turn_sim"):
-		call("end_player_turn_sim")
-	elif has_method("end_player_turn_headless"):
-		call("end_player_turn_headless")
-	elif has_method("end_player_turn"):
-		call("end_player_turn")
-
-
-# -------------------------
-# Actor / arcana runtime callbacks
-# -------------------------
-
-func _on_sim_actor_requested(cid: int) -> void:
-	if main == null or main.runtime == null:
-		return
-	main.runtime.handle_actor_requested(cid)
-
-func _on_sim_arcana_proc_requested(proc: int, token: int) -> void:
-	if main == null or main.runtime == null:
-		return
-	main.runtime.handle_arcana_proc_requested(proc, token)
-
-func _proc_to_arcanum_type(proc: int) -> int:
-	match proc:
-		TurnEngineCore.ArcanaProc.START_OF_COMBAT:
-			return int(Arcanum.Type.START_OF_COMBAT)
-		TurnEngineCore.ArcanaProc.START_OF_TURN:
-			return int(Arcanum.Type.START_OF_TURN)
-		TurnEngineCore.ArcanaProc.END_OF_TURN:
-			return int(Arcanum.Type.END_OF_TURN)
-		_:
-			return -1
-
-
-# -------------------------
-# External battle commands
-# -------------------------
-
-func add_combatant_from_data(data: CombatantData, group_index: int, insert_index: int = -1, is_player := false) -> int:
-	ensure_initialized()
-	if !has_main():
-		return 0
-	return main.api.spawn_from_data(data, group_index, insert_index, is_player)
-
-func apply_player_card(req: CardPlayRequest) -> bool:
-	ensure_initialized()
-	if main == null or main.runtime == null:
-		return false
-	return main.runtime.apply_player_card(req)
 
 # -------------------------
 # Preview management
@@ -345,12 +225,16 @@ func clone_preview_from_main() -> void:
 		return
 
 	preview = main.clone_for_preview()
+	if preview != null and preview.runtime != null:
+		preview.runtime.bind(preview, self)
+
 	preview_state_cloned.emit()
 
-## Ensures preview exists (cloned from main if missing).
+
 func ensure_preview() -> void:
 	if preview == null or preview.state == null or preview.api == null:
 		clone_preview_from_main()
+
 
 func add_preview_unit(u: CombatantState, group_index: int, insert_index: int) -> void:
 	ensure_preview()
@@ -368,7 +252,7 @@ func add_preview_unit(u: CombatantState, group_index: int, insert_index: int) ->
 	preview.state.add_unit(u, int(group_index), int(insert_index))
 	combatant_added.emit(int(u.id), int(group_index), int(insert_index), true)
 
-## Convenience: rebuild preview fresh, then run a closure to mutate it.
+
 func with_fresh_preview(fn: Callable) -> void:
 	clone_preview_from_main()
 	if fn.is_valid():
@@ -392,6 +276,7 @@ func debug_dump_orders() -> void:
 		print("SimHost preview orders:")
 		print("\tFRIENDLY: ", Array(preview.state.groups[0].order))
 		print("\tENEMY:    ", Array(preview.state.groups[1].order))
+
 
 func debug_dump_units() -> void:
 	if !has_main():
@@ -438,6 +323,7 @@ func debug_dump_units() -> void:
 		extras.sort()
 		print("SimHost units not in any group order: ", extras)
 
+
 func _format_sim_statuses(u: CombatantState) -> String:
 	if u == null:
 		return ""
@@ -480,6 +366,7 @@ func _format_sim_statuses(u: CombatantState) -> String:
 
 	return " [" + ", ".join(parts) + "]"
 
+
 func _debug_unit_name(u: CombatantState) -> String:
 	if u != null and ("name" in u):
 		var n := String(u.name)
@@ -494,6 +381,7 @@ func _debug_unit_name(u: CombatantState) -> String:
 				return base.get_basename()
 
 	return "<unnamed>"
+
 
 func debug_dump_events() -> void:
 	if !has_main():

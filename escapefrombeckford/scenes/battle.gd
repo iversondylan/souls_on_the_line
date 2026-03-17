@@ -1,9 +1,14 @@
-# battle.gd (SIM/VIEW only)
+# battle.gd
 
 class_name Battle extends Node
 
 const FRIENDLY := 0
 const ENEMY := 1
+
+
+# -------------------------
+# Inspector
+# -------------------------
 
 @export var debug_mode: bool = true:
 	set(value):
@@ -17,6 +22,11 @@ const ENEMY := 1
 
 @export var idle_delay_sec: float = 1.0
 @export var idle_cooldown_sec: float = 6.0
+
+
+# -------------------------
+# Scene refs
+# -------------------------
 
 @onready var sim_host: SimHost = $SimHost
 @onready var battle_view: BattleView = $BattleView
@@ -42,75 +52,104 @@ const ENEMY := 1
 
 @onready var thank_you_box: Node2D = $Battle_UI/ThankYouBox
 
+
+# -------------------------
+# Runtime data
+# -------------------------
+
 var player_data: PlayerData
 var deck: Deck : set = _set_deck
 var run: Run : set = _set_run
-var run_seed : int
+var run_seed: int
 var battle_seed: int
 var my_arcana: Array[StringName]
 
 var wait_for_anims: bool = false
 var _player_end_turn_armed: bool = false
 
+
+# -------------------------
+# Ready / setup
+# -------------------------
+
 func _ready() -> void:
 	battle_view.sim_host = sim_host
 	battle_view.battle_ui = battle_ui
 
+	hand.battle_view = battle_view
+	hand.sim_host = sim_host
+
+	battle_interaction_handler.setup(self)
+
+	_connect_events()
+	_connect_ui()
+
+	battle_ui.set_end_turn_enabled(false)
+
+	get_tree().paused = false
+	set_process(true)
+
+
+func _connect_events() -> void:
 	Events.hand_drawn.connect(_arm_end_turn_button.bind(true))
 	Events.hand_drawn.connect(_on_hand_done_drawing)
 	Events.dead_combatant_data.connect(_on_dead_combatant_data)
 	Events.request_defeat.connect(_on_request_defeat)
 	Events.request_victory.connect(_on_request_victory)
 	Events.summon_reserve_card_released.connect(_on_summon_reserve_card_released)
-
-	draw_pile_button.pressed.connect(draw_pile_view.show_current_draw_view.bind("Draw Pile", true))
-	discard_pile_button.pressed.connect(discard_pile_view.show_current_discard_view.bind("Discard Pile"))
-
-	hand.battle_view = battle_view
-	hand.sim_host = sim_host
-	battle_interaction_handler.setup(self)
-	
 	Events.end_turn_button_pressed.connect(_on_end_turn_button_pressed)
-	
-	# Optional: start with End Turn disabled until we draw
-	battle_ui.set_end_turn_enabled(false)
-	
-	get_tree().paused = false
-	set_process(true)
+
+
+func _connect_ui() -> void:
+	draw_pile_button.pressed.connect(
+		draw_pile_view.show_current_draw_view.bind("Draw Pile", true)
+	)
+	discard_pile_button.pressed.connect(
+		discard_pile_view.show_current_discard_view.bind("Discard Pile")
+	)
+
+
+# -------------------------
+# External wiring
+# -------------------------
 
 func _set_run(new_run: Run) -> void:
 	run = new_run
 	if !is_node_ready():
 		await ready
 
-	# Provide catalogs to SIM + VIEW
+	# Structural ownership lives in SimHost.
 	sim_host.status_catalog = run.status_catalog
 	sim_host.arcana_catalog = run.arcanum_catalog
+
+	# View still needs direct catalog access for status presentation.
 	battle_view.status_catalog = run.status_catalog
 
-func _set_deck(_deck: Deck) -> void:
-	deck = _deck
+
+func _set_deck(new_deck: Deck) -> void:
+	deck = new_deck
 	hand.deck = deck
 
-func initialize_card_pile_ui() -> void:
-	draw_pile_button.card_pile = deck.draw_pile
-	draw_pile_view.card_pile = deck.draw_pile
-	draw_pile_view.deck = deck
 
-	discard_pile_button.card_pile = deck.discard_pile
-	discard_pile_view.card_pile = deck.discard_pile
-	discard_pile_view.deck = deck
+func _runtime() -> SimRuntime:
+	return sim_host.get_main_runtime()
+
+
+# -------------------------
+# Battle start
+# -------------------------
 
 func start_battle() -> void:
-	var battle_seed := 0
-	var run_seed := 0
+	var resolved_battle_seed := 0
+	var resolved_run_seed := 0
+
 	if run != null:
 		if "battle_seed" in run:
-			battle_seed = int(run.battle_seed)
+			resolved_battle_seed = int(run.battle_seed)
 		if "run_seed" in run:
-			run_seed = int(run.run_seed)
+			resolved_run_seed = int(run.run_seed)
 
-	sim_host.init_from_seeds(battle_seed, run_seed)
+	sim_host.init_from_seeds(resolved_battle_seed, resolved_run_seed)
 	sim_host.seed_arcana_from_ids(my_arcana)
 
 	battle_view.bind_log(sim_host.get_event_log())
@@ -130,31 +169,53 @@ func start_battle() -> void:
 
 	sim_host.end_setup()
 
-	var runtime := sim_host.get_main_runtime()
+	var runtime := _runtime()
 	if runtime != null:
-		runtime.start_group_turn(0, true)
+		runtime.start_group_turn(FRIENDLY, true)
+
 
 func _spawn_from_battle_data() -> void:
+	var runtime := _runtime()
+	if runtime == null:
+		return
+
 	if player_data != null:
 		player_data.alive = true
 		hand.player_data = player_data
-		sim_host.add_combatant_from_data(player_data, FRIENDLY, 0, true)
-	
+		runtime.add_combatant_from_data(player_data, FRIENDLY, 0, true)
+
 	if battle_data == null:
 		thank_you_box.show()
 		return
-	
+
 	for enemy_data: CombatantData in battle_data.enemies:
 		if enemy_data == null:
 			continue
+
 		var new_data: CombatantData = enemy_data.duplicate()
 		new_data.init()
-		sim_host.add_combatant_from_data(new_data, ENEMY, -1, false)
+		runtime.add_combatant_from_data(new_data, ENEMY, -1, false)
+
+
+func initialize_card_pile_ui() -> void:
+	draw_pile_button.card_pile = deck.draw_pile
+	draw_pile_view.card_pile = deck.draw_pile
+	draw_pile_view.deck = deck
+
+	discard_pile_button.card_pile = deck.discard_pile
+	discard_pile_view.card_pile = deck.discard_pile
+	discard_pile_view.deck = deck
+
+
+# -------------------------
+# Turn flow / player input
+# -------------------------
 
 func _on_end_turn_pressed() -> void:
 	if wait_for_anims:
 		return
 	Events.end_turn_button_pressed.emit()
+
 
 func _on_end_turn_button_pressed() -> void:
 	if wait_for_anims:
@@ -164,57 +225,74 @@ func _on_end_turn_button_pressed() -> void:
 
 	_arm_end_turn_button(false)
 
+	# The hand discard animation is view-driven.
+	# Runtime does not advance the player end handshake until this completes.
 	if !Events.hand_discarded.is_connected(_on_hand_discarded_one_shot):
 		Events.hand_discarded.connect(_on_hand_discarded_one_shot, CONNECT_ONE_SHOT)
 
-	var runtime := sim_host.get_main_runtime()
+	var runtime := _runtime()
 	if runtime != null:
 		runtime.request_player_end()
 
+
 func _on_hand_discarded_one_shot() -> void:
-	# Your SimHost already has the hook (per your earlier code)
-	sim_host.notify_player_discard_animation_finished()
+	var runtime := _runtime()
+	if runtime != null:
+		runtime.notify_player_discard_animation_finished()
+
 
 func _on_hand_done_drawing() -> void:
 	wait_for_anims = false
+
 
 func _arm_end_turn_button(armed: bool) -> void:
 	_player_end_turn_armed = armed
 	battle_ui.set_end_turn_enabled(armed)
 
+
+# -------------------------
+# Event reactions
+# -------------------------
+
 func _on_dead_combatant_data(combatant_data: CombatantData) -> void:
 	if player_data != null and combatant_data == player_data:
 		Events.request_defeat.emit()
 
+
 func _on_summon_reserve_card_released(summoned_id: int, card_uid: String) -> void:
-	# 1) Move reserved card into discard pile (data truth for your deck UI)
 	if deck != null:
 		deck.discard_reserved_summon_card(card_uid)
 
-	# 2) Animate the “card flies to discard pile”
-	var v := battle_view.get_combatant(summoned_id) if battle_view != null else null
-	if v == null or discard_pile_button == null:
+	var combatant_view := battle_view.get_combatant(summoned_id) if battle_view != null else null
+	if combatant_view == null or discard_pile_button == null:
 		return
 
 	var perspective_card: PerspectiveCard = perspective_card_scn.instantiate()
 	battle_ui.add_child(perspective_card)
 
-	# Start point: unit art top-ish
-	var start := v.global_position
-	start.y -= 200.0 # or use height if you want
+	var start := combatant_view.global_position
+	start.y -= 200.0
 
-	var end := discard_pile_button.global_position
-	perspective_card.zoom_card(start, end)
+	var finish := discard_pile_button.global_position
+	perspective_card.zoom_card(start, finish)
+
 
 func _on_request_defeat() -> void:
 	Events.battle_over_screen_requested.emit("YOU DIED", BattleOverPanel.Outcome.LOSE)
 
+
 func _on_request_victory() -> void:
 	Events.battle_over_screen_requested.emit("PATH CLEARED", BattleOverPanel.Outcome.WIN)
+
+
+# -------------------------
+# Debug
+# -------------------------
 
 func _on_dump_states_button_pressed() -> void:
 	sim_host.debug_dump_orders()
 	sim_host.debug_dump_units()
+
 
 func _on_dump_events_button_pressed() -> void:
 	sim_host.debug_dump_events()

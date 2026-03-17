@@ -2,11 +2,31 @@
 
 class_name SimRuntime extends RefCounted
 
+# Runtime orchestration for a single Sim.
+# Responsibilities:
+# - own TurnEngineCore and TurnEngineHostSim for this Sim
+# - bridge TurnEngineCore callbacks into SIM-side lifecycle work
+# - emit scoped BattleEventLog runtime events
+# - drive round-to-round scheduling
+# - own runtime-only helpers like ArcanaResolver/CardExecutor
+#
+# Structural ownership still lives in SimHost:
+# - SimHost owns main/preview sims
+# - SimRuntime owns runtime execution for one Sim
+
 var sim: Sim
 var host: SimHost
 
 var arcana_resolver: ArcanaResolver
 var card_executor: CardExecutor
+
+var turn_engine: TurnEngineCore
+var turn_engine_host_sim: TurnEngineHostSim
+
+
+# -------------------------
+# Binding / lifecycle
+# -------------------------
 
 func _init(_sim: Sim = null, _host: SimHost = null) -> void:
 	sim = _sim
@@ -17,156 +37,293 @@ func bind(_sim: Sim, _host: SimHost) -> void:
 	sim = _sim
 	host = _host
 
-func start_group_turn(group_index: int, start_at_player := false, friendly_post_enemy := false) -> void:
+
+func reset_runtime_state() -> void:
+	arcana_resolver = null
+	card_executor = null
+	turn_engine = null
+	turn_engine_host_sim = null
+
+
+func _ensure_runtime_initialized() -> void:
 	if host == null:
 		return
-	host.start_group_turn(group_index, start_at_player, friendly_post_enemy)
+
+	if turn_engine_host_sim == null:
+		turn_engine_host_sim = TurnEngineHostSim.new(host)
+
+	if turn_engine != null:
+		return
+
+	turn_engine = TurnEngineCore.new(turn_engine_host_sim)
+	turn_engine.group_turn_ended.connect(_on_group_turn_ended)
+	turn_engine.arcana_proc_requested.connect(_on_arcana_proc_requested)
+	turn_engine.actor_requested.connect(_on_actor_requested)
+	turn_engine.player_begin_requested.connect(_on_player_begin_requested)
+	turn_engine.player_end_requested.connect(_on_player_end_requested)
+	turn_engine.pending_view_changed.connect(_on_pending_view_changed)
+
+
+# -------------------------
+# Small helpers
+# -------------------------
+
+func _api() -> SimBattleAPI:
+	return sim.api if sim != null else null
+
+
+func _writer() -> BattleEventWriter:
+	var api := _api()
+	return api.writer if api != null else null
+
+
+func _turn_engine() -> TurnEngineCore:
+	return turn_engine
+
+
+func _player_id() -> int:
+	if turn_engine_host_sim == null:
+		return 0
+	return turn_engine_host_sim.get_player_id()
+
+
+func _can_run() -> bool:
+	return sim != null and sim.api != null and host != null
+
+
+func _ensure_arcana_resolver() -> ArcanaResolver:
+	if arcana_resolver != null:
+		return arcana_resolver
+	if host == null or host.arcana_catalog == null:
+		push_warning("SimRuntime: no arcana_catalog; cannot run arcana")
+		return null
+	arcana_resolver = ArcanaResolver.new(host, host.arcana_catalog)
+	return arcana_resolver
+
+
+func _ensure_card_executor() -> CardExecutor:
+	if card_executor == null:
+		card_executor = CardExecutor.new()
+	return card_executor
+
+
+func has_runtime_initialized() -> bool:
+	return turn_engine != null
+
+
+func is_player(combat_id: int) -> bool:
+	if turn_engine_host_sim == null:
+		return false
+	return turn_engine_host_sim.is_player(combat_id)
+
+
+# -------------------------
+# Public runtime-facing API
+# -------------------------
+
+func start_group_turn(group_index: int, start_at_player := false, pre_player_friendly := false) -> void:
+	if !_can_run():
+		return
+
+	_ensure_runtime_initialized()
+	if turn_engine == null:
+		return
+
+	if start_at_player:
+		turn_engine.reset_for_new_battle()
+
+	handle_group_turn_started(group_index)
+	turn_engine.start_group_turn(group_index, start_at_player, pre_player_friendly)
+
 
 func request_player_end() -> void:
-	if sim == null or sim.api == null:
+	var api := _api()
+	if api == null:
 		return
 
-	var writer := sim.api.writer
+	var writer := api.writer
 	if writer != null:
-		writer.emit_end_turn_pressed(sim.api.get_player_id())
+		writer.emit_end_turn_pressed(api.get_player_id())
+
+
+func notify_player_discard_animation_finished() -> void:
+	_ensure_runtime_initialized()
+	if turn_engine == null:
+		return
+	turn_engine.request_player_end()
+
 
 func add_combatant_from_data(data: CombatantData, group_index: int, insert_index: int = -1, is_player := false) -> int:
-	if sim == null or sim.api == null:
+	var api := _api()
+	if api == null:
 		return 0
-	return sim.api.spawn_from_data(data, group_index, insert_index, is_player)
+	return api.spawn_from_data(data, group_index, insert_index, is_player)
+
+
+func apply_player_card(req: CardPlayRequest) -> bool:
+	if sim == null or sim.api == null or sim.resolver == null:
+		return false
+	return sim.resolver.resolve_player_card(sim, req, _ensure_card_executor())
+
+
+# -------------------------
+# API hooks (assigned from host)
+# -------------------------
+
+func on_summoned(summoned_id: int, group_index: int) -> void:
+	_ensure_runtime_initialized()
+	if turn_engine == null:
+		return
+	turn_engine.notify_summon_added(int(summoned_id), int(group_index))
+
+
+func on_unit_removed(cid: int, _group_index: int, _reason: String) -> void:
+	_ensure_runtime_initialized()
+	if turn_engine == null:
+		return
+	turn_engine.notify_actor_removed(int(cid))
+
+
+# -------------------------
+# TurnEngineCore signal handlers
+# -------------------------
+
+func _on_group_turn_ended(group_index: int) -> void:
+	handle_group_turn_ended(group_index)
+
+
+func _on_arcana_proc_requested(proc: int, token: int) -> void:
+	handle_arcana_proc_requested(proc, token)
+
+
+func _on_actor_requested(cid: int) -> void:
+	handle_actor_requested(cid)
+
+
+func _on_player_begin_requested(token: int) -> void:
+	handle_player_begin_requested(token)
+
+
+func _on_player_end_requested(token: int) -> void:
+	handle_player_end_requested(token)
+
+
+func _on_pending_view_changed(active_id: int, pending_ids: PackedInt32Array) -> void:
+	handle_pending_view_changed(active_id, pending_ids)
+
+
+# -------------------------
+# Turn / queue callbacks
+# -------------------------
 
 func handle_group_turn_started(group_index: int) -> void:
-	if sim == null or sim.api == null:
-		return
-	if host == null or host.turn_engine == null:
+	var api := _api()
+	var engine := _turn_engine()
+	if api == null or engine == null:
 		return
 
-	var writer := sim.api.writer
+	var writer := api.writer
 	if writer != null:
-		writer.set_turn_context(host.turn_engine._turn_token, group_index, 0)
+		writer.set_turn_context(engine._turn_token, group_index, 0)
 		writer.scope_begin(Scope.Kind.GROUP_TURN, "group=%d" % group_index, 0)
 		writer.emit_group_turn_begin(group_index)
 
-	sim.api.on_group_turn_begin(group_index)
+	api.on_group_turn_begin(group_index)
 
 
 func handle_group_turn_ended(group_index: int) -> void:
-	if sim == null or sim.api == null:
+	var api := _api()
+	if api == null:
 		return
 
-	sim.api.on_group_turn_end(group_index)
+	api.on_group_turn_end(group_index)
 
-	var writer := sim.api.writer
+	var writer := api.writer
 	if writer != null:
 		writer.emit_group_turn_end(group_index)
-		writer.scope_end()
+		writer.scope_end() # group_turn
 
 	_schedule_next_group_turn(group_index)
 
-func _schedule_next_group_turn(group_index: int) -> void:
-	if host == null or host.turn_engine == null:
-		return
-
-	if group_index == 0:
-		var finished_post := bool(host.turn_engine.ended_friendly_post_enemy)
-		if !finished_post:
-			host.start_group_turn(1, false)
-		else:
-			host.start_group_turn(0, false, false)
-		return
-
-	host.start_group_turn(0, false, true)
 
 func handle_pending_view_changed(active_id: int, pending_ids: PackedInt32Array) -> void:
-	if sim == null or sim.api == null:
-		return
-	if host == null or host.turn_engine == null:
+	var api := _api()
+	var engine := _turn_engine()
+	if api == null or engine == null:
 		return
 
-	var writer := sim.api.writer
+	var writer := api.writer
 	if writer == null:
 		return
 
 	writer.set_turn_context(
-		host.turn_engine._turn_token,
-		host.turn_engine.active_group_index,
+		engine._turn_token,
+		engine.active_group_index,
 		int(active_id)
 	)
 	writer.emit_turn_status(
 		int(active_id),
 		pending_ids,
-		int(host.turn_engine.active_group_index)
+		int(engine.active_group_index)
 	)
 
 
 func handle_actor_requested(cid: int) -> void:
-	if host == null or sim == null:
-		return
-	if sim.api == null:
+	var api := _api()
+	var engine := _turn_engine()
+	if api == null or engine == null or host == null:
 		return
 
-	var api := sim.api
 	var writer := api.writer
-	var turn_engine := host.turn_engine
-
-	if writer != null and turn_engine != null:
-		writer.set_turn_context(turn_engine._turn_token, turn_engine.active_group_index, cid)
+	if writer != null:
+		writer.set_turn_context(engine._turn_token, engine.active_group_index, cid)
 		writer.scope_begin(Scope.Kind.ACTOR_TURN, "actor=%d" % cid, cid)
 		writer.emit_actor_begin(cid)
 
 	SimStatusLifecycleRunner.on_actor_turn_begin(api, cid)
 
-	if host.is_player(cid):
+	if is_player(cid):
 		if writer != null:
 			writer.emit_player_input_reached(int(cid))
 		host.player_input_reached.emit()
 		return
 
-	if sim.resolver != null:
+	if sim != null and sim.resolver != null:
 		sim.resolver.resolve_npc_turn(sim, cid)
 
 	if writer != null:
 		writer.emit_actor_end(cid)
-		writer.scope_end()
+		writer.scope_end() # actor_turn
 
 	SimStatusLifecycleRunner.on_actor_turn_end(api, cid)
-
-	if turn_engine != null:
-		turn_engine.notify_actor_done(cid)
+	engine.notify_actor_done(cid)
 
 
 func handle_player_begin_requested(token: int) -> void:
-	if host == null or sim == null or sim.api == null:
-		return
-	if host.turn_engine == null or host.turn_engine_host_sim == null:
+	var api := _api()
+	var engine := _turn_engine()
+	if api == null or engine == null or host == null or turn_engine_host_sim == null:
 		return
 
-	var player_id := host.turn_engine_host_sim.get_player_id()
-
+	var player_id := _player_id()
 	if player_id > 0:
-		SimStatusLifecycleRunner.on_actor_turn_begin(sim.api, player_id)
+		SimStatusLifecycleRunner.on_actor_turn_begin(api, player_id)
 
-	if host.sim_host_has_begin_player_turn():
-		host._call_sim_begin_player_turn()
-
-	host.turn_engine.notify_player_begin_done(token)
+	engine.notify_player_begin_done(token)
 
 
 func handle_player_end_requested(token: int) -> void:
-	if host == null or sim == null or sim.api == null:
+	var api := _api()
+	var engine := _turn_engine()
+	if api == null or engine == null or host == null or turn_engine_host_sim == null:
 		return
-	if host.turn_engine == null or host.turn_engine_host_sim == null:
-		return
 
-	if host.sim_host_has_end_player_turn():
-		host._call_sim_end_player_turn()
+	var player_id := _player_id()
+	engine.request_end_of_turn_arcana(func():
+		engine.notify_player_end_done(token)
 
-	var player_id := host.turn_engine_host_sim.get_player_id()
-	host.turn_engine.request_end_of_turn_arcana(func():
-		host.turn_engine.notify_player_end_done(token)
-
-		SimStatusLifecycleRunner.on_actor_turn_end(sim.api, player_id)
-		if sim.checkpoint_processor != null:
+		SimStatusLifecycleRunner.on_actor_turn_end(api, player_id)
+		if sim != null and sim.checkpoint_processor != null:
 			sim.checkpoint_processor.flush(CheckpointProcessor.Kind.AFTER_ACTOR_TURN, sim, true)
 
 		_notify_actor_done(player_id)
@@ -174,55 +331,60 @@ func handle_player_end_requested(token: int) -> void:
 
 
 func handle_arcana_proc_requested(proc: int, token: int) -> void:
-	if host == null or sim == null or sim.api == null:
+	var api := _api()
+	var engine := _turn_engine()
+	if api == null or engine == null:
 		return
 
-	var writer := sim.api.writer
+	var writer := api.writer
 	if writer != null:
 		writer.scope_begin(Scope.Kind.ARCANA, "proc=%d" % int(proc), 0)
 		writer.emit_arcana_proc(proc)
 
-	if arcana_resolver == null:
-		if host.arcana_catalog == null:
-			push_warning("SimRuntime: no arcana_catalog; cannot run arcana")
-		else:
-			arcana_resolver = ArcanaResolver.new(host, host.arcana_catalog)
-
-	if sim.resolver != null and arcana_resolver != null:
-		sim.resolver.resolve_arcana_proc(sim, proc, arcana_resolver)
+	var resolver := _ensure_arcana_resolver()
+	if sim != null and sim.resolver != null and resolver != null:
+		sim.resolver.resolve_arcana_proc(sim, proc, resolver)
 
 	if writer != null:
 		writer.scope_end() # arcana
 
-	if host.turn_engine != null:
-		host.turn_engine.notify_arcana_proc_done(token)
+	engine.notify_arcana_proc_done(token)
 
 
-func apply_player_card(req: CardPlayRequest) -> bool:
-	if sim == null or sim.api == null:
-		return false
-	if sim.resolver == null:
-		return false
+# -------------------------
+# Internal flow helpers
+# -------------------------
 
-	if card_executor == null:
-		card_executor = CardExecutor.new()
+func _schedule_next_group_turn(group_index: int) -> void:
+	var engine := _turn_engine()
+	if engine == null:
+		return
 
-	return sim.resolver.resolve_player_card(sim, req, card_executor)
+	if group_index == 0:
+		var finished_pre_player_friendly := bool(engine.ended_pre_player_friendly)
 
+		# Friendly end:
+		# - POST-player friendlies -> enemies
+		# - PRE-player friendlies -> new round POST-player friendlies
+		if !finished_pre_player_friendly:
+			start_group_turn(1, false)
+		else:
+			start_group_turn(0, false, false)
+		return
 
-func reset_runtime_state() -> void:
-	arcana_resolver = null
-	card_executor = null
+	# Enemy end -> PRE-player friendlies
+	start_group_turn(0, false, true)
 
 
 func _notify_actor_done(cid: int) -> void:
-	if host == null or sim == null or sim.api == null:
+	var api := _api()
+	var engine := _turn_engine()
+	if api == null or engine == null:
 		return
 
-	var writer := sim.api.writer
+	var writer := api.writer
 	if writer != null:
 		writer.emit_actor_end(cid)
 		writer.scope_end() # actor_turn
 
-	if host.turn_engine != null:
-		host.turn_engine.notify_actor_done(cid)
+	engine.notify_actor_done(cid)

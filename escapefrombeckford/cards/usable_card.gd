@@ -246,7 +246,7 @@ func activate_sim_from_resolved_view(resolved_view: CardResolvedTargetView) -> b
 	req.card = card_data
 	req.target_ids = resolved_view.fighter_ids
 	req.insert_index = resolved_view.insert_index
-	return sim_host.apply_player_card(req)
+	return sim_host.get_main_runtime().apply_player_card(req)
 
 #func activate() -> bool:
 	#if card_data == null or player_data == null:# or battle_scene == null:

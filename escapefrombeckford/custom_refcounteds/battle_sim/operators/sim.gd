@@ -50,7 +50,7 @@ func _init_services() -> void:
 	checkpoint_processor = CheckpointProcessor.new()
 	api.checkpoint_processor = checkpoint_processor
 	resolver = Resolver.new()
-	runtime = SimRuntime.new(self, null)
+	runtime = SimRuntime.new()
 
 
 func clone_for_preview() -> Sim:

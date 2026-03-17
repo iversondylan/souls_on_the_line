@@ -18,11 +18,11 @@ class_name TurnEngineCore extends RefCounted
 #		friendlies in front of player
 #
 # Compatibility note:
-# - The existing external flag name `friendly_post_enemy` is preserved so other
+# - The existing external flag name `pre_player_friendly` is preserved so other
 #	scripts do not break.
 # - But semantically:
-#		friendly_post_enemy == false -> POST-Player Friendlies
-#		friendly_post_enemy == true	-> PRE-Player Friendlies
+#		pre_player_friendly == false -> POST-Player Friendlies
+#		pre_player_friendly == true	-> PRE-Player Friendlies
 # ============================================================================
 
 
@@ -97,13 +97,13 @@ var _start_of_combat_fired: bool = false
 # Semantic translation:
 #	false -> POST-Player Friendlies
 #	true	-> PRE-Player Friendlies
-var _friendly_post_enemy: bool = false
+var _pre_player_friendly: bool = false
 
 # Used externally by scheduling code after a friendly group turn ends.
 # Meaning:
 #	true  -> the just-finished friendly phase was PRE-Player Friendlies
 #	false -> otherwise
-var ended_friendly_post_enemy: bool = false
+var ended_pre_player_friendly: bool = false
 
 
 # -------------------------
@@ -146,17 +146,17 @@ func _init(_host: TurnEngineHostSim) -> void:
 # Public API
 # ============================================================================
 
-func start_group_turn(group_index: int, start_at_player := false, friendly_post_enemy := false) -> void:
+func start_group_turn(group_index: int, start_at_player := false, pre_player_friendly := false) -> void:
 	if dbg:
 		print(
 			"TurnEngineCore.start_group_turn() group=%s start_at_player=%s pre_player_friendlies=%s"
-			% [group_index, start_at_player, friendly_post_enemy]
+			% [group_index, start_at_player, pre_player_friendly]
 		)
 
 	active_group_index = int(group_index)
 	_start_at_player = bool(start_at_player)
-	_friendly_post_enemy = bool(friendly_post_enemy)
-	ended_friendly_post_enemy = false
+	_pre_player_friendly = bool(pre_player_friendly)
+	ended_pre_player_friendly = false
 
 	_turn_token += 1
 
@@ -413,9 +413,9 @@ func _end_group_turn() -> void:
 	var ended_group := active_group_index
 
 	if ended_group == 0:
-		ended_friendly_post_enemy = _is_pre_player_friendlies()
+		ended_pre_player_friendly = _is_pre_player_friendlies()
 	else:
-		ended_friendly_post_enemy = false
+		ended_pre_player_friendly = false
 
 	_reset()
 	group_turn_ended.emit(ended_group)
@@ -662,12 +662,12 @@ func _request_arcana(proc: int, resume: Callable) -> void:
 
 func _is_pre_player_friendlies() -> bool:
 	# Compatibility mapping:
-	# old name "friendly_post_enemy" now semantically means PRE-Player Friendlies
-	return _friendly_post_enemy
+	# old name "pre_player_friendly" now semantically means PRE-Player Friendlies
+	return _pre_player_friendly
 
 
 func _is_post_player_friendlies() -> bool:
-	return !_friendly_post_enemy
+	return !_pre_player_friendly
 
 
 # ============================================================================
