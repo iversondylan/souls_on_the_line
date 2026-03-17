@@ -458,11 +458,12 @@ func clear_focus(duration: float) -> void:
 	var bg: Array[Node] = get_tree().get_nodes_in_group("background")
 	if tween_bg:
 		tween_bg.kill()
+	var reduced_duration := duration * 0.75
 	if bg:
 		tween_bg = self.create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	for item in bg:
 		if "modulate" in item:
-			tween_bg.tween_property(item, "modulate", Color(1, 1, 1, 1.0), duration)
+			tween_bg.tween_property(item, "modulate", Color(1, 1, 1, 1.0), reduced_duration)
 
 
 func _apply_focus_background(order: FocusOrder) -> void:
@@ -470,10 +471,11 @@ func _apply_focus_background(order: FocusOrder) -> void:
 	if tween_bg:
 		tween_bg.kill()
 	if bg:
-		tween_bg = self.create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+		tween_bg = self.create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	var reduced_duration := order.duration * 0.75
 	for item in bg:
 		if "modulate" in item:
-			tween_bg.tween_property(item, "modulate", Color(order.dim_bg, order.dim_bg, order.dim_bg, 1.0), order.duration)
+			tween_bg.tween_property(item, "modulate", Color(order.dim_bg, order.dim_bg, order.dim_bg, 1.0), reduced_duration)
 
 
 func _apply_focus_combatants(order: FocusOrder) -> void:

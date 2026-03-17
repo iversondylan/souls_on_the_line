@@ -120,7 +120,7 @@ func get_targets_for_attack_sequence(ai_ctx) -> Array:
 	#resolve_damage_immediate(ctx)
 
 func resolve_attack(ctx: NPCAIContext) -> bool:
-	#print("sim_battle_api.gd resolve_attack()")
+	print("sim_battle_api.gd resolve_attack() IS THIS ACTUALLY USED?")
 	return SimAttackRunner.run(self, ctx)
 
 func resolve_damage_immediate(ctx: DamageContext) -> int:

@@ -1,5 +1,5 @@
 # live_battle_api.gd
-class_name LiveBattleAPI extends BattleAPI
+#class_name LiveBattleAPI extends BattleAPI
 #
 #const SUMMONED_ALLY_SCN := "res://scenes/turn_takers/summoned_ally.tscn"
 #const ENEMY_SCN := "res://scenes/turn_takers/enemy.tscn"

@@ -313,13 +313,15 @@ func on_focus(order: FocusOrder) -> void:
 	if involved:
 		var sign := 1.0 if (get_parent() as GroupView).faces_right else -1.0
 		drift = sign * order.drift_involved
-
+	
+	var reduced_duration := order.duration * 0.75
 	tween_focus = create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-	tween_focus.tween_property(self, "scale", target_scale, order.duration)
+	tween_focus.tween_property(self, "scale", target_scale, reduced_duration)
 
 	var x: float = anchor_position.x + drift
-	tween_focus.parallel().tween_property(self, "position", Vector2(x, 0), order.duration)
-	tween_focus.parallel().tween_property(self, "modulate", Color(target_dim, target_dim, target_dim, 1.0), order.duration)
+	tween_focus.parallel().tween_property(self, "position", Vector2(x, 0), reduced_duration)
+	#print("combatant_view() on_focus() duration: ", order.duration)
+	tween_focus.parallel().tween_property(self, "modulate", Color(target_dim, target_dim, target_dim, 1.0), reduced_duration)
 
 
 func clear_focus(duration: float) -> void:
@@ -330,11 +332,11 @@ func clear_focus(duration: float) -> void:
 
 	if tween_move:
 		tween_move.kill()
-
+	var reduced_duration := duration * 0.75
 	tween_focus = create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-	tween_focus.tween_property(self, "scale", Vector2.ONE, duration)
-	tween_focus.parallel().tween_property(self, "position", anchor_position, duration)
-	tween_focus.parallel().tween_property(self, "modulate", Color(1, 1, 1, 1), duration)
+	tween_focus.tween_property(self, "scale", Vector2.ONE, reduced_duration)
+	tween_focus.parallel().tween_property(self, "position", anchor_position, reduced_duration)
+	tween_focus.parallel().tween_property(self, "modulate", Color(1, 1, 1, 1), reduced_duration)
 
 
 # ------------------------------------------------------------------------------
