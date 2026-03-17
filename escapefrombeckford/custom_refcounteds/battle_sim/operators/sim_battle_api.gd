@@ -522,7 +522,9 @@ func summon(ctx: SummonContext) -> void:
 	ctx.summoned_id = id
 	if on_summoned.is_valid():
 		on_summoned.call(id, g)
-	plan_intent(id)
+
+	_request_replan(id)
+	_request_intent_refresh(id)
 
 func count_soulbound_in_group(group_index: int) -> int:
 	if state == null:
@@ -704,20 +706,6 @@ func plan_intent(cid: int, allow_hooks := true, clear_dirty := true) -> void:
 		#print("plan_intent() clearing dirty")
 		u.ai_state[&"replan_dirty"] = false
 
-func flush_replans(allow_hooks := true) -> void:
-	print("sim_battle_api.gd flush_replans() STOP USING THIS IT'S DEPRECATED")
-	if state == null:
-		return
-
-	for k in state.units.keys():
-		var cid := int(k)
-		var u: CombatantState = state.get_unit(cid)
-		if u == null:
-			continue
-		ActionPlanner._ensure_ai_state_initialized(u)
-		if bool(u.ai_state.get(&"replan_dirty", false)):
-			plan_intent(cid, allow_hooks, true)
-
 func plan_intents() -> void:
 	for cid in state.units.keys():
 		plan_intent(cid)
@@ -732,32 +720,6 @@ func _request_intent_refresh(cid: int) -> void:
 		return
 	ActionPlanner._ensure_ai_state_initialized(u)
 	u.ai_state[&"intent_dirty"] = true
-
-func flush_intent_refreshes() -> void:
-	if state == null:
-		return
-
-	for k in state.units.keys():
-		var cid := int(k)
-		var u: CombatantState = state.get_unit(cid)
-		if u == null or !u.is_alive():
-			continue
-		ActionPlanner._ensure_ai_state_initialized(u)
-
-		if !bool(u.ai_state.get(&"intent_dirty", false)):
-			continue
-
-		u.ai_state[&"intent_dirty"] = false
-
-		# Only update if intents are “enabled”
-		if !bool(u.ai_state.get(ActionPlanner.FIRST_INTENTS_READY, false)):
-			continue
-		if bool(u.ai_state.get(ActionPlanner.IS_ACTING, false)):
-			# don’t fight the clear/display logic mid-action
-			continue
-
-		# Re-emit SET_INTENT using current modifiers + current params
-		ActionPlanner.emit_current_intent_sim(self, cid)
 
 func has_pending_discard() -> bool:
 	return pending_discard != null

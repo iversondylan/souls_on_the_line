@@ -242,7 +242,6 @@ func request_player_end() -> void:
 func hand_discarded() -> void:
 	turn_engine.request_player_end()
 
-## vvv TO BE MOVED TO CHECKPOINT PROCESSOR vvv
 func _on_sim_player_end_requested(token: int) -> void:
 	# 1) end-of-player bookkeeping (discard, etc.)
 	if turn_engine_host_sim != null and sim_host_has_end_player_turn():
@@ -297,8 +296,6 @@ func _call_sim_end_player_turn() -> void:
 # Stuff that happens
 # -------------------------
 
-
-## vvv TO BE MOVED TO CHECKPOINT PROCESSOR vvv
 func _on_sim_actor_requested(cid: int) -> void:
 	#print("sim_host() _on_sim_actor_requested() cid: ", cid)
 	if main != null and main.api != null and main.api.writer != null:
