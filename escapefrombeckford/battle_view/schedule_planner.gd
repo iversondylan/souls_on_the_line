@@ -281,6 +281,25 @@ func _extract_action_units(turn_events: Array) -> Array[Dictionary]:
 					out.append(unit)
 			continue
 
+		# NEW:
+		# Attach loose post-action events (like STATUS remove / SET_INTENT replan)
+		# to the most recent action unit.
+		if !out.is_empty() and _belongs_to_current_action_unit(e):
+			var last_idx := out.size() - 1
+			var unit: Dictionary = out[last_idx]
+			var events: Array = unit.get("events", [])
+
+			events.append(e)
+			unit["events"] = events
+
+			var t := int(e.type)
+			if t == BattleEvent.Type.DIED or t == BattleEvent.Type.FADED:
+				unit["has_death"] = true
+
+			out[last_idx] = unit
+			i += 1
+			continue
+
 		i += 1
 
 	if out.is_empty():
@@ -587,12 +606,6 @@ func _split_unit_events_into_follow_and_resolve(
 				BattleEvent.Type.TURN_STATUS, \
 				BattleEvent.Type.MOVED:
 					resolve_payload.append(be)
-
-				BattleEvent.Type.SET_INTENT, \
-				BattleEvent.Type.TURN_STATUS, \
-				BattleEvent.Type.MOVED:
-					resolve_payload.append(be)
-
 				_:
 					follow_payload.append(be)
 

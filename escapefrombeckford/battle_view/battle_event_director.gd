@@ -438,22 +438,12 @@ func _on_attack_prep(e: EventPackage) -> void:
 		_make_focus_order(_source_id(e), _target_ids(e), e.duration)
 	)
 
-
 func _on_attack_wrapup(e: EventPackage) -> void:
 	battle_view.clear_focus(e.duration)
 
 	var attacker := battle_view.get_combatant(_source_id(e))
 	if attacker != null:
 		attacker.clear_strike_pose(e.duration)
-
-	if int(_data(e).get(Keys.ATTACK_MODE, Attack.Mode.MELEE)) == int(Attack.Mode.RANGED):
-		var strike_count := int(_data(e).get(Keys.STRIKE_COUNT, 1))
-		for i in range(strike_count):
-			var key := int(battle_view.make_projectile_key(_source_id(e), i))
-			var projectile := battle_view.take_projectile(key)
-			if projectile != null and is_instance_valid(projectile):
-				projectile.queue_free()
-
 
 func _on_strike_windup(e: EventPackage) -> void:
 	var attacker := battle_view.get_combatant(_source_id(e))
