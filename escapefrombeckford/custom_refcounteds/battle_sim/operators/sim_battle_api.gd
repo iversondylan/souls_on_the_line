@@ -593,7 +593,7 @@ func apply_attack_now(spec: SimAttackSpec) -> bool:
 	ai_ctx.cid = spec.attacker_id
 	ai_ctx.combatant_state = state.get_unit(spec.attacker_id)
 	#ai_ctx.combatant_data = api. #ctx.resolved.combatant_datas[0]
-	ai_ctx.battle_scene = null
+	#ai_ctx.battle_scene = null
 	ai_ctx.state = {}
 	ai_ctx.params = {}
 	ai_ctx.forecast = false
