@@ -62,9 +62,6 @@ func _set_main(new_sim: Sim) -> void:
 		main.state.status_catalog = status_catalog
 		main.state.arcana_catalog = arcana_catalog
 
-	if main.api != null:
-		main.api.status_catalog = status_catalog
-
 	if main.runtime != null:
 		main.runtime.bind(main, self)
 
@@ -76,16 +73,11 @@ func _set_status_catalog(catalog: StatusCatalog) -> void:
 		main.status_catalog = catalog
 		if main.state != null:
 			main.state.status_catalog = catalog
-		if main.api != null:
-			main.api.status_catalog = catalog
 
 	if preview != null:
 		preview.status_catalog = catalog
 		if preview.state != null:
 			preview.state.status_catalog = catalog
-		if preview.api != null:
-			preview.api.status_catalog = catalog
-
 
 func _set_arcana_catalog(catalog: ArcanaCatalog) -> void:
 	arcana_catalog = catalog

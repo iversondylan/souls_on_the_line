@@ -5,23 +5,21 @@ class_name SimBattleAPI extends RefCounted
 # ============================================================================
 # SimBattleAPI
 # ----------------------------------------------------------------------------
-# Design direction:
-# - Queries about battle state
-# - Atomic state mutations
-# - Event emission for those mutations
-# - Dirtying / checkpoint requests
+# Responsibilities:
+# - read/query battle state
+# - perform atomic state mutations
+# - emit events for those mutations
+# - request dirtying/checkpoint work
 #
-# Transitional shims still present:
-# - on_group_turn_begin()
-# - on_group_turn_end()
-# - pending_discard
-# - status metadata helpers
+# Explicitly NOT responsible for:
+# - turn/group lifecycle orchestration
+# - intent lifecycle orchestration
+# - status proto classification rules
 #
-# Long-term:
-# - pending_discard should move into a dedicated turn/input state object
-# - group-turn lifecycle hooks should likely move out of API into a turn-phase
-#   coordinator or dedicated lifecycle helper
-# - status metadata helpers should move into a status rules/helper module
+# Those belong in:
+# - SimRuntime
+# - ActionLifecycleSystem
+# - SimStatusSystem
 # ============================================================================
 
 const FRIENDLY := 0
@@ -30,14 +28,11 @@ const ENEMY := 1
 var state: BattleState
 var checkpoint_processor: CheckpointProcessor
 
-# Transitional: prefer state.status_catalog long-term.
-var status_catalog: StatusCatalog
-
 # Runtime callbacks assigned externally.
 var on_summoned: Callable = Callable()		# (summoned_id: int, group_index: int) -> void
 var on_unit_removed: Callable = Callable()	# (combat_id: int, group_index: int, reason: String) -> void
 
-# Transitional: should move into a player-turn/input state object.
+# Transitional: should ultimately live in dedicated player/input state.
 var pending_discard: DiscardRequest = null
 
 var scopes: BattleScopeManager
@@ -710,7 +705,7 @@ func resolve_player_discard(selected_card_uids: Array[String]) -> void:
 
 
 # ============================================================================
-# AI planning / intent hooks
+# AI planning helpers
 # ============================================================================
 
 func plan_intent(cid: int, allow_hooks := true, clear_dirty := true) -> void:
@@ -746,102 +741,6 @@ func plan_intents() -> void:
 
 	for cid in state.units.keys():
 		plan_intent(int(cid))
-
-
-# Transitional compatibility shim:
-# runtime currently calls these as lifecycle entry points.
-func on_group_turn_begin(group_index: int) -> void:
-	_run_group_turn_begin_hooks(int(group_index))
-
-
-# Transitional compatibility shim:
-# runtime currently calls these as lifecycle entry points.
-func on_group_turn_end(group_index: int) -> void:
-	_run_group_turn_end_hooks(int(group_index))
-
-
-func _run_group_turn_begin_hooks(group_index: int) -> void:
-	if state == null:
-		return
-
-	SimStatusLifecycleRunner.on_group_turn_begin(self, int(group_index))
-
-	var opposing_group := get_opposing_group(int(group_index))
-
-	for cid in get_combatants_in_group(opposing_group, false):
-		plan_intent(int(cid), true, false)
-
-	for cid in get_combatants_in_group(opposing_group, false):
-		_fire_opposing_group_start_for(int(cid))
-
-
-func _run_group_turn_end_hooks(group_index: int) -> void:
-	if state == null:
-		return
-
-	SimStatusLifecycleRunner.on_group_turn_end(self, int(group_index))
-
-	for cid in get_combatants_in_group(int(group_index), true):
-		_fire_my_group_end_for(int(cid))
-
-	for cid in get_combatants_in_group(int(group_index), true):
-		var u := state.get_unit(int(cid))
-		if u != null and u.ai_state:
-			u.ai_state["telegraph_committed"] = false
-
-
-func _fire_opposing_group_start_for(cid: int) -> void:
-	if state == null:
-		return
-
-	var u: CombatantState = state.get_unit(int(cid))
-	if u == null or !u.is_alive():
-		return
-	if u.combatant_data == null or u.combatant_data.ai == null:
-		return
-
-	ActionPlanner._ensure_ai_state_initialized(u)
-	u.ai_state[ActionPlanner.FIRST_INTENTS_READY] = true
-
-	var ctx := _make_ai_ctx(u)
-	ActionPlanner.ensure_valid_plan_sim(u.combatant_data.ai, ctx, true)
-
-	if bool(u.ai_state.get("telegraph_committed", false)):
-		return
-
-	var idx := int(u.ai_state.get(ActionPlanner.KEY_PLANNED_IDX, -1))
-	var action := ActionPlanner._get_action_by_idx(u.combatant_data.ai, idx)
-	if action == null:
-		return
-
-	for m: IntentLifecycleModel in action.intent_lifecycle_models:
-		if m != null:
-			m.on_opposing_group_start(ctx)
-
-	u.ai_state["telegraph_committed"] = true
-
-
-func _fire_my_group_end_for(cid: int) -> void:
-	if state == null:
-		return
-
-	var u: CombatantState = state.get_unit(int(cid))
-	if u == null:
-		return
-	if u.combatant_data == null or u.combatant_data.ai == null:
-		return
-
-	ActionPlanner._ensure_ai_state_initialized(u)
-	var ctx := _make_ai_ctx(u)
-
-	var idx := int(u.ai_state.get(ActionPlanner.KEY_PLANNED_IDX, -1))
-	var action := ActionPlanner._get_action_by_idx(u.combatant_data.ai, idx)
-	if action == null:
-		return
-
-	for m: IntentLifecycleModel in action.intent_lifecycle_models:
-		if m != null:
-			m.on_my_group_end(ctx)
 
 
 func _make_ai_ctx(u: CombatantState) -> NPCAIContext:
@@ -887,7 +786,7 @@ func on_damage_applied(ctx: DamageContext) -> void:
 	if u == null:
 		return
 
-	SimStatusEventRunner.on_damage_taken(self, ctx)
+	SimStatusSystem.on_damage_taken(self, ctx)
 
 	if !u.is_alive():
 		return
@@ -902,37 +801,6 @@ func on_damage_applied(ctx: DamageContext) -> void:
 	) + int(ctx.health_damage)
 
 	_request_replan(tid)
-
-
-# ============================================================================
-# Status metadata helpers (transitional)
-# ============================================================================
-
-func _get_status_proto(id: StringName) -> Status:
-	# Transitional:
-	# This should eventually move out to a status rules/helper layer.
-	if state != null and state.status_catalog != null:
-		return state.status_catalog.get_proto(id)
-
-	if status_catalog != null:
-		return status_catalog.get_proto(id)
-
-	return null
-
-
-func _is_aura_proto(proto: Status) -> bool:
-	# Transitional:
-	# This classification logic should eventually live in a status rules/helper layer.
-	if proto == null:
-		return false
-
-	if proto is Aura:
-		return true
-
-	if proto.affects_others():
-		return true
-
-	return false
 
 
 # ============================================================================
