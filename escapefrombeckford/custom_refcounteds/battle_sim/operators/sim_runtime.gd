@@ -186,6 +186,8 @@ func apply_player_card(req: CardPlayRequest) -> bool:
 	_apply_checkpoint_boundary(CheckpointProcessor.Kind.AFTER_CARD, true)
 	return ok
 
+func request_urgent_planning_flush() -> void:
+	_apply_checkpoint_boundary(CheckpointProcessor.Kind.URGENT_STATUS_LEGALITY, true)
 
 # ============================================================================
 # API hooks (assigned from host)

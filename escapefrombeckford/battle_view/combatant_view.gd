@@ -45,7 +45,7 @@ class_name CombatantView extends Node2D
 @onready var area_left: CombatantAreaLeft = $AreaLeft
 @onready var pending_turn_glow: Sprite2D = $PendingTurnGlow
 
-
+const DAMAGE_NUMBER_SCN_PATH := "res://scenes/ui/damage_number.tscn"
 # ------------------------------------------------------------------------------
 # Core state
 # ------------------------------------------------------------------------------
@@ -59,6 +59,7 @@ var mortality: Mortality = Mortality.MORTAL
 var display_name: String = ""
 var cid: int = -1 : set = _set_cid
 var character_art_uid: String
+var _height_px: int = 240
 
 var _status_catalog: StatusCatalog = null
 var _spec: Dictionary = {}
@@ -197,6 +198,7 @@ func _apply_visuals_from_spec() -> void:
 		character_art.texture = tex
 
 	var height := int(_spec.get(Keys.HEIGHT, 365))
+	_height_px = height
 	if character_art.texture != null:
 		var scalar := float(height) / float(character_art.texture.get_height())
 		character_art.scale = Vector2(scalar, scalar)
@@ -432,17 +434,53 @@ func play_attack_received_followthrough(info: AttackPresentationInfo, phase_dura
 	if info == null:
 		return
 
+	# If you want: stronger reaction if lethal is coming.
+	var lethal_incoming := false
 	for s in info.strikes:
+		if s == null:
+			continue
+		for h in s.hits:
+			if h != null and int(h.target_id) == int(cid) and bool(h.was_lethal):
+				lethal_incoming = true
+
+	# Micro-timing policy lives here:
+	# - melee: impact early
+	# - ranged: impact when projectile arrives (currently spawn uses travel_t=0.3)
+	for si in range(info.strikes.size()):
+		var s := info.strikes[si]
 		if s == null:
 			continue
 
 		for h in s.hits:
-			if h == null:
-				continue
-			if int(h.target_id) != int(cid):
+			if h == null or int(h.target_id) != int(cid):
 				continue
 
-			_play_received_hit_async(h, phase_duration)
+			var delay := _hit_delay_for(info, si, phase_duration)
+			_apply_received_hit_async(h, delay, phase_duration, lethal_incoming)
+
+
+func _hit_delay_for(info: AttackPresentationInfo, strike_index: int, phase_duration: float) -> float:
+	if strike_index == 0:
+		return 0#travel_t + 0.15 * float(strike_index)
+	else:
+		# melee impact happens early in followthrough
+		return 0.15*strike_index
+
+
+func _apply_received_hit_async(h: HitPresentationInfo, delay_sec: float, phase_duration: float, lethal_incoming: bool) -> void:
+	if delay_sec > 0.0:
+		await get_tree().create_timer(delay_sec).timeout
+	if !is_instance_valid(self):
+		return
+
+	play_hit()
+	set_health(h.after_health, h.was_lethal)
+	pop_damage_number(h.amount)
+
+	# Optional: if lethal, do a bigger reaction immediately.
+	if h.was_lethal:
+		play_death_reaction(maxf(phase_duration * 0.6, 0.15))
+
 
 # ------------------------------------------------------------------------------
 # Generic windup helper
@@ -937,11 +975,35 @@ func show_targeted(_is_targeted: bool) -> void:
 
 
 func play_hit() -> void:
-	pass
+	if tween_hit:
+		tween_hit.kill()
+
+	var base_pos := _get_base_art_pos()
+	var base_scale := _get_base_art_scale()
+
+	# tiny local flinch; tune later
+	var kick := Vector2(2, 0)
+	tween_hit = create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	tween_hit.tween_property(art_parent, "position", base_pos + kick, 0.05)
+	tween_hit.tween_property(art_parent, "position", base_pos, 0.08).set_ease(Tween.EASE_IN_OUT)
+	tween_hit.parallel().tween_property(art_parent, "scale", base_scale * Vector2(1.02, 0.98), 0.05)
+	tween_hit.tween_property(art_parent, "scale", base_scale, 0.08)
 
 
-func pop_damage_number(_amount: int) -> void:
-	pass
+func pop_damage_number(amount: int) -> void:
+	if amount <= 0:
+		return
+	var scn: PackedScene = FxLibrary.get_scene(DAMAGE_NUMBER_SCN_PATH)
+	if scn == null:
+		push_warning("Missing DamageNumber scene at %s" % DAMAGE_NUMBER_SCN_PATH)
+		return
+	var dn := scn.instantiate() as Node2D
+	if dn == null:
+		return
+	add_child(dn)
+	# your old behavior: local position at (0,-height)
+	if dn.has_method("animate_and_vanish"):
+		dn.call("animate_and_vanish", amount, _height_px)
 
 
 func play_attack_react() -> void:

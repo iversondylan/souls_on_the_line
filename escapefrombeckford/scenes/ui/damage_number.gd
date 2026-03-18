@@ -1,3 +1,5 @@
+# damage_number.gd
+
 class_name DamageNumber extends Node2D
 
 @onready var damage_number_label: Label = $DamageText

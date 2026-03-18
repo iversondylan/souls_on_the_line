@@ -133,6 +133,7 @@ func init_from_seeds(battle_seed: int, run_seed: int) -> void:
 	if main.runtime != null:
 		main.api.on_summoned = Callable(main.runtime, "on_summoned")
 		main.api.on_unit_removed = Callable(main.runtime, "on_unit_removed")
+		main.api.on_urgent_planning_requested = Callable(main.runtime, "request_urgent_planning_flush")
 
 	main_state_initialized.emit()
 

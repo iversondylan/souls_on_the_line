@@ -8,6 +8,7 @@ enum Kind {
 	AFTER_ARCANA,
 	AFTER_GROUP_TURN_BEGIN,
 	AFTER_GROUP_TURN_END,
+	URGENT_STATUS_LEGALITY,
 }
 
 var dirty_replan_ids: Dictionary = {}

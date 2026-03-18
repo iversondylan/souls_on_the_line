@@ -333,7 +333,9 @@ func _apply_payload_events(payload: Array, duration: float, allowed_types: Dicti
 			continue
 		if !allowed_types.is_empty() and !allowed_types.has(int(be.type)):
 			continue
-		on_event(_make_epkg_from_event(be, duration))
+		var ep := _make_epkg_from_event(be, duration)
+		ep.is_planned = true
+		on_event(ep)
 
 
 func _make_status_applied_order(e: EventPackage) -> StatusAppliedOrder:
@@ -510,6 +512,10 @@ func _on_targeted(e: EventPackage) -> void:
 
 
 func _on_damage_applied(e: EventPackage) -> void:
+	if e.is_planned:
+		# Planned damage is handled by CombatantView using AttackPresentationInfo.
+		# Ignore raw DAMAGE_APPLIED events here so it doesn't double-apply visuals.
+		return
 	var d := _data(e)
 	var tid := int(d.get(Keys.TARGET_ID, 0))
 	var amount := int(d.get(Keys.FINAL_AMOUNT, 0))

@@ -31,7 +31,7 @@ var checkpoint_processor: CheckpointProcessor
 # Runtime callbacks assigned externally.
 var on_summoned: Callable = Callable()		# (summoned_id: int, group_index: int) -> void
 var on_unit_removed: Callable = Callable()	# (combat_id: int, group_index: int, reason: String) -> void
-
+var on_urgent_planning_requested: Callable = Callable()
 # Transitional: should ultimately live in dedicated player/input state.
 var pending_discard: DiscardRequest = null
 
@@ -276,6 +276,20 @@ func _request_intent_refresh_all() -> void:
 		_request_intent_refresh(int(k))
 
 
+func _request_immediate_planning_flush_if_needed(target_id: int, proto: Status) -> void:
+	if proto == null:
+		return
+	if !proto.affects_intent_legality():
+		return
+
+	# Dirtiness should already be requested before this point,
+	# but make sure the target definitely gets both.
+	_request_replan(int(target_id))
+	_request_intent_refresh(int(target_id))
+
+	if on_urgent_planning_requested.is_valid():
+		on_urgent_planning_requested.call()
+
 func _request_turn_order_rebuild() -> void:
 	if checkpoint_processor != null:
 		checkpoint_processor.request_turn_order_rebuild()
@@ -471,18 +485,25 @@ func apply_status(ctx: StatusContext) -> void:
 		)
 
 	_rebuild_modifier_cache_for(int(ctx.target_id))
-	var status_ctx := SimStatusSystem.make_context(self, int(ctx.target_id), u.statuses.get_status_stack(ctx.status_id))
+
+	var status_ctx := SimStatusSystem.make_context(
+		self,
+		int(ctx.target_id),
+		u.statuses.get_status_stack(ctx.status_id)
+	)
 	if status_ctx != null and status_ctx.proto != null:
 		status_ctx.proto.on_apply(status_ctx, ctx)
+
 	var proto := SimStatusSystem.get_proto(self, ctx.status_id)
-	# eventually move aura refresh routing into SimStatusSystem too, 
-	# so API is not doing proto classification
+
 	if SimStatusSystem.is_aura_proto(proto):
 		_request_intent_refresh_targets_for_aura(int(ctx.target_id), proto)
 	else:
 		_request_intent_refresh(int(ctx.target_id))
 
 	_on_status_changed(int(ctx.target_id))
+
+	_request_immediate_planning_flush_if_needed(int(ctx.target_id), proto)
 
 
 func remove_status(ctx: StatusContext) -> void:
@@ -505,6 +526,7 @@ func remove_status(ctx: StatusContext) -> void:
 	if old_stack != null:
 		before_i = int(old_stack.intensity)
 		before_d = int(old_stack.duration)
+
 	var status_ctx := SimStatusSystem.make_context(self, int(ctx.target_id), old_stack)
 	u.statuses.remove_ctx(ctx)
 
@@ -527,14 +549,18 @@ func remove_status(ctx: StatusContext) -> void:
 		)
 
 	_rebuild_modifier_cache_for(int(ctx.target_id))
+
 	if status_ctx != null and status_ctx.proto != null:
 		status_ctx.proto.on_remove(status_ctx, ctx)
+
 	if SimStatusSystem.is_aura_proto(proto):
 		_request_intent_refresh_targets_for_aura(int(ctx.target_id), proto)
 	else:
 		_request_intent_refresh(int(ctx.target_id))
 
 	_on_status_changed(int(ctx.target_id))
+
+	_request_immediate_planning_flush_if_needed(int(ctx.target_id), proto)
 
 
 func fade_unit(combat_id: int, reason: String = "fade") -> void:
