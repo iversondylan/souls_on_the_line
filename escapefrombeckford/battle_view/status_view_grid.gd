@@ -125,7 +125,7 @@ func _add_or_update_display_from_state(st: Dictionary, duration: float) -> void:
 	if d.stacks.visible:
 		d.stacks.text = str(intensity)
 
-	print("_add_or_update_display_from_state() int: %s, dur: %s" % [str(intensity), str(dur)])
+	#print("_add_or_update_display_from_state() int: %s, dur: %s" % [str(intensity), str(dur)])
 
 func _remove_display(id: StringName, duration: float) -> void:
 	if !_displays_by_id.has(id):

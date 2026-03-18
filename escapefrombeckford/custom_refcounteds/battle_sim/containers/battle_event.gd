@@ -39,6 +39,7 @@ enum Type {
 	DISCARD_RESOLVED,
 	SUMMON_RESERVE_RELEASED,
 	TURN_STATUS,
+	MANA
 }
 
 var defines_beat: bool = false

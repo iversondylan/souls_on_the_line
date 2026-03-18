@@ -79,6 +79,7 @@ func _set_status_catalog(catalog: StatusCatalog) -> void:
 		if preview.state != null:
 			preview.state.status_catalog = catalog
 
+
 func _set_arcana_catalog(catalog: ArcanaCatalog) -> void:
 	arcana_catalog = catalog
 
@@ -164,8 +165,11 @@ func end_setup() -> void:
 	)
 	writer.scope_end() # setup
 
-	if main.intent_planner != null:
-		main.intent_planner.ensure_valid_plans(main.api, true)
+	# Initialize NPC plans and intent presentation directly.
+	for cid in main.state.units.keys():
+		var combat_id := int(cid)
+		main.api.plan_intent(combat_id, true, true)
+		ActionIntentPresenter.emit_current_intent(main.api, combat_id)
 
 
 func seed_arcana_from_ids(ids: Array[StringName]) -> void:
@@ -206,6 +210,7 @@ func get_main_state() -> BattleState:
 
 func get_preview_state() -> BattleState:
 	return preview.state if preview != null else null
+
 
 # -------------------------
 # Preview management
@@ -338,8 +343,6 @@ func _format_sim_statuses(u: CombatantState) -> String:
 		var dur := 0
 
 		if "intensity" in stack:
-			intensity = int(stack.intensity)
-		elif "intensity" in stack:
 			intensity = int(stack.intensity)
 
 		if "duration" in stack:

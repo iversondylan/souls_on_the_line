@@ -1,17 +1,15 @@
 # card_executor.gd
 class_name CardExecutor extends RefCounted
 
-#var card_catalog: CardCatalog
-
-func play_card(api: SimBattleAPI, req: CardPlayRequest) -> bool:
+static func play_card(api: SimBattleAPI, req: CardPlayRequest) -> bool:
 	if api == null or req == null or req.card == null:
 		return false
-	
+
 	var card := req.card
 	card.ensure_uid()
-	
-	var resolved := CardTargeting.resolve(api, card, req) # must accept CardData instance
-	
+
+	var resolved := CardTargeting.resolve(api, card, req)
+
 	var ctx := CardActionContextSim.new()
 	ctx.api = api
 	ctx.card_data = card
@@ -20,14 +18,10 @@ func play_card(api: SimBattleAPI, req: CardPlayRequest) -> bool:
 	ctx.resolved = resolved
 	ctx.params = req.params
 	
-	# Spend mana (SIM)
-	if api.has_method("spend_mana_for_card"):
-		if !bool(api.call("spend_mana_for_card", req.source_id, card)):
-			return false
+	api.on_card_played(ctx)
 	
-	# Emit “card played” hook once
-	if api.has_method("on_card_played"):
-		api.call("on_card_played", ctx)
+	if !api.spend_mana_for_card(req.source_id, card):
+		return false
 	
 	var any := false
 	for action: CardAction in card.actions:
@@ -35,5 +29,6 @@ func play_card(api: SimBattleAPI, req: CardPlayRequest) -> bool:
 			continue
 		if action.activate_sim(ctx):
 			any = true
-	(api as SimBattleAPI).on_card_finished(ctx)
+
+	api.on_card_finished(ctx)
 	return any

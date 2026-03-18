@@ -8,17 +8,22 @@ signal card_fan_requested(which_usable_card: UsableCard)
 signal mouse_entered(usablecard: UsableCard)
 signal mouse_exited(usablecard: UsableCard)
 
-var player_data: PlayerData : set = _set_player
+#var player_data: PlayerData : set = _set_player
 #var battle_scene: BattleScene
 var battle_view: BattleView
 var sim_host: SimHost
+
+var api: SimBattleAPI #NEW
+
 var hand: Hand
-var actions: Array[CardAction]
 var card_name_str: String = "Card Name"
 var card_description_str: String = "Card Description"
-var cost_red: int = 1
-var cost_green: int = 1
-var cost_blue: int = 1
+
+var cost := 1 #NEW
+
+#var cost_red: int = 1
+#var cost_green: int = 1
+#var cost_blue: int = 1
 var card_data: CardData : set = _set_card_data
 
 @onready var card_visuals: CardVisuals = $CardVisuals
@@ -74,6 +79,19 @@ func _process(_delta):
 	if _is_popped and is_instance_valid(strictly_visuals):
 		strictly_visuals.rotation = -rotation
 
+func _player_id() -> int:
+	if api == null:
+		return 0
+	return int(api.get_player_id())
+
+
+func _battle_view():
+	return hand.battle_view if hand != null and "battle_view" in hand else null
+
+
+func _sim_host():
+	return hand.sim_host if hand != null and "sim_host" in hand else null
+
 func animate_to_position(new_position: Vector2, new_rotation: float, duration: float, scale: Vector2 = Vector2.ONE, on_finish: Callable = Callable()) -> void:
 	#print("usable_card.gd animate_to_position()")
 	if tween and is_instance_valid(tween):
@@ -92,18 +110,12 @@ func animate_to_rotation(new_rotation: float, duration: float) -> void:
 	tween = create_tween().set_trans(Tween.TRANS_CIRC).set_ease(Tween.EASE_OUT)
 	tween.tween_property(self, "rotation_degrees", new_rotation,  duration)
 
-func _set_player(new_player: PlayerData) -> void:
-	player_data = new_player
-	if !is_node_ready():
-		await ready
-	card_state_machine.player_data = player_data
-	
-
 func _set_card_data(_card_data: CardData) -> void:
 	if !is_node_ready():
 		await ready
 	card_data = _card_data
 	card_visuals.card_data = card_data
+	cost = int(card_data.get_total_cost()) if card_data != null else 0
 	_update_graphics()
 	update_description()
 	playable = is_playable()
@@ -180,49 +192,44 @@ func get_description() -> String:
 
 
 
-func get_cost() -> Array[int]:
-	return [card_data.cost_red, card_data.cost_green, card_data.cost_blue]
+func get_cost() -> int:
+	if card_data == null:
+		return 0
+	return int(card_data.get_total_cost())
 
 func activate() -> bool:
-	if card_data == null or player_data == null:
+	if card_data == null or api == null or hand == null:
 		return false
 
 	var resolved_view := resolve_targets(targets)
 	if resolved_view.fighter_ids.is_empty() and resolved_view.areas.is_empty():
 		return false
 
-	if !player_data.can_play_card(card_data):
+	if !api.can_pay_card(card_data):
 		return false
 
-	# --- Summon cap gate (SIM/VIEW) ---
+	# Summon cap gate
 	if int(card_data.card_type) == int(CardData.CardType.SUMMON):
-		var api := sim_host.get_main_api() if sim_host else null
-		if api != null:
-			var n := api.count_soulbound_in_group(0)
-			print("usable_card.gd activate() soulbound in group %s: %s" % [0, n])
-			if n >= MAX_SOULBOUND:
-				# Build the CardPlayRequest, but DO NOT submit it yet.
-				card_data.ensure_uid()
+		var n := api.count_soulbound_in_group(0)
+		if n >= MAX_SOULBOUND:
+			card_data.ensure_uid()
 
-				var req := CardPlayRequest.new()
-				req.source_id = int(player_data.combat_id)
-				req.card = card_data
-				req.target_ids = resolved_view.fighter_ids
-				req.insert_index = resolved_view.insert_index
+			var req := CardPlayRequest.new()
+			req.source_id = _player_id()
+			req.card = card_data
+			req.target_ids = resolved_view.fighter_ids
+			req.insert_index = resolved_view.insert_index
 
-				# Build preview info for the modal (ghost visuals + insert idx).
-				var preview := SummonPreview.new()
-				preview.insert_index = int(resolved_view.insert_index)
-				preview.summon_data = _get_summon_preview_data() # implement from your SummonAction/card authoring
+			var preview := SummonPreview.new()
+			preview.insert_index = int(resolved_view.insert_index)
+			preview.summon_data = _get_summon_preview_data()
 
-				Events.request_summon_replace.emit(self, req, preview)
-				return true
+			Events.request_summon_replace.emit(self, req, preview)
+			return true
 
-	# --- Normal path: commit to SIM immediately ---
 	if !activate_sim_from_resolved_view(resolved_view):
 		return false
 
-	player_data.spend_mana(card_data)
 	Events.card_played.emit(self)
 	_move_to_destination()
 	return true
@@ -236,152 +243,29 @@ func _get_summon_preview_data() -> CombatantData:
 	return null
 
 func activate_sim_from_resolved_view(resolved_view: CardResolvedTargetView) -> bool:
+	var sim_host = _sim_host()
 	if sim_host == null:
+		return false
+
+	var runtime := sim_host.get_main_runtime()
+	if runtime == null:
 		return false
 
 	card_data.ensure_uid()
 
 	var req := CardPlayRequest.new()
-	req.source_id = int(player_data.combat_id)
+	req.source_id = _player_id()
 	req.card = card_data
 	req.target_ids = resolved_view.fighter_ids
 	req.insert_index = resolved_view.insert_index
-	return sim_host.get_main_runtime().apply_player_card(req)
 
-#func activate() -> bool:
-	#if card_data == null or player_data == null:# or battle_scene == null:
-		#return false
-#
-	#var resolved_view := resolve_targets(targets)
-	#if resolved_view.fighter_ids.is_empty() and resolved_view.areas.is_empty():
-		#return false
-#
-	#if !player_data.can_play_card(card_data):
-		#return false
-#
-	## SIM commit (source of truth)
-	#if !activate_sim_from_resolved_view(resolved_view):
-		#return false
-#
-	## Spend mana / discard visuals still live-ui concerns
-	#player_data.spend_mana(card_data)
-	#Events.card_played.emit(self)
-	#_move_to_destination()
-	#return true
-#
-#func activate_sim_from_resolved_view(resolved_view: CardResolvedTargetView) -> bool:
-	#if sim_host == null:
-		#return false
-#
-	#card_data.ensure_uid()
-#
-	#var req := CardPlayRequest.new()
-	#req.source_id = int(player_data.combat_id)
-	#req.card = card_data
-	#req.target_ids = resolved_view.fighter_ids
-	#req.insert_index = resolved_view.insert_index
-	#return sim_host.apply_player_card(req)
-
-#func activate() -> bool:
-	## --- basic validation (UI-side) ---
-	#if card_data == null or player == null or battle_scene == null:
-		#return false
-#
-	## Live resolution (what the user pointed at)
-	#var resolved_live := resolve_targets(targets)
-	#if resolved_live.fighters.is_empty() and resolved_live.areas.is_empty():
-		#return false
-#
-	#if !player.can_play_card(card_data):
-		#return false
-#
-	## Build SIM target payload from live resolution
-	#var resolved_sim := _build_resolved_sim_from_live(resolved_live)
-#
-	## Special-case: summon replace / swap partner still driven by UI flow
-	## (we cannot “just do sim + live” if you need extra user choice)
-	#var summon_action := _get_first_summon_action()
-	#if summon_action != null and summon_action.requires_summon_slot():
-		#var needs_replace := battle_scene.get_n_summoned_allies() >= BattleGroupFriendly.MAX_SOULBOUND
-		#if needs_replace:
-			## Keep existing UX path; do NOT apply sim/live yet
-			#var ctx_live := build_action_context(resolved_live)
-			#var effect := summon_action.build_effect(ctx_live)
-			#Events.request_summon_replace.emit(self, ctx_live, effect, summon_action)
-			#return true
-#
-	#var swap_action := _get_first_swap_action()
-	#if swap_action != null:
-		#Events.request_swap_partner.emit(self, build_action_context(resolved_live), resolved_live.fighters[0], swap_action)
-		#return true
-#
-	## --- Commit ---
-	## You said: “card plays engage sim; sim applies immediately and queues animation events to be shown in live”.
-	## For now we’ll do BOTH:
-	## 1) SIM mutates + logs events
-	## 2) LIVE runs current pipeline (until you switch live to consume event log)
-#
-	#var ok_sim := activate_sim(resolved_sim)
-	#if !ok_sim:
-		## Policy choice: if sim fails, do not do live.
-		## (Keeps source of truth consistent.)
-		#return false
-#
-	#var ok_live := activate_live(resolved_live)
-	#return ok_live
-
-
-#func activate_live(resolved_live: CardResolvedTarget) -> bool:
-	#var ctx := build_action_context(resolved_live)
-	#return commit_play_live(ctx, null, true)
-
-#func activate_sim(resolved_sim: CardResolvedTargetSim) -> bool:
-	#if battle_scene == null or battle_scene.sim_host == null:
-		## If you want to allow “live-only” in some situations, flip this policy.
-		#push_warning("UsableCard.activate_sim: no sim_host on battle_scene")
-		#return false
-#
-	## ensure persistent identity
-	#if card_data != null:
-		#card_data.ensure_uid()
-#
-	#var req := CardPlayRequest.new()
-	#req.source_id = int(player.combat_id)
-	##req.combatant_datas = resolved_sim.combatant_datas
-	#req.card = card_data
-	#req.target_ids = resolved_sim.fighter_ids
-	#req.insert_index = resolved_sim.insert_index
-	## optional
-	## req.params = ...
-	##print("usable_card.gd activate_sim() request combatant_datas: ", req.combatant_datas)
-	#return battle_scene.sim_host.apply_player_card(req)
+	return runtime.apply_player_card(req)
 
 func activate_view(_ctx: CardActionContextView) -> bool:
 	# Default: do nothing
 	var cname := _ctx.card_data.name if _ctx and _ctx.card_data else "<no card/ctx>"
 	push_error("%s missing activate_view() (card=%s)" % [get_class(), cname])
 	return false
-
-#func _build_resolved_sim_from_live(resolved_live: CardResolvedTarget) -> CardResolvedTargetSim:
-	#var out := CardResolvedTargetSim.new()
-#
-	## Fighters -> ids
-	#if resolved_live.fighters != null:
-		#for f: Fighter in resolved_live.fighters:
-			#if f != null and is_instance_valid(f):
-				##print("usable_card.gd _build_resolved_sim_from_live() appending %s to combatant_datas and fighter_ids" % f.name)
-				##out.combatant_datas.append(f.combatant_data)
-				#out.fighter_ids.append(int(f.combat_id))
-#
-	## Battlefield insert index
-	#out.insert_index = int(resolved_live.insert_index) if ("insert_index" in resolved_live) else -1
-#
-	## If you care later:
-	## out.group_index = ...
-	## out.area_index = ...
-	##print("usable_card.gd _build_resolved_sim_from_live() out combatant_data: ", out.combatant_datas)
-	#return out
-
 
 func _get_first_summon_action() -> SummonAction:
 	for action in card_data.actions:
@@ -454,17 +338,19 @@ func is_mouse_over() -> bool:
 
 func resolve_targets(new_targets: Array[Node]) -> CardResolvedTargetView:
 	var result := CardResolvedTargetView.new()
-	if new_targets == null or new_targets.is_empty() or card_data == null:
+	if new_targets == null or new_targets.is_empty() or card_data == null or api == null:
 		return result
+
+	var battle_view = _battle_view()
+	var player_id := _player_id()
 
 	match card_data.target_type:
 		CardData.TargetType.SELF:
-			# Source is the player cid. You already have player.combat_id.
-			var pid := int(player_data.combat_id)
-			result.fighter_ids.append(pid)
-			var pv := battle_view.get_combatant(pid) if battle_view else null
-			if pv != null:
-				result.views.append(pv)
+			if player_id > 0:
+				result.fighter_ids.append(player_id)
+				var pv = battle_view.get_combatant(player_id) if battle_view != null else null
+				if pv != null:
+					result.views.append(pv)
 
 		CardData.TargetType.BATTLEFIELD:
 			result.areas.clear()
@@ -477,99 +363,42 @@ func resolve_targets(new_targets: Array[Node]) -> CardResolvedTargetView:
 			if new_targets[0] is CombatantTargetArea:
 				var ta := new_targets[0] as CombatantTargetArea
 				if ta.combatant_view != null and ta.cid > 0:
-					# Optional: enforce ally/enemy legality using view’s group/side if you have it.
 					result.views = [ta.combatant_view]
-					result.fighter_ids = PackedInt32Array([ta.cid])
+					result.fighter_ids = PackedInt32Array([int(ta.cid)])
 
 		CardData.TargetType.ALL_ENEMIES:
-			# VIEW side: just collect views and ids from battle_view
-			var ids := sim_host.get_main_api().get_combatants_in_group(1, false) if sim_host else []
+			var ids := api.get_combatants_in_group(1, false)
 			for id in ids:
 				var cid := int(id)
 				result.fighter_ids.append(cid)
-				var v := battle_view.get_combatant(cid)
+				var v = battle_view.get_combatant(cid) if battle_view != null else null
 				if v != null:
 					result.views.append(v)
 
 		CardData.TargetType.EVERYONE:
-			var ids0 := sim_host.get_main_api().get_combatants_in_group(0, false) if sim_host else []
-			var ids1 := sim_host.get_main_api().get_combatants_in_group(1, false) if sim_host else []
+			var ids0 := api.get_combatants_in_group(0, false)
+			var ids1 := api.get_combatants_in_group(1, false)
+
 			for id in ids0:
 				var cid := int(id)
 				result.fighter_ids.append(cid)
-				var v := battle_view.get_combatant(cid)
-				if v != null:
-					result.views.append(v)
+				var v0 = battle_view.get_combatant(cid) if battle_view != null else null
+				if v0 != null:
+					result.views.append(v0)
+
 			for id in ids1:
 				var cid := int(id)
 				result.fighter_ids.append(cid)
-				var v := battle_view.get_combatant(cid)
-				if v != null:
-					result.views.append(v)
+				var v1 = battle_view.get_combatant(cid) if battle_view != null else null
+				if v1 != null:
+					result.views.append(v1)
 
 	return result
 
-#func resolve_targets(new_targets: Array[Node]) -> CardResolvedTarget:
-	#
-	#var result := CardResolvedTarget.new()
-	#
-	#if !new_targets:
-		#return result
-	#
-	#match card_data.target_type:
-		#CardData.TargetType.SELF:
-			#result.fighters = [player] as Array[Fighter]
-		#
-		#CardData.TargetType.BATTLEFIELD:
-			##var correct_targets: Array[Fighter] = []
-			#result.areas.clear()
-			#for target in new_targets:
-				#if target is CombatantAreaLeft or target is BattleSceneAreaLeft:
-					#result.areas.append(target)
-			#result.insert_index = new_targets.size() - 1
-		#
-		#CardData.TargetType.ALLY_OR_SELF:
-			##var correct_targets: Array[Fighter] = []
-			#if new_targets[0] is CombatantTargetArea:
-				#if new_targets[0].combatant is Player or new_targets[0].combatant is SummonedAlly:
-					#result.fighters = [new_targets[0].combatant] as Array[Fighter]
-		#
-		#CardData.TargetType.ALLY:
-			##var correct_targets: Array[Fighter]  = []
-			#if new_targets[0] is CombatantTargetArea:
-				#if new_targets[0].combatant is SummonedAlly:
-					#result.fighters = [new_targets[0].combatant] as Array[Fighter]
-		#
-		#CardData.TargetType.SINGLE_ENEMY:
-			#if new_targets[0] is CombatantTargetArea:
-				#if new_targets[0].combatant is Enemy:
-					#result.fighters = [new_targets[0].combatant] as Array[Fighter]
-		#
-		#CardData.TargetType.ALL_ENEMIES:
-			#result.fighters = battle_scene.get_combatants_in_group(1) as Array[Fighter]
-		#
-		#CardData.TargetType.EVERYONE:
-			#result.fighters = battle_scene.get_all_combatants() as Array[Fighter]
-	#return result
-
 func is_playable() -> bool:
-	if !player_data.can_play_card(card_data):
+	if card_data == null or api == null:
 		return false
-	
-	#for action in card_data.actions:
-		#if action.requires_summon_slot():
-			#if battle_scene.get_n_summoned_allies() >= player.combatant_data.max_mana:
-				#return false
-	#
-	return true
-
-#func get_fighters(new_targets: Array[Node]) -> Array[Fighter]:
-	#var attack_targets: Array[Fighter]
-	#for target in new_targets:
-		#if target is CombatantTargetArea:
-			#if target.combatant is Fighter:
-				#attack_targets.push_back(target.combatant)
-	#return attack_targets
+	return api.can_pay_card(card_data)
 
 func _cache_home() -> void:
 	if _home_cached or strictly_visuals == null:
@@ -624,19 +453,18 @@ func _kill_pop_tween() -> void:
 
 func build_action_context_sim(resolved_targets: CardResolvedTargetSim) -> CardActionContextSim:
 	var ctx := CardActionContextSim.new()
-	ctx.source_id = player_data.combat_id
-	#ctx.player = player
-	#ctx.battle_scene = battle_scene
+	ctx.api = api
+	ctx.source_id = _player_id()
 	ctx.card_data = card_data
 	ctx.resolved = resolved_targets
 	return ctx
 
+
 func build_action_context_view(resolved_targets: CardResolvedTargetView) -> CardActionContextView:
 	var ctx := CardActionContextView.new()
 	ctx.card_data = card_data
-	#ctx.battle_scene = battle_scene
-	ctx.battle_view = battle_view
-	ctx.source_id = int(player_data.combat_id)
+	ctx.battle_view = _battle_view()
+	ctx.source_id = _player_id()
 	ctx.resolved = resolved_targets
 	return ctx
 

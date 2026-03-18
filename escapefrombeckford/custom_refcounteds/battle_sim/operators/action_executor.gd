@@ -2,17 +2,13 @@
 
 class_name ActionExecutor extends RefCounted
 
-# Executes a chosen NPC action.
-# Action selection stays in ActionPlanner.
-# State mutation stays in SimBattleAPI / effect runners.
-
-func execute_npc_turn(sim: Sim, cid: int) -> void:
-	if sim == null or sim.api == null or sim.intent_planner == null:
+static func execute_npc_turn(api: SimBattleAPI, cid: int) -> void:
+	if api == null:
 		return
-	if cid <= 0 or !sim.api.is_alive(cid):
+	if cid <= 0 or !api.is_alive(cid):
 		return
 
-	var u: CombatantState = sim.state.get_unit(cid)
+	var u: CombatantState = api.state.get_unit(int(cid))
 	if u == null or u.combatant_data == null:
 		return
 
@@ -20,17 +16,9 @@ func execute_npc_turn(sim: Sim, cid: int) -> void:
 	if profile == null:
 		return
 
-	ActionPlanner._ensure_ai_state_initialized(u)
+	ActionPlanner.ensure_ai_state_initialized(u)
 
-	var ctx := NPCAIContext.new()
-	ctx.api = sim.api
-	ctx.cid = int(u.id)
-	ctx.combatant_state = u
-	ctx.combatant_data = u.combatant_data
-	ctx.rng = u.rng
-	ctx.state = u.ai_state
-	ctx.params = {}
-	ctx.forecast = false
+	var ctx := ActionPlanner.make_context(api, u)
 
 	if !bool(ctx.state.get(ActionPlanner.FIRST_INTENTS_READY, false)):
 		ctx.state[ActionPlanner.FIRST_INTENTS_READY] = true
@@ -41,7 +29,7 @@ func execute_npc_turn(sim: Sim, cid: int) -> void:
 		ActionPlanner.plan_next_intent_sim(profile, ctx, true)
 
 	var idx := int(ctx.state.get(ActionPlanner.KEY_PLANNED_IDX, -1))
-	var action := ActionPlanner._get_action_by_idx(profile, idx)
+	var action := ActionPlanner.get_action_by_idx(profile, idx)
 	if action == null:
 		_finish_turn(ctx)
 		return
@@ -72,13 +60,15 @@ func execute_npc_turn(sim: Sim, cid: int) -> void:
 			pkg.effect.execute_sim(ctx)
 
 	ctx.state[ActionPlanner.KEY_PLANNED_IDX] = -1
-	ActionPlanner._emit_set_intent_sim(profile, ctx, -1)
+	ActionIntentPresenter.emit_set_intent(api, profile, ctx, -1)
 	ctx.state[ActionPlanner.IS_ACTING] = false
 	ctx.state[ActionPlanner.STABILITY_BROKEN] = false
 	ctx.state[ActionPlanner.ACTIONS_TAKEN] = int(ctx.state.get(ActionPlanner.ACTIONS_TAKEN, 0)) + 1
 
-func _finish_turn(ctx: NPCAIContext) -> void:
+
+static func _finish_turn(ctx: NPCAIContext) -> void:
 	if ctx == null or ctx.state == null:
 		return
+
 	ctx.state[ActionPlanner.IS_ACTING] = false
 	ctx.state[ActionPlanner.STABILITY_BROKEN] = false

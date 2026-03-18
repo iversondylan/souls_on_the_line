@@ -20,7 +20,6 @@ var sim: Sim
 var host: SimHost
 
 var arcana_resolver: ArcanaResolver
-var card_executor: CardExecutor
 
 var turn_engine: TurnEngineCore
 var turn_engine_host_sim: TurnEngineHostSim
@@ -42,7 +41,6 @@ func bind(_sim: Sim, _host: SimHost) -> void:
 
 func reset_runtime_state() -> void:
 	arcana_resolver = null
-	card_executor = null
 	turn_engine = null
 	turn_engine_host_sim = null
 
@@ -114,13 +112,6 @@ func _ensure_arcana_resolver() -> ArcanaResolver:
 	arcana_resolver = ArcanaResolver.new(host, host.arcana_catalog)
 	return arcana_resolver
 
-
-func _ensure_card_executor() -> CardExecutor:
-	if card_executor == null:
-		card_executor = CardExecutor.new()
-	return card_executor
-
-
 # ============================================================================
 # Checkpoint boundaries
 # ============================================================================
@@ -191,7 +182,7 @@ func apply_player_card(req: CardPlayRequest) -> bool:
 	if sim == null or sim.api == null or sim.resolver == null:
 		return false
 
-	var ok := sim.resolver.resolve_player_card(sim, req, _ensure_card_executor())
+	var ok := sim.resolver.resolve_player_card(sim, req)
 	_apply_checkpoint_boundary(CheckpointProcessor.Kind.AFTER_CARD, true)
 	return ok
 
@@ -253,6 +244,7 @@ func _on_pending_view_changed(active_id: int, pending_ids: PackedInt32Array) -> 
 # ============================================================================
 
 func handle_group_turn_started(group_index: int) -> void:
+	#print("sim_runtime.gd handle_group_turn_started() group_index: ", group_index)
 	var api := _api()
 	var engine := _engine()
 	if api == null or engine == null:
@@ -263,7 +255,9 @@ func handle_group_turn_started(group_index: int) -> void:
 		writer.set_turn_context(engine._turn_token, group_index, 0)
 		writer.scope_begin(Scope.Kind.GROUP_TURN, "group=%d" % group_index, 0)
 		writer.emit_group_turn_begin(group_index)
-
+		
+	api.refresh_mana_for_group_turn(group_index)
+	
 	SimStatusSystem.on_group_turn_begin(api, group_index)
 	_apply_checkpoint_boundary(CheckpointProcessor.Kind.AFTER_GROUP_TURN_BEGIN, true)
 
@@ -334,7 +328,7 @@ func handle_actor_requested(cid: int) -> void:
 		return
 
 	if sim != null and sim.resolver != null:
-		sim.resolver.resolve_npc_turn(sim, cid)
+		sim.resolver.resolve_npc_turn(api, cid)
 
 	if writer != null:
 		writer.emit_actor_end(cid)
@@ -342,6 +336,7 @@ func handle_actor_requested(cid: int) -> void:
 
 	SimStatusSystem.on_actor_turn_end(api, cid)
 	_apply_checkpoint_boundary(CheckpointProcessor.Kind.AFTER_ACTOR_TURN, true)
+
 	engine.notify_actor_done(cid)
 
 
@@ -412,16 +407,12 @@ func _schedule_next_group_turn(group_index: int) -> void:
 	if group_index == 0:
 		var finished_pre_player_friendly := bool(engine.ended_pre_player_friendly)
 
-		# Friendly end:
-		# - POST-player friendlies -> enemies
-		# - PRE-player friendlies  -> next round POST-player friendlies
 		if !finished_pre_player_friendly:
 			start_group_turn(1, false)
 		else:
 			start_group_turn(0, false, false)
 		return
 
-	# Enemy end -> PRE-player friendlies
 	start_group_turn(0, false, true)
 
 

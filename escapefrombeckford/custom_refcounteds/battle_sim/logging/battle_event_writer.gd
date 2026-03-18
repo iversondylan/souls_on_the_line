@@ -214,6 +214,27 @@ func emit_card_played(ctx: CardActionContextSim) -> int:
 
 	return _append(BattleEvent.Type.CARD_PLAYED, data)
 
+func emit_mana(
+	source_id: int,
+	before_mana: int,
+	after_mana: int,
+	before_max_mana: int,
+	after_max_mana: int,
+	reason: String = "",
+	extra := {}
+) -> int:
+	var data := {
+		Keys.SOURCE_ID: int(source_id),
+		Keys.BEFORE_MANA: int(before_mana),
+		Keys.AFTER_MANA: int(after_mana),
+		Keys.BEFORE_MAX_MANA: int(before_max_mana),
+		Keys.AFTER_MAX_MANA: int(after_max_mana),
+		Keys.REASON: String(reason),
+	}
+	for k in extra.keys():
+		data[k] = extra[k]
+	return _append(BattleEvent.Type.MANA, data)
+
 func emit_damage_applied(source_id: int, target_id: int, base: int, final_amount: int, armor_dmg: int, hp_dmg: int, lethal: bool, before_health: int, after_health: int) -> int:
 	return _append(BattleEvent.Type.DAMAGE_APPLIED, {
 		Keys.SOURCE_ID: int(source_id),

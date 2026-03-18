@@ -26,7 +26,10 @@ func mode_for_beat(beat: Array, is_player_turn: bool, is_player_actor: bool) -> 
 
 	if _contains_type(beat, BattleEvent.Type.PLAYER_INPUT_REACHED):
 		return Mode.FREE
-
+	
+	if _contains_type(beat, BattleEvent.Type.MANA) and is_player_actor:
+		return Mode.FREE
+	
 	if is_player_turn and is_player_actor:
 		if _contains_type(beat, BattleEvent.Type.CARD_PLAYED) or _contains_type(beat, BattleEvent.Type.END_TURN_PRESSED):
 			return Mode.FREE

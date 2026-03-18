@@ -4,7 +4,6 @@ class_name Sim extends RefCounted
 
 var state: BattleState
 var api: SimBattleAPI
-var intent_planner: IntentPlanner
 var checkpoint_processor: CheckpointProcessor
 var resolver: Resolver
 var runtime: SimRuntime
@@ -44,7 +43,6 @@ func init_from_cloned_state(cloned_state: BattleState) -> void:
 
 
 func _init_services() -> void:
-	intent_planner = IntentPlanner.new()
 	checkpoint_processor = CheckpointProcessor.new()
 	api.checkpoint_processor = checkpoint_processor
 	resolver = Resolver.new()

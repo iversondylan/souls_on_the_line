@@ -11,6 +11,7 @@ const MENU_CARD_SCENE := preload("res://cards/menu_card/menu_card.tscn")
 
 var deck: Deck
 var player_data: PlayerData
+var api: SimBattleAPI
 
 func _ready() -> void:
 	back_button.pressed.connect(hide)

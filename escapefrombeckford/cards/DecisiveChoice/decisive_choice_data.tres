@@ -12,6 +12,7 @@ card_type = 3
 rarity = 2
 name = "Decisive Choice"
 description = "Draw %s cards and then discard %s cards. Deplete."
+cost = 1
 texture = ExtResource("3_y6wj4")
 actions = Array[ExtResource("1_ppb47")]([ExtResource("2_oeh25"), ExtResource("3_qpiyt")])
 metadata/_custom_type_script = "uid://d2f0qepe047dc"

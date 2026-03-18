@@ -12,7 +12,7 @@ target_type = 3
 rarity = 1
 name = "Supercharge"
 description = "Increase an ally's damage by %s%% for [color=\"008000\"]%s[/color] turns and they attack immediately."
-cost_red = 1
+cost = 1
 texture = ExtResource("4_tainj")
 actions = Array[ExtResource("1_ua1rg")]([ExtResource("2_tainj"), ExtResource("3_nfj5x")])
 metadata/_custom_type_script = "uid://d2f0qepe047dc"

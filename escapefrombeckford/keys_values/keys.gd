@@ -36,6 +36,11 @@ const GROUP_INDEX := &"group_index"
 const INSERT_INDEX := &"insert_index"
 const GROUP_TURN := &"group_turn"
 
+const BEFORE_MANA := &"before_mana"
+const AFTER_MANA := &"after_mana"
+const BEFORE_MAX_MANA := &"before_max_mana"
+const AFTER_MAX_MANA := &"after_max_mana"
+
 # -------------------------
 # Scope frame keys
 # -------------------------

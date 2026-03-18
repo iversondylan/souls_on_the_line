@@ -53,10 +53,7 @@ func has_dirty_turn_order() -> bool:
 
 
 func clear() -> void:
-	dirty_replan_ids.clear()
-	dirty_replan_all = false
-	dirty_intent_refresh_ids.clear()
-	dirty_intent_refresh_all = false
+	clear_planning()
 	dirty_turn_order = false
 
 
@@ -68,24 +65,25 @@ func clear_planning() -> void:
 
 
 func flush_planning(kind: int, sim: Sim, allow_hooks := true) -> void:
-	#print("checkpoint_processor.gd flush_planning() kind=%s replans=%s refresh=%s" % [
-		#Kind.keys()[kind] if kind >= 0 and kind < Kind.size() else str(kind),
-		#str(dirty_replan_ids.keys()),
-		#str(dirty_intent_refresh_ids.keys()),
-	#])
-
-	if sim == null or sim.api == null or sim.intent_planner == null:
+	if sim == null or sim.api == null:
 		clear_planning()
 		return
 
+	var api := sim.api
+
+	# 1) Replan first so any subsequent intent refresh reflects the new truth.
 	if dirty_replan_all:
-		sim.intent_planner.mark_all_dirty()
+		_replan_all(api, allow_hooks)
 	else:
 		for cid in dirty_replan_ids.keys():
-			sim.intent_planner.mark_dirty(int(cid))
+			_replan_if_valid(api, int(cid), allow_hooks)
 
-	sim.intent_planner.flush(sim.api, allow_hooks)
-	_flush_intent_refreshes(sim.api)
+	# 2) Refresh presented intent second.
+	if dirty_intent_refresh_all:
+		_refresh_all_intents(api)
+	else:
+		for cid in dirty_intent_refresh_ids.keys():
+			_refresh_intent_if_valid(api, int(cid))
 
 	clear_planning()
 
@@ -96,20 +94,36 @@ func consume_dirty_turn_order() -> bool:
 	return was_dirty
 
 
-func _flush_intent_refreshes(api: SimBattleAPI) -> void:
+func _replan_all(api: SimBattleAPI, allow_hooks: bool) -> void:
 	if api == null or api.state == null:
 		return
 
-	if dirty_intent_refresh_all:
-		for k in api.state.units.keys():
-			_emit_current_if_valid(api, int(k))
+	for k in api.state.units.keys():
+		_replan_if_valid(api, int(k), allow_hooks)
+
+
+func _replan_if_valid(api: SimBattleAPI, cid: int, allow_hooks: bool) -> void:
+	if api == null or api.state == null or cid <= 0:
 		return
 
-	for cid in dirty_intent_refresh_ids.keys():
-		_emit_current_if_valid(api, int(cid))
+	var u: CombatantState = api.state.get_unit(cid)
+	if u == null or !u.is_alive():
+		return
+	if u.combatant_data == null or u.combatant_data.ai == null:
+		return
+
+	api.plan_intent(cid, allow_hooks, true)
 
 
-func _emit_current_if_valid(api: SimBattleAPI, cid: int) -> void:
+func _refresh_all_intents(api: SimBattleAPI) -> void:
+	if api == null or api.state == null:
+		return
+
+	for k in api.state.units.keys():
+		_refresh_intent_if_valid(api, int(k))
+
+
+func _refresh_intent_if_valid(api: SimBattleAPI, cid: int) -> void:
 	if api == null or api.state == null:
 		return
 
@@ -117,11 +131,11 @@ func _emit_current_if_valid(api: SimBattleAPI, cid: int) -> void:
 	if u == null or !u.is_alive():
 		return
 
-	ActionPlanner._ensure_ai_state_initialized(u)
+	ActionPlanner.ensure_ai_state_initialized(u)
 
 	if !bool(u.ai_state.get(ActionPlanner.FIRST_INTENTS_READY, false)):
 		return
 	if bool(u.ai_state.get(ActionPlanner.IS_ACTING, false)):
 		return
 
-	ActionPlanner.emit_current_intent_sim(api, cid)
+	ActionIntentPresenter.emit_current_intent(api, cid)

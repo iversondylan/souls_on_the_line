@@ -78,6 +78,7 @@ func _ready() -> void:
 
 	hand.battle_view = battle_view
 	hand.sim_host = sim_host
+	hand.api = sim_host.get_main_api()
 
 	battle_interaction_handler.setup(self)
 
@@ -98,6 +99,7 @@ func _connect_events() -> void:
 	Events.request_victory.connect(_on_request_victory)
 	Events.summon_reserve_card_released.connect(_on_summon_reserve_card_released)
 	Events.end_turn_button_pressed.connect(_on_end_turn_button_pressed)
+	Events.mana_view_update.connect(_on_mana_view_update)
 
 
 func _connect_ui() -> void:
@@ -150,6 +152,11 @@ func start_battle() -> void:
 			resolved_run_seed = int(run.run_seed)
 
 	sim_host.init_from_seeds(resolved_battle_seed, resolved_run_seed)
+
+	hand.api = sim_host.get_main_api()
+	draw_pile_view.api = sim_host.get_main_api() if "api" in draw_pile_view else null
+	discard_pile_view.api = sim_host.get_main_api() if "api" in discard_pile_view else null
+
 	sim_host.seed_arcana_from_ids(my_arcana)
 
 	battle_view.bind_log(sim_host.get_event_log())
@@ -181,7 +188,7 @@ func _spawn_from_battle_data() -> void:
 
 	if player_data != null:
 		player_data.alive = true
-		hand.player_data = player_data
+		#hand.player_data = player_data
 		runtime.add_combatant_from_data(player_data, FRIENDLY, 0, true)
 
 	if battle_data == null:
@@ -253,6 +260,16 @@ func _arm_end_turn_button(armed: bool) -> void:
 # -------------------------
 # Event reactions
 # -------------------------
+
+func _on_mana_view_update(o: ManaViewOrder) -> void:
+	if o == null:
+		return
+	if mana_panel == null:
+		return
+
+	# For now just set current mana.
+	# Later you can add a max label and use o.after_max_mana too.
+	mana_panel.set_mana(o.after_mana)
 
 func _on_dead_combatant_data(combatant_data: CombatantData) -> void:
 	if player_data != null and combatant_data == player_data:

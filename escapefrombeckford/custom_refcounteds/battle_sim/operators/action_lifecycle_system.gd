@@ -19,7 +19,7 @@ static func on_group_turn_begin(api: SimBattleAPI, group_index: int) -> void:
 		if u.combatant_data == null or u.combatant_data.ai == null:
 			continue
 
-		ActionPlanner._ensure_ai_state_initialized(u)
+		ActionPlanner.ensure_ai_state_initialized(u)
 
 		var ctx := _make_ai_ctx(api, u)
 		ActionPlanner.ensure_valid_plan_sim(u.combatant_data.ai, ctx, true)
@@ -28,7 +28,7 @@ static func on_group_turn_begin(api: SimBattleAPI, group_index: int) -> void:
 			continue
 
 		var idx := int(u.ai_state.get(ActionPlanner.KEY_PLANNED_IDX, -1))
-		var action := ActionPlanner._get_action_by_idx(u.combatant_data.ai, idx)
+		var action := ActionPlanner.get_action_by_idx(u.combatant_data.ai, idx)
 		if action == null:
 			continue
 
@@ -49,11 +49,11 @@ static func on_group_turn_end(api: SimBattleAPI, group_index: int) -> void:
 		if u.combatant_data == null or u.combatant_data.ai == null:
 			continue
 
-		ActionPlanner._ensure_ai_state_initialized(u)
+		ActionPlanner.ensure_ai_state_initialized(u)
 
 		var ctx := _make_ai_ctx(api, u)
 		var idx := int(u.ai_state.get(ActionPlanner.KEY_PLANNED_IDX, -1))
-		var action := ActionPlanner._get_action_by_idx(u.combatant_data.ai, idx)
+		var action := ActionPlanner.get_action_by_idx(u.combatant_data.ai, idx)
 		if action != null:
 			for m: IntentLifecycleModel in action.intent_lifecycle_models:
 				if m != null:
@@ -70,7 +70,7 @@ static func on_action_execution_started(ctx: NPCAIContext) -> void:
 
 	var profile: NPCAIProfile = ctx.combatant_data.ai
 	var idx := int(ctx.state.get(ActionPlanner.KEY_PLANNED_IDX, -1))
-	var action := ActionPlanner._get_action_by_idx(profile, idx)
+	var action := ActionPlanner.get_action_by_idx(profile, idx)
 	if action == null:
 		return
 

@@ -37,6 +37,10 @@ func init(_battle_seed: int, _run_seed: int) -> void:
 	rng = RNG.new(battle_seed)
 	events = BattleEventLog.new()
 
+	resource = ResourceState.new()
+	resource.max_mana = 3
+	resource.mana = 3
+
 func has_unit(id: int) -> bool:
 	return units.has(id)
 
@@ -198,22 +202,24 @@ func clone() -> BattleState:
 	var b := BattleState.new()
 	b.battle_seed = battle_seed
 	b.run_seed = run_seed
-	
+
 	b.rng = RNG.new()
 	b.rng.seed = rng.seed
 	b._next_sim_id = _next_sim_id
+
 	for id in units.keys():
 		var u: CombatantState = units[id]
 		if u:
 			b.units[id] = u.clone()
-	
+
 	b.groups = [groups[0].clone(), groups[1].clone()]
 	b.turn = turn.clone()
 	b.arcana = arcana.duplicate(true)
-	
+	b.resource = resource.clone()
+
 	# Policy: preview clones start with a fresh empty event log.
 	b.events = BattleEventLog.new()
-	
+
 	return b
 
 func debug_dump_events(last_n: int = 20) -> void:

@@ -187,6 +187,36 @@ func get_targets_for_attack_sequence(ai_ctx) -> Array:
 
 	return AttackTargeting.get_target_ids(self, attacker_id, ai_ctx.params)
 
+# ============================================================================
+# Card / mana queries
+# ============================================================================
+
+
+func can_pay_cost(cost: int) -> bool:
+	if state == null or state.resource == null:
+		return false
+	return int(cost) <= int(state.resource.mana)
+
+
+func can_pay_card(card: CardData) -> bool:
+	if card == null:
+		return false
+	return can_pay_cost(int(card.get_total_cost()))
+
+func get_mana() -> int:
+	if state == null or state.resource == null:
+		return 0
+	return int(state.resource.mana)
+
+
+func get_max_mana() -> int:
+	if state == null or state.resource == null:
+		return 0
+	return int(state.resource.max_mana)
+
+
+func has_pending_discard() -> bool:
+	return state != null and state.resource != null and state.resource.pending_discard != null
 
 # ============================================================================
 # Dirtying / checkpoint requests
@@ -197,7 +227,6 @@ func _request_replan(cid: int) -> void:
 		checkpoint_processor.request_replan(int(cid))
 		return
 
-	# Transitional fallback
 	if state == null:
 		return
 
@@ -205,9 +234,8 @@ func _request_replan(cid: int) -> void:
 	if u == null:
 		return
 
-	ActionPlanner._ensure_ai_state_initialized(u)
+	ActionPlanner.ensure_ai_state_initialized(u)
 	u.ai_state[&"replan_dirty"] = true
-
 
 func _request_replan_all() -> void:
 	if checkpoint_processor != null:
@@ -220,13 +248,11 @@ func _request_replan_all() -> void:
 	for k in state.units.keys():
 		_request_replan(int(k))
 
-
 func _request_intent_refresh(cid: int) -> void:
 	if checkpoint_processor != null:
 		checkpoint_processor.request_intent_refresh(int(cid))
 		return
 
-	# Transitional fallback
 	if state == null:
 		return
 
@@ -234,7 +260,7 @@ func _request_intent_refresh(cid: int) -> void:
 	if u == null:
 		return
 
-	ActionPlanner._ensure_ai_state_initialized(u)
+	ActionPlanner.ensure_ai_state_initialized(u)
 	u.ai_state[&"intent_dirty"] = true
 
 
@@ -445,8 +471,12 @@ func apply_status(ctx: StatusContext) -> void:
 		)
 
 	_rebuild_modifier_cache_for(int(ctx.target_id))
-
+	var status_ctx := SimStatusSystem.make_context(self, int(ctx.target_id), u.statuses.get_status_stack(ctx.status_id))
+	if status_ctx != null and status_ctx.proto != null:
+		status_ctx.proto.on_apply(status_ctx, ctx)
 	var proto := SimStatusSystem.get_proto(self, ctx.status_id)
+	# eventually move aura refresh routing into SimStatusSystem too, 
+	# so API is not doing proto classification
 	if SimStatusSystem.is_aura_proto(proto):
 		_request_intent_refresh_targets_for_aura(int(ctx.target_id), proto)
 	else:
@@ -475,7 +505,7 @@ func remove_status(ctx: StatusContext) -> void:
 	if old_stack != null:
 		before_i = int(old_stack.intensity)
 		before_d = int(old_stack.duration)
-
+	var status_ctx := SimStatusSystem.make_context(self, int(ctx.target_id), old_stack)
 	u.statuses.remove_ctx(ctx)
 
 	if writer != null:
@@ -497,7 +527,8 @@ func remove_status(ctx: StatusContext) -> void:
 		)
 
 	_rebuild_modifier_cache_for(int(ctx.target_id))
-
+	if status_ctx != null and status_ctx.proto != null:
+		status_ctx.proto.on_remove(status_ctx, ctx)
 	if SimStatusSystem.is_aura_proto(proto):
 		_request_intent_refresh_targets_for_aura(int(ctx.target_id), proto)
 	else:
@@ -674,35 +705,162 @@ func on_card_finished(_ctx: CardActionContextSim) -> void:
 		writer.scope_end()
 
 
-func has_pending_discard() -> bool:
-	return pending_discard != null
-
-
 func request_player_discard(req: DiscardRequest) -> void:
-	if req == null:
+	if req == null or state == null or state.resource == null:
 		return
 
-	if pending_discard != null:
+	if state.resource.pending_discard != null:
 		push_warning("SimBattleAPI.request_player_discard(): discard already pending")
 		return
 
-	pending_discard = req
+	state.resource.pending_discard = req
 
 	if writer != null:
 		writer.emit_discard_requested(req)
 
 
 func resolve_player_discard(selected_card_uids: Array[String]) -> void:
-	if pending_discard == null:
+	if state == null or state.resource == null or state.resource.pending_discard == null:
 		push_warning("SimBattleAPI.resolve_player_discard(): no pending discard")
 		return
 
-	var req := pending_discard
-	pending_discard = null
+	var req := state.resource.pending_discard
+	state.resource.pending_discard = null
 
 	if writer != null:
 		writer.emit_discard_resolved(req, selected_card_uids)
 
+# ============================================================================
+# Shared resource mutations
+# ============================================================================
+
+func set_mana(new_mana: int, reason: String = "") -> void:
+	if state == null or state.resource == null:
+		return
+
+	var before_mana := int(state.resource.mana)
+	var before_max_mana := int(state.resource.max_mana)
+
+	state.resource.mana = clampi(int(new_mana), 0, int(state.resource.max_mana))
+
+	var after_mana := int(state.resource.mana)
+	var after_max_mana := int(state.resource.max_mana)
+
+	if writer != null and (before_mana != after_mana or before_max_mana != after_max_mana):
+		writer.emit_mana(
+			get_player_id(),
+			before_mana,
+			after_mana,
+			before_max_mana,
+			after_max_mana,
+			reason
+		)
+
+
+func set_max_mana(new_max_mana: int, refill := false, reason: String = "") -> void:
+	if state == null or state.resource == null:
+		return
+
+	var before_mana := int(state.resource.mana)
+	var before_max_mana := int(state.resource.max_mana)
+
+	state.resource.max_mana = maxi(int(new_max_mana), 0)
+	if refill:
+		state.resource.mana = int(state.resource.max_mana)
+	else:
+		state.resource.mana = mini(int(state.resource.mana), int(state.resource.max_mana))
+
+	var after_mana := int(state.resource.mana)
+	var after_max_mana := int(state.resource.max_mana)
+
+	if writer != null and (before_mana != after_mana or before_max_mana != after_max_mana):
+		writer.emit_mana(
+			get_player_id(),
+			before_mana,
+			after_mana,
+			before_max_mana,
+			after_max_mana,
+			reason
+		)
+
+
+func gain_mana(amount: int, reason: String = "") -> void:
+	if state == null or state.resource == null:
+		return
+	if int(amount) == 0:
+		return
+	set_mana(int(state.resource.mana) + int(amount), reason)
+
+
+func refresh_mana_for_group_turn(group_index: int) -> void:
+	if state == null or state.resource == null:
+		return
+
+	# Only refresh on friendly group turn start.
+	if int(group_index) != FRIENDLY:
+		return
+
+	var before_mana := int(state.resource.mana)
+	var before_max_mana := int(state.resource.max_mana)
+
+	# Current policy:
+	# refill current mana to max at start of friendly group turn.
+	state.resource.mana = int(state.resource.max_mana)
+
+	var after_mana := int(state.resource.mana)
+	var after_max_mana := int(state.resource.max_mana)
+
+	if writer != null:
+		writer.emit_mana(
+			get_player_id(),
+			before_mana,
+			after_mana,
+			before_max_mana,
+			after_max_mana,
+			"group_turn_begin_refresh"
+		)
+
+func can_pay_card_cost(_source_id: int, card: CardData) -> bool:
+	if state == null or state.resource == null or card == null:
+		return false
+	return int(state.resource.mana) >= int(card.cost)
+
+func spend_mana_for_card(source_id: int, card: CardData) -> bool:
+	if state == null or state.resource == null or card == null:
+		return false
+
+	var cost := int(card.get_total_cost())
+	if cost <= 0:
+		return true
+
+	if int(state.resource.mana) < cost:
+		return false
+
+	var before_mana := int(state.resource.mana)
+	var before_max_mana := int(state.resource.max_mana)
+
+	state.resource.mana -= cost
+
+	var after_mana := int(state.resource.mana)
+	var after_max_mana := int(state.resource.max_mana)
+
+	if writer != null:
+		card.ensure_uid()
+		writer.emit_mana(
+			int(source_id),
+			before_mana,
+			after_mana,
+			before_max_mana,
+			after_max_mana,
+			"card_spend",
+			{
+				Keys.CARD_UID: String(card.uid),
+				Keys.CARD_NAME: String(card.name),
+				Keys.AMOUNT: int(cost),
+			}
+		)
+
+	return true
 
 # ============================================================================
 # AI planning helpers
@@ -718,7 +876,7 @@ func plan_intent(cid: int, allow_hooks := true, clear_dirty := true) -> void:
 	if u.combatant_data == null or u.combatant_data.ai == null:
 		return
 
-	ActionPlanner._ensure_ai_state_initialized(u)
+	ActionPlanner.ensure_ai_state_initialized(u)
 	u.ai_state[ActionPlanner.FIRST_INTENTS_READY] = true
 
 	if bool(u.ai_state.get(&"planning_now", false)) or bool(u.ai_state.get(ActionPlanner.IS_ACTING, false)):

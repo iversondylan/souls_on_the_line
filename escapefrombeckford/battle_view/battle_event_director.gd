@@ -92,6 +92,8 @@ func on_event(e: EventPackage) -> void:
 			_on_faded(e)
 		BattleEvent.Type.SUMMON_RESERVE_RELEASED:
 			_on_summon_reserve_released(e)
+		BattleEvent.Type.MANA:
+			_on_mana(e)
 		_:
 			pass
 
@@ -359,6 +361,18 @@ func _make_status_removed_order(e: EventPackage) -> StatusRemovedOrder:
 	o.intensity = int(d.get(Keys.INTENSITY, 1))
 	o.removed_all = true
 
+	return o
+
+func _make_mana_view_order(e: EventPackage) -> ManaViewOrder:
+	var d := _data(e)
+	var o := ManaViewOrder.new()
+	o.duration = e.duration
+	o.source_id = int(d.get(Keys.SOURCE_ID, 0))
+	o.before_mana = int(d.get(Keys.BEFORE_MANA, 0))
+	o.after_mana = int(d.get(Keys.AFTER_MANA, 0))
+	o.before_max_mana = int(d.get(Keys.BEFORE_MAX_MANA, 0))
+	o.after_max_mana = int(d.get(Keys.AFTER_MAX_MANA, 0))
+	o.reason = String(d.get(Keys.REASON, ""))
 	return o
 
 func _relayout_groups_after_resolve() -> void:
@@ -698,6 +712,14 @@ func _on_scope_begin(_e: EventPackage) -> void:
 
 func _on_scope_end(_e: EventPackage) -> void:
 	pass
+
+func _on_mana(e: EventPackage) -> void:
+	var d := _data(e)
+	var o := _make_mana_view_order(e)
+
+	# View->UI bridge: Battle.gd owns the UI node, so we broadcast.
+	Events.mana_view_update.emit(o)
+
 
 
 # ------------------------------------------------------------------------------
