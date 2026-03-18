@@ -4,8 +4,7 @@
 [ext_resource type="Resource" uid="uid://dcxgjl672yljc" path="res://fighters/PowerBlocker/summon_mite_pkg.tres" id="2_2qtp0"]
 [ext_resource type="Texture2D" uid="uid://dnor2pbb0nhu" path="res://assets/sprites/assorted/egg-eye.png" id="3_rcqqn"]
 [ext_resource type="Script" uid="uid://dtwuyctovqk5r" path="res://custom_resources/intent_lifecycle_model.gd" id="4_4pvic"]
-[ext_resource type="Script" uid="uid://dbd3fjfn7d3ah" path="res://npc_actions/intent_lifecycle/status_from_opp_turn_model.gd" id="5_xd0vb"]
-[ext_resource type="Resource" uid="uid://bfon8dtpvipfp" path="res://statuses/resonance_spike.tres" id="6_n0f2o"]
+[ext_resource type="Resource" uid="uid://b8j3txinne778" path="res://fighters/PowerBlocker/3_resonance_spike_lifecycle.tres" id="5_m4ebu"]
 [ext_resource type="Resource" uid="uid://egssyhjkm2wq" path="res://fighters/PowerBlocker/5_stability_lifecycle.tres" id="7_2qtp0"]
 [ext_resource type="Resource" uid="uid://ctwocrhb1x5bv" path="res://npc_actions/text/summon_red_intent_text_model.tres" id="9_2qtp0"]
 [ext_resource type="Script" uid="uid://q408gy2b4q6a" path="res://custom_resources/performable_model.gd" id="9_fr0ta"]
@@ -13,11 +12,6 @@
 [ext_resource type="Script" uid="uid://bcih413oy6v73" path="res://custom_resources/npc_action.gd" id="11_owhfw"]
 [ext_resource type="Script" uid="uid://cuj4qvyx6dedj" path="res://custom_resources/state_model.gd" id="12_qrlu3"]
 [ext_resource type="Script" uid="uid://dg05abl3ms1xi" path="res://npc_actions/text/summon_red_intent_tooltip_text_model.gd" id="14_rcqqn"]
-
-[sub_resource type="Resource" id="Resource_usgkw"]
-script = ExtResource("5_xd0vb")
-status = ExtResource("6_n0f2o")
-metadata/_custom_type_script = "uid://dbd3fjfn7d3ah"
 
 [sub_resource type="Resource" id="Resource_1t84l"]
 script = ExtResource("10_eh7vo")
@@ -30,7 +24,7 @@ metadata/_custom_type_script = "uid://dg05abl3ms1xi"
 [resource]
 script = ExtResource("11_owhfw")
 effect_packages = Array[ExtResource("1_m4ebu")]([ExtResource("2_2qtp0")])
-intent_lifecycle_models = Array[ExtResource("4_4pvic")]([SubResource("Resource_usgkw"), ExtResource("7_2qtp0")])
+intent_lifecycle_models = Array[ExtResource("4_4pvic")]([ExtResource("5_m4ebu"), ExtResource("7_2qtp0")])
 choice_type = 0
 performable_models = Array[ExtResource("9_fr0ta")]([SubResource("Resource_1t84l")])
 intent_icon = ExtResource("3_rcqqn")
