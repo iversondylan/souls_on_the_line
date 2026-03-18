@@ -38,14 +38,14 @@ func contributes_modifier() -> bool:
 func get_contributed_modifier_types() -> Array[Modifier.Type]:
 	return [Modifier.Type.DMG_DEALT]
 
-func _on_status_changed(dmg_dealt_modifier: Modifier) -> void:
-	if duration <= 0 and dmg_dealt_modifier:
-		dmg_dealt_modifier.remove_value(ID)
-
-func get_tooltip() -> String:
-	var base_tooltip: String
-	if duration == 1:
-		base_tooltip = "Amplify: deals %s%% more damage for 1 turn."
-		return base_tooltip % floori(MULT_VALUE*100)
-	base_tooltip = "Amplify: deals %s%% more damage for %s turns."
-	return base_tooltip % [floori(MULT_VALUE*100), duration]
+#func _on_status_changed(dmg_dealt_modifier: Modifier) -> void:
+	#if duration <= 0 and dmg_dealt_modifier:
+		#dmg_dealt_modifier.remove_value(ID)
+#
+#func get_tooltip() -> String:
+	#var base_tooltip: String
+	#if duration == 1:
+		#base_tooltip = "Amplify: deals %s%% more damage for 1 turn."
+		#return base_tooltip % floori(MULT_VALUE*100)
+	#base_tooltip = "Amplify: deals %s%% more damage for %s turns."
+	#return base_tooltip % [floori(MULT_VALUE*100), duration]

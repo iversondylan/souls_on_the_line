@@ -14,6 +14,6 @@ func apply_status(_target: Node) -> void:
 	print("Gets status extent of %s" % member_var)
 	status_applied.emit(self)
 
-func get_tooltip() -> String:
-	var base_tooltip: String = "Explosive Ambition."
-	return base_tooltip % intensity
+#func get_tooltip() -> String:
+	#var base_tooltip: String = "Explosive Ambition."
+	#return base_tooltip % intensity

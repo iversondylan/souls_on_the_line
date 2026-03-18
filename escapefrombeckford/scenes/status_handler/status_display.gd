@@ -27,22 +27,10 @@ func _set_status(new_status) -> void:
 		custom_minimum_size = duration.size + duration.position
 	elif stacks.visible:
 		custom_minimum_size = stacks.size + stacks.position
-	
-	if !status.status_changed.is_connected(_on_status_changed):
-		status.status_changed.connect(_on_status_changed)
-	
-	_on_status_changed()
 
 func _set_status_parent(new_status_parent: CombatantView) -> void:
 	status_parent = new_status_parent
 	status.status_parent = status_parent
-
-func _on_status_changed() -> void:
-	if !status:
-		return
-	
-	duration.text = str(status.duration)
-	stacks.text = str(status.intensity)
 
 func _on_focused_gained(marked_status: Status):
 	if marked_status.status_parent != status_parent and status.get_id() == MarkedStatus.ID:

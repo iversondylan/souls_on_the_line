@@ -40,14 +40,14 @@ func apply_status(order: StatusAppliedOrder) -> void:
 		st = {
 			"id": id,
 			"intensity": maxi(int(order.intensity), 1),
-			"duration": maxi(int(order.turns_duration), 0),
+			"duration": maxi(int(order.turns_duration), 1),
 			"proto": proto,
 		}
 	else:
 		# View-side policy: just set to whatever SIM says.
 		# (You can later mimic reapply rules if you want, but SIM already resolved it.)
 		st["intensity"] = maxi(int(order.intensity), 1)
-		st["duration"] = maxi(int(order.turns_duration), 0)
+		st["duration"] = maxi(int(order.turns_duration), 1)
 		st["proto"] = proto
 
 	_states_by_id[id] = st
@@ -101,12 +101,14 @@ func _add_or_update_display_from_state(st: Dictionary, duration: float) -> void:
 	var id: StringName = st.get("id", &"")
 	if id == &"":
 		return
-
+	print("_add_or_update_display_from_state() int: %s, dur: %s" % [str(st.get("intensity", 1)), str(st.get("duration", 0))])
 	var d: StatusDisplay = _displays_by_id.get(id, null)
 	if d == null or !is_instance_valid(d):
 		d = STATUS_DISPLAY_SCN.instantiate() as StatusDisplay
 		add_child(d)
 		_displays_by_id[id] = d
+		d.duration.text = str(st.get("intensity", 1))
+		d.stacks.text  = str(st.get("duration", 0))
 
 	# IMPORTANT: StatusDisplay expects a Status resource and listens to status_changed,
 	# which we *don't* want to rely on.
@@ -116,8 +118,8 @@ func _add_or_update_display_from_state(st: Dictionary, duration: float) -> void:
 		return
 
 	var view_status := proto.duplicate(true) as Status
-	view_status.intensity = int(st.get("intensity", 1))
-	view_status.duration = int(st.get("duration", 0))
+	#view_status.intensity = int(st.get("intensity", 1))
+	#view_status.duration = int(st.get("duration", 0))
 
 	d.status = view_status
 

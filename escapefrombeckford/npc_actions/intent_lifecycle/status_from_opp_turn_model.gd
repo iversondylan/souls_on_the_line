@@ -5,17 +5,19 @@ extends IntentLifecycleModel
 ## The status to apply while this intent is active.
 ## NOTE: intent-lifecycle statuses must be unique by id per fighter.
 @export var status: Status
+@export var intensity := 0
+@export var duration := 0
 
 func _status_id() -> StringName:
 	return StringName(status.get_id())
 
-func on_opposing_group_start_sim(ctx: NPCAIContext) -> void:
+func on_opposing_group_start(ctx: NPCAIContext) -> void:
 	#print("uh oh")
 	if !_can_run_sim(ctx):
 		return
 	_apply_to_self_sim(ctx)
 
-func on_intent_canceled_sim(ctx: NPCAIContext) -> void:
+func on_intent_canceled(ctx: NPCAIContext) -> void:
 	if !_can_run_sim(ctx):
 		return
 	_remove_from_self_sim(ctx)
@@ -38,8 +40,8 @@ func _apply_to_self_sim(ctx: NPCAIContext) -> void:
 	sc.source_id = id
 	sc.target_id = id
 	sc.status_id = _status_id()
-	sc.duration = int(status.duration)
-	sc.intensity = int(status.intensity)
+	sc.duration = duration
+	sc.intensity = intensity
 	ctx.api.apply_status(sc)
 
 func _remove_from_self_sim(ctx: NPCAIContext) -> void:

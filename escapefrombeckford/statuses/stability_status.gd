@@ -11,8 +11,8 @@ var _last_known_hp: int = -1
 func get_id() -> StringName:
 	return ID
 
-func get_tooltip() -> String:
-	return "Stability: %s remaining. Breaking stability will interrupt this unit’s action." % intensity
+#func get_tooltip() -> String:
+	#return "Stability: %s remaining. Breaking stability will interrupt this unit’s action." % intensity
 
 func affects_intent_legality() -> bool:
 	return true

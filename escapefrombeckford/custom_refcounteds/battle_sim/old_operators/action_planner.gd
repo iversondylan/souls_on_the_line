@@ -63,7 +63,7 @@ static func run_turn(api: SimBattleAPI, cid: int) -> void:
 	# Ability started hooks
 	for m: IntentLifecycleModel in action.intent_lifecycle_models:
 		if m:
-			m.on_ability_started_sim(ctx)
+			m.on_ability_started(ctx)
 
 	# Action-level state models (once)
 	for sm: StateModel in action.state_models:
@@ -285,7 +285,7 @@ static func _on_planned_intent_changed_sim(profile: NPCAIProfile, prev_idx: int,
 	if prev_action:
 		for m in prev_action.intent_lifecycle_models:
 			if m:
-				m.on_intent_canceled_sim(ctx)
+				m.on_intent_canceled(ctx)
 
 static func _dbg(msg: String) -> void:
 	if debug:

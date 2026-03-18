@@ -32,5 +32,5 @@ func get_modifier_tokens(ctx: StatusTokenContext) -> Array[ModifierToken]:
 	return [token]
 
 
-func get_tooltip() -> String:
-	return "Echoed Cruelty [Aura]: Allies deal %s additional damage." % intensity
+#func get_tooltip() -> String:
+	#return "Echoed Cruelty [Aura]: Allies deal %s additional damage." % intensity

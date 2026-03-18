@@ -10,17 +10,17 @@ extends IntentLifecycleModel
 func _status_id() -> StringName:
 	return StringName(status.get_id())
 
-func on_opposing_group_start_sim(ctx: NPCAIContext) -> void:
+func on_opposing_group_start(ctx: NPCAIContext) -> void:
 	if !_can_run_sim(ctx):
 		return
 	_apply_to_self_sim(ctx)
 
-func on_ability_started_sim(ctx: NPCAIContext) -> void:
+func on_ability_started(ctx: NPCAIContext) -> void:
 	if !_can_run_sim(ctx):
 		return
 	_remove_from_self_sim(ctx)
 
-func on_intent_canceled_sim(ctx: NPCAIContext) -> void:
+func on_intent_canceled(ctx: NPCAIContext) -> void:
 	if !_can_run_sim(ctx):
 		return
 	_remove_from_self_sim(ctx)

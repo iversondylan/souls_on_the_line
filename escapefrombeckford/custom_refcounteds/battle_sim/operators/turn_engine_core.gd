@@ -335,6 +335,14 @@ func notify_arcana_proc_done(token: int) -> void:
 	if !resume.is_null():
 		resume.call()
 
+func request_queue_rebuild_and_publish() -> void:
+	_queue_dirty = true
+
+	# If we're idle, eagerly rebuild so pending view reflects latest truth.
+	if !_running_actor:
+		_rebuild_queue()
+
+	_publish_pending_view()
 
 func request_end_of_turn_arcana(resume: Callable) -> void:
 	_request_arcana(ArcanaProc.END_OF_TURN, resume)
