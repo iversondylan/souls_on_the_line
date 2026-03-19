@@ -1,0 +1,3 @@
+# clear_focus_presentation_order.gd
+
+class_name ClearFocusPresentationOrder extends PresentationOrder

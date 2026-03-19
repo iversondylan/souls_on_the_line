@@ -52,6 +52,223 @@ func play_raw_chunk(pkg: BeatPackage) -> void:
 			continue
 		on_event(_make_epkg_from_event(be, pkg.duration_sec))
 
+func on_director_cue(cue: DirectorCue, gen: int) -> void:
+	if cue == null or battle_view == null:
+		return
+	if !battle_view._playing or gen != battle_view._playback_gen:
+		return
+
+	for order in cue.orders:
+		_start_order(order)
+
+	for be in cue.events:
+		var ep := _make_epkg_from_event(be, 0.0)
+		ep.is_planned = true
+		on_event(ep)
+
+func _start_order(order: PresentationOrder) -> void:
+	if order == null or battle_view == null:
+		return
+	#print(_debug_start_order_line(order))
+	match int(order.kind):
+		PresentationOrder.Kind.FOCUS:
+			_start_focus_order(order as FocusPresentationOrder)
+
+		PresentationOrder.Kind.CLEAR_FOCUS:
+			_start_clear_focus_order(order as ClearFocusPresentationOrder)
+
+		PresentationOrder.Kind.MELEE_WINDUP:
+			_start_melee_windup_order(order as MeleeWindupPresentationOrder)
+
+		PresentationOrder.Kind.MELEE_STRIKE:
+			_start_melee_strike_order(order as MeleeStrikePresentationOrder)
+
+		PresentationOrder.Kind.RANGED_WINDUP:
+			_start_ranged_windup_order(order as RangedWindupPresentationOrder)
+
+		PresentationOrder.Kind.RANGED_FIRE:
+			_start_ranged_fire_order(order as RangedFirePresentationOrder)
+
+		PresentationOrder.Kind.IMPACT:
+			_start_impact_order(order as ImpactPresentationOrder)
+
+		PresentationOrder.Kind.SUMMON_WINDUP:
+			_start_summon_windup_order(order as SummonWindupPresentationOrder)
+
+		PresentationOrder.Kind.SUMMON_POP:
+			_start_summon_pop_order(order as SummonPopPresentationOrder)
+
+		PresentationOrder.Kind.STATUS_WINDUP:
+			_start_status_windup_order(order as StatusWindupPresentationOrder)
+
+		PresentationOrder.Kind.STATUS_POP:
+			_start_status_pop_order(order as StatusPopPresentationOrder)
+
+		PresentationOrder.Kind.DEATH:
+			_start_death_order(order as DeathPresentationOrder)
+
+		PresentationOrder.Kind.FADE:
+			_start_fade_order(order as FadePresentationOrder)
+
+func _start_focus_order(order: FocusPresentationOrder) -> void:
+	if order == null:
+		return
+
+	var o := FocusOrder.new()
+	o.duration = order.visual_sec if order.visual_sec > 0.0 else 0.35
+	o.attacker_id = int(order.actor_id)
+	o.target_ids = order.target_ids
+	o.dim_bg = order.dim_bg
+	o.dim_uninvolved = order.dim_uninvolved
+	o.scale_involved = order.scale_involved
+	o.scale_uninvolved = order.scale_uninvolved
+	o.drift_involved = order.drift_involved
+
+	battle_view.apply_focus(o)
+
+func _start_clear_focus_order(order: ClearFocusPresentationOrder) -> void:
+	if order == null:
+		return
+	var dur := order.visual_sec if order.visual_sec > 0.0 else 0.30
+	battle_view.clear_focus(dur)
+
+func _start_melee_windup_order(order: MeleeWindupPresentationOrder) -> void:
+	if order == null:
+		return
+	var attacker := battle_view.get_combatant(int(order.actor_id))
+	if attacker != null:
+		attacker.play_presentation_order(order, battle_view)
+
+func _start_melee_strike_order(order: MeleeStrikePresentationOrder) -> void:
+	if order == null:
+		return
+	var attacker := battle_view.get_combatant(int(order.actor_id))
+	if attacker != null:
+		attacker.play_presentation_order(order, battle_view)
+
+func _start_ranged_windup_order(order: RangedWindupPresentationOrder) -> void:
+	if order == null:
+		return
+	var attacker := battle_view.get_combatant(int(order.actor_id))
+	if attacker != null:
+		attacker.play_presentation_order(order, battle_view)
+
+func _start_ranged_fire_order(order: RangedFirePresentationOrder) -> void:
+	if order == null:
+		return
+	var attacker := battle_view.get_combatant(int(order.actor_id))
+	if attacker != null:
+		attacker.play_presentation_order(order, battle_view)
+
+func _start_impact_order(order: ImpactPresentationOrder) -> void:
+	if order == null:
+		return
+	var target := battle_view.get_combatant(int(order.target_id))
+	if target != null:
+		target.play_presentation_order(order, battle_view)
+
+
+func _start_status_windup_order(order: StatusWindupPresentationOrder) -> void:
+	if order == null:
+		return
+
+	# Minimal cosmetic: briefly mark targets as targeted.
+	for tid in order.target_ids:
+		var tv := battle_view.get_combatant(int(tid))
+		if tv != null:
+			tv.show_targeted(true)
+
+func _start_status_pop_order(order: StatusPopPresentationOrder) -> void:
+	if order == null:
+		return
+
+	# Placeholder cosmetic only. Raw STATUS event handles actual icon/state changes.
+	var tv := battle_view.get_combatant(int(order.target_id))
+	if tv != null:
+		tv.play_hit()
+
+func _start_summon_windup_order(order: SummonWindupPresentationOrder) -> void:
+	if order == null:
+		return
+
+	var be := BattleEvent.new(BattleEvent.Type.SUMMONED)
+	be.group_index = int(order.group_index)
+	be.data = {
+		Keys.SUMMONED_ID: int(order.summoned_id),
+		Keys.GROUP_INDEX: int(order.group_index),
+		Keys.INSERT_INDEX: int(order.insert_index),
+		Keys.BEFORE_ORDER_IDS: order.before_order_ids,
+		Keys.SUMMON_SPEC: order.summon_spec,
+	}
+
+	var ep := _make_epkg_from_event(be, order.visual_sec if order.visual_sec > 0.0 else 0.18)
+	_on_summon_windup(ep)
+
+func _start_summon_pop_order(order: SummonPopPresentationOrder) -> void:
+	if order == null:
+		return
+
+	var cid := int(order.summoned_id)
+	var g := int(order.group_index)
+	var idx := int(order.insert_index)
+
+	var v := battle_view.get_or_create_combatant_view(cid, g, idx, true)
+	if v == null:
+		return
+
+	if order.summon_spec != null and !order.summon_spec.is_empty():
+		v.apply_spawn_spec(order.summon_spec)
+
+	v.is_alive = true
+
+	if v.character_art != null:
+		var c := v.character_art.modulate
+		c.a = 0.0
+		v.character_art.modulate = c
+
+		if v.tween_misc:
+			v.tween_misc.kill()
+		v.tween_misc = v.create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+		v.tween_misc.tween_property(
+			v.character_art,
+			"modulate:a",
+			1.0,
+			maxf(order.visual_sec if order.visual_sec > 0.0 else 0.20, 0.01)
+		)
+
+	_apply_group_order(g, _packed_to_int_array(order.after_order_ids), true)
+
+func _start_death_order(order: DeathPresentationOrder) -> void:
+	if order == null:
+		return
+
+	var be := BattleEvent.new(BattleEvent.Type.DIED)
+	be.group_index = int(order.group_index)
+	be.data = {
+		Keys.TARGET_ID: int(order.target_id),
+		Keys.GROUP_INDEX: int(order.group_index),
+		Keys.AFTER_ORDER_IDS: order.after_order_ids,
+	}
+
+	var ep := _make_epkg_from_event(be, order.visual_sec if order.visual_sec > 0.0 else 0.24)
+	_on_death_followthrough(ep)
+
+func _start_fade_order(order: FadePresentationOrder) -> void:
+	if order == null:
+		return
+
+	var be := BattleEvent.new(BattleEvent.Type.FADED)
+	be.group_index = int(order.group_index)
+	be.data = {
+		Keys.TARGET_ID: int(order.target_id),
+		Keys.GROUP_INDEX: int(order.group_index),
+		Keys.AFTER_ORDER_IDS: order.after_order_ids,
+	}
+
+	var ep := _make_epkg_from_event(be, order.visual_sec if order.visual_sec > 0.0 else 0.20)
+	_on_fade_followthrough(ep)
+
+
 
 func on_event(e: EventPackage) -> void:
 	if e == null or e.event == null or battle_view == null:
@@ -532,10 +749,6 @@ func _on_targeted(e: EventPackage) -> void:
 
 
 func _on_damage_applied(e: EventPackage) -> void:
-	if e.is_planned:
-		# Planned damage is handled by CombatantView using AttackPresentationInfo.
-		# Ignore raw DAMAGE_APPLIED events here so it doesn't double-apply visuals.
-		return
 	var d := _data(e)
 	var tid := int(d.get(Keys.TARGET_ID, 0))
 	var amount := int(d.get(Keys.FINAL_AMOUNT, 0))
@@ -543,10 +756,16 @@ func _on_damage_applied(e: EventPackage) -> void:
 	var after_health := int(d.get(Keys.AFTER_HEALTH, 1))
 	var target_combatant := battle_view.get_combatant(tid)
 
-	if target_combatant != null:
-		target_combatant.play_hit()
-		target_combatant.set_health(after_health, lethal)
-		target_combatant.pop_damage_number(amount)
+	if target_combatant == null:
+		return
+
+	target_combatant.set_health(after_health, lethal)
+
+	if e.is_planned:
+		return
+
+	target_combatant.play_hit()
+	target_combatant.pop_damage_number(amount)
 
 
 func _on_status_changed(e: EventPackage) -> void:
@@ -992,3 +1211,113 @@ func _on_action_followthrough_from_timeline(info: ActionTimelinePresentationInfo
 
 		if int(step.marker.type) == int(BattleEvent.Type.SUMMONED):
 			_on_summon_followthrough(_make_epkg_from_event(step.marker, duration))
+
+func _debug_start_order_line(order: PresentationOrder) -> String:
+	if order == null:
+		return "[ORDER] <null>"
+
+	var kind_name := str(int(order.kind))
+	if int(order.kind) >= 0 and int(order.kind) < PresentationOrder.Kind.keys().size():
+		kind_name = PresentationOrder.Kind.keys()[int(order.kind)]
+
+	return "[ORDER] kind=%s %s" % [
+		kind_name,
+		_debug_order_payload(order),
+	]
+
+
+func _debug_order_payload(order: PresentationOrder) -> String:
+	if order == null:
+		return ""
+
+	var bits: Array[String] = []
+	bits.append("a=%d" % int(order.actor_id))
+
+	if order.target_ids != null and !order.target_ids.is_empty():
+		bits.append("tgts=%s" % str(order.target_ids))
+
+	if order.visual_sec > 0.0:
+		bits.append("vis=%.2f" % float(order.visual_sec))
+
+	match int(order.kind):
+		PresentationOrder.Kind.MELEE_WINDUP:
+			var o := order as MeleeWindupPresentationOrder
+			if o != null:
+				bits.append("strikes=%d" % int(o.strike_count))
+				bits.append("hits=%d" % int(o.total_hit_count))
+
+		PresentationOrder.Kind.MELEE_STRIKE:
+			var o2 := order as MeleeStrikePresentationOrder
+			if o2 != null:
+				bits.append("i=%d" % int(o2.strike_index))
+				bits.append("n=%d" % int(o2.strikes_total))
+				bits.append("hits=%d" % int(o2.total_hit_count))
+				bits.append("lethal=%s" % str(bool(o2.has_lethal)))
+
+		PresentationOrder.Kind.RANGED_WINDUP:
+			var o3 := order as RangedWindupPresentationOrder
+			if o3 != null:
+				bits.append("i=%d" % int(o3.strike_index))
+				bits.append("strikes=%d" % int(o3.strike_count))
+				bits.append("hits=%d" % int(o3.total_hit_count))
+
+		PresentationOrder.Kind.RANGED_FIRE:
+			var o4 := order as RangedFirePresentationOrder
+			if o4 != null:
+				bits.append("i=%d" % int(o4.strike_index))
+				bits.append("n=%d" % int(o4.strikes_total))
+				bits.append("hits=%d" % int(o4.total_hit_count))
+				bits.append("lethal=%s" % str(bool(o4.has_lethal)))
+				if o4.projectile_scene_path != "":
+					bits.append("proj=%s" % o4.projectile_scene_path.get_file())
+
+		PresentationOrder.Kind.IMPACT:
+			var o5 := order as ImpactPresentationOrder
+			if o5 != null:
+				bits.append("t=%d" % int(o5.target_id))
+				bits.append("i=%d" % int(o5.strike_index))
+				bits.append("amt=%d" % int(o5.amount))
+				bits.append("hp=%d" % int(o5.after_health))
+				bits.append("lethal=%s" % str(bool(o5.was_lethal)))
+
+		PresentationOrder.Kind.SUMMON_WINDUP:
+			var o6 := order as SummonWindupPresentationOrder
+			if o6 != null:
+				bits.append("summoned=%d" % int(o6.summoned_id))
+				bits.append("g=%d" % int(o6.group_index))
+				bits.append("idx=%d" % int(o6.insert_index))
+				bits.append("before=%s" % str(o6.before_order_ids))
+
+		PresentationOrder.Kind.SUMMON_POP:
+			var o7 := order as SummonPopPresentationOrder
+			if o7 != null:
+				bits.append("summoned=%d" % int(o7.summoned_id))
+				bits.append("g=%d" % int(o7.group_index))
+				bits.append("idx=%d" % int(o7.insert_index))
+				bits.append("after=%s" % str(o7.after_order_ids))
+
+		PresentationOrder.Kind.STATUS_POP:
+			var o8 := order as StatusPopPresentationOrder
+			if o8 != null:
+				bits.append("src=%d" % int(o8.source_id))
+				bits.append("t=%d" % int(o8.target_id))
+				bits.append("status=%s" % String(o8.status_id))
+				bits.append("op=%d" % int(o8.op))
+				bits.append("int=%d" % int(o8.intensity))
+				bits.append("dur=%d" % int(o8.turns_duration))
+
+		PresentationOrder.Kind.DEATH:
+			var o9 := order as DeathPresentationOrder
+			if o9 != null:
+				bits.append("t=%d" % int(o9.target_id))
+				bits.append("g=%d" % int(o9.group_index))
+				bits.append("after=%s" % str(o9.after_order_ids))
+
+		PresentationOrder.Kind.FADE:
+			var o10 := order as FadePresentationOrder
+			if o10 != null:
+				bits.append("t=%d" % int(o10.target_id))
+				bits.append("g=%d" % int(o10.group_index))
+				bits.append("after=%s" % str(o10.after_order_ids))
+
+	return " ".join(bits)

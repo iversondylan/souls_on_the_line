@@ -17,7 +17,7 @@ var transport: BattleTransport
 var planner: SchedulePlanner
 var scheduler: BeatScheduler
 var clock: BattleClock
-
+var cue_scheduler: CueScheduler
 var status_catalog: StatusCatalog = null
 
 var _playing := false
@@ -27,7 +27,7 @@ var _projectiles_by_attacker: Dictionary = {}
 var _summon_preview_ghost: Node2D = null
 var combatants_by_cid: Dictionary = {}
 
-var tempo: float = 110
+var tempo: float = 120
 
 var tween_bg: Tween
 
@@ -38,7 +38,7 @@ var tween_bg: Tween
 func _ready() -> void:
 	transport = BattleTransport.new()
 	transport.tempo_bpm = tempo
-
+	cue_scheduler = CueScheduler.new()
 	scheduler = BeatScheduler.new()
 	planner = SchedulePlanner.new()
 	event_player = BattleEventPlayer.new()
@@ -116,18 +116,23 @@ func _playback_loop(gen: int) -> void:
 			if !_playing or gen != _playback_gen:
 				return
 
-			var plan := planner.make_npc_turn_plan(
-				clock,
-				actor_turn,
-				playback_speed_mode,
-				t_start
-			)
+			var compiler := TurnTimelineCompiler.new()
+			var timeline := compiler.compile_actor_turn(actor_turn)
+			#print(_debug_timeline_line(timeline, actor_turn))
 
-			print(_debug_schedule_plan_line(plan, actor_turn, clock.now_sec(), schedule_t))
+			var plan_builder := TurnTimelineToDirectorPlan.new()
+			var plan := plan_builder.build_plan(timeline, t_start, transport.tempo_bpm)
+			print(_debug_director_plan_line(plan, actor_turn, clock.now_sec(), schedule_t))
 
-			await _play_schedule_plan(plan, gen)
-			schedule_t = plan.t_end
+			await cue_scheduler.play_plan(clock, event_director, plan, gen)
+			schedule_t = plan.get_end_sec()
 			continue
+
+			#print(_debug_schedule_plan_line(plan, actor_turn, clock.now_sec(), schedule_t))
+
+			#await _play_schedule_plan(plan, gen)
+			#schedule_t = plan.t_end
+			#continue
 
 		var chunk := event_player.next_raw_chunk(player_id)
 		if chunk.is_empty():
@@ -175,7 +180,7 @@ func _playback_loop(gen: int) -> void:
 		pkg.t_next_sec = t_next
 		pkg.duration_sec = maxf(0.0, t_next - t_start2)
 
-		print(_debug_beat_package_line(pkg, mode, actor_begin_id, is_player_actor, clock.now_sec(), schedule_t))
+		#print(_debug_beat_package_line(pkg, mode, actor_begin_id, is_player_actor, clock.now_sec(), schedule_t))
 
 		event_director.play_raw_chunk(pkg)
 
@@ -586,3 +591,206 @@ func _debug_action_presentation_summary(a: DirectorAction) -> String:
 		attack.has_lethal_hit,
 		attack.get_all_target_ids(),
 	]
+
+
+func _debug_timeline_line(timeline: TurnTimeline, actor_turn: Array[BattleEvent]) -> String:
+	if timeline == null:
+		return "[TIMELINE] <null>"
+
+	return "[TIMELINE] actor=%d group=%d kind=%s beats=%d src_events=%d summary=%s" % [
+		int(timeline.actor_id),
+		int(timeline.group_index),
+		String(timeline.action_kind),
+		timeline.beats.size(),
+		actor_turn.size(),
+		_debug_turn_beats_summary(timeline.beats),
+	]
+
+
+func _debug_director_plan_line(plan: DirectorPlan, actor_turn: Array[BattleEvent], now_sec: float, prior_schedule_t: float) -> String:
+	if plan == null:
+		return "[CUEPLAN] <null>"
+
+	var actor_id := _chunk_actor_id(actor_turn)
+	var last_q := plan.get_last_beat_q()
+	var end_sec := plan.get_end_sec()
+	var total_dur := end_sec - plan.t_start_sec
+	var start_slip := now_sec - plan.t_start_sec
+
+	return "[CUEPLAN] actor=%d cues=%d start=%.3f end=%.3f dur=%.3f last_q=%.2f gap_q=%.2f now=%.3f slip=%.3f prev_sched=%.3f cues=%s" % [
+		actor_id,
+		plan.cues.size(),
+		plan.t_start_sec,
+		end_sec,
+		total_dur,
+		last_q,
+		plan.handoff_gap_q,
+		now_sec,
+		start_slip,
+		prior_schedule_t,
+		_debug_cue_summary(plan.cues),
+	]
+
+
+func _debug_turn_beats_summary(beats: Array[TurnBeat]) -> String:
+	if beats == null or beats.is_empty():
+		return "[]"
+
+	var parts: Array[String] = []
+	var max_n := mini(beats.size(), 8)
+
+	for i in range(max_n):
+		var b := beats[i]
+		if b == null:
+			parts.append("<null>")
+			continue
+		parts.append("{q=%.2f label=%s orders=%d events=%d %s}" % [
+			float(b.beat_q),
+			String(b.label),
+			b.orders.size(),
+			b.events.size(),
+			_debug_order_summary(b.orders),
+		])
+
+	if beats.size() > max_n:
+		parts.append("... +" + str(beats.size() - max_n) + " more")
+
+	return " | ".join(parts)
+
+
+func _debug_cue_summary(cues: Array[DirectorCue]) -> String:
+	if cues == null or cues.is_empty():
+		return "[]"
+
+	var parts: Array[String] = []
+	var max_n := mini(cues.size(), 8)
+
+	for i in range(max_n):
+		var c := cues[i]
+		if c == null:
+			parts.append("<null>")
+			continue
+		parts.append("{q=%.2f idx=%d label=%s orders=%d events=%d %s}" % [
+			float(c.beat_q),
+			int(c.index),
+			String(c.label),
+			c.orders.size(),
+			c.events.size(),
+			_debug_order_summary(c.orders),
+		])
+
+	if cues.size() > max_n:
+		parts.append("... +" + str(cues.size() - max_n) + " more")
+
+	return " | ".join(parts)
+
+
+func _debug_order_summary(orders: Array[PresentationOrder]) -> String:
+	if orders == null or orders.is_empty():
+		return "orders=[]"
+
+	var parts: Array[String] = []
+	var max_n := mini(orders.size(), 6)
+
+	for i in range(max_n):
+		parts.append(_debug_order_short(orders[i]))
+
+	if orders.size() > max_n:
+		parts.append("... +" + str(orders.size() - max_n) + " more")
+
+	return "orders=[" + " | ".join(parts) + "]"
+
+
+func _debug_order_short(order: PresentationOrder) -> String:
+	if order == null:
+		return "<null-order>"
+
+	var kind_name := str(int(order.kind))
+	if int(order.kind) >= 0 and int(order.kind) < PresentationOrder.Kind.keys().size():
+		kind_name = PresentationOrder.Kind.keys()[int(order.kind)]
+
+	var bits: Array[String] = []
+	bits.append(kind_name)
+	bits.append("a=%d" % int(order.actor_id))
+
+	if order.target_ids != null and !order.target_ids.is_empty():
+		bits.append("tgts=%s" % str(order.target_ids))
+
+	if float(order.visual_sec) > 0.0:
+		bits.append("vis=%.2f" % float(order.visual_sec))
+
+	match int(order.kind):
+		PresentationOrder.Kind.MELEE_WINDUP:
+			var o := order as MeleeWindupPresentationOrder
+			if o != null:
+				bits.append("strikes=%d" % int(o.strike_count))
+				bits.append("hits=%d" % int(o.total_hit_count))
+
+		PresentationOrder.Kind.MELEE_STRIKE:
+			var o2 := order as MeleeStrikePresentationOrder
+			if o2 != null:
+				bits.append("i=%d/%d" % [int(o2.strike_index), int(o2.strikes_total)])
+				bits.append("hits=%d" % int(o2.total_hit_count))
+				bits.append("lethal=%s" % str(bool(o2.has_lethal)))
+
+		PresentationOrder.Kind.RANGED_WINDUP:
+			var o3 := order as RangedWindupPresentationOrder
+			if o3 != null:
+				bits.append("strikes=%d" % int(o3.strike_count))
+				bits.append("hits=%d" % int(o3.total_hit_count))
+
+		PresentationOrder.Kind.RANGED_FIRE:
+			var o4 := order as RangedFirePresentationOrder
+			if o4 != null:
+				bits.append("i=%d/%d" % [int(o4.strike_index), int(o4.strikes_total)])
+				bits.append("hits=%d" % int(o4.total_hit_count))
+				bits.append("lethal=%s" % str(bool(o4.has_lethal)))
+				if o4.projectile_scene_path != "":
+					bits.append("proj=%s" % o4.projectile_scene_path.get_file())
+
+		PresentationOrder.Kind.IMPACT:
+			var o5 := order as ImpactPresentationOrder
+			if o5 != null:
+				bits.append("t=%d" % int(o5.target_id))
+				bits.append("i=%d" % int(o5.strike_index))
+				bits.append("amt=%d" % int(o5.amount))
+				bits.append("hp=%d" % int(o5.after_health))
+				bits.append("lethal=%s" % str(bool(o5.was_lethal)))
+
+		PresentationOrder.Kind.SUMMON_WINDUP:
+			var o6 := order as SummonWindupPresentationOrder
+			if o6 != null:
+				bits.append("summoned=%d" % int(o6.summoned_id))
+				bits.append("g=%d" % int(o6.group_index))
+				bits.append("idx=%d" % int(o6.insert_index))
+
+		PresentationOrder.Kind.SUMMON_POP:
+			var o7 := order as SummonPopPresentationOrder
+			if o7 != null:
+				bits.append("summoned=%d" % int(o7.summoned_id))
+				bits.append("g=%d" % int(o7.group_index))
+				bits.append("idx=%d" % int(o7.insert_index))
+
+		PresentationOrder.Kind.STATUS_POP:
+			var o8 := order as StatusPopPresentationOrder
+			if o8 != null:
+				bits.append("src=%d" % int(o8.source_id))
+				bits.append("t=%d" % int(o8.target_id))
+				bits.append("status=%s" % String(o8.status_id))
+				bits.append("op=%d" % int(o8.op))
+				bits.append("int=%d" % int(o8.intensity))
+				bits.append("dur=%d" % int(o8.turns_duration))
+
+		PresentationOrder.Kind.DEATH:
+			var o9 := order as DeathPresentationOrder
+			if o9 != null:
+				bits.append("t=%d" % int(o9.target_id))
+				bits.append("g=%d" % int(o9.group_index))
+
+		PresentationOrder.Kind.FADE:
+			var o10 := order as FadePresentationOrder
+			if o10 != null:
+				bits.append("t=%d" % int(o10.target_id))
+				bits.append("g=%d" % int(o10.group_index))
+
+	return " ".join(bits)

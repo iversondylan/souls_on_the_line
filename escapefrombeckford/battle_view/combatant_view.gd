@@ -288,6 +288,168 @@ func set_anchor_position(_position: Vector2, ctx: GroupLayoutOrder) -> void:
 # Attack entry points
 # ------------------------------------------------------------------------------
 
+func play_presentation_order(order: PresentationOrder, battle_view: BattleView) -> void:
+	if order == null:
+		return
+
+	match int(order.kind):
+		PresentationOrder.Kind.MELEE_WINDUP:
+			_play_melee_windup_from_order(order as MeleeWindupPresentationOrder)
+
+		PresentationOrder.Kind.MELEE_STRIKE:
+			_play_melee_strike_from_order(order as MeleeStrikePresentationOrder)
+
+		PresentationOrder.Kind.RANGED_WINDUP:
+			_play_ranged_windup_from_order(order as RangedWindupPresentationOrder)
+
+		PresentationOrder.Kind.RANGED_FIRE:
+			_play_ranged_fire_from_order(order as RangedFirePresentationOrder, battle_view)
+
+		PresentationOrder.Kind.IMPACT:
+			_play_impact_from_order(order as ImpactPresentationOrder)
+
+		PresentationOrder.Kind.DEATH:
+			_play_death_from_order(order as DeathPresentationOrder)
+
+		PresentationOrder.Kind.FADE:
+			_play_fade_from_order(order as FadePresentationOrder)
+
+		PresentationOrder.Kind.STATUS_WINDUP:
+			_play_status_windup_from_order(order as StatusWindupPresentationOrder)
+
+		PresentationOrder.Kind.STATUS_POP:
+			_play_status_pop_from_order(order as StatusPopPresentationOrder)
+
+		_:
+			pass
+
+func _play_melee_windup_from_order(order: MeleeWindupPresentationOrder) -> void:
+	if order == null:
+		return
+
+	var o := StrikeWindupOrder.new()
+	o.duration = order.visual_sec if order.visual_sec > 0.0 else 0.20
+	o.attacker_id = int(order.actor_id)
+	o.target_ids = order.target_ids
+	o.attack_mode = Attack.Mode.MELEE
+	o.strike_count = int(order.strike_count)
+	o.total_hit_count = int(order.total_hit_count)
+
+	play_strike_windup(o, null)
+
+
+func _play_melee_strike_from_order(order: MeleeStrikePresentationOrder) -> void:
+	if order == null:
+		return
+
+	var o := StrikeFollowthroughOrder.new()
+	o.duration = order.visual_sec if order.visual_sec > 0.0 else 0.22
+	o.attacker_id = int(order.actor_id)
+	o.target_ids = order.target_ids
+	o.attack_mode = Attack.Mode.MELEE
+	o.strike_count = 1
+	o.strike_index = int(order.strike_index)
+	o.total_hit_count = int(order.total_hit_count)
+	o.has_lethal_hit = bool(order.has_lethal)
+
+	play_strike_followthrough(o, null)
+
+
+func _play_ranged_windup_from_order(order: RangedWindupPresentationOrder) -> void:
+	if order == null:
+		return
+
+	_strike_gen += 1
+	var gen := _strike_gen
+
+	var dur := order.visual_sec if order.visual_sec > 0.0 else 0.15
+	_play_ranged_windup_pose_async(dur, gen)
+
+
+func _play_ranged_fire_from_order(order: RangedFirePresentationOrder, battle_view: BattleView) -> void:
+	if order == null or battle_view == null:
+		return
+
+	var gen := _strike_gen
+
+	var o := StrikeWindupOrder.new()
+	o.duration = order.visual_sec if order.visual_sec > 0.0 else 0.18
+	o.attacker_id = int(order.actor_id)
+	o.target_ids = order.target_ids
+	o.attack_mode = Attack.Mode.RANGED
+	o.strike_count = 1
+	o.strike_index = int(order.strike_index)
+	o.projectile_scene_path = order.projectile_scene_path
+
+	_play_ranged_fire_pulse(o, gen)
+	_spawn_projectile_for_ranged_strike(o, battle_view, gen)
+
+
+func _play_impact_from_order(order: ImpactPresentationOrder) -> void:
+	if order == null:
+		return
+
+	var h := HitPresentationInfo.new()
+	h.target_id = int(order.target_id)
+	h.amount = int(order.amount)
+	h.after_health = int(order.after_health)
+	h.was_lethal = bool(order.was_lethal)
+
+	var dur := order.visual_sec if order.visual_sec > 0.0 else 0.18
+	play_received_hit_from_hitinfo(h, dur)
+
+
+func _play_death_from_order(order: DeathPresentationOrder) -> void:
+	if order == null:
+		return
+	play_death_reaction(order.visual_sec if order.visual_sec > 0.0 else 0.24)
+
+
+func _play_fade_from_order(order: FadePresentationOrder) -> void:
+	if order == null or character_art == null:
+		return
+
+	if tween_misc:
+		tween_misc.kill()
+
+	var dur := order.visual_sec if order.visual_sec > 0.0 else 0.20
+	tween_misc = create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+	tween_misc.tween_property(character_art, "modulate:a", 0.0, maxf(dur, 0.01))
+
+
+func _play_status_windup_from_order(order: StatusWindupPresentationOrder) -> void:
+	if order == null:
+		return
+	show_targeted(true)
+
+
+func _play_status_pop_from_order(order: StatusPopPresentationOrder) -> void:
+	if order == null:
+		return
+	play_hit()
+
+func _play_ranged_windup_pose_async(duration: float, gen: int) -> void:
+	if !is_instance_valid(self) or gen != _strike_gen:
+		return
+
+	if tween_strike:
+		tween_strike.kill()
+
+	_cache_base_art_transform_if_needed()
+	var base_scale := _get_base_art_scale()
+	var base_pos := _get_base_art_pos()
+
+	var load_scale := Vector2(base_scale.x * 0.95, base_scale.y * 1.05)
+	var load_pos := base_pos + Vector2(0, -2)
+
+	var dur := maxf(duration, 0.01)
+
+	tween_strike = create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	tween_strike.tween_property(art_parent, "scale", load_scale, dur)
+	tween_strike.parallel().tween_property(art_parent, "position", load_pos, dur)
+
+
+
 func play_strike_windup(order: StrikeWindupOrder, battle_view: BattleView) -> void:
 	if order == null or battle_view == null:
 		return
