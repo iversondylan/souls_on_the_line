@@ -37,3 +37,5 @@ static func run(api: SimBattleAPI, dead_id: int, killer_id: int = 0, reason: Str
 	# Non-beat: actual "DIED" semantic marker
 	if api.writer != null:
 		api.writer.emit_died(killer_id, dead_id, g, before_order_ids,  after_order_ids, reason)
+	
+	api._request_outcome_check()

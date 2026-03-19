@@ -7,7 +7,7 @@ class_name SimStatusSystem extends RefCounted
 # Atomistic mutations belong to SimBattleAPI.
 
 static func on_group_turn_begin(api: SimBattleAPI, group_index: int) -> void:
-	if api == null or api.state == null:
+	if api == null or api.state == null or api.state.has_terminal_outcome():
 		return
 
 	# 1) proto lifecycle hooks
@@ -20,7 +20,7 @@ static func on_group_turn_begin(api: SimBattleAPI, group_index: int) -> void:
 	_expire_by_policy(api, group_index, Status.ExpirationPolicy.GROUP_TURN_START)
 
 static func on_group_turn_end(api: SimBattleAPI, group_index: int) -> void:
-	if api == null or api.state == null:
+	if api == null or api.state == null or api.state.has_terminal_outcome():
 		return
 
 	# 1) proto lifecycle hooks
@@ -33,7 +33,7 @@ static func on_group_turn_end(api: SimBattleAPI, group_index: int) -> void:
 	_expire_by_policy(api, group_index, Status.ExpirationPolicy.GROUP_TURN_END)
 
 static func on_actor_turn_begin(api: SimBattleAPI, actor_id: int) -> void:
-	if api == null or api.state == null:
+	if api == null or api.state == null or api.state.has_terminal_outcome():
 		return
 
 	_for_each_status_on_unit(api, actor_id, func(ctx: SimStatusContext) -> void:
@@ -44,7 +44,7 @@ static func on_actor_turn_begin(api: SimBattleAPI, actor_id: int) -> void:
 	_tick_duration_for_proc(api, actor_id, Status.ProcType.START_OF_TURN)
 
 static func on_actor_turn_end(api: SimBattleAPI, actor_id: int) -> void:
-	if api == null or api.state == null:
+	if api == null or api.state == null or api.state.has_terminal_outcome():
 		return
 
 	_for_each_status_on_unit(api, actor_id, func(ctx: SimStatusContext) -> void:
@@ -55,7 +55,7 @@ static func on_actor_turn_end(api: SimBattleAPI, actor_id: int) -> void:
 	_tick_duration_for_proc(api, actor_id, Status.ProcType.END_OF_TURN)
 
 static func on_damage_taken(api: SimBattleAPI, damage_ctx: DamageContext) -> void:
-	if api == null or api.state == null or damage_ctx == null:
+	if api == null or api.state == null or damage_ctx == null or api.state.has_terminal_outcome():
 		return
 
 	var target_id := int(damage_ctx.target_id)
@@ -68,7 +68,7 @@ static func on_damage_taken(api: SimBattleAPI, damage_ctx: DamageContext) -> voi
 	)
 
 static func on_death(api: SimBattleAPI, dead_id: int, killer_id: int, reason: String) -> void:
-	if api == null or api.state == null or dead_id <= 0:
+	if api == null or api.state == null or dead_id <= 0 or api.state.has_terminal_outcome():
 		return
 
 	_for_each_status_on_unit(api, dead_id, func(ctx: SimStatusContext) -> void:

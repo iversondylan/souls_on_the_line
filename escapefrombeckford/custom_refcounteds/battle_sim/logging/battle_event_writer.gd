@@ -412,6 +412,22 @@ func emit_summon_reserve_released(summoned_id: int, card_uid: String, reason: St
 		Keys.REASON: String(reason),
 	})
 
+func emit_victory(source_id: int = 0, reason: String = "") -> int:
+	return _append(BattleEvent.Type.VICTORY, {
+		Keys.SOURCE_ID: int(source_id),
+		Keys.REASON: String(reason),
+		Keys.TURN_ID: int(turn_id),
+		Keys.GROUP_INDEX: int(group_index),
+	})
+
+func emit_defeat(source_id: int = 0, reason: String = "") -> int:
+	return _append(BattleEvent.Type.DEFEAT, {
+		Keys.SOURCE_ID: int(source_id),
+		Keys.REASON: String(reason),
+		Keys.TURN_ID: int(turn_id),
+		Keys.GROUP_INDEX: int(group_index),
+	})
+
 func emit_moved(actor_id: int, move_type: int, before_order: PackedInt32Array, after_order: PackedInt32Array, extra: Dictionary = {}) -> int:
 	var data := {
 		Keys.ACTOR_ID: int(actor_id),

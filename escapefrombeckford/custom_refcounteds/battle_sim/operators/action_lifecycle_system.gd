@@ -7,7 +7,7 @@ class_name ActionLifecycleSystem extends RefCounted
 # State mutation still goes through SimBattleAPI.
 
 static func on_group_turn_begin(api: SimBattleAPI, group_index: int) -> void:
-	if api == null or api.state == null:
+	if api == null or api.state == null or api.state.has_terminal_outcome():
 		return
 
 	var opposing_group := api.get_opposing_group(group_index)
@@ -39,7 +39,7 @@ static func on_group_turn_begin(api: SimBattleAPI, group_index: int) -> void:
 		u.ai_state[&"telegraph_committed"] = true
 
 static func on_group_turn_end(api: SimBattleAPI, group_index: int) -> void:
-	if api == null or api.state == null:
+	if api == null or api.state == null or api.state.has_terminal_outcome():
 		return
 
 	for cid in api.get_combatants_in_group(group_index, true):
@@ -67,7 +67,8 @@ static func on_group_turn_end(api: SimBattleAPI, group_index: int) -> void:
 static func on_action_execution_started(ctx: NPCAIContext) -> void:
 	if ctx == null or ctx.api == null or ctx.combatant_data == null or ctx.combatant_data.ai == null:
 		return
-
+	if ctx.api.state == null or ctx.api.state.has_terminal_outcome():
+		return
 	var profile: NPCAIProfile = ctx.combatant_data.ai
 	var idx := int(ctx.state.get(ActionPlanner.KEY_PLANNED_IDX, -1))
 	var action := ActionPlanner.get_action_by_idx(profile, idx)

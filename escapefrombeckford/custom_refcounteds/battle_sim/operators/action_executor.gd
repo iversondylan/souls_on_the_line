@@ -3,7 +3,7 @@
 class_name ActionExecutor extends RefCounted
 
 static func execute_npc_turn(api: SimBattleAPI, cid: int) -> void:
-	if api == null:
+	if api == null or api.state == null or api.state.has_terminal_outcome():
 		return
 	if cid <= 0 or !api.is_alive(cid):
 		return

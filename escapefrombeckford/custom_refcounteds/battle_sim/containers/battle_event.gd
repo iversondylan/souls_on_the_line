@@ -39,7 +39,9 @@ enum Type {
 	DISCARD_RESOLVED,
 	SUMMON_RESERVE_RELEASED,
 	TURN_STATUS,
-	MANA
+	MANA,
+	VICTORY,
+	DEFEAT,
 }
 
 var defines_beat: bool = false

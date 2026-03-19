@@ -136,7 +136,9 @@ func _apply_checkpoint_boundary(kind: int, allow_hooks := true) -> void:
 func start_group_turn(group_index: int, start_at_player := false, pre_player_friendly := false) -> void:
 	if !_can_run():
 		return
-
+	var api := _api()
+	if api == null or api.state == null or api.state.has_terminal_outcome():
+		return
 	_ensure_runtime_initialized()
 
 	var engine := _engine()
@@ -187,7 +189,9 @@ func apply_player_card(req: CardPlayRequest) -> bool:
 	return ok
 
 func request_urgent_planning_flush() -> void:
-	_apply_checkpoint_boundary(CheckpointProcessor.Kind.URGENT_STATUS_LEGALITY, true)
+	if sim == null or sim.checkpoint_processor == null:
+		return
+	sim.checkpoint_processor.request_followup_flush()
 
 # ============================================================================
 # API hooks (assigned from host)
@@ -313,7 +317,8 @@ func handle_actor_requested(cid: int) -> void:
 	var engine := _engine()
 	if api == null or engine == null or host == null:
 		return
-
+	if api.state == null or api.state.has_terminal_outcome():
+		return
 	var writer := api.writer
 	if writer != null:
 		writer.set_turn_context(engine._turn_token, engine.active_group_index, cid)
@@ -402,6 +407,10 @@ func handle_arcana_proc_requested(proc: int, token: int) -> void:
 # ============================================================================
 
 func _schedule_next_group_turn(group_index: int) -> void:
+	var api := _api()
+	if api == null or api.state == null or api.state.has_terminal_outcome():
+		return
+	
 	var engine := _engine()
 	if engine == null:
 		return

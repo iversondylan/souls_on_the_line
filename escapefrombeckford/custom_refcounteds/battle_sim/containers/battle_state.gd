@@ -2,6 +2,14 @@
 
 class_name BattleState extends RefCounted
 
+enum Outcome {
+	NONE,
+	VICTORY,
+	DEFEAT,
+}
+
+var outcome: int = Outcome.NONE
+
 const FRIENDLY := 0
 const ENEMY := 1
 
@@ -40,6 +48,15 @@ func init(_battle_seed: int, _run_seed: int) -> void:
 	resource = ResourceState.new()
 	resource.max_mana = 3
 	resource.mana = 3
+
+func has_terminal_outcome() -> bool:
+	return int(outcome) != int(Outcome.NONE)
+
+func set_victory() -> void:
+	outcome = Outcome.VICTORY
+
+func set_defeat() -> void:
+	outcome = Outcome.DEFEAT
 
 func has_unit(id: int) -> bool:
 	return units.has(id)
