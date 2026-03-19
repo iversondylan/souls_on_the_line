@@ -110,6 +110,12 @@ func _play_focus_action(a: DirectorAction) -> void:
 	if a == null:
 		return
 
+	# Focus can use either AttackPresentationInfo or a StrikeFollowthroughSlice (useful if you ever do refocus)
+	var slice := _as_strike_slice(a)
+	if slice != null and slice.attack != null:
+		_on_attack_prep_from_info(slice.attack, a.duration_sec)
+		return
+
 	var attack_info := _as_attack_info(a)
 	if attack_info != null:
 		_on_attack_prep_from_info(attack_info, a.duration_sec)
@@ -126,6 +132,11 @@ func _play_focus_action(a: DirectorAction) -> void:
 
 func _play_windup_action(a: DirectorAction) -> void:
 	if a == null:
+		return
+
+	var slice := _as_strike_slice(a)
+	if slice != null:
+		_on_strike_windup_from_slice(slice, a.duration_sec)
 		return
 
 	var attack_info := _as_attack_info(a)
@@ -146,11 +157,11 @@ func _play_followthrough_action(a: DirectorAction) -> void:
 	if a == null:
 		return
 
-	var attack_info := _as_attack_info(a)
-	if attack_info != null:
-		_on_strike_followthrough_from_info(attack_info, a.duration_sec)
+	var slice := _as_strike_slice(a)
+	if slice != null:
+		_on_strike_followthrough_from_slice(slice, a.duration_sec)
 
-		# Only non-structural, non-delete raw events here
+		# Only non-structural raw events here
 		_apply_payload_events(
 			a.payload,
 			a.duration_sec,
@@ -218,6 +229,11 @@ func _play_resolve_action(a: DirectorAction) -> void:
 # ------------------------------------------------------------------------------
 # Shared event/data helpers
 # ------------------------------------------------------------------------------
+
+func _as_strike_slice(a: DirectorAction) -> StrikeFollowthroughSlice:
+	if a == null:
+		return null
+	return a.presentation as StrikeFollowthroughSlice
 
 func _as_attack_info(a: DirectorAction) -> AttackPresentationInfo:
 	if a == null:
@@ -827,11 +843,13 @@ func _on_strike_windup_from_info(info: AttackPresentationInfo, duration: float) 
 	var o := StrikeWindupOrder.new()
 	o.duration = duration
 	o.attacker_id = info.attacker_id
-	o.target_ids = info.get_all_target_ids()
+	o.target_ids = _coerce_int_array(info.get_all_target_ids())
 	o.attack_mode = info.attack_mode
 	o.projectile_scene_path = info.projectile_scene_path
-	o.strike_count = info.strike_count
-	o.total_hit_count = info.total_hit_count
+
+	# For melee windup, you might want "whole attack" context (strike_count > 1)
+	o.strike_count = maxi(1, info.strike_count)
+	o.total_hit_count = maxi(1, info.total_hit_count)
 	o.attack_info = info
 
 	attacker.play_strike_windup(o, battle_view)
@@ -841,24 +859,49 @@ func _on_strike_followthrough_from_info(info: AttackPresentationInfo, duration: 
 	if info == null:
 		return
 
+	# Treat as "one strike" fallback:
+	# - melee: attacker pose
+	# - ranged: do nothing (impacts should be driven via slice)
 	var attacker := battle_view.get_combatant(info.attacker_id)
 	if attacker != null:
 		var o := StrikeFollowthroughOrder.new()
 		o.duration = duration
 		o.attacker_id = info.attacker_id
-		o.target_ids = info.get_all_target_ids()
+		o.target_ids = _coerce_int_array(info.get_all_target_ids())
 		o.attack_mode = info.attack_mode
-		o.strike_count = info.strike_count
-		o.total_hit_count = info.total_hit_count
-		o.has_lethal_hit = info.has_lethal_hit
+		o.strike_count = 1
+		o.strike_index = 0
+		o.total_hit_count = maxi(1, info.total_hit_count)
+		o.has_lethal_hit = bool(info.has_lethal_hit)
 		o.attack_info = info
 		attacker.play_strike_followthrough(o, battle_view)
 
-	for tid in info.get_all_target_ids():
-		var target := battle_view.get_combatant(int(tid))
-		if target != null:
-			target.play_attack_received_followthrough(info, duration)
+	# Targets are NOT driven here anymore; slice should handle per-strike hits.
 
+func _on_strike_windup_from_slice(slice: StrikeFollowthroughSlice, duration: float) -> void:
+	if slice == null or slice.attack == null:
+		return
+
+	var atk := slice.attack
+	var attacker := battle_view.get_combatant(atk.attacker_id)
+	if attacker == null:
+		return
+
+	var o := StrikeWindupOrder.new()
+	o.duration = duration
+	o.attacker_id = atk.attacker_id
+	o.attack_mode = atk.attack_mode
+	o.projectile_scene_path = atk.projectile_scene_path
+	o.attack_info = atk
+
+	# key: this WINDUP is for ONE strike (one projectile)
+	o.strike_count = 1
+	o.strike_index = int(slice.strike_index)
+
+	# target selection for THIS strike
+	o.target_ids = _coerce_int_array(slice.get_target_ids())
+
+	attacker.play_strike_windup(o, battle_view)
 
 func _on_attack_wrapup_from_info(info: AttackPresentationInfo, duration: float) -> void:
 	if info == null:
@@ -872,6 +915,40 @@ func _on_attack_wrapup_from_info(info: AttackPresentationInfo, duration: float) 
 	}
 	_on_attack_wrapup(_make_epkg_from_event(e, duration))
 
+func _on_strike_followthrough_from_slice(slice: StrikeFollowthroughSlice, duration: float) -> void:
+	if slice == null or slice.attack == null:
+		return
+
+	var atk := slice.attack
+	var si := int(slice.strike_index)
+
+	# 1) Attacker followthrough pose (melee only; ranged does nothing here)
+	var attacker := battle_view.get_combatant(atk.attacker_id)
+	if attacker != null:
+		var o := StrikeFollowthroughOrder.new()
+		o.duration = duration
+		o.attacker_id = atk.attacker_id
+		o.target_ids = _coerce_int_array(slice.get_target_ids())
+		o.attack_mode = atk.attack_mode
+
+		# This beat is ONE strike
+		o.strike_count = 1
+		o.strike_index = si
+		o.total_hit_count = slice.strike.hit_count if slice.strike != null else 1
+		o.has_lethal_hit = slice.strike.has_lethal_hit if slice.strike != null else false
+		o.attack_info = atk
+
+		attacker.play_strike_followthrough(o, battle_view)
+
+
+	# 3) Targets: apply ONLY this strike's hits
+	if slice.strike != null:
+		for h in slice.strike.hits:
+			if h == null:
+				continue
+			var target := battle_view.get_combatant(int(h.target_id))
+			if target != null:
+				target.play_received_hit_from_hitinfo(h, duration)
 
 # ------------------------------------------------------------------------------
 # Timeline presentation playback

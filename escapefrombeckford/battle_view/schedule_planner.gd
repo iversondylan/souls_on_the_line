@@ -1,203 +1,306 @@
 # schedule_planner.gd
 class_name SchedulePlanner extends RefCounted
 
-# ------------------------------------------------------------------------------
-# Purpose
-# ------------------------------------------------------------------------------
-# Converts one resolved NPC actor turn into a SchedulePlan.
-#
-# Upstream responsibility is intentionally narrow:
-# - decide WHICH beat each phase starts on
-# - decide HOW MANY beats each phase owns
-#
-# Consumers own all intra-phase feel.
-# ------------------------------------------------------------------------------
-
-var beats_per_bar: int = 4
-
-
-# ------------------------------------------------------------------------------
-# Public entry point
-# ------------------------------------------------------------------------------
-
 func make_npc_turn_plan(
 	clock: BattleClock,
 	turn_events: Array[BattleEvent],
-	speed_mode: int,
+	_speed_mode: int,
 	start_sec: float
 ) -> SchedulePlan:
 	var plan := SchedulePlan.new()
 	plan.t_start = start_sec
+	plan.actions = []
 
-	var unit_quarters := _unit_quarters_for_speed(speed_mode)
-	var unit_sec := unit_quarters * clock.seconds_per_quarter()
-
-	var action_units := _extract_action_units(turn_events)
-	var n_units := action_units.size()
-	var measures := _measures_for_action_units(n_units, action_units)
-	var total_sec := unit_sec * float(measures)
-
-	plan.measures = measures
-	plan.t_end = plan.t_start + total_sec
-
-	if n_units <= 0:
-		plan.actions = []
+	if clock == null or turn_events.is_empty():
+		plan.t_end = start_sec
 		return plan
 
-	if measures == 1:
-		_build_one_measure_plan(plan, turn_events, action_units, total_sec)
+	var spq := clock.seconds_per_quarter()
+
+	var action_units := _extract_action_units(turn_events)
+	if action_units.is_empty():
+		plan.t_end = start_sec
+		return plan
+
+	# For now: treat the first "primary" unit kind as the turn's scheduled content.
+	# You can later extend this to multiple sequential actions (summon + attack + status).
+	var primary_kind := _primary_action_kind(action_units)
+	var presentation = _build_presentation_for_primary_kind(primary_kind, action_units)
+
+	# Always: focus at q=0..1
+	_add_action_q(plan, spq,
+		DirectorAction.Phase.FOCUS,
+		primary_kind,
+		0.0, 1.0,
+		turn_events,
+		_make_focus_event_from_payload(primary_kind, turn_events),
+		presentation,
+		"focus"
+	)
+
+	var is_attack := (primary_kind == DirectorAction.ActionKind.MELEE_STRIKE
+	or primary_kind == DirectorAction.ActionKind.RANGED_STRIKE)
+
+	var atk := presentation as AttackPresentationInfo
+
+	if is_attack and atk != null and int(atk.attack_mode) == int(Attack.Mode.RANGED):
+		# ranged: don't schedule a generic windup at q=1
+		# first windup will be scheduled at q=1.5+ by _schedule_ranged_attack
+		pass
 	else:
-		_build_multi_measure_plan(plan, turn_events, action_units, total_sec, measures)
+		# melee + non-attack keep the early windup
+		_add_action_q(plan, spq,
+			DirectorAction.Phase.WINDUP,
+			primary_kind,
+			1.0, 1.0,
+			[action_units[0].get("marker")],
+			_make_windup_event_from_unit(action_units[0]),
+			presentation,
+			"windup"
+		)
+
+	# Then: variable “hit beats” + resolve
+	if primary_kind == DirectorAction.ActionKind.MELEE_STRIKE or primary_kind == DirectorAction.ActionKind.RANGED_STRIKE:
+		_schedule_attack_beats(plan, spq, primary_kind, action_units, presentation)
+	else:
+		# Generic non-attack: just do a single follow + resolve.
+		var follow_payload: Array = []
+		var resolve_payload: Array = []
+		_split_unit_events_into_follow_and_resolve(action_units, follow_payload, resolve_payload)
+
+		_add_action_q(plan, spq,
+			DirectorAction.Phase.FOLLOWTHROUGH,
+			primary_kind,
+			2.0, 1.0,
+			follow_payload,
+			_make_followthrough_event_from_unit(action_units[0]),
+			presentation,
+			"followthrough"
+		)
+
+		_add_action_q(plan, spq,
+			DirectorAction.Phase.RESOLVE,
+			_resolve_kind(resolve_payload, primary_kind),
+			3.0, 1.0,
+			resolve_payload,
+			_make_resolve_event(resolve_payload, primary_kind),
+			null,
+			"resolve"
+		)
+
+	# Compute t_end from last action end
+	var end_rel := 0.0
+	for a in plan.actions:
+		end_rel = maxf(end_rel, a.t_rel_sec + a.duration_sec)
+	plan.t_end = plan.t_start + end_rel
 
 	return plan
 
 
-# ------------------------------------------------------------------------------
-# Plan builders
-# ------------------------------------------------------------------------------
-
-func _build_one_measure_plan(
+func _add_action_q(
 	plan: SchedulePlan,
-	turn_events: Array[BattleEvent],
-	action_units: Array[Dictionary],
-	total_sec: float
+	spq: float,
+	phase: int,
+	action_kind: int,
+	t_q: float,
+	dur_q: float,
+	payload: Array,
+	ev: BattleEvent,
+	presentation: RefCounted,
+	label: String
 ) -> void:
-	var q := total_sec / 4.0
-	var primary_kind := _primary_action_kind(action_units)
-	var presentation = _build_presentation_for_primary_kind(primary_kind, action_units)
+	var a := DirectorAction.new()
+	a.phase = phase
+	a.action_kind = action_kind
+	a.t_rel_sec = t_q * spq
+	a.duration_sec = maxf(dur_q * spq, 0.0)
+	a.payload = payload
+	a.event = ev
+	a.presentation = presentation
+	a.label = label
+	plan.actions.append(a)
 
-	var focus_payload: Array = turn_events
-	var windup_payload: Array = [action_units[0].get("marker")]
+
+func _schedule_attack_beats(
+	plan: SchedulePlan,
+	spq: float,
+	primary_kind: int,
+	action_units: Array[Dictionary],
+	presentation: RefCounted
+) -> void:
+	var atk := presentation as AttackPresentationInfo
+	if atk == null:
+		return
+
+	var n := maxi(1, atk.strike_count)
+
+	# Determine if there is a lethal hit before the last strike (retarget / corpse beat)
+	var lethal_before_last := false
+	for i in range(mini(n - 1, atk.strikes.size())):
+		var s := atk.strikes[i]
+		if s != null and bool(s.has_lethal_hit):
+			lethal_before_last = true
+			break
+
+	var tail_gap_q := 0.5
+	if n == 1 or lethal_before_last:
+		tail_gap_q = 1.0
+
+	if int(atk.attack_mode) == int(Attack.Mode.RANGED):
+		_schedule_ranged_attack(plan, spq, primary_kind, action_units, atk, tail_gap_q)
+	else:
+		_schedule_melee_attack(plan, spq, primary_kind, action_units, atk, tail_gap_q)
+
+
+func _schedule_melee_attack(
+	plan: SchedulePlan,
+	spq: float,
+	primary_kind: int,
+	action_units: Array[Dictionary],
+	atk: AttackPresentationInfo,
+	tail_gap_q: float
+) -> void:
+	var n := maxi(1, atk.strike_count)
+
+	# Your rule: 1 strike uses full-quarter followthrough.
+	# Multi-strike uses half-quarter slices.
+	var follow_dur_q := 1.0 if n == 1 else 0.5
+
+	var start_follow_q := 2.0 + 0.5 * float(int(floor(float(n - 1) / 2.0)))
+	var dead_shift_q := 0.0
+	var last_hit_q := start_follow_q
+
+	for i in range(n):
+		var t_hit_q := start_follow_q + 0.5 * float(i) + dead_shift_q
+		last_hit_q = t_hit_q
+
+		var unit_events: Array = []
+		if i < action_units.size():
+			unit_events = action_units[i].get("events", [])
+
+		var slice := StrikeFollowthroughSlice.new()
+		slice.attack = atk
+		slice.strike_index = i
+		if i < atk.strikes.size():
+			slice.strike = atk.strikes[i]
+
+		_add_action_q(plan, spq,
+			DirectorAction.Phase.FOLLOWTHROUGH,
+			primary_kind,
+			t_hit_q,
+			follow_dur_q,
+			unit_events,
+			_make_followthrough_event_from_unit(action_units[min(i, action_units.size() - 1)]),
+			slice,
+			"hit_%d" % i
+		)
+
+		# If this strike was lethal and there are more strikes, insert a corpse/retarget half-beat.
+		if i < n - 1 and i < atk.strikes.size():
+			var s := atk.strikes[i]
+			if s != null and bool(s.has_lethal_hit):
+				dead_shift_q += 0.5
+
+	# Resolve start: your tail-gap rule stays, BUT resolve itself is always 1.0q.
+	var t_resolve_q := last_hit_q + tail_gap_q
+
 	var follow_payload: Array = []
 	var resolve_payload: Array = []
+	_split_unit_events_into_follow_and_resolve(action_units, follow_payload, resolve_payload)
 
-	_split_unit_events_into_follow_and_resolve(
-		action_units,
-		follow_payload,
-		resolve_payload
-	)
-
-	var a_focus := _make_phase_action(
-		DirectorAction.Phase.FOCUS,
-		primary_kind,
-		0.0,
-		q,
-		focus_payload,
-		"focus"
-	)
-	a_focus.event = _make_focus_event_from_payload(primary_kind, focus_payload)
-	a_focus.presentation = presentation
-
-	var a_windup := _make_phase_action(
-		DirectorAction.Phase.WINDUP,
-		primary_kind,
-		q,
-		q,
-		windup_payload,
-		"windup"
-	)
-	a_windup.event = _make_windup_event_from_unit(action_units[0])
-	a_windup.presentation = presentation
-
-	var a_follow := _make_phase_action(
-		DirectorAction.Phase.FOLLOWTHROUGH,
-		primary_kind,
-		2.0 * q,
-		q,
-		follow_payload,
-		"followthrough"
-	)
-	a_follow.event = _make_followthrough_event_from_unit(action_units[0])
-	a_follow.presentation = presentation
-
-	var a_resolve := _make_phase_action(
+	_add_action_q(plan, spq,
 		DirectorAction.Phase.RESOLVE,
 		_resolve_kind(resolve_payload, primary_kind),
-		3.0 * q,
-		q,
+		t_resolve_q,
+		1.0, # <-- always a full quarter
 		resolve_payload,
+		_make_resolve_event(resolve_payload, primary_kind),
+		null,
 		"resolve"
 	)
-	a_resolve.event = _make_resolve_event(resolve_payload, primary_kind)
-
-	plan.actions = [a_focus, a_windup, a_follow, a_resolve]
 
 
-func _build_multi_measure_plan(
+func _schedule_ranged_attack(
 	plan: SchedulePlan,
-	turn_events: Array[BattleEvent],
+	spq: float,
+	primary_kind: int,
 	action_units: Array[Dictionary],
-	total_sec: float,
-	measures: int
+	atk: AttackPresentationInfo,
+	tail_gap_q: float
 ) -> void:
-	var total_beats := measures * beats_per_bar
-	var beat_sec := total_sec / float(total_beats)
-	var primary_kind := _primary_action_kind(action_units)
-	var presentation = _build_presentation_for_primary_kind(primary_kind, action_units)
+	var n := maxi(1, atk.strike_count)
+
+	# Fire beats are half-quarter.
+	var fire_dur_q := 0.5
+	# Impact beat is full-quarter for single-shot, half-quarter for multi.
+	var impact_dur_q := 1.0 if n == 1 else 0.5
+
+	var start_fire_q := 1.5 + 0.5 * float(int(floor(float(n - 1) / 2.0)))
+	var dead_shift_q := 0.0
+
+	var last_impact_q := start_fire_q + 0.5
+
+	for i in range(n):
+		var t_fire_q := start_fire_q + 0.5 * float(i) + dead_shift_q
+		var t_impact_q := t_fire_q + 0.5
+		last_impact_q = t_impact_q
+
+		var slice := StrikeFollowthroughSlice.new()
+		slice.attack = atk
+		slice.strike_index = i
+		if i < atk.strikes.size():
+			slice.strike = atk.strikes[i]
+
+		# FIRE: WINDUP beat (spawns projectile for this strike_index)
+		_add_action_q(plan, spq,
+			DirectorAction.Phase.WINDUP,
+			primary_kind,
+			t_fire_q,
+			fire_dur_q,
+			[],
+			null,
+			slice,
+			"fire_%d" % i
+		)
+
+		# IMPACT: FOLLOWTHROUGH beat (projectile impact + hit reactions for this strike)
+		var unit_events: Array = []
+		if i < action_units.size():
+			unit_events = action_units[i].get("events", [])
+
+		_add_action_q(plan, spq,
+			DirectorAction.Phase.FOLLOWTHROUGH,
+			primary_kind,
+			t_impact_q,
+			impact_dur_q,
+			unit_events,
+			null,
+			slice,
+			"impact_%d" % i
+		)
+
+		# Lethal before last => insert corpse/retarget half-beat.
+		if i < n - 1 and i < atk.strikes.size():
+			var s := atk.strikes[i]
+			if s != null and bool(s.has_lethal_hit):
+				dead_shift_q += 0.5
+
+	var t_resolve_q := last_impact_q + tail_gap_q
 
 	var follow_payload: Array = []
 	var resolve_payload: Array = []
-	_split_unit_events_into_follow_and_resolve(
-		action_units,
-		follow_payload,
-		resolve_payload
-	)
+	_split_unit_events_into_follow_and_resolve(action_units, follow_payload, resolve_payload)
 
-	var actions: Array[DirectorAction] = []
-
-	var a_focus := _make_phase_action(
-		DirectorAction.Phase.FOCUS,
-		primary_kind,
-		0.0,
-		beat_sec,
-		turn_events,
-		"focus"
-	)
-	a_focus.event = _make_focus_event_from_payload(primary_kind, turn_events)
-	a_focus.presentation = presentation
-	actions.append(a_focus)
-
-	# strict simplification:
-	# extra beats go into windup
-	var windup_beats := maxi(1, total_beats - 3)
-
-	var a_windup := _make_phase_action(
-		DirectorAction.Phase.WINDUP,
-		primary_kind,
-		beat_sec,
-		float(windup_beats) * beat_sec,
-		[action_units[0].get("marker")],
-		"windup"
-	)
-	a_windup.event = _make_windup_event_from_unit(action_units[0])
-	a_windup.presentation = presentation
-	actions.append(a_windup)
-
-	var a_follow := _make_phase_action(
-		DirectorAction.Phase.FOLLOWTHROUGH,
-		primary_kind,
-		float(1 + windup_beats) * beat_sec,
-		beat_sec,
-		follow_payload,
-		"followthrough"
-	)
-	a_follow.event = _make_followthrough_event_from_unit(action_units[0])
-	a_follow.presentation = presentation
-	actions.append(a_follow)
-
-	var a_resolve := _make_phase_action(
+	_add_action_q(plan, spq,
 		DirectorAction.Phase.RESOLVE,
 		_resolve_kind(resolve_payload, primary_kind),
-		float(2 + windup_beats) * beat_sec,
-		beat_sec,
+		t_resolve_q,
+		1.0, # <-- always a full quarter
 		resolve_payload,
+		_make_resolve_event(resolve_payload, primary_kind),
+		null,
 		"resolve"
 	)
-	a_resolve.event = _make_resolve_event(resolve_payload, primary_kind)
-	actions.append(a_resolve)
-
-	plan.actions = actions
-
 
 func _make_phase_action(
 	phase: int,

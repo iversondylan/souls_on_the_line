@@ -103,7 +103,7 @@ func _playback_loop(gen: int) -> void:
 			if actor_turn.is_empty():
 				continue
 
-			var unit_q := _unit_quarters_for_speed_mode()
+			var unit_q := 1.0 # quarter-note grid only
 			var late_tolerance_sec := 0.05
 
 			var t_start := schedule_t

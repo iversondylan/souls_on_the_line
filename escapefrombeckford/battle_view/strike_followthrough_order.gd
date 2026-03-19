@@ -11,6 +11,7 @@ var attack_mode: int = Attack.Mode.MELEE
 
 # attack-level multiplicity
 var strike_count: int = 1
+var strike_index: int = 0
 var total_hit_count: int = 1
 var has_lethal_hit: bool = false
 
