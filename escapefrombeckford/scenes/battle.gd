@@ -306,10 +306,9 @@ func _on_request_victory() -> void:
 # Debug
 # -------------------------
 
-func _on_dump_states_button_pressed() -> void:
-	sim_host.debug_dump_orders()
-	sim_host.debug_dump_units()
-
-
 func _on_dump_events_button_pressed() -> void:
 	sim_host.debug_dump_events()
+
+
+func _on_kill_enemies_button_pressed() -> void:
+	sim_host.get_main_runtime().debug_kill_all_enemies()

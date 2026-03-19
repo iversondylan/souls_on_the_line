@@ -49,7 +49,7 @@ static func print_event_log(
 	log: BattleEventLog,
 	last_n: int = -1,
 	sleep_ms_every: int = 100,
-	sleep_ms: float = 250.0,
+	sleep_ms: float = 500.0,
 	show_data: bool = true,
 	show_empty_data: bool = false,
 	extra_keys: Array[StringName] = [],

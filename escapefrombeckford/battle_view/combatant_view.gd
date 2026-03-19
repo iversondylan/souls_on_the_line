@@ -405,11 +405,8 @@ func play_strike_followthrough(order: StrikeFollowthroughOrder, battle_view: Bat
 	if order == null or battle_view == null:
 		return
 
-	# RANGED: no followthrough body motion, only impact resolution
+	# RANGED: no followthrough body motion
 	if int(order.attack_mode) == int(Attack.Mode.RANGED):
-		var count := maxi(1, order.strike_count)
-		for i in range(count):
-			play_projectile_impact_for_strike(order.attacker_id, i, battle_view)
 		return
 
 	# MELEE: body motion owned here
@@ -697,6 +694,15 @@ func _spawn_projectile_async(
 
 	var t := projectile.create_tween().set_trans(Tween.TRANS_LINEAR)
 	t.tween_property(projectile, "global_position", end_pos, travel_t)
+
+	t.tween_callback(func():
+		if !is_instance_valid(projectile):
+			return
+		if projectile.has_method("play_impact"):
+			projectile.call("play_impact")
+		else:
+			projectile.queue_free()
+	)
 
 
 func _get_projectile_origin_global() -> Vector2:

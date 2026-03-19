@@ -94,6 +94,10 @@ func on_event(e: EventPackage) -> void:
 			_on_summon_reserve_released(e)
 		BattleEvent.Type.MANA:
 			_on_mana(e)
+		BattleEvent.Type.VICTORY:
+			_on_victory(e)
+		BattleEvent.Type.DEFEAT:
+			_on_defeat(e)
 		_:
 			pass
 
@@ -711,6 +715,19 @@ func _on_summon_reserve_released(e: EventPackage) -> void:
 		return
 	Events.summon_reserve_card_released.emit(summoned_id, card_uid)
 
+func _on_victory(e: EventPackage) -> void:
+	var d := _data(e)
+	#var reason := String(d.get(Keys.REASON, ""))
+	# Optional: stop playback visuals immediately if you want.
+	# if battle_view != null: battle_view.stop_playback()
+	Events.request_victory.emit()
+
+func _on_defeat(e: EventPackage) -> void:
+	var d := _data(e)
+	#var reason := String(d.get(Keys.REASON, ""))
+	# Optional: stop playback visuals immediately if you want.
+	# if battle_view != null: battle_view.stop_playback()
+	Events.request_defeat.emit()
 
 func _on_scope_begin(_e: EventPackage) -> void:
 	pass

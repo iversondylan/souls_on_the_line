@@ -439,3 +439,11 @@ func _notify_actor_done(cid: int) -> void:
 		writer.scope_end() # actor_turn
 
 	engine.notify_actor_done(cid)
+
+func debug_kill_all_enemies() -> void:
+	var api := _api()
+	if api == null:
+		return
+
+	api.debug_kill_all_enemies()
+	_apply_checkpoint_boundary(CheckpointProcessor.Kind.AFTER_CARD, true)

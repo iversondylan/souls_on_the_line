@@ -930,6 +930,26 @@ func plan_intents() -> void:
 	for cid in state.units.keys():
 		plan_intent(int(cid))
 
+func debug_kill_all_enemies(reason: String = "debug_kill_all_enemies") -> void:
+	if state == null:
+		return
+
+	var enemy_ids := get_combatants_in_group(ENEMY, false)
+	if enemy_ids.is_empty():
+		return
+
+	for cid in enemy_ids:
+		var enemy_id := int(cid)
+		if enemy_id <= 0 or !is_alive(enemy_id):
+			continue
+		resolve_death(enemy_id, reason, 0)
+
+	# Make sure downstream systems settle immediately the same way a card-resolution checkpoint would.
+	if checkpoint_processor != null:
+		checkpoint_processor.request_outcome_check()
+		checkpoint_processor.request_turn_order_rebuild()
+		checkpoint_processor.request_replan_all()
+		checkpoint_processor.request_intent_refresh_all()
 
 func _make_ai_ctx(u: CombatantState) -> NPCAIContext:
 	var ctx := NPCAIContext.new()
