@@ -35,3 +35,38 @@ var event: BattleEvent = null
 var payload: Array = []
 
 var label: String = ""
+
+
+
+
+
+
+#class_name DirectorAction extends RefCounted
+#
+#enum Type {
+	#NONE,
+	#GENERIC,
+	#FOCUS,
+	#CLEAR_FOCUS,
+	#MELEE_WINDUP,
+	#MELEE_STRIKE,
+	#RANGED_WINDUP,
+	#RANGED_STRIKE,
+	#DELAY,
+	#SUMMON_WINDUP,
+	#SUMMON,
+	#STATUS_WINDUP,
+	#STATUS,
+	#DEATH,
+#}
+#
+#var type: int = Type.NONE
+#
+#var t_start: float = 0.0
+#var t_end: float = 0.0
+#
+#var index := 0
+#
+#var events: Array[BattleEvent] = []
+#
+#var label: String = ""
