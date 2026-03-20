@@ -33,7 +33,7 @@ size = Vector2(1200, 200)
 [node name="Battle" type="Node" unique_id=1485552347]
 script = ExtResource("1_dd63g")
 
-[node name="SimHost" type="Node" parent="." unique_id=1488075628]
+[node name="SimHost" type="Node" parent="." unique_id=1488075628 groups=["sim_host"]]
 script = ExtResource("3_1m01a")
 
 [node name="BattleView" type="Node2D" parent="." unique_id=1276052910]

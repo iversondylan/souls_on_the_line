@@ -11,6 +11,11 @@ class_name DrawAction extends CardAction
 	#return true
 
 func activate_sim(ctx: CardActionContextSim) -> bool:
+	var draw_effect := CardDrawEffect.new()
+	draw_effect.amount = base_draw
+	draw_effect.source = ctx.api.get_player_id()
+	draw_effect.reason = "CardAction"
+	draw_effect.execute(ctx.api)
 	return true
 
 func description_arity() -> int:

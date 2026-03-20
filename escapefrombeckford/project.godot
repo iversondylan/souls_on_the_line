@@ -47,6 +47,7 @@ enemies=""
 allies=""
 battle_scene=""
 background=""
+sim_host=""
 
 [gui]
 

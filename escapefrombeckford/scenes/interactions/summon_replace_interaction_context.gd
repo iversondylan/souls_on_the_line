@@ -134,41 +134,8 @@ func _finish_confirm(chosen: CombatantView) -> void:
 
 	# 3) UI spend + move card
 	if card != null and is_instance_valid(card):
-		card.player_data.spend_mana(card.card_data)
+		api.spend_mana_for_card(api.get_player_id(), card.card_data)
 		Events.card_played.emit(card)
 		card._move_to_destination()
 
 	handler.end_active_context()
-
-#func _confirm(chosen: CombatantView) -> void:
-	#resolving = true
-	#for v in candidates:
-		#_set_candidate_mark(v, false)
-#
-	#var t := handler.create_tween()
-	#t.tween_property(chosen.character_art, "modulate:a", 0.0, 0.18)
-	#t.finished.connect(func(): _finish_confirm(chosen), CONNECT_ONE_SHOT)
-#
-#func _finish_confirm(chosen: CombatantView) -> void:
-	#if chosen == null or !is_instance_valid(chosen):
-		#handler.end_active_context()
-		#return
-#
-	#var api := handler.battle.sim_host.get_main_api()
-	#if api != null:
-		#api.fade_unit(int(chosen.cid), "summon_replace")
-#
-	#var ok := handler.battle.sim_host.apply_player_card(req)
-	#if !ok:
-		## Roll back the visual fade we applied
-		#if is_instance_valid(chosen) and chosen.character_art != null:
-			#chosen.character_art.modulate.a = 1.0
-		#handler.end_active_context()
-		#return
-#
-	#if card != null and is_instance_valid(card):
-		#card.player_data.spend_mana(card.card_data)
-		#Events.card_played.emit(card)
-		#card._move_to_destination()
-#
-	#handler.end_active_context()
