@@ -621,15 +621,15 @@ func _make_mana_view_order(e: EventPackage) -> ManaViewOrder:
 	o.reason = String(d.get(Keys.REASON, ""))
 	return o
 
-func _relayout_groups_after_resolve() -> void:
-	if battle_view == null:
-		return
-
-	if battle_view.friendly_group != null:
-		battle_view.friendly_group.relayout_alive_immediate(true)
-
-	if battle_view.enemy_group != null:
-		battle_view.enemy_group.relayout_alive_immediate(true)
+#func _relayout_groups_after_resolve() -> void:
+	#if battle_view == null:
+		#return
+#
+	#if battle_view.friendly_group != null:
+		#battle_view.friendly_group.relayout_alive_immediate(true)
+#
+	#if battle_view.enemy_group != null:
+		#battle_view.enemy_group.relayout_alive_immediate(true)
 
 # ------------------------------------------------------------------------------
 # Raw event handlers

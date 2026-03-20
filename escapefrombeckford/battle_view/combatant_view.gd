@@ -64,7 +64,7 @@ var max_mana: int = 0
 
 var anchor_position: Vector2
 var has_anchor_position: bool = false
-
+var _root_motion_locked: bool = false
 var _is_focus_active: bool = false
 
 var tween_move: Tween
@@ -117,6 +117,8 @@ func apply_spawn_spec(spec: Dictionary) -> void:
 	_apply_visuals_from_spec()
 	_apply_stats_from_spec()
 
+func is_root_motion_locked() -> bool:
+	return _root_motion_locked
 
 func _apply_visuals_from_spec() -> void:
 	var nm := String(_spec.get(Keys.COMBATANT_NAME, ""))
@@ -233,55 +235,89 @@ func on_focus(order: FocusOrder) -> void:
 	var target_scale := Vector2.ONE * (order.scale_involved if involved else order.scale_uninvolved)
 	var target_dim := 1.0 if involved else order.dim_uninvolved
 
-	var drift := 0.0
-	if involved:
-		var sign := 1.0 if (get_parent() as GroupView).faces_right else -1.0
-		drift = sign * order.drift_involved
-
 	var dur := maxf(order.duration * 0.75, 0.01)
 	tween_focus = create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	tween_focus.tween_property(self, "scale", target_scale, dur)
-	tween_focus.parallel().tween_property(self, "position", Vector2(anchor_position.x + drift, 0), dur)
 	tween_focus.parallel().tween_property(self, "modulate", Color(target_dim, target_dim, target_dim, 1.0), dur)
 
 
 func clear_focus(duration: float) -> void:
+	if _root_motion_locked or !is_alive:
+		_is_focus_active = false
+		if tween_focus:
+			tween_focus.kill()
+			tween_focus = null
+		return
+
 	_is_focus_active = false
 
 	if tween_focus:
 		tween_focus.kill()
-	if tween_move:
-		tween_move.kill()
+		tween_focus = null
 
 	var dur := maxf(duration * 0.75, 0.01)
 	tween_focus = create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	tween_focus.tween_property(self, "scale", Vector2.ONE, dur)
-	tween_focus.parallel().tween_property(self, "position", anchor_position, dur)
 	tween_focus.parallel().tween_property(self, "modulate", Color(1, 1, 1, 1), dur)
+	tween_focus.finished.connect(func() -> void:
+		tween_focus = null
+	, CONNECT_ONE_SHOT)
 
 
 # ------------------------------------------------------------------------------
 # Group movement
 # ------------------------------------------------------------------------------
 
-func set_anchor_position(_position: Vector2, ctx: GroupLayoutOrder) -> void:
-	anchor_position = _position
+func set_anchor_position(new_position: Vector2, ctx: GroupLayoutOrder) -> void:
+	anchor_position = new_position
 
+	# Once death has begun, root position is frozen.
+	if _root_motion_locked:
+		has_anchor_position = true
+		return
+
+	if tween_move:
+		tween_move.kill()
+		tween_move = null
+
+	# Dead / dying units do not participate in layout.
+	if !is_alive:
+		has_anchor_position = true
+		return
+
+	# If focus currently owns root motion, only update the stored anchor.
 	if _is_focus_active:
 		has_anchor_position = true
 		return
 
-	if ctx.animate_to_position and has_anchor_position:
-		if tween_move:
-			tween_move.kill()
+	var should_animate := false
+	if ctx != null:
+		should_animate = bool(ctx.animate_to_position)
+
+	# First placement should snap, never tween.
+	if !has_anchor_position:
+		position = anchor_position
+		has_anchor_position = true
+		return
+
+	if should_animate:
+		# Avoid tiny corrective tweens that can read as jitter.
+		if position.distance_to(anchor_position) <= 0.5:
+			position = anchor_position
+			has_anchor_position = true
+			return
+
 		tween_move = create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 		tween_move.tween_property(self, "position", anchor_position, 0.12)
+		tween_move.finished.connect(func() -> void:
+			tween_move = null
+		, CONNECT_ONE_SHOT)
 	else:
-		if tween_move:
-			tween_move.kill()
 		position = anchor_position
 
 	has_anchor_position = true
+
+
 
 
 # ------------------------------------------------------------------------------
@@ -326,16 +362,37 @@ func play_presentation_order(order: PresentationOrder, battle_view: BattleView) 
 func _play_melee_windup_from_order(order: MeleeWindupPresentationOrder) -> void:
 	if order == null:
 		return
+	if tween_strike:
+		tween_strike.kill()
 
-	var o := StrikeWindupOrder.new()
-	o.duration = order.visual_sec if order.visual_sec > 0.0 else 0.20
-	o.attacker_id = int(order.actor_id)
-	o.target_ids = order.target_ids
-	o.attack_mode = Attack.Mode.MELEE
-	o.strike_count = int(order.strike_count)
-	o.total_hit_count = int(order.total_hit_count)
+	_cache_base_art_transform_if_needed()
+	var base_scale := _get_base_art_scale()
+	var base_pos := _get_base_art_pos()
 
-	play_strike_windup(o, null)
+	#var drift := float(order.drift_x)
+	#var g := get_parent()
+	#if g is GroupView and !(g as GroupView).faces_right:
+		#drift = -drift
+
+	# Loaded pose
+	var windup_scale := Vector2(base_scale.x * 0.88, base_scale.y * 1.16)
+	#var windup_pos := base_pos + Vector2(drift, -4)
+
+	var dur := maxf(order.visual_sec, 0.01)
+	var snap_t := maxf(dur * 0.42, 0.04)
+
+	tween_strike = create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	tween_strike.tween_property(art_parent, "scale", windup_scale, snap_t)
+	#tween_strike.parallel().tween_property(art_parent, "position", windup_pos, snap_t)
+	#var o := StrikeWindupOrder.new()
+	#o.duration = order.visual_sec if order.visual_sec > 0.0 else 0.20
+	#o.attacker_id = int(order.actor_id)
+	#o.target_ids = order.target_ids
+	#o.attack_mode = Attack.Mode.MELEE
+	#o.strike_count = int(order.strike_count)
+	#o.total_hit_count = int(order.total_hit_count)
+#
+	#play_strike_windup(o, null)
 
 
 func _play_melee_strike_from_order(order: MeleeStrikePresentationOrder) -> void:
@@ -712,16 +769,41 @@ func _apply_received_hit(h: HitPresentationInfo, phase_duration: float) -> void:
 	set_health(h.after_health, h.was_lethal)
 	pop_damage_number(h.amount)
 
-	if h.was_lethal:
-		play_death_reaction(maxf(phase_duration * 0.6, 0.15))
-
 
 func play_death_reaction(duration: float) -> void:
+	# Prevent duplicate death-start ownership fights.
+	if _root_motion_locked:
+		return
+
+	_root_motion_locked = true
+	_is_focus_active = false
+	is_alive = false
+
+	if tween_move:
+		tween_move.kill()
+		tween_move = null
+
+	if tween_focus:
+		tween_focus.kill()
+		tween_focus = null
+
+	if tween_hit:
+		tween_hit.kill()
+		tween_hit = null
+
+	if tween_strike:
+		tween_strike.kill()
+		tween_strike = null
+
 	if tween_misc:
 		tween_misc.kill()
+		tween_misc = null
 
 	_cache_base_art_transform_if_needed()
-	is_alive = false
+
+	# Freeze the root exactly where it is right now.
+	anchor_position = position
+	has_anchor_position = true
 
 	if intent_container != null:
 		intent_container.visible = false
@@ -729,6 +811,10 @@ func play_death_reaction(duration: float) -> void:
 		health_bar.visible = false
 	if status_view_grid != null:
 		status_view_grid.visible = false
+	if pending_turn_glow != null:
+		pending_turn_glow.hide()
+	if targeted_arrow != null:
+		targeted_arrow.hide()
 
 	var dur := maxf(duration, 0.01)
 	var base_pos := _get_base_art_pos()
@@ -738,10 +824,16 @@ func play_death_reaction(duration: float) -> void:
 	var shrink_scale := base_scale * 0.96
 	var to_col := Color(0, 0, 0, 1.0)
 
+	# Snap root in case any tween left fractional drift.
+	position = anchor_position
+
 	tween_misc = create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
 	tween_misc.tween_property(character_art, "modulate", to_col, dur)
 	tween_misc.parallel().tween_property(art_parent, "position", base_pos + slump, dur)
 	tween_misc.parallel().tween_property(art_parent, "scale", shrink_scale, dur)
+	tween_misc.finished.connect(func() -> void:
+		tween_misc = null
+	, CONNECT_ONE_SHOT)
 
 
 # ------------------------------------------------------------------------------

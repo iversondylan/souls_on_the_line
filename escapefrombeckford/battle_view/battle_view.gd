@@ -118,21 +118,15 @@ func _playback_loop(gen: int) -> void:
 
 			var compiler := TurnTimelineCompiler.new()
 			var timeline := compiler.compile_actor_turn(actor_turn)
-			#print(_debug_timeline_line(timeline, actor_turn))
+			print(_debug_timeline_line(timeline, actor_turn))
 
 			var plan_builder := TurnTimelineToDirectorPlan.new()
 			var plan := plan_builder.build_plan(timeline, t_start, transport.tempo_bpm)
-			#print(_debug_director_plan_line(plan, actor_turn, clock.now_sec(), schedule_t))
+			print(_debug_director_plan_line(plan, actor_turn, clock.now_sec(), schedule_t))
 
 			await cue_scheduler.play_plan(clock, event_director, plan, gen)
 			schedule_t = plan.get_end_sec()
 			continue
-
-			#print(_debug_schedule_plan_line(plan, actor_turn, clock.now_sec(), schedule_t))
-
-			#await _play_schedule_plan(plan, gen)
-			#schedule_t = plan.t_end
-			#continue
 
 		var chunk := event_player.next_raw_chunk(player_id)
 		if chunk.is_empty():
@@ -180,7 +174,7 @@ func _playback_loop(gen: int) -> void:
 		pkg.t_next_sec = t_next
 		pkg.duration_sec = maxf(0.0, t_next - t_start2)
 
-		#print(_debug_beat_package_line(pkg, mode, actor_begin_id, is_player_actor, clock.now_sec(), schedule_t))
+		print(_debug_beat_package_line(pkg, mode, actor_begin_id, is_player_actor, clock.now_sec(), schedule_t))
 
 		event_director.play_raw_chunk(pkg)
 
@@ -439,7 +433,6 @@ func set_group_order(ctx: GroupLayoutOrder) -> void:
 
 
 func get_combatant(cid: int) -> CombatantView:
-	print("battle_view.gd get_combatant()")
 	return combatants_by_cid.get(cid, null)
 
 
