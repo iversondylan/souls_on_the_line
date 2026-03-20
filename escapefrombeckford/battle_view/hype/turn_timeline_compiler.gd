@@ -1,5 +1,4 @@
 # turn_timeline_compiler.gd
-
 class_name TurnTimelineCompiler extends RefCounted
 
 func compile_actor_turn(turn_events: Array[BattleEvent]) -> TurnTimeline:
@@ -30,6 +29,7 @@ func compile_actor_turn(turn_events: Array[BattleEvent]) -> TurnTimeline:
 	timeline.action_kind = &"generic"
 	timeline.beats = _build_generic_beats(turn_events)
 	return timeline
+
 
 func _find_actor_id(events: Array[BattleEvent]) -> int:
 	for e in events:
@@ -91,6 +91,7 @@ func _is_status_turn(events: Array[BattleEvent]) -> bool:
 				has_summon = true
 	return has_status and !has_strike and !has_summon
 
+
 func _collect_strike_blocks(events: Array[BattleEvent]) -> Array[Array]:
 	var out: Array[Array] = []
 	var current: Array = []
@@ -115,6 +116,7 @@ func _collect_strike_blocks(events: Array[BattleEvent]) -> Array[Array]:
 
 	return out
 
+
 func _build_attack_analysis(events: Array[BattleEvent]) -> AttackAnalysis:
 	var analysis := AttackAnalysis.new()
 	var blocks := _collect_strike_blocks(events)
@@ -133,6 +135,7 @@ func _build_attack_analysis(events: Array[BattleEvent]) -> AttackAnalysis:
 			analysis.lethal_indices.append(i)
 
 	return analysis
+
 
 func _build_strike_info_from_block(block: Array, strike_index: int) -> StrikePresentationInfo:
 	var s := StrikePresentationInfo.new()
@@ -174,6 +177,7 @@ func _build_strike_info_from_block(block: Array, strike_index: int) -> StrikePre
 
 	return s
 
+
 func _build_attack_beats(analysis: AttackAnalysis, turn_events: Array[BattleEvent]) -> Array[TurnBeat]:
 	if analysis == null or analysis.strike_count <= 0:
 		return _build_generic_beats(turn_events)
@@ -182,6 +186,7 @@ func _build_attack_beats(analysis: AttackAnalysis, turn_events: Array[BattleEven
 		return _build_ranged_attack_beats(analysis, turn_events)
 
 	return _build_melee_attack_beats(analysis, turn_events)
+
 
 func _split_attack_events(events: Array[BattleEvent]) -> Dictionary:
 	var by_strike: Array[Array] = []
@@ -216,11 +221,13 @@ func _split_attack_events(events: Array[BattleEvent]) -> Dictionary:
 		"trailing": trailing,
 	}
 
+
 func _build_melee_attack_beats(analysis: AttackAnalysis, turn_events: Array[BattleEvent]) -> Array[TurnBeat]:
 	var beats: Array[TurnBeat] = []
 	var split := _split_attack_events(turn_events)
 	var by_strike: Array = split["by_strike"]
 	var trailing: Array[BattleEvent] = split["trailing"]
+	var group_index := _find_group_index(turn_events)
 
 	beats.append(_make_focus_beat(0.0, analysis))
 	beats.append(_make_melee_windup_beat(1.0, analysis))
@@ -234,21 +241,25 @@ func _build_melee_attack_beats(analysis: AttackAnalysis, turn_events: Array[Batt
 
 	for i in range(n):
 		var beat_q := start_q + 0.5 * float(i) + lethal_shift_q
+		var strike_events: Array[BattleEvent] = by_strike[i] if i < by_strike.size() else []
+
 		beats.append(_make_melee_strike_beat(
 			beat_q,
 			analysis,
 			i,
-			by_strike[i] if i < by_strike.size() else []
+			strike_events
 		))
 
 		if i < n - 1 and _strike_has_early_lethal(analysis, i):
 			lethal_shift_q += 0.5
 
 	var last_hit_q := start_q + 0.5 * float(n - 1) + lethal_shift_q
-	var clear_q := last_hit_q + (_tail_gap_q_for_attack(analysis))
-	beats.append(_make_clear_focus_beat(clear_q, analysis.attacker_id, trailing))
+	var clear_q := last_hit_q + _tail_gap_q_for_attack(analysis)
+	var layout_order := _find_post_action_group_layout(turn_events, group_index)
+	beats.append(_make_clear_focus_beat(clear_q, analysis.attacker_id, trailing, layout_order))
 
 	return beats
+
 
 func _tail_gap_q_for_attack(analysis: AttackAnalysis) -> float:
 	if analysis == null or analysis.strike_count <= 1:
@@ -260,6 +271,7 @@ func _tail_gap_q_for_attack(analysis: AttackAnalysis) -> float:
 
 	return 0.5
 
+
 func _strike_has_early_lethal(analysis: AttackAnalysis, strike_index: int) -> bool:
 	if analysis == null:
 		return false
@@ -268,11 +280,13 @@ func _strike_has_early_lethal(analysis: AttackAnalysis, strike_index: int) -> bo
 			return true
 	return false
 
+
 func _build_ranged_attack_beats(analysis: AttackAnalysis, turn_events: Array[BattleEvent]) -> Array[TurnBeat]:
 	var beats: Array[TurnBeat] = []
 	var split := _split_attack_events(turn_events)
 	var by_strike: Array = split["by_strike"]
 	var trailing: Array[BattleEvent] = split["trailing"]
+	var group_index := _find_group_index(turn_events)
 
 	beats.append(_make_focus_beat(0.0, analysis))
 	beats.append(_make_ranged_windup_beat(1.0, analysis))
@@ -283,18 +297,16 @@ func _build_ranged_attack_beats(analysis: AttackAnalysis, turn_events: Array[Bat
 		fire_start_q = 2.0
 
 	var lethal_shift_q := 0.0
-	var pending_impacts := {}
 
 	for i in range(n):
 		var fire_q := fire_start_q + 0.5 * float(i) + lethal_shift_q
 		var impact_q := fire_q + 0.5
+		var strike_events: Array[BattleEvent] = by_strike[i] if i < by_strike.size() else []
 
 		_add_order_to_beat_array(beats, fire_q, _make_ranged_fire_order(analysis, i))
 
-		var impact_order := _make_impact_orders_for_strike(analysis, i)
-		_add_orders_to_beat_array(beats, impact_q, impact_order)
-
-		var strike_events: Array[BattleEvent] = by_strike[i] if i < by_strike.size() else []
+		var impact_orders := _make_impact_orders_for_strike(analysis, i, strike_events)
+		_add_orders_to_beat_array(beats, impact_q, impact_orders)
 		_add_events_to_beat_array(beats, impact_q, strike_events)
 
 		if i < n - 1 and _strike_has_early_lethal(analysis, i):
@@ -302,9 +314,11 @@ func _build_ranged_attack_beats(analysis: AttackAnalysis, turn_events: Array[Bat
 
 	var last_impact_q := fire_start_q + 0.5 * float(n - 1) + lethal_shift_q + 0.5
 	var clear_q := last_impact_q + _tail_gap_q_for_attack(analysis)
-	_add_beat_array_clear_focus(beats, clear_q, analysis.attacker_id, trailing)
+	var layout_order := _find_post_action_group_layout(turn_events, group_index)
+	_add_beat_array_clear_focus(beats, clear_q, analysis.attacker_id, trailing, layout_order)
 
 	return _sort_beats(beats)
+
 
 func _make_focus_beat(beat_q: float, analysis: AttackAnalysis) -> TurnBeat:
 	var beat := TurnBeat.new()
@@ -320,7 +334,13 @@ func _make_focus_beat(beat_q: float, analysis: AttackAnalysis) -> TurnBeat:
 	beat.orders.append(o)
 	return beat
 
-func _make_clear_focus_beat(beat_q: float, actor_id: int, trailing: Array[BattleEvent]) -> TurnBeat:
+
+func _make_clear_focus_beat(
+	beat_q: float,
+	actor_id: int,
+	trailing: Array[BattleEvent],
+	layout_order: GroupLayoutPresentationOrder = null
+) -> TurnBeat:
 	var beat := TurnBeat.new()
 	beat.beat_q = beat_q
 	beat.label = "clear_focus"
@@ -329,11 +349,17 @@ func _make_clear_focus_beat(beat_q: float, actor_id: int, trailing: Array[Battle
 	o.kind = PresentationOrder.Kind.CLEAR_FOCUS
 	o.actor_id = actor_id
 	o.visual_sec = 0.30
-
 	beat.orders.append(o)
+
+	if layout_order != null:
+		beat.orders.append(layout_order)
+
 	for e in trailing:
 		beat.events.append(e)
+
 	return beat
+
+
 
 func _make_melee_windup_beat(beat_q: float, analysis: AttackAnalysis) -> TurnBeat:
 	var beat := TurnBeat.new()
@@ -351,7 +377,13 @@ func _make_melee_windup_beat(beat_q: float, analysis: AttackAnalysis) -> TurnBea
 	beat.orders.append(o)
 	return beat
 
-func _make_melee_strike_beat(beat_q: float, analysis: AttackAnalysis, strike_index: int, strike_events: Array[BattleEvent]) -> TurnBeat:
+
+func _make_melee_strike_beat(
+	beat_q: float,
+	analysis: AttackAnalysis,
+	strike_index: int,
+	strike_events: Array[BattleEvent]
+) -> TurnBeat:
 	var beat := TurnBeat.new()
 	beat.beat_q = beat_q
 	beat.label = "melee_strike_%d" % strike_index
@@ -367,16 +399,17 @@ func _make_melee_strike_beat(beat_q: float, analysis: AttackAnalysis, strike_ind
 	o.strikes_total = analysis.strike_count
 	o.total_hit_count = strike.hit_count
 	o.has_lethal = strike.has_lethal_hit
-
 	beat.orders.append(o)
 
-	for impact_order in _make_impact_orders_for_strike(analysis, strike_index):
+	for impact_order in _make_impact_orders_for_strike(analysis, strike_index, strike_events):
 		beat.orders.append(impact_order)
 
 	for e in strike_events:
 		beat.events.append(e)
 
 	return beat
+
+
 
 func _make_ranged_windup_beat(beat_q: float, analysis: AttackAnalysis) -> TurnBeat:
 	var beat := TurnBeat.new()
@@ -394,6 +427,7 @@ func _make_ranged_windup_beat(beat_q: float, analysis: AttackAnalysis) -> TurnBe
 	beat.orders.append(o)
 	return beat
 
+
 func _make_ranged_fire_order(analysis: AttackAnalysis, strike_index: int) -> RangedFirePresentationOrder:
 	var strike := analysis.strikes[strike_index]
 
@@ -407,14 +441,21 @@ func _make_ranged_fire_order(analysis: AttackAnalysis, strike_index: int) -> Ran
 	o.total_hit_count = strike.hit_count
 	o.has_lethal = strike.has_lethal_hit
 	o.projectile_scene_path = "res://VFX/projectiles/fireball/fireball.tscn"
+
 	return o
 
-func _make_impact_orders_for_strike(analysis: AttackAnalysis, strike_index: int) -> Array[PresentationOrder]:
+
+func _make_impact_orders_for_strike(
+	analysis: AttackAnalysis,
+	strike_index: int,
+	strike_events: Array[BattleEvent] = []
+) -> Array[PresentationOrder]:
 	var out: Array[PresentationOrder] = []
 	if strike_index < 0 or strike_index >= analysis.strikes.size():
 		return out
 
 	var strike := analysis.strikes[strike_index]
+
 	for h in strike.hits:
 		if h == null:
 			continue
@@ -431,7 +472,33 @@ func _make_impact_orders_for_strike(analysis: AttackAnalysis, strike_index: int)
 		o.after_health = int(h.after_health)
 		out.append(o)
 
+	for e in strike_events:
+		if e == null or e.data == null:
+			continue
+
+		match int(e.type):
+			BattleEvent.Type.DIED:
+				var d := DeathPresentationOrder.new()
+				d.kind = PresentationOrder.Kind.DEATH
+				d.actor_id = analysis.attacker_id
+				d.target_id = int(e.data.get(Keys.TARGET_ID, 0))
+				d.group_index = int(e.data.get(Keys.GROUP_INDEX, e.group_index))
+				d.after_order_ids = e.data.get(Keys.AFTER_ORDER_IDS, PackedInt32Array())
+				d.visual_sec = 0.24
+				out.append(d)
+
+			BattleEvent.Type.FADED:
+				var f := FadePresentationOrder.new()
+				f.kind = PresentationOrder.Kind.FADE
+				f.actor_id = analysis.attacker_id
+				f.target_id = int(e.data.get(Keys.TARGET_ID, 0))
+				f.group_index = int(e.data.get(Keys.GROUP_INDEX, e.group_index))
+				f.after_order_ids = e.data.get(Keys.AFTER_ORDER_IDS, PackedInt32Array())
+				f.visual_sec = 0.20
+				out.append(f)
+
 	return out
+
 
 func _find_or_make_beat(beats: Array[TurnBeat], beat_q: float, label: String = "") -> TurnBeat:
 	for b in beats:
@@ -464,14 +531,21 @@ func _add_events_to_beat_array(beats: Array[TurnBeat], beat_q: float, events: Ar
 		b.events.append(e)
 
 
-func _add_beat_array_clear_focus(beats: Array[TurnBeat], beat_q: float, actor_id: int, trailing: Array[BattleEvent]) -> void:
-	var b := _make_clear_focus_beat(beat_q, actor_id, trailing)
+func _add_beat_array_clear_focus(
+	beats: Array[TurnBeat],
+	beat_q: float,
+	actor_id: int,
+	trailing: Array[BattleEvent],
+	layout_order: GroupLayoutPresentationOrder = null
+) -> void:
+	var b := _make_clear_focus_beat(beat_q, actor_id, trailing, layout_order)
 	beats.append(b)
 
 
 func _sort_beats(beats: Array[TurnBeat]) -> Array[TurnBeat]:
 	beats.sort_custom(func(a, b): return a.beat_q < b.beat_q)
 	return beats
+
 
 func _collect_all_attack_targets(analysis: AttackAnalysis) -> Array[int]:
 	var seen := {}
@@ -497,9 +571,11 @@ func _count_total_hits(analysis: AttackAnalysis) -> int:
 			n += int(s.hit_count)
 	return maxi(n, 1)
 
+
 func _build_generic_beats(events: Array[BattleEvent]) -> Array[TurnBeat]:
 	var beats: Array[TurnBeat] = []
 	var actor_id := _find_actor_id(events)
+	var group_index := _find_group_index(events)
 
 	var trailing: Array[BattleEvent] = []
 	for e in events:
@@ -513,18 +589,25 @@ func _build_generic_beats(events: Array[BattleEvent]) -> Array[TurnBeat]:
 			BattleEvent.Type.SUMMONED:
 				trailing.append(e)
 
+	var layout_order := _find_post_action_group_layout(events, group_index)
+
 	if actor_id > 0:
 		beats.append(_make_basic_focus_beat(0.0, actor_id, _collect_targets_from_events(events)))
-		beats.append(_make_clear_focus_beat(1.0, actor_id, trailing))
+		beats.append(_make_clear_focus_beat(1.0, actor_id, trailing, layout_order))
 	else:
 		var b := TurnBeat.new()
 		b.beat_q = 0.0
 		b.label = "generic"
+
+		if layout_order != null:
+			b.orders.append(layout_order)
+
 		for e in trailing:
 			b.events.append(e)
 		beats.append(b)
 
 	return beats
+
 
 func _split_summon_events(events: Array[BattleEvent]) -> Dictionary:
 	var summon_events: Array[BattleEvent] = []
@@ -548,6 +631,7 @@ func _split_summon_events(events: Array[BattleEvent]) -> Dictionary:
 		"trailing": trailing,
 	}
 
+
 func _split_status_events(events: Array[BattleEvent]) -> Dictionary:
 	var status_events: Array[BattleEvent] = []
 	var trailing: Array[BattleEvent] = []
@@ -570,42 +654,50 @@ func _split_status_events(events: Array[BattleEvent]) -> Dictionary:
 		"trailing": trailing,
 	}
 
+
 func _build_summon_beats(turn_events: Array[BattleEvent]) -> Array[TurnBeat]:
 	var beats: Array[TurnBeat] = []
 	var split := _split_summon_events(turn_events)
 	var summon_events: Array[BattleEvent] = split["summon_events"]
 	var trailing: Array[BattleEvent] = split["trailing"]
+	var actor_id := _find_actor_id(turn_events)
+	var group_index := _find_group_index(turn_events)
+	var layout_order := _find_post_action_group_layout(turn_events, group_index)
 
 	if summon_events.is_empty():
 		return _build_generic_beats(turn_events)
 
-	var actor_id := _find_actor_id(turn_events)
-
 	beats.append(_make_basic_focus_beat(0.0, actor_id, _collect_targets_from_events(summon_events)))
 	beats.append(_make_summon_windup_beat(1.0, actor_id, summon_events))
 	beats.append(_make_summon_pop_beat(2.0, actor_id, summon_events))
-	beats.append(_make_clear_focus_beat(3.0, actor_id, trailing))
+	beats.append(_make_clear_focus_beat(3.0, actor_id, trailing, layout_order))
 
 	return beats
+
+
+
 
 func _build_status_beats(turn_events: Array[BattleEvent]) -> Array[TurnBeat]:
 	var beats: Array[TurnBeat] = []
 	var split := _split_status_events(turn_events)
 	var status_events: Array[BattleEvent] = split["status_events"]
 	var trailing: Array[BattleEvent] = split["trailing"]
+	var actor_id := _find_actor_id(turn_events)
+	var group_index := _find_group_index(turn_events)
+	var layout_order := _find_post_action_group_layout(turn_events, group_index)
 
 	if status_events.is_empty():
 		return _build_generic_beats(turn_events)
 
-	var actor_id := _find_actor_id(turn_events)
 	var targets := _collect_targets_from_events(status_events)
 
 	beats.append(_make_basic_focus_beat(0.0, actor_id, targets))
 	beats.append(_make_status_windup_beat(1.0, actor_id, targets))
 	beats.append(_make_status_pop_beat(2.0, actor_id, status_events))
-	beats.append(_make_clear_focus_beat(3.0, actor_id, trailing))
+	beats.append(_make_clear_focus_beat(3.0, actor_id, trailing, layout_order))
 
 	return beats
+
 
 func _make_basic_focus_beat(beat_q: float, actor_id: int, target_ids: Array[int]) -> TurnBeat:
 	var beat := TurnBeat.new()
@@ -620,6 +712,7 @@ func _make_basic_focus_beat(beat_q: float, actor_id: int, target_ids: Array[int]
 
 	beat.orders.append(o)
 	return beat
+
 
 func _collect_targets_from_events(events: Array[BattleEvent]) -> Array[int]:
 	var seen := {}
@@ -642,6 +735,7 @@ func _collect_targets_from_events(events: Array[BattleEvent]) -> Array[int]:
 				out.append(tid)
 
 	return out
+
 
 func _make_summon_windup_beat(beat_q: float, actor_id: int, summon_events: Array[BattleEvent]) -> TurnBeat:
 	var beat := TurnBeat.new()
@@ -666,6 +760,7 @@ func _make_summon_windup_beat(beat_q: float, actor_id: int, summon_events: Array
 
 	return beat
 
+
 func _make_summon_pop_beat(beat_q: float, actor_id: int, summon_events: Array[BattleEvent]) -> TurnBeat:
 	var beat := TurnBeat.new()
 	beat.beat_q = beat_q
@@ -689,6 +784,7 @@ func _make_summon_pop_beat(beat_q: float, actor_id: int, summon_events: Array[Ba
 
 	return beat
 
+
 func _make_status_windup_beat(beat_q: float, actor_id: int, target_ids: Array[int]) -> TurnBeat:
 	var beat := TurnBeat.new()
 	beat.beat_q = beat_q
@@ -702,6 +798,7 @@ func _make_status_windup_beat(beat_q: float, actor_id: int, target_ids: Array[in
 
 	beat.orders.append(o)
 	return beat
+
 
 func _make_status_pop_beat(beat_q: float, actor_id: int, status_events: Array[BattleEvent]) -> TurnBeat:
 	var beat := TurnBeat.new()
@@ -729,6 +826,7 @@ func _make_status_pop_beat(beat_q: float, actor_id: int, status_events: Array[Ba
 
 	return beat
 
+
 func _targets_for_single_event(e: BattleEvent) -> Array[int]:
 	var out: Array[int] = []
 	if e == null or e.data == null:
@@ -743,3 +841,36 @@ func _targets_for_single_event(e: BattleEvent) -> Array[int]:
 			out.append(tid)
 
 	return out
+
+
+func _find_post_action_group_layout(events: Array[BattleEvent], fallback_group_index: int) -> GroupLayoutPresentationOrder:
+	var latest_group := -1
+	var latest_order := PackedInt32Array()
+
+	for e in events:
+		if e == null or e.data == null:
+			continue
+
+		match int(e.type):
+			BattleEvent.Type.SUMMONED, \
+			BattleEvent.Type.DIED, \
+			BattleEvent.Type.FADED, \
+			BattleEvent.Type.MOVED:
+				if e.data.has(Keys.AFTER_ORDER_IDS):
+					latest_order = e.data.get(Keys.AFTER_ORDER_IDS, PackedInt32Array())
+					latest_group = int(e.data.get(Keys.GROUP_INDEX, e.group_index))
+
+	if latest_group == -1:
+		latest_group = fallback_group_index
+
+	if latest_group == -1 or latest_order.is_empty():
+		return null
+
+	var o := GroupLayoutPresentationOrder.new()
+	o.kind = PresentationOrder.Kind.GROUP_LAYOUT
+	o.group_index = latest_group
+	o.order_ids = latest_order
+	o.animate = true
+	o.visual_sec = 0.12
+
+	return o

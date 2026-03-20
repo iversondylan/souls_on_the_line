@@ -20,6 +20,7 @@ enum Kind {
 	STATUS_POP,
 	DEATH,
 	FADE,
+	GROUP_LAYOUT,
 }
 
 var kind: int = Kind.FOCUS

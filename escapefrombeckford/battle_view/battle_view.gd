@@ -52,7 +52,7 @@ func _ready() -> void:
 	p.volume_db = metronome_sound.volume_db
 	p.pitch_scale = metronome_sound.pitch
 
-	clock = MetronomeClock.new(p, 120.0, 0.0, get_tree())
+	clock = MetronomeClock.new(p, tempo, 0.0, get_tree())
 
 
 func bind_log(log: BattleEventLog) -> void:
@@ -122,7 +122,7 @@ func _playback_loop(gen: int) -> void:
 
 			var plan_builder := TurnTimelineToDirectorPlan.new()
 			var plan := plan_builder.build_plan(timeline, t_start, transport.tempo_bpm)
-			print(_debug_director_plan_line(plan, actor_turn, clock.now_sec(), schedule_t))
+			#print(_debug_director_plan_line(plan, actor_turn, clock.now_sec(), schedule_t))
 
 			await cue_scheduler.play_plan(clock, event_director, plan, gen)
 			schedule_t = plan.get_end_sec()
@@ -439,6 +439,7 @@ func set_group_order(ctx: GroupLayoutOrder) -> void:
 
 
 func get_combatant(cid: int) -> CombatantView:
+	print("battle_view.gd get_combatant()")
 	return combatants_by_cid.get(cid, null)
 
 
@@ -792,5 +793,11 @@ func _debug_order_short(order: PresentationOrder) -> String:
 			if o10 != null:
 				bits.append("t=%d" % int(o10.target_id))
 				bits.append("g=%d" % int(o10.group_index))
+		PresentationOrder.Kind.GROUP_LAYOUT:
+			var og := order as GroupLayoutPresentationOrder
+			if og != null:
+				bits.append("g=%d" % int(og.group_index))
+				bits.append("order=%s" % str(og.order_ids))
+				bits.append("anim=%s" % str(bool(og.animate)))
 
 	return " ".join(bits)

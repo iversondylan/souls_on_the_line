@@ -62,6 +62,16 @@ func on_director_cue(cue: DirectorCue, gen: int) -> void:
 		_start_order(order)
 
 	for be in cue.events:
+		if be == null:
+			continue
+
+		match int(be.type):
+			BattleEvent.Type.SUMMONED, \
+			BattleEvent.Type.DIED, \
+			BattleEvent.Type.FADED, \
+			BattleEvent.Type.MOVED:
+				continue
+
 		var ep := _make_epkg_from_event(be, 0.0)
 		ep.is_planned = true
 		on_event(ep)
@@ -109,6 +119,9 @@ func _start_order(order: PresentationOrder) -> void:
 
 		PresentationOrder.Kind.FADE:
 			_start_fade_order(order as FadePresentationOrder)
+			
+		PresentationOrder.Kind.GROUP_LAYOUT:
+			_start_group_layout_order(order as GroupLayoutPresentationOrder)
 
 func _start_focus_order(order: FocusPresentationOrder) -> void:
 	if order == null:
@@ -191,18 +204,9 @@ func _start_summon_windup_order(order: SummonWindupPresentationOrder) -> void:
 	if order == null:
 		return
 
-	var be := BattleEvent.new(BattleEvent.Type.SUMMONED)
-	be.group_index = int(order.group_index)
-	be.data = {
-		Keys.SUMMONED_ID: int(order.summoned_id),
-		Keys.GROUP_INDEX: int(order.group_index),
-		Keys.INSERT_INDEX: int(order.insert_index),
-		Keys.BEFORE_ORDER_IDS: order.before_order_ids,
-		Keys.SUMMON_SPEC: order.summon_spec,
-	}
-
-	var ep := _make_epkg_from_event(be, order.visual_sec if order.visual_sec > 0.0 else 0.18)
-	_on_summon_windup(ep)
+	var caster := battle_view.get_combatant(int(order.actor_id))
+	if caster != null:
+		caster.play_summon_windup(order.visual_sec if order.visual_sec > 0.0 else 0.18)
 
 func _start_summon_pop_order(order: SummonPopPresentationOrder) -> void:
 	if order == null:
@@ -236,8 +240,6 @@ func _start_summon_pop_order(order: SummonPopPresentationOrder) -> void:
 			maxf(order.visual_sec if order.visual_sec > 0.0 else 0.20, 0.01)
 		)
 
-	_apply_group_order(g, _packed_to_int_array(order.after_order_ids), true)
-
 func _start_death_order(order: DeathPresentationOrder) -> void:
 	if order == null:
 		return
@@ -269,10 +271,28 @@ func _start_fade_order(order: FadePresentationOrder) -> void:
 	_on_fade_followthrough(ep)
 
 
+func _start_group_layout_order(order: GroupLayoutPresentationOrder) -> void:
+	if order == null or battle_view == null:
+		return
+
+	var ctx := GroupLayoutOrder.new()
+	ctx.group_index = int(order.group_index)
+	ctx.order = order.order_ids
+	ctx.animate_to_position = bool(order.animate)
+	battle_view.set_group_order(ctx)
+
 
 func on_event(e: EventPackage) -> void:
 	if e == null or e.event == null or battle_view == null:
 		return
+
+	if e.is_planned:
+		match int(e.event.type):
+			BattleEvent.Type.SUMMONED, \
+			BattleEvent.Type.DIED, \
+			BattleEvent.Type.FADED, \
+			BattleEvent.Type.MOVED:
+				return
 
 	match int(e.event.type):
 		BattleEvent.Type.SPAWNED:
@@ -419,28 +439,15 @@ func _play_resolve_action(a: DirectorAction) -> void:
 	if a == null:
 		return
 
-	# Structural / board-state events belong here
 	_apply_payload_events(
 		a.payload,
 		a.duration_sec,
 		{
-			BattleEvent.Type.DIED: true,
-			BattleEvent.Type.FADED: true,
 			BattleEvent.Type.STATUS: true,
 			BattleEvent.Type.SET_INTENT: true,
 			BattleEvent.Type.TURN_STATUS: true,
-			BattleEvent.Type.MOVED: true,
 		}
 	)
-
-	_relayout_groups_after_resolve()
-
-	var attack_info := _as_attack_info(a)
-	if attack_info != null:
-		_on_attack_wrapup_from_info(attack_info, a.duration_sec)
-		return
-
-	battle_view.clear_focus(a.duration_sec)
 
 
 # ------------------------------------------------------------------------------
@@ -836,18 +843,28 @@ func _on_death_windup(e: EventPackage) -> void:
 
 
 func _on_death_followthrough(e: EventPackage) -> void:
+	print("battle_event_director.gd _on_death_followthrough()")
 	var dead_id := _target_id(e)
 	var g := _group_index(e)
+	var dur := maxf(e.duration, 0.01)
 
 	var group: GroupView = battle_view.friendly_group if g == 0 else battle_view.enemy_group
 	if group != null:
 		group.unregister_cid(dead_id)
 
 	var dead_view := battle_view.get_combatant(dead_id)
-	if dead_view != null:
-		dead_view.on_death_followthrough(e.duration)
+	if dead_view == null:
+		return
 
-	_apply_group_order(g, _after_order(e), true)
+	dead_view.play_death_reaction(dur)
+	dead_view.is_alive = false
+
+	await battle_view.get_tree().create_timer(dur).timeout
+
+	if is_instance_valid(dead_view):
+		dead_view.queue_free()
+
+	battle_view.combatants_by_cid.erase(dead_id)
 
 
 func _on_discard_requested(e: EventPackage) -> void:
@@ -897,8 +914,6 @@ func _on_fade_followthrough(e: EventPackage) -> void:
 	if dv != null:
 		dv.is_alive = false
 
-	_apply_group_order(g, _after_order(e), true)
-
 
 func _on_faded(e: EventPackage) -> void:
 	var dead_id := _target_id(e)
@@ -925,8 +940,6 @@ func _on_summon_followthrough(e: EventPackage) -> void:
 	var v := battle_view.get_combatant(summoned_id)
 	if v != null:
 		v.is_alive = true
-
-	_apply_group_order(g, _after_order(e), true)
 
 
 func _on_summoned(e: EventPackage) -> void:
@@ -1022,16 +1035,11 @@ func _place_summon_for_windup(e: EventPackage, v: CombatantView) -> void:
 	v.anchor_position = v.position
 	v.has_anchor_position = true
 
+	# Keep entirely hidden until SUMMON_POP
 	if v.character_art != null:
 		var c := v.character_art.modulate
 		c.a = 0.0
 		v.character_art.modulate = c
-
-	if v.tween_misc:
-		v.tween_misc.kill()
-	v.tween_misc = v.create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-	if v.character_art != null:
-		v.tween_misc.tween_property(v.character_art, "modulate:a", 1.0, maxf(e.duration, 0.01))
 
 
 # ------------------------------------------------------------------------------
@@ -1319,5 +1327,11 @@ func _debug_order_payload(order: PresentationOrder) -> String:
 				bits.append("t=%d" % int(o10.target_id))
 				bits.append("g=%d" % int(o10.group_index))
 				bits.append("after=%s" % str(o10.after_order_ids))
+		PresentationOrder.Kind.GROUP_LAYOUT:
+			var og := order as GroupLayoutPresentationOrder
+			if og != null:
+				bits.append("g=%d" % int(og.group_index))
+				bits.append("order=%s" % str(og.order_ids))
+				bits.append("anim=%s" % str(bool(og.animate)))
 
 	return " ".join(bits)

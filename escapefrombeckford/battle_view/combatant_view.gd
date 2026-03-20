@@ -448,7 +448,30 @@ func _play_ranged_windup_pose_async(duration: float, gen: int) -> void:
 	tween_strike.tween_property(art_parent, "scale", load_scale, dur)
 	tween_strike.parallel().tween_property(art_parent, "position", load_pos, dur)
 
+func play_summon_windup(duration: float) -> void:
+	if tween_strike:
+		tween_strike.kill()
 
+	_cache_base_art_transform_if_needed()
+	var base_scale := _get_base_art_scale()
+	var base_pos := _get_base_art_pos()
+
+	var g := get_parent()
+	var drift := 10.0
+	if g is GroupView and !(g as GroupView).faces_right:
+		drift = -drift
+
+	var windup_scale := Vector2(base_scale.x * 0.90, base_scale.y * 1.14)
+	var windup_pos := base_pos + Vector2(drift, -4)
+
+	var dur := maxf(duration, 0.01)
+	var snap_t := maxf(dur * 0.42, 0.04)
+
+	tween_strike = create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	tween_strike.tween_property(art_parent, "scale", windup_scale, snap_t)
+	tween_strike.parallel().tween_property(art_parent, "position", windup_pos, snap_t)
+	if dur > snap_t:
+		tween_strike.tween_interval(dur - snap_t)
 
 func play_strike_windup(order: StrikeWindupOrder, battle_view: BattleView) -> void:
 	if order == null or battle_view == null:
