@@ -3,7 +3,7 @@
 class_name CardResolvedTargetView extends RefCounted
 
 var views: Array[CombatantView] = []
-var fighter_ids: PackedInt32Array = PackedInt32Array()
+var target_ids: PackedInt32Array = PackedInt32Array()
 
 # battlefield placement (summon, etc.)
 var areas: Array[Node] = []

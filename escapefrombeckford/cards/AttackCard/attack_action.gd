@@ -25,7 +25,7 @@ extends CardAction
 #
 	#return true
 
-func activate_sim(ctx: CardActionContextSim) -> bool:
+func activate_sim(ctx: CardContext) -> bool:
 	if ctx == null or ctx.api == null or ctx.resolved == null:
 		return false
 
@@ -33,7 +33,7 @@ func activate_sim(ctx: CardActionContextSim) -> bool:
 	if source_id <= 0:
 		return false
 
-	var targets := ctx.resolved.fighter_ids
+	var targets := ctx.target_ids
 	if targets.is_empty():
 		return false
 

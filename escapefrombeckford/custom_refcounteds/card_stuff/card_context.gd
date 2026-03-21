@@ -8,6 +8,10 @@ var source_id: int = 0
 var card_data: CardData
 var source_card: UsableCard
 
+var card_scope_id: int = 0
+var card_scope_opened: bool = false
+var card_play_committed: bool = false
+
 # resolved targeting / placement
 var target_ids: PackedInt32Array = PackedInt32Array()
 var insert_index: int = -1
@@ -26,3 +30,7 @@ var emitted_card_played: bool = false
 var mana_spent: bool = false
 var canceled: bool = false
 var finished: bool = false
+var current_action_index: int = -1
+var escrow_action_index: int = -1
+var confirm_action_index: int = -1
+var interaction_payloads: Dictionary = {} # action_index -> Dictionary

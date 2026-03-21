@@ -191,6 +191,7 @@ func _build_attack_beats(analysis: AttackAnalysis, turn_events: Array[BattleEven
 func _split_attack_events(events: Array[BattleEvent]) -> Dictionary:
 	var by_strike: Array[Array] = []
 	var trailing: Array[BattleEvent] = []
+	var final_strike_events: Array[BattleEvent] = []
 
 	var blocks := _collect_strike_blocks(events)
 	for block in blocks:
@@ -210,11 +211,19 @@ func _split_attack_events(events: Array[BattleEvent]) -> Dictionary:
 	for e in events:
 		if e == null:
 			continue
+
 		match int(e.type):
-			BattleEvent.Type.SET_INTENT, \
+			BattleEvent.Type.SET_INTENT:
+				final_strike_events.append(e)
+
 			BattleEvent.Type.TURN_STATUS, \
 			BattleEvent.Type.MOVED:
 				trailing.append(e)
+
+	if !by_strike.is_empty() and !final_strike_events.is_empty():
+		var last_i := by_strike.size() - 1
+		for e in final_strike_events:
+			by_strike[last_i].append(e)
 
 	return {
 		"by_strike": by_strike,

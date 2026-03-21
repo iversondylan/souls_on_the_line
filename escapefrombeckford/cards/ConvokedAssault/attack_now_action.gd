@@ -33,7 +33,7 @@ func description_arity() -> int:
 #func get_description_values(_ctx: CardActionContext) -> Array:
 	#return []
 
-func activate_sim(ctx: CardActionContextSim) -> bool:
+func activate_sim(ctx: CardContext) -> bool:
 	if ctx == null or ctx.api == null or ctx.resolved == null:
 		return false
 	

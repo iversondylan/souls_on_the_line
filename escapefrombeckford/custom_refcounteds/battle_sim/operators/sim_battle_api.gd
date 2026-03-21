@@ -137,6 +137,16 @@ func get_player_pos_delta(combat_id: int) -> int:
 	
 	return my_rank - player_rank
 
+func get_soulbound_ids_for_owner(_owner_id: int) -> Array[int]:
+	var out: Array[int] = []
+	var ids := get_combatants_in_group(0, false)
+	for id in ids:
+		var combatant := state.get_unit(int(id))
+		if combatant == null:
+			continue
+		if int(combatant.mortality) == int(CombatantView.Mortality.SOULBOUND):
+			out.append(int(id))
+	return out
 
 func has_status(combat_id: int, status_id: StringName) -> bool:
 	if state == null:
@@ -279,8 +289,9 @@ func _request_immediate_planning_flush_if_needed(target_id: int, proto: Status) 
 	if proto == null:
 		return
 	if !proto.affects_intent_legality():
+		print("sim_battle_api.gd _request_immediate_planning_flush_if_needed() affects_legality: false, status: ", proto.get_id())
 		return
-	
+	print("sim_battle_api.gd _request_immediate_planning_flush_if_needed() affects_legality: true, status: ", proto.get_id())
 	# Dirtiness should already be requested before this point,
 	# but make sure the target definitely gets both.
 	_request_replan(int(target_id))
@@ -304,6 +315,7 @@ func _on_status_changed(cid: int) -> void:
 func _request_intent_refresh_targets_for_aura(_source_id: int, _proto: Status) -> void:
 	# Conservative and correct for now.
 	_request_intent_refresh_all()
+
 
 
 # ============================================================================
@@ -400,11 +412,12 @@ func resolve_death(combat_id: int, reason := "", killer_id: int = 0) -> void:
 
 
 func resolve_move(ctx: MoveContext) -> void:
+	print("sim_battle_api.gd resolve_move()")
 	if ctx == null or state == null:
 		return
 	if int(ctx.actor_id) <= 0:
 		return
-	
+	print("actor_id: ", ctx.actor_id)
 	var u := state.get_unit(int(ctx.actor_id))
 	if u == null or !u.is_alive():
 		return
@@ -414,7 +427,7 @@ func resolve_move(ctx: MoveContext) -> void:
 		return
 	
 	ctx.before_order_ids = PackedInt32Array(state.groups[g].order)
-	
+	print("before_order_ids: ", ctx.before_order_ids)
 	match ctx.move_type:
 		MoveContext.MoveType.MOVE_TO_FRONT:
 			_move_id_to_index(g, int(ctx.actor_id), 0)
@@ -429,6 +442,7 @@ func resolve_move(ctx: MoveContext) -> void:
 			pass
 	
 	ctx.after_order_ids = PackedInt32Array(state.groups[g].order)
+	print("after_order_ids: ", ctx.after_order_ids)
 	_request_turn_order_rebuild()
 	
 	if writer != null:
@@ -504,7 +518,7 @@ func apply_status(ctx: StatusContext) -> void:
 		_request_intent_refresh(int(ctx.target_id))
 	
 	_on_status_changed(int(ctx.target_id))
-	
+	print("apply")
 	_request_immediate_planning_flush_if_needed(int(ctx.target_id), proto)
 
 
@@ -561,7 +575,7 @@ func remove_status(ctx: StatusContext) -> void:
 		_request_intent_refresh(int(ctx.target_id))
 	
 	_on_status_changed(int(ctx.target_id))
-	
+	#print("remove")
 	_request_immediate_planning_flush_if_needed(int(ctx.target_id), proto)
 
 
@@ -673,6 +687,9 @@ func summon(ctx: SummonContext) -> void:
 	
 	_request_replan(int(id))
 	_request_intent_refresh(int(id))
+	
+	if checkpoint_processor != null:
+		checkpoint_processor.request_followup_flush()
 
 
 func count_summons_in_group(group_index: int) -> int:
@@ -713,27 +730,56 @@ func count_soulbound_in_group(group_index: int) -> int:
 # Card / discard
 # ============================================================================
 
-func on_card_played(ctx: CardActionContextSim) -> void:
-	if ctx == null or ctx.card_data == null or writer == null:
+#func on_card_played(ctx: CardActionContextSim) -> void:
+	#if ctx == null or ctx.card_data == null or writer == null:
+		#return
+	#if ctx.emitted_card_played:
+		#return
+	#
+	#ctx.emitted_card_played = true
+	#ctx.card_data.ensure_uid()
+	#
+	#writer.scope_begin(
+		#Scope.Kind.CARD,
+		#"uid=%s %s" % [str(ctx.card_data.uid), String(ctx.card_data.name)],
+		#int(ctx.source_id)
+	#)
+	#writer.emit_card_played(ctx)
+
+
+#func on_card_finished(_ctx: CardActionContextSim) -> void:
+	#if writer != null:
+		#writer.scope_end()
+#
+func emit_card_played_ctx(ctx: CardContext) -> void:
+	if ctx == null or writer == null:
 		return
 	if ctx.emitted_card_played:
 		return
-	
+
 	ctx.emitted_card_played = true
-	ctx.card_data.ensure_uid()
-	
+
+	if ctx.card_data != null:
+		ctx.card_data.ensure_uid()
+
 	writer.scope_begin(
 		Scope.Kind.CARD,
-		"uid=%s %s" % [str(ctx.card_data.uid), String(ctx.card_data.name)],
+		"uid=%s %s" % [
+			str(ctx.card_data.uid) if ctx.card_data != null else "",
+			String(ctx.card_data.name) if ctx.card_data != null else "<no card>"
+		],
 		int(ctx.source_id)
 	)
-	writer.emit_card_played(ctx)
+	writer.emit_card_played_ctx(ctx)
 
+func finalize_card_execution(ctx: CardContext) -> void:
+	if ctx == null:
+		return
 
-func on_card_finished(_ctx: CardActionContextSim) -> void:
-	if writer != null:
+	# purely sim/log/runtime-side finalization
+	# do NOT move the visible card here if you want UsableCard to keep doing it
+	if writer != null and ctx.emitted_card_played:
 		writer.scope_end()
-
 
 func request_player_discard(req: DiscardRequest) -> void:
 	if req == null or state == null or state.resource == null:
@@ -1087,6 +1133,7 @@ func _move_id_to_index(group_index: int, id: int, new_index: int) -> void:
 
 
 func _swap_ids(group_index: int, a: int, b: int) -> void:
+	print("sim_battle_api.gd _swap_ids() g: %s, a: %s, b: %s" % [group_index,a, b])
 	var g := state.groups[int(group_index)]
 	var ai := g.index_of(int(a))
 	var bi := g.index_of(int(b))

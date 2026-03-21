@@ -3,5 +3,5 @@
 class_name EscrowCardInteractionContext extends InteractionContext
 
 var card: UsableCard
-var req: CardPlayRequest
+var card_ctx: CardContext
 var effect: Effect

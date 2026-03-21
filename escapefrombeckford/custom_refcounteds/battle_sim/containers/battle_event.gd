@@ -42,6 +42,7 @@ enum Type {
 	MANA,
 	VICTORY,
 	DEFEAT,
+	DRAW_CARDS,
 }
 
 var defines_beat: bool = false

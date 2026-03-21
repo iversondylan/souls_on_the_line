@@ -45,3 +45,4 @@ func on_damage_taken(ctx: SimStatusContext, damage_ctx: DamageContext) -> void:
 	ctx.remove_self("stability_broken")
 	ctx.request_replan()
 	ctx.request_intent_refresh()
+	ctx.api._request_immediate_planning_flush_if_needed(ctx.owner_id, self)

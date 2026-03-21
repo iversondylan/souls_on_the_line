@@ -10,7 +10,7 @@ class_name DiscardAction extends CardAction
 	#discard_effect.execute(ctx.battle_scene.api)
 	#return true
 
-func activate_sim(ctx: CardActionContextSim) -> bool:
+func activate_sim(ctx: CardContext) -> bool:
 	if ctx == null or ctx.api == null:
 		return false
 

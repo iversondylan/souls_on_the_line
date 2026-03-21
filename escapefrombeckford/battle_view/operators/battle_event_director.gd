@@ -843,7 +843,7 @@ func _on_death_windup(e: EventPackage) -> void:
 
 
 func _on_death_followthrough(e: EventPackage) -> void:
-	print("battle_event_director.gd _on_death_followthrough()")
+	#print("battle_event_director.gd _on_death_followthrough()")
 	var dead_id := _target_id(e)
 	var g := _group_index(e)
 	var dur := maxf(e.duration, 0.01)

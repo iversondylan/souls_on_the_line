@@ -664,13 +664,14 @@ func _debug_cue_summary(cues: Array[DirectorCue]) -> String:
 		if c == null:
 			parts.append("<null>")
 			continue
-		parts.append("{q=%.2f idx=%d label=%s orders=%d events=%d %s}" % [
+		parts.append("{q=%.2f idx=%d label=%s orders=%d events=%d %s %s}" % [
 			float(c.beat_q),
 			int(c.index),
 			String(c.label),
 			c.orders.size(),
 			c.events.size(),
 			_debug_order_summary(c.orders),
+			_debug_event_summary(c.events),
 		])
 
 	if cues.size() > max_n:
@@ -678,6 +679,20 @@ func _debug_cue_summary(cues: Array[DirectorCue]) -> String:
 
 	return " | ".join(parts)
 
+func _debug_event_summary(events: Array[BattleEvent]) -> String:
+	if events == null or events.is_empty():
+		return "events=[]"
+
+	var parts: Array[String] = []
+	var max_n := mini(events.size(), 6)
+
+	for i in range(max_n):
+		parts.append(_debug_event_short(events[i]))
+
+	if events.size() > max_n:
+		parts.append("... +" + str(events.size() - max_n) + " more")
+
+	return "events=[" + " | ".join(parts) + "]"
 
 func _debug_order_summary(orders: Array[PresentationOrder]) -> String:
 	if orders == null or orders.is_empty():

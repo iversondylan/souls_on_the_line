@@ -189,9 +189,10 @@ func apply_player_card(req: CardPlayRequest) -> bool:
 	return ok
 
 func request_urgent_planning_flush() -> void:
+	print("sim_runtime.gd request_urgent_planning_flush()")
 	if sim == null or sim.checkpoint_processor == null:
 		return
-	sim.checkpoint_processor.request_followup_flush()
+	sim.checkpoint_processor.flush_planning(CheckpointProcessor.Kind.URGENT_STATUS_LEGALITY, sim)#request_followup_flush()
 
 # ============================================================================
 # API hooks (assigned from host)
@@ -447,3 +448,343 @@ func debug_kill_all_enemies() -> void:
 
 	api.debug_kill_all_enemies()
 	_apply_checkpoint_boundary(CheckpointProcessor.Kind.AFTER_CARD, true)
+
+
+# ============================================================================
+# Card Execution
+# ============================================================================
+
+func begin_card_execution(ctx: CardContext) -> bool:
+	if ctx == null or ctx.finished:
+		return false
+	if ctx.card_data == null:
+		return false
+
+	ctx.action_states.clear()
+	ctx.next_action_index = 0
+	ctx.current_action_index = -1
+	ctx.canceled = false
+	ctx.finished = false
+	ctx.card_scope_id = 0
+	ctx.card_scope_opened = false
+	ctx.card_play_committed = false
+	ctx.interaction_payloads.clear()
+
+	var actions: Array = ctx.card_data.actions
+	for i in range(actions.size()):
+		var action := actions[i] as CardAction
+		if action == null:
+			continue
+
+		var st := CardActionExecutionState.new()
+		st.action_index = i
+		st.action = action
+		st.interaction_mode = action.get_interaction_mode(ctx)
+		st.state = CardActionExecutionState.State.PENDING
+		ctx.action_states.append(st)
+
+	return continue_card_execution(ctx)
+
+#func begin_card_execution(ctx: CardContext) -> bool:
+	#if ctx == null:
+		#return false
+#
+	#initialize_card_context(ctx)
+	#return continue_card_execution(ctx)
+
+func continue_card_execution(ctx: CardContext) -> bool:
+	if ctx == null or ctx.finished:
+		return false
+	if ctx.canceled:
+		_finalize_card_execution(ctx)
+		return false
+
+	while ctx.next_action_index < ctx.action_states.size():
+		var st: CardActionExecutionState = ctx.action_states[ctx.next_action_index]
+		if st == null or st.action == null:
+			ctx.next_action_index += 1
+			continue
+
+		ctx.current_action_index = st.action_index
+
+		match int(st.state):
+			CardActionExecutionState.State.EXECUTED, \
+			CardActionExecutionState.State.SKIPPED:
+				ctx.next_action_index += 1
+				continue
+
+			CardActionExecutionState.State.WAITING_INTERACTION:
+				return true
+
+			CardActionExecutionState.State.COVERED, \
+			CardActionExecutionState.State.PENDING:
+				if int(st.state) == int(CardActionExecutionState.State.PENDING) \
+				and int(st.interaction_mode) != int(CardAction.InteractionMode.NONE):
+					st.state = CardActionExecutionState.State.WAITING_INTERACTION
+					if !st.action.activate_interaction(ctx):
+						st.state = CardActionExecutionState.State.CANCELED
+						ctx.canceled = true
+						_finalize_card_execution(ctx)
+						return false
+					return true
+
+				if !_commit_card_play_if_needed(ctx):
+					ctx.canceled = true
+					_finalize_card_execution(ctx)
+					return false
+
+				if !execute_card_action(ctx, st.action_index):
+					st.state = CardActionExecutionState.State.CANCELED
+					ctx.canceled = true
+					_finalize_card_execution(ctx)
+					return false
+
+				st.state = CardActionExecutionState.State.EXECUTED
+				ctx.next_action_index += 1
+				continue
+
+			CardActionExecutionState.State.CANCELED:
+				ctx.canceled = true
+				_finalize_card_execution(ctx)
+				return false
+
+	ctx.finished = true
+	_finalize_card_execution(ctx)
+	return true
+
+func execute_card_action(ctx: CardContext, action_index: int) -> bool:
+	if ctx == null:
+		return false
+	if action_index < 0 or action_index >= ctx.action_states.size():
+		return false
+
+	var st: CardActionExecutionState = ctx.action_states[action_index]
+	if st == null or st.action == null:
+		return false
+
+	ctx.current_action_index = action_index
+	return st.action.activate_sim(ctx)
+
+func cover_waiting_action_and_continue(
+	ctx: CardContext,
+	action_index: int,
+	payload: Dictionary = {}
+) -> bool:
+	if ctx == null:
+		return false
+	if action_index < 0 or action_index >= ctx.action_states.size():
+		return false
+
+	var st: CardActionExecutionState = ctx.action_states[action_index]
+	if st == null or st.action == null:
+		return false
+	if int(st.state) != int(CardActionExecutionState.State.WAITING_INTERACTION):
+		return false
+
+	if !payload.is_empty():
+		ctx.interaction_payloads[action_index] = payload.duplicate(true)
+
+	st.state = CardActionExecutionState.State.COVERED
+	ctx.current_action_index = action_index
+
+	# Execute the just-covered action now.
+	if !_commit_card_play_if_needed(ctx):
+		st.state = CardActionExecutionState.State.CANCELED
+		ctx.canceled = true
+		_finalize_card_execution(ctx)
+		return false
+
+	if !execute_card_action(ctx, action_index):
+		st.state = CardActionExecutionState.State.CANCELED
+		ctx.canceled = true
+		_finalize_card_execution(ctx)
+		return false
+
+	st.state = CardActionExecutionState.State.EXECUTED
+	ctx.next_action_index = action_index + 1
+
+	return continue_card_execution(ctx)
+
+#func cover_waiting_action_and_continue(ctx: CardContext, action_index: int, payload: Dictionary = {}) -> bool:
+	#print("sim_runtime.gd cover_waiting_action_and_continue()")
+	#if ctx == null:
+		#return false
+	#if action_index < 0 or action_index >= ctx.action_states.size():
+		#return false
+#
+	#var state: CardActionExecutionState = ctx.action_states[action_index]
+	#if state == null:
+		#return false
+#
+	#if !payload.is_empty():
+		#ctx.interaction_payloads[action_index] = payload.duplicate(true)
+#
+	#state.state = CardActionExecutionState.State.EXECUTED
+#
+	#if ctx.next_action_index == action_index:
+		#ctx.next_action_index += 1
+	#elif ctx.next_action_index < action_index:
+		#ctx.next_action_index = action_index + 1
+#
+	#return continue_card_execution(ctx)
+
+
+func cancel_waiting_action(ctx: CardContext, action_index: int) -> bool:
+	if ctx == null:
+		return false
+	if action_index < 0 or action_index >= ctx.action_states.size():
+		return false
+
+	var st: CardActionExecutionState = ctx.action_states[action_index]
+	if st == null:
+		return false
+
+	st.state = CardActionExecutionState.State.CANCELED
+	ctx.canceled = true
+	ctx.finished = true
+	_finalize_card_execution(ctx, false)
+	return false
+
+
+func mark_action_skipped(ctx: CardContext, action_index: int) -> void:
+	if ctx == null:
+		return
+	if action_index < 0 or action_index >= ctx.action_states.size():
+		return
+
+	var state: CardActionExecutionState = ctx.action_states[action_index]
+	if state == null:
+		return
+
+	state.state = CardActionExecutionState.State.SKIPPED
+
+
+func append_affected_id(ctx: CardContext, cid: int) -> void:
+	if ctx == null or cid <= 0:
+		return
+	if !_packed_has_int(ctx.affected_ids, cid):
+		ctx.affected_ids.append(cid)
+
+
+func append_summoned_id(ctx: CardContext, cid: int) -> void:
+	if ctx == null or cid <= 0:
+		return
+	if !_packed_has_int(ctx.summoned_ids, cid):
+		ctx.summoned_ids.append(cid)
+	if !_packed_has_int(ctx.affected_ids, cid):
+		ctx.affected_ids.append(cid)
+
+func get_action_interaction_payload(ctx: CardContext, action_index: int) -> Dictionary:
+	if ctx == null:
+		return {}
+	if !ctx.interaction_payloads.has(action_index):
+		return {}
+	var d = ctx.interaction_payloads[action_index]
+	return d.duplicate(true) if d is Dictionary else {}
+
+# ============================================================================
+# Card Execution Helpers
+# ============================================================================
+
+func _ensure_card_scope_open(ctx: CardContext) -> bool:
+	if ctx == null or ctx.api == null:
+		return false
+	if ctx.card_scope_opened:
+		return true
+
+	var label := "card"
+	if ctx.card_data != null:
+		label = "uid=%s %s" % [String(ctx.card_data.uid), String(ctx.card_data.name)]
+
+	ctx.card_scope_id = ctx.api.writer.scope_begin(
+		Scope.Kind.CARD,
+		label,
+		int(ctx.source_id),
+		{}
+	)
+	ctx.card_scope_opened = (ctx.card_scope_id > 0)
+	return ctx.card_scope_opened
+
+func _commit_card_play_if_needed(ctx: CardContext) -> bool:
+	if ctx == null or ctx.api == null or ctx.source_card == null or ctx.card_data == null:
+		return false
+
+	if ctx.card_play_committed:
+		return true
+
+	if !_ensure_card_scope_open(ctx):
+		return false
+
+	if !ctx.emitted_card_played:
+		ctx.api.writer.emit_card_played_ctx(ctx)
+		ctx.emitted_card_played = true
+
+	if !ctx.mana_spent:
+		var cost := int(ctx.card_data.get_total_cost())
+		if !ctx.api.spend_mana_for_card(int(ctx.source_id), ctx.card_data):
+			return false
+		ctx.mana_spent = true
+
+	ctx.card_play_committed = true
+	return true
+
+func _close_card_scope(ctx: CardContext) -> void:
+	if ctx == null or ctx.api == null:
+		return
+	if !ctx.card_scope_opened:
+		return
+
+	ctx.api.writer.scope_end()
+	ctx.card_scope_opened = false
+	ctx.card_scope_id = 0
+
+func _maybe_commit_card_play(ctx: CardContext) -> bool:
+	if ctx == null:
+		return false
+
+	if !ctx.mana_spent:
+		if !_spend_card_mana(ctx):
+			return false
+		ctx.mana_spent = true
+
+	if !ctx.emitted_card_played:
+		_emit_card_played(ctx)
+		ctx.emitted_card_played = true
+
+	return true
+
+
+func _spend_card_mana(ctx: CardContext) -> bool:
+	if ctx == null or ctx.api == null or ctx.card_data == null:
+		return false
+	return ctx.api.spend_mana_for_card(ctx.source_id, ctx.card_data)
+
+
+func _emit_card_played(ctx: CardContext) -> void:
+	if ctx == null or ctx.api == null:
+		return
+	ctx.api.emit_card_played_ctx(ctx)
+
+
+func _finalize_card_execution(ctx: CardContext, committed := true) -> void:
+	if ctx == null:
+		return
+
+	_close_card_scope(ctx)
+	if ctx.source_card != null:
+		ctx.source_card.end_activation(committed)
+	ctx.current_action_index = -1
+	_apply_checkpoint_boundary(CheckpointProcessor.Kind.AFTER_CARD)
+
+
+func _packed_has_int(arr: PackedInt32Array, value: int) -> bool:
+	for x in arr:
+		if int(x) == int(value):
+			return true
+	return false
+
+
+func _ctx_card_name(ctx: CardContext) -> String:
+	if ctx == null or ctx.card_data == null:
+		return "<no card>"
+	return String(ctx.card_data.name)

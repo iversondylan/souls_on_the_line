@@ -102,26 +102,29 @@ func on_request_discard_cards(ctx: DiscardContext) -> void:
 	c.discard_ctx = ctx
 	begin(c, Mode.DISCARD)
 
-func on_request_summon_replace(card: UsableCard, req: CardPlayRequest, preview: SummonPreview) -> void:
+func on_request_summon_replace(ctx: CardContext, action_index: int, preview: SummonPreview) -> void:
 	if mode != Mode.NORMAL:
+		return
+	if ctx == null:
 		return
 
 	var c := SummonReplaceInteractionContext.new()
-	c.card = card
-	c.req = req
+	c.card_ctx = ctx
+	c.action_index = action_index
 	c.preview = preview
 	begin(c, Mode.SUMMON_REPLACE)
 
-func on_request_swap_partner(card: UsableCard, req: CardPlayRequest, action: SwapWithTargetAction) -> void:
+func on_request_swap_partner(ctx: CardContext, action_index: int) -> void:
 	if mode != Mode.NORMAL:
+		return
+	if ctx == null:
 		return
 	if battle == null or battle.battle_view == null:
 		return
 
 	var c := SwapPartnerInteractionContext.new()
-	c.card = card
-	c.req = req
-	c.swap_action = action
+	c.card_ctx = ctx
+	c.action_index = action_index
 	begin(c, Mode.SWAP_PARTNER)
 
 func on_combatant_view_hovered(v: CombatantView) -> void:

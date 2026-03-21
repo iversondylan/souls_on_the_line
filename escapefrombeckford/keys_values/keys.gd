@@ -74,7 +74,7 @@ const CARD_TARGET_TYPE_I := &"card_target_type_i"
 const CARD_TYPE_S := &"card_type_s"
 const CARD_TARGET_TYPE_S := &"card_target_type_s"
 const TARGETS := &"targets"
-
+const SUMMONED_IDS := &"summon_ids"
 const AMOUNT := &"amount"
 const CHOSEN_UIDS := &"chosen_uids"
 

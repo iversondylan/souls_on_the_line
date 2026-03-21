@@ -187,7 +187,7 @@ func emit_arcanum_proc(source_id: int, arcanum_id: StringName, proc: int, extra 
 		data[k] = extra[k]
 	return _append(BattleEvent.Type.ARCANUM_PROC, data)
 
-func emit_card_played(ctx: CardActionContextSim) -> int:
+func emit_card_played_ctx(ctx: CardContext) -> int:
 	if ctx == null or ctx.card_data == null:
 		return 0
 
@@ -204,13 +204,8 @@ func emit_card_played(ctx: CardActionContextSim) -> int:
 		Keys.SOURCE_ID: int(ctx.source_id),
 		Keys.TARGETS: ctx.affected_ids,
 		Keys.INSERT_INDEX: int(ctx.insert_index),
+		Keys.SUMMONED_IDS: ctx.summoned_ids,
 	}
-
-	if Keys.LOG_ENUM_STRINGS:
-		var card_type_s := int(CardData.CardType.keys()[card_type_i] if card_type_i >= 0 and card_type_i < CardData.CardType.size() else -1)
-		var target_type_s := int(CardData.TargetType.keys()[target_type_i] if target_type_i >= 0 and target_type_i < CardData.TargetType.size() else -1)
-		data[Keys.CARD_TYPE_S] = card_type_s
-		data[Keys.CARD_TARGET_TYPE_S] = target_type_s
 
 	return _append(BattleEvent.Type.CARD_PLAYED, data)
 

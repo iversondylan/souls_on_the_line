@@ -10,7 +10,7 @@ class_name DrawAction extends CardAction
 	#draw_effect.execute(ctx.battle_scene.api)
 	#return true
 
-func activate_sim(ctx: CardActionContextSim) -> bool:
+func activate_sim(ctx: CardContext) -> bool:
 	var draw_effect := CardDrawEffect.new()
 	draw_effect.amount = base_draw
 	draw_effect.source = ctx.api.get_player_id()

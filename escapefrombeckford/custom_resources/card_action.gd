@@ -24,7 +24,7 @@ enum InteractionMode {
 @export var requires_enemy: bool = false
 @export var requires_target: bool = true
 
-func activate_sim(ctx: CardActionContextSim) -> bool:
+func activate_sim(ctx: CardContext) -> bool:
 	var cname := ctx.card_data.name if ctx and ctx.card_data else "<no card/ctx>"
 	push_error("%s missing activate_sim() (card=%s)" % [get_class(), cname])
 	return false
@@ -36,9 +36,13 @@ func activate_sim(ctx: CardActionContextSim) -> bool:
 # 3. Leaves remaining placeholders intact ("%s") for later actions
 # --------------------------------
 
+func activate_interaction(ctx: CardContext) -> bool:
+	return false
 
 func get_interaction_mode(ctx: CardContext) -> int:
 	return InteractionMode.NONE
+
+
 
 func description_arity() -> int:
 	# Number of %s this action consumes
@@ -50,6 +54,3 @@ func description_arity() -> int:
 #
 #func get_modular_description(_ctx: CardActionContext) -> String:
 	#return ""
-
-func requires_summon_slot() -> bool:
-	return false
