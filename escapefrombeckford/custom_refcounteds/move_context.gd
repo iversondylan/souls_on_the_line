@@ -3,7 +3,7 @@
 class_name MoveContext extends RefCounted
 
 enum MoveType {
-	TRAVERSE_PLAYER,
+	TRAVERSE_PLAYER,                                                   
 	MOVE_TO_FRONT,
 	MOVE_TO_BACK,
 	SWAP_WITH_TARGET,

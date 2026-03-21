@@ -4,7 +4,6 @@
 
 [resource]
 script = ExtResource("1_g8lct")
-base_draw = 2
 action_type = 7
 requires_target = false
 metadata/_custom_type_script = "uid://df5ktjqgtlp6o"
