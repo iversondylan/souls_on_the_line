@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://bxhcb3bs75de6"]
 
-[ext_resource type="Script" uid="uid://d2o6btmvads3l" path="res://battle_view/combatant_view.gd" id="1_rluy7"]
+[ext_resource type="Script" uid="uid://d2o6btmvads3l" path="res://battle_view/operators/combatant_view.gd" id="1_rluy7"]
 [ext_resource type="Texture2D" uid="uid://bm2kp2h3bv3t2" path="res://assets/sprites/assorted/turn_taker_glow.png" id="2_c2uom"]
 [ext_resource type="Texture2D" uid="uid://dtvvequ1w1dlu" path="res://assets/sprites/assorted/enemy_thrall_mage.png" id="3_0po12"]
 [ext_resource type="Script" uid="uid://b5nvhcs5afo2m" path="res://scenes/combatant_target_area.gd" id="4_1j4af"]
@@ -11,7 +11,7 @@
 [ext_resource type="PackedScene" uid="uid://b5kimimy0ccq0" path="res://scenes/ui/health_bar.tscn" id="9_lwd22"]
 [ext_resource type="Texture2D" uid="uid://dob30qtbj3xk5" path="res://assets/sprites/assorted/block.PNG" id="10_he6ou"]
 [ext_resource type="Theme" uid="uid://1dr1eewpv0jd" path="res://themes/ui_theme.tres" id="11_qbq2w"]
-[ext_resource type="Script" uid="uid://dvv1xhy7j1pvq" path="res://battle_view/status_view_grid.gd" id="12_rluy7"]
+[ext_resource type="Script" uid="uid://dvv1xhy7j1pvq" path="res://battle_view/operators/status_view_grid.gd" id="12_rluy7"]
 
 [sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_y8vuy"]
 

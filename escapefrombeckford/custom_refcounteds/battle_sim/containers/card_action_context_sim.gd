@@ -4,6 +4,7 @@ class_name CardActionContextSim extends RefCounted
 
 var api: SimBattleAPI
 var card_data: CardData
+var source_card: UsableCard
 var source_id: int = 0
 
 var resolved: CardResolvedTargetSim

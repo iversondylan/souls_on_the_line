@@ -4,6 +4,7 @@ class_name CardPlayRequest extends RefCounted
 
 var source_id: int = 0
 var card: CardData
+var source_card: UsableCard
 
 # “resolved target” payload for sim
 var target_ids: PackedInt32Array = PackedInt32Array()

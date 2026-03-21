@@ -442,20 +442,12 @@ func _kill_pop_tween() -> void:
 		_pop_tween.kill()
 	_pop_tween = null
 
-
-#func build_action_context(resolved_targets: CardResolvedTarget) -> CardActionContext:
-	#var ctx := CardActionContext.new()
-	#ctx.player = player
-	#ctx.battle_scene = battle_scene
-	#ctx.card_data = card_data
-	#ctx.resolved_target = resolved_targets
-	#return ctx
-
 func build_action_context_sim(resolved_targets: CardResolvedTargetSim) -> CardActionContextSim:
 	var ctx := CardActionContextSim.new()
 	ctx.api = api
 	ctx.source_id = _player_id()
 	ctx.card_data = card_data
+	ctx.source_card = self
 	ctx.resolved = resolved_targets
 	return ctx
 
@@ -468,46 +460,6 @@ func build_action_context_view(resolved_targets: CardResolvedTargetView) -> Card
 	ctx.resolved = resolved_targets
 	return ctx
 
-#func commit_play_live(ctx: CardActionContext, skip_action: CardAction = null, spend_mana: bool = true) -> bool:
-	#if spend_mana:
-		#ctx.player.spend_mana(ctx.card_data)
-#
-	#var any_action_executed := false
-	#for action: CardAction in ctx.card_data.actions:
-		#if skip_action != null and action == skip_action:
-			#continue
-		#if action != null and action.activate_live(ctx):
-			#any_action_executed = true
-#
-	#Events.card_played.emit(self)
-	#flush_pending_summons.call_deferred(ctx)
-	#_move_to_destination()
-	#return true
-
-
-#func commit_play(ctx: CardActionContext, skip_action: CardAction = null, spend_mana: bool = true) -> bool:
-	## Spend mana once
-	##print("1")
-	#if spend_mana:
-		#ctx.player.spend_mana(ctx.card_data)
-#
-	## Execute actions (skipping one if requested)
-	#var any_action_executed := false
-	#for action: CardAction in ctx.card_data.actions:
-		#if skip_action != null and action == skip_action:
-			#continue
-		#if action.activate(ctx):
-			#any_action_executed = true
-	##print("2")
-	##if !any_action_executed:
-		##return false
-	##print("3")
-	#Events.card_played.emit(self)
-	#flush_pending_summons.call_deferred(ctx)
-	#_move_to_destination()
-	#return true
-
-
 func _move_to_destination() -> void:
 	#print("usable_card.gd _move_to_destination()")
 	if card_data.deplete:
@@ -516,11 +468,3 @@ func _move_to_destination() -> void:
 		hand.reserve_summon_card(hand.remove_card_by_entity(self))
 	else:
 		hand.discard_card(hand.remove_card_by_entity(self))
-
-#func flush_pending_summons(ctx: CardActionContext) -> void:
-	#if !ctx:
-		#return
-	#for e in ctx.pending_summon_effects:
-		#if e:
-			#e.apply_to_card_context(ctx)
-	#ctx.pending_summon_effects.clear()

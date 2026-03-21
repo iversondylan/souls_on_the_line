@@ -1,12 +1,14 @@
 # metronome_clock.gd
+
 class_name MetronomeClock extends BattleClock
 
 var _player: AudioStreamPlayer
 var _bpm: float = 120.0
 var _offset_sec: float = 0.0
-
-# internal: a reusable Timer node owner (SceneTree)
 var _tree: SceneTree
+
+var _running := false
+var _start_usec: int = 0
 
 func _init(player: AudioStreamPlayer, bpm: float, offset_sec: float, tree: SceneTree) -> void:
 	_player = player
@@ -15,23 +17,24 @@ func _init(player: AudioStreamPlayer, bpm: float, offset_sec: float, tree: Scene
 	_tree = tree
 
 func start() -> void:
-	_player.play()
+	_running = true
+	_start_usec = Time.get_ticks_usec()
+	if _player != null:
+		_player.play()
 
 func stop() -> void:
-	pass
+	_running = false
+	if _player != null:
+		_player.stop()
 
 func seconds_per_quarter() -> float:
 	return 60.0 / _bpm
 
 func now_sec() -> float:
-	if _player == null:
-		return 0.0
-	# playback position is 0 at play() start; add offset for “music time”
-	return float(_player.get_playback_position()) + _offset_sec
+	if !_running:
+		return _offset_sec
+	return _offset_sec + float(Time.get_ticks_usec() - _start_usec) / 1000000.0
 
 func wait_until(t_sec: float) -> Signal:
-	# IMPORTANT: This returns a signal to await.
-	# Implementation uses create_timer once; no process_frame loops required.
 	var dt := maxf(0.0, t_sec - now_sec())
-	# guard: if already past target, return a timer that fires immediately next tick
 	return _tree.create_timer(maxf(dt, 0.0001)).timeout

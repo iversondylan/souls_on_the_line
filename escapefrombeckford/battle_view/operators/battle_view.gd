@@ -2,7 +2,7 @@
 
 class_name BattleView extends Node2D
 
-@onready var combatant_view_scene: PackedScene = preload("res://battle_view/combatant_view.tscn")
+@onready var combatant_view_scene: PackedScene = preload("res://battle_view/operators/combatant_view.tscn")
 
 @onready var friendly_group: GroupView = $Group0
 @onready var enemy_group: GroupView = $Group1

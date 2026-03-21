@@ -13,18 +13,16 @@ enum ActionType {
 	DRAW
 }
 
+enum InteractionMode {
+	NONE,
+	ESCROW,
+	CONFIRM
+}
+
 @export var action_type: ActionType
 
 @export var requires_enemy: bool = false
-#@export var requires_summon_slot: bool = false
 @export var requires_target: bool = true
-
-#func activate(_ctx: CardActionContext) -> bool:
-	#push_error("Override activate(ctx) in CardAction.")
-	#return false
-#
-#func activate_live(ctx: CardActionContext) -> bool:
-	#return activate(ctx) # temporary shim
 
 func activate_sim(ctx: CardActionContextSim) -> bool:
 	var cname := ctx.card_data.name if ctx and ctx.card_data else "<no card/ctx>"
@@ -37,6 +35,10 @@ func activate_sim(ctx: CardActionContextSim) -> bool:
 # 2. Supplies exactly that many concrete values
 # 3. Leaves remaining placeholders intact ("%s") for later actions
 # --------------------------------
+
+
+func get_interaction_mode(ctx: CardContext) -> int:
+	return InteractionMode.NONE
 
 func description_arity() -> int:
 	# Number of %s this action consumes
