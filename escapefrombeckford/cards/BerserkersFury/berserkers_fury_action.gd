@@ -4,72 +4,63 @@ extends CardAction
 @export var attacks: int = 1
 @export var melee_impact_sound: Sound = preload("res://audio/aoe_explosion.tres")
 
-#func activate(ctx: CardActionContext) -> bool:
-	#var attackers := ctx.resolved_target.fighters
-	#if attackers.is_empty():
-		#return false
-	#
-	#
-	#var attacker: Fighter = attackers[0]
-	#if !attacker:
-		#return false
-	#
-	## Build NPCAIContext for the sequence.
-	#var ai_ctx := NPCAIContext.new()
-	#ai_ctx.combatant = attacker
-	#ai_ctx.battle_scene = ctx.battle_scene
-	#if !ai_ctx.battle_scene:
-		#return false
-	#
-	## Card-generated sequences get a fresh, non-persistent state bucket by default.
-	#ai_ctx.state = {}
-	#ai_ctx.params = {}
-	#ai_ctx.forecast = false
-	#
-	#var base_damage := attacker.combatant_data.apr + bonus_damage
-	#var final_damage := attacker.modifier_system.get_modified_value(base_damage, Modifier.Type.DMG_DEALT)
-	## Params consumed by NPCAttackSequence.
-	#ai_ctx.params[Keys.ATTACK_MODE] = Attack.Mode.MELEE
-	#ai_ctx.params[Keys.DAMAGE] = final_damage
-	#ai_ctx.params[Keys.STRIKES] = attacks
-	#ai_ctx.params[Keys.TARGET_TYPE] = NPCAttackSequence.TARGET_OPPONENTS
-	#ai_ctx.params[Keys.EXPLODE_ON_FINISH] = true
-	#
-	## Run sequence
-	#var seq := NPCAttackSequence.new()
-	#seq.melee_impact_sound = melee_impact_sound
-	#seq.execute(ai_ctx, Callable(self, "_on_card_attack_sequence_done"))
-	#
-	#return true
+func activate_sim(ctx: CardContext) -> bool:
+	if ctx == null or ctx.api == null:
+		return false
+	if ctx.target_ids.is_empty():
+		return false
+
+	var attacker_id := int(ctx.target_ids[0])
+	if attacker_id <= 0 or !ctx.api.is_alive(attacker_id):
+		return false
+
+	var attacker_state := ctx.api.state.get_unit(attacker_id) if ctx.api.state != null else null
+	if attacker_state == null or attacker_state.combatant_data == null:
+		return false
+
+	var enemy_ids := ctx.api.get_enemies_of(attacker_id)
+	if enemy_ids.is_empty():
+		return false
+
+	var base_damage := maxi(int(attacker_state.combatant_data.apr) + int(bonus_damage), 0)
+	var strike_count := maxi(int(attacks), 1)
+	var any := false
+
+	for tid in enemy_ids:
+		var target_id := int(tid)
+		if target_id <= 0 or !ctx.api.is_alive(target_id):
+			continue
+
+		for _i in range(strike_count):
+			var d := DamageContext.new()
+			d.source_id = attacker_id
+			d.target_id = target_id
+			d.base_amount = base_damage
+			d.deal_modifier_type = int(Modifier.Type.DMG_DEALT)
+			d.take_modifier_type = int(Modifier.Type.DMG_TAKEN)
+			ctx.api.resolve_damage_immediate(d)
+			any = true
+
+		if !ctx.affected_ids.has(target_id):
+			ctx.affected_ids.append(target_id)
+
+	if !any:
+		return false
+
+	if melee_impact_sound != null:
+		ctx.api.play_sfx(melee_impact_sound)
+
+	ctx.api.resolve_death(attacker_id, "berserkers_fury", attacker_id)
+	if !ctx.affected_ids.has(attacker_id):
+		ctx.affected_ids.append(attacker_id)
+
+	return true
 
 func _on_card_attack_sequence_done() -> void:
 	pass
 
-
 func description_arity() -> int:
 	return 1
 
-
-#func get_description_values(ctx: CardActionContext) -> Array:
-	## Case 1: hovering a valid ally → show fully modified value
-	#if ctx.resolved_target and !ctx.resolved_target.fighters.is_empty():
-		#var ally: Fighter = ctx.resolved_target.fighters[0]
-#
-		#var base_damage := ally.combatant_data.apr + bonus_damage
-		#var modified_damage := ally.modifier_system.get_modified_value(
-			#base_damage,
-			#Modifier.Type.DMG_DEALT
-		#)
-#
-		#return [modified_damage]
-#
-	## Case 2: no ally hovered → baseline preview (no modifiers)
-	## Prefer player_data if player is not instantiated
-	#if ctx.player:
-		#return [ctx.player.combatant_data.apr + bonus_damage]
-#
-	#if ctx.player_data:
-		#return [ctx.player_data.apr + bonus_damage]
-#
-	## Absolute fallback (should be rare)
-	#return [bonus_damage]
+func get_description_values(_ctx: CardActionContext) -> Array:
+	return [bonus_damage]

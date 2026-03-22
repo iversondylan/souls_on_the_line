@@ -27,7 +27,7 @@ var _projectiles_by_attacker: Dictionary = {}
 var _summon_preview_ghost: Node2D = null
 var combatants_by_cid: Dictionary = {}
 
-var tempo: float = 120
+var tempo: float = 130
 
 var tween_bg: Tween
 
