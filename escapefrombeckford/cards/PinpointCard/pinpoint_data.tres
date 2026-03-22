@@ -1,9 +1,9 @@
 [gd_resource type="Resource" script_class="CardData" format=3 uid="uid://ccevotl6l5gil"]
 
 [ext_resource type="Script" uid="uid://wtk5v77fcqvn" path="res://custom_resources/card_action.gd" id="1_ssb7r"]
-[ext_resource type="Resource" uid="uid://ce1lg5k4uob75" path="res://cards/FocusFireCard/pinpoint_action.tres" id="2_ddikp"]
+[ext_resource type="Resource" uid="uid://ce1lg5k4uob75" path="res://cards/PinpointCard/pinpoint_action.tres" id="2_ddikp"]
 [ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://custom_resources/card_data.gd" id="2_xv8nt"]
-[ext_resource type="Resource" uid="uid://cwsantdi8vmes" path="res://cards/HealingSurge/draw_action.tres" id="3_aeyd7"]
+[ext_resource type="Resource" uid="uid://cwsantdi8vmes" path="res://cards/_generic_actions/draw_1_action.tres" id="3_aeyd7"]
 [ext_resource type="Texture2D" uid="uid://dm3sd42a0p6ao" path="res://assets/sprites/assorted/pinpoint.PNG" id="5_5gxor"]
 
 [resource]

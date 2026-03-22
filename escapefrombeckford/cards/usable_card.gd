@@ -308,6 +308,7 @@ func resolve_targets(new_targets: Array[Node]) -> CardResolvedTargetView:
 			for t in new_targets:
 				if t is CombatantAreaLeft or t is BattleSceneAreaLeft:
 					result.areas.append(t)
+			print("BATTLEFIELD result.insert_index = ", new_targets.size() - 1)
 			result.insert_index = new_targets.size() - 1
 
 		CardData.TargetType.ALLY_OR_SELF, CardData.TargetType.ALLY, CardData.TargetType.SINGLE_ENEMY:

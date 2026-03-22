@@ -1,6 +1,6 @@
-[gd_resource type="Resource" load_steps=4 format=3 uid="uid://c5qjmc4akover"]
+[gd_resource type="Resource" format=3 uid="uid://c5qjmc4akover"]
 
-[ext_resource type="Script" uid="uid://buhtw3540mbls" path="res://cards/SpectralCloneCard/summon_action.gd" id="1_uj6cq"]
+[ext_resource type="Script" uid="uid://buhtw3540mbls" path="res://cards/_generic_actions/summon_action.gd" id="1_uj6cq"]
 [ext_resource type="Resource" uid="uid://dwy6ym7cfiix7" path="res://fighters/BasicClone/basic_clone_data.tres" id="2_brs4w"]
 [ext_resource type="AudioStream" uid="uid://bhgtqvxlst0g" path="res://assets/sfx/summon_zap.wav" id="2_gj3hl"]
 

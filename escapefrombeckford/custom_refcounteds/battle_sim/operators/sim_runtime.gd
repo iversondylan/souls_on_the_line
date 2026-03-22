@@ -605,30 +605,6 @@ func cover_waiting_action_and_continue(
 
 	return continue_card_execution(ctx)
 
-#func cover_waiting_action_and_continue(ctx: CardContext, action_index: int, payload: Dictionary = {}) -> bool:
-	#print("sim_runtime.gd cover_waiting_action_and_continue()")
-	#if ctx == null:
-		#return false
-	#if action_index < 0 or action_index >= ctx.action_states.size():
-		#return false
-#
-	#var state: CardActionExecutionState = ctx.action_states[action_index]
-	#if state == null:
-		#return false
-#
-	#if !payload.is_empty():
-		#ctx.interaction_payloads[action_index] = payload.duplicate(true)
-#
-	#state.state = CardActionExecutionState.State.EXECUTED
-#
-	#if ctx.next_action_index == action_index:
-		#ctx.next_action_index += 1
-	#elif ctx.next_action_index < action_index:
-		#ctx.next_action_index = action_index + 1
-#
-	#return continue_card_execution(ctx)
-
-
 func cancel_waiting_action(ctx: CardContext, action_index: int) -> bool:
 	if ctx == null:
 		return false

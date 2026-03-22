@@ -122,7 +122,7 @@ func _playback_loop(gen: int) -> void:
 
 			var plan_builder := TurnTimelineToDirectorPlan.new()
 			var plan := plan_builder.build_plan(timeline, t_start, transport.tempo_bpm)
-			#print(_debug_director_plan_line(plan, actor_turn, clock.now_sec(), schedule_t))
+			print(_debug_director_plan_line(plan, actor_turn, clock.now_sec(), schedule_t))
 
 			await cue_scheduler.play_plan(clock, event_director, plan, gen)
 			schedule_t = plan.get_end_sec()
@@ -174,7 +174,7 @@ func _playback_loop(gen: int) -> void:
 		pkg.t_next_sec = t_next
 		pkg.duration_sec = maxf(0.0, t_next - t_start2)
 
-		#print(_debug_beat_package_line(pkg, mode, actor_begin_id, is_player_actor, clock.now_sec(), schedule_t))
+		print(_debug_beat_package_line(pkg, mode, actor_begin_id, is_player_actor, clock.now_sec(), schedule_t))
 
 		event_director.play_raw_chunk(pkg)
 

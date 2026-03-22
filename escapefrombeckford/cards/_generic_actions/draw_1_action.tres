@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="DrawAction" format=3 uid="uid://cwsantdi8vmes"]
 
-[ext_resource type="Script" uid="uid://df5ktjqgtlp6o" path="res://cards/HealingSurge/draw_action.gd" id="1_g8lct"]
+[ext_resource type="Script" uid="uid://df5ktjqgtlp6o" path="res://cards/_generic_actions/draw_action.gd" id="1_g8lct"]
 
 [resource]
 script = ExtResource("1_g8lct")

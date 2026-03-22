@@ -1,8 +1,13 @@
-[gd_resource type="Resource" format=3 uid="uid://cyc74p2bcq452"]
+[gd_resource type="Resource" script_class="HealAction" format=3 uid="uid://cyc74p2bcq452"]
 
-[ext_resource type="Script" uid="uid://dnqihptx7npch" path="res://cards/HealingSurge/healing_surge_action.gd" id="1_cfeqk"]
+[ext_resource type="Script" uid="uid://bhrr2hl5y314o" path="res://cards/_generic_actions/heal_action.gd" id="1_cfeqk"]
 
 [resource]
 script = ExtResource("1_cfeqk")
+flat_amount = null
+of_total = null
 of_missing = 1.0
+action_type = 6
+requires_enemy = null
+requires_target = null
 metadata/_custom_type_script = "uid://bhrr2hl5y314o"

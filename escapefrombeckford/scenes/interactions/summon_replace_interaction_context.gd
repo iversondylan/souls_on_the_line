@@ -108,8 +108,11 @@ func _confirm(chosen: CombatantView) -> void:
 	for v in candidates:
 		_set_candidate_mark(v, false)
 
+	var replaced_index := chosen.get_index()
+
 	var payload := {
-		Keys.REPLACED_ID: int(chosen.cid)
+		Keys.REPLACED_ID: int(chosen.cid),
+		Keys.REPLACED_INSERT_INDEX: replaced_index,
 	}
 
 	if card_ctx != null and card_ctx.runtime != null:

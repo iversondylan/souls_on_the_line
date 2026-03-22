@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="DiscardAction" format=3 uid="uid://bldayk8dvovui"]
 
-[ext_resource type="Script" uid="uid://b0ncdfetl25nu" path="res://cards/DecisiveChoice/discard_action.gd" id="1_hb60t"]
+[ext_resource type="Script" uid="uid://b0ncdfetl25nu" path="res://cards/_generic_actions/discard_action.gd" id="1_hb60t"]
 
 [resource]
 script = ExtResource("1_hb60t")

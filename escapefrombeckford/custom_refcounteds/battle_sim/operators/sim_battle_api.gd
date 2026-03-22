@@ -398,6 +398,60 @@ func resolve_damage_immediate(ctx: DamageContext) -> int:
 	
 	return int(ctx.amount)
 
+func change_max_health(
+	cid: int,
+	amount: int,
+	change_health_relative := false,
+	reason: String = ""
+) -> void:
+	if state == null:
+		return
+	if int(cid) <= 0:
+		return
+	if int(amount) == 0:
+		return
+
+	var u: CombatantState = state.get_unit(int(cid))
+	if u == null or !u.alive:
+		return
+
+	var before_max_health := int(u.max_health)
+	var before_health := int(u.health)
+
+	var after_max_health := maxi(0, before_max_health + int(amount))
+	if after_max_health == before_max_health:
+		return
+
+	u.max_health = after_max_health
+
+	if bool(change_health_relative):
+		u.health = before_health + int(amount)
+	else:
+		u.health = mini(before_health, after_max_health)
+
+	u.health = clampi(int(u.health), 0, int(u.max_health))
+
+	var after_health := int(u.health)
+
+	if writer != null:
+		writer.emit_change_max_health(
+			0,
+			int(cid),
+			before_max_health,
+			after_max_health,
+			before_health,
+			after_health,
+			int(amount),
+			bool(change_health_relative),
+			reason
+		)
+
+	# If this can affect planning / legality later, leave yourself this hook point.
+	# _request_replan(int(cid))
+	# _request_intent_refresh(int(cid))
+
+	if before_health > 0 and after_health <= 0:
+		resolve_death(int(cid), "change_max_health:" + String(reason), 0)
 
 func resolve_death(combat_id: int, reason := "", killer_id: int = 0) -> void:
 	if state == null or int(combat_id) <= 0:
@@ -534,14 +588,14 @@ func remove_status(ctx: StatusContext) -> void:
 	if u == null:
 		return
 	
-	var proto := SimStatusSystem.get_proto(self, ctx.status_id)
 	var old_stack: StatusStack = u.statuses.get_status_stack(ctx.status_id)
+	if old_stack == null:
+		return
 	
-	var before_i := 0
-	var before_d := 0
-	if old_stack != null:
-		before_i = int(old_stack.intensity)
-		before_d = int(old_stack.duration)
+	var proto := SimStatusSystem.get_proto(self, ctx.status_id)
+	
+	var before_i := int(old_stack.intensity)
+	var before_d := int(old_stack.duration)
 	
 	var status_ctx := SimStatusSystem.make_context(self, int(ctx.target_id), old_stack)
 	u.statuses.remove_ctx(ctx)
@@ -575,7 +629,6 @@ func remove_status(ctx: StatusContext) -> void:
 		_request_intent_refresh(int(ctx.target_id))
 	
 	_on_status_changed(int(ctx.target_id))
-	#print("remove")
 	_request_immediate_planning_flush_if_needed(int(ctx.target_id), proto)
 
 
@@ -1181,8 +1234,80 @@ func run_status_proc(_target_id: int, _proc_type: Status.ProcType) -> void:
 	pass
 
 
-func resolve_heal(_ctx: HealContext) -> void:
-	pass
+func heal(ctx: HealContext) -> int:
+	if ctx == null or state == null:
+		return 0
+
+	if int(ctx.target_id) <= 0:
+		return 0
+
+	if ctx.flat_amount < 0 or ctx.of_total < 0.0 or ctx.of_missing < 0.0:
+		push_warning("sim_battle_api.gd heal(): negative heal input")
+		return 0
+
+	var u := state.get_unit(int(ctx.target_id))
+	if u == null:
+		return 0
+
+	var before_health := int(u.health)
+	var max_health := int(u.max_health)
+
+	if max_health <= 0:
+		return 0
+
+	ctx.phase = HealContext.Phase.PRE_MODIFIERS
+
+	# Future hook point:
+	# _apply_heal_modifiers(ctx)
+
+	var heal_amount := int(ctx.flat_amount)
+
+	# Match your specified math exactly:
+	# first flat
+	var working_health := clampi(before_health + heal_amount, 0, max_health)
+
+	# then % of current total health after flat
+	if ctx.of_total > 0.0:
+		working_health = clampi(
+			working_health + floori(float(max_health) * ctx.of_total),
+			0,
+			max_health
+		)
+
+	# then % of missing health after previous steps
+	if ctx.of_missing > 0.0:
+		working_health = clampi(
+			working_health + floori(float(max_health - working_health) * ctx.of_missing),
+			0,
+			max_health
+		)
+
+	ctx.phase = HealContext.Phase.POST_MODIFIERS
+
+	var healed_amount := maxi(0, working_health - before_health)
+	if healed_amount <= 0:
+		ctx.healed_amount = 0
+		return 0
+
+	u.health = working_health
+	ctx.healed_amount = healed_amount
+	ctx.phase = HealContext.Phase.APPLIED
+
+	if writer != null:
+		writer.emit_heal_applied(
+			int(ctx.source_id),
+			int(ctx.target_id),
+			before_health,
+			int(u.health),
+			int(ctx.flat_amount),
+			float(ctx.of_total),
+			float(ctx.of_missing),
+			int(ctx.healed_amount),
+			{}
+		)
+
+	#_on_health_changed(int(ctx.target_id))
+	return ctx.healed_amount
 
 
 func resolve_attack_now(_ctx: AttackNowContext) -> void:

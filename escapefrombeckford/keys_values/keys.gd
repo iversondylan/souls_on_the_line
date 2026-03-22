@@ -91,6 +91,13 @@ const WAS_LETHAL := &"was_lethal"
 const BEFORE_HEALTH := &"before_health"
 const AFTER_HEALTH := &"after_health"
 
+const FLAT_AMOUNT := &"flat_amount"
+const OF_TOTAL := &"of_total"
+const OF_MISSING := &"of_missing"
+const HEALED_AMOUNT := &"healed_amount"
+const BEFORE_MAX_HEALTH := &"before_max_health"
+const AFTER_MAX_HEALTH := &"after_max_health"
+const CHANGE_HEALTH_RELATIVE := &"change_health_relative"
 # Attack
 #const TARGETED := &"targeted"
 const STRIKE_INDEX := &"strike_index"
@@ -117,6 +124,7 @@ const PROTO_PATH := &"proto_path"
 const WINDUP_LAYOUT_COUNT := &"windup_layout_count"
 const WINDUP_ORDER_IDS := &"windup_order_ids"
 const REPLACED_ID := &"replaced_id" # optional, useful for director FX pairing
+const REPLACED_INSERT_INDEX := &"replaced_insert_index"
 
 # Card mutated
 const REASON := &"reason"

@@ -243,6 +243,62 @@ func emit_damage_applied(source_id: int, target_id: int, base: int, final_amount
 		Keys.AFTER_HEALTH: int(after_health),
 	})
 
+func emit_heal_applied(
+	source_id: int,
+	target_id: int,
+	before_health: int,
+	after_health: int,
+	flat_amount: int,
+	of_total: float,
+	of_missing: float,
+	healed_amount: int,
+	extra := {}
+) -> int:
+	var data := {
+		Keys.SOURCE_ID: int(source_id),
+		Keys.TARGET_ID: int(target_id),
+		Keys.BEFORE_HEALTH: int(before_health),
+		Keys.AFTER_HEALTH: int(after_health),
+		Keys.FLAT_AMOUNT: int(flat_amount),
+		Keys.OF_TOTAL: float(of_total),
+		Keys.OF_MISSING: float(of_missing),
+		Keys.HEALED_AMOUNT: int(healed_amount),
+	}
+
+	for k in extra.keys():
+		data[k] = extra[k]
+
+	return _append(BattleEvent.Type.HEAL_APPLIED, data)
+
+func emit_change_max_health(
+	source_id: int,
+	target_id: int,
+	before_max_health: int,
+	after_max_health: int,
+	before_health: int,
+	after_health: int,
+	amount: int,
+	change_health_relative: bool,
+	reason: String = "",
+	extra := {}
+) -> int:
+	var data := {
+		Keys.SOURCE_ID: int(source_id),
+		Keys.TARGET_ID: int(target_id),
+		Keys.BEFORE_MAX_HEALTH: int(before_max_health),
+		Keys.AFTER_MAX_HEALTH: int(after_max_health),
+		Keys.BEFORE_HEALTH: int(before_health),
+		Keys.AFTER_HEALTH: int(after_health),
+		Keys.AMOUNT: int(amount),
+		Keys.CHANGE_HEALTH_RELATIVE: bool(change_health_relative),
+		Keys.REASON: String(reason),
+	}
+
+	for k in extra.keys():
+		data[k] = extra[k]
+
+	return _append(BattleEvent.Type.CHANGE_MAX_HEALTH, data)
+
 func emit_strike(
 	attacker_id: int,
 	target_ids: Array[int],

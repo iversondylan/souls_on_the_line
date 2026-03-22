@@ -91,3 +91,13 @@ func clone() -> CombatantState:
 		c.rng.seed = rng.seed
 
 	return c
+
+func increase_max_health(amount: int, heal_added_health: bool = true) -> void:
+	if amount <= 0:
+		return
+
+	max_health += amount
+	if heal_added_health:
+		health = clampi(health + amount, 0, max_health)
+	else:
+		health = clampi(health, 0, max_health)

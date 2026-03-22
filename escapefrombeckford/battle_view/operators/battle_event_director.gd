@@ -335,6 +335,10 @@ func on_event(e: EventPackage) -> void:
 			_on_victory(e)
 		BattleEvent.Type.DEFEAT:
 			_on_defeat(e)
+		BattleEvent.Type.HEAL_APPLIED:
+			_on_heal_applied(e)
+		BattleEvent.Type.CHANGE_MAX_HEALTH:
+			_on_change_max_health(e)
 		_:
 			pass
 
@@ -774,6 +778,54 @@ func _on_damage_applied(e: EventPackage) -> void:
 	target_combatant.play_hit()
 	target_combatant.pop_damage_number(amount)
 
+func _on_heal_applied(e: EventPackage) -> void:
+	var d := _data(e)
+	var tid := int(d.get(Keys.TARGET_ID, 0))
+	var healed := int(d.get(Keys.HEALED_AMOUNT, 0))
+	var after_health := int(d.get(Keys.AFTER_HEALTH, 0))
+
+	var target := battle_view.get_combatant(tid)
+	if target == null:
+		return
+
+	target.set_health(after_health, false)
+
+	if e.is_planned:
+		return
+
+	if target.has_method("play_heal_fx"):
+		target.play_heal_fx()
+
+	if target.has_method("pop_heal_number"):
+		target.pop_heal_number(healed)
+
+func _on_change_max_health(e: EventPackage) -> void:
+	print("director _on_change_max_health")
+	var d := _data(e)
+	var tid := int(d.get(Keys.TARGET_ID, 0))
+	if tid <= 0:
+		return
+
+	var v := battle_view.get_combatant(tid)
+	if v == null:
+		return
+
+	var after_health := int(d.get(Keys.AFTER_HEALTH, v.health))
+	var after_max_health := int(d.get(Keys.AFTER_MAX_HEALTH, v.max_health))
+	var before_health := int(d.get(Keys.BEFORE_HEALTH, v.health))
+	var before_max_health := int(d.get(Keys.BEFORE_MAX_HEALTH, v.max_health))
+	print("director before max: %s, after max: %s" % [before_max_health, after_max_health])
+	v.max_health = after_max_health
+	v.health = clampi(after_health, 0, after_max_health)
+
+	if v.health_bar != null:
+		v.health_bar.update_health_view(v.max_health, v.health)
+
+	# Optional tiny cosmetic when max health changes.
+	# Only pop a number if health actually changed.
+	var delta_health := after_health - before_health
+	if !e.is_planned and delta_health > 0:
+		v.pop_damage_number(delta_health) # replace later with heal/max-hp popup if desired
 
 func _on_status_changed(e: EventPackage) -> void:
 	if e == null or e.event == null:

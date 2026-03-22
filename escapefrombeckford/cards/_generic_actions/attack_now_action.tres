@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://b8d5j6ne4mt88" path="res://custom_resources/param_model.gd" id="1_4so6l"]
 [ext_resource type="Resource" uid="uid://c2313wqave6gn" path="res://fighters/BasicClone/mana_red_plus_1_damage.tres" id="2_7k1uh"]
 [ext_resource type="Script" uid="uid://ciectlejwqbj" path="res://npc_actions/attack_mode/ranged_behind_player_model.gd" id="2_vba8h"]
-[ext_resource type="Script" uid="uid://7g1t05kmo4hm" path="res://cards/ConvokedAssault/attack_now_action.gd" id="2_wgyto"]
+[ext_resource type="Script" uid="uid://7g1t05kmo4hm" path="res://cards/_generic_actions/attack_now_action.gd" id="2_wgyto"]
 
 [sub_resource type="Resource" id="Resource_j6eya"]
 script = ExtResource("2_vba8h")

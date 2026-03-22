@@ -1,0 +1,41 @@
+# heal_action.gd
+
+class_name HealAction extends CardAction
+
+@export var flat_amount : int = 0
+@export var of_total : float = 0.0
+@export var of_missing : float = 0.0
+
+func activate_sim(ctx: CardContext) -> bool:
+	if ctx == null or ctx.api == null:
+		return false
+
+	if flat_amount < 0 or of_total < 0.0 or of_missing < 0.0:
+		push_warning("heal_action.gd activate_sim(): negative heal input")
+		return false
+
+	var any_applied := false
+
+	for target_id in ctx.target_ids:
+		var tid := int(target_id)
+		if tid <= 0:
+			continue
+
+		var hctx := HealContext.new(
+			int(ctx.source_id),
+			tid,
+			int(flat_amount),
+			float(of_total),
+			float(of_missing)
+		)
+
+		if ctx.card_data != null:
+			hctx.tags.append(&"card")
+			hctx.tags.append(StringName(ctx.card_data.name))
+
+		var healed := ctx.api.heal(hctx)
+		if healed > 0:
+			any_applied = true
+			ctx.runtime.append_affected_id(ctx, tid)
+
+	return any_applied

@@ -54,8 +54,12 @@ func activate_sim(ctx: CardContext) -> bool:
 
 	var payload := ctx.runtime.get_action_interaction_payload(ctx, ctx.current_action_index)
 	var replaced_id := int(payload.get(Keys.REPLACED_ID, 0))
+	var replaced_insert_index := int(payload.get(Keys.REPLACED_INSERT_INDEX, -1))
 
 	if replaced_id > 0:
+		if replaced_insert_index >= 0 and replaced_insert_index < insert_index:
+			insert_index -= 1
+
 		ctx.api.fade_unit(replaced_id, "summon_replace")
 
 	var sctx := SummonContext.new()
