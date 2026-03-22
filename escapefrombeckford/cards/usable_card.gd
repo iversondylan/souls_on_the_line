@@ -124,61 +124,7 @@ func update_description() -> void:
 	card_visuals.description.set_text(get_description())
 
 func get_description() -> String:
-	return("HELP ME OH GOD NO")
-	#var text := card_data.description
-	#var resolved := resolve_targets(targets)
-#
-	#var ctx := CardActionContext.new()
-	#ctx.player = player
-	#ctx.player_data = player.combatant_data
-	#ctx.battle_scene = battle_scene
-	#ctx.card_data = card_data
-	#ctx.resolved_target = resolved
-#
-	#for action: CardAction in card_data.actions:
-		#var total_slots := TextUtils.count_placeholders(text)
-#
-		## If there are no placeholders left, switch to modular append behavior.
-		#if total_slots <= 0:
-			#var extra := action.get_modular_description(ctx)
-			#if extra != null and extra != "":
-				## append with a leading space (as requested)
-				#text += " " + extra
-			#continue
-#
-		#var consume := action.description_arity()
-		#if consume <= 0:
-			## This action doesn't consume placeholders; leave text unchanged
-			## (modular append happens only when total_slots == 0, handled above)
-			#continue
-#
-		#var values := action.get_description_values(ctx)
-		## You can keep this assert if you want strict authoring:
-		## assert(values.size() == consume)
-#
-		## We apply at most the number of placeholders available.
-		## If the action returned MORE values than placeholders, that's the only error case.
-		#var apply_n : int = min(values.size(), total_slots)
-		#if values.size() > total_slots:
-			#push_error(
-				#"UsableCard.get_description(): action returned %s values but only %s placeholders remain. Truncating."
-				#% [values.size(), total_slots]
-			#)
-#
-		## Build formatting args: fill remaining slots with "%s" so placeholders persist.
-		#var args: Array = []
-		#for i in range(apply_n):
-			#args.append(values[i])
-#
-		#for i in range(total_slots - apply_n):
-			#args.append("%s")
-#
-		#text = text % args
-#
-	#text = text.replace("{percent}", "%")
-	#text = TextUtils.percent_to_symbol(text)
-	#text = TextUtils.end_with_period(text)
-	#return text
+	return TextUtils.build_card_description(card_data)
 
 
 

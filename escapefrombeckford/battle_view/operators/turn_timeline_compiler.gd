@@ -202,6 +202,7 @@ func _split_attack_events(events: Array[BattleEvent]) -> Dictionary:
 				continue
 			match int(e.type):
 				BattleEvent.Type.DAMAGE_APPLIED, \
+				BattleEvent.Type.CHANGE_MAX_HEALTH, \
 				BattleEvent.Type.STATUS, \
 				BattleEvent.Type.DIED, \
 				BattleEvent.Type.FADED:
