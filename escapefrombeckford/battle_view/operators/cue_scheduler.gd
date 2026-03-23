@@ -8,7 +8,7 @@ func play_plan(clock: BattleClock, director: BattleEventDirector, plan: Director
 		if fire_t > clock.now_sec():
 			await clock.wait_until(fire_t)
 
-		print(_debug_cue_fire_line(clock, plan, cue))
+		#print(_debug_cue_fire_line(clock, plan, cue))
 		director.on_director_cue(cue, gen)
 
 	var end_t := plan.get_end_sec()
