@@ -14,7 +14,6 @@ var battle_ui: BattleUI
 var event_player: BattleEventPlayer
 var event_director: BattleEventDirector
 var transport: BattleTransport
-var planner: SchedulePlanner
 var scheduler: BeatScheduler
 var clock: BattleClock
 var cue_scheduler: CueScheduler
@@ -41,7 +40,6 @@ func _ready() -> void:
 	transport.tempo_bpm = tempo
 	cue_scheduler = CueScheduler.new()
 	scheduler = BeatScheduler.new()
-	planner = SchedulePlanner.new()
 	event_player = BattleEventPlayer.new()
 	event_director = BattleEventDirector.new()
 	event_director.bind(self)
@@ -179,31 +177,6 @@ func _playback_loop(gen: int) -> void:
 
 		event_director.play_raw_chunk(pkg)
 
-func _debug_schedule_plan_line(plan: SchedulePlan, actor_turn: Array[BattleEvent], now_sec: float, prior_schedule_t: float) -> String:
-	if plan == null:
-		return "[PLAN] <null>"
-
-	var actor_id := _chunk_actor_id(actor_turn)
-	var measures := plan.measures
-	var n_actions := plan.actions.size()
-	var total_dur := plan.t_end - plan.t_start
-	var start_slip := now_sec - plan.t_start
-	var summary := _debug_chunk_summary(actor_turn)
-
-	return "[PLAN] actor=%d measures=%d actions=%d start=%.3f end=%.3f dur=%.3f now=%.3f slip=%.3f prev_sched=%.3f events=%s" % [
-		actor_id,
-		measures,
-		n_actions,
-		plan.t_start,
-		plan.t_end,
-		total_dur,
-		now_sec,
-		start_slip,
-		prior_schedule_t,
-		summary,
-	]
-
-
 func _debug_beat_package_line(
 	pkg: BeatPackage,
 	mode: int,
@@ -316,40 +289,6 @@ func _debug_payload_summary(payload: Array) -> String:
 		parts.append("... +" + str(payload.size() - max_n) + " more")
 
 	return " | ".join(parts)
-
-func _play_schedule_plan(plan: SchedulePlan, gen: int) -> void:
-	if plan == null:
-		return
-
-	var plan_start := plan.t_start
-
-	for a in plan.actions:
-		if !_playing or gen != _playback_gen:
-			return
-		
-		var fire_t := plan_start + a.t_rel_sec
-		var now := clock.now_sec()
-		if fire_t > now:
-			await clock.wait_until(fire_t)
-
-		if !_playing or gen != _playback_gen:
-			return
-		#print(
-			#"[ACT] phase=%s label=%s fire=%.3f now=%.3f dur=%.3f %s" % [
-				#str(a.phase),
-				#a.label,
-				#fire_t,
-				#clock.now_sec(),
-				#a.duration_sec,
-				#_debug_action_presentation_summary(a),
-			#]
-		#)
-		event_director.on_director_action(a, gen)
-
-	var now2 := clock.now_sec()
-	if plan.t_end > now2:
-		await clock.wait_until(plan.t_end)
-
 
 func _unit_quarters_for_speed_mode() -> float:
 	match playback_speed_mode:
