@@ -49,6 +49,7 @@ const ENEMY := 1
 
 @onready var draw_pile_view: CardPileView = %DrawPileView
 @onready var discard_pile_view: CardPileView = %DiscardPileView
+@onready var turn_phase_title: TurnPhaseTitle = $Battle_UI/TurnPhaseTitle
 
 @onready var thank_you_box: Node2D = $Battle_UI/ThankYouBox
 
@@ -100,6 +101,7 @@ func _connect_events() -> void:
 	Events.summon_reserve_card_released.connect(_on_summon_reserve_card_released)
 	Events.end_turn_button_pressed.connect(_on_end_turn_button_pressed)
 	Events.mana_view_update.connect(_on_mana_view_update)
+	Events.turn_status_view_changed.connect(_on_turn_status_view_changed)
 
 
 func _connect_ui() -> void:
@@ -270,6 +272,22 @@ func _on_mana_view_update(o: ManaViewOrder) -> void:
 	# For now just set current mana.
 	# Later you can add a max label and use o.after_max_mana too.
 	mana_panel.set_mana(o.after_mana)
+
+func _on_turn_status_view_changed(group_index: int, active_id: int, _pending_ids: PackedInt32Array, player_id: int) -> void:
+	if turn_phase_title == null:
+		return
+
+	var text := ""
+	if active_id > 0 and active_id == player_id:
+		text = "Player Turn"
+	elif int(group_index) == FRIENDLY:
+		text = "Friendly Turn"
+	elif int(group_index) == ENEMY:
+		text = "Enemy Turn"
+	else:
+		text = "Turn"
+
+	turn_phase_title.update_turn_text(text)
 
 func _on_dead_combatant_data(combatant_data: CombatantData) -> void:
 	if player_data != null and combatant_data == player_data:

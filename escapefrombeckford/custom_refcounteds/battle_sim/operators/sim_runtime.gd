@@ -309,7 +309,8 @@ func handle_pending_view_changed(active_id: int, pending_ids: PackedInt32Array) 
 	writer.emit_turn_status(
 		int(active_id),
 		pending_ids,
-		int(engine.active_group_index)
+		int(engine.active_group_index),
+		int(api.get_player_id())
 	)
 
 

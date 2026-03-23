@@ -32,7 +32,7 @@ var tempo: float = 135
 var tween_bg: Tween
 
 @export var metronome_sound: Sound
-@export var offset_s: float = 0.35
+@export var offset_s: float = 0.38
 @export var click_sound: Sound
 
 

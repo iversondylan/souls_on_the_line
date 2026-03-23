@@ -664,6 +664,8 @@ func _on_turn_status(e: EventPackage) -> void:
 	var d := _data(e)
 	var active_id := int(d.get(Keys.ACTIVE_ID, 0))
 	var pending_ids: PackedInt32Array = d.get(Keys.PENDING_IDS, PackedInt32Array())
+	var group_index := int(d.get(Keys.GROUP_INDEX, e.event.group_index))
+	var player_id := int(d.get(Keys.PLAYER_ID, 0))
 
 	var pending_set := {}
 	for cid in pending_ids:
@@ -683,6 +685,8 @@ func _on_turn_status(e: EventPackage) -> void:
 			v.set_pending_turn_glow(CombatantView.TurnStatus.TURN_PENDING)
 		else:
 			v.set_pending_turn_glow(CombatantView.TurnStatus.NONE)
+
+	Events.turn_status_view_changed.emit(group_index, active_id, pending_ids, player_id)
 
 
 func _on_formation_set(e: EventPackage) -> void:

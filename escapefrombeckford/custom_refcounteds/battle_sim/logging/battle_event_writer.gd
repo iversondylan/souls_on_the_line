@@ -148,11 +148,12 @@ func emit_group_turn_end(group_idx: int) -> int:
 		Keys.TURN_ID: int(turn_id),
 	})
 
-func emit_turn_status(active_id: int, pending_ids: PackedInt32Array, group_idx: int) -> int:
+func emit_turn_status(active_id: int, pending_ids: PackedInt32Array, group_idx: int, player_id: int) -> int:
 	return _append(BattleEvent.Type.TURN_STATUS, {
 		Keys.ACTIVE_ID: int(active_id),
 		Keys.PENDING_IDS: pending_ids,
 		Keys.GROUP_INDEX: int(group_idx),
+		Keys.PLAYER_ID: int(player_id),
 		Keys.TURN_ID: int(turn_id),
 	})
 

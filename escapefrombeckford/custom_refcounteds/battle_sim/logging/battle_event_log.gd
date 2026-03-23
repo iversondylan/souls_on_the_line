@@ -130,6 +130,7 @@ static func print_event_log(
 		Keys.SUMMONED_ID,
 		Keys.SPAWNED_ID,
 		Keys.ACTIVE_ID,
+		Keys.PLAYER_ID,
 		Keys.PENDING_IDS,
 		Keys.SUMMON_COUNT,
 	]
