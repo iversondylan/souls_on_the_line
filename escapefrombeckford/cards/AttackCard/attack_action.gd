@@ -26,7 +26,7 @@ extends CardAction
 	#return true
 
 func activate_sim(ctx: CardContext) -> bool:
-	if ctx == null or ctx.api == null or ctx.resolved == null:
+	if ctx == null or ctx.api == null:
 		return false
 
 	var source_id := int(ctx.source_id)

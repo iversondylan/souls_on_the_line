@@ -37,10 +37,10 @@ func activate_sim(ctx: CardContext) -> bool:
 	if ctx == null or ctx.api == null or ctx.target_ids == null:
 		return false
 	
-	# You currently choose attacker as first resolved fighter (live); SIM needs an id.
+	# Use the first selected target as the attacker.
 	var attacker_id := 0
 	if ctx.target_ids.size() > 0:
-		attacker_id = int(ctx.resolved.fighter_ids[0])
+		attacker_id = int(ctx.target_ids[0])
 	if attacker_id <= 0:
 		return false
 	
