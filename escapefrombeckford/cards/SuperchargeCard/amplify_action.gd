@@ -25,12 +25,13 @@ extends CardAction
 	#return true
 
 func activate_sim(ctx: CardContext) -> bool:
-	if ctx == null or ctx.api == null or ctx.resolved == null:
+	if ctx == null or ctx.api == null:
 		return false
 
 	var any := false
-	for i in range(ctx.resolved.fighter_ids.size()):
-		var tid := int(ctx.resolved.fighter_ids[i])
+	var affected: PackedInt32Array = PackedInt32Array()
+	for i in range(ctx.target_ids.size()):
+		var tid := int(ctx.target_ids[i])
 		if tid <= 0:
 			continue
 		if ctx.api.has_method("is_alive") and !bool(ctx.api.call("is_alive", tid)):
@@ -49,9 +50,10 @@ func activate_sim(ctx: CardContext) -> bool:
 
 		ctx.api.apply_status(s)
 		any = true
+		affected.append(tid)
 
 	if any:
-		ctx.affected_ids = ctx.resolved.fighter_ids.duplicate()
+		ctx.affected_ids = affected
 
 	return any
 
