@@ -185,20 +185,26 @@ func _start_status_windup_order(order: StatusWindupPresentationOrder) -> void:
 	if order == null:
 		return
 
-	# Minimal cosmetic: briefly mark targets as targeted.
+	var caster := battle_view.get_combatant(int(order.actor_id))
+	if caster != null:
+		caster.play_presentation_order(order, battle_view)
+
 	for tid in order.target_ids:
 		var tv := battle_view.get_combatant(int(tid))
-		if tv != null:
-			tv.show_targeted(true)
+		if tv != null and tv != caster:
+			tv.play_presentation_order(order, battle_view)
 
 func _start_status_pop_order(order: StatusPopPresentationOrder) -> void:
 	if order == null:
 		return
 
-	# Placeholder cosmetic only. Raw STATUS event handles actual icon/state changes.
+	var source := battle_view.get_combatant(int(order.source_id))
+	if source != null:
+		source.play_presentation_order(order, battle_view)
+
 	var tv := battle_view.get_combatant(int(order.target_id))
-	if tv != null:
-		tv.play_hit()
+	if tv != null and tv != source:
+		tv.play_presentation_order(order, battle_view)
 
 func _start_summon_windup_order(order: SummonWindupPresentationOrder) -> void:
 	if order == null:

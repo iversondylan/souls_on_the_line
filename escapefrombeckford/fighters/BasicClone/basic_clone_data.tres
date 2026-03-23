@@ -3,30 +3,15 @@
 [ext_resource type="Script" uid="uid://cfatj0ryn8uv3" path="res://custom_resources/combatant_data.gd" id="1_ago3s"]
 [ext_resource type="Texture2D" uid="uid://boidn5bneb5f0" path="res://assets/sprites/assorted/player_mage.png" id="1_kbgrf"]
 [ext_resource type="Resource" uid="uid://dueva43wmh3no" path="res://fighters/BasicClone/basic_clone_ai_profile.tres" id="1_sriky"]
-[ext_resource type="Script" uid="uid://03807i8cp3r3" path="res://scenes/turn_takers/behaviors/fighter_behavior.gd" id="2_ahv35"]
-[ext_resource type="Script" uid="uid://bh3u544b28osi" path="res://scenes/turn_takers/behaviors/friendly_behavior.gd" id="3_0mu2j"]
-[ext_resource type="Script" uid="uid://csljslxfgnidf" path="res://scenes/turn_takers/behaviors/npcai_behavior.gd" id="4_yaakh"]
-[ext_resource type="Script" uid="uid://scekanx56uiy" path="res://scenes/turn_takers/behaviors/summoned_ally_behavior.gd" id="5_0v837"]
-
-[sub_resource type="Resource" id="Resource_4mtla"]
-script = ExtResource("3_0mu2j")
-metadata/_custom_type_script = "uid://bh3u544b28osi"
-
-[sub_resource type="Resource" id="Resource_n6q0x"]
-script = ExtResource("4_yaakh")
-metadata/_custom_type_script = "uid://csljslxfgnidf"
-
-[sub_resource type="Resource" id="Resource_ykc33"]
-script = ExtResource("5_0v837")
-metadata/_custom_type_script = "uid://scekanx56uiy"
 
 [resource]
 script = ExtResource("1_ago3s")
-name = "Shadow Clone"
+name = "Spectral Clone"
 character_art = ExtResource("1_kbgrf")
 character_art_uid = "uid://boidn5bneb5f0"
 height = 270
 max_health = 5
-behaviors = Array[ExtResource("2_ahv35")]([SubResource("Resource_4mtla"), SubResource("Resource_n6q0x"), SubResource("Resource_ykc33")])
+apr = 4
+apm = 4
 ai = ExtResource("1_sriky")
 metadata/_custom_type_script = "uid://cfatj0ryn8uv3"

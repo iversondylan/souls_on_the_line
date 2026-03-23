@@ -27,11 +27,12 @@ var _projectiles_by_attacker: Dictionary = {}
 var _summon_preview_ghost: Node2D = null
 var combatants_by_cid: Dictionary = {}
 
-var tempo: float = 130
+var tempo: float = 120
 
 var tween_bg: Tween
 
 @export var metronome_sound: Sound
+@export var offset_s: float = 0.0
 @export var click_sound: Sound
 
 
@@ -52,7 +53,7 @@ func _ready() -> void:
 	p.volume_db = metronome_sound.volume_db
 	p.pitch_scale = metronome_sound.pitch
 
-	clock = MetronomeClock.new(p, tempo, 0.0, get_tree())
+	clock = MetronomeClock.new(p, tempo, offset_s, get_tree())
 
 
 func bind_log(log: BattleEventLog) -> void:

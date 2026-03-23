@@ -36,6 +36,21 @@ extends Node2D
 @onready var pending_turn_glow: Sprite2D = $PendingTurnGlow
 
 const DAMAGE_NUMBER_SCN_PATH := "res://scenes/ui/damage_number.tscn"
+const FOCUS_SOUND_KEY := &"focus_sound"
+const CLEAR_FOCUS_SOUND_KEY := &"clear_focus_sound"
+const WINDUP_SOUND_KEY := &"windup_sound"
+const MELEE_IMPACT_SOUND_KEY := &"melee_impact_sound"
+const FIRE_PROJECTILE_SOUND_KEY := &"fire_projectile_sound"
+const FIREBALL_IMPACT_SOUND_KEY := &"fireball_impact_sound"
+const STATUS_SOUND_KEY := &"status_sound"
+
+const DEFAULT_FOCUS_SOUND := preload("res://audio/focus.tres")
+const DEFAULT_CLEAR_FOCUS_SOUND := preload("res://audio/clear_focus.tres")
+const DEFAULT_WINDUP_SOUND := preload("res://audio/windup.tres")
+const DEFAULT_MELEE_IMPACT_SOUND := preload("res://audio/melee_impact.tres")
+const DEFAULT_FIRE_PROJECTILE_SOUND := preload("res://audio/fire_projectile.tres")
+const DEFAULT_FIREBALL_IMPACT_SOUND := preload("res://audio/fireball_impact.tres")
+const DEFAULT_STATUS_SOUND := preload("res://audio/status.tres")
 
 # ------------------------------------------------------------------------------
 # Core state
@@ -53,6 +68,13 @@ var group_index: int = -1 # 0 friendly, 1 enemy
 
 var _status_catalog: StatusCatalog = null
 var _spec: Dictionary = {}
+var focus_sound: Sound = DEFAULT_FOCUS_SOUND
+var clear_focus_sound: Sound = DEFAULT_CLEAR_FOCUS_SOUND
+var windup_sound: Sound = DEFAULT_WINDUP_SOUND
+var melee_impact_sound: Sound = DEFAULT_MELEE_IMPACT_SOUND
+var fire_projectile_sound: Sound = DEFAULT_FIRE_PROJECTILE_SOUND
+var fireball_impact_sound: Sound = DEFAULT_FIREBALL_IMPACT_SOUND
+var status_sound: Sound = DEFAULT_STATUS_SOUND
 
 var _height_px: int = 240
 var health: int = 1
@@ -66,6 +88,7 @@ var anchor_position: Vector2
 var has_anchor_position: bool = false
 var _root_motion_locked: bool = false
 var _is_focus_active: bool = false
+var _owns_focus_audio: bool = false
 
 var tween_move: Tween
 var tween_focus: Tween
@@ -159,8 +182,39 @@ func _apply_stats_from_spec() -> void:
 	mortality = int(_spec.get(Keys.MORTALITY, CombatantView.Mortality.MORTAL))
 	max_health = int(_spec.get(Keys.MAX_HEALTH, 0))
 	health = int(_spec.get(Keys.HEALTH, 0))
+	focus_sound = _resolve_sound_from_spec(FOCUS_SOUND_KEY, DEFAULT_FOCUS_SOUND)
+	clear_focus_sound = _resolve_sound_from_spec(CLEAR_FOCUS_SOUND_KEY, DEFAULT_CLEAR_FOCUS_SOUND)
+	windup_sound = _resolve_sound_from_spec(WINDUP_SOUND_KEY, DEFAULT_WINDUP_SOUND)
+	melee_impact_sound = _resolve_sound_from_spec(MELEE_IMPACT_SOUND_KEY, DEFAULT_MELEE_IMPACT_SOUND)
+	fire_projectile_sound = _resolve_sound_from_spec(FIRE_PROJECTILE_SOUND_KEY, DEFAULT_FIRE_PROJECTILE_SOUND)
+	fireball_impact_sound = _resolve_sound_from_spec(FIREBALL_IMPACT_SOUND_KEY, DEFAULT_FIREBALL_IMPACT_SOUND)
+	status_sound = _resolve_sound_from_spec(STATUS_SOUND_KEY, DEFAULT_STATUS_SOUND)
 	if health_bar != null:
 		health_bar.update_health_view(max_health, health)
+
+
+func _resolve_sound_from_spec(key: StringName, fallback: Sound) -> Sound:
+	if _spec == null or !_spec.has(key):
+		return fallback
+
+	var value = _spec.get(key, null)
+	if value is Sound:
+		return value as Sound
+
+	if value is String or value is StringName:
+		var path := String(value)
+		if path != "":
+			var loaded := load(path) as Sound
+			if loaded != null:
+				return loaded
+
+	return fallback
+
+
+func _play_sound(sound: Sound, single := false, runtime_volume_db := 0.0, runtime_pitch := 0.0) -> void:
+	if sound == null:
+		return
+	SFXPlayer.play(sound, single, runtime_volume_db, runtime_pitch)
 
 
 # ------------------------------------------------------------------------------
@@ -220,14 +274,17 @@ func set_pending_turn_glow(status: TurnStatus) -> void:
 # ------------------------------------------------------------------------------
 
 func on_focus(order: FocusOrder) -> void:
-	_is_focus_active = true
-
 	var involved := (cid == order.attacker_id)
 	if !involved:
 		for tid in order.target_ids:
 			if cid == int(tid):
 				involved = true
 				break
+
+	_is_focus_active = true
+	_owns_focus_audio = (cid == int(order.attacker_id))
+	if _owns_focus_audio:
+		_play_sound(focus_sound)
 
 	if tween_focus:
 		tween_focus.kill()
@@ -242,6 +299,10 @@ func on_focus(order: FocusOrder) -> void:
 
 
 func clear_focus(duration: float) -> void:
+	if _owns_focus_audio:
+		_play_sound(clear_focus_sound)
+	_owns_focus_audio = false
+
 	if _root_motion_locked or !is_alive:
 		_is_focus_active = false
 		if tween_focus:
@@ -362,6 +423,7 @@ func play_presentation_order(order: PresentationOrder, battle_view: BattleView) 
 func _play_melee_windup_from_order(order: MeleeWindupPresentationOrder) -> void:
 	if order == null:
 		return
+	_play_sound(windup_sound)
 	if tween_strike:
 		tween_strike.kill()
 
@@ -415,6 +477,7 @@ func _play_melee_strike_from_order(order: MeleeStrikePresentationOrder) -> void:
 func _play_ranged_windup_from_order(order: RangedWindupPresentationOrder) -> void:
 	if order == null:
 		return
+	_play_sound(windup_sound)
 	#if !is_instance_valid(self) or gen != _strike_gen:
 		#return
 	
@@ -513,13 +576,26 @@ func _play_fade_from_order(order: FadePresentationOrder) -> void:
 func _play_status_windup_from_order(order: StatusWindupPresentationOrder) -> void:
 	if order == null:
 		return
-	show_targeted(true)
+
+	if cid == int(order.actor_id):
+		_play_sound(windup_sound)
+
+	for tid in order.target_ids:
+		if cid == int(tid):
+			show_targeted(true)
+			break
 
 
 func _play_status_pop_from_order(order: StatusPopPresentationOrder) -> void:
 	if order == null:
 		return
-	play_hit()
+
+	if cid == int(order.source_id):
+		_play_sound(status_sound)
+
+	if cid == int(order.target_id):
+		show_targeted(false)
+		play_hit()
 
 func _play_ranged_windup_pose_async(duration: float, gen: int) -> void:
 	if !is_instance_valid(self) or gen != _strike_gen:
@@ -572,6 +648,7 @@ func play_strike_windup(order: StrikeWindupOrder, battle_view: BattleView) -> vo
 
 	_strike_gen += 1
 	var gen := _strike_gen
+	_play_sound(windup_sound)
 
 	if int(order.attack_mode) == int(Attack.Mode.RANGED):
 		# One projectile per windup beat / per-strike slice.
@@ -650,6 +727,7 @@ func _play_melee_followthrough_per_strike(order: StrikeFollowthroughOrder) -> vo
 		tween_strike.kill()
 
 	_cache_base_art_transform_if_needed()
+	_play_sound(melee_impact_sound)
 
 	var dur := maxf(order.duration, 0.01)
 	var base_scale := _get_base_art_scale()
@@ -765,6 +843,7 @@ func _spawn_projectile_async(
 		return
 
 	battle_view.add_child(projectile)
+	_play_sound(fire_projectile_sound)
 
 	var start_pos := _get_projectile_origin_global()
 	var end_pos := battle_view.get_mean_target_position_global(target_ids, start_pos)
@@ -783,6 +862,7 @@ func _spawn_projectile_async(
 	t.tween_callback(func():
 		if !is_instance_valid(projectile):
 			return
+		_play_sound(fireball_impact_sound)
 		if projectile.has_method("play_impact"):
 			projectile.call("play_impact")
 		else:

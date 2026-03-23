@@ -11,5 +11,7 @@ character_art = ExtResource("1_vid76")
 character_art_uid = "uid://dfqya1jagaknn"
 portrait = ExtResource("1_vid76")
 max_health = 100
+apr = 4
+apm = 4
 ai = ExtResource("1_6nul6")
 metadata/_custom_type_script = "uid://cfatj0ryn8uv3"
