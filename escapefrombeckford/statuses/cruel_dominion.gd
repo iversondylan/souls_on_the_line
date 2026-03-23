@@ -21,5 +21,5 @@ func get_id() -> StringName:
 #
 	#status_applied.emit(self)
 
-#func get_tooltip() -> String:
-	#return "Cruel Dominion: Each turn, empower your allies to deal %s additional damage." % intensity
+func get_tooltip(intensity: int = 0, _duration: int = 0) -> String:
+	return "Cruel Dominion: each turn, empower your allies to deal %s additional damage." % intensity

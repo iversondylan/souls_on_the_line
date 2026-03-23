@@ -14,3 +14,6 @@ func apply_status(_target: Node) -> void:
 	print("The status targets: %s" % _target)
 	print("Gets status extent of %s" % member_var)
 	status_applied.emit(self)
+
+func get_tooltip(_intensity: int = 0, _duration: int = 0) -> String:
+	return "Terminal Glory."

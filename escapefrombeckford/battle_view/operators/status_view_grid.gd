@@ -95,7 +95,7 @@ func clear_all(duration: float = 0.0) -> void:
 # Display plumbing
 # -------------------------
 
-func _add_or_update_display_from_state(st: Dictionary, duration: float) -> void:
+func _add_or_update_display_from_state(st: Dictionary, _duration: float) -> void:
 	var id: StringName = st.get("id", &"")
 	if id == &"":
 		return
@@ -110,29 +110,16 @@ func _add_or_update_display_from_state(st: Dictionary, duration: float) -> void:
 	if proto == null:
 		return
 
-	# Status has no state now, so do NOT duplicate.
-	# Just assign the proto so StatusDisplay can set icon + which label is visible.
-	d.status = proto
-
 	var intensity := int(st.get("intensity", 1))
 	var dur := int(st.get("duration", 0))
-
-	# IMPORTANT: write text to whichever label is visible for this status type
-	# - StatusDisplay.duration label is for NumberDisplayType.DURATION
-	# - StatusDisplay.stacks label is for NumberDisplayType.INTENSITY
-	if d.duration.visible:
-		d.duration.text = str(dur)
-	if d.stacks.visible:
-		d.stacks.text = str(intensity)
-
-	#print("_add_or_update_display_from_state() int: %s, dur: %s" % [str(intensity), str(dur)])
+	d.set_status_state(proto, intensity, dur)
 
 func _remove_display(id: StringName, duration: float) -> void:
 	if !_displays_by_id.has(id):
 		return
 	var d: StatusDisplay = _displays_by_id[id]
-	d.duration.text = "0"
-	d.stacks.text = "0"
+	if d != null and is_instance_valid(d):
+		d.set_status_state(d.status, 0, 0)
 	_displays_by_id.erase(id)
 
 	if d == null or !is_instance_valid(d):
@@ -151,9 +138,9 @@ func _update_visuals() -> void:
 	size = get_combined_minimum_size()
 	position.x = -0.5 * size.x
 
-func get_all_statuses() -> Array[Status]:
-	var out: Array[Status] = []
-	if _catalog == null:
+func get_all_statuses() -> Array[StatusDisplay]:
+	var out: Array[StatusDisplay] = []
+	if _states_by_id.is_empty():
 		return out
 
 	var ids: Array = _states_by_id.keys()
@@ -164,13 +151,11 @@ func get_all_statuses() -> Array[Status]:
 		if st.is_empty():
 			continue
 
-		var proto: Status = st.get("proto", null)
-		if proto == null:
-			proto = _catalog.get_proto(StringName(id))
-		if proto == null:
+		var d: StatusDisplay = _displays_by_id.get(id, null)
+		if d == null or !is_instance_valid(d):
 			continue
 
-		out.append(proto)
+		out.append(d)
 
 	return out
 

@@ -17,10 +17,14 @@ func affects_intent_legality() -> bool:
 	return true
 
 
+func get_tooltip(intensity: int = 0, _duration: int = 0) -> String:
+	return "Stability: %s remaining. Breaking stability will interrupt this unit's action." % intensity
+
+
 func get_tooltip_sim(ctx: SimStatusContext) -> String:
 	if ctx == null or !ctx.is_valid():
-		return "Stability"
-	return "Stability: %s remaining. Breaking stability will interrupt this unit’s action." % ctx.get_intensity()
+		return get_tooltip()
+	return get_tooltip(ctx.get_intensity(), ctx.get_duration())
 
 
 func on_damage_taken(ctx: SimStatusContext, damage_ctx: DamageContext) -> void:

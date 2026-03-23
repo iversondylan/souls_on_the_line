@@ -41,10 +41,7 @@ func get_contributed_modifier_types() -> Array[Modifier.Type]:
 	#if duration <= 0 and dmg_taken_modifier:
 		#dmg_taken_modifier.remove_value(ID)
 	#
-#func get_tooltip() -> String:
-	#if duration == 1:
-		#var base_tooltip: String = "Pinpoint: takes %s%% more damage for 1 turn."
-		#return base_tooltip % floori(MULT_VALUE*100)
-	#else:
-		#var base_tooltip: String = "Pinpoint: takes %s%% more damage for %s turns."
-		#return base_tooltip % [floori(MULT_VALUE*100), duration]
+func get_tooltip(_intensity: int = 0, duration: int = 0) -> String:
+	if duration == 1:
+		return "Pinpoint: takes %s%% more damage for 1 turn." % floori(MULT_VALUE * 100)
+	return "Pinpoint: takes %s%% more damage for %s turns." % [floori(MULT_VALUE * 100), duration]

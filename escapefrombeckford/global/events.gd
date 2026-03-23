@@ -73,7 +73,7 @@ signal selection_prompt_button_pressed()
 signal intent_tooltip_show_requested(intent_display: IntentDisplay)
 signal arcanum_tooltip_show_requested(arcanum_display: ArcanumDisplay)
 signal tooltip_hide_requested()
-signal status_tooltip_requested(statuses: Array[Status])
+signal status_tooltip_requested(statuses: Array[StatusDisplay])
 signal arcanum_popup_requested(arcanum: Arcanum)
 
 ## battle transition events

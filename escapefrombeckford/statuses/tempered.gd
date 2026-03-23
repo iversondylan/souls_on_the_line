@@ -27,8 +27,8 @@ func on_damage_taken(ctx: SimStatusContext, damage_ctx: DamageContext) -> void:
 	ctx.stack.intensity += max_health_per_strike
 	ctx.api.change_max_health(ctx.owner_id, max_health_per_strike, false)
 
-#func get_tooltip() -> String:
-	#return "Tempered: gains %s maximum health for each strike survived. +%s maximum health." % [
-		#max_health_per_strike,
-		#intensity
-	#]
+func get_tooltip(intensity: int = 0, _duration: int = 0) -> String:
+	return "Tempered: gains %s maximum health for each strike survived. +%s maximum health." % [
+		max_health_per_strike,
+		intensity
+	]

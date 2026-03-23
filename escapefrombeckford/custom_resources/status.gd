@@ -86,13 +86,13 @@ func get_contributed_modifier_types() -> Array[Modifier.Type]:
 # Query helpers
 # -------------------------------------------------------------------
 
-func get_tooltip() -> String:
+func get_tooltip(_intensity: int = 0, _duration: int = 0) -> String:
 	return tooltip
 
 func get_tooltip_sim(ctx: SimStatusContext) -> String:
 	if ctx == null or !ctx.is_valid():
-		return tooltip
-	return tooltip
+		return get_tooltip()
+	return get_tooltip(ctx.get_intensity(), ctx.get_duration())
 
 func affects_intent_legality() -> bool:
 	return false

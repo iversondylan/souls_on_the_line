@@ -30,11 +30,12 @@ func on_apply(ctx: SimStatusContext, apply_ctx: StatusContext) -> void:
 func get_id() -> StringName:
 	return ID
 
-func get_tooltip_sim(ctx: SimStatusContext) -> String:
-	var turns := 0
-	if ctx != null and ctx.stack != null:
-		turns = int(ctx.stack.duration)
-
-	if turns == 1:
+func get_tooltip(_intensity: int = 0, duration: int = 0) -> String:
+	if duration == 1:
 		return "Marked: ranged attacks prioritize this target for 1 turn."
-	return "Marked: ranged attacks prioritize this target for %s turns." % turns
+	return "Marked: ranged attacks prioritize this target for %s turns." % duration
+
+func get_tooltip_sim(ctx: SimStatusContext) -> String:
+	if ctx == null or !ctx.is_valid():
+		return get_tooltip()
+	return get_tooltip(ctx.get_intensity(), ctx.get_duration())

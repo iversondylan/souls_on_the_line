@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://dixfcu6jmx0kd" path="res://scenes/battle.gd" id="1_dd63g"]
 [ext_resource type="Script" uid="uid://8txpx232aks0" path="res://scenes/sim_host.gd" id="3_1m01a"]
-[ext_resource type="Resource" uid="uid://cbs38uf5bi3y" path="res://audio/metronome_120bpm.tres" id="4_kl6ie"]
+[ext_resource type="Resource" uid="uid://imk8gtaskdbp" path="res://audio/slimeking_menu.tres" id="4_kl6ie"]
 [ext_resource type="Script" uid="uid://cyefuqg3i2y7o" path="res://battle_view/operators/battle_view.gd" id="4_lv4so"]
 [ext_resource type="Texture2D" uid="uid://jml4obgrdfeg" path="res://assets/backgrounds/flat-forestred-dark.png" id="4_yhk5m"]
 [ext_resource type="Script" uid="uid://chqthfo2t83me" path="res://battle_view/operators/group_view.gd" id="5_eivww"]
@@ -17,7 +17,7 @@
 [ext_resource type="PackedScene" uid="uid://chyl400nmwlxo" path="res://scenes/selection_prompt.tscn" id="16_61i1y"]
 [ext_resource type="PackedScene" uid="uid://bxtf6la07t0t5" path="res://scenes/ui/card_pile_opener.tscn" id="17_ariee"]
 [ext_resource type="PackedScene" uid="uid://bhps5rw0coka5" path="res://VFX/turn_order_spark_controller.tscn" id="17_saiin"]
-[ext_resource type="PackedScene" uid="uid://cmc2ypry076mq" path="res://scenes/ui/status_view.tscn" id="18_h4dll"]
+[ext_resource type="PackedScene" uid="uid://cmc2ypry076mq" path="res://scenes/ui/status_overlay.tscn" id="18_h4dll"]
 [ext_resource type="Theme" uid="uid://1dr1eewpv0jd" path="res://themes/ui_theme.tres" id="18_s5alk"]
 [ext_resource type="PackedScene" uid="uid://d6f3t1qcn8bk" path="res://scenes/ui/turn_phase_title.tscn" id="19_fpf3k"]
 [ext_resource type="PackedScene" uid="uid://ggbqqkmgvjb1" path="res://scenes/ui/mana_panel.tscn" id="19_tgt58"]
@@ -225,9 +225,9 @@ visible = false
 unique_name_in_owner = true
 visible = false
 
-[node name="StatusView" type="CanvasLayer" parent="." unique_id=2094819986]
+[node name="StatusOverlay" type="CanvasLayer" parent="." unique_id=2094819986]
 
-[node name="StatusView" parent="StatusView" unique_id=1932521555 instance=ExtResource("18_h4dll")]
+[node name="StatusOverlay" parent="StatusOverlay" unique_id=1932521555 instance=ExtResource("18_h4dll")]
 visible = false
 
 [node name="BattleInteractionHandler" type="Node" parent="." unique_id=1048632546]

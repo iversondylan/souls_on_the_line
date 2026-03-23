@@ -28,6 +28,5 @@ func get_modifier_tokens(ctx: StatusTokenContext) -> Array[ModifierToken]:
 	Status.set_token_owner(token, ctx)
 	return [token]
 	
-#func get_tooltip() -> String:
-	#var base_tooltip: String = "Might: Take %s reduced damage from each strike."
-	#return base_tooltip % intensity
+func get_tooltip(intensity: int = 0, _duration: int = 0) -> String:
+	return "Pressure Barrier: take %s reduced damage from each strike." % intensity
