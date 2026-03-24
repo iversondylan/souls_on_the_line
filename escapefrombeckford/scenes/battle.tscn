@@ -26,6 +26,7 @@
 [ext_resource type="PackedScene" uid="uid://b1rro3h5dxilx" path="res://scenes/ui/battle_over_panel.tscn" id="21_p2d7x"]
 [ext_resource type="PackedScene" uid="uid://c634qgskmd0a" path="res://scenes/ui/card_pile_view.tscn" id="22_wyn7e"]
 [ext_resource type="Script" uid="uid://bmlyytso4qsj6" path="res://scenes/interactions/battle_interaction_handler.gd" id="25_jt4d8"]
+[ext_resource type="Script" uid="uid://d1qgiqjurb6nw" path="res://scenes/battle_preview_coordinator.gd" id="27_1m01a"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_eb6dy"]
 size = Vector2(1200, 200)
@@ -232,6 +233,9 @@ visible = false
 
 [node name="BattleInteractionHandler" type="Node" parent="." unique_id=1048632546]
 script = ExtResource("25_jt4d8")
+
+[node name="BattlePreviewCoordinator" type="Node" parent="." unique_id=624651634]
+script = ExtResource("27_1m01a")
 
 [connection signal="pressed" from="Debug_UI/VBoxContainer/KillEnemiesButton" to="." method="_on_kill_enemies_button_pressed"]
 [connection signal="pressed" from="Debug_UI/VBoxContainer/DumpEventsButton" to="." method="_on_dump_events_button_pressed"]
