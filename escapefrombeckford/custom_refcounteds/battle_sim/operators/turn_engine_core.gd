@@ -580,6 +580,30 @@ func _publish_pending_view() -> void:
 				if bool(_restore_allowed.get(id, false)):
 					pending.append(id)
 
+	if active_group_index == 0 and _is_pre_player_friendlies():
+		var player_id := _player_id
+		if player_id == 0:
+			player_id = host.get_player_id()
+			_player_id = player_id
+
+		if player_id > 0:
+			var friendly_order := host.get_group_order_ids(0)
+			var player_idx := friendly_order.find(player_id)
+
+			# During PRE-player friendlies, the pending view should also include
+			# the player and friendlies behind the player.
+			if player_idx != -1:
+				for i in range(player_idx, friendly_order.size()):
+					var id := int(friendly_order[i])
+					if id == active_id:
+						continue
+					if !host.is_alive(id):
+						continue
+					if _turns_left(id) <= 0:
+						continue
+					if !pending.has(id):
+						pending.append(id)
+
 	pending_view_changed.emit(active_id, pending)
 
 
