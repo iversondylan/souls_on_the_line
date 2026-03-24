@@ -2,7 +2,7 @@
 
 class_name BattleEventWriter extends RefCounted
 
-var log: BattleEventLog
+var sink: EventSink
 var scopes: BattleScopeManager
 
 var turn_id: int = 0
@@ -19,8 +19,8 @@ var _beat_marker_types := {
 	BattleEvent.Type.FADED: true,
 }
 
-func _init(_log: BattleEventLog, _scopes: BattleScopeManager) -> void:
-	log = _log
+func _init(_sink: EventSink, _scopes: BattleScopeManager) -> void:
+	sink = _sink
 	scopes = _scopes
 
 func set_turn_context(_turn_id: int, _group_index: int, _actor_id: int) -> void:
@@ -29,7 +29,7 @@ func set_turn_context(_turn_id: int, _group_index: int, _actor_id: int) -> void:
 	active_actor_id = _actor_id
 
 func _append(type: int, data: Dictionary = {}) -> int:
-	if log == null:
+	if sink == null:
 		return 0
 
 	var sid := (scopes.current_scope_id() if scopes != null else 0)
@@ -52,7 +52,7 @@ func _append(type: int, data: Dictionary = {}) -> int:
 
 	e.data = data
 
-	var seq := log.append(e)
+	var seq := sink.append(e)
 	#print("EVT seq=%d type=%s scope=%d kind=%s ctx(t=%d g=%d a=%d) data=%s" % [
 		#seq,
 		#BattleEvent.Type.keys()[int(e.type)] if int(e.type) >= 0 and int(e.type) < BattleEvent.Type.size() else str(e.type),
