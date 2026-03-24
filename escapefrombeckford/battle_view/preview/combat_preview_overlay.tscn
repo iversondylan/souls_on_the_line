@@ -1,0 +1,77 @@
+[gd_scene format=3 uid="uid://irmwnd5ss87g"]
+
+[ext_resource type="Texture2D" uid="uid://c73rgxbvcwveo" path="res://assets/sprites/assorted/death-skull.png" id="1_b60qy"]
+[ext_resource type="Script" uid="uid://bhv8ixnp8xqgv" path="res://battle_view/preview/combat_preview_overlay.gd" id="1_glr07"]
+[ext_resource type="Theme" uid="uid://1dr1eewpv0jd" path="res://themes/ui_theme.tres" id="2_glr07"]
+
+[node name="CombatPreviewOverlay" type="Node2D" unique_id=326907784]
+script = ExtResource("1_glr07")
+
+[node name="IconParent" type="Control" parent="." unique_id=1147900409]
+layout_mode = 3
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -20.0
+offset_right = 20.0
+offset_bottom = 20.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="TextureRect" type="TextureRect" parent="IconParent" unique_id=1612890124]
+custom_minimum_size = Vector2(75, 75)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -37.5
+offset_top = -37.5
+offset_right = 37.5
+offset_bottom = 37.5
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("1_b60qy")
+expand_mode = 3
+stretch_mode = 5
+
+[node name="TextParent" type="Control" parent="." unique_id=1089211324]
+layout_mode = 3
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -20.0
+offset_right = 20.0
+offset_bottom = 20.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="RichTextLabel" type="RichTextLabel" parent="TextParent" unique_id=1859124892]
+clip_contents = false
+custom_minimum_size = Vector2(200, 0)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -100.0
+offset_top = -23.0
+offset_right = 100.0
+offset_bottom = 23.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("2_glr07")
+theme_override_font_sizes/normal_font_size = 28
+text = "25/50"
+fit_content = true
+scroll_active = false
+horizontal_alignment = 1
+vertical_alignment = 1

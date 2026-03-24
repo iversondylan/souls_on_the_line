@@ -12,6 +12,7 @@
 [ext_resource type="Texture2D" uid="uid://dob30qtbj3xk5" path="res://assets/sprites/assorted/block.PNG" id="10_he6ou"]
 [ext_resource type="Theme" uid="uid://1dr1eewpv0jd" path="res://themes/ui_theme.tres" id="11_qbq2w"]
 [ext_resource type="Script" uid="uid://dvv1xhy7j1pvq" path="res://battle_view/operators/status_view_grid.gd" id="12_rluy7"]
+[ext_resource type="PackedScene" uid="uid://irmwnd5ss87g" path="res://battle_view/preview/combat_preview_overlay.tscn" id="13_odn20"]
 
 [sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_y8vuy"]
 
@@ -107,6 +108,9 @@ columns = 6
 script = ExtResource("12_rluy7")
 
 [node name="CameraFocus" type="Node2D" parent="." unique_id=1148131427]
+
+[node name="CombatPreviewOverlay" parent="." unique_id=326907784 instance=ExtResource("13_odn20")]
+position = Vector2(0, -141)
 
 [connection signal="area_entered" from="TargetArea" to="." method="_on_target_area_area_entered"]
 [connection signal="area_exited" from="TargetArea" to="." method="_on_target_area_area_exited"]
