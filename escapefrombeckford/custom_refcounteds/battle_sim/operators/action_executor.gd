@@ -60,10 +60,15 @@ static func execute_npc_turn(api: SimBattleAPI, cid: int) -> void:
 			pkg.effect.execute_sim(ctx)
 
 	ctx.state[ActionPlanner.KEY_PLANNED_IDX] = -1
-	ActionIntentPresenter.emit_set_intent(api, profile, ctx, -1)
 	ctx.state[ActionPlanner.IS_ACTING] = false
 	ctx.state[ActionPlanner.STABILITY_BROKEN] = false
 	ctx.state[ActionPlanner.ACTIONS_TAKEN] = int(ctx.state.get(ActionPlanner.ACTIONS_TAKEN, 0)) + 1
+
+	if _should_immediately_replan_intent(api, u):
+		# Friendly AI should show their next intent before the player turn begins.
+		ActionPlanner.plan_next_intent_sim(profile, ctx, true)
+	else:
+		ActionIntentPresenter.emit_set_intent(api, profile, ctx, -1)
 
 
 static func _finish_turn(ctx: NPCAIContext) -> void:
@@ -72,3 +77,14 @@ static func _finish_turn(ctx: NPCAIContext) -> void:
 
 	ctx.state[ActionPlanner.IS_ACTING] = false
 	ctx.state[ActionPlanner.STABILITY_BROKEN] = false
+
+
+static func _should_immediately_replan_intent(api: SimBattleAPI, u: CombatantState) -> bool:
+	if api == null or u == null or u.combatant_data == null:
+		return false
+
+	# Only non-player friendlies should immediately show the next plan.
+	if int(u.team) != int(SimBattleAPI.FRIENDLY):
+		return false
+
+	return int(u.id) != int(api.get_player_id())
