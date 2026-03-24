@@ -205,6 +205,10 @@ func get_preview_state() -> BattleState:
 	return preview.state if preview != null else null
 
 
+
+func get_preview_runtime() -> SimRuntime:
+	return preview.runtime if preview != null else null
+
 # -------------------------
 # Preview management
 # -------------------------
