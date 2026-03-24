@@ -41,6 +41,8 @@ const ENEMY := 1
 @onready var selection_prompt: SelectionPrompt = $Battle_UI/SelectionPrompt
 @onready var battle_interaction_handler: BattleInteractionHandler = $BattleInteractionHandler
 
+var battle_preview_coordinator: BattlePreviewCoordinator
+
 @onready var hand: Hand = $Battle_UI/Hand
 @onready var battle_ui: BattleUI = $Battle_UI
 
@@ -82,6 +84,13 @@ func _ready() -> void:
 	hand.api = sim_host.get_main_api()
 
 	battle_interaction_handler.setup(self)
+
+	battle_preview_coordinator = BattlePreviewCoordinator.new()
+	battle_preview_coordinator.name = "BattlePreviewCoordinator"
+	battle_preview_coordinator.sim_host = sim_host
+	battle_preview_coordinator.battle_view = battle_view
+	battle_preview_coordinator.turn_phase_title = turn_phase_title
+	add_child(battle_preview_coordinator)
 
 	_connect_events()
 	_connect_ui()
