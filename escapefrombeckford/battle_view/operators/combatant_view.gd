@@ -34,6 +34,7 @@ extends Node2D
 @onready var target_area: CombatantTargetArea = $TargetArea
 @onready var area_left: CombatantAreaLeft = $AreaLeft
 @onready var pending_turn_glow: Sprite2D = $PendingTurnGlow
+@onready var combat_preview_overlay: CombatPreviewOverlay = $CombatPreviewOverlay
 
 const DAMAGE_NUMBER_SCN_PATH := "res://scenes/ui/damage_number.tscn"
 const FOCUS_SOUND_KEY := &"focus_sound"
@@ -244,6 +245,21 @@ func _on_target_area_area_exited(_area: Area2D) -> void:
 func show_targeted_arrow(show_it: bool) -> void:
 	if targeted_arrow != null:
 		targeted_arrow.visible = show_it
+
+
+func clear_combat_preview() -> void:
+	if combat_preview_overlay != null:
+		combat_preview_overlay.clear_preview()
+
+
+func show_combat_preview_death() -> void:
+	if combat_preview_overlay != null:
+		combat_preview_overlay.show_death_preview()
+
+
+func show_combat_preview_health(after_health: int, before_health: int) -> void:
+	if combat_preview_overlay != null:
+		combat_preview_overlay.show_health_preview(after_health, max_health, before_health)
 
 
 func _on_target_area_input_event(_viewport: Node, event: InputEvent, _shape_idx: int) -> void:
