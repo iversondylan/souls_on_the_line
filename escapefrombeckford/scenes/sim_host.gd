@@ -120,20 +120,12 @@ func init_from_seeds(battle_seed: int, run_seed: int) -> void:
 	if main.runtime != null:
 		main.runtime.bind(main, self)
 
-	var scopes := BattleScopeManager.new()
-	scopes.reset()
-
-	main.api.scopes = scopes
-	main.api.writer = BattleEventWriter.new(main.state.events, scopes)
-	main.api.writer.allow_unscoped_events = false
+	_configure_main_api_logging()
 
 	main.api.writer.set_turn_context(0, -1, 0)
 	main.api.writer.scope_begin(Scope.Kind.BATTLE, "battle_seed=%d run_seed=%d" % [battle_seed, run_seed], 0)
 
-	if main.runtime != null:
-		main.api.on_summoned = Callable(main.runtime, "on_summoned")
-		main.api.on_unit_removed = Callable(main.runtime, "on_unit_removed")
-		main.api.on_urgent_planning_requested = Callable(main.runtime, "request_urgent_planning_flush")
+	_bind_runtime_callbacks(main)
 
 	main_state_initialized.emit()
 
@@ -225,6 +217,8 @@ func clone_preview_from_main() -> void:
 	preview = main.clone_for_preview()
 	if preview != null and preview.runtime != null:
 		preview.runtime.bind(preview, self)
+	_configure_preview_api_logging()
+	_bind_runtime_callbacks(preview)
 
 	preview_state_cloned.emit()
 
@@ -255,6 +249,44 @@ func with_fresh_preview(fn: Callable) -> void:
 	clone_preview_from_main()
 	if fn.is_valid():
 		fn.call()
+
+
+func _configure_main_api_logging() -> void:
+	if main == null or main.api == null or main.state == null:
+		return
+
+	var scopes := BattleScopeManager.new()
+	scopes.reset()
+
+	main.api.scopes = scopes
+	main.api.writer = BattleEventWriter.new(EventSinkMain.new(main.state.events), scopes)
+	main.api.writer.allow_unscoped_events = false
+
+
+func _configure_preview_api_logging() -> void:
+	if preview == null or preview.api == null:
+		return
+
+	var scopes := BattleScopeManager.new()
+	scopes.reset()
+
+	preview.api.scopes = scopes
+	preview.api.writer = BattleEventWriter.new(EventSinkPreview.new(), scopes)
+	preview.api.writer.allow_unscoped_events = false
+
+
+func _bind_runtime_callbacks(sim: Sim) -> void:
+	if sim == null or sim.api == null:
+		return
+	if sim.runtime == null:
+		sim.api.on_summoned = Callable()
+		sim.api.on_unit_removed = Callable()
+		sim.api.on_urgent_planning_requested = Callable()
+		return
+
+	sim.api.on_summoned = Callable(sim.runtime, "on_summoned")
+	sim.api.on_unit_removed = Callable(sim.runtime, "on_unit_removed")
+	sim.api.on_urgent_planning_requested = Callable(sim.runtime, "request_urgent_planning_flush")
 
 
 # -------------------------
