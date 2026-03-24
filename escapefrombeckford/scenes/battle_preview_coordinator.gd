@@ -18,6 +18,7 @@ func _ready() -> void:
 	Events.summon_reserve_card_released.connect(_on_summon_reserve_card_released)
 	Events.dead_combatant_data.connect(_on_dead_combatant_data)
 	Events.hand_discarded.connect(_on_hand_discarded)
+	Events.end_turn_button_pressed.connect(_on_end_turn_button_pressed)
 
 
 func enable_for_player_turn() -> void:
@@ -121,22 +122,32 @@ func _on_turn_status_view_changed(group_index: int, active_id: int, _pending_ids
 	var is_player_turn := active_id > 0 and active_id == player_id and int(group_index) == FRIENDLY
 	if is_player_turn:
 		enable_for_player_turn()
+		recompute_preview_if_needed()
 		return
 
 	disable_and_clear()
 
 
 func _on_card_played(_usable_card: UsableCard) -> void:
-	mark_dirty("card_played")
+	_refresh_preview("card_played")
 
 
 func _on_summon_reserve_card_released(_summoned_id: int, _card_uid: String) -> void:
-	mark_dirty("summon_reserve_card_released")
+	_refresh_preview("summon_reserve_card_released")
 
 
 func _on_dead_combatant_data(_combatant_data: CombatantData) -> void:
-	mark_dirty("dead_combatant_data")
+	_refresh_preview("dead_combatant_data")
 
 
 func _on_hand_discarded() -> void:
-	mark_dirty("hand_discarded")
+	_refresh_preview("hand_discarded")
+
+
+func _on_end_turn_button_pressed() -> void:
+	disable_and_clear()
+
+
+func _refresh_preview(reason: String) -> void:
+	mark_dirty(reason)
+	recompute_preview_if_needed()
