@@ -565,7 +565,7 @@ func _append_manual(type: int, scope_id: int, parent_scope_id: int, scope_kind: 
 
 	e.data = data
 
-	var seq := log.append(e)
+	var seq := sink.append(e)
 	#print("EVT seq=%d type=%s scope=%d kind=%s ctx(t=%d g=%d a=%d) data=%s" % [
 		#seq,
 		#BattleEvent.Type.keys()[int(e.type)] if int(e.type) >= 0 and int(e.type) < BattleEvent.Type.size() else str(e.type),
