@@ -227,6 +227,11 @@ func get_max_mana() -> int:
 func has_pending_discard() -> bool:
 	return state != null and state.resource != null and state.resource.pending_discard != null
 
+func get_pending_discard() -> DiscardRequest:
+	if state == null or state.resource == null:
+		return null
+	return state.resource.pending_discard
+
 # ============================================================================
 # Dirtying / checkpoint requests
 # ============================================================================
@@ -781,57 +786,6 @@ func count_soulbound_in_group(group_index: int) -> int:
 # ============================================================================
 # Card / discard
 # ============================================================================
-
-#func on_card_played(ctx: CardActionContextSim) -> void:
-	#if ctx == null or ctx.card_data == null or writer == null:
-		#return
-	#if ctx.emitted_card_played:
-		#return
-	#
-	#ctx.emitted_card_played = true
-	#ctx.card_data.ensure_uid()
-	#
-	#writer.scope_begin(
-		#Scope.Kind.CARD,
-		#"uid=%s %s" % [str(ctx.card_data.uid), String(ctx.card_data.name)],
-		#int(ctx.source_id)
-	#)
-	#writer.emit_card_played(ctx)
-
-
-#func on_card_finished(_ctx: CardActionContextSim) -> void:
-	#if writer != null:
-		#writer.scope_end()
-#
-func emit_card_played_ctx(ctx: CardContext) -> void:
-	if ctx == null or writer == null:
-		return
-	if ctx.emitted_card_played:
-		return
-
-	ctx.emitted_card_played = true
-
-	if ctx.card_data != null:
-		ctx.card_data.ensure_uid()
-
-	writer.scope_begin(
-		Scope.Kind.CARD,
-		"uid=%s %s" % [
-			str(ctx.card_data.uid) if ctx.card_data != null else "",
-			String(ctx.card_data.name) if ctx.card_data != null else "<no card>"
-		],
-		int(ctx.source_id)
-	)
-	writer.emit_card_played_ctx(ctx)
-
-func finalize_card_execution(ctx: CardContext) -> void:
-	if ctx == null:
-		return
-
-	# purely sim/log/runtime-side finalization
-	# do NOT move the visible card here if you want UsableCard to keep doing it
-	if writer != null and ctx.emitted_card_played:
-		writer.scope_end()
 
 func request_player_discard(req: DiscardRequest) -> bool:
 	if req == null or state == null or state.resource == null:

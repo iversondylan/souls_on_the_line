@@ -23,8 +23,6 @@ var arcana_resolver: ArcanaResolver
 
 var turn_engine: TurnEngineCore
 var turn_engine_host_sim: TurnEngineHostSim
-var _next_async_request_id: int = 1
-var _pending_async_action_requests: Dictionary = {}
 
 
 # ============================================================================
@@ -45,8 +43,6 @@ func reset_runtime_state() -> void:
 	arcana_resolver = null
 	turn_engine = null
 	turn_engine_host_sim = null
-	_next_async_request_id = 1
-	_pending_async_action_requests.clear()
 
 func _ensure_turn_engine_host_initialized() -> void:
 	if host == null:
@@ -87,8 +83,6 @@ func clone_turn_flow_from(source_runtime: SimRuntime) -> bool:
 
 	turn_engine = source_runtime.turn_engine.clone_for_host(turn_engine_host_sim)
 	_connect_turn_engine_signals(turn_engine)
-	_next_async_request_id = 1
-	_pending_async_action_requests.clear()
 	return true
 
 
@@ -488,15 +482,17 @@ func begin_card_execution(ctx: CardContext) -> bool:
 	if ctx.card_data == null:
 		return false
 
-	_clear_pending_async_requests_for_ctx(ctx)
 	ctx.action_states.clear()
 	ctx.next_action_index = 0
 	ctx.current_action_index = -1
+	ctx.activation_committed_to_view = false
 	ctx.canceled = false
 	ctx.finished = false
 	ctx.card_scope_id = 0
 	ctx.card_scope_opened = false
 	ctx.card_play_committed = false
+	ctx.waiting_async_action_index = -1
+	ctx.waiting_async_request_id = 0
 	ctx.interaction_payloads.clear()
 
 	var actions: Array = ctx.card_data.actions
@@ -570,6 +566,7 @@ func continue_card_execution(ctx: CardContext) -> bool:
 					return false
 
 				if st.action.waits_for_async_resolution_after_activate_sim(ctx):
+					ctx.waiting_async_action_index = st.action_index
 					st.state = CardActionExecutionState.State.WAITING_ASYNC_RESOLUTION
 					return true
 
@@ -639,31 +636,22 @@ func cover_waiting_action_and_continue(
 
 	return continue_card_execution(ctx)
 
-func resume_async_action_request(request_id: int, payload: Dictionary = {}) -> bool:
-	if request_id <= 0:
-		return false
-	if !_pending_async_action_requests.has(request_id):
-		push_warning("SimRuntime.resume_async_action_request(): unknown request_id=%d" % request_id)
-		return false
-
-	var entry = _pending_async_action_requests[request_id]
-	_pending_async_action_requests.erase(request_id)
-
-	var ctx: CardContext = entry.get("ctx", null)
-	var action_index := int(entry.get("action_index", -1))
+func resume_async_action(ctx: CardContext, action_index: int, payload: Dictionary = {}) -> bool:
 	if ctx == null:
-		push_warning("SimRuntime.resume_async_action_request(): missing card context for request_id=%d" % request_id)
 		return false
 	if action_index < 0 or action_index >= ctx.action_states.size():
-		push_warning("SimRuntime.resume_async_action_request(): invalid action_index=%d request_id=%d" % [action_index, request_id])
+		push_warning("SimRuntime.resume_async_action(): invalid action_index=%d" % action_index)
 		return false
 
 	var st: CardActionExecutionState = ctx.action_states[action_index]
 	if st == null:
-		push_warning("SimRuntime.resume_async_action_request(): missing action state request_id=%d" % request_id)
+		push_warning("SimRuntime.resume_async_action(): missing action state action_index=%d" % action_index)
 		return false
 	if int(st.state) != int(CardActionExecutionState.State.WAITING_ASYNC_RESOLUTION):
-		push_warning("SimRuntime.resume_async_action_request(): action not waiting async request_id=%d state=%d" % [request_id, int(st.state)])
+		push_warning("SimRuntime.resume_async_action(): action not waiting async action_index=%d state=%d" % [action_index, int(st.state)])
+		return false
+	if int(ctx.waiting_async_action_index) != int(action_index):
+		push_warning("SimRuntime.resume_async_action(): mismatched waiting action expected=%d got=%d" % [int(ctx.waiting_async_action_index), action_index])
 		return false
 
 	if !payload.is_empty():
@@ -673,28 +661,11 @@ func resume_async_action_request(request_id: int, payload: Dictionary = {}) -> b
 		ctx.interaction_payloads[action_index] = merged
 
 	st.state = CardActionExecutionState.State.EXECUTED
+	ctx.waiting_async_action_index = -1
+	ctx.waiting_async_request_id = 0
 	ctx.current_action_index = action_index
 	ctx.next_action_index = action_index + 1
 	return continue_card_execution(ctx)
-
-func register_async_action_request(ctx: CardContext, action_index: int) -> int:
-	if ctx == null:
-		return 0
-	if action_index < 0 or action_index >= ctx.action_states.size():
-		return 0
-
-	var request_id := _next_async_request_id
-	_next_async_request_id += 1
-	_pending_async_action_requests[request_id] = {
-		"ctx": ctx,
-		"action_index": action_index,
-	}
-	return request_id
-
-func unregister_async_action_request(request_id: int) -> void:
-	if request_id <= 0:
-		return
-	_pending_async_action_requests.erase(request_id)
 
 func cancel_waiting_action(ctx: CardContext, action_index: int) -> bool:
 	if ctx == null:
@@ -793,6 +764,9 @@ func _commit_card_play_if_needed(ctx: CardContext) -> bool:
 		ctx.mana_spent = true
 
 	ctx.card_play_committed = true
+	if !ctx.activation_committed_to_view and ctx.source_card != null and is_instance_valid(ctx.source_card):
+		ctx.source_card.commit_activation()
+		ctx.activation_committed_to_view = true
 	return true
 
 func _close_card_scope(ctx: CardContext) -> void:
@@ -805,57 +779,18 @@ func _close_card_scope(ctx: CardContext) -> void:
 	ctx.card_scope_opened = false
 	ctx.card_scope_id = 0
 
-func _maybe_commit_card_play(ctx: CardContext) -> bool:
-	if ctx == null:
-		return false
-
-	if !ctx.mana_spent:
-		if !_spend_card_mana(ctx):
-			return false
-		ctx.mana_spent = true
-
-	if !ctx.emitted_card_played:
-		_emit_card_played(ctx)
-		ctx.emitted_card_played = true
-
-	return true
-
-
-func _spend_card_mana(ctx: CardContext) -> bool:
-	if ctx == null or ctx.api == null or ctx.card_data == null:
-		return false
-	return ctx.api.spend_mana_for_card(ctx.source_id, ctx.card_data)
-
-
-func _emit_card_played(ctx: CardContext) -> void:
-	if ctx == null or ctx.api == null:
-		return
-	ctx.api.emit_card_played_ctx(ctx)
-
 
 func _finalize_card_execution(ctx: CardContext, committed := true) -> void:
 	if ctx == null:
 		return
 
-	_clear_pending_async_requests_for_ctx(ctx)
+	ctx.waiting_async_action_index = -1
+	ctx.waiting_async_request_id = 0
 	_close_card_scope(ctx)
-	if ctx.source_card != null:
-		ctx.source_card.end_activation(committed)
+	if ctx.source_card != null and is_instance_valid(ctx.source_card):
+		ctx.source_card.finish_activation(committed)
 	ctx.current_action_index = -1
 	_apply_checkpoint_boundary(CheckpointProcessor.Kind.AFTER_CARD)
-
-func _clear_pending_async_requests_for_ctx(ctx: CardContext) -> void:
-	if ctx == null:
-		return
-
-	var to_remove: Array[int] = []
-	for request_id in _pending_async_action_requests.keys():
-		var entry = _pending_async_action_requests[request_id]
-		if entry.get("ctx", null) == ctx:
-			to_remove.append(int(request_id))
-
-	for request_id in to_remove:
-		_pending_async_action_requests.erase(request_id)
 
 
 func _packed_has_int(arr: PackedInt32Array, value: int) -> bool:

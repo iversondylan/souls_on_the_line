@@ -26,6 +26,7 @@ var affected_ids: PackedInt32Array = PackedInt32Array()
 var summoned_ids: PackedInt32Array = PackedInt32Array()
 
 # card lifecycle
+var activation_committed_to_view: bool = false
 var emitted_card_played: bool = false
 var mana_spent: bool = false
 var canceled: bool = false
@@ -33,4 +34,6 @@ var finished: bool = false
 var current_action_index: int = -1
 var escrow_action_index: int = -1
 var confirm_action_index: int = -1
+var waiting_async_action_index: int = -1
+var waiting_async_request_id: int = 0
 var interaction_payloads: Dictionary = {} # action_index -> Dictionary

@@ -940,26 +940,33 @@ func _on_discard_requested(e: EventPackage) -> void:
 
 	var d: Dictionary = _data(e)
 	var ctx := DiscardContext.new()
-	ctx.request_id = int(d.get(Keys.REQUEST_ID, 0))
-	ctx.source_id = int(d.get(Keys.SOURCE_ID, 0))
-	ctx.amount = int(d.get(Keys.AMOUNT, 0))
-	ctx.card_uid = String(d.get(Keys.CARD_UID, ""))
-
 	var sim_host: SimHost = battle_view.sim_host if battle_view != null else null
+	var api := sim_host.get_main_api() if sim_host != null else null
+	var req := api.get_pending_discard() if api != null else null
+
+	if req != null:
+		ctx.request_id = int(req.request_id)
+		ctx.source_id = int(req.source_id)
+		ctx.amount = int(req.amount)
+		ctx.card_uid = String(req.card_uid)
+	else:
+		ctx.request_id = int(d.get(Keys.REQUEST_ID, 0))
+		ctx.source_id = int(d.get(Keys.SOURCE_ID, 0))
+		ctx.amount = int(d.get(Keys.AMOUNT, 0))
+		ctx.card_uid = String(d.get(Keys.CARD_UID, ""))
+
 	ctx.on_done = func(chosen_uids: Array[String]) -> void:
 		if sim_host == null:
 			push_warning("DiscardContext.on_done: missing sim_host")
 			return
-		var api := sim_host.get_main_api()
 		if api == null:
 			push_warning("DiscardContext.on_done: missing sim api")
 			return
-		var runtime := sim_host.get_main_runtime()
 		api.resolve_player_discard(chosen_uids)
-		if runtime == null:
-			push_warning("DiscardContext.on_done: missing sim runtime")
+		if req == null or req.card_ctx == null or req.card_ctx.runtime == null:
+			push_warning("DiscardContext.on_done: missing live discard request/card context")
 			return
-		runtime.resume_async_action_request(ctx.request_id, {
+		req.card_ctx.runtime.resume_async_action(req.card_ctx, int(req.action_index), {
 			Keys.CHOSEN_UIDS: chosen_uids,
 		})
 

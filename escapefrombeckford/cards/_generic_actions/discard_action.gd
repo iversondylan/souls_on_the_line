@@ -23,16 +23,17 @@ func activate_sim(ctx: CardContext) -> bool:
 		ctx.card_data.ensure_uid()
 
 	var req := DiscardRequest.new()
-	req.request_id = ctx.runtime.register_async_action_request(ctx, ctx.current_action_index)
-	if req.request_id <= 0:
-		return false
+	req.request_id = int(ctx.card_scope_id) * 100 + int(ctx.current_action_index) + 1
 	req.source_id = int(ctx.source_id)
 	req.amount = n
 	req.reason = "card_action:discard"
 	req.card_uid = String(ctx.card_data.uid) if ctx.card_data != null else ""
+	req.card_ctx = ctx
+	req.action_index = int(ctx.current_action_index)
+	ctx.waiting_async_request_id = int(req.request_id)
 
 	if !(ctx.api as SimBattleAPI).request_player_discard(req):
-		ctx.runtime.unregister_async_action_request(req.request_id)
+		ctx.waiting_async_request_id = 0
 		return false
 
 	return true

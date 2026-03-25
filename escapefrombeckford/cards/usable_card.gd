@@ -349,7 +349,9 @@ func _move_to_destination() -> void:
 	else:
 		hand.discard_card(hand.remove_card_by_entity(self))
 
-func end_activation(committed := true) -> void:
-	if committed:
-		Events.card_played.emit(self)
-		_move_to_destination()
+func commit_activation() -> void:
+	Events.card_played.emit(self)
+	_move_to_destination()
+
+func finish_activation(_committed := true) -> void:
+	return
