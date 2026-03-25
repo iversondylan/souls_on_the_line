@@ -4,6 +4,7 @@ extends Node
 enum State { DISABLED, HOT, DIRTY }
 
 const FRIENDLY := 0
+const PREVIEW_DISPLAY_DELAY_SEC := 1.5
 
 var sim_host: SimHost : set = _set_sim_host
 var battle_view: BattleView
@@ -12,6 +13,7 @@ var turn_phase_title: TurnPhaseTitle
 var _state: int = State.DISABLED
 var _player_input_ready: bool = false
 var _view_is_player_turn: bool = false
+var _preview_display_request_id: int = 0
 
 
 func _ready() -> void:
@@ -38,25 +40,32 @@ func enable_for_player_turn() -> void:
 			turn_phase_title.preview_button_pressed.connect(_on_preview_button_pressed)
 		turn_phase_title.enable_button(true)
 
-	if _state == State.DISABLED:
-		_state = State.DIRTY
-
 
 func mark_dirty(reason: String = "") -> void:
-	if _state == State.DISABLED:
-		return
-
-	_state = State.DIRTY
+	if _state != State.DIRTY:
+		_state = State.DIRTY
 	if !reason.is_empty():
 		print("BattlePreviewCoordinator.mark_dirty(): ", reason)
 
 
 func disable_and_clear() -> void:
 	_state = State.DISABLED
+	_preview_display_request_id += 1
 	if turn_phase_title != null:
 		turn_phase_title.enable_button(false)
 
 	_clear_all_previews()
+
+
+func display_preview_now(reason: String = "") -> void:
+	if !_player_input_ready or !_view_is_player_turn:
+		return
+
+	enable_for_player_turn()
+	if !reason.is_empty():
+		print("BattlePreviewCoordinator.display_preview_now(): ", reason)
+	_preview_display_request_id += 1
+	recompute_preview_if_needed()
 
 
 func recompute_preview_if_needed() -> void:
@@ -133,7 +142,26 @@ func _clear_all_previews() -> void:
 
 
 func _on_preview_button_pressed() -> void:
-	recompute_preview_if_needed()
+	display_preview_now("preview_button_pressed")
+
+
+func _restart_preview_display_timer(delay_sec: float = PREVIEW_DISPLAY_DELAY_SEC) -> void:
+	var tree := get_tree()
+	if tree == null:
+		return
+
+	_preview_display_request_id += 1
+	var request_id := _preview_display_request_id
+	tree.create_timer(delay_sec).timeout.connect(_on_preview_display_delay_elapsed.bind(request_id), CONNECT_ONE_SHOT)
+
+
+func _on_preview_display_delay_elapsed(request_id: int) -> void:
+	if request_id != _preview_display_request_id:
+		return
+	if !_player_input_ready or !_view_is_player_turn:
+		return
+
+	display_preview_now("preview_display_delay_elapsed")
 
 
 func _on_turn_status_view_changed(group_index: int, active_id: int, _pending_ids: PackedInt32Array, player_id: int) -> void:
@@ -141,7 +169,8 @@ func _on_turn_status_view_changed(group_index: int, active_id: int, _pending_ids
 	if _view_is_player_turn:
 		if _player_input_ready:
 			enable_for_player_turn()
-			recompute_preview_if_needed()
+			mark_dirty("turn_status_view_changed")
+			_restart_preview_display_timer()
 		return
 
 	_player_input_ready = false
@@ -153,7 +182,8 @@ func _on_player_input_reached() -> void:
 		return
 
 	enable_for_player_turn()
-	recompute_preview_if_needed()
+	mark_dirty("player_input_reached")
+	_restart_preview_display_timer()
 
 
 func _on_card_played(_usable_card: UsableCard) -> void:
@@ -182,4 +212,3 @@ func _refresh_preview(reason: String) -> void:
 	if !_player_input_ready or !_view_is_player_turn:
 		return
 	mark_dirty(reason)
-	recompute_preview_if_needed()
