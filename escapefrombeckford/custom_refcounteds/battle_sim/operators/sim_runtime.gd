@@ -10,7 +10,7 @@ class_name SimRuntime extends RefCounted
 # - emit scoped BattleEventLog runtime events
 # - define checkpoint boundaries for the turn flow
 # - drive round-to-round scheduling
-# - own runtime-only helpers like ArcanaResolver/CardExecutor
+# - own runtime-only execution orchestration and scope lifecycle
 #
 # Structural ownership still lives in SimHost:
 # - SimHost owns main/preview sims
@@ -18,8 +18,6 @@ class_name SimRuntime extends RefCounted
 
 var sim: Sim
 var host: SimHost
-
-var arcana_resolver: ArcanaResolver
 
 var turn_engine: TurnEngineCore
 var turn_engine_host_sim: TurnEngineHostSim
@@ -40,7 +38,6 @@ func bind(_sim: Sim, _host: SimHost) -> void:
 
 
 func reset_runtime_state() -> void:
-	arcana_resolver = null
 	turn_engine = null
 	turn_engine_host_sim = null
 
@@ -123,17 +120,6 @@ func is_player(combat_id: int) -> bool:
 	return turn_engine_host_sim.is_player(combat_id)
 
 
-func _ensure_arcana_resolver() -> ArcanaResolver:
-	if arcana_resolver != null:
-		return arcana_resolver
-
-	if host == null or host.arcana_catalog == null:
-		push_warning("SimRuntime: no arcana_catalog; cannot run arcana")
-		return null
-
-	arcana_resolver = ArcanaResolver.new(host, host.arcana_catalog)
-	return arcana_resolver
-
 # ============================================================================
 # Checkpoint boundaries
 # ============================================================================
@@ -201,14 +187,6 @@ func add_combatant_from_data(data: CombatantData, group_index: int, insert_index
 
 	return api.spawn_from_data(data, group_index, insert_index, is_player)
 
-
-func apply_player_card(req: CardPlayRequest) -> bool:
-	if sim == null or sim.api == null or sim.resolver == null:
-		return false
-
-	var ok := sim.resolver.resolve_player_card(sim, req)
-	_apply_checkpoint_boundary(CheckpointProcessor.Kind.AFTER_CARD, true)
-	return ok
 
 func request_urgent_planning_flush() -> void:
 	#print("sim_runtime.gd request_urgent_planning_flush()")
@@ -357,8 +335,7 @@ func handle_actor_requested(cid: int) -> void:
 			writer.emit_player_input_reached(int(cid))
 		return
 
-	if sim != null and sim.resolver != null:
-		sim.resolver.resolve_npc_turn(api, cid)
+	run_npc_turn(cid)
 
 	if writer != null:
 		writer.emit_actor_end(cid)
@@ -408,19 +385,7 @@ func handle_arcana_proc_requested(proc: int, token: int) -> void:
 	if api == null or engine == null:
 		return
 
-	var writer := api.writer
-	if writer != null:
-		writer.scope_begin(Scope.Kind.ARCANA, "proc=%d" % int(proc), 0)
-		writer.emit_arcana_proc(proc)
-
-	var resolver := _ensure_arcana_resolver()
-	if sim != null and sim.resolver != null and resolver != null:
-		sim.resolver.resolve_arcana_proc(sim, proc, resolver)
-
-	_apply_checkpoint_boundary(CheckpointProcessor.Kind.AFTER_ARCANA, true)
-
-	if writer != null:
-		writer.scope_end() # arcana
+	run_arcana_proc(proc)
 
 	engine.notify_arcana_proc_done(token)
 
@@ -470,6 +435,471 @@ func debug_kill_all_enemies() -> void:
 
 	api.debug_kill_all_enemies()
 	_apply_checkpoint_boundary(CheckpointProcessor.Kind.AFTER_CARD, true)
+
+
+# ============================================================================
+# Composite Execution
+# ============================================================================
+
+func run_npc_turn(cid: int) -> void:
+	var api := _api()
+	if api == null or api.state == null or api.state.has_terminal_outcome():
+		return
+	if cid <= 0 or !api.is_alive(cid):
+		return
+
+	var u: CombatantState = api.state.get_unit(int(cid))
+	if u == null or u.combatant_data == null:
+		return
+
+	var profile: NPCAIProfile = u.combatant_data.ai
+	if profile == null:
+		return
+
+	ActionPlanner.ensure_ai_state_initialized(u)
+
+	var ctx := ActionPlanner.make_context(api, u)
+	ctx.runtime = self
+
+	if !bool(ctx.state.get(ActionPlanner.FIRST_INTENTS_READY, false)):
+		ctx.state[ActionPlanner.FIRST_INTENTS_READY] = true
+
+	ActionPlanner.ensure_valid_plan_sim(profile, ctx, true)
+
+	if int(ctx.state.get(ActionPlanner.KEY_PLANNED_IDX, -1)) < 0:
+		ActionPlanner.plan_next_intent_sim(profile, ctx, true)
+
+	var idx := int(ctx.state.get(ActionPlanner.KEY_PLANNED_IDX, -1))
+	var action := ActionPlanner.get_action_by_idx(profile, idx)
+	if action == null:
+		_finish_npc_turn(ctx)
+		return
+
+	ctx.state[ActionPlanner.IS_ACTING] = true
+	ActionLifecycleSystem.on_action_execution_started(ctx)
+
+	for sm: StateModel in action.state_models:
+		if sm != null:
+			sm.change_state_sim(ctx)
+
+	for pkg: NPCEffectPackage in action.effect_packages:
+		if pkg == null:
+			continue
+
+		ctx.params.clear()
+
+		for sm2: StateModel in pkg.state_models:
+			if sm2 != null:
+				sm2.change_state_sim(ctx)
+
+		for pm: ParamModel in pkg.param_models:
+			if pm != null:
+				pm.change_params_sim(ctx)
+
+		if pkg.effect != null and pkg.effect.has_method("execute_sim"):
+			pkg.effect.execute_sim(ctx)
+
+	ctx.state[ActionPlanner.KEY_PLANNED_IDX] = -1
+	ctx.state[ActionPlanner.IS_ACTING] = false
+	ctx.state[ActionPlanner.STABILITY_BROKEN] = false
+	ctx.state[ActionPlanner.ACTIONS_TAKEN] = int(ctx.state.get(ActionPlanner.ACTIONS_TAKEN, 0)) + 1
+
+	if _should_immediately_replan_intent(api, u):
+		ActionPlanner.plan_next_intent_sim(profile, ctx, true)
+	else:
+		ActionIntentPresenter.emit_set_intent(api, profile, ctx, -1)
+
+
+func run_attack(ctx: NPCAIContext) -> bool:
+	var api := _api()
+	if api == null or ctx == null:
+		return false
+	if ctx.cid <= 0 or !api.is_alive(ctx.cid):
+		return false
+
+	var params: Dictionary = ctx.params if ctx.params else {}
+	var strikes := maxi(int(params.get(Keys.STRIKES, 1)), 1)
+	var mode := int(params.get(Keys.ATTACK_MODE, Attack.Mode.MELEE))
+	var targeting := int(params.get(Keys.TARGET_TYPE, Attack.Targeting.STANDARD))
+	var any := false
+
+	_begin_scope(Scope.Kind.ATTACK, "attacker=%d" % int(ctx.cid), int(ctx.cid), {
+		Keys.ACTOR_ID: int(ctx.cid),
+		Keys.ATTACK_MODE: mode,
+		Keys.STRIKES: strikes,
+		Keys.TARGET_TYPE: targeting,
+	})
+
+	for s in range(strikes):
+		if !api.is_alive(ctx.cid):
+			break
+
+		_begin_scope(Scope.Kind.STRIKE, "i=%d" % s, int(ctx.cid), {
+			Keys.STRIKE_INDEX: s,
+			Keys.ATTACK_MODE: mode,
+			Keys.TARGET_TYPE: targeting,
+		})
+
+		var target_ids: Array[int] = AttackTargeting.get_target_ids(api, ctx.cid, params)
+		target_ids = target_ids.filter(func(id):
+			return int(id) > 0 and api.is_alive(int(id))
+		)
+
+		if target_ids.is_empty():
+			_end_scope()
+			continue
+
+		var writer := _writer()
+		if writer != null:
+			writer.emit_strike(
+				int(ctx.cid),
+				target_ids,
+				mode,
+				targeting,
+				s,
+				strikes,
+				String(params.get(Keys.PROJECTILE_SCENE, ""))
+			)
+
+		var dmg := 0
+		if params.has(Keys.DAMAGE_MELEE) or params.has(Keys.DAMAGE_RANGED):
+			var k := Keys.DAMAGE_RANGED if mode == Attack.Mode.RANGED else Keys.DAMAGE_MELEE
+			dmg = int(params.get(k, 0))
+		else:
+			dmg = int(params.get(Keys.DAMAGE, 0))
+		dmg = maxi(dmg, 0)
+
+		var deal_mod := int(params.get(Keys.DEAL_MOD_TYPE, Modifier.Type.DMG_DEALT))
+		var take_mod := int(params.get(Keys.TAKE_MOD_TYPE, Modifier.Type.DMG_TAKEN))
+
+		for tid: int in target_ids:
+			_begin_scope(Scope.Kind.HIT, "t=%d" % int(tid), int(ctx.cid), {
+				Keys.TARGET_ID: int(tid),
+				Keys.STRIKE_INDEX: s,
+				Keys.ATTACK_MODE: mode,
+			})
+
+			var d := DamageContext.new()
+			d.source_id = int(ctx.cid)
+			d.target_id = int(tid)
+			d.base_amount = dmg
+			d.deal_modifier_type = deal_mod
+			d.take_modifier_type = take_mod
+			d.params = params
+			api.resolve_damage_immediate(d)
+			any = true
+
+			_end_scope()
+
+		_end_scope()
+
+	_end_scope()
+	return any
+
+
+func run_status_action(ctx: NPCAIContext) -> void:
+	var api := _api()
+	if api == null or api.state == null or ctx == null or bool(ctx.forecast):
+		return
+
+	var params: Dictionary = ctx.params if ctx.params else {}
+
+	var target_id := int(ParamModel._actor_id(ctx))
+	if target_id <= 0:
+		target_id = int(ctx.cid)
+	if target_id <= 0:
+		return
+
+	var status_id: StringName = &""
+	if params.has(Keys.STATUS_ID):
+		var v = params[Keys.STATUS_ID]
+		if v is StringName:
+			status_id = v
+		elif v is String:
+			status_id = StringName(v)
+
+	if status_id == &"":
+		var status_res = params.get(Keys.STATUS_SCENE, null)
+		if status_res != null and status_res is Status:
+			status_id = StringName((status_res as Status).get_id())
+
+	if status_id == &"":
+		return
+
+	var intensity := int(params.get(Keys.STATUS_INTENSITY, 0))
+	var duration := int(params.get(Keys.STATUS_DURATION, 0))
+	var actor_id := int(ctx.cid)
+	var source_id := int(params.get(Keys.SOURCE_ID, actor_id))
+	if source_id <= 0:
+		source_id = actor_id
+
+	_begin_scope(
+		Scope.Kind.STATUS_ACTION,
+		"id=%s tgt=%d" % [String(status_id), int(target_id)],
+		actor_id,
+		{
+			Keys.ACTOR_ID: int(actor_id),
+			Keys.SOURCE_ID: int(source_id),
+			Keys.TARGET_ID: int(target_id),
+			Keys.STATUS_ID: status_id,
+			Keys.INTENSITY: int(intensity),
+			Keys.DURATION: int(duration),
+		}
+	)
+
+	var sc := StatusContext.new()
+	sc.source_id = source_id
+	sc.target_id = target_id
+	sc.status_id = status_id
+	sc.intensity = intensity
+	sc.duration = duration
+	api.apply_status(sc)
+
+	_end_scope()
+
+
+func run_summon_action(ctx: NPCAIContext) -> void:
+	var api := _api()
+	if api == null or api.state == null or ctx == null or bool(ctx.forecast):
+		return
+
+	var params: Dictionary = ctx.params if ctx.params else {}
+	var actor_id := int(ctx.cid)
+	if actor_id <= 0:
+		return
+
+	var source_id := int(params.get(Keys.SOURCE_ID, actor_id))
+	if source_id <= 0:
+		source_id = actor_id
+
+	var group_index := clampi(int(params.get(Keys.GROUP_INDEX, api.get_group(source_id))), 0, 1)
+	var insert_index := int(params.get(Keys.INSERT_INDEX, 0))
+	var count := int(params.get(Keys.SUMMON_COUNT, 1))
+	if count <= 0:
+		return
+
+	var summon_data_orig: CombatantData = _resolve_summon_data(params.get(Keys.SUMMON_DATA, null))
+	if summon_data_orig == null:
+		push_warning("SimRuntime.run_summon_action(): missing summon_data")
+		return
+
+	var n_existing := api.get_combatants_in_group(group_index, false).size()
+	if n_existing >= 7:
+		return
+	if n_existing + count > 7:
+		count = 7 - n_existing
+		if count <= 0:
+			return
+
+	_begin_scope(
+		Scope.Kind.SUMMON_ACTION,
+		"count=%d g=%d idx=%d" % [count, group_index, insert_index],
+		actor_id,
+		{
+			Keys.ACTOR_ID: int(actor_id),
+			Keys.SOURCE_ID: int(source_id),
+			Keys.GROUP_INDEX: int(group_index),
+			Keys.INSERT_INDEX: int(insert_index),
+			Keys.SUMMON_COUNT: int(count),
+			Keys.PROTO: String(summon_data_orig.resource_path),
+		}
+	)
+
+	for _i in range(count):
+		var cur_n := api.get_combatants_in_group(group_index, false).size()
+		var idx := clampi(insert_index, 0, cur_n)
+
+		var sc := SummonContext.new()
+		sc.source_id = source_id
+		sc.group_index = group_index
+		sc.insert_index = idx
+
+		var cd := summon_data_orig.duplicate(true) as CombatantData
+		if cd != null:
+			cd.init()
+		sc.summon_data = cd
+
+		api.summon(sc)
+
+	_end_scope()
+
+
+func run_move(ctx: MoveContext) -> void:
+	var api := _api()
+	if api == null or api.state == null or ctx == null or int(ctx.actor_id) <= 0:
+		return
+
+	var u := api.state.get_unit(int(ctx.actor_id))
+	if u == null or !u.is_alive():
+		return
+
+	var extra := {}
+	if int(ctx.target_id) > 0:
+		extra[Keys.TARGET_ID] = int(ctx.target_id)
+	if int(ctx.index) >= 0:
+		extra[Keys.TO_INDEX] = int(ctx.index)
+
+	_begin_scope(Scope.Kind.MOVE, "actor=%d" % int(ctx.actor_id), int(ctx.actor_id), extra)
+	api.resolve_move(ctx)
+	_end_scope()
+
+
+func run_fade(combat_id: int, reason: String = "fade") -> void:
+	var api := _api()
+	if api == null or api.state == null or combat_id <= 0:
+		return
+
+	var u: CombatantState = api.state.get_unit(int(combat_id))
+	if u == null or !u.alive:
+		return
+
+	_begin_scope(Scope.Kind.FADE, "fade_unit", int(combat_id))
+	api.fade_unit(int(combat_id), String(reason))
+	_end_scope()
+
+
+func run_arcana_proc(proc: int) -> void:
+	var api := _api()
+	var engine := _engine()
+	if api == null or engine == null or sim == null or sim.state == null:
+		return
+	if host == null or host.arcana_catalog == null:
+		push_warning("SimRuntime: no arcana_catalog; cannot run arcana")
+		return
+
+	_begin_scope(Scope.Kind.ARCANA, "proc=%d" % int(proc), 0)
+	var writer := _writer()
+	if writer != null:
+		writer.emit_arcana_proc(proc)
+
+	var arcanum_type := _proc_to_arcanum_type(proc)
+	if arcanum_type >= 0:
+		for entry: ArcanaState.ArcanumEntry in sim.state.arcana.list:
+			if entry == null or int(entry.type) != arcanum_type:
+				continue
+
+			var id := entry.id
+			if id == &"":
+				continue
+
+			var proto: Arcanum = host.arcana_catalog.get_proto(id)
+			if proto == null:
+				push_warning("SimRuntime: missing proto for id=%s" % String(id))
+				continue
+
+			var player_id := int(sim.state.groups[0].player_id)
+			_begin_scope(Scope.Kind.ARCANUM, "id=%s" % String(id), player_id)
+
+			var ctx := ArcanumContext.new()
+			ctx.api = sim.api
+			ctx.runtime = self
+			ctx.params[Keys.MODE] = Keys.MODE_SIM
+			ctx.params[Keys.PLAYER_ID] = sim.state.groups[0].player_id
+			ctx.params[Keys.SOURCE_ID] = sim.state.groups[0].player_id
+			ctx.params[Keys.GROUP_INDEX] = 0
+
+			if writer != null:
+				writer.emit_arcanum_proc(ctx.params[Keys.SOURCE_ID], id, proc)
+			var r = proto.activate_arcanum(ctx)
+
+			if r is Signal and !(r as Signal).is_null():
+				push_warning("SimRuntime: arcana %s returned Signal; ignored" % String(id))
+			elif typeof(r) == TYPE_OBJECT and r != null and r.get_class() == "GDScriptFunctionState":
+				push_warning("SimRuntime: arcana %s returned FunctionState; ignored" % String(id))
+
+			_end_scope()
+
+	_apply_checkpoint_boundary(CheckpointProcessor.Kind.AFTER_ARCANA, true)
+	_end_scope()
+
+
+func apply_attack_now(spec: SimAttackSpec) -> bool:
+	var api := _api()
+	if api == null or api.state == null or spec == null:
+		return false
+	if int(spec.attacker_id) <= 0 or !api.is_alive(int(spec.attacker_id)):
+		return false
+
+	var ai_ctx := NPCAIContext.new()
+	ai_ctx.api = api
+	ai_ctx.runtime = self
+	ai_ctx.cid = int(spec.attacker_id)
+	ai_ctx.combatant_state = api.state.get_unit(int(spec.attacker_id))
+	ai_ctx.combatant_data = ai_ctx.combatant_state.combatant_data if ai_ctx.combatant_state != null else null
+	ai_ctx.rng = ai_ctx.combatant_state.rng if ai_ctx.combatant_state != null else null
+	ai_ctx.state = {}
+	ai_ctx.params = spec.params.duplicate(true) if spec.params != null else {}
+	ai_ctx.forecast = false
+
+	ai_ctx.params[Keys.STRIKES] = maxi(int(spec.strikes), 1)
+	ai_ctx.params[Keys.DEAL_MOD_TYPE] = int(spec.deal_modifier_type)
+	ai_ctx.params[Keys.TAKE_MOD_TYPE] = int(spec.take_modifier_type)
+	if int(spec.base_damage) > 0:
+		ai_ctx.params[Keys.DAMAGE] = int(spec.base_damage)
+		ai_ctx.params[Keys.DAMAGE_MELEE] = int(spec.base_damage)
+		ai_ctx.params[Keys.DAMAGE_RANGED] = int(spec.base_damage)
+
+	for m in spec.param_models:
+		if m != null:
+			m.change_params_sim(ai_ctx)
+
+	return run_attack(ai_ctx)
+
+
+func _begin_scope(kind: int, label: String, actor_id: int = 0, extra := {}) -> int:
+	var writer := _writer()
+	if writer == null:
+		return 0
+	return writer.scope_begin(kind, label, actor_id, extra)
+
+
+func _end_scope() -> int:
+	var writer := _writer()
+	if writer == null:
+		return 0
+	return writer.scope_end()
+
+
+func _finish_npc_turn(ctx: NPCAIContext) -> void:
+	if ctx == null or ctx.state == null:
+		return
+
+	ctx.state[ActionPlanner.IS_ACTING] = false
+	ctx.state[ActionPlanner.STABILITY_BROKEN] = false
+
+
+func _should_immediately_replan_intent(api: SimBattleAPI, u: CombatantState) -> bool:
+	if api == null or u == null or u.combatant_data == null:
+		return false
+	if int(u.team) != int(SimBattleAPI.FRIENDLY):
+		return false
+	return int(u.id) != int(api.get_player_id())
+
+
+func _resolve_summon_data(value) -> CombatantData:
+	if value == null:
+		return null
+	if value is CombatantData:
+		return value
+	if value is String:
+		var path := String(value)
+		if path.is_empty():
+			return null
+		var res := load(path)
+		return res if res is CombatantData else null
+	return null
+
+
+func _proc_to_arcanum_type(proc: int) -> int:
+	match proc:
+		TurnEngineCore.ArcanaProc.START_OF_COMBAT:
+			return int(Arcanum.Type.START_OF_COMBAT)
+		TurnEngineCore.ArcanaProc.START_OF_TURN:
+			return int(Arcanum.Type.START_OF_TURN)
+		TurnEngineCore.ArcanaProc.END_OF_TURN:
+			return int(Arcanum.Type.END_OF_TURN)
+		_:
+			return -1
 
 
 # ============================================================================

@@ -82,6 +82,7 @@ static func on_action_execution_started(ctx: NPCAIContext) -> void:
 static func _make_ai_ctx(api: SimBattleAPI, u: CombatantState) -> NPCAIContext:
 	var ctx := NPCAIContext.new()
 	ctx.api = api
+	ctx.runtime = api.runtime if api != null else null
 	ctx.cid = int(u.id)
 	ctx.combatant_state = u
 	ctx.combatant_data = u.combatant_data

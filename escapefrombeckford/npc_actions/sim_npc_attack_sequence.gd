@@ -5,7 +5,7 @@
 class_name SimNPCAttackSequence extends RefCounted
 
 static func run(ctx: NPCAIContext) -> bool:
-	if ctx == null or ctx.api == null:
+	if ctx == null:
 		return false
 
 	var attacker_id := 0
@@ -23,4 +23,7 @@ static func run(ctx: NPCAIContext) -> bool:
 	#spec.base_damage = int(ctx.params.get(Keys.DAMAGE, 0))
 	#spec.params = ctx.params # (shared dict is fine if you treat it as read-only here)
 
-	return ctx.api.resolve_attack(ctx)
+	var runtime := ctx.runtime if ctx.runtime != null else (ctx.api.runtime if ctx.api != null else null)
+	if runtime == null:
+		return false
+	return runtime.run_attack(ctx)

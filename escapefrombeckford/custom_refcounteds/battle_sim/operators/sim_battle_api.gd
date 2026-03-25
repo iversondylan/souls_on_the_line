@@ -27,6 +27,7 @@ const ENEMY := 1
 
 var state: BattleState
 var checkpoint_processor: CheckpointProcessor
+var runtime: SimRuntime
 
 # Runtime callbacks assigned externally.
 var on_summoned: Callable = Callable()		# (summoned_id: int, group_index: int) -> void
@@ -323,14 +324,6 @@ func _request_intent_refresh_targets_for_aura(_source_id: int, _proto: Status) -
 
 
 
-# ============================================================================
-# Core action entry points
-# ============================================================================
-
-func resolve_attack(ctx: NPCAIContext) -> bool:
-	return SimAttackRunner.run(self, ctx)
-
-
 func resolve_damage_immediate(ctx: DamageContext) -> int:
 	if ctx == null or state == null:
 		return 0
@@ -467,16 +460,29 @@ func resolve_death(combat_id: int, reason := "", killer_id: int = 0) -> void:
 		return
 	
 	_maybe_release_soulbound_reserve(u, "fade:" + String(reason))
-	SimDeathRunner.run(self, int(combat_id), int(killer_id), String(reason))
+
+	var g := int(u.team)
+	var before_order_ids := PackedInt32Array(state.groups[g].order) if g != -1 else PackedInt32Array()
+
+	u.alive = false
+	if g != -1:
+		state.groups[g].remove(int(combat_id))
+
+	var after_order_ids := PackedInt32Array(state.groups[g].order) if g != -1 else PackedInt32Array()
+	if on_unit_removed.is_valid():
+		on_unit_removed.call(int(combat_id), int(g), "death:" + String(reason))
+
+	if writer != null:
+		writer.emit_died(int(killer_id), int(combat_id), g, before_order_ids, after_order_ids, String(reason))
+
+	_request_outcome_check()
 
 
 func resolve_move(ctx: MoveContext) -> void:
-	print("sim_battle_api.gd resolve_move()")
 	if ctx == null or state == null:
 		return
 	if int(ctx.actor_id) <= 0:
 		return
-	print("actor_id: ", ctx.actor_id)
 	var u := state.get_unit(int(ctx.actor_id))
 	if u == null or !u.is_alive():
 		return
@@ -486,7 +492,6 @@ func resolve_move(ctx: MoveContext) -> void:
 		return
 	
 	ctx.before_order_ids = PackedInt32Array(state.groups[g].order)
-	print("before_order_ids: ", ctx.before_order_ids)
 	match ctx.move_type:
 		MoveContext.MoveType.MOVE_TO_FRONT:
 			_move_id_to_index(g, int(ctx.actor_id), 0)
@@ -501,12 +506,9 @@ func resolve_move(ctx: MoveContext) -> void:
 			pass
 	
 	ctx.after_order_ids = PackedInt32Array(state.groups[g].order)
-	print("after_order_ids: ", ctx.after_order_ids)
 	_request_turn_order_rebuild()
 	
 	if writer != null:
-		writer.scope_begin(Scope.Kind.MOVE, "actor=%d" % int(ctx.actor_id), int(ctx.actor_id))
-		
 		var extra := {}
 		if int(ctx.target_id) > 0:
 			extra[Keys.TARGET_ID] = int(ctx.target_id)
@@ -520,7 +522,6 @@ func resolve_move(ctx: MoveContext) -> void:
 			ctx.after_order_ids,
 			extra
 		)
-		writer.scope_end()
 
 
 func apply_status(ctx: StatusContext) -> void:
@@ -649,9 +650,6 @@ func fade_unit(combat_id: int, reason: String = "fade") -> void:
 	var g := int(u.team)
 	var before := PackedInt32Array(state.groups[g].order)
 	
-	if writer != null:
-		writer.scope_begin(Scope.Kind.FADE, "fade_unit", int(combat_id))
-	
 	u.alive = false
 	if g != -1:
 		state.groups[g].remove(int(combat_id))
@@ -666,7 +664,6 @@ func fade_unit(combat_id: int, reason: String = "fade") -> void:
 	
 	if writer != null:
 		writer.emit_faded(int(combat_id), int(g), before, after_order_ids, String(reason))
-		writer.scope_end()
 
 
 # ============================================================================
@@ -1008,6 +1005,7 @@ func debug_kill_all_enemies(reason: String = "debug_kill_all_enemies") -> void:
 func _make_ai_ctx(u: CombatantState) -> NPCAIContext:
 	var ctx := NPCAIContext.new()
 	ctx.api = self
+	ctx.runtime = runtime
 	ctx.cid = int(u.id)
 	ctx.combatant_state = u
 	ctx.combatant_data = u.combatant_data
@@ -1163,28 +1161,6 @@ func _rebuild_modifier_cache_for(_id: int) -> void:
 # Other API surface / stubs
 # ============================================================================
 
-func apply_attack_now(spec: SimAttackSpec) -> bool:
-	if spec == null or state == null:
-		return false
-	if int(spec.attacker_id) <= 0 or !is_alive(int(spec.attacker_id)):
-		return false
-	
-	var ai_ctx := NPCAIContext.new()
-	ai_ctx.api = self
-	ai_ctx.cid = int(spec.attacker_id)
-	ai_ctx.combatant_state = state.get_unit(int(spec.attacker_id))
-	ai_ctx.state = {}
-	ai_ctx.params = {}
-	ai_ctx.forecast = false
-	
-	if spec.param_models:
-		for m in spec.param_models:
-			if m != null:
-				m.change_params_sim(ai_ctx)
-	
-	return resolve_attack(ai_ctx)
-
-
 func run_status_proc(_target_id: int, _proc_type: Status.ProcType) -> void:
 	pass
 
@@ -1263,10 +1239,6 @@ func heal(ctx: HealContext) -> int:
 
 	#_on_health_changed(int(ctx.target_id))
 	return ctx.healed_amount
-
-
-func resolve_attack_now(_ctx: AttackNowContext) -> void:
-	pass
 
 
 func apply_damage_amount(_ctx: DamageContext, _amount: int) -> void:

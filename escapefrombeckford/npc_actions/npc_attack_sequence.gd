@@ -180,6 +180,12 @@ const DEFAULT_PROJECTILE_SCENE := "res://VFX/projectiles/fireball/fireball.tscn"
 	#return sum / float(targets.size())
 #
 func execute_sim(ctx: NPCAIContext) -> void:
-	#print("npc_attack_sequence.gd execute_sim()")
-	if ctx and ctx.api:
-		(ctx.api as SimBattleAPI).resolve_attack(ctx)
+	if ctx == null:
+		return
+
+	var runtime := ctx.runtime if ctx.runtime != null else (ctx.api.runtime if ctx.api != null else null)
+	if runtime == null:
+		push_warning("NPCAttackSequence.execute_sim: missing runtime")
+		return
+
+	runtime.run_attack(ctx)

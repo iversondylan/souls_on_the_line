@@ -44,7 +44,7 @@ func activate_sim(ctx: CardContext) -> bool:
 	move.can_restore_turn = true
 	move.sound = sound
 
-	ctx.api.resolve_move(move)
+	ctx.runtime.run_move(move)
 
 	if move.sound != null:
 		ctx.api.play_sfx(move.sound)

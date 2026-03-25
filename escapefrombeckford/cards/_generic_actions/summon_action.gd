@@ -45,7 +45,7 @@ func activate_interaction(ctx: CardContext) -> bool:
 
 func activate_sim(ctx: CardContext) -> bool:
 	print("summon_action.gd activate_sim()")
-	if ctx == null or ctx.api == null:
+	if ctx == null or ctx.api == null or ctx.runtime == null:
 		return false
 
 	var insert_index := int(ctx.insert_index)
@@ -60,7 +60,7 @@ func activate_sim(ctx: CardContext) -> bool:
 		if replaced_insert_index >= 0 and replaced_insert_index < insert_index:
 			insert_index -= 1
 
-		ctx.api.fade_unit(replaced_id, "summon_replace")
+		ctx.runtime.run_fade(replaced_id, "summon_replace")
 
 	var sctx := SummonContext.new()
 	sctx.group_index = 0

@@ -34,7 +34,7 @@ func description_arity() -> int:
 	#return []
 
 func activate_sim(ctx: CardContext) -> bool:
-	if ctx == null or ctx.api == null or ctx.target_ids == null:
+	if ctx == null or ctx.runtime == null or ctx.target_ids == null:
 		return false
 	
 	# Use the first selected target as the attacker.
@@ -53,4 +53,4 @@ func activate_sim(ctx: CardContext) -> bool:
 		Keys.TARGET_TYPE: Attack.Targeting.STANDARD
 	}
 	spec.param_models = param_models
-	return (ctx.api as SimBattleAPI).apply_attack_now(spec)
+	return ctx.runtime.apply_attack_now(spec)

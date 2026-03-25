@@ -3,6 +3,7 @@ class_name ArcanumContext extends RefCounted
 
 var arcanum_display: ArcanumDisplay
 var api: SimBattleAPI
+var runtime: SimRuntime
 var player_id: int
 #var player_data: PlayerData
 #var battle_scene: BattleScene
