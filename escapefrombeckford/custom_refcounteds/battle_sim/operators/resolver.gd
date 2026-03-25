@@ -27,4 +27,4 @@ func resolve_arcana_proc(sim: Sim, proc: int, arcana_resolver: ArcanaResolver) -
 	if sim == null or sim.api == null or arcana_resolver == null:
 		return
 
-	arcana_resolver.run_proc(proc)
+	arcana_resolver.run_proc(sim, proc)

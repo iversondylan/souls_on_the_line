@@ -231,7 +231,7 @@ func clone() -> BattleState:
 
 	b.groups = [groups[0].clone(), groups[1].clone()]
 	b.turn = turn.clone()
-	b.arcana = arcana.duplicate(true)
+	b.arcana = arcana.clone() if arcana != null else ArcanaState.new()
 	b.resource = resource.clone()
 
 	# Policy: preview clones start with a fresh empty event log.

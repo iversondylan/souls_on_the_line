@@ -64,3 +64,19 @@ func has_arcanum(id: StringName) -> bool:
 
 func get_entry(id: StringName) -> ArcanumEntry:
 	return by_id.get(id, null)
+
+func clone() -> ArcanaState:
+	var c := ArcanaState.new()
+	for entry: ArcanumEntry in list:
+		if entry == null:
+			continue
+
+		var entry_clone := ArcanumEntry.new(entry.id, entry.type)
+		entry_clone.charges = entry.charges
+		entry_clone.cooldown = entry.cooldown
+		entry_clone.data = entry.data.duplicate(true)
+
+		c.list.append(entry_clone)
+		c.by_id[entry_clone.id] = entry_clone
+
+	return c

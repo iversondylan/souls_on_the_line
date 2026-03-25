@@ -8,8 +8,8 @@ func _init(_host: SimHost, _catalog: ArcanaCatalog) -> void:
 	host = _host
 	catalog = _catalog
 
-func run_proc(proc: int) -> void:
-	if host == null or host.main.state == null or host.main.api == null:
+func run_proc(sim: Sim, proc: int) -> void:
+	if sim == null or sim.state == null or sim.api == null:
 		return
 	if catalog == null:
 		push_warning("ArcanaResolverSim: catalog is null")
@@ -19,8 +19,8 @@ func run_proc(proc: int) -> void:
 	if arcanum_type < 0:
 		return
 	var ran := 0
-	var writer : BattleEventWriter = host.main.api.writer
-	for entry: ArcanaState.ArcanumEntry in host.main.state.arcana.list:
+	var writer : BattleEventWriter = sim.api.writer
+	for entry: ArcanaState.ArcanumEntry in sim.state.arcana.list:
 		if entry == null:
 			continue
 		if int(entry.type) != arcanum_type:
@@ -39,7 +39,7 @@ func run_proc(proc: int) -> void:
 		
 		# if ("writer" in host.main.api) else null
 		#var scope_id := 0
-		var player_id := int(host.main.state.groups[0].player_id)
+		var player_id := int(sim.state.groups[0].player_id)
 		if writer != null:# and writer.has_method("begin_scope"):
 			# actor_id: usually player_id for friendly-owned arcana; keep consistent with your earlier ctx params
 			
@@ -51,12 +51,12 @@ func run_proc(proc: int) -> void:
 			)
 		
 		var ctx := ArcanumContext.new()
-		ctx.api = host.main.api
+		ctx.api = sim.api
 		
 		# Headless context params
 		ctx.params[Keys.MODE] = Keys.MODE_SIM
-		ctx.params[Keys.PLAYER_ID] = host.main.state.groups[0].player_id
-		ctx.params[Keys.SOURCE_ID] = host.main.state.groups[0].player_id
+		ctx.params[Keys.PLAYER_ID] = sim.state.groups[0].player_id
+		ctx.params[Keys.SOURCE_ID] = sim.state.groups[0].player_id
 		ctx.params[Keys.GROUP_INDEX] = 0
 		
 		if ctx.api.writer != null:

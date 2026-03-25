@@ -810,7 +810,7 @@ func _on_heal_applied(e: EventPackage) -> void:
 		target.pop_heal_number(healed)
 
 func _on_change_max_health(e: EventPackage) -> void:
-	print("director _on_change_max_health")
+	#print("director _on_change_max_health")
 	var d := _data(e)
 	var tid := int(d.get(Keys.TARGET_ID, 0))
 	if tid <= 0:
@@ -824,7 +824,7 @@ func _on_change_max_health(e: EventPackage) -> void:
 	var after_max_health := int(d.get(Keys.AFTER_MAX_HEALTH, v.max_health))
 	var before_health := int(d.get(Keys.BEFORE_HEALTH, v.health))
 	var before_max_health := int(d.get(Keys.BEFORE_MAX_HEALTH, v.max_health))
-	print("director before max: %s, after max: %s" % [before_max_health, after_max_health])
+	#print("director before max: %s, after max: %s" % [before_max_health, after_max_health])
 	v.max_health = after_max_health
 	v.health = clampi(after_health, 0, after_max_health)
 

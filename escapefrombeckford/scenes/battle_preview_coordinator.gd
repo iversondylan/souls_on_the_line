@@ -93,13 +93,15 @@ func _apply_preview_delta(main_state: BattleState, preview_state: BattleState) -
 		var cid := int(view.cid)
 		var before := main_state.get_unit(cid)
 		var after := preview_state.get_unit(cid)
-		if before == null or after == null:
+		if before == null:
 			continue
 
 		var before_hp := int(before.health)
-		var after_hp := int(after.health)
+		var after_hp := int(after.health) if after != null else 0
+		var before_alive := main_state.is_alive(cid)
+		var after_alive := preview_state.is_alive(cid) if after != null else false
 
-		if before_hp > 0 and after_hp <= 0:
+		if before_alive and !after_alive:
 			view.show_combat_preview_death()
 		elif before_hp != after_hp:
 			view.show_combat_preview_health(after_hp, before_hp)
@@ -119,8 +121,10 @@ func _on_preview_button_pressed() -> void:
 
 
 func _on_turn_status_view_changed(group_index: int, active_id: int, _pending_ids: PackedInt32Array, player_id: int) -> void:
+	print("battle_preview_coordinator.gd _on_turn_status_view_changed() is_player_turn")
 	var is_player_turn := active_id > 0 and active_id == player_id and int(group_index) == FRIENDLY
 	if is_player_turn:
+		print("battle_preview_coordinator.gd _on_turn_status_view_changed() is_player_turn")
 		enable_for_player_turn()
 		recompute_preview_if_needed()
 		return

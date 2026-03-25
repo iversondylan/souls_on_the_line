@@ -1,9 +1,16 @@
 # turn_engine_host_sim.gd
 class_name TurnEngineHostSim extends RefCounted
 
+var sim: Sim
 var sim_host: SimHost
 
-func _init(_sim_host: SimHost) -> void:
+func _init(_sim: Sim = null, _sim_host: SimHost = null) -> void:
+	sim = _sim
+	sim_host = _sim_host
+
+
+func bind(_sim: Sim, _sim_host: SimHost) -> void:
+	sim = _sim
 	sim_host = _sim_host
 
 
@@ -11,9 +18,9 @@ func _init(_sim_host: SimHost) -> void:
 # Internal: get BattleState
 # -------------------------
 func _get_state() -> BattleState:
-	if sim_host == null:
+	if sim == null:
 		return null
-	return sim_host.get_main_state()
+	return sim.state
 
 
 # -------------------------

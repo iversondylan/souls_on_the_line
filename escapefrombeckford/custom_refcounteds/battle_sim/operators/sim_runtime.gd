@@ -50,7 +50,9 @@ func _ensure_runtime_initialized() -> void:
 		return
 
 	if turn_engine_host_sim == null:
-		turn_engine_host_sim = TurnEngineHostSim.new(host)
+		turn_engine_host_sim = TurnEngineHostSim.new(sim, host)
+	else:
+		turn_engine_host_sim.bind(sim, host)
 
 	if turn_engine != null:
 		return
