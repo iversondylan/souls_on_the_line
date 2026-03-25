@@ -8,7 +8,7 @@ var source_id: int = 0
 var card_data: CardData
 var source_card: UsableCard
 
-var card_scope_id: int = 0
+var card_scope_handle: ScopeHandle = null
 var card_scope_opened: bool = false
 var card_play_committed: bool = false
 

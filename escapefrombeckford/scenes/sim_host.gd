@@ -24,6 +24,8 @@ var arcana_catalog: ArcanaCatalog : set = _set_arcana_catalog
 
 var main: Sim : set = _set_main
 var preview: Sim
+var _battle_scope_handle: ScopeHandle = null
+var _setup_scope_handle: ScopeHandle = null
 
 
 # -------------------------
@@ -102,6 +104,8 @@ func reset() -> void:
 	if main != null and main.runtime != null:
 		main.runtime.reset_runtime_state()
 
+	_battle_scope_handle = null
+	_setup_scope_handle = null
 	main = null
 	preview = null
 
@@ -123,7 +127,7 @@ func init_from_seeds(battle_seed: int, run_seed: int) -> void:
 	_configure_main_api_logging()
 
 	main.api.writer.set_turn_context(0, -1, 0)
-	main.api.writer.scope_begin(Scope.Kind.BATTLE, "battle_seed=%d run_seed=%d" % [battle_seed, run_seed], 0)
+	_battle_scope_handle = main.api.writer.scope_begin(Scope.Kind.BATTLE, "battle_seed=%d run_seed=%d" % [battle_seed, run_seed], 0)
 
 	_bind_runtime_callbacks(main)
 
@@ -143,7 +147,7 @@ func start_setup() -> void:
 	var writer := get_main_writer()
 	if writer == null:
 		return
-	writer.scope_begin(Scope.Kind.SETUP, "setup", 0)
+	_setup_scope_handle = writer.scope_begin(Scope.Kind.SETUP, "setup", 0)
 
 
 func end_setup() -> void:
@@ -156,7 +160,9 @@ func end_setup() -> void:
 		main.state.groups[1].order.duplicate(),
 		main.state.groups[0].player_id
 	)
-	writer.scope_end() # setup
+	if _setup_scope_handle != null:
+		writer.scope_end(_setup_scope_handle) # setup
+		_setup_scope_handle = null
 
 	# Initialize NPC plans and intent presentation directly.
 	for cid in main.state.units.keys():

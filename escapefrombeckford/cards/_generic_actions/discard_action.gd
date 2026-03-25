@@ -23,7 +23,10 @@ func activate_sim(ctx: CardContext) -> bool:
 		ctx.card_data.ensure_uid()
 
 	var req := DiscardRequest.new()
-	req.request_id = int(ctx.card_scope_id) * 100 + int(ctx.current_action_index) + 1
+	var scope_id := 0
+	if ctx.card_scope_handle != null:
+		scope_id = int(ctx.card_scope_handle.scope_id)
+	req.request_id = scope_id * 100 + int(ctx.current_action_index) + 1
 	req.source_id = int(ctx.source_id)
 	req.amount = n
 	req.reason = "card_action:discard"

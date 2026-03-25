@@ -2,6 +2,49 @@
 
 class_name BattleEventLog extends RefCounted
 
+class ScopeValidationIssue extends RefCounted:
+	var seq: int = -1
+	var scope_id: int = 0
+	var scope_kind: int = -1
+	var message: String = ""
+
+	func _init(_seq: int = -1, _scope_id: int = 0, _scope_kind: int = -1, _message: String = "") -> void:
+		seq = _seq
+		scope_id = _scope_id
+		scope_kind = _scope_kind
+		message = _message
+
+class ScopeValidationReport extends RefCounted:
+	var issues: Array[ScopeValidationIssue] = []
+	var open_scopes: Array[Dictionary] = []
+
+	func is_valid() -> bool:
+		if !issues.is_empty():
+			return false
+		if open_scopes.is_empty():
+			return true
+		if open_scopes.size() == 1:
+			var root := open_scopes[0]
+			return int(root.get(Keys.SCOPE_KIND, -1)) == int(Scope.Kind.BATTLE) \
+				and int(root.get(Keys.PARENT_SCOPE_ID, -1)) == 0
+		return false
+
+	func to_debug_string() -> String:
+		var bits: Array[String] = []
+		bits.append("issues=%d" % int(issues.size()))
+		for issue in issues:
+			if issue == null:
+				continue
+			bits.append("seq=%d scope_id=%d kind=%d msg=%s" % [
+				int(issue.seq),
+				int(issue.scope_id),
+				int(issue.scope_kind),
+				String(issue.message),
+			])
+		if !open_scopes.is_empty():
+			bits.append("open_scopes=%s" % str(open_scopes))
+		return "\n".join(bits)
+
 
 signal appended(new_size: int)
 
@@ -43,6 +86,85 @@ func read_range(start_index: int, end_index: int) -> Array[BattleEvent]:
 		out[k] = _events[i]
 		k += 1
 	return out
+
+func validate_scope_nesting() -> ScopeValidationReport:
+	var report := ScopeValidationReport.new()
+	var stack: Array[Dictionary] = []
+	var live_ids := {}
+
+	for e in _events:
+		if e == null:
+			continue
+
+		var etype := int(e.type)
+		if etype == int(BattleEvent.Type.SCOPE_BEGIN):
+			var begin_scope_id := int(e.data.get(Keys.SCOPE_ID, e.scope_id)) if e.data != null else int(e.scope_id)
+			var begin_parent_scope_id := int(e.data.get(Keys.PARENT_SCOPE_ID, e.parent_scope_id)) if e.data != null else int(e.parent_scope_id)
+			var begin_scope_kind := int(e.data.get(Keys.SCOPE_KIND, e.scope_kind)) if e.data != null else int(e.scope_kind)
+			var begin_label := String(e.data.get(Keys.SCOPE_LABEL, "")) if e.data != null else ""
+
+			if begin_scope_id <= 0:
+				report.issues.append(ScopeValidationIssue.new(int(e.seq), begin_scope_id, begin_scope_kind, "scope_begin has invalid scope_id"))
+				continue
+			if live_ids.has(begin_scope_id):
+				report.issues.append(ScopeValidationIssue.new(int(e.seq), begin_scope_id, begin_scope_kind, "duplicate live scope_id"))
+				continue
+
+			var expected_parent_id := 0
+			if !stack.is_empty():
+				expected_parent_id = int(stack.back().get(Keys.SCOPE_ID, 0))
+			if begin_parent_scope_id != expected_parent_id:
+				report.issues.append(ScopeValidationIssue.new(
+					int(e.seq),
+					begin_scope_id,
+					begin_scope_kind,
+					"scope_begin parent mismatch expected=%d got=%d" % [expected_parent_id, begin_parent_scope_id]
+				))
+			var record := {
+				Keys.SCOPE_ID: begin_scope_id,
+				Keys.PARENT_SCOPE_ID: begin_parent_scope_id,
+				Keys.SCOPE_KIND: begin_scope_kind,
+				Keys.SCOPE_LABEL: begin_label,
+				&"seq": int(e.seq),
+			}
+			stack.append(record)
+			live_ids[begin_scope_id] = true
+			continue
+
+		if etype != int(BattleEvent.Type.SCOPE_END):
+			continue
+
+		var end_scope_id := int(e.data.get(Keys.SCOPE_ID, e.scope_id)) if e.data != null else int(e.scope_id)
+		var end_scope_kind := int(e.data.get(Keys.SCOPE_KIND, e.scope_kind)) if e.data != null else int(e.scope_kind)
+
+		if stack.is_empty():
+			report.issues.append(ScopeValidationIssue.new(int(e.seq), end_scope_id, end_scope_kind, "scope_end encountered with empty stack"))
+			continue
+
+		var top : Dictionary = stack.back()
+		var top_scope_id := int(top.get(Keys.SCOPE_ID, 0))
+		var top_scope_kind := int(top.get(Keys.SCOPE_KIND, -1))
+		if end_scope_id != top_scope_id or end_scope_kind != top_scope_kind:
+			report.issues.append(ScopeValidationIssue.new(
+				int(e.seq),
+				end_scope_id,
+				end_scope_kind,
+				"scope_end mismatch expected_id=%d expected_kind=%d got_id=%d got_kind=%d" % [
+					top_scope_id,
+					top_scope_kind,
+					end_scope_id,
+					end_scope_kind,
+				]
+			))
+			continue
+
+		stack.pop_back()
+		live_ids.erase(end_scope_id)
+
+	for open_scope in stack:
+		report.open_scopes.append(open_scope.duplicate(true))
+
+	return report
 
 
 static func print_event_log(

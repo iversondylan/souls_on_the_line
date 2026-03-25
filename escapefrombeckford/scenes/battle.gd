@@ -336,3 +336,26 @@ func _on_dump_events_button_pressed() -> void:
 
 func _on_kill_enemies_button_pressed() -> void:
 	sim_host.get_main_runtime().debug_kill_all_enemies()
+
+
+func _on_validate_scope_nesting_pressed() -> void:
+	if sim_host == null:
+		push_warning("Battle._on_validate_scope_nesting_pressed(): missing sim_host")
+		return
+
+	var log := sim_host.get_event_log()
+	if log == null:
+		push_warning("Battle._on_validate_scope_nesting_pressed(): missing event log")
+		return
+
+	var report := log.validate_scope_nesting()
+	if report == null:
+		push_warning("Battle._on_validate_scope_nesting_pressed(): validator returned null report")
+		return
+
+	if report.is_valid():
+		print("ValidateScopeNesting: PASS")
+		return
+
+	push_warning("ValidateScopeNesting: FAIL")
+	print(report.to_debug_string())

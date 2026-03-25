@@ -30,12 +30,12 @@ func set_turn_context(_turn_id: int, _group_index: int, _actor_id: int) -> void:
 
 func _append(type: int, data: Dictionary = {}) -> int:
 	if sink == null:
-		return 0
+		return -1
 
 	var sid := (scopes.current_scope_id() if scopes != null else 0)
 	if sid == 0 and !allow_unscoped_events:
 		push_warning("BattleEventWriter: attempted to append event with no active scope. type=%s" % str(type))
-		return 0
+		return -1
 
 	var e := BattleEvent.new(type)
 	e.turn_id = turn_id
@@ -69,48 +69,56 @@ func _append(type: int, data: Dictionary = {}) -> int:
 # Scope helpers
 # -------------------------
 
-func scope_begin(kind: int, label: String = "", actor_id: int = 0, extra := {}) -> int:
+func scope_begin(kind: int, label: String = "", actor_id: int = 0, extra := {}) -> ScopeHandle:
 	if scopes == null:
-		push_warning("BattleEventWriter: scope_begin without scopes")
-		return 0
+		_scope_failure("BattleEventWriter.scope_begin(): missing scope manager")
+		return null
 
-	var f := scopes.push(kind, label, actor_id, group_index, turn_id)
+	var handle := scopes.push(kind, label, actor_id, group_index, turn_id)
+	if handle == null:
+		_scope_failure("BattleEventWriter.scope_begin(): failed to create scope handle")
+		return null
 
 	if actor_id > 0:
 		active_actor_id = actor_id
 	
 	var data := {
-		Keys.SCOPE_ID: f.id,
-		Keys.PARENT_SCOPE_ID: f.parent_id,
-		Keys.SCOPE_KIND: f.kind,
-		Keys.SCOPE_LABEL: f.label,
-		Keys.ACTOR_ID: f.actor_id,
-		Keys.GROUP_INDEX: f.group_index,
-		Keys.TURN_ID: f.turn_id,
+		Keys.SCOPE_ID: handle.scope_id,
+		Keys.PARENT_SCOPE_ID: handle.parent_scope_id,
+		Keys.SCOPE_KIND: handle.kind,
+		Keys.SCOPE_LABEL: handle.label,
+		Keys.ACTOR_ID: handle.actor_id,
+		Keys.GROUP_INDEX: handle.group_index,
+		Keys.TURN_ID: handle.turn_id,
 	}
 	for k in extra.keys():
 		data[k] = extra[k]
-	return _append(BattleEvent.Type.SCOPE_BEGIN, data)
+	var seq := _append(BattleEvent.Type.SCOPE_BEGIN, data)
+	if seq < 0:
+		scopes.close(handle)
+		_scope_failure("BattleEventWriter.scope_begin(): failed to append SCOPE_BEGIN id=%d" % int(handle.scope_id))
+		return null
+	return handle
 
-func scope_end() -> int:
+func scope_end(handle: ScopeHandle) -> int:
 	if scopes == null:
-		push_warning("BattleEventWriter: scope_end without scopes")
+		_scope_failure("BattleEventWriter.scope_end(): missing scope manager")
 		return 0
 
-	var f := scopes.pop()
-	if f == null:
-		push_warning("BattleEventWriter: scope_end with empty stack")
+	var closed := scopes.close(handle)
+	if closed == null:
+		_scope_failure(scopes.last_error_message if scopes != null else "BattleEventWriter.scope_end(): failed to close scope")
 		return 0
 	
 	var data := {
-		Keys.SCOPE_ID: f.id,
-		Keys.PARENT_SCOPE_ID: f.parent_id,
-		Keys.SCOPE_KIND: f.kind,
-		Keys.SCOPE_LABEL: f.label,
-		Keys.ACTOR_ID: f.actor_id,
+		Keys.SCOPE_ID: closed.scope_id,
+		Keys.PARENT_SCOPE_ID: closed.parent_scope_id,
+		Keys.SCOPE_KIND: closed.kind,
+		Keys.SCOPE_LABEL: closed.label,
+		Keys.ACTOR_ID: closed.actor_id,
 	}
 	
-	return _append_manual(BattleEvent.Type.SCOPE_END, f.id, f.parent_id, f.kind, data)
+	return _append_manual(BattleEvent.Type.SCOPE_END, closed.scope_id, closed.parent_scope_id, closed.kind, data)
 
 # -------------------------
 # “Structural” timeline markers (these scale into animation)
@@ -553,8 +561,8 @@ func emit_discard_resolved(req: DiscardRequest, chosen_uids: Array[String]) -> i
 
 
 func _append_manual(type: int, scope_id: int, parent_scope_id: int, scope_kind: int, data: Dictionary = {}) -> int:
-	if log == null:
-		return 0
+	if sink == null:
+		return -1
 
 	var e := BattleEvent.new(type)
 	e.turn_id = turn_id
@@ -579,3 +587,9 @@ func _append_manual(type: int, scope_id: int, parent_scope_id: int, scope_kind: 
 		#str(e.data)
 	#])
 	return seq
+
+func _scope_failure(message: String) -> void:
+	var text := String(message)
+	push_error(text)
+	if OS.is_debug_build():
+		assert(false, text) #Assertion failed: BattleEventWriter.scope_begin(): failed to append SCOPE_BEGIN id=1

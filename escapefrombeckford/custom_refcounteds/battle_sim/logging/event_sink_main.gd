@@ -9,5 +9,5 @@ func _init(_log: BattleEventLog) -> void:
 
 func append(e: BattleEvent) -> int:
 	if log == null:
-		return 0
+		return -1
 	return log.append(e)

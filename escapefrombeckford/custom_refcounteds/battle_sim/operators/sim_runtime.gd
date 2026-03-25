@@ -21,6 +21,8 @@ var host: SimHost
 
 var turn_engine: TurnEngineCore
 var turn_engine_host_sim: TurnEngineHostSim
+var _group_turn_scope_handle: ScopeHandle = null
+var _actor_turn_scope_handle: ScopeHandle = null
 
 
 # ============================================================================
@@ -40,6 +42,8 @@ func bind(_sim: Sim, _host: SimHost) -> void:
 func reset_runtime_state() -> void:
 	turn_engine = null
 	turn_engine_host_sim = null
+	_group_turn_scope_handle = null
+	_actor_turn_scope_handle = null
 
 func _ensure_turn_engine_host_initialized() -> void:
 	if host == null:
@@ -260,7 +264,7 @@ func handle_group_turn_started(group_index: int) -> void:
 	var writer := api.writer
 	if writer != null:
 		writer.set_turn_context(engine._turn_token, group_index, 0)
-		writer.scope_begin(Scope.Kind.GROUP_TURN, "group=%d" % group_index, 0)
+		_group_turn_scope_handle = writer.scope_begin(Scope.Kind.GROUP_TURN, "group=%d" % group_index, 0)
 		writer.emit_group_turn_begin(group_index)
 		
 	api.refresh_mana_for_group_turn(group_index)
@@ -286,7 +290,9 @@ func handle_group_turn_ended(group_index: int) -> void:
 	var writer := api.writer
 	if writer != null:
 		writer.emit_group_turn_end(group_index)
-		writer.scope_end() # group_turn
+		if _group_turn_scope_handle != null:
+			writer.scope_end(_group_turn_scope_handle) # group_turn
+			_group_turn_scope_handle = null
 
 	_schedule_next_group_turn(group_index)
 
@@ -324,7 +330,7 @@ func handle_actor_requested(cid: int) -> void:
 	var writer := api.writer
 	if writer != null:
 		writer.set_turn_context(engine._turn_token, engine.active_group_index, cid)
-		writer.scope_begin(Scope.Kind.ACTOR_TURN, "actor=%d" % cid, cid)
+		_actor_turn_scope_handle = writer.scope_begin(Scope.Kind.ACTOR_TURN, "actor=%d" % cid, cid)
 		writer.emit_actor_begin(cid)
 
 	SimStatusSystem.on_actor_turn_begin(api, cid)
@@ -339,7 +345,9 @@ func handle_actor_requested(cid: int) -> void:
 
 	if writer != null:
 		writer.emit_actor_end(cid)
-		writer.scope_end() # actor_turn
+		if _actor_turn_scope_handle != null:
+			writer.scope_end(_actor_turn_scope_handle) # actor_turn
+			_actor_turn_scope_handle = null
 
 	SimStatusSystem.on_actor_turn_end(api, cid)
 	_apply_checkpoint_boundary(CheckpointProcessor.Kind.AFTER_ACTOR_TURN, true)
@@ -424,7 +432,9 @@ func _notify_actor_done(cid: int) -> void:
 	var writer := api.writer
 	if writer != null:
 		writer.emit_actor_end(cid)
-		writer.scope_end() # actor_turn
+		if _actor_turn_scope_handle != null:
+			writer.scope_end(_actor_turn_scope_handle) # actor_turn
+			_actor_turn_scope_handle = null
 
 	engine.notify_actor_done(cid)
 
@@ -501,7 +511,6 @@ func run_npc_turn(cid: int) -> void:
 
 	ctx.state[ActionPlanner.KEY_PLANNED_IDX] = -1
 	ctx.state[ActionPlanner.IS_ACTING] = false
-	ctx.state[ActionPlanner.STABILITY_BROKEN] = false
 	ctx.state[ActionPlanner.ACTIONS_TAKEN] = int(ctx.state.get(ActionPlanner.ACTIONS_TAKEN, 0)) + 1
 
 	if _should_immediately_replan_intent(api, u):
@@ -523,22 +532,27 @@ func run_attack(ctx: NPCAIContext) -> bool:
 	var targeting := int(params.get(Keys.TARGET_TYPE, Attack.Targeting.STANDARD))
 	var any := false
 
-	_begin_scope(Scope.Kind.ATTACK, "attacker=%d" % int(ctx.cid), int(ctx.cid), {
+	var attack_scope := _begin_scope(Scope.Kind.ATTACK, "attacker=%d" % int(ctx.cid), int(ctx.cid), {
 		Keys.ACTOR_ID: int(ctx.cid),
 		Keys.ATTACK_MODE: mode,
 		Keys.STRIKES: strikes,
 		Keys.TARGET_TYPE: targeting,
 	})
+	if attack_scope == null:
+		return false
 
 	for s in range(strikes):
 		if !api.is_alive(ctx.cid):
 			break
 
-		_begin_scope(Scope.Kind.STRIKE, "i=%d" % s, int(ctx.cid), {
+		var strike_scope := _begin_scope(Scope.Kind.STRIKE, "i=%d" % s, int(ctx.cid), {
 			Keys.STRIKE_INDEX: s,
 			Keys.ATTACK_MODE: mode,
 			Keys.TARGET_TYPE: targeting,
 		})
+		if strike_scope == null:
+			_end_scope(attack_scope)
+			return false
 
 		var target_ids: Array[int] = AttackTargeting.get_target_ids(api, ctx.cid, params)
 		target_ids = target_ids.filter(func(id):
@@ -546,7 +560,7 @@ func run_attack(ctx: NPCAIContext) -> bool:
 		)
 
 		if target_ids.is_empty():
-			_end_scope()
+			_end_scope(strike_scope)
 			continue
 
 		var writer := _writer()
@@ -573,11 +587,15 @@ func run_attack(ctx: NPCAIContext) -> bool:
 		var take_mod := int(params.get(Keys.TAKE_MOD_TYPE, Modifier.Type.DMG_TAKEN))
 
 		for tid: int in target_ids:
-			_begin_scope(Scope.Kind.HIT, "t=%d" % int(tid), int(ctx.cid), {
+			var hit_scope := _begin_scope(Scope.Kind.HIT, "t=%d" % int(tid), int(ctx.cid), {
 				Keys.TARGET_ID: int(tid),
 				Keys.STRIKE_INDEX: s,
 				Keys.ATTACK_MODE: mode,
 			})
+			if hit_scope == null:
+				_end_scope(strike_scope)
+				_end_scope(attack_scope)
+				return false
 
 			var d := DamageContext.new()
 			d.source_id = int(ctx.cid)
@@ -589,11 +607,11 @@ func run_attack(ctx: NPCAIContext) -> bool:
 			api.resolve_damage_immediate(d)
 			any = true
 
-			_end_scope()
+			_end_scope(hit_scope)
 
-		_end_scope()
+		_end_scope(strike_scope)
 
-	_end_scope()
+	_end_scope(attack_scope)
 	return any
 
 
@@ -633,7 +651,7 @@ func run_status_action(ctx: NPCAIContext) -> void:
 	if source_id <= 0:
 		source_id = actor_id
 
-	_begin_scope(
+	var status_scope := _begin_scope(
 		Scope.Kind.STATUS_ACTION,
 		"id=%s tgt=%d" % [String(status_id), int(target_id)],
 		actor_id,
@@ -646,6 +664,8 @@ func run_status_action(ctx: NPCAIContext) -> void:
 			Keys.DURATION: int(duration),
 		}
 	)
+	if status_scope == null:
+		return
 
 	var sc := StatusContext.new()
 	sc.source_id = source_id
@@ -655,7 +675,7 @@ func run_status_action(ctx: NPCAIContext) -> void:
 	sc.duration = duration
 	api.apply_status(sc)
 
-	_end_scope()
+	_end_scope(status_scope)
 
 
 func run_summon_action(ctx: NPCAIContext) -> void:
@@ -691,7 +711,7 @@ func run_summon_action(ctx: NPCAIContext) -> void:
 		if count <= 0:
 			return
 
-	_begin_scope(
+	var summon_scope := _begin_scope(
 		Scope.Kind.SUMMON_ACTION,
 		"count=%d g=%d idx=%d" % [count, group_index, insert_index],
 		actor_id,
@@ -704,6 +724,8 @@ func run_summon_action(ctx: NPCAIContext) -> void:
 			Keys.PROTO: String(summon_data_orig.resource_path),
 		}
 	)
+	if summon_scope == null:
+		return
 
 	for _i in range(count):
 		var cur_n := api.get_combatants_in_group(group_index, false).size()
@@ -721,7 +743,7 @@ func run_summon_action(ctx: NPCAIContext) -> void:
 
 		api.summon(sc)
 
-	_end_scope()
+	_end_scope(summon_scope)
 
 
 func run_move(ctx: MoveContext) -> void:
@@ -739,9 +761,11 @@ func run_move(ctx: MoveContext) -> void:
 	if int(ctx.index) >= 0:
 		extra[Keys.TO_INDEX] = int(ctx.index)
 
-	_begin_scope(Scope.Kind.MOVE, "actor=%d" % int(ctx.actor_id), int(ctx.actor_id), extra)
+	var move_scope := _begin_scope(Scope.Kind.MOVE, "actor=%d" % int(ctx.actor_id), int(ctx.actor_id), extra)
+	if move_scope == null:
+		return
 	api.resolve_move(ctx)
-	_end_scope()
+	_end_scope(move_scope)
 
 
 func run_fade(combat_id: int, reason: String = "fade") -> void:
@@ -753,9 +777,11 @@ func run_fade(combat_id: int, reason: String = "fade") -> void:
 	if u == null or !u.alive:
 		return
 
-	_begin_scope(Scope.Kind.FADE, "fade_unit", int(combat_id))
+	var fade_scope := _begin_scope(Scope.Kind.FADE, "fade_unit", int(combat_id))
+	if fade_scope == null:
+		return
 	api.fade_unit(int(combat_id), String(reason))
-	_end_scope()
+	_end_scope(fade_scope)
 
 
 func run_arcana_proc(proc: int) -> void:
@@ -767,7 +793,9 @@ func run_arcana_proc(proc: int) -> void:
 		push_warning("SimRuntime: no arcana_catalog; cannot run arcana")
 		return
 
-	_begin_scope(Scope.Kind.ARCANA, "proc=%d" % int(proc), 0)
+	var arcana_scope := _begin_scope(Scope.Kind.ARCANA, "proc=%d" % int(proc), 0)
+	if arcana_scope == null:
+		return
 	var writer := _writer()
 	if writer != null:
 		writer.emit_arcana_proc(proc)
@@ -788,7 +816,10 @@ func run_arcana_proc(proc: int) -> void:
 				continue
 
 			var player_id := int(sim.state.groups[0].player_id)
-			_begin_scope(Scope.Kind.ARCANUM, "id=%s" % String(id), player_id)
+			var arcanum_scope := _begin_scope(Scope.Kind.ARCANUM, "id=%s" % String(id), player_id)
+			if arcanum_scope == null:
+				_end_scope(arcana_scope)
+				return
 
 			var ctx := ArcanumContext.new()
 			ctx.api = sim.api
@@ -807,10 +838,10 @@ func run_arcana_proc(proc: int) -> void:
 			elif typeof(r) == TYPE_OBJECT and r != null and r.get_class() == "GDScriptFunctionState":
 				push_warning("SimRuntime: arcana %s returned FunctionState; ignored" % String(id))
 
-			_end_scope()
+			_end_scope(arcanum_scope)
 
 	_apply_checkpoint_boundary(CheckpointProcessor.Kind.AFTER_ARCANA, true)
-	_end_scope()
+	_end_scope(arcana_scope)
 
 
 func apply_attack_now(spec: SimAttackSpec) -> bool:
@@ -846,18 +877,18 @@ func apply_attack_now(spec: SimAttackSpec) -> bool:
 	return run_attack(ai_ctx)
 
 
-func _begin_scope(kind: int, label: String, actor_id: int = 0, extra := {}) -> int:
+func _begin_scope(kind: int, label: String, actor_id: int = 0, extra := {}) -> ScopeHandle:
 	var writer := _writer()
 	if writer == null:
-		return 0
+		return null
 	return writer.scope_begin(kind, label, actor_id, extra)
 
 
-func _end_scope() -> int:
+func _end_scope(handle: ScopeHandle) -> int:
 	var writer := _writer()
-	if writer == null:
+	if writer == null or handle == null:
 		return 0
-	return writer.scope_end()
+	return writer.scope_end(handle)
 
 
 func _finish_npc_turn(ctx: NPCAIContext) -> void:
@@ -865,7 +896,6 @@ func _finish_npc_turn(ctx: NPCAIContext) -> void:
 		return
 
 	ctx.state[ActionPlanner.IS_ACTING] = false
-	ctx.state[ActionPlanner.STABILITY_BROKEN] = false
 
 
 func _should_immediately_replan_intent(api: SimBattleAPI, u: CombatantState) -> bool:
@@ -918,7 +948,7 @@ func begin_card_execution(ctx: CardContext) -> bool:
 	ctx.activation_committed_to_view = false
 	ctx.canceled = false
 	ctx.finished = false
-	ctx.card_scope_id = 0
+	ctx.card_scope_handle = null
 	ctx.card_scope_opened = false
 	ctx.card_play_committed = false
 	ctx.waiting_async_action_index = -1
@@ -1164,13 +1194,13 @@ func _ensure_card_scope_open(ctx: CardContext) -> bool:
 	if ctx.card_data != null:
 		label = "uid=%s %s" % [String(ctx.card_data.uid), String(ctx.card_data.name)]
 
-	ctx.card_scope_id = ctx.api.writer.scope_begin(
+	ctx.card_scope_handle = ctx.api.writer.scope_begin(
 		Scope.Kind.CARD,
 		label,
 		int(ctx.source_id),
 		{}
 	)
-	ctx.card_scope_opened = (ctx.card_scope_id > 0)
+	ctx.card_scope_opened = (ctx.card_scope_handle != null)
 	return ctx.card_scope_opened
 
 func _commit_card_play_if_needed(ctx: CardContext) -> bool:
@@ -1205,9 +1235,9 @@ func _close_card_scope(ctx: CardContext) -> void:
 	if !ctx.card_scope_opened:
 		return
 
-	ctx.api.writer.scope_end()
+	ctx.api.writer.scope_end(ctx.card_scope_handle)
 	ctx.card_scope_opened = false
-	ctx.card_scope_id = 0
+	ctx.card_scope_handle = null
 
 
 func _finalize_card_execution(ctx: CardContext, committed := true) -> void:
