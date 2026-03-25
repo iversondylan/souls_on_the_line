@@ -330,6 +330,7 @@ func on_event(e: EventPackage) -> void:
 		BattleEvent.Type.TURN_STATUS:
 			_on_turn_status(e)
 		BattleEvent.Type.PLAYER_INPUT_REACHED:
+			Events.player_input_view_reached.emit(int(e.event.data.get(Keys.ACTOR_ID, 0)) if e.event.data != null else 0)
 			Events.request_draw_hand.emit()
 		BattleEvent.Type.END_TURN_PRESSED:
 			Events.player_turn_completed.emit()
@@ -939,6 +940,7 @@ func _on_discard_requested(e: EventPackage) -> void:
 
 	var d: Dictionary = _data(e)
 	var ctx := DiscardContext.new()
+	ctx.request_id = int(d.get(Keys.REQUEST_ID, 0))
 	ctx.source_id = int(d.get(Keys.SOURCE_ID, 0))
 	ctx.amount = int(d.get(Keys.AMOUNT, 0))
 	ctx.card_uid = String(d.get(Keys.CARD_UID, ""))
@@ -952,7 +954,14 @@ func _on_discard_requested(e: EventPackage) -> void:
 		if api == null:
 			push_warning("DiscardContext.on_done: missing sim api")
 			return
+		var runtime := sim_host.get_main_runtime()
 		api.resolve_player_discard(chosen_uids)
+		if runtime == null:
+			push_warning("DiscardContext.on_done: missing sim runtime")
+			return
+		runtime.resume_async_action_request(ctx.request_id, {
+			Keys.CHOSEN_UIDS: chosen_uids,
+		})
 
 	Events.request_discard_cards.emit(ctx)
 
@@ -1046,12 +1055,26 @@ func _on_defeat(e: EventPackage) -> void:
 	# if battle_view != null: battle_view.stop_playback()
 	Events.request_defeat.emit()
 
-func _on_scope_begin(_e: EventPackage) -> void:
-	pass
+func _on_scope_begin(e: EventPackage) -> void:
+	var d := _data(e)
+	var scope_kind := int(d.get(Keys.SCOPE_KIND, e.event.scope_kind if e != null and e.event != null else -1))
+	if scope_kind != int(Scope.Kind.CARD):
+		return
+
+	var scope_id := int(d.get(Keys.SCOPE_ID, 0))
+	var actor_id := int(d.get(Keys.ACTOR_ID, 0))
+	Events.card_scope_view_started.emit(scope_id, actor_id)
 
 
-func _on_scope_end(_e: EventPackage) -> void:
-	pass
+func _on_scope_end(e: EventPackage) -> void:
+	var d := _data(e)
+	var scope_kind := int(d.get(Keys.SCOPE_KIND, e.event.scope_kind if e != null and e.event != null else -1))
+	if scope_kind != int(Scope.Kind.CARD):
+		return
+
+	var scope_id := int(d.get(Keys.SCOPE_ID, 0))
+	var actor_id := int(d.get(Keys.ACTOR_ID, 0))
+	Events.card_scope_view_finished.emit(scope_id, actor_id)
 
 func _on_mana(e: EventPackage) -> void:
 	var d := _data(e)

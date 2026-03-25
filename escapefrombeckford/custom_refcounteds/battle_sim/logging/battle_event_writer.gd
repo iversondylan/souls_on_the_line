@@ -533,6 +533,7 @@ func emit_end_turn_pressed(player_id: int) -> void:
 
 func emit_discard_requested(req: DiscardRequest) -> int:
 	return _append(BattleEvent.Type.DISCARD_REQUESTED, {
+		Keys.REQUEST_ID: int(req.request_id),
 		Keys.SOURCE_ID: int(req.source_id),
 		Keys.AMOUNT: int(req.amount),
 		Keys.REASON: String(req.reason),
@@ -541,6 +542,7 @@ func emit_discard_requested(req: DiscardRequest) -> int:
 
 func emit_discard_resolved(req: DiscardRequest, chosen_uids: Array[String]) -> int:
 	return _append(BattleEvent.Type.DISCARD_RESOLVED, {
+		Keys.REQUEST_ID: int(req.request_id),
 		Keys.SOURCE_ID: int(req.source_id),
 		Keys.AMOUNT: int(req.amount),
 		Keys.REASON: String(req.reason),

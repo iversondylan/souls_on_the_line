@@ -5,6 +5,7 @@ class_name CardActionExecutionState extends RefCounted
 enum State {
 	PENDING,
 	WAITING_INTERACTION,
+	WAITING_ASYNC_RESOLUTION,
 	COVERED,
 	EXECUTED,
 	SKIPPED,

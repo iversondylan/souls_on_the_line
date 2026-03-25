@@ -17,6 +17,7 @@ func clone() -> ResourceState:
 		# If DiscardRequest is RefCounted/custom class without clone(),
 		# copy fields manually.
 		var req := DiscardRequest.new()
+		req.request_id = int(pending_discard.request_id)
 		req.source_id = int(pending_discard.source_id)
 		req.amount = int(pending_discard.amount)
 		req.reason = String(pending_discard.reason)

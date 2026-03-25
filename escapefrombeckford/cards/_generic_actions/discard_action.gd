@@ -11,7 +11,7 @@ class_name DiscardAction extends CardAction
 	#return true
 
 func activate_sim(ctx: CardContext) -> bool:
-	if ctx == null or ctx.api == null:
+	if ctx == null or ctx.api == null or ctx.runtime == null:
 		return false
 
 	var n := maxi(int(base_discard), 0)
@@ -23,13 +23,22 @@ func activate_sim(ctx: CardContext) -> bool:
 		ctx.card_data.ensure_uid()
 
 	var req := DiscardRequest.new()
+	req.request_id = ctx.runtime.register_async_action_request(ctx, ctx.current_action_index)
+	if req.request_id <= 0:
+		return false
 	req.source_id = int(ctx.source_id)
 	req.amount = n
 	req.reason = "card_action:discard"
 	req.card_uid = String(ctx.card_data.uid) if ctx.card_data != null else ""
 
-	(ctx.api as SimBattleAPI).request_player_discard(req)
+	if !(ctx.api as SimBattleAPI).request_player_discard(req):
+		ctx.runtime.unregister_async_action_request(req.request_id)
+		return false
+
 	return true
+
+func waits_for_async_resolution_after_activate_sim(_ctx: CardContext) -> bool:
+	return maxi(int(base_discard), 0) > 0
 
 func description_arity() -> int:
 	return 1

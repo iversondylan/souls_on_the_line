@@ -1,6 +1,7 @@
 # discard_context.gd
 class_name DiscardContext extends RefCounted
 
+var request_id: int = 0
 var source_id: int = 0
 var amount: int = 0
 var card_uid: String = ""

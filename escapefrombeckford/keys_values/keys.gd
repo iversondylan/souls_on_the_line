@@ -76,6 +76,7 @@ const CARD_TARGET_TYPE_S := &"card_target_type_s"
 const TARGETS := &"targets"
 const SUMMONED_IDS := &"summon_ids"
 const AMOUNT := &"amount"
+const REQUEST_ID := &"request_id"
 const CHOSEN_UIDS := &"chosen_uids"
 
 # Arcana

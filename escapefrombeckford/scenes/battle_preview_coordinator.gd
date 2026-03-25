@@ -14,10 +14,15 @@ var _state: int = State.DISABLED
 var _player_input_ready: bool = false
 var _view_is_player_turn: bool = false
 var _preview_display_request_id: int = 0
+var _card_scope_depth: int = 0
 
 
 func _ready() -> void:
+	print("battle_preview_coordinator.gd _ready()")
 	Events.turn_status_view_changed.connect(_on_turn_status_view_changed)
+	Events.player_input_view_reached.connect(_on_player_input_view_reached)
+	Events.card_scope_view_started.connect(_on_card_scope_view_started)
+	Events.card_scope_view_finished.connect(_on_card_scope_view_finished)
 	Events.card_played.connect(_on_card_played)
 	Events.summon_reserve_card_released.connect(_on_summon_reserve_card_released)
 	Events.dead_combatant_data.connect(_on_dead_combatant_data)
@@ -25,16 +30,12 @@ func _ready() -> void:
 	Events.end_turn_button_pressed.connect(_on_end_turn_button_pressed)
 
 func _set_sim_host(new_sim_host: SimHost) -> void:
-	if sim_host != null and sim_host.player_input_reached.is_connected(_on_player_input_reached):
-		sim_host.player_input_reached.disconnect(_on_player_input_reached)
-
+	print("battle_preview_coordinator.gd _set_sim_host()")
 	sim_host = new_sim_host
-
-	if sim_host != null and !sim_host.player_input_reached.is_connected(_on_player_input_reached):
-		sim_host.player_input_reached.connect(_on_player_input_reached)
 
 
 func enable_for_player_turn() -> void:
+	print("battle_preview_coordinator.gd enable_for_player_turn()")
 	if turn_phase_title != null:
 		if !turn_phase_title.preview_button_pressed.is_connected(_on_preview_button_pressed):
 			turn_phase_title.preview_button_pressed.connect(_on_preview_button_pressed)
@@ -42,13 +43,15 @@ func enable_for_player_turn() -> void:
 
 
 func mark_dirty(reason: String = "") -> void:
+	print("battle_preview_coordinator.gd mark_dirty()")
 	if _state != State.DIRTY:
 		_state = State.DIRTY
 	if !reason.is_empty():
-		print("BattlePreviewCoordinator.mark_dirty(): ", reason)
+		print("battle_preview_coordinator.gd mark_dirty(): ", reason)
 
 
 func disable_and_clear() -> void:
+	print("battle_preview_coordinator.gd disable_and_clear()")
 	_state = State.DISABLED
 	_preview_display_request_id += 1
 	if turn_phase_title != null:
@@ -58,20 +61,24 @@ func disable_and_clear() -> void:
 
 
 func display_preview_now(reason: String = "") -> void:
-	if !_player_input_ready or !_view_is_player_turn:
+	print("battle_preview_coordinator.gd display_preview_now()")
+	if !_can_preview():
 		return
 
 	enable_for_player_turn()
 	if !reason.is_empty():
-		print("BattlePreviewCoordinator.display_preview_now(): ", reason)
+		print("battle_preview_coordinator.gd display_preview_now(): ", reason)
 	_preview_display_request_id += 1
 	recompute_preview_if_needed()
 
 
 func recompute_preview_if_needed() -> void:
+	print("battle_preview_coordinator.gd recompute_preview_if_needed()")
 	if _state == State.DISABLED:
 		return
 	if _state == State.HOT:
+		return
+	if _card_scope_depth > 0:
 		return
 	if sim_host == null or battle_view == null:
 		return
@@ -106,6 +113,7 @@ func recompute_preview_if_needed() -> void:
 
 
 func _apply_preview_delta(main_state: BattleState, preview_state: BattleState) -> void:
+	print("battle_preview_coordinator.gd _apply_preview_delta()")
 	if battle_view == null:
 		return
 
@@ -133,6 +141,7 @@ func _apply_preview_delta(main_state: BattleState, preview_state: BattleState) -
 
 
 func _clear_all_previews() -> void:
+	print("battle_preview_coordinator.gd _clear_all_previews()")
 	if battle_view == null:
 		return
 
@@ -142,10 +151,12 @@ func _clear_all_previews() -> void:
 
 
 func _on_preview_button_pressed() -> void:
+	print("battle_preview_coordinator.gd _on_preview_button_pressed()")
 	display_preview_now("preview_button_pressed")
 
 
 func _restart_preview_display_timer(delay_sec: float = PREVIEW_DISPLAY_DELAY_SEC) -> void:
+	print("battle_preview_coordinator.gd _restart_preview_display_timer()")
 	var tree := get_tree()
 	if tree == null:
 		return
@@ -156,59 +167,103 @@ func _restart_preview_display_timer(delay_sec: float = PREVIEW_DISPLAY_DELAY_SEC
 
 
 func _on_preview_display_delay_elapsed(request_id: int) -> void:
+	print("battle_preview_coordinator.gd _on_preview_display_delay_elapsed()")
 	if request_id != _preview_display_request_id:
 		return
-	if !_player_input_ready or !_view_is_player_turn:
+	if !_can_preview():
 		return
 
 	display_preview_now("preview_display_delay_elapsed")
 
 
 func _on_turn_status_view_changed(group_index: int, active_id: int, _pending_ids: PackedInt32Array, player_id: int) -> void:
+	print("battle_preview_coordinator.gd _on_turn_status_view_changed()")
 	_view_is_player_turn = active_id > 0 and active_id == player_id and int(group_index) == FRIENDLY
 	if _view_is_player_turn:
 		if _player_input_ready:
-			enable_for_player_turn()
-			mark_dirty("turn_status_view_changed")
-			_restart_preview_display_timer()
+			if _card_scope_depth == 0:
+				enable_for_player_turn()
+				mark_dirty("turn_status_view_changed")
+				_restart_preview_display_timer()
 		return
 
 	_player_input_ready = false
+	_card_scope_depth = 0
 	disable_and_clear()
 
-func _on_player_input_reached() -> void:
+func _on_player_input_view_reached(player_id: int) -> void:
+	print("battle_preview_coordinator.gd _on_player_input_view_reached()")
+	if player_id <= 0:
+		return
 	_player_input_ready = true
 	if !_view_is_player_turn:
+		print("battle_preview_coordinator.gd _on_player_input_view_reached() it is not player turn")
+		return
+
+	if _card_scope_depth > 0:
 		return
 
 	enable_for_player_turn()
-	mark_dirty("player_input_reached")
+	mark_dirty("player_input_view_reached")
+	_restart_preview_display_timer()
+
+
+func _on_card_scope_view_started(_scope_id: int, _actor_id: int) -> void:
+	print("battle_preview_coordinator.gd _on_card_scope_view_started()")
+	if _player_input_ready and _view_is_player_turn:
+		mark_dirty("card_scope_view_started")
+
+	_card_scope_depth += 1
+	disable_and_clear()
+
+
+func _on_card_scope_view_finished(_scope_id: int, _actor_id: int) -> void:
+	print("battle_preview_coordinator.gd _on_card_scope_view_finished()")
+	_card_scope_depth = maxi(0, _card_scope_depth - 1)
+	if _card_scope_depth > 0:
+		return
+	if !_player_input_ready or !_view_is_player_turn:
+		return
+
+	enable_for_player_turn()
+	mark_dirty("card_scope_view_finished")
 	_restart_preview_display_timer()
 
 
 func _on_card_played(_usable_card: UsableCard) -> void:
-	_refresh_preview("card_played")
+	print("battle_preview_coordinator.gd _on_card_played()")
+	return
 
 
 func _on_summon_reserve_card_released(_summoned_id: int, _card_uid: String) -> void:
+	print("battle_preview_coordinator.gd _on_summon_reserve_card_released()")
 	_refresh_preview("summon_reserve_card_released")
 
 
 func _on_dead_combatant_data(_combatant_data: CombatantData) -> void:
+	print("battle_preview_coordinator.gd _on_dead_combatant_data()")
 	_refresh_preview("dead_combatant_data")
 
 
 func _on_hand_discarded() -> void:
+	print("battle_preview_coordinator.gd _on_hand_discarded()")
 	_refresh_preview("hand_discarded")
 
 
 func _on_end_turn_button_pressed() -> void:
+	print("battle_preview_coordinator.gd _on_end_turn_button_pressed()")
 	_player_input_ready = false
 	_view_is_player_turn = false
+	_card_scope_depth = 0
 	disable_and_clear()
 
 
 func _refresh_preview(reason: String) -> void:
-	if !_player_input_ready or !_view_is_player_turn:
+	print("battle_preview_coordinator.gd _refresh_preview()")
+	if !_can_preview():
 		return
 	mark_dirty(reason)
+
+
+func _can_preview() -> bool:
+	return _player_input_ready and _view_is_player_turn and _card_scope_depth == 0

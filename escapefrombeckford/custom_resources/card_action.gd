@@ -42,6 +42,9 @@ func activate_interaction(ctx: CardContext) -> bool:
 func get_interaction_mode(ctx: CardContext) -> int:
 	return InteractionMode.NONE
 
+func waits_for_async_resolution_after_activate_sim(ctx: CardContext) -> bool:
+	return false
+
 
 
 func description_arity() -> int:

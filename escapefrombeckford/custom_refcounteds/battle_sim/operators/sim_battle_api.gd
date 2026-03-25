@@ -289,9 +289,9 @@ func _request_immediate_planning_flush_if_needed(target_id: int, proto: Status) 
 	if proto == null:
 		return
 	if !proto.affects_intent_legality():
-		print("sim_battle_api.gd _request_immediate_planning_flush_if_needed() affects_legality: false, status: ", proto.get_id())
+		#print("sim_battle_api.gd _request_immediate_planning_flush_if_needed() affects_legality: false, status: ", proto.get_id())
 		return
-	print("sim_battle_api.gd _request_immediate_planning_flush_if_needed() affects_legality: true, status: ", proto.get_id())
+	#print("sim_battle_api.gd _request_immediate_planning_flush_if_needed() affects_legality: true, status: ", proto.get_id())
 	# Dirtiness should already be requested before this point,
 	# but make sure the target definitely gets both.
 	_request_replan(int(target_id))
@@ -572,7 +572,6 @@ func apply_status(ctx: StatusContext) -> void:
 		_request_intent_refresh(int(ctx.target_id))
 	
 	_on_status_changed(int(ctx.target_id))
-	print("apply")
 	_request_immediate_planning_flush_if_needed(int(ctx.target_id), proto)
 
 
@@ -834,18 +833,20 @@ func finalize_card_execution(ctx: CardContext) -> void:
 	if writer != null and ctx.emitted_card_played:
 		writer.scope_end()
 
-func request_player_discard(req: DiscardRequest) -> void:
+func request_player_discard(req: DiscardRequest) -> bool:
 	if req == null or state == null or state.resource == null:
-		return
+		return false
 	
 	if state.resource.pending_discard != null:
 		push_warning("SimBattleAPI.request_player_discard(): discard already pending")
-		return
+		return false
 	
 	state.resource.pending_discard = req
 	
 	if writer != null:
 		writer.emit_discard_requested(req)
+
+	return true
 
 
 func resolve_player_discard(selected_card_uids: Array[String]) -> void:

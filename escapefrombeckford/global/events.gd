@@ -76,6 +76,9 @@ signal tooltip_hide_requested()
 signal status_tooltip_requested(statuses: Array[StatusDisplay])
 signal arcanum_popup_requested(arcanum: Arcanum)
 signal turn_status_view_changed(group_index: int, active_id: int, pending_ids: PackedInt32Array, player_id: int)
+signal player_input_view_reached(player_id: int)
+signal card_scope_view_started(scope_id: int, actor_id: int)
+signal card_scope_view_finished(scope_id: int, actor_id: int)
 
 ## battle transition events
 signal battle_over_screen_requested(text: String, outcome: BattleOverPanel.Outcome)
