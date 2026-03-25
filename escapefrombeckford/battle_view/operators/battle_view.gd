@@ -121,7 +121,7 @@ func _playback_loop(gen: int) -> void:
 
 			var plan_builder := TurnTimelineToDirectorPlan.new()
 			var plan := plan_builder.build_plan(timeline, t_start, transport.tempo_bpm)
-			print(_debug_director_plan_line(plan, actor_turn, clock.now_sec(), schedule_t))
+			#print(_debug_director_plan_line(plan, actor_turn, clock.now_sec(), schedule_t))
 
 			await cue_scheduler.play_plan(clock, event_director, plan, gen)
 			schedule_t = plan.get_end_sec()

@@ -67,8 +67,11 @@ func init_from_combatant_data(data: CombatantData) -> void:
 func clone() -> CombatantState:
 	var c := CombatantState.new()
 	c.id = id
+	c.combatant_data = combatant_data
 	c.team = team
 	c.alive = alive
+	c.type = type
+	c.mortality = mortality
 
 	c.name = name
 	c.max_health = max_health
@@ -79,11 +82,13 @@ func clone() -> CombatantState:
 	c.mana = mana
 	c.apm = apm
 	c.apr = apr
+	c.bound_card_uid = bound_card_uid
 
 	c.data_proto_path = data_proto_path
 
 	c.statuses = statuses.clone()
 	c.modifiers = modifiers.clone()
+	c.ai_profile = ai_profile
 	c.ai_state = ai_state.duplicate(true)
 
 	if rng:

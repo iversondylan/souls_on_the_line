@@ -28,15 +28,16 @@ func show_death_preview() -> void:
 	_text_parent.visible = false
 
 
-func show_health_preview(current_health: int, max_hp: int, previous_health: int) -> void:
+func show_health_preview(current_health: int, _max_hp: int, previous_health: int) -> void:
 	visible = true
 	_icon_parent.visible = false
 	_text_parent.visible = true
-
-	_label.text = "%d/%d" % [current_health, max_hp]
-	if current_health < previous_health:
+	var delta_health := current_health - previous_health
+	if delta_health < 0:
+		_label.text = "%d" % delta_health
 		_label.modulate = DAMAGE_COLOR
-	elif current_health > previous_health:
+	elif delta_health > 0:
+		_label.text = "+%d" % delta_health
 		_label.modulate = HEAL_COLOR
 	else:
-		_label.modulate = NEUTRAL_COLOR
+		visible = false

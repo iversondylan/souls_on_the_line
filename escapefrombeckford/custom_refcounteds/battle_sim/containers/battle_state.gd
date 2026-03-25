@@ -239,12 +239,177 @@ func clone() -> BattleState:
 
 	return b
 
-func debug_dump_events(last_n: int = 20) -> void:
-	if events == null:
-		#print("BattleState: no events")
-		return
-	var n := events.size()
-	var start := maxi(n - last_n, 0)
-	for i in range(start, n):
-		var e := events.get_event(i)
-		#print("battle_state.gd debug_dump_events() seq=%d type=%d scope=%d kind=%s data=%s" % [e.seq, e.type, e.scope_id, String(e.scope_kind), str(e.data)])
+func debug_dump_state(label: String = "") -> void:
+	var header := "BattleState dump"
+	if !label.is_empty():
+		header += " [%s]" % label
+	print(header)
+	print("  seeds: battle=%d run=%d next_sim_id=%d outcome=%s" % [
+		battle_seed,
+		run_seed,
+		_next_sim_id,
+		_debug_outcome_name(outcome),
+	])
+	print("  turn: round=%d active_group=%s active_id=%d queue=%s actions=%s" % [
+		int(turn.round),
+		_debug_group_name(int(turn.active_group)),
+		int(turn.active_id),
+		Array(turn.queue),
+		str(turn.actions_this_group_turn),
+	])
+	print("  resource: mana=%d/%d pending_discard=%s" % [
+		int(resource.mana) if resource != null else 0,
+		int(resource.max_mana) if resource != null else 0,
+		_debug_pending_discard_summary(),
+	])
+	print("  arcana: %s" % _debug_arcana_summary())
+
+	for group_index in [FRIENDLY, ENEMY]:
+		var group := groups[group_index] if group_index < groups.size() else null
+		if group == null:
+			print("  %s: <missing group>" % _debug_group_name(group_index))
+			continue
+
+		print("  %s: player_id=%d order=%s" % [
+			_debug_group_name(group_index),
+			int(group.player_id),
+			Array(group.order),
+		])
+
+		for cid in group.order:
+			var unit := get_unit(int(cid))
+			if unit == null:
+				print("    cid=%d <missing unit>" % int(cid))
+				continue
+			print("    %s" % _debug_unit_summary(unit))
+
+	var ordered_ids := {}
+	for group in groups:
+		if group == null:
+			continue
+		for cid in group.order:
+			ordered_ids[int(cid)] = true
+
+	var extras: Array[int] = []
+	for cid in units.keys():
+		var id := int(cid)
+		if !ordered_ids.has(id):
+			extras.append(id)
+
+	if !extras.is_empty():
+		extras.sort()
+		print("  units_not_in_order=%s" % [str(extras)])
+		for cid in extras:
+			var unit := get_unit(int(cid))
+			if unit != null:
+				print("    %s" % _debug_unit_summary(unit))
+
+func _debug_outcome_name(value: int) -> String:
+	if value >= 0 and value < Outcome.keys().size():
+		return Outcome.keys()[value]
+	return str(value)
+
+func _debug_group_name(group_index: int) -> String:
+	match int(group_index):
+		FRIENDLY:
+			return "FRIENDLY"
+		ENEMY:
+			return "ENEMY"
+		_:
+			return "GROUP_%d" % int(group_index)
+
+func _debug_pending_discard_summary() -> String:
+	if resource == null or resource.pending_discard == null:
+		return "none"
+
+	var req := resource.pending_discard
+	return "{source_id=%d amount=%d reason=%s card_uid=%s}" % [
+		int(req.source_id),
+		int(req.amount),
+		String(req.reason),
+		String(req.card_uid),
+	]
+
+func _debug_arcana_summary() -> String:
+	if arcana == null or arcana.list.is_empty():
+		return "[]"
+
+	var parts: Array[String] = []
+	for entry: ArcanaState.ArcanumEntry in arcana.list:
+		if entry == null:
+			continue
+
+		var type_name := "type=%d" % int(entry.type)
+		if entry.type >= 0 and entry.type < Arcanum.Type.keys().size():
+			type_name = Arcanum.Type.keys()[int(entry.type)]
+
+		var extra: Array[String] = []
+		if int(entry.charges) != 0:
+			extra.append("charges=%d" % int(entry.charges))
+		if int(entry.cooldown) != 0:
+			extra.append("cooldown=%d" % int(entry.cooldown))
+		if !entry.data.is_empty():
+			extra.append("data=%s" % str(entry.data))
+
+		var suffix := ""
+		if !extra.is_empty():
+			suffix = " {%s}" % ", ".join(extra)
+
+		parts.append("%s(%s)%s" % [String(entry.id), type_name, suffix])
+
+	return "[" + ", ".join(parts) + "]"
+
+func _debug_unit_summary(unit: CombatantState) -> String:
+	var team_name := _debug_group_name(int(unit.team))
+	var type_name := _debug_combatant_type_name(int(unit.type))
+	var mortality_name := _debug_mortality_name(int(unit.mortality))
+	var statuses := _debug_status_summary(unit)
+	var proto := ""
+	if !String(unit.data_proto_path).is_empty():
+		proto = " proto=%s" % String(unit.data_proto_path).get_file()
+
+	return "cid=%d name=%s team=%s type=%s mortality=%s alive=%s hp=%d/%d armor=%d mana=%d/%d apm=%d apr=%d%s%s" % [
+		int(unit.id),
+		String(unit.name),
+		team_name,
+		type_name,
+		mortality_name,
+		str(bool(unit.alive)),
+		int(unit.health),
+		int(unit.max_health),
+		int(unit.armor),
+		int(unit.mana),
+		int(unit.max_mana),
+		int(unit.apm),
+		int(unit.apr),
+		proto,
+		statuses,
+	]
+
+func _debug_combatant_type_name(value: int) -> String:
+	if value >= 0 and value < CombatantView.Type.keys().size():
+		return CombatantView.Type.keys()[value]
+	return str(value)
+
+func _debug_mortality_name(value: int) -> String:
+	if value >= 0 and value < CombatantView.Mortality.keys().size():
+		return CombatantView.Mortality.keys()[value]
+	return str(value)
+
+func _debug_status_summary(unit: CombatantState) -> String:
+	if unit == null or unit.statuses == null or unit.statuses.by_id.is_empty():
+		return ""
+
+	var parts: Array[String] = []
+	for status_id in unit.statuses.by_id.keys():
+		var stack: StatusStack = unit.statuses.by_id[status_id]
+		if stack == null:
+			continue
+		parts.append("%s(i=%d,d=%d)" % [
+			String(status_id),
+			int(stack.intensity),
+			int(stack.duration),
+		])
+
+	parts.sort()
+	return " statuses=[" + ", ".join(parts) + "]"

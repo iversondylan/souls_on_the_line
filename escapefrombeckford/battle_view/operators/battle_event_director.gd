@@ -218,6 +218,7 @@ func _start_summon_pop_order(order: SummonPopPresentationOrder) -> void:
 	if order == null:
 		return
 
+	var caster := battle_view.get_combatant(int(order.actor_id))
 	var cid := int(order.summoned_id)
 	var g := int(order.group_index)
 	var idx := int(order.insert_index)
@@ -245,6 +246,9 @@ func _start_summon_pop_order(order: SummonPopPresentationOrder) -> void:
 			1.0,
 			maxf(order.visual_sec if order.visual_sec > 0.0 else 0.20, 0.01)
 		)
+
+	if caster != null:
+		caster.clear_strike_pose(order.visual_sec if order.visual_sec > 0.0 else 0.20)
 
 func _start_death_order(order: DeathPresentationOrder) -> void:
 	if order == null:
@@ -997,11 +1001,14 @@ func _on_summon_windup(e: EventPackage) -> void:
 
 func _on_summon_followthrough(e: EventPackage) -> void:
 	var summoned_id := int(_data(e).get(Keys.SUMMONED_ID, 0))
-	var g := _group_index(e)
 
 	var v := battle_view.get_combatant(summoned_id)
 	if v != null:
 		v.is_alive = true
+
+	var caster := battle_view.get_combatant(_source_id(e))
+	if caster != null:
+		caster.clear_strike_pose(e.duration)
 
 
 func _on_summoned(e: EventPackage) -> void:

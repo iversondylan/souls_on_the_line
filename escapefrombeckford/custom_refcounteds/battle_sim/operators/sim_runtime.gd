@@ -44,8 +44,7 @@ func reset_runtime_state() -> void:
 	turn_engine = null
 	turn_engine_host_sim = null
 
-
-func _ensure_runtime_initialized() -> void:
+func _ensure_turn_engine_host_initialized() -> void:
 	if host == null:
 		return
 
@@ -54,16 +53,37 @@ func _ensure_runtime_initialized() -> void:
 	else:
 		turn_engine_host_sim.bind(sim, host)
 
+func _connect_turn_engine_signals(engine: TurnEngineCore) -> void:
+	if engine == null:
+		return
+
+	engine.group_turn_ended.connect(_on_group_turn_ended)
+	engine.arcana_proc_requested.connect(_on_arcana_proc_requested)
+	engine.actor_requested.connect(_on_actor_requested)
+	engine.player_begin_requested.connect(_on_player_begin_requested)
+	engine.player_end_requested.connect(_on_player_end_requested)
+	engine.pending_view_changed.connect(_on_pending_view_changed)
+
+func _ensure_runtime_initialized() -> void:
+	_ensure_turn_engine_host_initialized()
+
 	if turn_engine != null:
 		return
 
 	turn_engine = TurnEngineCore.new(turn_engine_host_sim)
-	turn_engine.group_turn_ended.connect(_on_group_turn_ended)
-	turn_engine.arcana_proc_requested.connect(_on_arcana_proc_requested)
-	turn_engine.actor_requested.connect(_on_actor_requested)
-	turn_engine.player_begin_requested.connect(_on_player_begin_requested)
-	turn_engine.player_end_requested.connect(_on_player_end_requested)
-	turn_engine.pending_view_changed.connect(_on_pending_view_changed)
+	_connect_turn_engine_signals(turn_engine)
+
+func clone_turn_flow_from(source_runtime: SimRuntime) -> bool:
+	if source_runtime == null or source_runtime.turn_engine == null:
+		return false
+
+	_ensure_turn_engine_host_initialized()
+	if turn_engine_host_sim == null:
+		return false
+
+	turn_engine = source_runtime.turn_engine.clone_for_host(turn_engine_host_sim)
+	_connect_turn_engine_signals(turn_engine)
+	return true
 
 
 # ============================================================================
@@ -335,7 +355,8 @@ func handle_actor_requested(cid: int) -> void:
 	if is_player(cid):
 		if writer != null:
 			writer.emit_player_input_reached(int(cid))
-		host.player_input_reached.emit()
+		if sim != null and !sim.is_preview:
+			host.player_input_reached.emit()
 		return
 
 	if sim != null and sim.resolver != null:

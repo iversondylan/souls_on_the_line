@@ -141,6 +141,45 @@ var dbg := false
 func _init(_host: TurnEngineHostSim) -> void:
 	host = _host
 
+func clone_for_host(new_host: TurnEngineHostSim) -> TurnEngineCore:
+	var c := TurnEngineCore.new(new_host)
+
+	c.active_group_index = active_group_index
+	c.current_actor_id = current_actor_id
+	c._running_actor = _running_actor
+	c._turn_token = _turn_token
+	c.phase = phase
+
+	c._queue = _queue.duplicate()
+	c._turns_taken = _turns_taken.duplicate(true)
+	c._restore_allowed = _restore_allowed.duplicate(true)
+	c._queue_dirty = _queue_dirty
+
+	c._start_at_player = _start_at_player
+	c._player_id = _player_id
+	c._cursor_cid = _cursor_cid
+
+	c._player_start_of_turn_fired = _player_start_of_turn_fired
+	c._start_of_combat_fired = _start_of_combat_fired
+	c._pre_player_friendly = _pre_player_friendly
+	c.ended_pre_player_friendly = ended_pre_player_friendly
+
+	# Preview snapshots resume from a stable execution point and should not inherit
+	# pending handshakes or callbacks bound to the source runtime.
+	c._waiting_for_player_begin = false
+	c._waiting_for_player_end = false
+	c._player_token = 0
+	c._resume_after_player_begin = Callable()
+	c._resume_after_player_end = Callable()
+
+	c._waiting_for_arcana = false
+	c._arcana_token = 0
+	c._resume_after_arcana = Callable()
+
+	c.dbg = dbg
+
+	return c
+
 
 # ============================================================================
 # Public API

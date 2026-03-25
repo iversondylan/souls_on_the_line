@@ -5,11 +5,13 @@ enum State { DISABLED, HOT, DIRTY }
 
 const FRIENDLY := 0
 
-var sim_host: SimHost
+var sim_host: SimHost : set = _set_sim_host
 var battle_view: BattleView
 var turn_phase_title: TurnPhaseTitle
 
 var _state: int = State.DISABLED
+var _player_input_ready: bool = false
+var _view_is_player_turn: bool = false
 
 
 func _ready() -> void:
@@ -19,6 +21,15 @@ func _ready() -> void:
 	Events.dead_combatant_data.connect(_on_dead_combatant_data)
 	Events.hand_discarded.connect(_on_hand_discarded)
 	Events.end_turn_button_pressed.connect(_on_end_turn_button_pressed)
+
+func _set_sim_host(new_sim_host: SimHost) -> void:
+	if sim_host != null and sim_host.player_input_reached.is_connected(_on_player_input_reached):
+		sim_host.player_input_reached.disconnect(_on_player_input_reached)
+
+	sim_host = new_sim_host
+
+	if sim_host != null and !sim_host.player_input_reached.is_connected(_on_player_input_reached):
+		sim_host.player_input_reached.connect(_on_player_input_reached)
 
 
 func enable_for_player_turn() -> void:
@@ -62,13 +73,18 @@ func recompute_preview_if_needed() -> void:
 		return
 
 	sim_host.clone_preview_from_main()
+	var main_runtime := sim_host.get_main_runtime()
 	var preview_runtime := sim_host.get_preview_runtime()
 	if preview_runtime != null:
 		# Preview from "player presses end turn" forward:
 		# 1) finish POST-player friendly phase (player, then friendlies behind player)
 		# 2) enemy phase
 		# 3) stop when the next player input point is reached
-		preview_runtime.start_group_turn(FRIENDLY, false, false)
+		var resumed_from_live_turn := false
+		if main_runtime != null and main_runtime.has_runtime_initialized():
+			resumed_from_live_turn = preview_runtime.clone_turn_flow_from(main_runtime)
+		if !resumed_from_live_turn:
+			preview_runtime.start_group_turn(FRIENDLY, false, false)
 		preview_runtime.notify_player_discard_animation_finished()
 
 	var preview_state := sim_host.get_preview_state()
@@ -121,15 +137,23 @@ func _on_preview_button_pressed() -> void:
 
 
 func _on_turn_status_view_changed(group_index: int, active_id: int, _pending_ids: PackedInt32Array, player_id: int) -> void:
-	print("battle_preview_coordinator.gd _on_turn_status_view_changed() is_player_turn")
-	var is_player_turn := active_id > 0 and active_id == player_id and int(group_index) == FRIENDLY
-	if is_player_turn:
-		print("battle_preview_coordinator.gd _on_turn_status_view_changed() is_player_turn")
-		enable_for_player_turn()
-		recompute_preview_if_needed()
+	_view_is_player_turn = active_id > 0 and active_id == player_id and int(group_index) == FRIENDLY
+	if _view_is_player_turn:
+		if _player_input_ready:
+			enable_for_player_turn()
+			recompute_preview_if_needed()
 		return
 
+	_player_input_ready = false
 	disable_and_clear()
+
+func _on_player_input_reached() -> void:
+	_player_input_ready = true
+	if !_view_is_player_turn:
+		return
+
+	enable_for_player_turn()
+	recompute_preview_if_needed()
 
 
 func _on_card_played(_usable_card: UsableCard) -> void:
@@ -149,9 +173,13 @@ func _on_hand_discarded() -> void:
 
 
 func _on_end_turn_button_pressed() -> void:
+	_player_input_ready = false
+	_view_is_player_turn = false
 	disable_and_clear()
 
 
 func _refresh_preview(reason: String) -> void:
+	if !_player_input_ready or !_view_is_player_turn:
+		return
 	mark_dirty(reason)
 	recompute_preview_if_needed()
