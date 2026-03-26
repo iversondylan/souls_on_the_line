@@ -7,7 +7,6 @@ class TargetingParticipant extends RefCounted:
 	var discovery_index: int = 0
 	var status_ctx: SimStatusContext = null
 	var status_proto: Status = null
-	var arcanum_ctx: ArcanumContext = null
 	var arcanum_proto: Arcanum = null
 
 static func get_target_ids(ctx: TargetingContext) -> Array[int]:
@@ -94,12 +93,12 @@ static func _run_stage(ctx: TargetingContext, stage: int) -> void:
 					participant.status_proto.on_targeting_retarget(participant.status_ctx, ctx)
 				TargetingContext.Stage.INTERPOSE:
 					participant.status_proto.on_targeting_interpose(participant.status_ctx, ctx)
-		elif participant.arcanum_proto != null and participant.arcanum_ctx != null:
+		elif participant.arcanum_proto != null:
 			match int(stage):
 				TargetingContext.Stage.RETARGET:
-					participant.arcanum_proto.on_targeting_retarget(participant.arcanum_ctx, ctx)
+					participant.arcanum_proto.on_targeting_retarget(ctx.api, ctx)
 				TargetingContext.Stage.INTERPOSE:
-					participant.arcanum_proto.on_targeting_interpose(participant.arcanum_ctx, ctx)
+					participant.arcanum_proto.on_targeting_interpose(ctx.api, ctx)
 
 
 static func _finalize_targets(ctx: TargetingContext) -> void:
@@ -186,19 +185,9 @@ static func _append_arcana_participants(
 		if proto == null:
 			continue
 
-		var arcanum_ctx := ArcanumContext.new()
-		arcanum_ctx.api = ctx.api
-		arcanum_ctx.runtime = ctx.api.runtime
-		arcanum_ctx.player_id = int(ctx.api.get_player_id())
-		arcanum_ctx.params[Keys.MODE] = Keys.MODE_SIM
-		arcanum_ctx.params[Keys.PLAYER_ID] = arcanum_ctx.player_id
-		arcanum_ctx.params[Keys.SOURCE_ID] = arcanum_ctx.player_id
-		arcanum_ctx.params[Keys.GROUP_INDEX] = int(side_group_index)
-
 		var participant := TargetingParticipant.new()
 		participant.priority = int(proto.get_targeting_priority(stage))
 		participant.discovery_index = discovery_index
-		participant.arcanum_ctx = arcanum_ctx
 		participant.arcanum_proto = proto
 		out.append(participant)
 		discovery_index += 1

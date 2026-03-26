@@ -9,9 +9,20 @@ var member_var := 0
 func get_id() -> StringName:
 	return ID
 
-func activate_arcanum(ctx: ArcanumContext) -> Variant:
-	#_add_mana(ctx.arcanum_display)
-	return null
+func on_battle_started(api: SimBattleAPI) -> void:
+	if api == null:
+		return
+
+	var player_id := int(api.get_player_id())
+	if player_id <= 0:
+		return
+
+	var mana_ctx := ManaContext.new()
+	mana_ctx.source_id = player_id
+	mana_ctx.mode = ManaContext.Mode.GAIN_MANA
+	mana_ctx.amount = 1
+	mana_ctx.reason = "arcanum_battle_start"
+	api.gain_mana(mana_ctx)
 
 func _add_mana(arcanum_display: ArcanumDisplay) -> void:
 	#arcanum_display.flash()

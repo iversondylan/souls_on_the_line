@@ -54,10 +54,35 @@ func _input(event: InputEvent) -> void:
 		card_tooltip_popup.hide_tooltip()
 
 func populate_shop() -> void:
-	_generate_shop_cards()
-	_generate_shop_arcana()
+	var ctx := build_opening_context()
+	populate_from_context(ctx)
 
-func _generate_shop_cards() -> void:
+func build_opening_context() -> ShopContext:
+	var ctx := ShopContext.new()
+	ctx.run = run
+	ctx.run_account = run_account
+	ctx.player_data = player_data
+	ctx.arcana_system = arcana_system
+	ctx.arcana_catalog = arcana_catalog
+	ctx.arcana_reward_pool = arcana_reward_pool
+	ctx.card_offers = _build_shop_card_offers()
+	ctx.arcanum_offers = _build_shop_arcanum_offers()
+	return ctx
+
+func populate_from_context(ctx: ShopContext) -> void:
+	if ctx == null:
+		return
+	_clear_shop_items()
+	_populate_shop_cards(ctx.card_offers)
+	_populate_shop_arcana(ctx.arcanum_offers)
+
+func _clear_shop_items() -> void:
+	for shop_card: ShopCard in card_container.get_children():
+		shop_card.queue_free()
+	for shop_arcanum: ShopArcanum in arcanum_container.get_children():
+		shop_arcanum.queue_free()
+
+func _build_shop_card_offers() -> Array[CardData]:
 	var shop_cards: Array[CardData] = []
 	var available_cards := player_data.draftable_cards.cards.duplicate(true)
 	available_cards.shuffle()
@@ -68,8 +93,9 @@ func _generate_shop_cards() -> void:
 			shop_cards.append(card)
 		if cards_added >= 3:
 			break
-	#shop_cards = available_cards.slice(0, 3)
-	
+	return shop_cards
+
+func _populate_shop_cards(shop_cards: Array[CardData]) -> void:
 	for card_data: CardData in shop_cards:
 		var new_shop_card := SHOP_CARD_SCN.instantiate() as ShopCard
 		card_container.add_child(new_shop_card)
@@ -78,7 +104,7 @@ func _generate_shop_cards() -> void:
 		new_shop_card.gold_cost = _get_updated_shop_cost(new_shop_card.gold_cost)
 		new_shop_card.update(run_account)
 
-func _generate_shop_arcana() -> void:
+func _build_shop_arcanum_offers() -> Array[Arcanum]:
 	var eligible_arcana: Array[Arcanum] = []
 	print("_generate_shop_arcana()")
 	for arcanum_id: String in arcana_reward_pool.allowed_ids:
@@ -90,11 +116,13 @@ func _generate_shop_arcana() -> void:
 
 	if eligible_arcana.is_empty():
 		print("shop.gd _generate_shop_arcana() arcana empty" % eligible_arcana)
-		return
+		return []
 	#print("shop.gd _generate_shop_arcana() eligible_arcana: %s" % eligible_arcana)
 	eligible_arcana.shuffle()
+	return eligible_arcana.slice(0, 3)
 
-	for arcanum: Arcanum in eligible_arcana.slice(0, 3):
+func _populate_shop_arcana(shop_arcana: Array[Arcanum]) -> void:
+	for arcanum: Arcanum in shop_arcana:
 		var shop_arcanum := SHOP_ARCANUM_SCN.instantiate() as ShopArcanum
 		arcanum_container.add_child(shop_arcanum)
 		shop_arcanum.arcanum = arcanum

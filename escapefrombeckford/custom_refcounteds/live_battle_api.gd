@@ -171,15 +171,10 @@
 	#if !arcanum:
 		#return null
 #
-	#var ctx := ArcanumContext.new()
-	#ctx.api = self
-	#ctx.arcanum_display = display
-	#ctx.battle_scene = battle_scene
-	#ctx.player = battle_scene.player
+	## Arcana now use explicit typed hooks instead of a generic activation wrapper.
 #
-	## If you ever decide some arcanum wants to be awaitable,
-	## you can have activate_arcanum return a Signal / FunctionState.
-	#var r : Variant = arcanum.activate_arcanum(ctx)
+	## If you ever decide live timed arcana need to run here again,
+	## dispatch the explicit timed hook for this proc instead.
 #
 	#if typeof(r) == TYPE_OBJECT and r != null and r.get_class() == "GDScriptFunctionState":
 		#return r

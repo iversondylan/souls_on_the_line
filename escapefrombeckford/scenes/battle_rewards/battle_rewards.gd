@@ -12,7 +12,7 @@ const CARD_TEXTURE := preload("res://assets/sprites/assorted/diamond_white.png")
 const CARD_TEXT := "Add New Card"
 
 @export var run_account: RunAccount
-@export var player_data: CombatantData
+@export var player_data: PlayerData
 var arcanum_system: ArcanaSystem
 
 @onready var rewards: VBoxContainer = %Rewards
@@ -26,8 +26,22 @@ var card_rarity_weights := {
 }
 
 func _ready() -> void:
-	for node: Node in rewards.get_children():
-		node.queue_free()
+	_clear_rewards()
+
+func populate_from_context(ctx: RewardContext) -> void:
+	if ctx == null:
+		return
+	_clear_rewards()
+
+	for n_gold in ctx.gold_rewards:
+		add_gold_reward(int(n_gold))
+
+	if bool(ctx.include_card_reward):
+		add_card_reward()
+
+	for arcanum: Arcanum in ctx.arcanum_rewards:
+		if arcanum != null:
+			add_arcanum_reward(arcanum)
 
 func add_gold_reward(n_gold: int) -> void:
 	var gold_reward := REWARD_BUTTON.instantiate() as RewardButton
@@ -118,3 +132,7 @@ func _on_card_reward_taken(card: CardData) -> void:
 
 func _on_back_button_pressed() -> void:
 	Events.battle_rewards_exited.emit()
+
+func _clear_rewards() -> void:
+	for node: Node in rewards.get_children():
+		node.queue_free()

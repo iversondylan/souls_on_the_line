@@ -4,7 +4,6 @@ class_name Arcanum extends Resource
 
 enum Type {START_OF_TURN, START_OF_COMBAT, END_OF_TURN, END_OF_COMBAT, EVENT_BASED}
 enum Beats {NONE, IN, OUT, IN_OUT}
-enum HookFamily {TIMED_BATTLE, MODIFIER, RUN, BATTLE_RESOLUTION}
 @export var arcanum_name: String
 @export var type: Type
 @export var starter_arcanum: bool = false
@@ -20,40 +19,31 @@ var arcanum_display: ArcanumDisplay
 func get_id() -> StringName:
 	return &""
 
-# Current timed battle hook entrypoint.
-# SimRuntime uses this for deterministic START/END_OF_COMBAT and START/END_OF_TURN
-# execution. Treat this as one hook family, not the whole long-term arcana API.
-func activate_arcanum(_ctx: ArcanumContext) -> Variant:
-	return null
+func on_battle_started(_api: SimBattleAPI) -> void:
+	pass
 
+func on_turn_started(_api: SimBattleAPI) -> void:
+	pass
 
-func get_hook_families() -> Array[int]:
-	var out: Array[int] = []
-	if type != Type.EVENT_BASED:
-		out.append(HookFamily.TIMED_BATTLE)
-	if contributes_modifier():
-		out.append(HookFamily.MODIFIER)
-	return out
+func on_turn_ended(_api: SimBattleAPI) -> void:
+	pass
 
+func on_battle_ended(_api: SimBattleAPI) -> void:
+	pass
 
-# Future run-owned interception point for non-battle systems such as reward,
-# shop, map, or meta progression hooks. Not driven yet.
-func on_run_hook(_hook_id: StringName, _ctx: Dictionary = {}) -> Variant:
-	return null
+func on_reward_context_started(_ctx: RewardContext) -> void:
+	pass
 
-
-# Future battle-resolution interception point for contexts like damage, summon,
-# status, death, or move. Not driven yet.
-func on_battle_resolution_hook(_hook_id: StringName, _ctx: Dictionary = {}) -> Variant:
-	return null
+func on_shop_context_started(_ctx: ShopContext) -> void:
+	pass
 
 func get_targeting_priority(_stage: int) -> int:
 	return 100
 
-func on_targeting_retarget(_ctx: ArcanumContext, _targeting_ctx: TargetingContext) -> void:
+func on_targeting_retarget(_api: SimBattleAPI, _targeting_ctx: TargetingContext) -> void:
 	pass
 
-func on_targeting_interpose(_ctx: ArcanumContext, _targeting_ctx: TargetingContext) -> void:
+func on_targeting_interpose(_api: SimBattleAPI, _targeting_ctx: TargetingContext) -> void:
 	pass
 
 func get_modifier_tokens_for(_target: Node) -> Array[ModifierToken]:

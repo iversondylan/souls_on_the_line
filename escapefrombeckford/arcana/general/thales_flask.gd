@@ -6,15 +6,16 @@ const ID := &"thales_flask"
 
 @export var n_heal := 6
 #
-#func initialize_arcanum(_arcanum_display: ArcanumDisplay) -> void:
-	#print("arcanum.gd initialize_arcanum(): This happens once when arcanum is acquired.")
+func on_battle_ended(api: SimBattleAPI) -> void:
+	if api == null:
+		return
 
-func activate_arcanum(ctx: ArcanumContext) -> Variant:
-	#var player := ctx.arcanum_display.get_tree().get_first_node_in_group("player") as Player
-	#if player:
-		#player.heal(n_heal)
-		#arcanum_display.flash()
-	return null
+	var player_id := int(api.get_player_id())
+	if player_id <= 0:
+		return
+
+	var heal_ctx := HealContext.new(player_id, player_id, int(n_heal), 0.0, 0.0)
+	api.heal(heal_ctx)
 
 func get_id() -> StringName:
 	return ID

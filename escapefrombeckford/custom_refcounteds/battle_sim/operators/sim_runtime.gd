@@ -766,27 +766,26 @@ func run_arcana_proc(proc: int) -> void:
 				_end_scope(arcana_scope)
 				return
 
-			var ctx := ArcanumContext.new()
-			ctx.api = sim.api
-			ctx.runtime = self
-			ctx.params[Keys.MODE] = Keys.MODE_SIM
-			ctx.params[Keys.PLAYER_ID] = sim.state.groups[0].player_id
-			ctx.params[Keys.SOURCE_ID] = sim.state.groups[0].player_id
-			ctx.params[Keys.GROUP_INDEX] = 0
-
 			if writer != null:
-				writer.emit_arcanum_proc(ctx.params[Keys.SOURCE_ID], id, proc)
-			var r = proto.activate_arcanum(ctx)
-
-			if r is Signal and !(r as Signal).is_null():
-				push_warning("SimRuntime: arcana %s returned Signal; ignored" % String(id))
-			elif typeof(r) == TYPE_OBJECT and r != null and r.get_class() == "GDScriptFunctionState":
-				push_warning("SimRuntime: arcana %s returned FunctionState; ignored" % String(id))
+				writer.emit_arcanum_proc(player_id, id, proc)
+			_dispatch_battle_timed_arcanum(proto, int(proc), sim.api)
 
 			_end_scope(arcanum_scope)
 
 	_apply_checkpoint_boundary(CheckpointProcessor.Kind.AFTER_ARCANA, true)
 	_end_scope(arcana_scope)
+
+func _dispatch_battle_timed_arcanum(proto: Arcanum, proc: int, api: SimBattleAPI) -> void:
+	if proto == null or api == null:
+		return
+
+	match int(proc):
+		TurnEngineCore.ArcanaProc.START_OF_COMBAT:
+			proto.on_battle_started(api)
+		TurnEngineCore.ArcanaProc.START_OF_TURN:
+			proto.on_turn_started(api)
+		TurnEngineCore.ArcanaProc.END_OF_TURN:
+			proto.on_turn_ended(api)
 
 
 func apply_attack_now(spec: SimAttackSpec) -> bool:

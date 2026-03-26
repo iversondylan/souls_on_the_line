@@ -7,8 +7,8 @@ var member_var := 0
 func initialize_arcanum(_arcanum_display: ArcanumDisplay) -> void:
 	print("arcanum.gd initialize_arcanum(): This happens once when arcanum is acquired.")
 
-func activate_arcanum(_arcanum_display: ArcanumDisplay) -> void:
-	print("arcanum.gd activate_arcanum(): This happens at specific times based on the Relic.Type property.")
+func on_battle_started(_api: SimBattleAPI) -> void:
+	print("arcanum.gd on_battle_started(): This happens at specific times based on the Arcanum.Type property.")
 
 func deactivate_arcanum(_arcanum_display: ArcanumDisplay) -> void:
 	print("arcanum.gd deactivate_arcanum(): this gets called when an ArcanumDisplay is exiting scene tree.")

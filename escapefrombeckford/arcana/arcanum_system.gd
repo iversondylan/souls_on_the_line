@@ -47,6 +47,20 @@ func play_view_activation(arcanum_id: StringName, _proc: int, _source_id: int) -
 
 	d.flash()
 
+func on_reward_context_started(ctx: RewardContext) -> void:
+	if ctx == null:
+		return
+	for a in _arcana:
+		if a != null:
+			a.on_reward_context_started(ctx)
+
+func on_shop_context_started(ctx: ShopContext) -> void:
+	if ctx == null:
+		return
+	for a in _arcana:
+		if a != null:
+			a.on_shop_context_started(ctx)
+
 func has_arcanum(id: StringName) -> bool:
 	return _by_id.has(id)
 
@@ -146,12 +160,7 @@ func activate_arcana_by_type(type: Arcanum.Type, host: Node) -> void:
 	var tween := host.get_tree().create_tween()
 
 	for a in queue:
-		var ctx := ArcanumContext.new()
-		ctx.api = api
-		# Legacy live-path convenience only. Battle-time activation visuals should
-		# flow through Events.arcanum_view_activated instead of direct display access.
-		ctx.arcanum_display = _get_display(a.get_id()) # may be null; ok
-		tween.tween_callback(a.activate_arcanum.bind(ctx))
+		tween.tween_callback(_activate_arcana_by_type_now.bind(a, type))
 		tween.tween_interval(ARCANUM_APPLY_INTERVAL)
 
 	tween.finished.connect(func():
@@ -165,3 +174,17 @@ func get_my_arcana() -> Array[StringName]:
 		#print(arcanum.get_id())
 		arcana_ids.push_back(arcanum.get_id())
 	return arcana_ids
+
+func _activate_arcana_by_type_now(arcanum: Arcanum, type: Arcanum.Type) -> void:
+	if arcanum == null or api == null:
+		return
+
+	match int(type):
+		Arcanum.Type.START_OF_COMBAT:
+			arcanum.on_battle_started(api)
+		Arcanum.Type.START_OF_TURN:
+			arcanum.on_turn_started(api)
+		Arcanum.Type.END_OF_TURN:
+			arcanum.on_turn_ended(api)
+		Arcanum.Type.END_OF_COMBAT:
+			arcanum.on_battle_ended(api)
