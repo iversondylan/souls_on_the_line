@@ -19,15 +19,15 @@ var _display_by_id: Dictionary = {}
 #func set_api(new_api: LiveBattleAPI) -> void:
 	#api = new_api
 
-func bind_display(arcanum_id: String, display: Node) -> void:
-	if arcanum_id == "" or display == null:
+func bind_display(arcanum_id: StringName, display: Node) -> void:
+	if arcanum_id == &"" or display == null:
 		return
 	_display_by_id[arcanum_id] = weakref(display)
 
-func unbind_display(arcanum_id: String) -> void:
+func unbind_display(arcanum_id: StringName) -> void:
 	_display_by_id.erase(arcanum_id)
 
-func _get_display(arcanum_id: String) -> ArcanumDisplay:
+func _get_display(arcanum_id: StringName) -> ArcanumDisplay:
 	var wr : WeakRef = _display_by_id.get(arcanum_id, null)
 	if wr == null:
 		return null
@@ -36,7 +36,18 @@ func _get_display(arcanum_id: String) -> ArcanumDisplay:
 		return null
 	return d as ArcanumDisplay
 
-func has_arcanum(id: String) -> bool:
+
+func play_view_activation(arcanum_id: StringName, _proc: int, _source_id: int) -> void:
+	if arcanum_id == &"" or !_by_id.has(arcanum_id):
+		return
+
+	var d := _get_display(arcanum_id)
+	if d == null:
+		return
+
+	d.flash()
+
+func has_arcanum(id: StringName) -> bool:
 	return _by_id.has(id)
 
 func get_all_arcana() -> Array[Arcanum]:
@@ -137,6 +148,8 @@ func activate_arcana_by_type(type: Arcanum.Type, host: Node) -> void:
 	for a in queue:
 		var ctx := ArcanumContext.new()
 		ctx.api = api
+		# Legacy live-path convenience only. Battle-time activation visuals should
+		# flow through Events.arcanum_view_activated instead of direct display access.
 		ctx.arcanum_display = _get_display(a.get_id()) # may be null; ok
 		tween.tween_callback(a.activate_arcanum.bind(ctx))
 		tween.tween_interval(ARCANUM_APPLY_INTERVAL)

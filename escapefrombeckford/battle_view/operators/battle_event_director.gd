@@ -329,6 +329,8 @@ func on_event(e: EventPackage) -> void:
 			_on_scope_end(e)
 		BattleEvent.Type.TURN_STATUS:
 			_on_turn_status(e)
+		BattleEvent.Type.ARCANUM_PROC:
+			_on_arcanum_proc(e)
 		BattleEvent.Type.PLAYER_INPUT_REACHED:
 			Events.player_input_view_reached.emit(int(e.event.data.get(Keys.ACTOR_ID, 0)) if e.event.data != null else 0)
 			Events.request_draw_hand.emit()
@@ -692,6 +694,18 @@ func _on_turn_status(e: EventPackage) -> void:
 			v.set_pending_turn_glow(CombatantView.TurnStatus.NONE)
 
 	Events.turn_status_view_changed.emit(group_index, active_id, pending_ids, player_id)
+
+
+func _on_arcanum_proc(e: EventPackage) -> void:
+	if e == null or e.is_planned:
+		return
+	var d := _data(e)
+	var arcanum_id: StringName = d.get(Keys.ARCANUM_ID, &"")
+	var proc := int(d.get(Keys.PROC, -1))
+	var source_id := int(d.get(Keys.SOURCE_ID, 0))
+	if arcanum_id == &"":
+		return
+	Events.arcanum_view_activated.emit(arcanum_id, proc, source_id)
 
 
 func _on_formation_set(e: EventPackage) -> void:

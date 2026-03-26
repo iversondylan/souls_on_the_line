@@ -60,25 +60,34 @@ func activate_sim(ctx: CardContext) -> bool:
 		if replaced_insert_index >= 0 and replaced_insert_index < insert_index:
 			insert_index -= 1
 
-		ctx.runtime.run_fade(replaced_id, "summon_replace")
+		var fade_ctx := FadeContext.new()
+		fade_ctx.actor_id = replaced_id
+		fade_ctx.reason = "summon_replace"
+		if ctx.card_data != null:
+			ctx.card_data.ensure_uid()
+			fade_ctx.origin_card_uid = String(ctx.card_data.uid)
+		ctx.runtime.run_fade(fade_ctx)
 
 	var sctx := SummonContext.new()
+	sctx.actor_id = int(ctx.source_id)
 	sctx.group_index = 0
 	sctx.insert_index = insert_index
 	sctx.source_id = int(ctx.source_id)
 	sctx.summon_data = _build_clone_data_sim()
 	sctx.mortality = CombatantView.Mortality.SOULBOUND
+	sctx.reason = "card_summon"
 
 	if ctx.card_data != null and !ctx.card_data.deplete:
 		ctx.card_data.ensure_uid()
 		sctx.bound_card_uid = String(ctx.card_data.uid)
+		sctx.origin_card_uid = String(ctx.card_data.uid)
 
 	if ctx.params != null and ctx.params.has(Keys.WINDUP_ORDER_IDS):
 		var snap = ctx.params[Keys.WINDUP_ORDER_IDS]
 		if snap is PackedInt32Array:
 			sctx.windup_order_ids = snap
 
-	ctx.api.summon(sctx)
+	ctx.runtime.run_summon_action(sctx)
 
 	if sctx.summoned_id > 0:
 		ctx.runtime.append_summoned_id(ctx, sctx.summoned_id)

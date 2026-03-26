@@ -51,6 +51,10 @@ func activate_sim(ctx: CardContext) -> bool:
 			d.source_id = source_id
 			d.target_id = target_id
 			d.base_amount = int(base_damage)
+			if ctx.card_data != null:
+				ctx.card_data.ensure_uid()
+				d.origin_card_uid = String(ctx.card_data.uid)
+			d.reason = "card_attack"
 
 			# Let SIM modifiers do their thing (defaults are already DMG_DEALT/DMG_TAKEN)
 			d.deal_modifier_type = int(Modifier.Type.DMG_DEALT)

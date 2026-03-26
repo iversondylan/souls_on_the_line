@@ -11,6 +11,8 @@ func _set_arcanum(new_arcanum: Arcanum) -> void:
 	if !is_node_ready():
 		await ready
 	arcanum = new_arcanum
+	# Legacy convenience for older run-level modifier/live paths.
+	# Sim battle activation should not depend on this mutable display reference.
 	arcanum.arcanum_display = self
 	icon.texture = arcanum.icon
 

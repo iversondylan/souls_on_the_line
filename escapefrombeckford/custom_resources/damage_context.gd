@@ -25,12 +25,17 @@ var deal_modifier_type: int = Modifier.Type.DMG_DEALT
 var take_modifier_type: int = Modifier.Type.DMG_TAKEN
 
 # Results (filled in when applied)
+var before_health: int = 0
+var after_health: int = 0
 var armor_damage: int = 0
 var health_damage: int = 0
 var was_lethal: bool = false
 
 # Optional flags / tags
 var tags: Array[StringName] = []
+var reason: String = ""
+var origin_card_uid: String = ""
+var origin_arcanum_id: StringName = &""
 var phase: Phase = Phase.PRE_MODIFIERS
 var params := {}
 var sound: Sound

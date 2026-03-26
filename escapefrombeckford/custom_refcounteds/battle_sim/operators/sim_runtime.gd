@@ -239,8 +239,15 @@ func handle_group_turn_started(group_index: int) -> void:
 		writer.set_turn_context(engine._turn_token, group_index, 0)
 		_group_turn_scope_handle = writer.scope_begin(Scope.Kind.GROUP_TURN, "group=%d" % group_index, 0)
 		writer.emit_group_turn_begin(group_index)
-		
-	api.refresh_mana_for_group_turn(group_index)
+
+	if int(group_index) == int(SimBattleAPI.FRIENDLY):
+		var mana_ctx := ManaContext.new()
+		mana_ctx.source_id = int(api.get_player_id())
+		mana_ctx.mode = ManaContext.Mode.REFRESH_FOR_GROUP_TURN
+		mana_ctx.group_index = int(group_index)
+		mana_ctx.reason = "group_turn_begin_refresh"
+		mana_ctx.new_mana = int(api.state.resource.max_mana)
+		api.set_mana(mana_ctx)
 	
 	SimStatusSystem.on_group_turn_begin(api, group_index)
 	_apply_checkpoint_boundary(CheckpointProcessor.Kind.AFTER_GROUP_TURN_BEGIN, true)
@@ -500,21 +507,25 @@ func run_npc_turn(cid: int) -> void:
 		ActionIntentPresenter.emit_set_intent(api, profile, ctx, -1)
 
 
-func run_attack(ctx: NPCAIContext) -> bool:
+func run_attack(ctx: AttackContext) -> bool:
 	var api := _api()
 	if api == null or ctx == null:
 		return false
-	if ctx.cid <= 0 or !api.is_alive(ctx.cid):
+	if ctx.api != null:
+		api = ctx.api
+	if int(ctx.attacker_id) <= 0 or !api.is_alive(int(ctx.attacker_id)):
 		return false
 
 	var params: Dictionary = ctx.params if ctx.params else {}
-	var strikes := maxi(int(params.get(Keys.STRIKES, 1)), 1)
-	var mode := int(params.get(Keys.ATTACK_MODE, Attack.Mode.MELEE))
-	var targeting := int(params.get(Keys.TARGET_TYPE, Attack.Targeting.STANDARD))
+	var strikes := maxi(int(ctx.strikes), 1)
+	var mode := int(ctx.attack_mode)
+	var targeting := int(ctx.targeting)
+	var attacker_id := int(ctx.attacker_id)
+	var source_id := int(ctx.source_id if ctx.source_id > 0 else attacker_id)
 	var any := false
 
-	var attack_scope := _begin_scope(Scope.Kind.ATTACK, "attacker=%d" % int(ctx.cid), int(ctx.cid), {
-		Keys.ACTOR_ID: int(ctx.cid),
+	var attack_scope := _begin_scope(Scope.Kind.ATTACK, "attacker=%d" % attacker_id, attacker_id, {
+		Keys.ACTOR_ID: attacker_id,
 		Keys.ATTACK_MODE: mode,
 		Keys.STRIKES: strikes,
 		Keys.TARGET_TYPE: targeting,
@@ -523,10 +534,10 @@ func run_attack(ctx: NPCAIContext) -> bool:
 		return false
 
 	for s in range(strikes):
-		if !api.is_alive(ctx.cid):
+		if !api.is_alive(attacker_id):
 			break
 
-		var strike_scope := _begin_scope(Scope.Kind.STRIKE, "i=%d" % s, int(ctx.cid), {
+		var strike_scope := _begin_scope(Scope.Kind.STRIKE, "i=%d" % s, attacker_id, {
 			Keys.STRIKE_INDEX: s,
 			Keys.ATTACK_MODE: mode,
 			Keys.TARGET_TYPE: targeting,
@@ -535,7 +546,7 @@ func run_attack(ctx: NPCAIContext) -> bool:
 			_end_scope(attack_scope)
 			return false
 
-		var target_ids: Array[int] = AttackTargeting.get_target_ids(api, ctx.cid, params)
+		var target_ids: Array[int] = AttackTargeting.get_target_ids(api, attacker_id, params)
 		target_ids = target_ids.filter(func(id):
 			return int(id) > 0 and api.is_alive(int(id))
 		)
@@ -547,28 +558,21 @@ func run_attack(ctx: NPCAIContext) -> bool:
 		var writer := _writer()
 		if writer != null:
 			writer.emit_strike(
-				int(ctx.cid),
+				attacker_id,
 				target_ids,
 				mode,
 				targeting,
 				s,
 				strikes,
-				String(params.get(Keys.PROJECTILE_SCENE, ""))
+				String(ctx.projectile_scene if !ctx.projectile_scene.is_empty() else params.get(Keys.PROJECTILE_SCENE, ""))
 			)
 
-		var dmg := 0
-		if params.has(Keys.DAMAGE_MELEE) or params.has(Keys.DAMAGE_RANGED):
-			var k := Keys.DAMAGE_RANGED if mode == Attack.Mode.RANGED else Keys.DAMAGE_MELEE
-			dmg = int(params.get(k, 0))
-		else:
-			dmg = int(params.get(Keys.DAMAGE, 0))
-		dmg = maxi(dmg, 0)
-
-		var deal_mod := int(params.get(Keys.DEAL_MOD_TYPE, Modifier.Type.DMG_DEALT))
-		var take_mod := int(params.get(Keys.TAKE_MOD_TYPE, Modifier.Type.DMG_TAKEN))
+		var dmg := _resolve_attack_damage(ctx)
+		var deal_mod := int(ctx.deal_modifier_type)
+		var take_mod := int(ctx.take_modifier_type)
 
 		for tid: int in target_ids:
-			var hit_scope := _begin_scope(Scope.Kind.HIT, "t=%d" % int(tid), int(ctx.cid), {
+			var hit_scope := _begin_scope(Scope.Kind.HIT, "t=%d" % int(tid), attacker_id, {
 				Keys.TARGET_ID: int(tid),
 				Keys.STRIKE_INDEX: s,
 				Keys.ATTACK_MODE: mode,
@@ -579,150 +583,97 @@ func run_attack(ctx: NPCAIContext) -> bool:
 				return false
 
 			var d := DamageContext.new()
-			d.source_id = int(ctx.cid)
+			d.source_id = source_id
 			d.target_id = int(tid)
 			d.base_amount = dmg
 			d.deal_modifier_type = deal_mod
 			d.take_modifier_type = take_mod
 			d.params = params
+			d.tags = ctx.tags.duplicate()
+			d.reason = ctx.reason
+			d.origin_card_uid = ctx.origin_card_uid
+			d.origin_arcanum_id = ctx.origin_arcanum_id
 			api.resolve_damage_immediate(d)
 			any = true
+			if !_packed_has_int(ctx.affected_target_ids, int(tid)):
+				ctx.affected_target_ids.append(int(tid))
 
 			_end_scope(hit_scope)
 
 		_end_scope(strike_scope)
 
 	_end_scope(attack_scope)
+	ctx.any_hit = any
 	return any
 
 
-func run_status_action(ctx: NPCAIContext) -> void:
+func run_status_action(ctx: StatusContext) -> void:
 	var api := _api()
-	if api == null or api.state == null or ctx == null or bool(ctx.forecast):
+	if api == null or api.state == null or ctx == null:
 		return
 
-	var params: Dictionary = ctx.params if ctx.params else {}
-
-	var target_id := int(ParamModel._actor_id(ctx))
-	if target_id <= 0:
-		target_id = int(ctx.cid)
-	if target_id <= 0:
+	var actor_id := int(ctx.actor_id if ctx.actor_id > 0 else ctx.source_id)
+	var source_id := int(ctx.source_id if ctx.source_id > 0 else actor_id)
+	if int(ctx.target_id) <= 0 or ctx.status_id == &"":
 		return
-
-	var status_id: StringName = &""
-	if params.has(Keys.STATUS_ID):
-		var v = params[Keys.STATUS_ID]
-		if v is StringName:
-			status_id = v
-		elif v is String:
-			status_id = StringName(v)
-
-	if status_id == &"":
-		var status_res = params.get(Keys.STATUS_SCENE, null)
-		if status_res != null and status_res is Status:
-			status_id = StringName((status_res as Status).get_id())
-
-	if status_id == &"":
-		return
-
-	var intensity := int(params.get(Keys.STATUS_INTENSITY, 0))
-	var duration := int(params.get(Keys.STATUS_DURATION, 0))
-	var actor_id := int(ctx.cid)
-	var source_id := int(params.get(Keys.SOURCE_ID, actor_id))
-	if source_id <= 0:
-		source_id = actor_id
 
 	var status_scope := _begin_scope(
 		Scope.Kind.STATUS_ACTION,
-		"id=%s tgt=%d" % [String(status_id), int(target_id)],
+		"id=%s tgt=%d" % [String(ctx.status_id), int(ctx.target_id)],
 		actor_id,
 		{
 			Keys.ACTOR_ID: int(actor_id),
 			Keys.SOURCE_ID: int(source_id),
-			Keys.TARGET_ID: int(target_id),
-			Keys.STATUS_ID: status_id,
-			Keys.INTENSITY: int(intensity),
-			Keys.DURATION: int(duration),
+			Keys.TARGET_ID: int(ctx.target_id),
+			Keys.STATUS_ID: ctx.status_id,
+			Keys.INTENSITY: int(ctx.intensity),
+			Keys.DURATION: int(ctx.duration),
 		}
 	)
 	if status_scope == null:
 		return
 
-	var sc := StatusContext.new()
-	sc.source_id = source_id
-	sc.target_id = target_id
-	sc.status_id = status_id
-	sc.intensity = intensity
-	sc.duration = duration
-	api.apply_status(sc)
+	ctx.actor_id = actor_id
+	ctx.source_id = source_id
+	api.apply_status(ctx)
 
 	_end_scope(status_scope)
 
 
-func run_summon_action(ctx: NPCAIContext) -> void:
+func run_summon_action(ctx: SummonContext) -> void:
 	var api := _api()
-	if api == null or api.state == null or ctx == null or bool(ctx.forecast):
+	if api == null or api.state == null or ctx == null:
 		return
 
-	var params: Dictionary = ctx.params if ctx.params else {}
-	var actor_id := int(ctx.cid)
+	var actor_id := int(ctx.actor_id if ctx.actor_id > 0 else ctx.source_id)
 	if actor_id <= 0:
 		return
 
-	var source_id := int(params.get(Keys.SOURCE_ID, actor_id))
-	if source_id <= 0:
-		source_id = actor_id
-
-	var group_index := clampi(int(params.get(Keys.GROUP_INDEX, api.get_group(source_id))), 0, 1)
-	var insert_index := int(params.get(Keys.INSERT_INDEX, 0))
-	var count := int(params.get(Keys.SUMMON_COUNT, 1))
-	if count <= 0:
-		return
-
-	var summon_data_orig: CombatantData = _resolve_summon_data(params.get(Keys.SUMMON_DATA, null))
-	if summon_data_orig == null:
+	var source_id := int(ctx.source_id if ctx.source_id > 0 else actor_id)
+	var group_index := clampi(int(ctx.group_index), 0, 1)
+	if ctx.summon_data == null:
 		push_warning("SimRuntime.run_summon_action(): missing summon_data")
 		return
-
-	var n_existing := api.get_combatants_in_group(group_index, false).size()
-	if n_existing >= 7:
-		return
-	if n_existing + count > 7:
-		count = 7 - n_existing
-		if count <= 0:
-			return
+	ctx.actor_id = actor_id
+	ctx.source_id = source_id
 
 	var summon_scope := _begin_scope(
 		Scope.Kind.SUMMON_ACTION,
-		"count=%d g=%d idx=%d" % [count, group_index, insert_index],
+		"count=1 g=%d idx=%d" % [group_index, int(ctx.insert_index)],
 		actor_id,
 		{
 			Keys.ACTOR_ID: int(actor_id),
 			Keys.SOURCE_ID: int(source_id),
 			Keys.GROUP_INDEX: int(group_index),
-			Keys.INSERT_INDEX: int(insert_index),
-			Keys.SUMMON_COUNT: int(count),
-			Keys.PROTO: String(summon_data_orig.resource_path),
+			Keys.INSERT_INDEX: int(ctx.insert_index),
+			Keys.SUMMON_COUNT: 1,
+			Keys.PROTO: String(ctx.summon_data.resource_path),
 		}
 	)
 	if summon_scope == null:
 		return
 
-	for _i in range(count):
-		var cur_n := api.get_combatants_in_group(group_index, false).size()
-		var idx := clampi(insert_index, 0, cur_n)
-
-		var sc := SummonContext.new()
-		sc.source_id = source_id
-		sc.group_index = group_index
-		sc.insert_index = idx
-
-		var cd := summon_data_orig.duplicate(true) as CombatantData
-		if cd != null:
-			cd.init()
-		sc.summon_data = cd
-
-		api.summon(sc)
+	api.summon(ctx)
 
 	_end_scope(summon_scope)
 
@@ -753,19 +704,19 @@ func run_move(ctx: MoveContext) -> void:
 	_end_scope(move_scope)
 
 
-func run_fade(combat_id: int, reason: String = "fade") -> void:
+func run_fade(ctx: FadeContext) -> void:
 	var api := _api()
-	if api == null or api.state == null or combat_id <= 0:
+	if api == null or api.state == null or ctx == null or int(ctx.actor_id) <= 0:
 		return
 
-	var u: CombatantState = api.state.get_unit(int(combat_id))
+	var u: CombatantState = api.state.get_unit(int(ctx.actor_id))
 	if u == null or !u.alive:
 		return
 
-	var fade_scope := _begin_scope(Scope.Kind.FADE, "fade_unit", int(combat_id))
+	var fade_scope := _begin_scope(Scope.Kind.FADE, "fade_unit", int(ctx.actor_id))
 	if fade_scope == null:
 		return
-	api.fade_unit(int(combat_id), String(reason))
+	api.fade_unit(ctx)
 	_end_scope(fade_scope)
 
 
@@ -859,7 +810,25 @@ func apply_attack_now(spec: SimAttackSpec) -> bool:
 		if m != null:
 			m.change_params_sim(ai_ctx)
 
-	return run_attack(ai_ctx)
+	var attack_ctx := AttackContext.new()
+	attack_ctx.api = api
+	attack_ctx.runtime = self
+	attack_ctx.attacker_id = int(spec.attacker_id)
+	attack_ctx.source_id = int(spec.attacker_id)
+	attack_ctx.strikes = maxi(int(spec.strikes), 1)
+	attack_ctx.deal_modifier_type = int(spec.deal_modifier_type)
+	attack_ctx.take_modifier_type = int(spec.take_modifier_type)
+	attack_ctx.params = ai_ctx.params
+	attack_ctx.attack_mode = int(attack_ctx.params.get(Keys.ATTACK_MODE, Attack.Mode.MELEE))
+	attack_ctx.targeting = int(attack_ctx.params.get(Keys.TARGET_TYPE, Attack.Targeting.STANDARD))
+	attack_ctx.projectile_scene = String(attack_ctx.params.get(Keys.PROJECTILE_SCENE, ""))
+	attack_ctx.reason = "attack_now"
+	if int(spec.base_damage) > 0:
+		attack_ctx.base_damage = int(spec.base_damage)
+		attack_ctx.base_damage_melee = int(spec.base_damage)
+		attack_ctx.base_damage_ranged = int(spec.base_damage)
+
+	return run_attack(attack_ctx)
 
 
 func _begin_scope(kind: int, label: String, actor_id: int = 0, extra := {}) -> ScopeHandle:
@@ -889,6 +858,26 @@ func _should_immediately_replan_intent(api: SimBattleAPI, u: CombatantState) -> 
 	if int(u.team) != int(SimBattleAPI.FRIENDLY):
 		return false
 	return int(u.id) != int(api.get_player_id())
+
+
+func _resolve_attack_damage(ctx: AttackContext) -> int:
+	if ctx == null:
+		return 0
+	var params: Dictionary = ctx.params if ctx.params else {}
+	var mode := int(ctx.attack_mode)
+	var dmg := 0
+	if mode == int(Attack.Mode.RANGED) and int(ctx.base_damage_ranged) > 0:
+		dmg = int(ctx.base_damage_ranged)
+	elif mode != int(Attack.Mode.RANGED) and int(ctx.base_damage_melee) > 0:
+		dmg = int(ctx.base_damage_melee)
+	elif int(ctx.base_damage) > 0:
+		dmg = int(ctx.base_damage)
+	elif params.has(Keys.DAMAGE_MELEE) or params.has(Keys.DAMAGE_RANGED):
+		var k := Keys.DAMAGE_RANGED if mode == Attack.Mode.RANGED else Keys.DAMAGE_MELEE
+		dmg = int(params.get(k, 0))
+	else:
+		dmg = int(params.get(Keys.DAMAGE, 0))
+	return maxi(dmg, 0)
 
 
 func _resolve_summon_data(value) -> CombatantData:
@@ -1203,8 +1192,10 @@ func _commit_card_play_if_needed(ctx: CardContext) -> bool:
 		ctx.emitted_card_played = true
 
 	if !ctx.mana_spent:
-		var cost := int(ctx.card_data.get_total_cost())
-		if !ctx.api.spend_mana_for_card(int(ctx.source_id), ctx.card_data):
+		var mana_ctx := ManaContext.new()
+		mana_ctx.source_id = int(ctx.source_id)
+		mana_ctx.reason = "card_spend"
+		if !ctx.api.spend_mana_for_card(mana_ctx, ctx.card_data):
 			return false
 		ctx.mana_spent = true
 

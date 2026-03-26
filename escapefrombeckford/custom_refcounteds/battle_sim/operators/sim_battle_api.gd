@@ -374,6 +374,8 @@ func resolve_damage_immediate(ctx: DamageContext) -> int:
 	ctx.armor_damage = armor_damage
 	ctx.health_damage = health_damage
 	ctx.was_lethal = (int(tgt.health) <= 0)
+	ctx.before_health = before_health
+	ctx.after_health = int(tgt.health)
 	ctx.phase = DamageContext.Phase.APPLIED
 	
 	if writer != null:
@@ -385,14 +387,20 @@ func resolve_damage_immediate(ctx: DamageContext) -> int:
 			int(ctx.armor_damage),
 			int(ctx.health_damage),
 			bool(ctx.was_lethal),
-			int(before_health),
-			int(tgt.health),
+			int(ctx.before_health),
+			int(ctx.after_health),
 		)
 	
 	on_damage_applied(ctx)
 	
 	if bool(ctx.was_lethal):
-		resolve_death(int(ctx.target_id), "damage", int(ctx.source_id))
+		var death_ctx := DeathContext.new()
+		death_ctx.dead_id = int(ctx.target_id)
+		death_ctx.killer_id = int(ctx.source_id)
+		death_ctx.reason = "damage"
+		death_ctx.origin_card_uid = String(ctx.origin_card_uid)
+		death_ctx.origin_arcanum_id = ctx.origin_arcanum_id
+		resolve_death(death_ctx)
 	
 	return int(ctx.amount)
 
@@ -449,32 +457,46 @@ func change_max_health(
 	# _request_intent_refresh(int(cid))
 
 	if before_health > 0 and after_health <= 0:
-		resolve_death(int(cid), "change_max_health:" + String(reason), 0)
+		var death_ctx := DeathContext.new()
+		death_ctx.dead_id = int(cid)
+		death_ctx.reason = "change_max_health:" + String(reason)
+		resolve_death(death_ctx)
 
-func resolve_death(combat_id: int, reason := "", killer_id: int = 0) -> void:
-	if state == null or int(combat_id) <= 0:
+func resolve_death(ctx: DeathContext) -> void:
+	if state == null or ctx == null:
+		return
+	if int(ctx.dead_id) <= 0:
 		return
 	
-	var u: CombatantState = state.get_unit(int(combat_id))
+	var u: CombatantState = state.get_unit(int(ctx.dead_id))
 	if u == null or !u.alive:
 		return
 	
-	_maybe_release_soulbound_reserve(u, "fade:" + String(reason))
+	_maybe_release_soulbound_reserve(u, "fade:" + String(ctx.reason))
 
 	var g := int(u.team)
-	var before_order_ids := PackedInt32Array(state.groups[g].order) if g != -1 else PackedInt32Array()
+	ctx.group_index = g
+	ctx.before_order_ids = PackedInt32Array(state.groups[g].order) if g != -1 else PackedInt32Array()
 
 	u.alive = false
 	if g != -1:
-		state.groups[g].remove(int(combat_id))
+		state.groups[g].remove(int(ctx.dead_id))
 
-	var after_order_ids := PackedInt32Array(state.groups[g].order) if g != -1 else PackedInt32Array()
+	ctx.after_order_ids = PackedInt32Array(state.groups[g].order) if g != -1 else PackedInt32Array()
 	if on_unit_removed.is_valid():
-		on_unit_removed.call(int(combat_id), int(g), "death:" + String(reason))
+		on_unit_removed.call(int(ctx.dead_id), int(g), "death:" + String(ctx.reason))
 
 	if writer != null:
-		writer.emit_died(int(killer_id), int(combat_id), g, before_order_ids, after_order_ids, String(reason))
+		writer.emit_died(
+			int(ctx.killer_id),
+			int(ctx.dead_id),
+			g,
+			ctx.before_order_ids,
+			ctx.after_order_ids,
+			String(ctx.reason)
+		)
 
+	ctx.died = true
 	_request_outcome_check()
 
 
@@ -637,33 +659,36 @@ func remove_status(ctx: StatusContext) -> void:
 	_request_immediate_planning_flush_if_needed(int(ctx.target_id), proto)
 
 
-func fade_unit(combat_id: int, reason: String = "fade") -> void:
-	if state == null:
+func fade_unit(ctx: FadeContext) -> void:
+	if state == null or ctx == null:
 		return
 	
-	var u: CombatantState = state.get_unit(int(combat_id))
+	var u: CombatantState = state.get_unit(int(ctx.actor_id))
 	if u == null or !u.alive:
 		return
 	
-	_maybe_release_soulbound_reserve(u, "fade:" + String(reason))
+	_maybe_release_soulbound_reserve(u, "fade:" + String(ctx.reason))
 	
 	var g := int(u.team)
-	var before := PackedInt32Array(state.groups[g].order)
+	ctx.group_index = g
+	ctx.before_order_ids = PackedInt32Array(state.groups[g].order)
 	
 	u.alive = false
 	if g != -1:
-		state.groups[g].remove(int(combat_id))
+		state.groups[g].remove(int(ctx.actor_id))
 	
 	if on_unit_removed.is_valid():
-		on_unit_removed.call(int(combat_id), int(g), "fade:" + String(reason))
+		on_unit_removed.call(int(ctx.actor_id), int(g), "fade:" + String(ctx.reason))
 	
-	var after_order_ids := PackedInt32Array(state.groups[g].order) if g != -1 else PackedInt32Array()
+	ctx.after_order_ids = PackedInt32Array(state.groups[g].order) if g != -1 else PackedInt32Array()
 	
 	_request_turn_order_rebuild()
 	_request_outcome_check()
 	
 	if writer != null:
-		writer.emit_faded(int(combat_id), int(g), before, after_order_ids, String(reason))
+		writer.emit_faded(int(ctx.actor_id), int(g), ctx.before_order_ids, ctx.after_order_ids, String(ctx.reason))
+
+	ctx.faded = true
 
 
 # ============================================================================
@@ -701,11 +726,12 @@ func summon(ctx: SummonContext) -> void:
 		return
 	
 	var g := clampi(int(ctx.group_index), 0, 1)
-	var source_id := int(ctx.source_id) if ("source_id" in ctx) else 0
+	var source_id := int(ctx.source_id)
 	
 	var windup_order := ctx.windup_order_ids
 	if windup_order == null or windup_order.is_empty():
 		windup_order = PackedInt32Array(state.groups[g].order)
+	ctx.before_order_ids = windup_order
 	
 	var id := state.alloc_id()
 	ctx.summon_data.combat_id = id
@@ -721,6 +747,7 @@ func summon(ctx: SummonContext) -> void:
 	if writer != null:
 		var spec := _make_spawn_spec_from_data(ctx.summon_data, u)
 		var after_order_ids := PackedInt32Array(state.groups[g].order)
+		ctx.after_order_ids = after_order_ids
 		writer.emit_summoned(
 			int(source_id),
 			int(id),
@@ -735,6 +762,8 @@ func summon(ctx: SummonContext) -> void:
 		)
 	
 	ctx.summoned_id = id
+	if ctx.after_order_ids.is_empty():
+		ctx.after_order_ids = PackedInt32Array(state.groups[g].order)
 	
 	if on_summoned.is_valid():
 		on_summoned.call(int(id), int(g))
@@ -815,128 +844,118 @@ func resolve_player_discard(selected_card_uids: Array[String]) -> void:
 # Shared resource mutations
 # ============================================================================
 
-func set_mana(new_mana: int, reason: String = "") -> void:
-	if state == null or state.resource == null:
+func set_mana(ctx: ManaContext) -> void:
+	if state == null or state.resource == null or ctx == null:
 		return
 	
-	var before_mana := int(state.resource.mana)
-	var before_max_mana := int(state.resource.max_mana)
+	ctx.before_mana = int(state.resource.mana)
+	ctx.before_max_mana = int(state.resource.max_mana)
 	
-	state.resource.mana = clampi(int(new_mana), 0, int(state.resource.max_mana))
+	state.resource.mana = clampi(int(ctx.new_mana), 0, int(state.resource.max_mana))
 	
-	var after_mana := int(state.resource.mana)
-	var after_max_mana := int(state.resource.max_mana)
+	ctx.after_mana = int(state.resource.mana)
+	ctx.after_max_mana = int(state.resource.max_mana)
+	ctx.changed = (
+		ctx.before_mana != ctx.after_mana
+		or ctx.before_max_mana != ctx.after_max_mana
+	)
 	
-	if writer != null and (before_mana != after_mana or before_max_mana != after_max_mana):
+	if writer != null and ctx.changed:
 		writer.emit_mana(
-			get_player_id(),
-			before_mana,
-			after_mana,
-			before_max_mana,
-			after_max_mana,
-			reason
+			int(ctx.source_id),
+			ctx.before_mana,
+			ctx.after_mana,
+			ctx.before_max_mana,
+			ctx.after_max_mana,
+			ctx.reason
 		)
 
 
-func set_max_mana(new_max_mana: int, refill := false, reason: String = "") -> void:
-	if state == null or state.resource == null:
+func set_max_mana(ctx: ManaContext) -> void:
+	if state == null or state.resource == null or ctx == null:
 		return
 	
-	var before_mana := int(state.resource.mana)
-	var before_max_mana := int(state.resource.max_mana)
+	ctx.before_mana = int(state.resource.mana)
+	ctx.before_max_mana = int(state.resource.max_mana)
 	
-	state.resource.max_mana = maxi(int(new_max_mana), 0)
-	if refill:
+	state.resource.max_mana = maxi(int(ctx.new_max_mana), 0)
+	if ctx.refill:
 		state.resource.mana = int(state.resource.max_mana)
 	else:
 		state.resource.mana = mini(int(state.resource.mana), int(state.resource.max_mana))
 	
-	var after_mana := int(state.resource.mana)
-	var after_max_mana := int(state.resource.max_mana)
+	ctx.after_mana = int(state.resource.mana)
+	ctx.after_max_mana = int(state.resource.max_mana)
+	ctx.changed = (
+		ctx.before_mana != ctx.after_mana
+		or ctx.before_max_mana != ctx.after_max_mana
+	)
 	
-	if writer != null and (before_mana != after_mana or before_max_mana != after_max_mana):
+	if writer != null and ctx.changed:
 		writer.emit_mana(
-			get_player_id(),
-			before_mana,
-			after_mana,
-			before_max_mana,
-			after_max_mana,
-			reason
+			int(ctx.source_id),
+			ctx.before_mana,
+			ctx.after_mana,
+			ctx.before_max_mana,
+			ctx.after_max_mana,
+			ctx.reason
 		)
 
 
-func gain_mana(amount: int, reason: String = "") -> void:
-	if state == null or state.resource == null:
+func gain_mana(ctx: ManaContext) -> void:
+	if state == null or state.resource == null or ctx == null:
 		return
-	if int(amount) == 0:
+	if int(ctx.amount) == 0:
 		return
-	set_mana(int(state.resource.mana) + int(amount), reason)
-
-
-func refresh_mana_for_group_turn(group_index: int) -> void:
-	if state == null or state.resource == null:
-		return
-	
-	# Only refresh on friendly group turn start.
-	if int(group_index) != FRIENDLY:
-		return
-	
-	var before_mana := int(state.resource.mana)
-	var before_max_mana := int(state.resource.max_mana)
-	
-	# Current policy:
-	# refill current mana to max at start of friendly group turn.
-	state.resource.mana = int(state.resource.max_mana)
-	
-	var after_mana := int(state.resource.mana)
-	var after_max_mana := int(state.resource.max_mana)
-	
-	if writer != null:
-		writer.emit_mana(
-			get_player_id(),
-			before_mana,
-			after_mana,
-			before_max_mana,
-			after_max_mana,
-			"group_turn_begin_refresh"
-		)
+	ctx.new_mana = int(state.resource.mana) + int(ctx.amount)
+	set_mana(ctx)
 
 func can_pay_card_cost(_source_id: int, card: CardData) -> bool:
 	if state == null or state.resource == null or card == null:
 		return false
 	return int(state.resource.mana) >= int(card.cost)
 
-func spend_mana_for_card(source_id: int, card: CardData) -> bool:
-	if state == null or state.resource == null or card == null:
+func spend_mana_for_card(ctx: ManaContext, card: CardData) -> bool:
+	if state == null or state.resource == null or card == null or ctx == null:
 		return false
 	
 	var cost := int(card.get_total_cost())
 	if cost <= 0:
+		ctx.before_mana = int(state.resource.mana)
+		ctx.after_mana = int(state.resource.mana)
+		ctx.before_max_mana = int(state.resource.max_mana)
+		ctx.after_max_mana = int(state.resource.max_mana)
+		ctx.changed = false
 		return true
 	
 	if int(state.resource.mana) < cost:
 		return false
 	
-	var before_mana := int(state.resource.mana)
-	var before_max_mana := int(state.resource.max_mana)
+	ctx.before_mana = int(state.resource.mana)
+	ctx.before_max_mana = int(state.resource.max_mana)
+	ctx.amount = cost
+	ctx.mode = ManaContext.Mode.SPEND_FOR_CARD
 	
 	state.resource.mana -= cost
 	
-	var after_mana := int(state.resource.mana)
-	var after_max_mana := int(state.resource.max_mana)
+	ctx.after_mana = int(state.resource.mana)
+	ctx.after_max_mana = int(state.resource.max_mana)
+	ctx.changed = true
+	card.ensure_uid()
+	ctx.card_uid = String(card.uid)
+	ctx.card_name = String(card.name)
 	
 	if writer != null:
-		card.ensure_uid()
 		writer.emit_mana(
-			int(source_id),
-			before_mana,
-			after_mana,
-			before_max_mana,
-			after_max_mana,
-			"card_spend",
+			int(ctx.source_id),
+			ctx.before_mana,
+			ctx.after_mana,
+			ctx.before_max_mana,
+			ctx.after_max_mana,
+			ctx.reason,
 			{
-				Keys.CARD_UID: String(card.uid),
-				Keys.CARD_NAME: String(card.name),
+				Keys.CARD_UID: ctx.card_uid,
+				Keys.CARD_NAME: ctx.card_name,
 				Keys.AMOUNT: int(cost),
 			}
 		)
@@ -993,7 +1012,10 @@ func debug_kill_all_enemies(reason: String = "debug_kill_all_enemies") -> void:
 		var enemy_id := int(cid)
 		if enemy_id <= 0 or !is_alive(enemy_id):
 			continue
-		resolve_death(enemy_id, reason, 0)
+		var death_ctx := DeathContext.new()
+		death_ctx.dead_id = enemy_id
+		death_ctx.reason = reason
+		resolve_death(death_ctx)
 
 	# Make sure downstream systems settle immediately the same way a card-resolution checkpoint would.
 	if checkpoint_processor != null:

@@ -38,6 +38,10 @@ func activate_sim(ctx: CardContext) -> bool:
 			d.base_amount = base_damage
 			d.deal_modifier_type = int(Modifier.Type.DMG_DEALT)
 			d.take_modifier_type = int(Modifier.Type.DMG_TAKEN)
+			if ctx.card_data != null:
+				ctx.card_data.ensure_uid()
+				d.origin_card_uid = String(ctx.card_data.uid)
+			d.reason = "berserkers_fury"
 			ctx.api.resolve_damage_immediate(d)
 			any = true
 
@@ -50,7 +54,14 @@ func activate_sim(ctx: CardContext) -> bool:
 	if melee_impact_sound != null:
 		ctx.api.play_sfx(melee_impact_sound)
 
-	ctx.api.resolve_death(attacker_id, "berserkers_fury", attacker_id)
+	var death_ctx := DeathContext.new()
+	death_ctx.dead_id = attacker_id
+	death_ctx.killer_id = attacker_id
+	death_ctx.reason = "berserkers_fury"
+	if ctx.card_data != null:
+		ctx.card_data.ensure_uid()
+		death_ctx.origin_card_uid = String(ctx.card_data.uid)
+	ctx.api.resolve_death(death_ctx)
 	if !ctx.affected_ids.has(attacker_id):
 		ctx.affected_ids.append(attacker_id)
 

@@ -75,6 +75,8 @@ func _apply_damage_headless(api: SimBattleAPI, source_id: int, target_id: int, a
 
 	_safe_set(d, &"source_id", source_id)
 	_safe_set(d, &"target_id", target_id)
+	_safe_set(d, &"origin_arcanum_id", get_id())
+	_safe_set(d, &"reason", "arcanum_proc")
 
 	# IMPORTANT: your sim DamageResolver reads ctx.base_amount.
 	_safe_set_any(d, [&"base_amount"], amount)

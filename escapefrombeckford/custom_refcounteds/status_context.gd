@@ -2,6 +2,8 @@
 class_name StatusContext
 extends RefCounted
 
+var actor_id: int = 0
+
 #var source: Fighter = null
 var source_id: int = 0
 
@@ -27,6 +29,9 @@ var after_duration := 0
 
 # optional tags
 var tags: Array[StringName] = []
+var reason: String = ""
+var origin_card_uid: String = ""
+var origin_arcanum_id: StringName = &""
 
 # results (filled by API)
 var applied: bool = false

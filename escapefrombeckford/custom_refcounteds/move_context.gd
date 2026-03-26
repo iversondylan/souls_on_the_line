@@ -29,3 +29,6 @@ var after_order_ids: PackedInt32Array = []
 
 # optional
 var sound: Sound = null
+var reason: String = ""
+var origin_card_uid: String = ""
+var origin_arcanum_id: StringName = &""

@@ -71,8 +71,9 @@ func execute(ctx: NPCAIContext, on_done: Callable) -> void:
 	# Build context + apply via API
 	# -------------------------
 	var sc := StatusContext.new()
+	sc.actor_id = target_id
 	sc.target_id = target_id
-	sc.source_id = target_id # optional (self as source)
+	sc.source_id = target_id
 	sc.status_id = status_id
 	sc.duration = duration
 	sc.intensity = intensity
@@ -88,4 +89,33 @@ func execute_sim(ctx: NPCAIContext) -> void:
 	if runtime == null:
 		push_warning("NPCStatusSequence.execute_sim: missing runtime")
 		return
-	runtime.run_status_action(ctx)
+	var params: Dictionary = ctx.params if ctx.params else {}
+	var target_id := int(ParamModel._actor_id(ctx))
+	if target_id <= 0:
+		target_id = int(ctx.cid)
+	if target_id <= 0:
+		return
+
+	var status_id: StringName = &""
+	if params.has(Keys.STATUS_ID):
+		var v = params[Keys.STATUS_ID]
+		if v is StringName:
+			status_id = v
+		elif v is String:
+			status_id = StringName(v)
+	if status_id == &"":
+		var status_res = params.get(Keys.STATUS_SCENE, null)
+		if status_res != null and status_res is Status:
+			status_id = StringName((status_res as Status).get_id())
+	if status_id == &"":
+		return
+
+	var status_ctx := StatusContext.new()
+	status_ctx.actor_id = int(ctx.cid)
+	status_ctx.source_id = int(params.get(Keys.SOURCE_ID, ctx.cid))
+	status_ctx.target_id = target_id
+	status_ctx.status_id = status_id
+	status_ctx.intensity = int(params.get(Keys.STATUS_INTENSITY, 0))
+	status_ctx.duration = int(params.get(Keys.STATUS_DURATION, 0))
+	status_ctx.reason = "npc_status_action"
+	runtime.run_status_action(status_ctx)

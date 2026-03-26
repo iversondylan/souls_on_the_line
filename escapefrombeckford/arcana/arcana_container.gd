@@ -10,7 +10,13 @@ var system: ArcanaSystem = ArcanaSystem.new()
 
 func _ready() -> void:
 	arcana_row.child_exiting_tree.connect(_on_arcanum_display_exiting_tree)
+	Events.arcanum_view_activated.connect(_on_arcanum_view_activated)
 	#Events.live_battle_api_created.connect(_on_live_battle_api_created)
+
+
+func _exit_tree() -> void:
+	if Events.arcanum_view_activated.is_connected(_on_arcanum_view_activated):
+		Events.arcanum_view_activated.disconnect(_on_arcanum_view_activated)
 
 #func _on_live_battle_api_created(new_api: LiveBattleAPI) -> void:
 	#if new_api:
@@ -66,3 +72,7 @@ func _on_arcanum_display_exiting_tree(node: Node) -> void:
 	if d.arcanum:
 		d.arcanum.deactivate_arcanum(d)
 		system.unbind_display(d.arcanum.get_id())
+
+
+func _on_arcanum_view_activated(arcanum_id: StringName, proc: int, source_id: int) -> void:
+	system.play_view_activation(arcanum_id, proc, source_id)

@@ -4,6 +4,7 @@ class_name Arcanum extends Resource
 
 enum Type {START_OF_TURN, START_OF_COMBAT, END_OF_TURN, END_OF_COMBAT, EVENT_BASED}
 enum Beats {NONE, IN, OUT, IN_OUT}
+enum HookFamily {TIMED_BATTLE, MODIFIER, RUN, BATTLE_RESOLUTION}
 @export var arcanum_name: String
 @export var type: Type
 @export var starter_arcanum: bool = false
@@ -12,12 +13,38 @@ enum Beats {NONE, IN, OUT, IN_OUT}
 @export_multiline var flavor_text: String
 @export_multiline var lore: String
 
+# Legacy convenience for older live/run-only paths.
+# Battle sim should not depend on this mutable reference.
 var arcanum_display: ArcanumDisplay
 
 func get_id() -> StringName:
 	return &""
 
+# Current timed battle hook entrypoint.
+# SimRuntime uses this for deterministic START/END_OF_COMBAT and START/END_OF_TURN
+# execution. Treat this as one hook family, not the whole long-term arcana API.
 func activate_arcanum(_ctx: ArcanumContext) -> Variant:
+	return null
+
+
+func get_hook_families() -> Array[int]:
+	var out: Array[int] = []
+	if type != Type.EVENT_BASED:
+		out.append(HookFamily.TIMED_BATTLE)
+	if contributes_modifier():
+		out.append(HookFamily.MODIFIER)
+	return out
+
+
+# Future run-owned interception point for non-battle systems such as reward,
+# shop, map, or meta progression hooks. Not driven yet.
+func on_run_hook(_hook_id: StringName, _ctx: Dictionary = {}) -> Variant:
+	return null
+
+
+# Future battle-resolution interception point for contexts like damage, summon,
+# status, death, or move. Not driven yet.
+func on_battle_resolution_hook(_hook_id: StringName, _ctx: Dictionary = {}) -> Variant:
 	return null
 
 func get_modifier_tokens_for(_target: Node) -> Array[ModifierToken]:

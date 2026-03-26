@@ -43,6 +43,10 @@ func activate_sim(ctx: CardContext) -> bool:
 	move.target_id = target_id
 	move.can_restore_turn = true
 	move.sound = sound
+	move.reason = "card_swap"
+	if ctx.card_data != null:
+		ctx.card_data.ensure_uid()
+		move.origin_card_uid = String(ctx.card_data.uid)
 
 	ctx.runtime.run_move(move)
 
