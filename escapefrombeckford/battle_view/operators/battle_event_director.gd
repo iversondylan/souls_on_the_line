@@ -332,10 +332,22 @@ func on_event(e: EventPackage) -> void:
 		BattleEvent.Type.ARCANUM_PROC:
 			_on_arcanum_proc(e)
 		BattleEvent.Type.PLAYER_INPUT_REACHED:
-			Events.player_input_view_reached.emit(int(e.event.data.get(Keys.ACTOR_ID, 0)) if e.event.data != null else 0)
-			Events.request_draw_hand.emit()
+			var actor_id := int(e.event.data.get(Keys.ACTOR_ID, 0)) if e.event.data != null else 0
+			Events.player_input_view_reached.emit(actor_id)
+			var draw_ctx := DrawContext.new()
+			draw_ctx.source_id = actor_id
+			draw_ctx.amount = 5
+			draw_ctx.reason = "player_input_reached"
+			draw_ctx.phase = "player_turn_start"
+			draw_ctx.use_first_hand_summon_guarantee = true
+			Events.player_hand_refill_requested.emit(draw_ctx)
 		BattleEvent.Type.END_TURN_PRESSED:
-			Events.player_turn_completed.emit()
+			var cleanup_ctx := HandCleanupContext.new()
+			cleanup_ctx.cleanup_kind = "player_end_turn"
+			cleanup_ctx.phase = "player_turn_end"
+			cleanup_ctx.reason = "end_turn_pressed"
+			cleanup_ctx.should_discard_hand = true
+			Events.player_end_cleanup_requested.emit(cleanup_ctx)
 		BattleEvent.Type.DISCARD_REQUESTED:
 			_on_discard_requested(e)
 		BattleEvent.Type.FADED:

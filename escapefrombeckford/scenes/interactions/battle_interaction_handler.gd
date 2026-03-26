@@ -94,10 +94,6 @@ func on_request_discard_cards(ctx: DiscardContext) -> void:
 	if ctx == null:
 		return
 
-	ctx.hand = hand
-	ctx.deck = battle.deck
-	ctx.battle = battle
-
 	var c := DiscardInteractionContext.new()
 	c.discard_ctx = ctx
 	begin(c, Mode.DISCARD)

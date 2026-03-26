@@ -26,7 +26,7 @@ func _ready() -> void:
 	Events.card_played.connect(_on_card_played)
 	Events.summon_reserve_card_released.connect(_on_summon_reserve_card_released)
 	Events.dead_combatant_data.connect(_on_dead_combatant_data)
-	Events.hand_discarded.connect(_on_hand_discarded)
+	Events.player_end_cleanup_completed.connect(_on_player_end_cleanup_completed)
 	Events.end_turn_button_pressed.connect(_on_end_turn_button_pressed)
 
 func _set_sim_host(new_sim_host: SimHost) -> void:
@@ -245,9 +245,8 @@ func _on_dead_combatant_data(_combatant_data: CombatantData) -> void:
 	_refresh_preview("dead_combatant_data")
 
 
-func _on_hand_discarded() -> void:
-	#print("battle_preview_coordinator.gd _on_hand_discarded()")
-	_refresh_preview("hand_discarded")
+func _on_player_end_cleanup_completed(_ctx: HandCleanupContext) -> void:
+	_refresh_preview("player_end_cleanup_completed")
 
 
 func _on_end_turn_button_pressed() -> void:

@@ -12,15 +12,15 @@ func enter() -> void:
 	_resolving = false
 	_selected.clear()
 	
-	if discard_ctx == null or discard_ctx.hand == null:
+	if discard_ctx == null or handler == null or handler.hand == null:
 		push_warning("DiscardInteractionContext.enter(): missing discard_ctx/hand")
 		handler.end_active_context()
 		return
 	
 	# Enter modal-selection mode (suppresses Hand hover logic)
-	discard_ctx.hand.set_modal_selecting(true)
+	handler.hand.set_modal_selecting(true)
 	
-	_cards = discard_ctx.hand.get_hand_cards()
+	_cards = handler.hand.get_hand_cards()
 	
 	if discard_ctx.amount <= 0 or _cards.is_empty():
 		discard_ctx.actually_discarded = 0
@@ -51,8 +51,8 @@ func enter() -> void:
 
 func exit() -> void:
 	# Leave modal-selection mode (re-enables Hand hover logic)
-	if discard_ctx != null and discard_ctx.hand != null:
-		discard_ctx.hand.set_modal_selecting(false)
+	if handler != null and handler.hand != null:
+		handler.hand.set_modal_selecting(false)
 	
 	if Events.card_selection_toggled.is_connected(_on_card_selection_toggled):
 		Events.card_selection_toggled.disconnect(_on_card_selection_toggled)
@@ -155,10 +155,9 @@ func _auto_discard_all() -> void:
 			_on_discard_done(chosen_uids),
 		CONNECT_ONE_SHOT
 	)
-
-	var removed := discard_ctx.hand.remove_cards_by_entities(_cards)
-	discard_ctx.actually_discarded = removed.size()
-	discard_ctx.hand.discard_cards(removed)
+	discard_ctx.requested_card_uids = chosen_uids
+	if handler.battle != null and handler.battle.card_bins != null:
+		handler.battle.card_bins.request_discard(discard_ctx)
 
 func _on_hand_card_added(card: UsableCard) -> void:
 	if _resolving:
@@ -166,7 +165,7 @@ func _on_hand_card_added(card: UsableCard) -> void:
 	if card == null or !is_instance_valid(card):
 		return
 	# Only care about the hand we’re selecting from
-	if card.hand != discard_ctx.hand:
+	if handler == null or card.hand != handler.hand:
 		return
 	# If we already have it, ignore
 	if _cards.has(card):
@@ -199,19 +198,15 @@ func _finish_discard(chosen_cards: Array[UsableCard]) -> void:
 			c.card_data.ensure_uid()
 			chosen_uids.append(String(c.card_data.uid))
 	
-	# 2) Run UI discard animation / move cards to discard pile
-	# (You likely already do this)
-	handler.hand.discard_cards(chosen_cards)
+	discard_ctx.requested_card_uids = chosen_uids
+	if handler.battle != null and handler.battle.card_bins != null:
+		handler.battle.card_bins.request_discard(discard_ctx)
 
-	# 3) When animation completes, call SIM callback then end context.
-	# If you already use Events.hand_discard_animation_finished, hook it.
 	var done := func():
 		if discard_ctx != null and discard_ctx.on_done.is_valid():
 			discard_ctx.on_done.call(chosen_uids)
 		handler.end_active_context()
 
-	# If your discard is instantaneous, just call done().
-	# Otherwise wait for the animation-finished signal.
 	if Events.hand_discard_animation_finished.is_connected(done):
 		Events.hand_discard_animation_finished.disconnect(done)
 	Events.hand_discard_animation_finished.connect(done, CONNECT_ONE_SHOT)
@@ -242,7 +237,6 @@ func _commit_selected() -> void:
 			_on_discard_done(chosen_uids),
 		CONNECT_ONE_SHOT
 	)
-
-	var removed := discard_ctx.hand.remove_cards_by_entities(_selected)
-	discard_ctx.actually_discarded = removed.size()
-	discard_ctx.hand.discard_cards(removed)
+	discard_ctx.requested_card_uids = chosen_uids
+	if handler.battle != null and handler.battle.card_bins != null:
+		handler.battle.card_bins.request_discard(discard_ctx)

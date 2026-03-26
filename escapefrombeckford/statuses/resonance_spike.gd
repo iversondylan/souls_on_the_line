@@ -35,4 +35,4 @@ func get_modifier_tokens(ctx: StatusTokenContext) -> Array[ModifierToken]:
 	return [token]
 
 func get_tooltip(intensity: int = 0, _duration: int = 0) -> String:
-	return "Resonance Spike [Aura]: allies deal +%s damage. This effect is lost if stability is broken." % intensity
+	return "Resonance Spike [Aura]: allies deal +%s damage." % intensity

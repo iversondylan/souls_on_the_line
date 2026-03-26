@@ -4,6 +4,7 @@ class_name Hand extends Node2D
 
 signal card_activated(card: UsableCard)
 signal done_drawing()
+signal discard_animation_completed()
 
 @export var discard_anchor_path: NodePath
 @export var draw_anchor_path: NodePath
@@ -39,6 +40,7 @@ var api: SimBattleAPI
 
 #var player_data: PlayerData
 var deck: Deck
+var bins: BattleCardBins
 
 var highlighted_card_index_int: int = -1
 var currently_selected_card_index: int = -1
@@ -48,13 +50,11 @@ var selected_card: UsableCard
 #var _active_tween: Tween = null
 var _is_drawing: bool = false
 var _is_discarding: bool = false
-var _emit_hand_discarded_on_complete := false
+var _emit_discard_animation_finished_on_complete := false
 var _modal_selecting : bool = false
 
 
 func _ready() -> void:
-	Events.request_draw_hand.connect(_on_request_draw_hand)
-	Events.request_draw_cards.connect(draw_cards_from_ctx)
 	Events.card_drag_ended.connect(_card_drag_or_aim_ended)
 	Events.card_drag_started.connect(_on_card_drag_or_aim_started)
 	
@@ -63,8 +63,6 @@ func _ready() -> void:
 	
 	Events.battlefield_aim_started.connect(_on_card_drag_or_aim_started)
 	Events.battlefield_aim_ended.connect(_card_drag_or_aim_ended)
-	
-	Events.player_turn_completed.connect(_on_player_turn_completed)
 
 
 func _process(_delta: float) -> void:
@@ -129,89 +127,32 @@ func add_card(card: CardData) -> void:
 	reposition_hand_cards()
 	Events.hand_card_added.emit(usable_card)
 
-func draw_card() -> bool:
-	var c := deck.draw_card()
-	if c == null:
-		return false
-	add_card(c)
-	return true
-
-func draw_cards(n_cards: int) -> void:
+func present_draw_cards(cards: Array[CardData]) -> void:
 	_is_drawing = true
-	for i in range(n_cards):
-		draw_card()
+	for card in cards:
+		if card == null:
+			continue
+		add_card(card)
 		await get_tree().create_timer(CARD_DRAW_INTERVAL).timeout
 	_is_drawing = false
 	done_drawing.emit()
 
 func draw_cards_from_ctx(ctx: DrawContext) -> void:
-	await draw_cards(ctx.amount)
-
-func draw_hand(n_cards: int) -> void:
-	await draw_cards(n_cards)
-	Events.hand_drawn.emit()
-
-func _draw_first_hand_with_summon_guarantee(n_cards: int) -> void:
-	_is_drawing = true
-	
-	# Mark immediately so we can't re-enter and do it twice.
-	deck.first_hand_drawn = true
-	
-	# Draw exactly like normal (uses deck.draw_card(), including reshuffles + size signals).
-	var drawn: Array[CardData] = []
-	for i in range(n_cards):
-		var c := deck.draw_card()
-		if c != null:
-			drawn.append(c)
-	
-	# If we already have a summon, proceed normally.
-	var has_summon := false
-	for c in drawn:
-		if c != null and c.card_type == CardData.CardType.SUMMON:
-			has_summon = true
-			break
-	
-	# If not, swap in a random summon from the REMAINING draw pile.
-	if !has_summon and drawn.size() > 0:
-		var summon_indices: Array[int] = []
-		for idx in range(deck.draw_pile.cards.size()):
-			var c: CardData = deck.draw_pile.cards[idx]
-			if c != null and c.card_type == CardData.CardType.SUMMON:
-				summon_indices.append(idx)
-	
-		if summon_indices.size() > 0:
-			var rng := RandomNumberGenerator.new()
-			rng.randomize()
-	
-			var draw_pile_idx := summon_indices[rng.randi_range(0, summon_indices.size() - 1)]
-			var hand_idx := rng.randi_range(0, drawn.size() - 1)
-	
-			var summon_card: CardData = deck.draw_pile.cards[draw_pile_idx]
-			deck.draw_pile.cards[draw_pile_idx] = drawn[hand_idx]
-			drawn[hand_idx] = summon_card
-	
-	for c in drawn:
-		add_card(c)
-		await get_tree().create_timer(CARD_DRAW_INTERVAL).timeout
-	_is_drawing = false
-	Events.hand_drawn.emit()
+	await present_draw_cards(ctx.drawn_cards)
 
 func discard_card(usable_card: UsableCard) -> void:
 	if usable_card == null or !is_instance_valid(usable_card):
 		return
-	if deck == null:
-		push_error("Hand.discard_card(): Hand.deck is NULL (card=%s uid=%s)" % [
-			usable_card.card_data.name if usable_card.card_data else "<no card_data>",
-			str(usable_card.card_data.uid) if usable_card.card_data else "<no uid>"
-		])
-		return
-	deck.add_card_to_discard(usable_card.card_data)
+	if bins != null and usable_card.card_data != null:
+		bins.discard_card_from_hand(usable_card.card_data)
 	usable_card.queue_free()
 	reposition_hand_cards()
 
 func deplete_card(usable_card: UsableCard) -> void:
 	if usable_card == null or !is_instance_valid(usable_card):
 		return
+	if bins != null and usable_card.card_data != null:
+		bins.exhaust_card_from_hand(usable_card.card_data)
 	usable_card.queue_free()
 	reposition_hand_cards()
 
@@ -223,17 +164,20 @@ func set_modal_selecting(on: bool) -> void:
 	_clear_hover_visuals()
 
 func discard_cards(usable_cards: Array[UsableCard]) -> void:
-	# “discard some cards” is the general-purpose version.
-	# It should NOT emit Events.hand_discarded.
-	_discard_cards_internal(usable_cards, false)
-
-
-func discard_hand(usable_cards: Array[UsableCard]) -> void:
-	# “discard the hand” is just a special case that DOES emit Events.hand_discarded.
 	_discard_cards_internal(usable_cards, true)
 
 
-func _discard_cards_internal(usable_cards: Array[UsableCard], emit_hand_discarded: bool) -> void:
+func discard_hand(usable_cards: Array[UsableCard]) -> void:
+	_discard_cards_internal(usable_cards, true)
+
+
+func animate_discard_cards(usable_cards: Array[UsableCard], emit_discard_animation_finished: bool = true) -> void:
+	_discard_cards_internal(usable_cards, emit_discard_animation_finished)
+	if _is_discarding:
+		await discard_animation_completed
+
+
+func _discard_cards_internal(usable_cards: Array[UsableCard], emit_discard_animation_finished: bool) -> void:
 	# If already discarding, don't start another batch.
 	# (Optional recovery: if somehow stuck, auto-unstick when disabled node is empty)
 	if _is_discarding:
@@ -250,23 +194,24 @@ func _discard_cards_internal(usable_cards: Array[UsableCard], emit_hand_discarde
 
 	# Nothing to do
 	if cards.is_empty():
-		if emit_hand_discarded:
-			Events.hand_discarded.emit()
+		if emit_discard_animation_finished:
+			Events.hand_discard_animation_finished.emit()
+		discard_animation_completed.emit()
 		return
 
 	# No anchor => instant discard
 	if discard_anchor == null:
 		push_warning("Hand._discard_cards_internal(): discard_anchor not set; falling back to instant discard")
 		for c in cards:
-			deck.add_card_to_discard(c.card_data)
 			c.queue_free()
 		reposition_hand_cards()
-		if emit_hand_discarded:
-			Events.hand_discarded.emit()
+		if emit_discard_animation_finished:
+			Events.hand_discard_animation_finished.emit()
+		discard_animation_completed.emit()
 		return
 
 	_is_discarding = true
-	_emit_hand_discarded_on_complete = emit_hand_discarded
+	_emit_discard_animation_finished_on_complete = emit_discard_animation_finished
 
 	var target_global := discard_anchor.global_position
 
@@ -299,7 +244,6 @@ func _discard_cards_internal(usable_cards: Array[UsableCard], emit_hand_discarde
 			func():
 				# Important: remove from tree regardless, then free.
 				if is_instance_valid(card_ref):
-					deck.add_card_to_discard(card_ref.card_data)
 					var parent := card_ref.get_parent()
 					if parent:
 						parent.remove_child(card_ref)
@@ -320,15 +264,12 @@ func _on_one_discard_complete() -> void:
 
 	_is_discarding = false
 	reposition_hand_cards()
-	#print("_on_one_discard_complete no more to discard...")
-	if _emit_hand_discarded_on_complete:
-		#print("hand discard complete")
-		_emit_hand_discarded_on_complete = false
-		Events.hand_discarded.emit()
-	else:
-		#print("effect discard complete")
-		_emit_hand_discarded_on_complete = false
+	if _emit_discard_animation_finished_on_complete:
+		_emit_discard_animation_finished_on_complete = false
 		Events.hand_discard_animation_finished.emit()
+	else:
+		_emit_discard_animation_finished_on_complete = false
+	discard_animation_completed.emit()
 
 
 func _count_cards_in(node: Node) -> int:
@@ -400,6 +341,33 @@ func remove_cards_by_entities(usable_cards: Array[UsableCard]) -> Array[UsableCa
 			removing_cards.append(removed)
 	return removing_cards
 
+
+func get_hand_cards_by_uids(card_uids: Array[String]) -> Array[UsableCard]:
+	var wanted := {}
+	for uid in card_uids:
+		wanted[String(uid)] = true
+
+	var out: Array[UsableCard] = []
+	for card in _get_hand_cards():
+		if card == null or !is_instance_valid(card) or card.card_data == null:
+			continue
+		card.card_data.ensure_uid()
+		if wanted.has(String(card.card_data.uid)):
+			out.append(card)
+	return out
+
+
+func remove_cards_by_uids(card_uids: Array[String]) -> Array[UsableCard]:
+	return remove_cards_by_entities(get_hand_cards_by_uids(card_uids))
+
+
+func clear_removed_cards(usable_cards: Array[UsableCard]) -> void:
+	for usable_card in usable_cards:
+		if usable_card == null or !is_instance_valid(usable_card):
+			continue
+		usable_card.queue_free()
+	reposition_hand_cards()
+
 func empty_hand() -> void:
 	currently_selected_card_index = -1
 	for card in _get_hand_cards():
@@ -451,14 +419,6 @@ func _on_hand_area_mouse_entered() -> void:
 func _on_hand_area_mouse_exited() -> void:
 	mouse_in_hand_area = false
 
-func _on_request_draw_hand() -> void:
-	#print("hand.gd _on_request_draw_hand()")
-	var n := 5
-	if deck and !deck.first_hand_drawn and deck.first_hand_summon_guarantee:
-		_draw_first_hand_with_summon_guarantee(n)
-	else:
-		draw_hand(n)
-
 func _on_card_drag_or_aim_started(card: UsableCard) -> void:
 	_top_locked_card = card
 	_top_hover_card = null
@@ -471,11 +431,6 @@ func _card_drag_or_aim_ended(card: UsableCard) -> void:
 		_top_locked_card = null
 	_clear_hover_visuals()
 	_apply_z_order()
-
-func _on_player_turn_completed() -> void:
-	#print("hand.gd _on_player_turn_completed()")
-	disable_hand_cards()
-	discard_hand(get_hand_cards())
 
 func _pick_top_by_tree_order(cards: Array[UsableCard]) -> UsableCard:
 	var best: UsableCard = null
@@ -534,9 +489,8 @@ func reserve_summon_card(usable_card: UsableCard) -> void:
 	if usable_card == null or !is_instance_valid(usable_card):
 		return
 
-	# NEW: stash CardData in deck reserve
-	if deck != null and usable_card.card_data != null:
-		deck.reserve_summon_card(usable_card.card_data)
+	if bins != null and usable_card.card_data != null:
+		bins.reserve_card_from_hand(usable_card.card_data)
 
 	usable_card.queue_free()
 	reposition_hand_cards()

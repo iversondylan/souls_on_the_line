@@ -69,6 +69,7 @@ var my_arcana: Array[StringName]
 
 var wait_for_anims: bool = false
 var _player_end_turn_armed: bool = false
+var card_bins: BattleCardBins
 
 
 # -------------------------
@@ -76,6 +77,8 @@ var _player_end_turn_armed: bool = false
 # -------------------------
 
 func _ready() -> void:
+	_ensure_card_bins()
+
 	battle_view.sim_host = sim_host
 	battle_view.battle_ui = battle_ui
 
@@ -99,13 +102,13 @@ func _ready() -> void:
 
 
 func _connect_events() -> void:
-	Events.hand_drawn.connect(_arm_end_turn_button.bind(true))
-	Events.hand_drawn.connect(_on_hand_done_drawing)
+	Events.player_hand_refill_completed.connect(_on_player_hand_refill_completed)
 	Events.dead_combatant_data.connect(_on_dead_combatant_data)
 	Events.request_defeat.connect(_on_request_defeat)
 	Events.request_victory.connect(_on_request_victory)
 	Events.summon_reserve_card_released.connect(_on_summon_reserve_card_released)
 	Events.end_turn_button_pressed.connect(_on_end_turn_button_pressed)
+	Events.player_end_cleanup_completed.connect(_on_player_end_cleanup_completed)
 	Events.mana_view_update.connect(_on_mana_view_update)
 	Events.turn_status_view_changed.connect(_on_turn_status_view_changed)
 
@@ -139,10 +142,20 @@ func _set_run(new_run: Run) -> void:
 func _set_deck(new_deck: Deck) -> void:
 	deck = new_deck
 	hand.deck = deck
+	if is_node_ready():
+		_ensure_card_bins()
 
 
 func _runtime() -> SimRuntime:
 	return sim_host.get_main_runtime()
+
+
+func _ensure_card_bins() -> void:
+	if card_bins == null:
+		card_bins = BattleCardBins.new()
+		card_bins.name = "BattleCardBins"
+		add_child(card_bins)
+	card_bins.setup(self, hand, deck)
 
 
 # -------------------------
@@ -177,8 +190,12 @@ func start_battle() -> void:
 	_spawn_from_battle_data()
 
 	hand.empty_hand()
-	deck.reset()
-	deck.make_draw_pile()
+	if card_bins != null:
+		card_bins.reset_bins()
+		card_bins.make_draw_pile()
+	elif deck != null:
+		deck.reset()
+		deck.make_draw_pile()
 	MusicPlayer.play(music, true)
 	initialize_card_pile_ui()
 
@@ -242,21 +259,19 @@ func _on_end_turn_button_pressed() -> void:
 
 	# The hand discard animation is view-driven.
 	# Runtime does not advance the player end handshake until this completes.
-	if !Events.hand_discarded.is_connected(_on_hand_discarded_one_shot):
-		Events.hand_discarded.connect(_on_hand_discarded_one_shot, CONNECT_ONE_SHOT)
-
 	var runtime := _runtime()
 	if runtime != null:
 		runtime.request_player_end()
 
 
-func _on_hand_discarded_one_shot() -> void:
+func _on_player_end_cleanup_completed(_ctx: HandCleanupContext) -> void:
 	var runtime := _runtime()
 	if runtime != null:
 		runtime.confirm_player_end_ready()
 
 
-func _on_hand_done_drawing() -> void:
+func _on_player_hand_refill_completed(_ctx: DrawContext) -> void:
+	_arm_end_turn_button(true)
 	wait_for_anims = false
 
 
@@ -301,7 +316,9 @@ func _on_dead_combatant_data(combatant_data: CombatantData) -> void:
 
 
 func _on_summon_reserve_card_released(summoned_id: int, card_uid: String) -> void:
-	if deck != null:
+	if card_bins != null:
+		card_bins.discard_reserved_summon_card(card_uid)
+	elif deck != null:
 		deck.discard_reserved_summon_card(card_uid)
 
 	var combatant_view := battle_view.get_combatant(summoned_id) if battle_view != null else null
