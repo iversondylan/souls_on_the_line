@@ -525,12 +525,12 @@ func run_attack(ctx: AttackContext) -> bool:
 	var targeting_ctx := ctx.targeting_ctx
 	if targeting_ctx == null:
 		targeting_ctx = TargetingContext.new()
-		targeting_ctx.api = api
-		targeting_ctx.source_id = attacker_id
-		targeting_ctx.target_type = targeting
-		targeting_ctx.attack_mode = mode
-		targeting_ctx.params = params
 		ctx.targeting_ctx = targeting_ctx
+	targeting_ctx.api = api
+	targeting_ctx.source_id = attacker_id
+	targeting_ctx.target_type = targeting
+	targeting_ctx.attack_mode = mode
+	targeting_ctx.params = params
 	var any := false
 
 	var attack_scope := _begin_scope(Scope.Kind.ATTACK, "attacker=%d" % attacker_id, attacker_id, {

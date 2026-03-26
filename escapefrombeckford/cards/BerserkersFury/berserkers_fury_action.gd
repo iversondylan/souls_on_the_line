@@ -5,7 +5,7 @@ extends CardAction
 @export var melee_impact_sound: Sound = preload("res://audio/aoe_explosion.tres")
 
 func activate_sim(ctx: CardContext) -> bool:
-	if ctx == null or ctx.api == null:
+	if ctx == null or ctx.api == null or ctx.runtime == null:
 		return false
 	if ctx.target_ids.is_empty():
 		return false
@@ -18,34 +18,33 @@ func activate_sim(ctx: CardContext) -> bool:
 	if attacker_state == null or attacker_state.combatant_data == null:
 		return false
 
-	var enemy_ids := ctx.api.get_enemies_of(attacker_id)
-	if enemy_ids.is_empty():
-		return false
-
 	var base_damage := maxi(int(attacker_state.combatant_data.apr) + int(bonus_damage), 0)
-	var strike_count := maxi(int(attacks), 1)
-	var any := false
+	var attack_ctx := AttackContext.new()
+	attack_ctx.api = ctx.api
+	attack_ctx.runtime = ctx.runtime
+	attack_ctx.attacker_id = attacker_id
+	attack_ctx.source_id = attacker_id
+	attack_ctx.strikes = maxi(int(attacks), 1)
+	attack_ctx.attack_mode = int(Attack.Mode.MELEE)
+	attack_ctx.targeting = int(Attack.Targeting.ENEMIES)
+	attack_ctx.base_damage = base_damage
+	attack_ctx.deal_modifier_type = int(Modifier.Type.DMG_DEALT)
+	attack_ctx.take_modifier_type = int(Modifier.Type.DMG_TAKEN)
+	attack_ctx.reason = "berserkers_fury"
+	attack_ctx.targeting_ctx = TargetingContext.new()
+	attack_ctx.targeting_ctx.api = ctx.api
+	attack_ctx.targeting_ctx.source_id = attacker_id
+	attack_ctx.targeting_ctx.target_type = int(attack_ctx.targeting)
+	attack_ctx.targeting_ctx.attack_mode = int(attack_ctx.attack_mode)
 
-	for tid in enemy_ids:
+	if ctx.card_data != null:
+		ctx.card_data.ensure_uid()
+		attack_ctx.origin_card_uid = String(ctx.card_data.uid)
+
+	var any := ctx.runtime.run_attack(attack_ctx)
+	for tid in attack_ctx.affected_target_ids:
 		var target_id := int(tid)
-		if target_id <= 0 or !ctx.api.is_alive(target_id):
-			continue
-
-		for _i in range(strike_count):
-			var d := DamageContext.new()
-			d.source_id = attacker_id
-			d.target_id = target_id
-			d.base_amount = base_damage
-			d.deal_modifier_type = int(Modifier.Type.DMG_DEALT)
-			d.take_modifier_type = int(Modifier.Type.DMG_TAKEN)
-			if ctx.card_data != null:
-				ctx.card_data.ensure_uid()
-				d.origin_card_uid = String(ctx.card_data.uid)
-			d.reason = "berserkers_fury"
-			ctx.api.resolve_damage_immediate(d)
-			any = true
-
-		if !ctx.affected_ids.has(target_id):
+		if target_id > 0 and !ctx.affected_ids.has(target_id):
 			ctx.affected_ids.append(target_id)
 
 	if !any:

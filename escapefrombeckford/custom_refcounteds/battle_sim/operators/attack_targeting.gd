@@ -67,6 +67,8 @@ static func _get_base_target_ids(ctx: TargetingContext) -> Array[int]:
 
 
 static func _is_single(ctx: TargetingContext) -> bool:
+	if !ctx.explicit_target_ids.is_empty():
+		return ctx.explicit_target_ids.size() == 1
 	var target_type := int(ctx.target_type)
 	return target_type == Attack.Targeting.STANDARD
 
