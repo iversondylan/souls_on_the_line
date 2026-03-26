@@ -5,8 +5,8 @@ class_name SimRuntime extends RefCounted
 # Runtime orchestration for a single Sim.
 #
 # Responsibilities:
-# - own TurnEngineCore and TurnEngineHostSim for this Sim
-# - bridge TurnEngineCore callbacks into SIM-side lifecycle work
+# - own TurnEngineCore and TurnFlowQueryHost for this Sim
+# - own turn-flow orchestration for this Sim
 # - emit scoped BattleEventLog runtime events
 # - define checkpoint boundaries for the turn flow
 # - drive round-to-round scheduling
@@ -20,7 +20,7 @@ var sim: Sim
 var host: SimHost
 
 var turn_engine: TurnEngineCore
-var turn_engine_host_sim: TurnEngineHostSim
+var turn_flow_query_host: TurnFlowQueryHost
 var _group_turn_scope_handle: ScopeHandle = null
 var _actor_turn_scope_handle: ScopeHandle = null
 
@@ -41,49 +41,36 @@ func bind(_sim: Sim, _host: SimHost) -> void:
 
 func reset_runtime_state() -> void:
 	turn_engine = null
-	turn_engine_host_sim = null
+	turn_flow_query_host = null
 	_group_turn_scope_handle = null
 	_actor_turn_scope_handle = null
 
-func _ensure_turn_engine_host_initialized() -> void:
+func _ensure_turn_flow_query_host_initialized() -> void:
 	if host == null:
 		return
 
-	if turn_engine_host_sim == null:
-		turn_engine_host_sim = TurnEngineHostSim.new(sim, host)
+	if turn_flow_query_host == null:
+		turn_flow_query_host = TurnFlowQueryHost.new(sim, host)
 	else:
-		turn_engine_host_sim.bind(sim, host)
-
-func _connect_turn_engine_signals(engine: TurnEngineCore) -> void:
-	if engine == null:
-		return
-
-	engine.group_turn_ended.connect(_on_group_turn_ended)
-	engine.arcana_proc_requested.connect(_on_arcana_proc_requested)
-	engine.actor_requested.connect(_on_actor_requested)
-	engine.player_begin_requested.connect(_on_player_begin_requested)
-	engine.player_end_requested.connect(_on_player_end_requested)
-	engine.pending_actors_changed.connect(_on_pending_actors_changed)
+		turn_flow_query_host.bind(sim, host)
 
 func _ensure_runtime_initialized() -> void:
-	_ensure_turn_engine_host_initialized()
+	_ensure_turn_flow_query_host_initialized()
 
 	if turn_engine != null:
 		return
 
-	turn_engine = TurnEngineCore.new(turn_engine_host_sim)
-	_connect_turn_engine_signals(turn_engine)
+	turn_engine = TurnEngineCore.new(turn_flow_query_host)
 
 func clone_turn_flow_from(source_runtime: SimRuntime) -> bool:
 	if source_runtime == null or source_runtime.turn_engine == null:
 		return false
 
-	_ensure_turn_engine_host_initialized()
-	if turn_engine_host_sim == null:
+	_ensure_turn_flow_query_host_initialized()
+	if turn_flow_query_host == null:
 		return false
 
-	turn_engine = source_runtime.turn_engine.clone_for_host(turn_engine_host_sim)
-	_connect_turn_engine_signals(turn_engine)
+	turn_engine = source_runtime.turn_engine.clone_for_host(turn_flow_query_host)
 	return true
 
 
@@ -105,9 +92,9 @@ func _engine() -> TurnEngineCore:
 
 
 func _player_id() -> int:
-	if turn_engine_host_sim == null:
+	if turn_flow_query_host == null:
 		return 0
-	return turn_engine_host_sim.get_player_id()
+	return turn_flow_query_host.get_player_id()
 
 
 func _can_run() -> bool:
@@ -119,9 +106,9 @@ func has_runtime_initialized() -> bool:
 
 
 func is_player(combat_id: int) -> bool:
-	if turn_engine_host_sim == null:
+	if turn_flow_query_host == null:
 		return false
-	return turn_engine_host_sim.is_player(combat_id)
+	return turn_flow_query_host.is_player(combat_id)
 
 
 # ============================================================================
@@ -138,14 +125,15 @@ func _apply_checkpoint_boundary(kind: int, allow_hooks := true) -> void:
 	if cp.consume_dirty_turn_order():
 		var engine := _engine()
 		if engine != null:
-			engine.request_queue_rebuild_and_publish()
+			engine.mark_queue_dirty()
+			_publish_turn_status()
 
 
 # ============================================================================
 # Public runtime-facing API
 # ============================================================================
 
-func start_group_turn(group_index: int, start_at_player := false, pre_player_friendly := false) -> void:
+func begin_group_turn_flow(group_index: int, start_at_player := false, pre_player_friendly := false) -> void:
 	if !_can_run():
 		return
 	var api := _api()
@@ -160,8 +148,10 @@ func start_group_turn(group_index: int, start_at_player := false, pre_player_fri
 	if start_at_player:
 		engine.reset_for_new_battle()
 
+	engine.begin_group_turn_state(group_index, start_at_player, pre_player_friendly)
 	handle_group_turn_started(group_index)
-	engine.start_group_turn(group_index, start_at_player, pre_player_friendly)
+	_publish_turn_status()
+	_drive_turn_flow_until_blocked()
 
 
 func request_player_end() -> void:
@@ -174,14 +164,22 @@ func request_player_end() -> void:
 		writer.emit_end_turn_pressed(api.get_player_id())
 
 
-func notify_player_discard_animation_finished() -> void:
+func confirm_player_end_ready() -> void:
 	_ensure_runtime_initialized()
 
+	var api := _api()
 	var engine := _engine()
-	if engine == null:
+	if api == null or engine == null:
 		return
 
-	engine.request_player_end()
+	if !engine.begin_player_end_transition():
+		return
+
+	var player_id := _player_id()
+	_service_arcana(TurnEngineCore.ArcanaProc.END_OF_TURN)
+	engine.complete_player_end()
+	_complete_actor_turn(player_id)
+	_drive_turn_flow_until_blocked()
 
 
 func add_combatant_from_data(data: CombatantData, group_index: int, insert_index: int = -1, is_player := false) -> int:
@@ -210,6 +208,7 @@ func on_summoned(summoned_id: int, group_index: int) -> void:
 		return
 
 	engine.notify_summon_added(int(summoned_id), int(group_index))
+	_publish_turn_status()
 
 
 func on_unit_removed(cid: int, _group_index: int, _reason: String) -> void:
@@ -220,34 +219,8 @@ func on_unit_removed(cid: int, _group_index: int, _reason: String) -> void:
 		return
 
 	engine.notify_actor_removed(int(cid))
-
-
-# ============================================================================
-# TurnEngineCore signal handlers
-# ============================================================================
-
-func _on_group_turn_ended(group_index: int) -> void:
-	handle_group_turn_ended(group_index)
-
-
-func _on_arcana_proc_requested(proc: int, token: int) -> void:
-	handle_arcana_proc_requested(proc, token)
-
-
-func _on_actor_requested(cid: int) -> void:
-	handle_actor_requested(cid)
-
-
-func _on_player_begin_requested(token: int) -> void:
-	handle_player_begin_requested(token)
-
-
-func _on_player_end_requested(token: int) -> void:
-	handle_player_end_requested(token)
-
-
-func _on_pending_actors_changed(active_id: int, pending_ids: PackedInt32Array) -> void:
-	handle_pending_actors_changed(active_id, pending_ids)
+	_publish_turn_status()
+	_drive_turn_flow_until_blocked()
 
 
 # ============================================================================
@@ -297,7 +270,7 @@ func handle_group_turn_ended(group_index: int) -> void:
 	_schedule_next_group_turn(group_index)
 
 
-func handle_pending_actors_changed(active_id: int, pending_ids: PackedInt32Array) -> void:
+func _publish_turn_status() -> void:
 	var api := _api()
 	var engine := _engine()
 	if api == null or engine == null:
@@ -306,6 +279,13 @@ func handle_pending_actors_changed(active_id: int, pending_ids: PackedInt32Array
 	var writer := api.writer
 	if writer == null:
 		return
+
+	var snapshot := engine.build_pending_actor_snapshot()
+	if snapshot == null:
+		return
+
+	var active_id := int(snapshot.active_id)
+	var pending_ids := snapshot.pending_ids
 
 	writer.set_turn_context(
 		engine._turn_token,
@@ -320,7 +300,7 @@ func handle_pending_actors_changed(active_id: int, pending_ids: PackedInt32Array
 	)
 
 
-func handle_actor_requested(cid: int) -> void:
+func _service_actor_turn(cid: int) -> void:
 	var api := _api()
 	var engine := _engine()
 	if api == null or engine == null or host == null:
@@ -342,23 +322,13 @@ func handle_actor_requested(cid: int) -> void:
 		return
 
 	run_npc_turn(cid)
-
-	if writer != null:
-		writer.emit_actor_end(cid)
-		if _actor_turn_scope_handle != null:
-			writer.scope_end(_actor_turn_scope_handle) # actor_turn
-			_actor_turn_scope_handle = null
-
-	SimStatusSystem.on_actor_turn_end(api, cid)
-	_apply_checkpoint_boundary(CheckpointProcessor.Kind.AFTER_ACTOR_TURN, true)
-
-	engine.notify_actor_done(cid)
+	_complete_actor_turn(cid)
 
 
-func handle_player_begin_requested(token: int) -> void:
+func _service_player_begin() -> void:
 	var api := _api()
 	var engine := _engine()
-	if api == null or engine == null or turn_engine_host_sim == null:
+	if api == null or engine == null or turn_flow_query_host == null:
 		return
 
 	var player_id := _player_id()
@@ -366,36 +336,17 @@ func handle_player_begin_requested(token: int) -> void:
 		SimStatusSystem.on_actor_turn_begin(api, player_id)
 		_apply_checkpoint_boundary(CheckpointProcessor.Kind.AFTER_ACTOR_TURN, true)
 
-	engine.notify_player_begin_done(token)
+	engine.complete_player_begin()
 
 
-func handle_player_end_requested(token: int) -> void:
-	var api := _api()
-	var engine := _engine()
-	if api == null or engine == null or turn_engine_host_sim == null:
-		return
-
-	var player_id := _player_id()
-
-	engine.request_end_of_turn_arcana(func():
-		engine.notify_player_end_done(token)
-
-		SimStatusSystem.on_actor_turn_end(api, player_id)
-		_apply_checkpoint_boundary(CheckpointProcessor.Kind.AFTER_ACTOR_TURN, true)
-
-		_notify_actor_done(player_id)
-	)
-
-
-func handle_arcana_proc_requested(proc: int, token: int) -> void:
+func _service_arcana(proc: int) -> void:
 	var api := _api()
 	var engine := _engine()
 	if api == null or engine == null:
 		return
 
 	run_arcana_proc(proc)
-
-	engine.notify_arcana_proc_done(token)
+	engine.complete_arcana()
 
 
 # ============================================================================
@@ -415,15 +366,15 @@ func _schedule_next_group_turn(group_index: int) -> void:
 		var finished_pre_player_friendly := bool(engine.ended_pre_player_friendly)
 
 		if !finished_pre_player_friendly:
-			start_group_turn(1, false)
+			begin_group_turn_flow(1, false)
 		else:
-			start_group_turn(0, false, false)
+			begin_group_turn_flow(0, false, false)
 		return
 
-	start_group_turn(0, false, true)
+	begin_group_turn_flow(0, false, true)
 
 
-func _notify_actor_done(cid: int) -> void:
+func _complete_actor_turn(cid: int) -> void:
 	var api := _api()
 	var engine := _engine()
 	if api == null or engine == null:
@@ -436,7 +387,37 @@ func _notify_actor_done(cid: int) -> void:
 			writer.scope_end(_actor_turn_scope_handle) # actor_turn
 			_actor_turn_scope_handle = null
 
-	engine.notify_actor_done(cid)
+	SimStatusSystem.on_actor_turn_end(api, cid)
+	_apply_checkpoint_boundary(CheckpointProcessor.Kind.AFTER_ACTOR_TURN, true)
+
+	engine.complete_actor(cid)
+
+
+func _drive_turn_flow_until_blocked() -> void:
+	var engine := _engine()
+	if engine == null:
+		return
+
+	while true:
+		var directive := engine.advance()
+		if directive == null:
+			return
+
+		match directive.kind:
+			TurnFlowDirective.Kind.IDLE, TurnFlowDirective.Kind.BLOCKED:
+				return
+			TurnFlowDirective.Kind.REQUEST_PLAYER_BEGIN:
+				_service_player_begin()
+			TurnFlowDirective.Kind.REQUEST_ARCANA:
+				_service_arcana(int(directive.arcana_proc))
+			TurnFlowDirective.Kind.REQUEST_ACTOR:
+				_publish_turn_status()
+				_service_actor_turn(int(directive.actor_id))
+				if is_player(int(directive.actor_id)):
+					return
+			TurnFlowDirective.Kind.GROUP_TURN_ENDED:
+				handle_group_turn_ended(int(directive.group_index))
+				return
 
 func debug_kill_all_enemies() -> void:
 	var api := _api()
@@ -765,6 +746,10 @@ func run_move(ctx: MoveContext) -> void:
 	if move_scope == null:
 		return
 	api.resolve_move(ctx)
+	var engine := _engine()
+	if engine != null:
+		engine.notify_move_executed(ctx)
+	_publish_turn_status()
 	_end_scope(move_scope)
 
 

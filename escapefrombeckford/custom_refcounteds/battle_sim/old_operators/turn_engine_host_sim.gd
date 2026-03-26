@@ -1,5 +1,5 @@
-# turn_engine_host_sim.gd
-class_name TurnEngineHostSim extends RefCounted
+# turn_flow_query_host.gd
+class_name TurnFlowQueryHost extends RefCounted
 
 var sim: Sim
 var sim_host: SimHost
@@ -24,7 +24,7 @@ func _get_state() -> BattleState:
 
 
 # -------------------------
-# TurnEngineHost overrides
+# Query surface used by TurnEngineCore
 # -------------------------
 func get_player_id() -> int:
 	var s := _get_state()
@@ -57,40 +57,3 @@ func is_alive(combat_id: int) -> bool:
 	if s == null:
 		return false
 	return bool(s.is_alive(int(combat_id)))
-
-
-# -------------------------
-# Player boundary hooks (SIM)
-# -------------------------
-func begin_player_turn_async() -> void:
-	# Do sim-side “start of player turn” bookkeeping synchronously.
-	# This should NOT do hand draw. It should be purely state mutation.
-	if sim_host != null:
-		if sim_host.has_method("begin_player_turn_sim"):
-			sim_host.begin_player_turn_sim()
-		elif sim_host.has_method("begin_player_turn_headless"):
-			sim_host.begin_player_turn_headless()
-		elif sim_host.has_method("begin_player_turn"):
-			sim_host.begin_player_turn()
-
-	# Ensure this function is always awaitable (coroutine) even if work was immediate.
-	await _coroutine_marker()
-
-func end_player_turn_async() -> void:
-	# Optional for now; keep shape consistent.
-	if sim_host != null:
-		if sim_host.has_method("end_player_turn_sim"):
-			sim_host.end_player_turn_sim()
-		elif sim_host.has_method("end_player_turn_headless"):
-			sim_host.end_player_turn_headless()
-		elif sim_host.has_method("end_player_turn"):
-			sim_host.end_player_turn()
-
-	await _coroutine_marker()
-
-func _coroutine_marker() -> void:
-	# This makes the function a coroutine in Godot 4.x without actually yielding.
-	if false:
-		var tree := Engine.get_main_loop() as SceneTree
-		if tree != null:
-			await tree.process_frame

@@ -7,9 +7,32 @@ class_name TurnEngineCore extends RefCounted
 # ----------------------------------------------------------------------------
 # Responsibilities:
 # - own intra-group actor queueing
-# - request player begin / player end handshakes
-# - request arcana timing hooks
-# - emit actor_requested / group_turn_ended / pending_actors_changed
+# - own turn-flow state and handshake state
+# - answer "what needs to happen next?" via TurnFlowDirective
+# - provide pending-actor snapshots for runtime-owned publication
+#
+# Relationship to SimRuntime:
+# - SimRuntime is the flow owner and side-effect owner.
+# - TurnEngineCore never runs gameplay, writes log events, or opens scopes.
+# - SimRuntime mutates the outside world, then calls back into this object to
+#   record that the requested step has completed.
+#
+# The normal handshake looks like this:
+# 1) SimRuntime calls begin_group_turn_flow(...).
+# 2) SimRuntime tells TurnEngineCore to begin_group_turn_state(...).
+# 3) SimRuntime repeatedly calls advance().
+# 4) advance() returns a TurnFlowDirective describing the next required step.
+# 5) SimRuntime performs that step:
+#    - player begin bookkeeping
+#    - arcana proc execution
+#    - actor turn execution
+#    - group-end lifecycle work
+# 6) SimRuntime calls the matching completion method here:
+#    - complete_player_begin()
+#    - complete_arcana()
+#    - complete_actor()
+#    - complete_player_end()
+# 7) SimRuntime calls advance() again until the flow blocks or goes idle.
 #
 # Friendly phase semantics in THIS FILE:
 # - POST-Player Friendlies:
@@ -24,19 +47,6 @@ class_name TurnEngineCore extends RefCounted
 #		pre_player_friendly == false -> POST-Player Friendlies
 #		pre_player_friendly == true	-> PRE-Player Friendlies
 # ============================================================================
-
-
-# -------------------------
-# Signals
-# -------------------------
-
-signal actor_requested(combat_id: int)
-signal group_turn_ended(group_index: int)
-signal arcana_proc_requested(proc: int, token: int)
-signal pending_actors_changed(active_id: int, pending_ids: PackedInt32Array)
-
-signal player_begin_requested(token: int)
-signal player_end_requested(token: int)
 
 
 # -------------------------
@@ -68,7 +78,9 @@ const MAX_TURNS_PER_FIGHTER_PER_GROUP_TURN := 3
 # External host
 # -------------------------
 
-var host: TurnEngineHostSim
+# Query-only host used to inspect BattleState-derived facts such as order,
+# liveness, and player identity. This object is intentionally not a flow owner.
+var host: TurnFlowQueryHost
 
 
 # -------------------------
@@ -112,10 +124,6 @@ var ended_pre_player_friendly: bool = false
 
 var _waiting_for_player_begin: bool = false
 var _waiting_for_player_end: bool = false
-var _player_token: int = 0
-
-var _resume_after_player_begin: Callable = Callable()
-var _resume_after_player_end: Callable = Callable()
 
 
 # -------------------------
@@ -123,8 +131,7 @@ var _resume_after_player_end: Callable = Callable()
 # -------------------------
 
 var _waiting_for_arcana: bool = false
-var _arcana_token: int = 0
-var _resume_after_arcana: Callable = Callable()
+var _pending_arcana_proc: int = -1
 
 
 # -------------------------
@@ -138,10 +145,13 @@ var dbg := false
 # Init
 # ============================================================================
 
-func _init(_host: TurnEngineHostSim) -> void:
+# Inject the query host used by queue-building and actor classification.
+func _init(_host: TurnFlowQueryHost) -> void:
 	host = _host
 
-func clone_for_host(new_host: TurnEngineHostSim) -> TurnEngineCore:
+# Clone turn-state into a new query host. Preview uses this to resume from the
+# main runtime's flow position without inheriting live wait-state handshakes.
+func clone_for_host(new_host: TurnFlowQueryHost) -> TurnEngineCore:
 	var c := TurnEngineCore.new(new_host)
 
 	c.active_group_index = active_group_index
@@ -165,16 +175,11 @@ func clone_for_host(new_host: TurnEngineHostSim) -> TurnEngineCore:
 	c.ended_pre_player_friendly = ended_pre_player_friendly
 
 	# Preview snapshots resume from a stable execution point and should not inherit
-	# pending handshakes or callbacks bound to the source runtime.
+	# pending handshakes from the source runtime.
 	c._waiting_for_player_begin = false
 	c._waiting_for_player_end = false
-	c._player_token = 0
-	c._resume_after_player_begin = Callable()
-	c._resume_after_player_end = Callable()
-
 	c._waiting_for_arcana = false
-	c._arcana_token = 0
-	c._resume_after_arcana = Callable()
+	c._pending_arcana_proc = -1
 
 	c.dbg = dbg
 
@@ -185,10 +190,13 @@ func clone_for_host(new_host: TurnEngineHostSim) -> TurnEngineCore:
 # Public API
 # ============================================================================
 
-func start_group_turn(group_index: int, start_at_player := false, pre_player_friendly := false) -> void:
+# Reset this state machine for a new group-turn phase.
+# SimRuntime calls this exactly once at the start of a group flow before it
+# performs group-start lifecycle work and begins polling advance().
+func begin_group_turn_state(group_index: int, start_at_player := false, pre_player_friendly := false) -> void:
 	if dbg:
 		print(
-			"TurnEngineCore.start_group_turn() group=%s start_at_player=%s pre_player_friendlies=%s"
+			"TurnEngineCore.begin_group_turn_state() group=%s start_at_player=%s pre_player_friendlies=%s"
 			% [group_index, start_at_player, pre_player_friendly]
 		)
 
@@ -216,17 +224,70 @@ func start_group_turn(group_index: int, start_at_player := false, pre_player_fri
 		# Only once per battle, and only when explicitly starting at player.
 		if _start_at_player and !_start_of_combat_fired:
 			_start_of_combat_fired = true
-			_request_arcana(ArcanaProc.START_OF_COMBAT, func():
-				_advance_to_next_actor()
-			)
-			return
-
-	_advance_to_next_actor()
+			_pending_arcana_proc = ArcanaProc.START_OF_COMBAT
 
 
-func notify_actor_done(combat_id: int) -> void:
+# Return the next required step in the turn flow, without performing side
+# effects. SimRuntime owns the loop that repeatedly calls this method.
+#
+# `BLOCKED` means runtime is waiting for an external completion signal such as:
+# - player input / end-turn confirmation
+# - arcana completion
+# - actor completion
+#
+# `IDLE` means no active group flow exists.
+func advance() -> TurnFlowDirective:
 	if dbg:
-		print("TurnEngineCore.notify_actor_done() cid=%s current=%s" % [combat_id, current_actor_id])
+		print("TurnEngineCore.advance()")
+
+	if _waiting_for_player_begin or _waiting_for_player_end or _waiting_for_arcana or _running_actor:
+		return TurnFlowDirective.blocked()
+
+	if active_group_index < 0:
+		_reset()
+		return TurnFlowDirective.idle()
+
+	if _pending_arcana_proc >= 0:
+		_waiting_for_arcana = true
+		return TurnFlowDirective.request_arcana(_pending_arcana_proc)
+
+	if _queue_dirty:
+		_rebuild_queue()
+
+	if _queue.is_empty():
+		var ended_group := active_group_index
+		if ended_group == 0:
+			ended_pre_player_friendly = _is_pre_player_friendlies()
+		else:
+			ended_pre_player_friendly = false
+		_reset()
+		return TurnFlowDirective.group_turn_ended(ended_group)
+
+	var actor_id := int(_queue[0])
+	if !host.is_alive(actor_id):
+		_queue.remove_at(0)
+		_queue_dirty = true
+		return advance()
+
+	if active_group_index == 0 and host.is_player(actor_id):
+		if !_player_start_of_turn_fired:
+			_player_start_of_turn_fired = true
+			_waiting_for_player_begin = true
+			return TurnFlowDirective.request_player_begin()
+
+	current_actor_id = actor_id
+	_running_actor = true
+	_cursor_cid = actor_id
+	phase = Phase.ACTOR_START
+	return TurnFlowDirective.request_actor(actor_id)
+
+
+# Mark the current actor as fully resolved. SimRuntime calls this only after it
+# has already handled actor-end bookkeeping, scope closure, and any side effects
+# caused by the actor's action.
+func complete_actor(combat_id: int) -> void:
+	if dbg:
+		print("TurnEngineCore.complete_actor() cid=%s current=%s" % [combat_id, current_actor_id])
 
 	if int(combat_id) != current_actor_id:
 		return
@@ -236,23 +297,24 @@ func notify_actor_done(combat_id: int) -> void:
 	_restore_allowed.erase(int(combat_id))
 	_queue_dirty = true
 	phase = Phase.IDLE
-	_advance_to_next_actor()
 
 
+# Notify the state machine that an actor disappeared from battle state. This is
+# a structural update only; SimRuntime remains responsible for any resulting
+# flow advancement and status publication.
 func notify_actor_removed(combat_id: int) -> void:
 	if dbg:
 		print("TurnEngineCore.notify_actor_removed() cid=%s current=%s" % [combat_id, current_actor_id])
 
 	if int(combat_id) == current_actor_id:
-		current_actor_id = 0
 		phase = Phase.IDLE
 		_queue_dirty = true
-		if !_running_actor:
-			_advance_to_next_actor()
 	else:
 		_queue_dirty = true
 
 
+# Notify the state machine that a new combatant joined the active group so the
+# next queue rebuild includes them when appropriate.
 func notify_summon_added(combat_id: int, group_index: int) -> void:
 	if dbg:
 		print("TurnEngineCore.notify_summon_added() cid=%s group=%s" % [combat_id, group_index])
@@ -261,9 +323,11 @@ func notify_summon_added(combat_id: int, group_index: int) -> void:
 		return
 
 	_queue_dirty = true
-	_publish_pending_view()
 
 
+# Feed a completed move back into turn accounting. Some moves can grant a
+# restored turn when a unit crosses behind the active anchor; this method only
+# computes that allowance and marks the queue dirty.
 func notify_move_executed(ctx) -> void:
 	if dbg:
 		print("TurnEngineCore.notify_move_executed()")
@@ -302,172 +366,90 @@ func notify_move_executed(ctx) -> void:
 	if granted:
 		_queue_dirty = true
 
-	_publish_pending_view()
 
-
-func request_player_end() -> void:
+# Begin the player's end-turn handshake. SimRuntime calls this after the UI has
+# requested end turn and the discard animation / hand cleanup is ready to let
+# flow continue.
+func begin_player_end_transition() -> bool:
 	if dbg:
-		print("TurnEngineCore.request_player_end()")
+		print("TurnEngineCore.begin_player_end_transition()")
 
 	# Safety: only valid during the player's actor turn.
 	if active_group_index != 0:
-		return
+		return false
 	if !host.is_player(current_actor_id):
-		return
+		return false
+	if !_running_actor:
+		return false
+	if _waiting_for_player_end:
+		push_warning("TurnEngineCore: player_end already pending; ignoring request")
+		return false
 
-	_request_player_end(func():
-		pass
-	)
+	_waiting_for_player_end = true
+	return true
 
 
-func notify_player_begin_done(token: int) -> void:
+# Complete the player-begin boundary. SimRuntime calls this after running
+# player-turn-start sim bookkeeping, which unlocks the START_OF_TURN arcana step.
+func complete_player_begin() -> void:
 	if dbg:
-		print("TurnEngineCore.notify_player_begin_done() token=%s" % token)
+		print("TurnEngineCore.complete_player_begin()")
 
 	if !_waiting_for_player_begin:
 		return
-	if int(token) != _player_token:
-		return
 
 	_waiting_for_player_begin = false
-
-	var resume := _resume_after_player_begin
-	_resume_after_player_begin = Callable()
-
-	if !resume.is_null():
-		resume.call()
+	_pending_arcana_proc = ArcanaProc.START_OF_TURN
 
 
-func notify_player_end_done(token: int) -> void:
+# Complete the player-end boundary after SimRuntime has already serviced
+# end-of-turn arcana and any other player-end lifecycle work.
+func complete_player_end() -> void:
 	if dbg:
-		print("TurnEngineCore.notify_player_end_done() token=%s" % token)
+		print("TurnEngineCore.complete_player_end()")
 
 	if !_waiting_for_player_end:
-		return
-	if int(token) != _player_token:
 		return
 
 	_waiting_for_player_end = false
 
-	var resume := _resume_after_player_end
-	_resume_after_player_end = Callable()
 
-	if !resume.is_null():
-		resume.call()
-
-
-func notify_arcana_proc_done(token: int) -> void:
+# Complete whichever arcana proc was requested by advance(). SimRuntime calls
+# this after run_arcana_proc(proc) finishes.
+func complete_arcana() -> void:
 	if dbg:
-		print("TurnEngineCore.notify_arcana_proc_done() token=%s" % token)
+		print("TurnEngineCore.complete_arcana()")
 
 	if !_waiting_for_arcana:
 		return
-	if int(token) != _arcana_token:
-		return
 
 	_waiting_for_arcana = false
-	_arcana_token = 0
+	_pending_arcana_proc = -1
 
-	var resume := _resume_after_arcana
-	_resume_after_arcana = Callable()
 
-	if !resume.is_null():
-		resume.call()
-
-func request_queue_rebuild_and_publish() -> void:
+# Tell the state machine that turn order may have changed. SimRuntime uses this
+# after checkpoint flushing and other structural mutations so the next advance()
+# or pending snapshot rebuilds queue truth from current battle state.
+func mark_queue_dirty() -> void:
 	_queue_dirty = true
 
-	# If we're idle, eagerly rebuild so pending view reflects latest truth.
-	if !_running_actor:
-		_rebuild_queue()
 
-	_publish_pending_view()
-
-func request_end_of_turn_arcana(resume: Callable) -> void:
-	_request_arcana(ArcanaProc.END_OF_TURN, resume)
-
-
+# Reset one-battle-only handshake state. SimRuntime uses this when a live flow
+# is being started from the initial battle entrypoint.
 func reset_for_new_battle() -> void:
 	_start_of_combat_fired = false
 	_player_start_of_turn_fired = false
 
 	_waiting_for_arcana = false
-	_arcana_token = 0
-	_resume_after_arcana = Callable()
+	_pending_arcana_proc = -1
 
 	_waiting_for_player_begin = false
 	_waiting_for_player_end = false
-	_player_token = 0
-	_resume_after_player_begin = Callable()
-	_resume_after_player_end = Callable()
 
 	_reset()
 
 
-# ============================================================================
-# Core progression
-# ============================================================================
-
-func _advance_to_next_actor() -> void:
-	if dbg:
-		print("TurnEngineCore._advance_to_next_actor()")
-
-	if _running_actor:
-		return
-
-	if active_group_index < 0:
-		_reset()
-		return
-
-	if _queue_dirty:
-		_rebuild_queue()
-
-	if _queue.is_empty():
-		_end_group_turn()
-		return
-
-	var actor_id := int(_queue[0])
-
-	if !host.is_alive(actor_id):
-		_queue.remove_at(0)
-		_queue_dirty = true
-		_advance_to_next_actor()
-		return
-
-	# Player special case:
-	# On POST-Player Friendly phase, first hit player_begin, then START_OF_TURN arcana,
-	# then continue into actor request.
-	if active_group_index == 0 and host.is_player(actor_id):
-		if !_player_start_of_turn_fired:
-			_player_start_of_turn_fired = true
-			_request_player_begin(func():
-				_request_arcana(ArcanaProc.START_OF_TURN, func():
-					_advance_to_next_actor()
-				)
-			)
-			return
-
-	current_actor_id = actor_id
-	_running_actor = true
-	_cursor_cid = actor_id
-	phase = Phase.ACTOR_START
-
-	_publish_pending_view()
-	actor_requested.emit(actor_id)
-
-
-func _end_group_turn() -> void:
-	var ended_group := active_group_index
-
-	if ended_group == 0:
-		ended_pre_player_friendly = _is_pre_player_friendlies()
-	else:
-		ended_pre_player_friendly = false
-
-	_reset()
-	group_turn_ended.emit(ended_group)
-
-
+# Internal hard reset for "no active group flow".
 func _reset() -> void:
 	if dbg:
 		print("TurnEngineCore._reset()")
@@ -489,6 +471,8 @@ func _reset() -> void:
 # Queue construction
 # ============================================================================
 
+# Rebuild the current in-group execution queue from BattleState-derived order
+# plus this object's local turn-accounting rules.
 func _rebuild_queue() -> void:
 	if dbg:
 		print("TurnEngineCore._rebuild_queue()")
@@ -534,6 +518,10 @@ func _rebuild_queue() -> void:
 			_queue.append(id)
 
 
+# Produce the semantic order for the active phase before turn limits and restore
+# allowances are applied:
+# - friendlies are partitioned around the player
+# - enemies continue forward from the current cursor for stable progression
 func _get_desired_order_ids(group_index: int) -> PackedInt32Array:
 	if dbg:
 		print("TurnEngineCore._get_desired_order_ids() group=%s" % group_index)
@@ -585,7 +573,17 @@ func _get_desired_order_ids(group_index: int) -> PackedInt32Array:
 	return out
 
 
-func _publish_pending_view() -> void:
+# Build the snapshot used by SimRuntime for TURN_STATUS publication. This method
+# is intentionally pure from the runtime's point of view: it only reads local
+# flow state plus BattleState queries and returns the active actor + pending ids.
+func build_pending_actor_snapshot() -> TurnPendingSnapshot:
+	var snapshot := TurnPendingSnapshot.new()
+	if active_group_index < 0:
+		return snapshot
+
+	if _queue_dirty:
+		_rebuild_queue()
+
 	var active_id := 0
 
 	if _running_actor and current_actor_id > 0:
@@ -643,18 +641,24 @@ func _publish_pending_view() -> void:
 					if !pending.has(id):
 						pending.append(id)
 
-	pending_actors_changed.emit(active_id, pending)
+	snapshot.active_id = active_id
+	snapshot.pending_ids = pending
+	return snapshot
 
 
 # ============================================================================
 # Turn accounting
 # ============================================================================
 
+# Record that an actor has spent one of its allowed turns in the current group
+# phase. Player turns are capped differently from NPC/friendly extra turns.
 func _mark_turn_taken(combat_id: int) -> void:
 	var n := int(_turns_taken.get(combat_id, 0))
 	_turns_taken[combat_id] = n + 1
 
 
+# Return how many executions this actor still has available in the current group
+# phase, after considering special player rules and restore-turn grants.
 func _turns_left(combat_id: int) -> int:
 	if !host.is_alive(combat_id):
 		return 0
@@ -669,6 +673,8 @@ func _turns_left(combat_id: int) -> int:
 # Restore-turn move support
 # ============================================================================
 
+# Return true when a moved unit crossed from at-or-before the active anchor to
+# behind it, which is the condition used to grant a restored turn.
 func _crossed_behind(cid: int, ctx, before_anchor: int, after_anchor: int) -> bool:
 	if cid <= 0:
 		return false
@@ -683,74 +689,16 @@ func _crossed_behind(cid: int, ctx, before_anchor: int, after_anchor: int) -> bo
 
 
 # ============================================================================
-# Handshake requests
-# ============================================================================
-
-func _request_player_begin(resume: Callable) -> void:
-	if dbg:
-		print("TurnEngineCore._request_player_begin()")
-
-	if _waiting_for_player_begin:
-		return
-
-	_waiting_for_player_begin = true
-	_player_token += 1
-	_resume_after_player_begin = resume
-	player_begin_requested.emit(_player_token)
-
-
-func _request_player_end(resume: Callable) -> void:
-	if dbg:
-		print("TurnEngineCore._request_player_end()")
-
-	if _waiting_for_player_end:
-		push_warning("TurnEngineCore: player_end already pending; ignoring request")
-		return
-
-	_waiting_for_player_end = true
-	_player_token += 1
-	_resume_after_player_end = resume
-	player_end_requested.emit(_player_token)
-
-
-func _request_arcana(proc: int, resume: Callable) -> void:
-	if dbg:
-		print("TurnEngineCore._request_arcana() proc=%s" % ArcanaProc.keys()[proc])
-
-	if _waiting_for_arcana:
-		push_error("TurnEngineCore: arcana request while another arcana request is pending")
-		return
-
-	_waiting_for_arcana = true
-	_arcana_token += 1
-	_resume_after_arcana = resume
-	arcana_proc_requested.emit(proc, _arcana_token)
-
-
-# ============================================================================
 # Semantic helpers
 # ============================================================================
 
+# Compatibility wrapper around the old external flag naming.
 func _is_pre_player_friendlies() -> bool:
 	# Compatibility mapping:
 	# old name "pre_player_friendly" now semantically means PRE-Player Friendlies
 	return _pre_player_friendly
 
 
+# Convenience opposite of `_is_pre_player_friendlies()`.
 func _is_post_player_friendlies() -> bool:
 	return !_pre_player_friendly
-
-
-# ============================================================================
-# Legacy utility kept for compatibility
-# ============================================================================
-
-func _call_hook(h: Callable) -> Signal:
-	if h.is_null():
-		return Signal()
-
-	var r = h.call()
-	if r is Signal and !(r as Signal).is_null():
-		return r
-
-	return Signal()

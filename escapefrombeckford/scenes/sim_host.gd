@@ -9,7 +9,7 @@ class_name SimHost extends Node
 # - host-side bridge methods used by runtimes
 #
 # Runtime execution belongs to SimRuntime.
-# SimHost should not own TurnEngineCore or TurnEngineHostSim.
+# SimHost should not own TurnEngineCore or TurnFlowQueryHost.
 
 signal main_state_initialized()
 signal preview_state_cloned()

@@ -186,7 +186,7 @@ func start_battle() -> void:
 
 	var runtime := _runtime()
 	if runtime != null:
-		runtime.start_group_turn(FRIENDLY, true)
+		runtime.begin_group_turn_flow(FRIENDLY, true)
 
 
 func _spawn_from_battle_data() -> void:
@@ -253,7 +253,7 @@ func _on_end_turn_button_pressed() -> void:
 func _on_hand_discarded_one_shot() -> void:
 	var runtime := _runtime()
 	if runtime != null:
-		runtime.notify_player_discard_animation_finished()
+		runtime.confirm_player_end_ready()
 
 
 func _on_hand_done_drawing() -> void:

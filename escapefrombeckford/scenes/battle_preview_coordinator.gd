@@ -100,8 +100,8 @@ func recompute_preview_if_needed() -> void:
 		if main_runtime != null and main_runtime.has_runtime_initialized():
 			resumed_from_live_turn = preview_runtime.clone_turn_flow_from(main_runtime)
 		if !resumed_from_live_turn:
-			preview_runtime.start_group_turn(FRIENDLY, false, false)
-		preview_runtime.notify_player_discard_animation_finished()
+			preview_runtime.begin_group_turn_flow(FRIENDLY, false, false)
+		preview_runtime.confirm_player_end_ready()
 
 	var preview_state := sim_host.get_preview_state()
 	if preview_state == null:
