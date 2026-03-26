@@ -9,7 +9,7 @@ class_name TurnEngineCore extends RefCounted
 # - own intra-group actor queueing
 # - request player begin / player end handshakes
 # - request arcana timing hooks
-# - emit actor_requested / group_turn_ended / pending_view_changed
+# - emit actor_requested / group_turn_ended / pending_actors_changed
 #
 # Friendly phase semantics in THIS FILE:
 # - POST-Player Friendlies:
@@ -33,7 +33,7 @@ class_name TurnEngineCore extends RefCounted
 signal actor_requested(combat_id: int)
 signal group_turn_ended(group_index: int)
 signal arcana_proc_requested(proc: int, token: int)
-signal pending_view_changed(active_id: int, pending_ids: PackedInt32Array)
+signal pending_actors_changed(active_id: int, pending_ids: PackedInt32Array)
 
 signal player_begin_requested(token: int)
 signal player_end_requested(token: int)
@@ -643,7 +643,7 @@ func _publish_pending_view() -> void:
 					if !pending.has(id):
 						pending.append(id)
 
-	pending_view_changed.emit(active_id, pending)
+	pending_actors_changed.emit(active_id, pending)
 
 
 # ============================================================================

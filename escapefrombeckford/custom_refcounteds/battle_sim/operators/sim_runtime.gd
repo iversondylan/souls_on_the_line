@@ -63,7 +63,7 @@ func _connect_turn_engine_signals(engine: TurnEngineCore) -> void:
 	engine.actor_requested.connect(_on_actor_requested)
 	engine.player_begin_requested.connect(_on_player_begin_requested)
 	engine.player_end_requested.connect(_on_player_end_requested)
-	engine.pending_view_changed.connect(_on_pending_view_changed)
+	engine.pending_actors_changed.connect(_on_pending_actors_changed)
 
 func _ensure_runtime_initialized() -> void:
 	_ensure_turn_engine_host_initialized()
@@ -246,8 +246,8 @@ func _on_player_end_requested(token: int) -> void:
 	handle_player_end_requested(token)
 
 
-func _on_pending_view_changed(active_id: int, pending_ids: PackedInt32Array) -> void:
-	handle_pending_view_changed(active_id, pending_ids)
+func _on_pending_actors_changed(active_id: int, pending_ids: PackedInt32Array) -> void:
+	handle_pending_actors_changed(active_id, pending_ids)
 
 
 # ============================================================================
@@ -297,7 +297,7 @@ func handle_group_turn_ended(group_index: int) -> void:
 	_schedule_next_group_turn(group_index)
 
 
-func handle_pending_view_changed(active_id: int, pending_ids: PackedInt32Array) -> void:
+func handle_pending_actors_changed(active_id: int, pending_ids: PackedInt32Array) -> void:
 	var api := _api()
 	var engine := _engine()
 	if api == null or engine == null:
