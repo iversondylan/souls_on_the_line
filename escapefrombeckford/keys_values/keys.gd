@@ -194,6 +194,11 @@ const SUMMON_SOUND := &"summon_sound"
 const ATTACK_SPREE := &"attack_spree"
 const USED_1 := &"used_1"
 const COOLDOWN_1 := &"cooldown_1"
+const PLANNING_NOW := &"planning_now"
+const REPLAN_DIRTY := &"replan_dirty"
+const INTENT_DIRTY := &"intent_dirty"
+const IS_ACTING := &"is_acting"
+const FIRST_INTENTS_READY := &"first_intent_ready"
 
 # Chance-weight protocol
 const CHANCE_ADD := &"chance_add"        # float, default 0.0

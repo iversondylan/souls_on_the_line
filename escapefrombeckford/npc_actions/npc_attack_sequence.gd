@@ -204,5 +204,11 @@ func execute_sim(ctx: NPCAIContext) -> void:
 	attack_ctx.deal_modifier_type = int(attack_ctx.params.get(Keys.DEAL_MOD_TYPE, Modifier.Type.DMG_DEALT))
 	attack_ctx.take_modifier_type = int(attack_ctx.params.get(Keys.TAKE_MOD_TYPE, Modifier.Type.DMG_TAKEN))
 	attack_ctx.reason = "npc_attack"
+	attack_ctx.targeting_ctx = TargetingContext.new()
+	attack_ctx.targeting_ctx.api = ctx.api
+	attack_ctx.targeting_ctx.source_id = int(ctx.cid)
+	attack_ctx.targeting_ctx.target_type = int(attack_ctx.targeting)
+	attack_ctx.targeting_ctx.attack_mode = int(attack_ctx.attack_mode)
+	attack_ctx.targeting_ctx.params = attack_ctx.params
 
 	runtime.run_attack(attack_ctx)

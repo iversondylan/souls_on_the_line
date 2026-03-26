@@ -48,7 +48,7 @@ func _init(_state: BattleState) -> void:
 
 
 # ============================================================================
-# Basic queries
+# Combatant Queries
 # ============================================================================
 
 func is_alive(combat_id: int) -> bool:
@@ -175,6 +175,10 @@ func get_status_intensity(combat_id: int, status_id: StringName) -> int:
 	return int(stack.intensity)
 
 
+# ============================================================================
+# Targeting Queries
+# ============================================================================
+
 func find_marked_ranged_redirect_target(attacker_id: int) -> int:
 	for id in get_enemies_of(int(attacker_id)):
 		if has_status(int(id), Keys.STATUS_MARKED):
@@ -185,20 +189,22 @@ func find_marked_ranged_redirect_target(attacker_id: int) -> int:
 func get_targets_for_attack_sequence(ai_ctx) -> Array:
 	if ai_ctx == null:
 		return []
-	
+
 	var attacker_id := int(ai_ctx.cid) if ai_ctx and ("cid" in ai_ctx) else 0
-	if attacker_id <= 0 and ai_ctx.combatant:
-		attacker_id = int(ai_ctx.combatant.combat_id)
-	if attacker_id <= 0 and ai_ctx.combatant_data:
-		attacker_id = int(ai_ctx.combatant_data.combat_id)
-	
 	if attacker_id <= 0:
 		return []
-	
-	return AttackTargeting.get_target_ids(self, attacker_id, ai_ctx.params)
+
+	var targeting_ctx := TargetingContext.new()
+	targeting_ctx.api = self
+	targeting_ctx.source_id = attacker_id
+	targeting_ctx.params = ai_ctx.params if ai_ctx.params != null else {}
+	targeting_ctx.target_type = int(targeting_ctx.params.get(Keys.TARGET_TYPE, Attack.Targeting.STANDARD))
+	targeting_ctx.attack_mode = int(targeting_ctx.params.get(Keys.ATTACK_MODE, Attack.Mode.MELEE))
+
+	return AttackTargeting.get_target_ids(targeting_ctx)
 
 # ============================================================================
-# Card / mana queries
+# Resource Queries
 # ============================================================================
 
 
@@ -234,7 +240,7 @@ func get_pending_discard() -> DiscardRequest:
 	return state.resource.pending_discard
 
 # ============================================================================
-# Dirtying / checkpoint requests
+# Planning / Dirty Requests
 # ============================================================================
 
 func _request_replan(cid: int) -> void:
@@ -250,7 +256,7 @@ func _request_replan(cid: int) -> void:
 		return
 	
 	ActionPlanner.ensure_ai_state_initialized(u)
-	u.ai_state[&"replan_dirty"] = true
+	u.ai_state[Keys.REPLAN_DIRTY] = true
 
 func _request_replan_all() -> void:
 	if checkpoint_processor != null:
@@ -276,7 +282,7 @@ func _request_intent_refresh(cid: int) -> void:
 		return
 	
 	ActionPlanner.ensure_ai_state_initialized(u)
-	u.ai_state[&"intent_dirty"] = true
+	u.ai_state[Keys.INTENT_DIRTY] = true
 
 
 func _request_intent_refresh_all() -> void:
@@ -323,6 +329,10 @@ func _request_intent_refresh_targets_for_aura(_source_id: int, _proto: Status) -
 	_request_intent_refresh_all()
 
 
+
+# ============================================================================
+# Atomic Combat Mutations
+# ============================================================================
 
 func resolve_damage_immediate(ctx: DamageContext) -> int:
 	if ctx == null or state == null:
@@ -810,7 +820,7 @@ func count_soulbound_in_group(group_index: int) -> int:
 
 
 # ============================================================================
-# Card / discard
+# Pending Input / Discard
 # ============================================================================
 
 func request_player_discard(req: DiscardRequest) -> bool:
@@ -841,7 +851,7 @@ func resolve_player_discard(selected_card_uids: Array[String]) -> void:
 		writer.emit_discard_resolved(req, selected_card_uids)
 
 # ============================================================================
-# Shared resource mutations
+# Resource Mutations
 # ============================================================================
 
 func set_mana(ctx: ManaContext) -> void:
@@ -963,7 +973,7 @@ func spend_mana_for_card(ctx: ManaContext, card: CardData) -> bool:
 	return true
 
 # ============================================================================
-# AI planning helpers
+# Planning Helpers
 # ============================================================================
 
 func plan_intent(cid: int, allow_hooks := true, clear_dirty := true) -> void:
@@ -977,20 +987,20 @@ func plan_intent(cid: int, allow_hooks := true, clear_dirty := true) -> void:
 		return
 
 	ActionPlanner.ensure_ai_state_initialized(u)
-	u.ai_state[ActionPlanner.FIRST_INTENTS_READY] = true
+	u.ai_state[Keys.FIRST_INTENTS_READY] = true
 
-	if bool(u.ai_state.get(&"planning_now", false)) or bool(u.ai_state.get(ActionPlanner.IS_ACTING, false)):
-		u.ai_state[&"replan_dirty"] = true
+	if bool(u.ai_state.get(Keys.PLANNING_NOW, false)) or bool(u.ai_state.get(Keys.IS_ACTING, false)):
+		u.ai_state[Keys.REPLAN_DIRTY] = true
 		return
 
-	u.ai_state[&"planning_now"] = true
+	u.ai_state[Keys.PLANNING_NOW] = true
 
 	var ctx_ai := _make_ai_ctx(u)
 	ActionPlanner.ensure_valid_plan_sim(u.combatant_data.ai, ctx_ai, allow_hooks)
 
-	u.ai_state[&"planning_now"] = false
+	u.ai_state[Keys.PLANNING_NOW] = false
 	if clear_dirty:
-		u.ai_state[&"replan_dirty"] = false
+		u.ai_state[Keys.REPLAN_DIRTY] = false
 
 
 func plan_intents() -> void:
@@ -1039,7 +1049,7 @@ func _make_ai_ctx(u: CombatantState) -> NPCAIContext:
 
 
 # ============================================================================
-# Damage / reaction hooks
+# Reaction Hooks
 # ============================================================================
 
 func modify_damage_amount(ctx: DamageContext, base: int) -> int:
@@ -1086,7 +1096,7 @@ func on_damage_applied(ctx: DamageContext) -> void:
 
 
 # ============================================================================
-# Internal mutation helpers
+# Internal Mutation Helpers
 # ============================================================================
 
 func _make_unit_from_combatant_data(
@@ -1180,7 +1190,7 @@ func _rebuild_modifier_cache_for(_id: int) -> void:
 
 
 # ============================================================================
-# Other API surface / stubs
+# Misc / Stubs
 # ============================================================================
 
 func run_status_proc(_target_id: int, _proc_type: Status.ProcType) -> void:

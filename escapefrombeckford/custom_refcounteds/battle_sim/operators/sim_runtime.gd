@@ -459,8 +459,8 @@ func run_npc_turn(cid: int) -> void:
 	var ctx := ActionPlanner.make_context(api, u)
 	ctx.runtime = self
 
-	if !bool(ctx.state.get(ActionPlanner.FIRST_INTENTS_READY, false)):
-		ctx.state[ActionPlanner.FIRST_INTENTS_READY] = true
+	if !bool(ctx.state.get(Keys.FIRST_INTENTS_READY, false)):
+		ctx.state[Keys.FIRST_INTENTS_READY] = true
 
 	ActionPlanner.ensure_valid_plan_sim(profile, ctx, true)
 
@@ -473,7 +473,7 @@ func run_npc_turn(cid: int) -> void:
 		_finish_npc_turn(ctx)
 		return
 
-	ctx.state[ActionPlanner.IS_ACTING] = true
+	ctx.state[Keys.IS_ACTING] = true
 	ActionLifecycleSystem.on_action_execution_started(ctx)
 
 	for sm: StateModel in action.state_models:
@@ -498,7 +498,7 @@ func run_npc_turn(cid: int) -> void:
 			pkg.effect.execute_sim(ctx)
 
 	ctx.state[ActionPlanner.KEY_PLANNED_IDX] = -1
-	ctx.state[ActionPlanner.IS_ACTING] = false
+	ctx.state[Keys.IS_ACTING] = false
 	ctx.state[ActionPlanner.ACTIONS_TAKEN] = int(ctx.state.get(ActionPlanner.ACTIONS_TAKEN, 0)) + 1
 
 	if _should_immediately_replan_intent(api, u):
@@ -522,6 +522,15 @@ func run_attack(ctx: AttackContext) -> bool:
 	var targeting := int(ctx.targeting)
 	var attacker_id := int(ctx.attacker_id)
 	var source_id := int(ctx.source_id if ctx.source_id > 0 else attacker_id)
+	var targeting_ctx := ctx.targeting_ctx
+	if targeting_ctx == null:
+		targeting_ctx = TargetingContext.new()
+		targeting_ctx.api = api
+		targeting_ctx.source_id = attacker_id
+		targeting_ctx.target_type = targeting
+		targeting_ctx.attack_mode = mode
+		targeting_ctx.params = params
+		ctx.targeting_ctx = targeting_ctx
 	var any := false
 
 	var attack_scope := _begin_scope(Scope.Kind.ATTACK, "attacker=%d" % attacker_id, attacker_id, {
@@ -546,7 +555,7 @@ func run_attack(ctx: AttackContext) -> bool:
 			_end_scope(attack_scope)
 			return false
 
-		var target_ids: Array[int] = AttackTargeting.get_target_ids(api, attacker_id, params)
+		var target_ids: Array[int] = AttackTargeting.get_target_ids(targeting_ctx)
 		target_ids = target_ids.filter(func(id):
 			return int(id) > 0 and api.is_alive(int(id))
 		)
@@ -823,6 +832,13 @@ func apply_attack_now(spec: SimAttackSpec) -> bool:
 	attack_ctx.targeting = int(attack_ctx.params.get(Keys.TARGET_TYPE, Attack.Targeting.STANDARD))
 	attack_ctx.projectile_scene = String(attack_ctx.params.get(Keys.PROJECTILE_SCENE, ""))
 	attack_ctx.reason = "attack_now"
+	attack_ctx.targeting_ctx = TargetingContext.new()
+	attack_ctx.targeting_ctx.api = api
+	attack_ctx.targeting_ctx.source_id = int(spec.attacker_id)
+	attack_ctx.targeting_ctx.target_type = int(attack_ctx.targeting)
+	attack_ctx.targeting_ctx.attack_mode = int(attack_ctx.attack_mode)
+	attack_ctx.targeting_ctx.params = attack_ctx.params
+	attack_ctx.targeting_ctx.explicit_target_ids = spec.explicit_target_ids.duplicate()
 	if int(spec.base_damage) > 0:
 		attack_ctx.base_damage = int(spec.base_damage)
 		attack_ctx.base_damage_melee = int(spec.base_damage)
@@ -849,7 +865,7 @@ func _finish_npc_turn(ctx: NPCAIContext) -> void:
 	if ctx == null or ctx.state == null:
 		return
 
-	ctx.state[ActionPlanner.IS_ACTING] = false
+	ctx.state[Keys.IS_ACTING] = false
 
 
 func _should_immediately_replan_intent(api: SimBattleAPI, u: CombatantState) -> bool:

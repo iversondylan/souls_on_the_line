@@ -6,9 +6,7 @@ const KEY_PLANNED_IDX := &"key_planned_index"
 const HP_AT_TURN_START := &"hp_at_turn_start"
 const DMG_SINCE_LAST_TURN := &"dmg_since_last_turn"
 const STABILITY_BROKEN := &"stability_broken"
-const IS_ACTING := &"is_acting"
 const ACTIONS_TAKEN := &"actions_taken"
-const FIRST_INTENTS_READY := &"first_intent_ready"
 
 static var debug := false
 
@@ -33,7 +31,7 @@ static func ensure_ai_state_initialized(u: CombatantState) -> void:
 		u.ai_state = {}
 
 	var s := u.ai_state
-	s[&"planning_now"] = bool(s.get(&"planning_now", false))
+	s[Keys.PLANNING_NOW] = bool(s.get(Keys.PLANNING_NOW, false))
 
 	if !s.has(HP_AT_TURN_START):
 		s[HP_AT_TURN_START] = int(u.health)
@@ -43,10 +41,10 @@ static func ensure_ai_state_initialized(u: CombatantState) -> void:
 		s[KEY_PLANNED_IDX] = -1
 	if !s.has(&"telegraph_committed"):
 		s[&"telegraph_committed"] = false
-	if !s.has(IS_ACTING):
-		s[IS_ACTING] = false
-	if !s.has(FIRST_INTENTS_READY):
-		s[FIRST_INTENTS_READY] = false
+	if !s.has(Keys.IS_ACTING):
+		s[Keys.IS_ACTING] = false
+	if !s.has(Keys.FIRST_INTENTS_READY):
+		s[Keys.FIRST_INTENTS_READY] = false
 	if !s.has(STABILITY_BROKEN):
 		s[STABILITY_BROKEN] = false
 	if !s.has(ACTIONS_TAKEN):
@@ -56,7 +54,7 @@ static func ensure_ai_state_initialized(u: CombatantState) -> void:
 static func ensure_valid_plan_sim(profile: NPCAIProfile, ctx: NPCAIContext, allow_hooks := true) -> void:
 	if profile == null or ctx == null:
 		return
-	if bool(ctx.state.get(IS_ACTING, false)):
+	if bool(ctx.state.get(Keys.IS_ACTING, false)):
 		return
 
 	if !ctx.state.has(KEY_PLANNED_IDX):
@@ -131,7 +129,7 @@ static func emit_current_intent(api: SimBattleAPI, cid: int) -> void:
 
 
 static func _can_cancel_intent_sim(state: Dictionary) -> bool:
-	if bool(state.get(IS_ACTING, false)):
+	if bool(state.get(Keys.IS_ACTING, false)):
 		return false
 	return true
 

@@ -175,9 +175,9 @@ func _refresh_intent_if_valid(api: SimBattleAPI, cid: int) -> void:
 
 	ActionPlanner.ensure_ai_state_initialized(u)
 
-	if !bool(u.ai_state.get(ActionPlanner.FIRST_INTENTS_READY, false)):
+	if !bool(u.ai_state.get(Keys.FIRST_INTENTS_READY, false)):
 		return
-	if bool(u.ai_state.get(ActionPlanner.IS_ACTING, false)):
+	if bool(u.ai_state.get(Keys.IS_ACTING, false)):
 		return
 
 	ActionIntentPresenter.emit_current_intent(api, cid)

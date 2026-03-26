@@ -11,6 +11,7 @@ var strikes: int = 1
 var attack_mode: int = Attack.Mode.MELEE
 var targeting: int = Attack.Targeting.STANDARD
 var projectile_scene: String = ""
+var targeting_ctx: TargetingContext
 
 var base_damage: int = 0
 var base_damage_melee: int = 0
