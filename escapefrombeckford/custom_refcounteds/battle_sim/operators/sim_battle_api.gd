@@ -179,13 +179,6 @@ func get_status_intensity(combat_id: int, status_id: StringName) -> int:
 # Targeting Queries
 # ============================================================================
 
-func find_marked_ranged_redirect_target(attacker_id: int) -> int:
-	for id in get_enemies_of(int(attacker_id)):
-		if has_status(int(id), Keys.STATUS_MARKED):
-			return int(id)
-	return 0
-
-
 func get_targets_for_attack_sequence(ai_ctx) -> Array:
 	if ai_ctx == null:
 		return []

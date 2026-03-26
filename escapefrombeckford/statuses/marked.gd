@@ -30,6 +30,30 @@ func on_apply(ctx: SimStatusContext, apply_ctx: StatusContext) -> void:
 func get_id() -> StringName:
 	return ID
 
+func get_targeting_priority(stage: int) -> int:
+	if int(stage) == int(TargetingContext.Stage.RETARGET):
+		return 100
+	return 1000
+
+func on_targeting_retarget(ctx: SimStatusContext, targeting_ctx: TargetingContext) -> void:
+	if ctx == null or !ctx.is_valid() or ctx.owner == null or targeting_ctx == null:
+		return
+	if !targeting_ctx.is_single_target_intent:
+		return
+	if int(targeting_ctx.attack_mode) != int(Attack.Mode.RANGED):
+		return
+
+	var owner_id := int(ctx.owner_id)
+	if owner_id <= 0:
+		return
+	if int(ctx.owner.team) != int(targeting_ctx.defending_group_index):
+		return
+	if !targeting_ctx.api.is_alive(owner_id):
+		return
+
+	targeting_ctx.redirect_target_id = owner_id
+	targeting_ctx.working_target_ids = [owner_id]
+
 func get_tooltip(_intensity: int = 0, duration: int = 0) -> String:
 	if duration == 1:
 		return "Marked: ranged attacks prioritize this target for 1 turn."

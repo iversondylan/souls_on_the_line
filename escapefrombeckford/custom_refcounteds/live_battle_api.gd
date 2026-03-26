@@ -654,14 +654,6 @@
 		#return false
 	#return f.status_system.has_status(status_id)
 #
-#func find_marked_ranged_redirect_target(attacker_id: int) -> int:
-	#var enemies := get_enemies_of(attacker_id) # ids front->back
-	#for id in enemies:
-		#if is_alive(id) and has_status(id, &"marked"):
-			#return id
-	#return 0
-#
-#
 #func get_targets_for_attack_sequence(ai_ctx) -> Array:
 	#var attacker_id := 0
 	#if ai_ctx.combatant:

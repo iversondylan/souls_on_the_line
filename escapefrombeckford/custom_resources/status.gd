@@ -64,6 +64,15 @@ func on_damage_taken(_ctx: SimStatusContext, _damage_ctx: DamageContext) -> void
 func on_death(_ctx: SimStatusContext, _dead_id: int, _killer_id: int, _reason: String) -> void:
 	pass
 
+func get_targeting_priority(_stage: int) -> int:
+	return 100
+
+func on_targeting_retarget(_ctx: SimStatusContext, _targeting_ctx: TargetingContext) -> void:
+	pass
+
+func on_targeting_interpose(_ctx: SimStatusContext, _targeting_ctx: TargetingContext) -> void:
+	pass
+
 
 # -------------------------------------------------------------------
 # Modifier hooks

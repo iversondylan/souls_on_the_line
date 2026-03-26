@@ -47,6 +47,15 @@ func on_run_hook(_hook_id: StringName, _ctx: Dictionary = {}) -> Variant:
 func on_battle_resolution_hook(_hook_id: StringName, _ctx: Dictionary = {}) -> Variant:
 	return null
 
+func get_targeting_priority(_stage: int) -> int:
+	return 100
+
+func on_targeting_retarget(_ctx: ArcanumContext, _targeting_ctx: TargetingContext) -> void:
+	pass
+
+func on_targeting_interpose(_ctx: ArcanumContext, _targeting_ctx: TargetingContext) -> void:
+	pass
+
 func get_modifier_tokens_for(_target: Node) -> Array[ModifierToken]:
 	return []
 
