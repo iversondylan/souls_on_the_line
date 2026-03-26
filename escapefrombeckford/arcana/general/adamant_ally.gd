@@ -1,7 +1,9 @@
 # adamant_ally.gd
 
 extends Arcanum
+
 const ID := &"adamant_ally"
+
 @export var summon_data: CombatantData
 
 func get_id() -> StringName:

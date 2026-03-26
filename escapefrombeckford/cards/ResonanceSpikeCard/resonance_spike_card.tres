@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="CardData" format=3 uid="uid://bhqq2dr8db5pn"]
+
+[ext_resource type="Script" uid="uid://wtk5v77fcqvn" path="res://custom_resources/card_action.gd" id="1_action"]
+[ext_resource type="Resource" path="res://cards/ResonanceSpikeCard/resonance_spike_action.tres" id="2_resonance_action"]
+[ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://custom_resources/card_data.gd" id="3_card_data"]
+[ext_resource type="Texture2D" uid="uid://cnj435rpb1haa" path="res://assets/sprites/statuses/resonance_spike.png" id="4_texture"]
+
+[resource]
+script = ExtResource("3_card_data")
+name = "Resonance Spike"
+description = "Allies deal +%s damage until the enemy turn."
+cost = 1
+texture = ExtResource("4_texture")
+actions = Array[ExtResource("1_action")]([ExtResource("2_resonance_action")])
+metadata/_custom_type_script = "uid://d2f0qepe047dc"

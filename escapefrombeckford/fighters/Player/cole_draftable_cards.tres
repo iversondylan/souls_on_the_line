@@ -12,8 +12,9 @@
 [ext_resource type="Resource" uid="uid://iv5lrhm4b60n" path="res://cards/SpacetimeWarp/spacetime_warp_data.tres" id="8_twox4"]
 [ext_resource type="Resource" uid="uid://eet5htwsey50" path="res://cards/SuperchargeCard/supercharge.tres" id="10_ph4sk"]
 [ext_resource type="Resource" uid="uid://dqmjfqr0ijgwh" path="res://cards/TemperedSilverbackCard/tempered_silverback_card.tres" id="11_os4ej"]
+[ext_resource type="Resource" path="res://cards/ResonanceSpikeCard/resonance_spike_card.tres" id="12_resonance"]
 
 [resource]
 script = ExtResource("2_a8mjb")
-cards = Array[ExtResource("1_fen0u")]([ExtResource("2_fv5yh"), ExtResource("3_8eqlo"), ExtResource("4_22mo8"), ExtResource("5_bnr1j"), ExtResource("6_lex8d"), ExtResource("7_o6avm"), ExtResource("8_twox4"), ExtResource("6_ltswl"), ExtResource("10_ph4sk"), ExtResource("11_os4ej")])
+cards = Array[ExtResource("1_fen0u")]([ExtResource("2_fv5yh"), ExtResource("3_8eqlo"), ExtResource("4_22mo8"), ExtResource("5_bnr1j"), ExtResource("6_lex8d"), ExtResource("7_o6avm"), ExtResource("8_twox4"), ExtResource("6_ltswl"), ExtResource("10_ph4sk"), ExtResource("11_os4ej"), ExtResource("12_resonance")])
 metadata/_custom_type_script = "uid://dnybrgm0o6gjj"

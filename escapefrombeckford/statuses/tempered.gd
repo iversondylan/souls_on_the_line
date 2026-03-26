@@ -9,7 +9,7 @@ func get_id() -> StringName:
 	return ID
 
 func on_damage_taken(ctx: SimStatusContext, damage_ctx: DamageContext) -> void:
-	print("tempered.gd on_damage_taken()")
+	#print("tempered.gd on_damage_taken()")
 	if ctx == null or damage_ctx == null:
 		return
 	if damage_ctx.target_id <= 0:

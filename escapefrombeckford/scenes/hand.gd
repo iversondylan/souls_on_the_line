@@ -473,7 +473,7 @@ func _card_drag_or_aim_ended(card: UsableCard) -> void:
 	_apply_z_order()
 
 func _on_player_turn_completed() -> void:
-	print("hand.gd _on_player_turn_completed()")
+	#print("hand.gd _on_player_turn_completed()")
 	disable_hand_cards()
 	discard_hand(get_hand_cards())
 
