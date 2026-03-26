@@ -111,7 +111,7 @@ func _set_card_data(_card_data: CardData) -> void:
 	playable = is_playable()
 
 func highlight():
-	if disabled == false and card_state_machine.current_state is BaseState:
+	if disabled == false and card_state_machine.is_in_state(CardState.State.BASE):
 		card_visuals.glow.show()
 
 func unhighlight():

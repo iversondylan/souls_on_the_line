@@ -3,14 +3,7 @@
 [ext_resource type="Script" uid="uid://dw6oso8sytggf" path="res://cards/usable_card.gd" id="1_f88n7"]
 [ext_resource type="PackedScene" uid="uid://dlpbxdm81neil" path="res://cards/card_visuals.tscn" id="2_f727x"]
 [ext_resource type="Script" uid="uid://cgsyc7ofma8tv" path="res://cards/card_state_machine.gd" id="3_32cfh"]
-[ext_resource type="Script" uid="uid://dpi1bdtdbgufi" path="res://cards/card_states/card_base_state.gd" id="4_juwkc"]
-[ext_resource type="Script" uid="uid://c8md6rjubuj2a" path="res://cards/card_states/card_clicked_state.gd" id="5_pefwv"]
-[ext_resource type="Script" uid="uid://c105frfq73ho0" path="res://cards/card_states/card_dragging_state.gd" id="6_xk81s"]
-[ext_resource type="Script" uid="uid://bikh7yv8s3kjv" path="res://cards/card_states/card_released_state.gd" id="7_a1aea"]
-[ext_resource type="Script" uid="uid://cq15qwif2sf5u" path="res://cards/card_states/card_aiming_state.gd" id="8_oqtgk"]
-[ext_resource type="Script" uid="uid://btx2y7yj6fm0h" path="res://cards/card_states/card_selection_state.gd" id="9_f727x"]
 [ext_resource type="Texture2D" uid="uid://c2cpjnsgjdd1x" path="res://assets/sprites/assorted/card_back_1.PNG" id="10_5usk7"]
-[ext_resource type="Script" uid="uid://bupfxdfg6dd0k" path="res://cards/card_states/card_selected_state.gd" id="10_32cfh"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_g488w"]
 size = Vector2(225, 315)
@@ -47,36 +40,8 @@ monitorable = false
 position = Vector2(60.5, 84.5)
 shape = SubResource("RectangleShape2D_horhy")
 
-[node name="CardStateMachine" type="Node" parent="." unique_id=1554702334 node_paths=PackedStringArray("initial_state")]
+[node name="CardStateMachine" type="Node" parent="." unique_id=1554702334]
 script = ExtResource("3_32cfh")
-initial_state = NodePath("CardBaseState")
-
-[node name="CardBaseState" type="Node" parent="CardStateMachine" unique_id=1904034263]
-script = ExtResource("4_juwkc")
-
-[node name="CardClickedState" type="Node" parent="CardStateMachine" unique_id=491802013]
-script = ExtResource("5_pefwv")
-state = 1
-
-[node name="CardDraggingState" type="Node" parent="CardStateMachine" unique_id=675971500]
-script = ExtResource("6_xk81s")
-state = 2
-
-[node name="CardReleasedState" type="Node" parent="CardStateMachine" unique_id=1970469704]
-script = ExtResource("7_a1aea")
-state = 4
-
-[node name="CardAimingState" type="Node" parent="CardStateMachine" unique_id=1037205823]
-script = ExtResource("8_oqtgk")
-state = 3
-
-[node name="CardSelectionState" type="Node" parent="CardStateMachine" unique_id=881379409]
-script = ExtResource("9_f727x")
-state = 5
-
-[node name="CardSelectedState" type="Node" parent="CardStateMachine" unique_id=1232879768]
-script = ExtResource("10_32cfh")
-state = 6
 
 [node name="CardBack" type="Sprite2D" parent="." unique_id=789359508]
 visible = false

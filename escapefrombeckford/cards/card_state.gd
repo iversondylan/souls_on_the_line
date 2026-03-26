@@ -1,6 +1,4 @@
-class_name CardState extends Node
-
-var player_data: PlayerData
+class_name CardState extends RefCounted
 
 enum State {
 	BASE,
@@ -11,30 +9,3 @@ enum State {
 	SELECTION,
 	SELECTED
 }
-
-signal transition_requested(from: CardState, to: State)
-
-@export var state: State
-
-var usable_card: UsableCard
-
-func enter() -> void:
-	pass
-
-func dwell() -> void:
-	pass
-
-func exit() -> void:
-	pass
-
-func on_input(_event: InputEvent) -> void:
-	pass
-
-func on_gui_input(_event: InputEvent) -> void:
-	pass
-
-func on_mouse_entered() -> void:
-	pass
-
-func on_mouse_exited() -> void:
-	pass
