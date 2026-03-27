@@ -61,11 +61,17 @@ func load_active_run() -> RunState:
 	var loaded := _load_resource(ACTIVE_RUN_SAVE_PATH)
 	if loaded == null:
 		return null
+	var needs_resave := false
+	if loaded is RunAccount:
+		needs_resave = true
+	elif loaded is RunState:
+		var loaded_run := loaded as RunState
+		needs_resave = loaded_run.player_data != null or String(loaded_run.player_profile_id).is_empty()
 
 	var migrated := _normalize_active_run(loaded)
 	if migrated == null:
 		return null
-	if loaded is RunAccount:
+	if needs_resave:
 		save_active_run(migrated)
 	return migrated
 
@@ -73,6 +79,7 @@ func load_active_run() -> RunState:
 func save_active_run(run_state: RunState) -> bool:
 	if run_state == null:
 		return false
+	run_state.player_data = null
 	return _save_resource(run_state, ACTIVE_RUN_SAVE_PATH)
 
 
@@ -120,6 +127,8 @@ func _normalize_active_run(resource: Resource) -> RunState:
 		run_state.player_run_state = PlayerRunState.new()
 	if run_state.player_data == null and resource is RunAccount:
 		run_state.player_data = (resource as RunAccount).player_definition
+	if run_state.player_profile_id.is_empty() and run_state.player_data != null:
+		run_state.player_profile_id = _derive_player_profile_id(run_state.player_data)
 	if run_state.run_deck == null:
 		run_state.run_deck = RunDeck.new()
 	if run_state.run_deck.card_collection == null:
@@ -127,7 +136,21 @@ func _normalize_active_run(resource: Resource) -> RunState:
 	run_state.run_deck.normalize_cards()
 	if run_state.owned_arcanum_ids == null:
 		run_state.owned_arcanum_ids = PackedStringArray()
+	run_state.player_data = null
 	return run_state
+
+
+func _derive_player_profile_id(player_data: PlayerData) -> String:
+	if player_data == null:
+		return ""
+	if !String(player_data.profile_id).is_empty():
+		return String(player_data.profile_id)
+	if !String(player_data.resource_path).is_empty():
+		var file_name := player_data.resource_path.get_file().get_basename()
+		if file_name.ends_with("_data"):
+			file_name = file_name.trim_suffix("_data")
+		return file_name.to_lower()
+	return ""
 
 
 func _migrate_legacy_save_paths(path: String) -> void:

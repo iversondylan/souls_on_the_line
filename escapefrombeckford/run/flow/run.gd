@@ -13,6 +13,7 @@ const TREASURE_SCN := preload("res://run/treasure/treasure_room.tscn")
 
 
 @export var run_startup: RunStartup = preload("res://run/flow/run_startup.tres")
+@export var player_catalog: PlayerCatalog = preload("res://character_profiles/player_catalog.tres")
 @export var status_catalog: StatusCatalog
 ##Main menu startup will need to populate 
 ##this variable before changing scenes.
@@ -47,7 +48,6 @@ var player_data: PlayerData
 var run_seed: int = 0
 var arcana_system: ArcanaSystem
 var arcana_catalog: ArcanaCatalog
-var starting_deck: CardPile
 var draftable_cards: CardPile
 var run_deck: RunDeck
 var run_rng: RunRNG
@@ -57,6 +57,8 @@ func _ready() -> void:
 	#print_tree_pretty()
 	status_catalog.build_index()
 	arcanum_catalog.build_index()
+	if player_catalog != null:
+		player_catalog.build_index()
 	arcana_system = arcana_container.system
 	arcana_system.modifier_tokens_changed.connect(_on_modifier_tokens_changed)
 	
@@ -74,8 +76,10 @@ func _start_run() -> void:
 		run_state = RunState.new()
 	run_state.draftable_cards = draftable_cards
 	if run_state.run_deck == null:
-		run_deck = RunDeck.new()
-		run_deck.card_collection = starting_deck
+		if run_deck == null:
+			run_deck = RunDeck.new()
+		if run_deck.card_collection == null and player_data != null and player_data.starting_deck != null:
+			run_deck.card_collection = player_data.starting_deck.duplicate()
 		run_state.run_deck = run_deck
 	else:
 		run_deck = run_state.run_deck
@@ -278,16 +282,13 @@ func _start_new_run() -> void:
 	print("run.gd new run startup seed: ", run_seed)
 	run_rng = RunRNG.new(run_seed)
 
-	player_data = run_startup.player_definition
+	player_data = _resolve_player_profile(run_startup.player_profile_id)
+	if player_data == null:
+		push_warning("Run._start_new_run(): no player profile found for id '%s'" % run_startup.player_profile_id)
+		return
 
-	if run_startup.starting_deck != null:
-		starting_deck = run_startup.starting_deck.duplicate()
-	else:
-		starting_deck = player_data.starting_deck.duplicate()
-	if run_startup.draftable_cards != null:
-		draftable_cards = run_startup.draftable_cards.duplicate()
-	else:
-		draftable_cards = player_data.draftable_cards.duplicate()
+	var starting_deck := player_data.starting_deck.duplicate()
+	draftable_cards = player_data.draftable_cards.duplicate()
 
 	var soul_snapshot: CardSnapshot = null
 	if profile_data != null and profile_data.soul_recess_state != null:
@@ -300,13 +301,16 @@ func _start_new_run() -> void:
 		if carried_card != null:
 			starting_deck.add_back(carried_card)
 
-	arcana_catalog = run_startup.arcana_catalog.duplicate() if run_startup.arcana_catalog != null else arcanum_catalog.duplicate()
+	arcana_catalog = arcanum_catalog.duplicate()
 	run_state = RunState.new()
 	run_state.run_seed = run_seed
-	run_state.player_data = player_data
+	run_state.player_profile_id = String(player_data.profile_id)
 	run_state.player_run_state = PlayerRunState.new()
 	run_state.player_run_state.current_health = int(player_data.max_health)
 	run_state.owned_arcanum_ids = PackedStringArray([String(player_data.starting_arcanum.get_id())]) if player_data.starting_arcanum != null else PackedStringArray()
+	run_deck = RunDeck.new()
+	run_deck.card_collection = starting_deck
+	run_state.run_deck = run_deck
 	for arcanum in extra_arcana:
 		if arcanum != null:
 			run_state.owned_arcanum_ids.append(String(arcanum.get_id()))
@@ -321,11 +325,12 @@ func _continue_saved_run() -> void:
 		push_warning("Run._continue_saved_run(): no active run save found")
 		return
 
-	if run_state.player_data == null:
-		push_warning("Run._continue_saved_run(): saved run missing player_data")
+	player_data = _resolve_player_profile(run_state.player_profile_id)
+	if player_data == null:
+		push_warning("Run._continue_saved_run(): unknown player_profile_id '%s'" % run_state.player_profile_id)
 		return
-
-	player_data = run_state.player_data
+	if run_state.player_profile_id.is_empty():
+		run_state.player_profile_id = String(player_data.profile_id)
 
 	draftable_cards = run_state.draftable_cards if run_state.draftable_cards != null else player_data.draftable_cards.duplicate()
 	run_deck = run_state.run_deck if run_state.run_deck != null else RunDeck.new()
@@ -333,7 +338,7 @@ func _continue_saved_run() -> void:
 		run_deck.card_collection = player_data.starting_deck.duplicate()
 	run_seed = int(run_state.run_seed)
 	run_rng = RunRNG.new(run_seed)
-	arcana_catalog = run_startup.arcana_catalog.duplicate() if run_startup.arcana_catalog != null else arcanum_catalog.duplicate()
+	arcana_catalog = arcanum_catalog.duplicate()
 	_start_run()
 	_restore_saved_location()
 
@@ -406,7 +411,8 @@ func _sync_run_state_from_live_state() -> void:
 	if run_state == null:
 		return
 	run_state.run_seed = run_seed
-	run_state.player_data = player_data
+	run_state.player_profile_id = String(player_data.profile_id) if player_data != null else ""
+	run_state.player_data = null
 	if run_state.player_run_state == null:
 		run_state.player_run_state = PlayerRunState.new()
 	run_state.run_deck = run_deck
@@ -478,6 +484,15 @@ func _on_modifier_tokens_changed(mod_type: Modifier.Type) -> void:
 	
 	if view.has_method("on_modifier_tokens_changed"):
 		view.on_modifier_tokens_changed(mod_type)
+
+
+func _resolve_player_profile(profile_id: String) -> PlayerData:
+	if player_catalog == null:
+		return null
+	var resolved := player_catalog.get_profile(profile_id)
+	if resolved != null:
+		return resolved
+	return player_catalog.get_default_profile()
 
 #func make_rng(label: String) -> RandomNumberGenerator:
 	#var rng := RandomNumberGenerator.new()

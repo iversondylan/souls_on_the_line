@@ -83,7 +83,10 @@ func _clear_shop_items() -> void:
 
 func _build_shop_card_offers() -> Array[CardData]:
 	var shop_cards: Array[CardData] = []
-	var available_cards := player_data.draftable_cards.cards.duplicate(true)
+	var source_pile := run_state.draftable_cards if run_state != null and run_state.draftable_cards != null else player_data.draftable_cards
+	if source_pile == null:
+		return shop_cards
+	var available_cards := source_pile.cards.duplicate(true)
 	available_cards.shuffle()
 	var cards_added: int = 0
 	for card: CardData in available_cards:

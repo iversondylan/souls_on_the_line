@@ -25,7 +25,8 @@ const BASE_RARE_WEIGHT := 0.3
 @export_range(0.0, 10.0) var rare_weight: float = BASE_RARE_WEIGHT
 
 @export var run_seed: int = 0
-@export var player_data: PlayerData
+@export var player_profile_id: String = ""
+@export var player_data: PlayerData # Legacy save compatibility only.
 @export var player_run_state: PlayerRunState = PlayerRunState.new()
 @export var cleared_room_coords: Array[Vector2i] = []
 @export var location_kind: int = LocationKind.MAP

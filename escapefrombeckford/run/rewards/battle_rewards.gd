@@ -74,7 +74,10 @@ func _on_arcanum_reward_taken(arcanum: Arcanum) -> void:
 		run._persist_active_run()
 
 func _show_card_reward() -> void:
-	if !run_state or !player_data:
+	if !run_state:
+		return
+	var source_pile := run_state.draftable_cards if run_state.draftable_cards != null else (player_data.draftable_cards if player_data != null else null)
+	if source_pile == null:
 		return
 	
 	var card_reward := CARD_REWARD.instantiate() as CardReward
@@ -82,7 +85,7 @@ func _show_card_reward() -> void:
 	card_reward.card_reward_selected.connect(_on_card_reward_taken)
 	
 	var card_choices: Array[CardData] = []
-	var possible_cards: Array[CardData] = run_state.draftable_cards.cards.duplicate()
+	var possible_cards: Array[CardData] = source_pile.cards.duplicate()
 	#print("battle_rewards.gd _show_card_reward() possible cards: ", possible_cards.size())
 	for i in run_state.card_reward_choices:
 		_calculate_card_chances()
@@ -131,7 +134,7 @@ func _on_gold_reward_taken(n_gold: int) -> void:
 		run._persist_active_run()
 
 func _on_card_reward_taken(card: CardData) -> void:
-	if !player_data or !card or !run_state.run_deck:
+	if !card or !run_state.run_deck:
 		return
 	run_state.run_deck.add_card(card)
 	if run != null:

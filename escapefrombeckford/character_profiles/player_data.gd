@@ -2,6 +2,7 @@
 
 class_name PlayerData extends CombatantData
 
+@export var profile_id: String = ""
 @export var starting_arcanum: Arcanum
 @export var possible_arcana: Arcana
 @export var starting_deck: CardPile
