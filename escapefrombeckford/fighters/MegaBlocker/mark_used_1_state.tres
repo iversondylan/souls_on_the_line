@@ -1,7 +1,0 @@
-[gd_resource type="Resource" script_class="MarkUsedStateModel" load_steps=2 format=3 uid="uid://cboaeigdxkc1a"]
-
-[ext_resource type="Script" uid="uid://bgkkcyf28dvjw" path="res://npc_actions/state/mark_used_state_model.gd" id="1_5cexf"]
-
-[resource]
-script = ExtResource("1_5cexf")
-metadata/_custom_type_script = "uid://bgkkcyf28dvjw"

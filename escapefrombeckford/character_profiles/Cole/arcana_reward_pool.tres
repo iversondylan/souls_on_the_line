@@ -1,6 +1,6 @@
-[gd_resource type="Resource" script_class="ArcanaRewardPool" load_steps=2 format=3 uid="uid://c8kt337vs6465"]
+[gd_resource type="Resource" script_class="ArcanaRewardPool" format=3 uid="uid://c8kt337vs6465"]
 
-[ext_resource type="Script" uid="uid://l5htcqf6312n" path="res://custom_resources/arcana_reward_pool.gd" id="1_ghr83"]
+[ext_resource type="Script" uid="uid://l5htcqf6312n" path="res://arcana/core/arcana_reward_pool.gd" id="1_ghr83"]
 
 [resource]
 script = ExtResource("1_ghr83")

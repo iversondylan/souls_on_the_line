@@ -1,8 +1,0 @@
-[gd_resource type="Resource" script_class="IntentTooltipTextModel" load_steps=2 format=3 uid="uid://ua4f5n3ka8qp"]
-
-[ext_resource type="Script" uid="uid://cxh1c3vqgquc5" path="res://npc_actions/text/intent_tooltip_text_model.gd" id="1_j84mh"]
-
-[resource]
-script = ExtResource("1_j84mh")
-text_template = "[b]Block Intent:[/b] gain {armor_amount} armor."
-metadata/_custom_type_script = "uid://cxh1c3vqgquc5"

@@ -1,0 +1,7 @@
+[gd_resource type="Resource" script_class="FlatArmorModel" load_steps=2 format=3 uid="uid://bl041k85026h4"]
+
+[ext_resource type="Script" uid="uid://csw8sovsyb4vq" path="res://npc_ai/armor_amount/flat_armor_model.gd" id="1_3xxua"]
+
+[resource]
+script = ExtResource("1_3xxua")
+metadata/_custom_type_script = "uid://csw8sovsyb4vq"

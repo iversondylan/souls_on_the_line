@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="NPCAIProfile" load_steps=6 format=3 uid="uid://7hi0c0m1vnpb"]
+
+[ext_resource type="Script" uid="uid://bcih413oy6v73" path="res://npc_ai/core/npc_action.gd" id="1_eg5ed"]
+[ext_resource type="Script" uid="uid://bdsvca1cpka5s" path="res://npc_ai/core/npc_ai_profile.gd" id="2_3ucy0"]
+[ext_resource type="Resource" uid="uid://cx8lb7pxxv4vq" path="res://combatants/MegaBlocker/mega_blocker_attack.tres" id="2_xdpna"]
+[ext_resource type="Resource" uid="uid://cdi1ok8yv6b4l" path="res://combatants/MegaBlocker/mega_blocker_block.tres" id="3_mx3sn"]
+[ext_resource type="Resource" uid="uid://dnkgkdy6leoku" path="res://combatants/MegaBlocker/mega_blocker_emergency_block.tres" id="4_fuyub"]
+
+[resource]
+script = ExtResource("2_3ucy0")
+actions = Array[ExtResource("1_eg5ed")]([ExtResource("2_xdpna"), ExtResource("3_mx3sn"), ExtResource("4_fuyub")])
+metadata/_custom_type_script = "uid://bdsvca1cpka5s"

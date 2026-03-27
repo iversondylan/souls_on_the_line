@@ -25,12 +25,12 @@ buses/default_bus_layout="uid://dbgqy38x3r4ca"
 
 [autoload]
 
-Events="*res://global/events.gd"
-Shaker="*res://global/shaker.gd"
-MusicPlayer="*res://global/music_player.tscn"
-SFXPlayer="*res://global/sfx_player.tscn"
+Events="*res://core/events.gd"
+Shaker="*res://core/shaker.gd"
+MusicPlayer="*res://core/music_player.tscn"
+SFXPlayer="*res://core/sfx_player.tscn"
 FxLibrary="*uid://bvxmtkalwcaf"
-SaveService="*res://global/save_service.gd"
+SaveService="*res://core/save_service.gd"
 
 [debug]
 

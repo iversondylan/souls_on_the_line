@@ -2,13 +2,12 @@
 
 [ext_resource type="Texture2D" uid="uid://dqw3vrvo72rls" path="res://assets/sprites/arcana_placeholders/clone.png" id="1_ga55l"]
 [ext_resource type="Script" uid="uid://lpr1x3npsid" path="res://arcana/general/adamant_ally.gd" id="1_gjwtx"]
-[ext_resource type="Resource" uid="uid://dwy6ym7cfiix7" path="res://fighters/BasicClone/basic_clone_data.tres" id="3_cia6o"]
+[ext_resource type="Resource" uid="uid://dwy6ym7cfiix7" path="res://combatants/BasicClone/basic_clone_data.tres" id="3_cia6o"]
 
 [resource]
 script = ExtResource("1_gjwtx")
 summon_data = ExtResource("3_cia6o")
 arcanum_name = "Adamant Ally"
-id = "adamant_ally"
 type = 1
 starter_arcanum = true
 icon = ExtResource("1_ga55l")

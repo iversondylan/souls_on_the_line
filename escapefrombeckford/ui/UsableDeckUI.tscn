@@ -1,0 +1,12 @@
+[gd_scene load_steps=3 format=3 uid="uid://c01lspqb108gi"]
+
+[ext_resource type="Script" uid="uid://clx7g6v1sui4p" path="res://ui/usable_deck_ui.gd" id="2_ildqj"]
+[ext_resource type="Texture2D" uid="uid://45iqapug5iws" path="res://assets/sprites/assorted/card_back.PNG" id="2_otcw5"]
+
+[node name="TextureButton" type="TextureButton"]
+offset_right = 40.0
+offset_bottom = 40.0
+texture_normal = ExtResource("2_otcw5")
+script = ExtResource("2_ildqj")
+
+[node name="UsableDeckUi" type="Node2D" parent="."]

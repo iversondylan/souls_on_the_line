@@ -1,6 +1,7 @@
 [gd_resource type="Resource" format=3 uid="uid://ce1lg5k4uob75"]
 
 [ext_resource type="Script" uid="uid://bvtjs02t4l8n5" path="res://cards/PinpointCard/pinpoint_action.gd" id="1_tel1a"]
+[ext_resource type="Resource" uid="uid://dg4xayxef851q" path="res://audio/pinpoint_buzz.tres" id="2_15o8m"]
 
 [resource]
 script = ExtResource("1_tel1a")

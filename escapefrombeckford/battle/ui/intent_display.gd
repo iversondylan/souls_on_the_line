@@ -1,0 +1,28 @@
+class_name IntentDisplay extends Control
+var intent_data: IntentData
+@onready var text: Label = $Text
+@onready var icon: TextureRect = $Icon
+
+func _ready() -> void:
+	pass
+
+func load_icon_data(_intent_data: IntentData):
+	intent_data = _intent_data
+	set_icon_values()
+
+func set_icon_values():
+	if intent_data == null:
+		text.text = ""
+		icon.texture = null
+		return
+	text.text = intent_data.base_text
+	if intent_data.icon_uid != "":
+		icon.texture = load(intent_data.icon_uid)
+	else:
+		icon.texture = null
+
+func _on_mouse_entered() -> void:
+	Events.intent_tooltip_show_requested.emit(self as IntentDisplay)
+
+func _on_mouse_exited() -> void:
+	Events.tooltip_hide_requested.emit()

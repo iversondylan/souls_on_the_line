@@ -1,4 +1,4 @@
-[gd_resource type="Resource" load_steps=3 format=3 uid="uid://dvvb4if62jfkx"]
+[gd_resource type="Resource" format=3 uid="uid://dvvb4if62jfkx"]
 
 [ext_resource type="Texture2D" uid="uid://bfra3ulw7gf27" path="res://assets/sprites/arcana_placeholders/rune-stone.png" id="1_jqkyd"]
 [ext_resource type="Script" uid="uid://cd2wn5xk0smof" path="res://arcana/general/sigil_of_mana.gd" id="2_6vupx"]
@@ -6,7 +6,6 @@
 [resource]
 script = ExtResource("2_6vupx")
 arcanum_name = "Sigil of Mana"
-id = "sigil_of_mana"
 type = 1
 starter_arcanum = null
 icon = ExtResource("1_jqkyd")

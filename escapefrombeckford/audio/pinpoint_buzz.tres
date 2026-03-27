@@ -1,6 +1,6 @@
-[gd_resource type="Resource" script_class="Sound" load_steps=3 format=3 uid="uid://dg4xayxef851q"]
+[gd_resource type="Resource" script_class="Sound" format=3 uid="uid://dg4xayxef851q"]
 
-[ext_resource type="Script" uid="uid://bjedhaqsbwou7" path="res://custom_resources/sound.gd" id="1_eylb8"]
+[ext_resource type="Script" path="res://audio/sound.gd" id="1_eylb8"]
 [ext_resource type="AudioStream" uid="uid://idwtyj2act0h" path="res://assets/sfx/pinpoint_buzz.wav" id="2_jrtk5"]
 
 [resource]

@@ -1,0 +1,7 @@
+[gd_resource type="Resource" script_class="FlatDamageModel" load_steps=2 format=3 uid="uid://c6usn1gcev33x"]
+
+[ext_resource type="Script" uid="uid://db3rq0sfeqpw1" path="res://npc_ai/damage/flat_damage_model.gd" id="1_ypoot"]
+
+[resource]
+script = ExtResource("1_ypoot")
+metadata/_custom_type_script = "uid://db3rq0sfeqpw1"

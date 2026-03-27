@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="CombatantData" format=3 uid="uid://cdmyfenehv67g"]
+
+[ext_resource type="Resource" uid="uid://6st7qsavadsd" path="res://combatants/BacklineGreenhorn/backline_greenhorn_ai.tres" id="1_qov74"]
+[ext_resource type="Script" uid="uid://cfatj0ryn8uv3" path="res://combatants/combatant_data.gd" id="3_8cg22"]
+
+[resource]
+script = ExtResource("3_8cg22")
+name = "Backline Greenhorn"
+character_art_uid = "uid://dtvvequ1w1dlu"
+facing_right = false
+height = 270
+color_tint = Color(0.34310004, 0.73, 0.37534165, 1)
+max_health = 12
+ai = ExtResource("1_qov74")
+metadata/_custom_type_script = "uid://cfatj0ryn8uv3"

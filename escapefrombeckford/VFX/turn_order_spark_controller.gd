@@ -5,7 +5,7 @@ extends Node2D
 signal finished
 signal canceled
 
-@onready var turn_preview_number_scn: PackedScene = preload("res://scenes/ui/turn_preview_number.tscn")
+@onready var turn_preview_number_scn: PackedScene = preload("res://battle/ui/turn_preview_number.tscn")
 @onready var ordinals_parent: Node2D = $OrdinalsParent
 
 @export var height_above_feet: float = 100.0

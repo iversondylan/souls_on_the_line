@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="StabilityUntilMyActionModel" format=3 uid="uid://egssyhjkm2wq"]
+
+[ext_resource type="Script" path="res://npc_ai/intent_lifecycle/stability_until_my_action_model.gd" id="1_wq4a8"]
+[ext_resource type="Resource" uid="uid://w4sf6lmivd8d" path="res://combatants/PowerBlocker/5_stability.tres" id="2_u7rfr"]
+
+[resource]
+script = ExtResource("1_wq4a8")
+status = ExtResource("2_u7rfr")
+status_id = &"stability"
+intensity = 5

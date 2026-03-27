@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://buhtw3540mbls" path="res://cards/_generic_actions/summon_action.gd" id="1_extil"]
 [ext_resource type="Resource" uid="uid://c0cllss7w30rn" path="res://audio/summon_zap.tres" id="2_65k5t"]
-[ext_resource type="Resource" uid="uid://ut67k4rbn403" path="res://fighters/TemperedSilverback/tempered_silverback_data.tres" id="3_boald"]
+[ext_resource type="Resource" uid="uid://ut67k4rbn403" path="res://combatants/TemperedSilverback/tempered_silverback_data.tres" id="3_boald"]
 
 [resource]
 script = ExtResource("1_extil")

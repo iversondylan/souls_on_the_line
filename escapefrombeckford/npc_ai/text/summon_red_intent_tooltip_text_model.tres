@@ -1,0 +1,7 @@
+[gd_resource type="Resource" script_class="SummonRedIntentTooltipTextModel" load_steps=2 format=3 uid="uid://bv4vmq637qs77"]
+
+[ext_resource type="Script" uid="uid://dg05abl3ms1xi" path="res://npc_ai/text/summon_red_intent_tooltip_text_model.gd" id="1_ro3cu"]
+
+[resource]
+script = ExtResource("1_ro3cu")
+metadata/_custom_type_script = "uid://dg05abl3ms1xi"

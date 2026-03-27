@@ -1,8 +1,8 @@
 [gd_resource type="Resource" script_class="CardData" format=3 uid="uid://b7txf6d8vmjkk"]
 
-[ext_resource type="Script" uid="uid://wtk5v77fcqvn" path="res://custom_resources/card_action.gd" id="1_nt5vi"]
-[ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://custom_resources/card_data.gd" id="2_nt5vi"]
-[ext_resource type="Resource" uid="uid://c5qjmc4akover" path="res://cards/SpectralCloneCard/spectral_clone_action.tres" id="2_r36tv"]
+[ext_resource type="Script" uid="uid://wtk5v77fcqvn" path="res://cards/core/card_action.gd" id="1_nt5vi"]
+[ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://cards/core/card_data.gd" id="2_nt5vi"]
+[ext_resource type="Resource" uid="uid://c5qjmc4akover" path="res://cards/SpectralCloneCard/spectral_clone_action.tres" id="3_80tus"]
 [ext_resource type="Texture2D" uid="uid://boidn5bneb5f0" path="res://assets/sprites/assorted/player_mage.png" id="4_5lags"]
 
 [resource]
@@ -13,5 +13,5 @@ name = "Spectral Clone"
 description = "Summon a %s/%s %s."
 cost = 1
 texture = ExtResource("4_5lags")
-actions = Array[ExtResource("1_nt5vi")]([ExtResource("2_r36tv")])
+actions = Array[ExtResource("1_nt5vi")]([ExtResource("3_80tus")])
 metadata/_custom_type_script = "uid://d2f0qepe047dc"

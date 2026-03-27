@@ -6,7 +6,6 @@
 [resource]
 script = ExtResource("2_dcqir")
 number_display_type = 1
-intensity = 2
 icon = ExtResource("1_18iun")
 tooltip = "TO DO
 A player buff which makes summons deal more damage."

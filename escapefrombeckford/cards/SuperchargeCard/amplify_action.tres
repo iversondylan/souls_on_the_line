@@ -1,5 +1,6 @@
-[gd_resource type="Resource" load_steps=2 format=3 uid="uid://pogo8alg2nkw"]
+[gd_resource type="Resource" format=3 uid="uid://pogo8alg2nkw"]
 
+[ext_resource type="Resource" uid="uid://bwbxpiia8trvh" path="res://audio/supercharge_application.tres" id="1_8n2h5"]
 [ext_resource type="Script" uid="uid://7oq0cdc437jn" path="res://cards/SuperchargeCard/amplify_action.gd" id="1_htngn"]
 
 [resource]

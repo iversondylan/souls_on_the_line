@@ -1,0 +1,26 @@
+[gd_scene format=3 uid="uid://buo1rmesoj57w"]
+
+[ext_resource type="Script" uid="uid://ckutv4xyr8o7v" path="res://ui/status_entry_row.gd" id="1_nj0h8"]
+[ext_resource type="PackedScene" uid="uid://cd15ukicbp7fj" path="res://battle/view/status_display.tscn" id="2_6u54l"]
+[ext_resource type="Theme" uid="uid://1dr1eewpv0jd" path="res://themes/ui_theme.tres" id="2_nj0h8"]
+
+[node name="StatusEntryRow" type="HBoxContainer"]
+custom_minimum_size = Vector2(600, 128)
+offset_right = 40.0
+offset_bottom = 40.0
+theme_override_constants/separation = 16
+script = ExtResource("1_nj0h8")
+
+[node name="StatusDisplay" parent="." instance=ExtResource("2_6u54l")]
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 4
+
+[node name="Description" type="RichTextLabel" parent="."]
+custom_minimum_size = Vector2(500, 0)
+layout_mode = 2
+theme = ExtResource("2_nj0h8")
+theme_override_font_sizes/normal_font_size = 26
+bbcode_enabled = true
+text = "Status text goes here."
+vertical_alignment = 1

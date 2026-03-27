@@ -1,0 +1,120 @@
+# card_data.gd
+class_name CardData extends Resource
+
+enum CardType {
+	CONVOCATION,
+	SUMMON,
+	ENCHANTMENT,
+	EFFUSION
+}
+
+enum TargetType {
+	SELF,
+	BATTLEFIELD,
+	ALLY_OR_SELF,
+	ALLY,
+	SINGLE_ENEMY,
+	ALL_ENEMIES,
+	EVERYONE
+}
+
+enum Rarity {COMMON, UNCOMMON, RARE}
+
+enum CardStatus {
+	PRE_GAME,
+	DRAW_PILE,
+	HAND,
+	DISCARD_PILE,
+	SUMMON_RESERVE,
+	EXHAUSTED
+}
+
+const RARITY_COLORS := {
+	CardData.Rarity.COMMON: Color.GRAY,
+	CardData.Rarity.UNCOMMON: Color.ROYAL_BLUE,
+	CardData.Rarity.RARE: Color.DARK_ORANGE,
+}
+
+
+@export_group("Identity")
+@export var uid: String = ""				# stable per instance
+@export var version: int = 1
+@export var base_proto_path: String = ""	# optional: template origin
+
+@export_group("Card Attributes")
+@export var id: int
+
+@export var card_type: CardType
+@export var target_type: TargetType
+@export var rarity: Rarity
+@export var name: String
+@export var deplete: bool
+@export_multiline var description: String
+@export var cost: int
+@export var texture: Texture2D
+@export var actions: Array[CardAction] = []
+
+func ensure_uid() -> void:
+	if uid != "":
+		return
+	uid = "%d_%d_%d" % [Time.get_unix_time_from_system(), randi(), int(hash(name))]
+
+
+func make_runtime_instance() -> CardData:
+	var instance := duplicate(true) as CardData
+	if instance == null:
+		return null
+
+	var proto_path := String(base_proto_path if !base_proto_path.is_empty() else resource_path)
+	if instance._needs_proto_rehydrate():
+		var proto := load(proto_path) as CardData
+		if proto != null:
+			var hydrated := proto.duplicate(true) as CardData
+			if hydrated != null:
+				_copy_runtime_overrides(instance, hydrated)
+				instance = hydrated
+
+	if instance.base_proto_path.is_empty():
+		instance.base_proto_path = proto_path
+	instance.ensure_uid()
+	return instance
+
+
+func _needs_proto_rehydrate() -> bool:
+	return actions.is_empty() or name.is_empty()
+
+
+static func _copy_runtime_overrides(from: CardData, to: CardData) -> void:
+	if from == null or to == null:
+		return
+	to.uid = from.uid
+	to.version = from.version
+	to.base_proto_path = String(from.base_proto_path if !from.base_proto_path.is_empty() else to.base_proto_path)
+	to.id = from.id
+	to.card_type = from.card_type
+	to.target_type = from.target_type
+	to.rarity = from.rarity
+	if !from.name.is_empty():
+		to.name = from.name
+	to.deplete = from.deplete
+	if !from.description.is_empty():
+		to.description = from.description
+	to.cost = from.cost
+	if from.texture != null:
+		to.texture = from.texture
+	if !from.actions.is_empty():
+		to.actions = from.actions.duplicate()
+
+func serialize_snapshot() -> CardSnapshot:
+	return CardSnapshot.from_card(self)
+
+static func deserialize_snapshot(snapshot: CardSnapshot) -> CardData:
+	if snapshot == null:
+		return null
+	return snapshot.instantiate_card()
+
+func is_single_targeted() -> bool:
+	return target_type == TargetType.SINGLE_ENEMY or target_type == TargetType.ALLY_OR_SELF or target_type == TargetType.ALLY or target_type == TargetType.BATTLEFIELD
+
+func get_total_cost() -> int:
+	return cost

@@ -1,0 +1,116 @@
+[gd_scene load_steps=8 format=3 uid="uid://b5kimimy0ccq0"]
+
+[ext_resource type="Script" uid="uid://dt1x8ukdg7b33" path="res://ui/health_bar.gd" id="1_1vcc2"]
+[ext_resource type="Theme" uid="uid://d2wc7fposrlqs" path="res://themes/wizard_theme.tres" id="1_4rf34"]
+[ext_resource type="Theme" uid="uid://1dr1eewpv0jd" path="res://themes/ui_theme.tres" id="2_qi2ti"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_qi2ti"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_4rf34"]
+bg_color = Color(0.57, 0.1596, 0.22116, 1)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_8ymem"]
+bg_color = Color(0.027, 0.0330833, 0.1, 1)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
+shadow_color = Color(0.27, 0.2376, 0.2376, 0.52549)
+shadow_offset = Vector2(0, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_x4hh8"]
+bg_color = Color(0.65, 0.48555, 0.2015, 1)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
+
+[node name="HealthPanel" type="PanelContainer"]
+offset_right = 142.0
+offset_bottom = 31.0
+size_flags_horizontal = 0
+theme = ExtResource("1_4rf34")
+script = ExtResource("1_1vcc2")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="."]
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 4
+theme_override_constants/separation = 0
+
+[node name="Spacer1" type="Control" parent="HBoxContainer"]
+custom_minimum_size = Vector2(4, 0)
+layout_mode = 2
+size_flags_horizontal = 4
+
+[node name="VBoxContainer" type="VBoxContainer" parent="HBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="Control2" type="Control" parent="HBoxContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 4)
+layout_mode = 2
+
+[node name="HealthBar" type="ProgressBar" parent="HBoxContainer/VBoxContainer"]
+unique_name_in_owner = true
+z_index = 1
+custom_minimum_size = Vector2(56, 17)
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/background = SubResource("StyleBoxEmpty_qi2ti")
+theme_override_styles/fill = SubResource("StyleBoxFlat_4rf34")
+step = 1.0
+value = 50.0
+show_percentage = false
+
+[node name="DamageBar" type="ProgressBar" parent="HBoxContainer/VBoxContainer/HealthBar"]
+unique_name_in_owner = true
+z_index = -1
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/background = SubResource("StyleBoxFlat_8ymem")
+theme_override_styles/fill = SubResource("StyleBoxFlat_x4hh8")
+step = 1.0
+value = 75.0
+show_percentage = false
+
+[node name="Control" type="Control" parent="HBoxContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 4)
+layout_mode = 2
+
+[node name="Spacer2" type="Control" parent="HBoxContainer"]
+custom_minimum_size = Vector2(4, 0)
+layout_mode = 2
+size_flags_horizontal = 4
+
+[node name="HealthNumber" type="Label" parent="HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 4
+theme = ExtResource("2_qi2ti")
+theme_override_font_sizes/font_size = 16
+text = "999"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="MaxHealthNumber" type="Label" parent="HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+theme = ExtResource("2_qi2ti")
+theme_override_font_sizes/font_size = 16
+text = "/999"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Spacer3" type="Control" parent="HBoxContainer"]
+custom_minimum_size = Vector2(4, 0)
+layout_mode = 2
+size_flags_horizontal = 4

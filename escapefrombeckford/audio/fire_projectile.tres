@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="Sound" format=3 uid="uid://20341tfvmh04"]
 
-[ext_resource type="Script" uid="uid://bjedhaqsbwou7" path="res://custom_resources/sound.gd" id="1_autyp"]
+[ext_resource type="Script" path="res://audio/sound.gd" id="1_autyp"]
 [ext_resource type="AudioStream" uid="uid://dul7faytxowdj" path="res://assets/sfx/forcepush.ogg" id="2_728vf"]
 
 [resource]

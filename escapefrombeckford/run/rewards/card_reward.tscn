@@ -1,0 +1,80 @@
+[gd_scene format=3 uid="uid://dlq3idvfn5vil"]
+
+[ext_resource type="PackedScene" uid="uid://d4g7iin5x7648" path="res://cards/menu_card/menu_card.tscn" id="1_bvuxf"]
+[ext_resource type="Script" uid="uid://ct6y4rbokh8gv" path="res://run/rewards/card_reward.gd" id="1_mac32"]
+[ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://cards/core/card_data.gd" id="2_4yi5y"]
+[ext_resource type="Theme" uid="uid://d2wc7fposrlqs" path="res://themes/wizard_theme.tres" id="2_jfd2g"]
+[ext_resource type="PackedScene" uid="uid://c4ioesrs574d7" path="res://ui/card_tooltip_popup.tscn" id="3_uwpog"]
+[ext_resource type="Resource" uid="uid://ds3np5rpek8ot" path="res://cards/BerserkersFury/berserkers_fury.tres" id="3_vthmm"]
+[ext_resource type="Resource" uid="uid://iv5lrhm4b60n" path="res://cards/SpacetimeWarp/spacetime_warp_data.tres" id="4_dry12"]
+[ext_resource type="Resource" uid="uid://daxsngijhqe3k" path="res://cards/FocusFireCard/focus_fire.tres" id="5_pnegv"]
+
+[node name="CardReward" type="ColorRect" unique_id=315655578]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.076, 0.06, 0.12, 1)
+script = ExtResource("1_mac32")
+card_choices = Array[ExtResource("2_4yi5y")]([ExtResource("3_vthmm"), ExtResource("4_dry12"), ExtResource("5_pnegv")])
+
+[node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=222513747]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -341.5
+offset_top = -163.5
+offset_right = 341.5
+offset_bottom = 163.5
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 20
+
+[node name="CardChoiceContainer" type="HBoxContainer" parent="VBoxContainer" unique_id=1707318439]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 30
+
+[node name="MenuCard" parent="VBoxContainer/CardChoiceContainer" unique_id=124490572 instance=ExtResource("1_bvuxf")]
+layout_mode = 2
+
+[node name="MenuCard2" parent="VBoxContainer/CardChoiceContainer" unique_id=12523649 instance=ExtResource("1_bvuxf")]
+layout_mode = 2
+
+[node name="MenuCard3" parent="VBoxContainer/CardChoiceContainer" unique_id=902838567 instance=ExtResource("1_bvuxf")]
+layout_mode = 2
+
+[node name="SkipCard" type="Button" parent="VBoxContainer" unique_id=950616085]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(250, 0)
+layout_mode = 2
+size_flags_horizontal = 4
+theme = ExtResource("2_jfd2g")
+theme_override_font_sizes/font_size = 70
+text = "Skip"
+
+[node name="CardTooltipPopup" parent="." unique_id=1653195684 instance=ExtResource("3_uwpog")]
+layout_mode = 1
+background_color = Color(0.112533, 0.092, 0.4, 0.886275)
+
+[node name="TakeButton" type="Button" parent="CardTooltipPopup" unique_id=174568934]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(250, 0)
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -81.0
+offset_top = -215.0
+offset_right = 82.0
+offset_bottom = -126.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_font_sizes/font_size = 70
+text = "Take"

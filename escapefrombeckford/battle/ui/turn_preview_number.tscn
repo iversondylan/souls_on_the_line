@@ -1,0 +1,44 @@
+[gd_scene load_steps=3 format=3 uid="uid://pykj00dleoho"]
+
+[ext_resource type="Script" uid="uid://llhk33f6c36n" path="res://battle/ui/turn_preview_number.gd" id="1_v1bf2"]
+[ext_resource type="Theme" uid="uid://1dr1eewpv0jd" path="res://themes/ui_theme.tres" id="2_en4ek"]
+
+[node name="TurnPreviewNumber" type="Node2D"]
+script = ExtResource("1_v1bf2")
+
+[node name="OrdinalHBox" type="HBoxContainer" parent="."]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -30.5
+offset_right = 20.0
+offset_bottom = 30.5
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 0
+size_flags_vertical = 4
+theme_override_constants/separation = 0
+
+[node name="Base" type="RichTextLabel" parent="OrdinalHBox"]
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 4
+theme = ExtResource("2_en4ek")
+text = "1"
+fit_content = true
+scroll_active = false
+autowrap_mode = 0
+
+[node name="Suffix" type="RichTextLabel" parent="OrdinalHBox"]
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 0
+theme = ExtResource("2_en4ek")
+theme_override_font_sizes/normal_font_size = 28
+text = "st"
+fit_content = true
+scroll_active = false
+autowrap_mode = 0

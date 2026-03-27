@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="NPCAIProfile" load_steps=4 format=3 uid="uid://om0vi82jpkvd"]
+
+[ext_resource type="Script" uid="uid://bcih413oy6v73" path="res://npc_ai/core/npc_action.gd" id="1_0uvoh"]
+[ext_resource type="Resource" uid="uid://bkmf1p3jsl12y" path="res://combatants/ShieldMite/attack_action.tres" id="2_0kdan"]
+[ext_resource type="Script" uid="uid://bdsvca1cpka5s" path="res://npc_ai/core/npc_ai_profile.gd" id="2_vdwga"]
+
+[resource]
+script = ExtResource("2_vdwga")
+actions = Array[ExtResource("1_0uvoh")]([ExtResource("2_0kdan")])
+metadata/_custom_type_script = "uid://bdsvca1cpka5s"

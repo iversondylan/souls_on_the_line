@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="CardData" format=3 uid="uid://u3qjjn0pwawp"]
 
-[ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://custom_resources/card_data.gd" id="1_sxbgo"]
-[ext_resource type="Script" uid="uid://wtk5v77fcqvn" path="res://custom_resources/card_action.gd" id="1_us7mc"]
+[ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://cards/core/card_data.gd" id="1_sxbgo"]
+[ext_resource type="Script" uid="uid://wtk5v77fcqvn" path="res://cards/core/card_action.gd" id="1_us7mc"]
 [ext_resource type="Resource" uid="uid://ikcpprhw8x78" path="res://cards/DefendCard/defend_action.tres" id="2_m7g3h"]
 [ext_resource type="Texture2D" uid="uid://b8ohknf4jw2ee" path="res://assets/sprites/assorted/shield_cardart2.png" id="3_fh72t"]
 
@@ -11,7 +11,6 @@ card_type = 3
 rarity = 2
 name = "Defend"
 description = "Gain [color=\"008000\"]%s[/color] armor."
-cost_green = 1
 texture = ExtResource("3_fh72t")
 actions = Array[ExtResource("1_us7mc")]([ExtResource("2_m7g3h")])
 metadata/_custom_type_script = "uid://d2f0qepe047dc"

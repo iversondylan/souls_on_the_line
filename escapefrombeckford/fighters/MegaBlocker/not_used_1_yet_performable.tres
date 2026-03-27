@@ -1,7 +1,0 @@
-[gd_resource type="Resource" script_class="NotUsedYetPerformableModel" load_steps=2 format=3 uid="uid://dh7ogdb558g7u"]
-
-[ext_resource type="Script" uid="uid://couyibstg1qel" path="res://npc_actions/performable/not_used_yet_performable_model.gd" id="1_2lnab"]
-
-[resource]
-script = ExtResource("1_2lnab")
-metadata/_custom_type_script = "uid://couyibstg1qel"
