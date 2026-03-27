@@ -59,6 +59,14 @@ func ensure_uid() -> void:
 		return
 	uid = "%d_%d_%d" % [Time.get_unix_time_from_system(), randi(), int(hash(name))]
 
+func serialize_snapshot() -> CardSnapshot:
+	return CardSnapshot.from_card(self)
+
+static func deserialize_snapshot(snapshot: CardSnapshot) -> CardData:
+	if snapshot == null:
+		return null
+	return snapshot.instantiate_card()
+
 func is_single_targeted() -> bool:
 	return target_type == TargetType.SINGLE_ENEMY or target_type == TargetType.ALLY_OR_SELF or target_type == TargetType.ALLY or target_type == TargetType.BATTLEFIELD
 

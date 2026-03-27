@@ -25,7 +25,9 @@ func _ready() -> void:
 #do I need to make a new _input method? Maybe I can avoid scrolling
 
 func generate_new_map(rng: RNG) -> void:
+	_clear_map_visuals()
 	n_encounters_finished = 0
+	last_room = null
 	map_data = map_generator.make_map(rng)
 	create_map()
 
@@ -91,3 +93,43 @@ func _on_usable_room_selected(room: Room) -> void:
 	last_room = room
 	n_encounters_finished += 1
 	Events.map_exited.emit(room)
+
+
+func get_room_at(column: int, row: int) -> Room:
+	if column < 0 or column >= map_data.size():
+		return null
+	var column_rooms: Array = map_data[column]
+	if row < 0 or row >= column_rooms.size():
+		return null
+	return column_rooms[row] as Room
+
+
+func restore_progress(cleared_room_coords: Array[Vector2i]) -> void:
+	n_encounters_finished = 0
+	last_room = null
+
+	for coord in cleared_room_coords:
+		var room := get_room_at(int(coord.x), int(coord.y))
+		if room == null:
+			continue
+		room.selected = true
+		last_room = room
+		n_encounters_finished += 1
+
+	for usable_room: UsableRoom in rooms.get_children():
+		if usable_room == null or usable_room.room == null:
+			continue
+		if usable_room.room.selected and usable_room.room.column < n_encounters_finished:
+			usable_room.show_selected()
+
+	if n_encounters_finished <= 0:
+		unlock_encounter_column(0)
+	elif last_room != null:
+		unlock_next_rooms()
+
+
+func _clear_map_visuals() -> void:
+	for child in rooms.get_children():
+		child.queue_free()
+	for child in lines.get_children():
+		child.queue_free()

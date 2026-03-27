@@ -31,6 +31,7 @@ Shaker="*res://global/shaker.gd"
 MusicPlayer="*res://global/music_player.tscn"
 SFXPlayer="*res://global/sfx_player.tscn"
 FxLibrary="*uid://bvxmtkalwcaf"
+SaveService="*res://global/save_service.gd"
 
 [debug]
 

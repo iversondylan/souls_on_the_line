@@ -150,14 +150,7 @@ func _auto_discard_all() -> void:
 			c.card_data.ensure_uid()
 			chosen_uids.append(String(c.card_data.uid))
 
-	Events.hand_discard_animation_finished.connect(
-		func():
-			_on_discard_done(chosen_uids),
-		CONNECT_ONE_SHOT
-	)
-	discard_ctx.requested_card_uids = chosen_uids
-	if handler.battle != null and handler.battle.card_bins != null:
-		handler.battle.card_bins.request_discard(discard_ctx)
+	await _execute_discard(chosen_uids)
 
 func _on_hand_card_added(card: UsableCard) -> void:
 	if _resolving:
@@ -190,27 +183,6 @@ func _enroll_card(card: UsableCard) -> void:
 	card.card_state_machine.request_state(CardState.State.SELECTION)
 
 # discard_interaction_context.gd (inside "confirm/finish" path)
-func _finish_discard(chosen_cards: Array[UsableCard]) -> void:
-	# 1) Convert to uids (deterministic identity)
-	var chosen_uids: Array[String] = []
-	for c in chosen_cards:
-		if c != null and is_instance_valid(c) and c.card_data != null:
-			c.card_data.ensure_uid()
-			chosen_uids.append(String(c.card_data.uid))
-	
-	discard_ctx.requested_card_uids = chosen_uids
-	if handler.battle != null and handler.battle.card_bins != null:
-		handler.battle.card_bins.request_discard(discard_ctx)
-
-	var done := func():
-		if discard_ctx != null and discard_ctx.on_done.is_valid():
-			discard_ctx.on_done.call(chosen_uids)
-		handler.end_active_context()
-
-	if Events.hand_discard_animation_finished.is_connected(done):
-		Events.hand_discard_animation_finished.disconnect(done)
-	Events.hand_discard_animation_finished.connect(done, CONNECT_ONE_SHOT)
-
 func _get_selected_uids() -> Array[String]:
 	var out: Array[String] = []
 	for c in _selected:
@@ -232,11 +204,19 @@ func _commit_selected() -> void:
 	# Capture choice deterministically BEFORE we remove/free anything
 	var chosen_uids := _get_selected_uids()
 
-	Events.hand_discard_animation_finished.connect(
-		func():
-			_on_discard_done(chosen_uids),
-		CONNECT_ONE_SHOT
-	)
-	discard_ctx.requested_card_uids = chosen_uids
-	if handler.battle != null and handler.battle.card_bins != null:
-		handler.battle.card_bins.request_discard(discard_ctx)
+	await _execute_discard(chosen_uids)
+
+
+func _execute_discard(chosen_uids: Array[String]) -> void:
+	if discard_ctx == null:
+		return
+
+	discard_ctx.requested_card_uids = chosen_uids.duplicate()
+	discard_ctx.amount = chosen_uids.size()
+
+	if handler == null or handler.battle == null or handler.battle.card_bins == null:
+		_on_discard_done(chosen_uids)
+		return
+
+	await handler.battle.card_bins.request_discard(discard_ctx)
+	_on_discard_done(chosen_uids)

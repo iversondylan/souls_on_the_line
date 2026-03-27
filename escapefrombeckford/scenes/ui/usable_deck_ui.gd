@@ -1,9 +1,13 @@
 class_name UsableDeckUI extends TextureButton
 
-var deck: Deck
+var run_deck: RunDeck
 
 func draw_card() -> CardData:
-	return deck.draw_card()
+	if run_deck == null or run_deck.card_collection == null:
+		return null
+	return run_deck.card_collection.draw_back()
 
 func shuffle():
-	deck.shuffle()
+	if run_deck == null or run_deck.card_collection == null:
+		return
+	run_deck.card_collection.shuffle()

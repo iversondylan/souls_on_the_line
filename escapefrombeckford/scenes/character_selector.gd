@@ -5,7 +5,7 @@ const COLE_STATS := preload("res://fighters/Player/cole_data.tres")
 const COLE_BASIC_DECK := preload("res://fighters/Player/cole_basic_deck.tres")
 const COLE_DRAFTABLE_CARDS := preload("res://fighters/Player/cole_draftable_cards.tres")
 
-@export var run_startup: RunStartup
+@export var run_startup: RunStartup = preload("res://scenes/run/run_startup.tres")
 
 @onready var title: Label = %Title
 @onready var description: Label = %Description
@@ -35,8 +35,10 @@ func set_current_draftable_cards(new_draftable_cards: CardPile) -> void:
 func _on_start_button_pressed() -> void:
 	print("Start new escape attempt with %s" % current_character.name)
 	run_startup.startup_type = RunStartup.StartupType.NEW_RUN
+	run_startup.run_seed = 0
+	run_startup.selected_starting_soul_uid = ""
 	run_startup.player_data = current_character
-	run_startup.deck = current_deck
+	run_startup.starting_deck = current_deck
 	run_startup.draftable_cards = current_draftable_cards
 	get_tree().change_scene_to_packed(RUN_SCENE)
 

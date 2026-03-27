@@ -61,7 +61,7 @@ const ENEMY := 1
 # -------------------------
 
 var player_data: PlayerData
-var deck: Deck : set = _set_deck
+var run_deck: RunDeck : set = _set_run_deck
 var run: Run : set = _set_run
 var run_seed: int
 var battle_seed: int
@@ -70,6 +70,7 @@ var my_arcana: Array[StringName]
 var wait_for_anims: bool = false
 var _player_end_turn_armed: bool = false
 var card_bins: BattleCardBins
+var card_bin_rule_host: CardBinRuleHost
 
 
 # -------------------------
@@ -102,23 +103,22 @@ func _ready() -> void:
 
 
 func _connect_events() -> void:
-	Events.player_hand_refill_completed.connect(_on_player_hand_refill_completed)
 	Events.dead_combatant_data.connect(_on_dead_combatant_data)
 	Events.request_defeat.connect(_on_request_defeat)
 	Events.request_victory.connect(_on_request_victory)
 	Events.summon_reserve_card_released.connect(_on_summon_reserve_card_released)
 	Events.end_turn_button_pressed.connect(_on_end_turn_button_pressed)
-	Events.player_end_cleanup_completed.connect(_on_player_end_cleanup_completed)
+	Events.player_input_view_reached.connect(_on_player_input_view_reached)
 	Events.mana_view_update.connect(_on_mana_view_update)
 	Events.turn_status_view_changed.connect(_on_turn_status_view_changed)
 
 
 func _connect_ui() -> void:
 	draw_pile_button.pressed.connect(
-		draw_pile_view.show_current_draw_view.bind("Draw Pile", true)
+		draw_pile_view.show_current_view.bind("Draw Pile", true)
 	)
 	discard_pile_button.pressed.connect(
-		discard_pile_view.show_current_discard_view.bind("Discard Pile")
+		discard_pile_view.show_current_view.bind("Discard Pile")
 	)
 
 
@@ -139,9 +139,8 @@ func _set_run(new_run: Run) -> void:
 	battle_view.status_catalog = run.status_catalog
 
 
-func _set_deck(new_deck: Deck) -> void:
-	deck = new_deck
-	hand.deck = deck
+func _set_run_deck(new_run_deck: RunDeck) -> void:
+	run_deck = new_run_deck
 	if is_node_ready():
 		_ensure_card_bins()
 
@@ -155,7 +154,10 @@ func _ensure_card_bins() -> void:
 		card_bins = BattleCardBins.new()
 		card_bins.name = "BattleCardBins"
 		add_child(card_bins)
-	card_bins.setup(self, hand, deck)
+	if card_bin_rule_host == null:
+		card_bin_rule_host = CardBinRuleHost.new()
+	card_bins.setup(self, hand)
+	card_bins.rule_host = card_bin_rule_host
 
 
 # -------------------------
@@ -192,10 +194,9 @@ func start_battle() -> void:
 	hand.empty_hand()
 	if card_bins != null:
 		card_bins.reset_bins()
+		if run_deck != null and run_deck.card_collection != null:
+			card_bins.seed_card_collection(run_deck.card_collection)
 		card_bins.make_draw_pile()
-	elif deck != null:
-		deck.reset()
-		deck.make_draw_pile()
 	MusicPlayer.play(music, true)
 	initialize_card_pile_ui()
 
@@ -230,13 +231,13 @@ func _spawn_from_battle_data() -> void:
 
 
 func initialize_card_pile_ui() -> void:
-	draw_pile_button.card_pile = deck.draw_pile
-	draw_pile_view.card_pile = deck.draw_pile
-	draw_pile_view.deck = deck
+	if card_bins == null:
+		return
+	draw_pile_button.card_pile = card_bins.state.draw_pile
+	draw_pile_view.card_pile = card_bins.state.draw_pile
 
-	discard_pile_button.card_pile = deck.discard_pile
-	discard_pile_view.card_pile = deck.discard_pile
-	discard_pile_view.deck = deck
+	discard_pile_button.card_pile = card_bins.state.discard_pile
+	discard_pile_view.card_pile = card_bins.state.discard_pile
 
 
 # -------------------------
@@ -256,21 +257,33 @@ func _on_end_turn_button_pressed() -> void:
 		return
 
 	_arm_end_turn_button(false)
+	wait_for_anims = true
 
-	# The hand discard animation is view-driven.
-	# Runtime does not advance the player end handshake until this completes.
 	var runtime := _runtime()
 	if runtime != null:
 		runtime.request_player_end()
-
-
-func _on_player_end_cleanup_completed(_ctx: HandCleanupContext) -> void:
-	var runtime := _runtime()
+	var api := sim_host.get_main_api() if sim_host != null else null
+	if card_bins == null or card_bin_rule_host == null or api == null:
+		return
+	var cleanup_ctx := card_bin_rule_host.build_player_end_cleanup_context(int(api.get_player_id()))
+	await card_bins.request_hand_cleanup(cleanup_ctx)
 	if runtime != null:
 		runtime.confirm_player_end_ready()
 
 
-func _on_player_hand_refill_completed(_ctx: DrawContext) -> void:
+func _on_player_input_view_reached(player_id: int) -> void:
+	var api := sim_host.get_main_api() if sim_host != null else null
+	if api == null:
+		return
+	if int(player_id) <= 0 or int(player_id) != int(api.get_player_id()):
+		return
+	if card_bins == null or card_bin_rule_host == null:
+		return
+
+	wait_for_anims = true
+	var draw_ctx := card_bin_rule_host.build_player_turn_refill_context(int(player_id))
+	await card_bins.request_draw(draw_ctx)
+	Events.hand_drawn.emit()
 	_arm_end_turn_button(true)
 	wait_for_anims = false
 
@@ -318,8 +331,6 @@ func _on_dead_combatant_data(combatant_data: CombatantData) -> void:
 func _on_summon_reserve_card_released(summoned_id: int, card_uid: String) -> void:
 	if card_bins != null:
 		card_bins.discard_reserved_summon_card(card_uid)
-	elif deck != null:
-		deck.discard_reserved_summon_card(card_uid)
 
 	var combatant_view := battle_view.get_combatant(summoned_id) if battle_view != null else null
 	if combatant_view == null or discard_pile_button == null:

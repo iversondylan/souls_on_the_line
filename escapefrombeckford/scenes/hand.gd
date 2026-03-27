@@ -39,7 +39,6 @@ var sim_host: SimHost
 var api: SimBattleAPI
 
 #var player_data: PlayerData
-var deck: Deck
 var bins: BattleCardBins
 
 var highlighted_card_index_int: int = -1

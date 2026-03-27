@@ -334,20 +334,8 @@ func on_event(e: EventPackage) -> void:
 		BattleEvent.Type.PLAYER_INPUT_REACHED:
 			var actor_id := int(e.event.data.get(Keys.ACTOR_ID, 0)) if e.event.data != null else 0
 			Events.player_input_view_reached.emit(actor_id)
-			var draw_ctx := DrawContext.new()
-			draw_ctx.source_id = actor_id
-			draw_ctx.amount = 5
-			draw_ctx.reason = "player_input_reached"
-			draw_ctx.phase = "player_turn_start"
-			draw_ctx.use_first_hand_summon_guarantee = true
-			Events.player_hand_refill_requested.emit(draw_ctx)
 		BattleEvent.Type.END_TURN_PRESSED:
-			var cleanup_ctx := HandCleanupContext.new()
-			cleanup_ctx.cleanup_kind = "player_end_turn"
-			cleanup_ctx.phase = "player_turn_end"
-			cleanup_ctx.reason = "end_turn_pressed"
-			cleanup_ctx.should_discard_hand = true
-			Events.player_end_cleanup_requested.emit(cleanup_ctx)
+			pass
 		BattleEvent.Type.DISCARD_REQUESTED:
 			_on_discard_requested(e)
 		BattleEvent.Type.FADED:
@@ -964,22 +952,21 @@ func _on_discard_requested(e: EventPackage) -> void:
 	if e == null:
 		return
 
-	var d: Dictionary = _data(e)
 	var ctx := DiscardContext.new()
 	var sim_host: SimHost = battle_view.sim_host if battle_view != null else null
 	var api := sim_host.get_main_api() if sim_host != null else null
 	var req := api.get_pending_discard() if api != null else null
 
-	if req != null:
-		ctx.request_id = int(req.request_id)
-		ctx.source_id = int(req.source_id)
-		ctx.amount = int(req.amount)
-		ctx.card_uid = String(req.card_uid)
-	else:
-		ctx.request_id = int(d.get(Keys.REQUEST_ID, 0))
-		ctx.source_id = int(d.get(Keys.SOURCE_ID, 0))
-		ctx.amount = int(d.get(Keys.AMOUNT, 0))
-		ctx.card_uid = String(d.get(Keys.CARD_UID, ""))
+	# Only live pending discard requests should open selection UI.
+	# If this event is replayed after the request has already been resolved,
+	# falling back to logged payload would reopen a stale discard flow.
+	if req == null:
+		return
+
+	ctx.request_id = int(req.request_id)
+	ctx.source_id = int(req.source_id)
+	ctx.amount = int(req.amount)
+	ctx.card_uid = String(req.card_uid)
 
 	ctx.on_done = func(chosen_uids: Array[String]) -> void:
 		if sim_host == null:

@@ -14,6 +14,7 @@ const CARD_TEXT := "Add New Card"
 @export var run_account: RunAccount
 @export var player_data: PlayerData
 var arcanum_system: ArcanaSystem
+var run: Run
 
 @onready var rewards: VBoxContainer = %Rewards
 
@@ -69,6 +70,8 @@ func _on_arcanum_reward_taken(arcanum: Arcanum) -> void:
 		return
 	
 	arcanum_system.add_arcanum(arcanum)
+	if run != null:
+		run._persist_active_run()
 
 func _show_card_reward() -> void:
 	if !run_account or !player_data:
@@ -124,13 +127,19 @@ func _on_gold_reward_taken(n_gold: int) -> void:
 	if !run_account:
 		return
 	run_account.gold += n_gold
+	if run != null:
+		run._persist_active_run()
 
 func _on_card_reward_taken(card: CardData) -> void:
-	if !player_data or !card or !run_account.deck:
+	if !player_data or !card or !run_account.run_deck:
 		return
-	run_account.deck.add_card(card)
+	run_account.run_deck.add_card(card)
+	if run != null:
+		run._persist_active_run()
 
 func _on_back_button_pressed() -> void:
+	if run != null:
+		run._persist_active_run()
 	Events.battle_rewards_exited.emit()
 
 func _clear_rewards() -> void:

@@ -11,28 +11,22 @@ var state: CardBinState = CardBinState.new()
 
 var battle: Battle
 var hand: Hand
-var deck: Deck
+var rule_host: CardBinRuleHost
 
 func _ready() -> void:
-	if !Events.player_hand_refill_requested.is_connected(_on_player_hand_refill_requested):
-		Events.player_hand_refill_requested.connect(_on_player_hand_refill_requested)
 	if !Events.request_draw_cards.is_connected(_on_request_draw_cards):
 		Events.request_draw_cards.connect(_on_request_draw_cards)
-	if !Events.player_end_cleanup_requested.is_connected(_on_player_end_cleanup_requested):
-		Events.player_end_cleanup_requested.connect(_on_player_end_cleanup_requested)
 
 
-func setup(new_battle: Battle, new_hand: Hand, new_deck: Deck) -> void:
+func setup(new_battle: Battle, new_hand: Hand) -> void:
 	battle = new_battle
 	hand = new_hand
-	deck = new_deck
 	if hand != null:
 		hand.bins = self
-	if deck != null:
-		deck.bins = self
 
 
 func reset_bins() -> void:
+	state.card_collection.clear()
 	state.draw_pile.clear()
 	state.hand_pile.clear()
 	state.discard_pile.clear()
@@ -43,11 +37,26 @@ func reset_bins() -> void:
 	state.first_hand_drawn = false
 
 
+func seed_card_collection(source_pile: CardPile) -> void:
+	state.card_collection = CardPile.new()
+	if source_pile == null:
+		return
+	for card: CardData in source_pile.cards:
+		if card == null:
+			continue
+		var new_card := card.duplicate(true) as CardData
+		if new_card == null:
+			continue
+		new_card.uid = ""
+		new_card.ensure_uid()
+		state.card_collection.add_back(new_card)
+
+
 func make_draw_pile() -> void:
-	if deck == null or deck.card_collection == null:
+	if state.card_collection == null or state.card_collection.cards.is_empty():
 		return
 	if state.first_shuffle:
-		state.draw_pile = deck.card_collection.duplicate(true)
+		state.draw_pile = state.card_collection.duplicate(true)
 		state.first_shuffle = false
 	else:
 		_take_discards_into_draw()
@@ -98,7 +107,7 @@ func request_discard(ctx: DiscardContext) -> void:
 	move_ctx.tags = ctx.tags.duplicate()
 	move_cards(move_ctx)
 
-	var removed := hand.remove_cards_by_uids(move_ctx.card_uids)
+	var removed := hand.get_hand_cards_by_uids(move_ctx.card_uids)
 	ctx.discarded_card_uids = move_ctx.card_uids.duplicate()
 	ctx.actually_discarded = move_ctx.actually_moved
 
@@ -147,7 +156,7 @@ func request_hand_cleanup(ctx: HandCleanupContext) -> void:
 		discard_move.tags = ctx.tags.duplicate()
 		move_cards(discard_move)
 
-		var discard_cards := hand.remove_cards_by_uids(discard_uids)
+		var discard_cards := hand.get_hand_cards_by_uids(discard_uids)
 		ctx.discarded_card_uids = discard_uids.duplicate()
 		if !discard_cards.is_empty():
 			await hand.animate_discard_cards(discard_cards, false)
@@ -246,18 +255,6 @@ func discard_reserved_summon_card(card_uid: String) -> void:
 	move_ctx.reason = "summon_reserve_release"
 	move_cards(move_ctx)
 
-
-func draw_card_from_pile_for_compat() -> CardData:
-	return _draw_one_from_draw_pile()
-
-
-func add_card_to_discard_for_compat(card: CardData) -> void:
-	if card == null:
-		return
-	card.ensure_uid()
-	state.discard_pile.add_back(card)
-
-
 func build_bin_snapshot() -> CardBinSnapshot:
 	var snapshot := CardBinSnapshot.new()
 	snapshot.draw_pile_uids = _uids_for_cards(state.draw_pile.cards)
@@ -274,41 +271,43 @@ func build_bin_snapshot() -> CardBinSnapshot:
 
 
 func prepare_draw(ctx: DrawContext) -> void:
+	if rule_host != null:
+		rule_host.prepare_draw(ctx)
 	draw_prepare_requested.emit(ctx)
 
 
 func after_draw(ctx: DrawContext) -> void:
+	if rule_host != null:
+		rule_host.after_draw(ctx)
 	draw_completed.emit(ctx)
 
 
 func prepare_discard(ctx: DiscardContext) -> void:
+	if rule_host != null:
+		rule_host.prepare_discard(ctx)
 	discard_prepare_requested.emit(ctx)
 
 
 func after_discard(ctx: DiscardContext) -> void:
+	if rule_host != null:
+		rule_host.after_discard(ctx)
 	discard_completed.emit(ctx)
 
 
 func prepare_hand_cleanup(ctx: HandCleanupContext) -> void:
+	if rule_host != null:
+		rule_host.prepare_hand_cleanup(ctx)
 	hand_cleanup_prepare_requested.emit(ctx)
 
 
 func after_hand_cleanup(ctx: HandCleanupContext) -> void:
+	if rule_host != null:
+		rule_host.after_hand_cleanup(ctx)
 	hand_cleanup_completed.emit(ctx)
-
-
-func _on_player_hand_refill_requested(ctx: DrawContext) -> void:
-	await request_draw(ctx)
-	Events.player_hand_refill_completed.emit(ctx)
-	Events.hand_drawn.emit()
 
 
 func _on_request_draw_cards(ctx: DrawContext) -> void:
 	await request_draw(ctx)
-
-
-func _on_player_end_cleanup_requested(ctx: HandCleanupContext) -> void:
-	await request_hand_cleanup(ctx)
 
 
 func _draw_cards_into_hand(ctx: DrawContext) -> Array[CardData]:

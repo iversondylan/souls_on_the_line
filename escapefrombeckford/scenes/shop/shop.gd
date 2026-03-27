@@ -18,7 +18,7 @@ var modifier_system: ModifierSystem
 
 var run: Run: set = _set_run
 var arcana_reward_pool: ArcanaRewardPool
-var arcana_catalog: Arcana
+var arcana_catalog: ArcanaCatalog
 
 func _set_run(value) -> void:
 		run = value
@@ -169,14 +169,18 @@ func _on_back_button_pressed() -> void:
 	Events.shop_exited.emit()
 
 func _on_shop_card_bought(card_data: CardData, gold_cost: int) -> void:
-	run_account.deck.add_card(card_data)
+	run_account.run_deck.add_card(card_data)
 	run_account.gold -= gold_cost
 	_update_items()
+	if run != null:
+		run._persist_active_run()
 
 func _on_shop_arcanum_bought(arcanum: Arcanum, gold_cost: int) -> void:
 	arcana_system.add_arcanum(arcanum)
 	run_account.gold -= gold_cost
 	_update_items()
+	if run != null:
+		run._persist_active_run()
 
 #func _on_shop_modifier_acquired() -> void:
 	#print("_on_shop_modifier_acquired")

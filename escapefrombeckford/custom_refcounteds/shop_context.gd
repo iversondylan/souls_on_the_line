@@ -5,7 +5,7 @@ var run: Run
 var run_account: RunAccount
 var player_data: PlayerData
 var arcana_system: ArcanaSystem
-var arcana_catalog: Arcana
+var arcana_catalog: ArcanaCatalog
 var arcana_reward_pool: ArcanaRewardPool
 
 var card_offers: Array[CardData] = []

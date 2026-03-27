@@ -9,7 +9,6 @@ const MENU_CARD_SCENE := preload("res://cards/menu_card/menu_card.tscn")
 @onready var card_tooltip_popup: CardTooltipPopup = %CardTooltipPopup
 @onready var back_button: Button = %BackButton
 
-var deck: Deck
 var player_data: PlayerData
 var api: SimBattleAPI
 
@@ -23,7 +22,7 @@ func _ready() -> void:
 	
 	#await get_tree().create_timer(1.5).timeout
 	#card_pile = preload("res://fighters/Player/cole_basic_deck.tres")
-	#show_current_view("Deck", true)
+	#show_current_view("Collection", true)
 
 func _input(event: InputEvent) -> void:
 	if event.is_action("ui_cancel"):
@@ -31,21 +30,6 @@ func _input(event: InputEvent) -> void:
 			card_tooltip_popup.hide_tooltip()
 		else:
 			hide()
-#I DON'T SEE WHY THE FOLLOWING 3 FUNCTIONS CAN'T BE ELIMINATED. THESE CARD
-#PILE VIEWS ALREADY GET ASSIGNED THEIR RESPECTIVE CARD PILES ELSEWHERE.
-#I COULD JUST CALL show_current_view() INSTEAD.
-func show_current_collection_view(new_title: String, randomized: bool = false) -> void:
-	card_pile = deck.card_collection
-	show_current_view(new_title, randomized)
-
-func show_current_draw_view(new_title: String, randomized: bool = false) -> void:
-	card_pile = deck.draw_pile
-	show_current_view(new_title, randomized)
-
-func show_current_discard_view(new_title: String, randomized: bool = false) -> void:
-	card_pile = deck.discard_pile
-	show_current_view(new_title, randomized)
-
 func show_current_view(new_title: String, randomized: bool = false) -> void:
 	for card: Node in card_grid.get_children():
 		card.queue_free()
