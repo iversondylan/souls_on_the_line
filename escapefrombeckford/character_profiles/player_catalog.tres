@@ -1,8 +1,9 @@
-[gd_resource type="Resource" script_class="PlayerCatalog" format=3]
+[gd_resource type="Resource" script_class="PlayerCatalog" format=3 uid="uid://b2ewfy12rhm0l"]
 
 [ext_resource type="Script" uid="uid://dchhudh2vsc1o" path="res://character_profiles/player_catalog.gd" id="1_7iwim"]
+[ext_resource type="Script" uid="uid://bql7t8sctwe10" path="res://character_profiles/player_data.gd" id="1_q8f3r"]
 [ext_resource type="Resource" uid="uid://cv7ssxqkw1opq" path="res://character_profiles/Cole/cole_data.tres" id="2_hgc46"]
 
 [resource]
 script = ExtResource("1_7iwim")
-profiles = Array[ExtResource("2_hgc46")]([ExtResource("2_hgc46")])
+profiles = Array[ExtResource("1_q8f3r")]([ExtResource("2_hgc46")])

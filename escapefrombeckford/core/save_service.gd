@@ -66,7 +66,10 @@ func load_active_run() -> RunState:
 		needs_resave = true
 	elif loaded is RunState:
 		var loaded_run := loaded as RunState
-		needs_resave = loaded_run.player_data != null or String(loaded_run.player_profile_id).is_empty()
+		needs_resave = loaded_run.player_data != null \
+			or String(loaded_run.player_profile_id).is_empty() \
+			or int(loaded_run.map_seed) == 0 \
+			or _pending_room_in_cleared(loaded_run)
 
 	var migrated := _normalize_active_run(loaded)
 	if migrated == null:
@@ -110,11 +113,14 @@ func _normalize_active_run(resource: Resource) -> RunState:
 		run_state.uncommon_weight = legacy.uncommon_weight
 		run_state.rare_weight = legacy.rare_weight
 		run_state.run_seed = legacy.run_seed
+		run_state.map_seed = int(legacy.map_seed) if "map_seed" in legacy else 0
+		run_state.run_rng_snapshot = legacy.run_rng_snapshot.duplicate(true) if "run_rng_snapshot" in legacy else {}
 		run_state.player_data = legacy.player_data if legacy.player_data != null else legacy.player_definition
 		run_state.player_run_state = legacy.player_run_state
 		run_state.cleared_room_coords = legacy.cleared_room_coords
 		run_state.location_kind = legacy.location_kind
 		run_state.pending_room_coord = legacy.pending_room_coord
+		run_state.pending_battle_seed = int(legacy.pending_battle_seed) if "pending_battle_seed" in legacy else 0
 		run_state.owned_arcanum_ids = legacy.owned_arcanum_ids
 		run_state.draftable_cards = legacy.draftable_cards
 		run_state.run_deck = legacy.run_deck
@@ -134,8 +140,15 @@ func _normalize_active_run(resource: Resource) -> RunState:
 	if run_state.run_deck.card_collection == null:
 		run_state.run_deck.card_collection = CardPile.new()
 	run_state.run_deck.normalize_cards()
+	if run_state.cleared_room_coords == null:
+		run_state.cleared_room_coords = []
+	if int(run_state.map_seed) == 0:
+		run_state.map_seed = RNGUtil.seed_from_label(int(run_state.run_seed), "map")
+	if run_state.run_rng_snapshot == null:
+		run_state.run_rng_snapshot = {}
 	if run_state.owned_arcanum_ids == null:
 		run_state.owned_arcanum_ids = PackedStringArray()
+	_remove_pending_room_from_cleared(run_state)
 	run_state.player_data = null
 	return run_state
 
@@ -175,3 +188,19 @@ func _migrate_legacy_save_paths(path: String) -> void:
 		return
 	file.store_string(migrated)
 	file.close()
+
+
+func _pending_room_in_cleared(run_state: RunState) -> bool:
+	if run_state == null:
+		return false
+	if int(run_state.location_kind) == int(RunState.LocationKind.MAP):
+		return false
+	if run_state.cleared_room_coords == null:
+		return false
+	return run_state.cleared_room_coords.has(run_state.pending_room_coord)
+
+
+func _remove_pending_room_from_cleared(run_state: RunState) -> void:
+	if !_pending_room_in_cleared(run_state):
+		return
+	run_state.cleared_room_coords.erase(run_state.pending_room_coord)

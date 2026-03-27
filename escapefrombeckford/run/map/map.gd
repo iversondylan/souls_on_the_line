@@ -104,6 +104,20 @@ func get_room_at(column: int, row: int) -> Room:
 	return column_rooms[row] as Room
 
 
+func set_active_room(room: Room) -> void:
+	if room == null:
+		return
+	room.selected = true
+	last_room = room
+	n_encounters_finished = maxi(n_encounters_finished, int(room.column) + 1)
+
+	for usable_room: UsableRoom in rooms.get_children():
+		if usable_room == null or usable_room.room == null:
+			continue
+		if usable_room.room == room:
+			usable_room.show_selected()
+
+
 func restore_progress(cleared_room_coords: Array[Vector2i]) -> void:
 	n_encounters_finished = 0
 	last_room = null

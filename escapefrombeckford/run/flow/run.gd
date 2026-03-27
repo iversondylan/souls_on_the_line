@@ -123,10 +123,10 @@ func _show_map() -> void:
 
 func _connect_signals() -> void:
 	Events.battle_won.connect(_on_battle_won)
-	Events.battle_rewards_exited.connect(_show_map)
-	Events.campfire_exited.connect(_show_map)
+	Events.battle_rewards_exited.connect(_on_pending_room_exited_to_map)
+	Events.campfire_exited.connect(_on_pending_room_exited_to_map)
 	Events.map_exited.connect(_on_map_exited)
-	Events.shop_exited.connect(_show_map)
+	Events.shop_exited.connect(_on_pending_room_exited_to_map)
 	Events.treasure_room_exited.connect(_on_treasure_room_exited)
 	Events.request_defeat.connect(_on_run_defeat)
 	
@@ -163,17 +163,21 @@ func _init_top_bar() -> void:
 	collection_button.pressed.connect(collection_pile_view.show_current_view.bind("Collection"))
 
 func _on_battle_entered(room: Room) -> void:
-	#var battle_seed := RNGUtil.mix_seed(run_seed, rc_hash(room.row, room.column))
-	#battle_scn.run_seed = run_seed
-	#battle_scn.battle_seed = battle_seed
+	_on_battle_entered_with_seed(room, -1)
+
+
+func _on_battle_entered_with_seed(room: Room, existing_battle_seed: int = -1) -> void:
 	var label := "room:%d:%d:battle_seed" % [room.row, room.column]
-	var rng := run_rng.get_stream(label)
-	
-	# simplest: battle_seed is first randi from this room stream
-	var battle_seed := int(rng.randi())
-	run_rng.commit(rng)
+	var battle_seed := int(existing_battle_seed)
+	if battle_seed < 0:
+		var rng := run_rng.get_stream(label)
+		# simplest: battle_seed is first randi from this room stream
+		battle_seed = int(rng.randi())
+		run_rng.commit(rng)
 	print("[Run] battle_seed for (%d,%d) = %d" % [room.row, room.column, battle_seed])
+	map.set_active_room(room)
 	_set_location_for_room(room)
+	run_state.pending_battle_seed = battle_seed
 	_persist_active_run()
 	var battle_scn: Battle = _change_view(BATTLE_SCN) as Battle
 	battle_scn.run_seed = run_seed
@@ -187,16 +191,18 @@ func _on_battle_entered(room: Room) -> void:
 	battle_scn.my_arcana = arcana_system.get_my_arcana()
 	battle_scn.start_battle()
 
-func _on_rest_site_entered() -> void:
-	_set_location_for_room(map.last_room)
+func _on_rest_site_entered(room: Room = map.last_room) -> void:
+	map.set_active_room(room)
+	_set_location_for_room(room)
 	_persist_active_run()
 	var campfire := _change_view(CAMPFIRE_SCN) as Campfire
 	campfire.player_data = player_data
 	campfire.run_state = run_state
 
-func _on_shop_entered() -> void:
+func _on_shop_entered(room: Room = map.last_room) -> void:
 	#print("run.gd _on_shop_entered()")
-	_set_location_for_room(map.last_room)
+	map.set_active_room(room)
+	_set_location_for_room(room)
 	_persist_active_run()
 	var shop := _change_view(SHOP_SCN) as Shop
 	shop.run = self
@@ -231,8 +237,9 @@ func _on_battle_won() -> void:
 		arcana_system.on_reward_context_started(reward_ctx)
 	rewards_scn.populate_from_context(reward_ctx)
 
-func _on_treasure_room_entered() -> void:
-	_set_location_for_room(map.last_room)
+func _on_treasure_room_entered(room: Room = map.last_room) -> void:
+	map.set_active_room(room)
+	_set_location_for_room(room)
 	_persist_active_run()
 	var treasure_scn := _change_view(TREASURE_SCN) as TreasureRoom
 	treasure_scn.arcanum_system = arcana_container.system
@@ -258,16 +265,15 @@ func _on_treasure_room_exited(arcanum: Arcanum) -> void:
 	reward_scn.populate_from_context(reward_ctx)
 
 func _on_map_exited(room: Room) -> void:
-	_record_cleared_room(room)
 	match room.type:
 		Room.RoomType.BATTLE:
 			_on_battle_entered(room)
 		Room.RoomType.TREASURE:
-			_on_treasure_room_entered()
+			_on_treasure_room_entered(room)
 		Room.RoomType.REST:
-			_on_rest_site_entered()
+			_on_rest_site_entered(room)
 		Room.RoomType.SHOP:
-			_on_shop_entered()
+			_on_shop_entered(room)
 		Room.RoomType.BOSS:
 			_on_battle_entered(room)
 
@@ -304,6 +310,8 @@ func _start_new_run() -> void:
 	arcana_catalog = arcanum_catalog.duplicate()
 	run_state = RunState.new()
 	run_state.run_seed = run_seed
+	run_state.map_seed = RNGUtil.seed_from_label(run_seed, "map")
+	run_state.run_rng_snapshot = run_rng.snapshot()
 	run_state.player_profile_id = String(player_data.profile_id)
 	run_state.player_run_state = PlayerRunState.new()
 	run_state.player_run_state.current_health = int(player_data.max_health)
@@ -337,16 +345,20 @@ func _continue_saved_run() -> void:
 	if run_deck.card_collection == null:
 		run_deck.card_collection = player_data.starting_deck.duplicate()
 	run_seed = int(run_state.run_seed)
-	run_rng = RunRNG.new(run_seed)
+	run_rng = RunRNG.from_snapshot(run_state.run_rng_snapshot) if run_state.run_rng_snapshot != null and !run_state.run_rng_snapshot.is_empty() else RunRNG.new(run_seed)
 	arcana_catalog = arcanum_catalog.duplicate()
 	_start_run()
 	_restore_saved_location()
 
 
 func _generate_or_restore_map() -> void:
-	var rng := run_rng.get_stream("map")
+	var map_seed := int(run_state.map_seed) if run_state != null else 0
+	if map_seed == 0:
+		map_seed = RNGUtil.seed_from_label(run_seed, "map")
+		if run_state != null:
+			run_state.map_seed = map_seed
+	var rng := RNG.new(map_seed)
 	map.generate_new_map(rng)
-	run_rng.commit(rng)
 	if run_state != null and !run_state.cleared_room_coords.is_empty():
 		map.restore_progress(run_state.cleared_room_coords)
 	else:
@@ -360,6 +372,26 @@ func _record_cleared_room(room: Room) -> void:
 	if run_state.cleared_room_coords.has(coord):
 		return
 	run_state.cleared_room_coords.append(coord)
+
+
+func _complete_pending_room_if_any() -> void:
+	if run_state == null:
+		return
+	if int(run_state.location_kind) == int(RunState.LocationKind.MAP):
+		return
+	var pending := run_state.pending_room_coord
+	if pending == Vector2i(-1, -1):
+		return
+	var room := map.get_room_at(int(pending.x), int(pending.y))
+	if room == null:
+		return
+	map.set_active_room(room)
+	_record_cleared_room(room)
+
+
+func _on_pending_room_exited_to_map() -> void:
+	_complete_pending_room_if_any()
+	_show_map()
 
 
 func _set_location_for_room(room: Room) -> void:
@@ -384,6 +416,7 @@ func _set_location_map() -> void:
 		return
 	run_state.location_kind = RunState.LocationKind.MAP
 	run_state.pending_room_coord = Vector2i(-1, -1)
+	run_state.pending_battle_seed = 0
 
 
 func _restore_saved_location() -> void:
@@ -396,7 +429,17 @@ func _restore_saved_location() -> void:
 		RunState.LocationKind.ROOM_PENDING_SHOP:
 			var room := map.get_room_at(int(run_state.pending_room_coord.x), int(run_state.pending_room_coord.y))
 			if room != null:
-				_on_map_exited(room)
+				map.set_active_room(room)
+				if int(run_state.location_kind) == int(RunState.LocationKind.ROOM_PENDING_BATTLE):
+					_on_battle_entered_with_seed(room, int(run_state.pending_battle_seed))
+				elif int(run_state.location_kind) == int(RunState.LocationKind.ROOM_PENDING_TREASURE):
+					_on_treasure_room_entered(room)
+				elif int(run_state.location_kind) == int(RunState.LocationKind.ROOM_PENDING_REST):
+					_on_rest_site_entered(room)
+				elif int(run_state.location_kind) == int(RunState.LocationKind.ROOM_PENDING_SHOP):
+					_on_shop_entered(room)
+				else:
+					_show_map()
 				return
 	_show_map()
 
@@ -411,6 +454,9 @@ func _sync_run_state_from_live_state() -> void:
 	if run_state == null:
 		return
 	run_state.run_seed = run_seed
+	if int(run_state.map_seed) == 0:
+		run_state.map_seed = RNGUtil.seed_from_label(run_seed, "map")
+	run_state.run_rng_snapshot = run_rng.snapshot() if run_rng != null else {}
 	run_state.player_profile_id = String(player_data.profile_id) if player_data != null else ""
 	run_state.player_data = null
 	if run_state.player_run_state == null:

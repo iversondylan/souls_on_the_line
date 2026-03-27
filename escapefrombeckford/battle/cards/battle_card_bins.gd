@@ -12,6 +12,7 @@ var state: CardBinState = CardBinState.new()
 var battle: Battle
 var hand: Hand
 var rule_host: CardBinRuleHost
+var rng: RNG
 
 func _ready() -> void:
 	if !Events.request_draw_cards.is_connected(_on_request_draw_cards):
@@ -23,6 +24,10 @@ func setup(new_battle: Battle, new_hand: Hand) -> void:
 	hand = new_hand
 	if hand != null:
 		hand.bins = self
+
+
+func configure_seed(battle_seed: int) -> void:
+	rng = RNG.new(RNGUtil.seed_from_label(int(battle_seed), "battle_card_bins"))
 
 
 func reset_bins() -> void:
@@ -349,10 +354,9 @@ func _draw_first_hand_with_summon_guarantee(count: int) -> Array[CardData]:
 				summon_indices.append(idx)
 
 		if !summon_indices.is_empty():
-			var rng := RandomNumberGenerator.new()
-			rng.randomize()
-			var draw_pile_idx := summon_indices[rng.randi_range(0, summon_indices.size() - 1)]
-			var hand_idx := rng.randi_range(0, drawn.size() - 1)
+			var summon_choice_idx := _rng_range_i(0, summon_indices.size() - 1, "first_hand.summon_index")
+			var draw_pile_idx := summon_indices[summon_choice_idx]
+			var hand_idx := _rng_range_i(0, drawn.size() - 1, "first_hand.hand_index")
 			var summon_card: CardData = state.draw_pile.cards[draw_pile_idx]
 			state.draw_pile.cards[draw_pile_idx] = drawn[hand_idx]
 			drawn[hand_idx] = summon_card
@@ -380,8 +384,26 @@ func _take_discards_into_draw() -> void:
 
 
 func _shuffle_draw_pile() -> void:
-	state.draw_pile.shuffle()
+	_shuffle_pile_with_rng(state.draw_pile)
 	state.draw_pile.card_pile_size_changed.emit(state.draw_pile.cards.size())
+
+
+func _shuffle_pile_with_rng(pile: CardPile) -> void:
+	if pile == null or pile.cards.size() <= 1:
+		return
+	for i in range(pile.cards.size() - 1, 0, -1):
+		var j := _rng_range_i(0, i, "shuffle.%d" % i)
+		if i == j:
+			continue
+		var tmp := pile.cards[i]
+		pile.cards[i] = pile.cards[j]
+		pile.cards[j] = tmp
+
+
+func _rng_range_i(lo: int, hi: int, tag: String) -> int:
+	if rng == null:
+		rng = RNG.new(1)
+	return rng.debug_range_i(lo, hi, "battle_card_bins.%s" % tag)
 
 
 func _get_bin_pile(kind: int) -> CardPile:

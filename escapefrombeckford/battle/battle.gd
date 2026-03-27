@@ -166,14 +166,13 @@ func _ensure_card_bins() -> void:
 # -------------------------
 
 func start_battle() -> void:
-	var resolved_battle_seed := 0
-	var resolved_run_seed := 0
+	var resolved_battle_seed := int(battle_seed)
+	var resolved_run_seed := int(run_seed)
 
-	if run != null:
-		if "battle_seed" in run:
-			resolved_battle_seed = int(run.battle_seed)
-		if "run_seed" in run:
-			resolved_run_seed = int(run.run_seed)
+	if resolved_battle_seed == 0 and run != null and "battle_seed" in run:
+		resolved_battle_seed = int(run.battle_seed)
+	if resolved_run_seed == 0 and run != null and "run_seed" in run:
+		resolved_run_seed = int(run.run_seed)
 
 	sim_host.init_from_seeds(resolved_battle_seed, resolved_run_seed)
 
@@ -194,6 +193,7 @@ func start_battle() -> void:
 
 	hand.empty_hand()
 	if card_bins != null:
+		card_bins.configure_seed(resolved_battle_seed)
 		card_bins.reset_bins()
 		if run_deck != null and run_deck.card_collection != null:
 			card_bins.seed_card_collection(run_deck.card_collection)
