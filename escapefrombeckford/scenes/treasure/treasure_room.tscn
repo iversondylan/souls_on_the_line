@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://q4dorm0smiab" path="res://scenes/treasure/treasure_room.gd" id="1_x7vk5"]
 [ext_resource type="Theme" uid="uid://d2wc7fposrlqs" path="res://themes/wizard_theme.tres" id="2_0vo2r"]
-[ext_resource type="Resource" uid="uid://cv7ssxqkw1opq" path="res://fighters/Player/cole_data.tres" id="2_xqacy"]
+[ext_resource type="Resource" uid="uid://cv7ssxqkw1opq" path="res://character_profiles/Cole/cole_data.tres" id="2_xqacy"]
 [ext_resource type="Texture2D" uid="uid://dn47tj5km1o13" path="res://assets/sprites/unsuitable_images/chest_closed.png" id="3_6u0ip"]
 [ext_resource type="Texture2D" uid="uid://c0211utrbnx3m" path="res://assets/sprites/unsuitable_images/chest_open.png" id="4_xqacy"]
 [ext_resource type="Texture2D" uid="uid://cbbohhy0ybxvy" path="res://assets/sprites/assorted/coin.PNG" id="5_wm2hw"]

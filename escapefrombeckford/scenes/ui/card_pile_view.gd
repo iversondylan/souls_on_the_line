@@ -21,7 +21,7 @@ func _ready() -> void:
 	card_tooltip_popup.hide_tooltip()
 	
 	#await get_tree().create_timer(1.5).timeout
-	#card_pile = preload("res://fighters/Player/cole_basic_deck.tres")
+	#card_pile = preload("res://character_profiles/Cole/cole_basic_deck.tres")
 	#show_current_view("Collection", true)
 
 func _input(event: InputEvent) -> void:

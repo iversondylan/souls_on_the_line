@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://eqh4qvjkvwic" path="res://scenes/campfire/campfire.gd" id="1_56ahn"]
 [ext_resource type="Theme" uid="uid://d2wc7fposrlqs" path="res://themes/wizard_theme.tres" id="2_5yci7"]
-[ext_resource type="Resource" uid="uid://cv7ssxqkw1opq" path="res://fighters/Player/cole_data.tres" id="2_6jn8c"]
+[ext_resource type="Resource" uid="uid://cv7ssxqkw1opq" path="res://character_profiles/Cole/cole_data.tres" id="2_6jn8c"]
 [ext_resource type="Texture2D" uid="uid://cs0yoc5t1u07u" path="res://assets/sprites/assorted/asterisk.png" id="2_civeq"]
 [ext_resource type="Theme" uid="uid://1dr1eewpv0jd" path="res://themes/ui_theme.tres" id="4_6jn8c"]
 [ext_resource type="Theme" uid="uid://dhn0og888psda" path="res://themes/description_theme.tres" id="5_auago"]

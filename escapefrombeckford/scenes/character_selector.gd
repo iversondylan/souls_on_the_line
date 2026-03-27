@@ -1,9 +1,9 @@
 extends Control
 
 const RUN_SCENE = preload("res://scenes/run/run.tscn")
-const COLE_STATS := preload("res://fighters/Player/cole_data.tres")
-const COLE_BASIC_DECK := preload("res://fighters/Player/cole_basic_deck.tres")
-const COLE_DRAFTABLE_CARDS := preload("res://fighters/Player/cole_draftable_cards.tres")
+const COLE_STATS := preload("res://character_profiles/Cole/cole_data.tres")
+const COLE_BASIC_DECK := preload("res://character_profiles/Cole/cole_basic_deck.tres")
+const COLE_DRAFTABLE_CARDS := preload("res://character_profiles/Cole/cole_draftable_cards.tres")
 
 @export var run_startup: RunStartup = preload("res://scenes/run/run_startup.tres")
 

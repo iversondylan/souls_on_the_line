@@ -2,7 +2,7 @@
 
 [ext_resource type="Resource" uid="uid://dk5tv1hrr615d" path="res://arcana/arcana_catalog.tres" id="1_fwnab"]
 [ext_resource type="Script" uid="uid://dlxexdxlypm2o" path="res://scenes/run/run_startup.gd" id="1_ujbn8"]
-[ext_resource type="Resource" uid="uid://cv7ssxqkw1opq" path="res://fighters/Player/cole_data.tres" id="3_onvgd"]
+[ext_resource type="Resource" uid="uid://cv7ssxqkw1opq" path="res://character_profiles/Cole/cole_data.tres" id="3_onvgd"]
 
 [resource]
 script = ExtResource("1_ujbn8")
