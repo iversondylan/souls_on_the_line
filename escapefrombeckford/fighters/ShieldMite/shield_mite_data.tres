@@ -1,13 +1,11 @@
 [gd_resource type="Resource" script_class="CombatantData" format=3 uid="uid://jtnxxy8mq8s4"]
 
 [ext_resource type="Resource" uid="uid://om0vi82jpkvd" path="res://fighters/ShieldMite/shield_mite_ai.tres" id="1_rj3us"]
-[ext_resource type="Texture2D" uid="uid://mduxjrtw74f3" path="res://assets/character_visuals/shield_mite/shield_mite.PNG" id="2_adklw"]
 [ext_resource type="Script" uid="uid://cfatj0ryn8uv3" path="res://custom_resources/combatant_data.gd" id="3_grdiy"]
 
 [resource]
 script = ExtResource("3_grdiy")
 name = "Shield Mite"
-character_art = ExtResource("2_adklw")
 character_art_uid = "uid://mduxjrtw74f3"
 facing_right = false
 height = 160

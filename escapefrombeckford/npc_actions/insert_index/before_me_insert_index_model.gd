@@ -6,12 +6,7 @@ func change_params(ctx: NPCAIContext) -> NPCAIContext:
 	if !ctx or !ctx.api:
 		return ctx
 
-	var cid := 0
-	if ctx.combatant and is_instance_valid(ctx.combatant):
-		cid = ctx.combatant.combat_id
-	elif ctx.combatant_data:
-		cid = ctx.combatant_data.combat_id
-
+	var cid := ParamModel._actor_id(ctx)
 	if cid <= 0:
 		return ctx
 

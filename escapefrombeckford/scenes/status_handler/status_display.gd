@@ -13,7 +13,6 @@ var turns_duration: int = 0
 var status_parent: CombatantView : set = _set_status_parent
 
 func _ready() -> void:
-	Events.focused_gained.connect(_on_focused_gained)
 	_refresh_display()
 
 func _set_status(new_status: Status) -> void:
@@ -53,9 +52,3 @@ func _set_status_parent(new_status_parent: CombatantView) -> void:
 	status_parent = new_status_parent
 	if status != null:
 		status.status_parent = status_parent
-
-func _on_focused_gained(marked_status: Status):
-	if status == null or marked_status == null:
-		return
-	if marked_status.status_parent != status_parent and status.get_id() == MarkedStatus.ID:
-		queue_free()

@@ -13,13 +13,13 @@ const MENU_CARD_SCN = preload("res://cards/menu_card/menu_card.tscn")
 
 var current_menu_card: MenuCard
 
-func update(run_account: RunAccount) -> void:
+func update(run_state: RunState) -> void:
 	if !card_container or !price or !buy_button:
 		return
 	
 	price_label.text = str(gold_cost)
 	
-	if run_account.gold >= gold_cost:
+	if run_state != null and run_state.gold >= gold_cost:
 		price_label.remove_theme_color_override("font_color")
 		buy_button.disabled = false
 	else:

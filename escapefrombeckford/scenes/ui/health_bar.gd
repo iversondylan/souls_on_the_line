@@ -16,7 +16,7 @@ var damage_health: int : set = _set_damage_health
 
 func update_health(combatant_data: CombatantData) -> void:
 	max_health = combatant_data.max_health
-	health = combatant_data.health
+	health = combatant_data.max_health
 
 func update_health_view(_max_health: int, _health: int) -> void:
 	max_health = _max_health

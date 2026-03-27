@@ -2,7 +2,7 @@
 class_name ShopContext extends RefCounted
 
 var run: Run
-var run_account: RunAccount
+var run_state: RunState
 var player_data: PlayerData
 var arcana_system: ArcanaSystem
 var arcana_catalog: ArcanaCatalog

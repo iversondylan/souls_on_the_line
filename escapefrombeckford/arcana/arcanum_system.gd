@@ -142,7 +142,6 @@ func activate_arcana_by_type(type: Arcanum.Type, host: Node) -> void:
 	# host is required to create tweens / intervals.
 	if !host or !is_instance_valid(host):
 		push_warning("ArcanaSystem.activate_arcana_by_type called without a valid host Node.")
-		Events.arcana_activated.emit(type)
 		return
 
 	if type == Arcanum.Type.EVENT_BASED:
@@ -154,7 +153,6 @@ func activate_arcana_by_type(type: Arcanum.Type, host: Node) -> void:
 			queue.push_back(a)
 
 	if queue.is_empty():
-		Events.arcana_activated.emit(type)
 		return
 
 	var tween := host.get_tree().create_tween()
@@ -162,10 +160,6 @@ func activate_arcana_by_type(type: Arcanum.Type, host: Node) -> void:
 	for a in queue:
 		tween.tween_callback(_activate_arcana_by_type_now.bind(a, type))
 		tween.tween_interval(ARCANUM_APPLY_INTERVAL)
-
-	tween.finished.connect(func():
-		Events.arcana_activated.emit(type)
-	)
 
 func get_my_arcana() -> Array[StringName]:
 	#print("arcanum_syste.gd get_my_arcana")

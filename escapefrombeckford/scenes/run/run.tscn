@@ -1,7 +1,6 @@
 [gd_scene format=3 uid="uid://ceemxcslkt31b"]
 
 [ext_resource type="Script" uid="uid://c0e8h833ypklr" path="res://scenes/run/run.gd" id="1_l7o68"]
-[ext_resource type="Resource" uid="uid://ck8qxvs3me11h" path="res://scenes/run/run_startup.tres" id="2_o4jfg"]
 [ext_resource type="PackedScene" uid="uid://6p15tduy6cd2" path="res://scenes/map/map.tscn" id="2_wdonh"]
 [ext_resource type="Resource" uid="uid://bqr4wekgibhim" path="res://statuses/status_utils/status_catalog.tres" id="3_7yo0l"]
 [ext_resource type="Resource" uid="uid://cd45rlmihsfvb" path="res://arcana/arcanum_catalog.tres" id="4_fo0ly"]
@@ -19,7 +18,6 @@
 
 [node name="Run" type="Node" unique_id=13304911]
 script = ExtResource("1_l7o68")
-run_startup = ExtResource("2_o4jfg")
 status_catalog = ExtResource("3_7yo0l")
 arcanum_catalog = ExtResource("4_fo0ly")
 extra_arcana = Array[ExtResource("5_l6p45")]([ExtResource("6_kdgoc")])

@@ -72,10 +72,13 @@ func make_summon_ghost(preview: SummonPreview) -> Node2D:
 	var spr := Sprite2D.new()
 	ghost.add_child(spr)
 
-	if preview == null or preview.summon_data == null or preview.summon_data.character_art == null:
+	if preview == null or preview.summon_data == null:
 		return ghost
 
-	spr.texture = preview.summon_data.character_art
+	var texture := preview.summon_data.load_character_art()
+	if texture == null:
+		return ghost
+	spr.texture = texture
 
 	var color := preview.summon_data.color_tint
 	color.a = 0.55

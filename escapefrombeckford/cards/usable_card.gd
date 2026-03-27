@@ -61,7 +61,6 @@ func _ready() -> void:
 	Events.card_aim_ended.connect(_on_card_drag_or_aiming_ended)
 	Events.card_drag_ended.connect(_on_card_drag_or_aiming_ended)
 	Events.mana_view_update.connect(_mana_changed)
-	Events.player_modifier_changed.connect(_on_player_modifier_changed)
 	card_state_machine.init(self)
 
 func _input(event: InputEvent) -> void:
@@ -69,9 +68,6 @@ func _input(event: InputEvent) -> void:
 
 	if disabled:
 		return
-	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
-		if is_mouse_over():
-			Events.hand_card_clicked.emit(self)
 
 func _process(_delta):
 	if _is_popped and is_instance_valid(strictly_visuals):
@@ -218,9 +214,6 @@ func _on_card_drag_or_aiming_ended(_usable_card: UsableCard) -> void:
 
 func _mana_changed(_order: ManaViewOrder) -> void:
 	playable = is_playable()
-
-func _on_player_modifier_changed() -> void:
-	card_visuals.set_description(get_description())
 
 func is_mouse_over() -> bool:
 	# Get the global mouse position

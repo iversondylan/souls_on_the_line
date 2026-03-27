@@ -2,18 +2,11 @@
 
 [ext_resource type="Texture2D" uid="uid://eg204ufmsub7" path="res://assets/sprites/unsuitable_images/tree_boss.png" id="1_44bnb"]
 [ext_resource type="Script" uid="uid://cfatj0ryn8uv3" path="res://custom_resources/combatant_data.gd" id="1_nxtje"]
-[ext_resource type="Script" uid="uid://03807i8cp3r3" path="res://scenes/turn_takers/behaviors/fighter_behavior.gd" id="1_pbkps"]
-[ext_resource type="Script" uid="uid://csljslxfgnidf" path="res://scenes/turn_takers/behaviors/npcai_behavior.gd" id="2_hganw"]
-
-[sub_resource type="Resource" id="Resource_exvbq"]
-script = ExtResource("2_hganw")
-metadata/_custom_type_script = "uid://csljslxfgnidf"
 
 [resource]
 script = ExtResource("1_nxtje")
 name = "Magister Rowan Fellhart"
-character_art = ExtResource("1_44bnb")
-portrait = ExtResource("1_44bnb")
+character_art_uid = "uid://eg204ufmsub7"
+portrait_art_uid = "uid://eg204ufmsub7"
 max_health = 60
-behaviors = Array[ExtResource("1_pbkps")]([SubResource("Resource_exvbq")])
 metadata/_custom_type_script = "uid://cfatj0ryn8uv3"

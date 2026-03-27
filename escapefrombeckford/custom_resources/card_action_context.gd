@@ -13,5 +13,3 @@ class_name CardActionContext extends RefCounted
 ## Pipeline outputs (mutable)
 #var summoned_fighters: Array[Fighter] = []
 #var affected_fighters: Array[Fighter] = []
-#
-#var pending_summon_effects: Array[SummonEffect] = []

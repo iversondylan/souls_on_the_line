@@ -24,7 +24,7 @@ func set_current_character(new_character: PlayerData) -> void:
 	current_character = new_character
 	title.text = current_character.name
 	description.text = current_character.description
-	character_image.texture = current_character.character_art
+	character_image.texture = current_character.load_portrait_art()
 
 func set_current_card_pile(new_deck: CardPile) -> void:
 	current_deck = new_deck
@@ -37,7 +37,7 @@ func _on_start_button_pressed() -> void:
 	run_startup.startup_type = RunStartup.StartupType.NEW_RUN
 	run_startup.run_seed = 0
 	run_startup.selected_starting_soul_uid = ""
-	run_startup.player_data = current_character
+	run_startup.player_definition = current_character
 	run_startup.starting_deck = current_deck
 	run_startup.draftable_cards = current_draftable_cards
 	get_tree().change_scene_to_packed(RUN_SCENE)

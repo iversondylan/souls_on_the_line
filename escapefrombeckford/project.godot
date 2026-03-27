@@ -26,7 +26,6 @@ buses/default_bus_layout="uid://dbgqy38x3r4ca"
 [autoload]
 
 Events="*res://global/events.gd"
-BattleController="*res://global/battle_controller.gd"
 Shaker="*res://global/shaker.gd"
 MusicPlayer="*res://global/music_player.tscn"
 SFXPlayer="*res://global/sfx_player.tscn"
@@ -50,7 +49,6 @@ ui_layer=""
 player=""
 enemies=""
 allies=""
-battle_scene=""
 background=""
 sim_host=""
 

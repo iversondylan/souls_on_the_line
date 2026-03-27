@@ -11,13 +11,13 @@ const ARCANUM_DISPLAY_SCN = preload("res://arcana/arcanum_display.tscn")
 @onready var original_gold_cost := randi_range(100, 300)
 @onready var gold_cost: int = original_gold_cost
 
-func update(run_account: RunAccount) -> void:
+func update(run_state: RunState) -> void:
 	if !arcanum_container or !price or !buy_button:
 		return
 	
 	price_label.text = str(gold_cost)
 	
-	if gold_cost <= run_account.gold:
+	if run_state != null and gold_cost <= run_state.gold:
 		price_label.remove_theme_color_override("font_color")
 		buy_button.disabled = false
 	else:

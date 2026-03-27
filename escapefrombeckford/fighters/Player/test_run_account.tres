@@ -1,8 +1,7 @@
-[gd_resource type="Resource" script_class="RunAccount" load_steps=2 format=3 uid="uid://b6d7uendl35s6"]
+[gd_resource type="Resource" script_class="RunState" load_steps=2 format=3 uid="uid://b6d7uendl35s6"]
 
-[ext_resource type="Script" uid="uid://cv774w5enwaet" path="res://custom_resources/run_account.gd" id="1_foa6u"]
+[ext_resource type="Script" path="res://custom_resources/run_state.gd" id="1_foa6u"]
 
 [resource]
 script = ExtResource("1_foa6u")
 gold = 500
-metadata/_custom_type_script = "uid://cv774w5enwaet"

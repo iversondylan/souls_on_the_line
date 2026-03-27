@@ -182,12 +182,18 @@ func confirm_player_end_ready() -> void:
 	_drive_turn_flow_until_blocked()
 
 
-func add_combatant_from_data(data: CombatantData, group_index: int, insert_index: int = -1, is_player := false) -> int:
+func add_combatant_from_data(
+	data: CombatantData,
+	group_index: int,
+	insert_index: int = -1,
+	is_player := false,
+	current_health_override := -1
+) -> int:
 	var api := _api()
 	if api == null:
 		return 0
 
-	return api.spawn_from_data(data, group_index, insert_index, is_player)
+	return api.spawn_from_data(data, group_index, insert_index, is_player, current_health_override)
 
 
 func request_urgent_planning_flush() -> void:

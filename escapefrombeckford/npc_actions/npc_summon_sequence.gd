@@ -3,6 +3,7 @@ class_name NPCSummonSequence
 extends NPCEffectSequence
 
 const MAX_UNITS_PER_GROUP := 7
+const DEFAULT_SUMMON_DATA_PATH := "res://fighters/BasicClone/basic_clone_data.tres"
 
 func execute(ctx: NPCAIContext, on_done: Callable) -> void:
 	if !ctx:
@@ -30,7 +31,7 @@ func execute(ctx: NPCAIContext, on_done: Callable) -> void:
 		return
 	
 	var summon_data_orig: CombatantData = _resolve_summon_data(
-		params.get(Keys.SUMMON_DATA, load(SummonEffect.DEFAULT_SUMMON_DATA))
+		params.get(Keys.SUMMON_DATA, load(DEFAULT_SUMMON_DATA_PATH))
 	)
 	var summon_sound : Sound = params.get(Keys.SUMMON_SOUND, null)
 	
@@ -47,16 +48,12 @@ func execute(ctx: NPCAIContext, on_done: Callable) -> void:
 		var cur_n := ctx.api.get_n_combatants_in_group(group_index, false)
 		var idx := clampi(insert_index, 0, cur_n)
 	
-		var effect := SummonEffect.new()
-		effect.group_index = group_index
-		effect.insert_index = idx
-	
-		if summon_data_orig:
-			effect.summon_data = summon_data_orig.duplicate()
-		if summon_sound:
-			effect.sound = summon_sound
-	
-		effect.execute(ctx.api)
+		var summon_ctx := SummonContext.new()
+		summon_ctx.group_index = group_index
+		summon_ctx.insert_index = idx
+		summon_ctx.summon_data = summon_data_orig.duplicate(true) as CombatantData if summon_data_orig != null else null
+		summon_ctx.sfx = summon_sound
+		ctx.api.summon(summon_ctx)
 	
 	on_done.call()
 
@@ -116,8 +113,6 @@ func execute_sim(ctx: NPCAIContext) -> void:
 		summon_ctx.group_index = group_index
 		summon_ctx.insert_index = idx
 		summon_ctx.summon_data = summon_data_orig.duplicate(true) as CombatantData
-		if summon_ctx.summon_data != null:
-			summon_ctx.summon_data.init()
 		summon_ctx.reason = "npc_summon_action"
 		runtime.run_summon_action(summon_ctx)
 

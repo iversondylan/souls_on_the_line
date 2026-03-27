@@ -1,9 +1,0 @@
-[gd_scene format=3 uid="uid://4btlny3vkuo7"]
-
-[ext_resource type="Script" uid="uid://d3ce1fryycd5t" path="res://scenes/turn_takers/enemy.gd" id="1_w30da"]
-[ext_resource type="PackedScene" uid="uid://dghmlrg1poqs7" path="res://scenes/combatant.tscn" id="2_irlvq"]
-
-[node name="Enemy" type="Node2D" unique_id=1923764682 groups=["enemies"]]
-script = ExtResource("1_w30da")
-
-[node name="Combatant" parent="." unique_id=1376239175 instance=ExtResource("2_irlvq")]

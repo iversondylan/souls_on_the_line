@@ -698,7 +698,13 @@ func fade_unit(ctx: FadeContext) -> void:
 # Spawn / summon
 # ============================================================================
 
-func spawn_from_data(combatant_data: CombatantData, group_index: int, insert_index: int = -1, is_player := false) -> int:
+func spawn_from_data(
+	combatant_data: CombatantData,
+	group_index: int,
+	insert_index: int = -1,
+	is_player := false,
+	current_health_override := -1
+) -> int:
 	if combatant_data == null or state == null:
 		return 0
 	
@@ -708,7 +714,7 @@ func spawn_from_data(combatant_data: CombatantData, group_index: int, insert_ind
 	if is_player:
 		state.groups[FRIENDLY].player_id = id
 	
-	var u := _make_unit_from_combatant_data(combatant_data, id, g, is_player)
+	var u := _make_unit_from_combatant_data(combatant_data, id, g, is_player, int(current_health_override))
 	state.add_unit(u, g, int(insert_index))
 	_request_turn_order_rebuild()
 	
@@ -737,8 +743,6 @@ func summon(ctx: SummonContext) -> void:
 	ctx.before_order_ids = windup_order
 	
 	var id := state.alloc_id()
-	ctx.summon_data.combat_id = id
-	
 	var u := _make_unit_from_combatant_data(ctx.summon_data, id, g, false)
 	u.bound_card_uid = String(ctx.bound_card_uid)
 	u.mortality = int(ctx.mortality)
@@ -1096,13 +1100,14 @@ func _make_unit_from_combatant_data(
 	combatant_data: CombatantData,
 	id: int,
 	group_index: int,
-	is_player: bool
+	is_player: bool,
+	current_health_override: int = -1
 ) -> CombatantState:
 	var u := CombatantState.new()
 	u.id = int(id)
 	u.rng = RNG.new(RNGUtil.mix_seed(state.battle_seed, u.id))
 	u.combatant_data = combatant_data
-	u.init_from_combatant_data(combatant_data)
+	u.init_from_combatant_data(combatant_data, current_health_override)
 	
 	u.type = (
 		CombatantView.Type.PLAYER
@@ -1123,7 +1128,7 @@ func _make_spawn_spec_from_data(combatant_data: CombatantData, u: CombatantState
 	return {
 		Keys.COMBATANT_NAME: String(combatant_data.name),
 		Keys.MAX_HEALTH: int(combatant_data.max_health),
-		Keys.HEALTH: int(combatant_data.health),
+		Keys.HEALTH: int(u.health),
 		Keys.MAX_MANA: int(combatant_data.max_mana),
 		Keys.APM: int(combatant_data.apm),
 		Keys.APR: int(combatant_data.apr),

@@ -1,7 +1,6 @@
 # summon_replace_interaction_context.gd
 
-class_name SummonReplaceInteractionContext
-extends EscrowCardInteractionContext
+class_name SummonReplaceInteractionContext extends EscrowCardInteractionContext
 
 
 var action_index: int = -1

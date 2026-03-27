@@ -1,9 +1,0 @@
-[gd_scene format=3 uid="uid://bfgbrcrt4dfjf"]
-
-[ext_resource type="Script" uid="uid://buubnon543t7p" path="res://scenes/turn_takers/summoned_ally.gd" id="1_on5pq"]
-[ext_resource type="PackedScene" uid="uid://dghmlrg1poqs7" path="res://scenes/combatant.tscn" id="3_e71qy"]
-
-[node name="SummonedAlly" type="Node2D" unique_id=831165029 groups=["allies"]]
-script = ExtResource("1_on5pq")
-
-[node name="Combatant" parent="." unique_id=887427414 instance=ExtResource("3_e71qy")]

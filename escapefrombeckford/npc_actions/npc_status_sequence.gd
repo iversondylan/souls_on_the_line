@@ -22,12 +22,7 @@ func execute(ctx: NPCAIContext, on_done: Callable) -> void:
 		return
 
 	# Resolve target combat_id (self)
-	var target_id := 0
-	if ctx.combatant:
-		target_id = int(ctx.combatant.combat_id)
-	elif ctx.combatant_data:
-		target_id = int(ctx.combatant_data.combat_id)
-
+	var target_id := int(ParamModel._actor_id(ctx))
 	if target_id <= 0:
 		on_done.call()
 		return

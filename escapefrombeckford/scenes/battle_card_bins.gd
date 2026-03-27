@@ -76,7 +76,6 @@ func request_draw(ctx: DrawContext) -> void:
 		await hand.present_draw_cards(ctx.drawn_cards)
 
 	after_draw(ctx)
-	Events.cards_drawn.emit(ctx)
 
 
 func request_discard(ctx: DiscardContext) -> void:

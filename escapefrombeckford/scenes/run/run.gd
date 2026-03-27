@@ -41,9 +41,8 @@ const TREASURE_SCN := preload("res://scenes/treasure/treasure_room.tscn")
 @onready var campfire_button: Button = %CampfireButton
 @onready var health_panel: HealthBar = $TopBar/Items/HealthPanel
 
-var account: RunAccount
+var run_state: RunState
 var profile_data: ProfileData
-var player_definition: PlayerData
 var player_data: PlayerData
 var run_seed: int = 0
 var arcana_system: ArcanaSystem
@@ -71,19 +70,19 @@ func _ready() -> void:
 			_continue_saved_run()
 
 func _start_run() -> void:
-	if account == null:
-		account = RunAccount.new()
-	account.draftable_cards = draftable_cards
-	if account.run_deck == null:
+	if run_state == null:
+		run_state = RunState.new()
+	run_state.draftable_cards = draftable_cards
+	if run_state.run_deck == null:
 		run_deck = RunDeck.new()
 		run_deck.card_collection = starting_deck
-		account.run_deck = run_deck
+		run_state.run_deck = run_deck
 	else:
-		run_deck = account.run_deck
+		run_deck = run_state.run_deck
 	
 	##This is for messing around with extra starting gold
 	if run_startup != null and int(run_startup.startup_type) == int(RunStartup.StartupType.NEW_RUN):
-		account.gold += player_definition.bonus_starting_gold
+		run_state.gold += player_data.bonus_starting_gold
 	
 	_connect_signals()
 	_init_top_bar()
@@ -115,6 +114,7 @@ func _show_map() -> void:
 	else:
 		map.unlock_next_rooms()
 	_set_location_map()
+	_refresh_top_bar_health()
 	_persist_active_run()
 
 func _connect_signals() -> void:
@@ -134,21 +134,20 @@ func _connect_signals() -> void:
 	treasure_button.pressed.connect(_on_treasure_room_entered)
 
 func _init_top_bar() -> void:
-	player_data.combatant_data_changed.connect(health_panel.update_health.bind(player_data))
-	health_panel.update_health(player_data)
-	gold_display.run_account = account
+	health_panel.update_health_view(int(player_data.max_health), _get_current_run_health())
+	gold_display.run_state = run_state
 	
 	_clear_run_arcana()
-	if account != null and !account.owned_arcanum_ids.is_empty():
-		for arcanum_id in account.owned_arcanum_ids:
+	if run_state != null and !run_state.owned_arcanum_ids.is_empty():
+		for arcanum_id in run_state.owned_arcanum_ids:
 			var proto := arcanum_catalog.get_proto(StringName(arcanum_id))
 			if proto != null:
 				arcana_container.add_arcanum(proto)
-	elif player_definition != null and player_definition.starting_arcanum != null:
-		arcana_container.add_arcanum(player_definition.starting_arcanum)
+	elif player_data != null and player_data.starting_arcanum != null:
+		arcana_container.add_arcanum(player_data.starting_arcanum)
 	
 # TEMPORARY v
-	if account != null and account.owned_arcanum_ids.is_empty():
+	if run_state != null and run_state.owned_arcanum_ids.is_empty():
 		for arcanum: Arcanum in extra_arcana:
 			arcana_container.add_arcana([arcanum])
 # TEMPORARY ^
@@ -176,6 +175,7 @@ func _on_battle_entered(room: Room) -> void:
 	battle_scn.run_seed = run_seed
 	battle_scn.battle_seed = battle_seed
 	battle_scn.run = self
+	battle_scn.run_state = run_state
 	battle_scn.player_data = player_data
 	battle_scn.run_deck = run_deck
 	battle_scn.battle_data = room.battle_data
@@ -188,6 +188,7 @@ func _on_rest_site_entered() -> void:
 	_persist_active_run()
 	var campfire := _change_view(CAMPFIRE_SCN) as Campfire
 	campfire.player_data = player_data
+	campfire.run_state = run_state
 
 func _on_shop_entered() -> void:
 	#print("run.gd _on_shop_entered()")
@@ -196,26 +197,26 @@ func _on_shop_entered() -> void:
 	var shop := _change_view(SHOP_SCN) as Shop
 	shop.run = self
 	shop.player_data = player_data
-	shop.run_account = account
+	shop.run_state = run_state
 	shop.arcana_system = arcana_container.system
 	shop.arcana_catalog = arcana_catalog
 	shop.arcana_reward_pool = player_data.arcana_reward_pool
-	Events.request_shop_modifiers.emit(shop)
 	var shop_ctx := shop.build_opening_context()
 	if arcana_system != null:
 		arcana_system.on_shop_context_started(shop_ctx)
 	shop.populate_from_context(shop_ctx)
 
 func _on_battle_won() -> void:
+	_sync_player_health_from_active_battle()
 	var rewards_scn := _change_view(BATTLE_REWARDS_SCN) as BattleRewardsScreen
-	rewards_scn.run_account = account
+	rewards_scn.run_state = run_state
 	rewards_scn.player_data = player_data
 	rewards_scn.arcanum_system = arcana_system
 	rewards_scn.run = self
 
 	var reward_ctx := RewardContext.new()
 	reward_ctx.source_kind = int(RewardContext.SourceKind.BATTLE)
-	reward_ctx.run_account = account
+	reward_ctx.run_state = run_state
 	reward_ctx.player_data = player_data
 	reward_ctx.arcana_system = arcana_system
 	reward_ctx.battle_data = map.last_room.battle_data if map != null and map.last_room != null else null
@@ -236,14 +237,14 @@ func _on_treasure_room_entered() -> void:
 
 func _on_treasure_room_exited(arcanum: Arcanum) -> void:
 	var reward_scn := _change_view(BATTLE_REWARDS_SCN) as BattleRewardsScreen
-	reward_scn.run_account = account
+	reward_scn.run_state = run_state
 	reward_scn.player_data = player_data
 	reward_scn.arcanum_system = arcana_container.system
 	reward_scn.run = self
 
 	var reward_ctx := RewardContext.new()
 	reward_ctx.source_kind = int(RewardContext.SourceKind.TREASURE)
-	reward_ctx.run_account = account
+	reward_ctx.run_state = run_state
 	reward_ctx.player_data = player_data
 	reward_ctx.arcana_system = arcana_system
 	if arcanum != null:
@@ -277,18 +278,16 @@ func _start_new_run() -> void:
 	print("run.gd new run startup seed: ", run_seed)
 	run_rng = RunRNG.new(run_seed)
 
-	player_definition = run_startup.player_data
-	player_data = player_definition.create_instance()
-	player_data.set_health(player_data.max_health)
+	player_data = run_startup.player_definition
 
 	if run_startup.starting_deck != null:
 		starting_deck = run_startup.starting_deck.duplicate()
 	else:
-		starting_deck = player_definition.starting_deck.duplicate()
+		starting_deck = player_data.starting_deck.duplicate()
 	if run_startup.draftable_cards != null:
 		draftable_cards = run_startup.draftable_cards.duplicate()
 	else:
-		draftable_cards = player_definition.draftable_cards.duplicate()
+		draftable_cards = player_data.draftable_cards.duplicate()
 
 	var soul_snapshot: CardSnapshot = null
 	if profile_data != null and profile_data.soul_recess_state != null:
@@ -302,42 +301,37 @@ func _start_new_run() -> void:
 			starting_deck.add_back(carried_card)
 
 	arcana_catalog = run_startup.arcana_catalog.duplicate() if run_startup.arcana_catalog != null else arcanum_catalog.duplicate()
-	account = RunAccount.new()
-	account.run_seed = run_seed
-	account.player_definition = player_definition
-	account.player_run_state = PlayerRunState.new()
-	account.player_run_state.current_health = player_definition.max_health
-	account.owned_arcanum_ids = PackedStringArray([String(player_definition.starting_arcanum.get_id())]) if player_definition.starting_arcanum != null else PackedStringArray()
+	run_state = RunState.new()
+	run_state.run_seed = run_seed
+	run_state.player_data = player_data
+	run_state.player_run_state = PlayerRunState.new()
+	run_state.player_run_state.current_health = int(player_data.max_health)
+	run_state.owned_arcanum_ids = PackedStringArray([String(player_data.starting_arcanum.get_id())]) if player_data.starting_arcanum != null else PackedStringArray()
 	for arcanum in extra_arcana:
 		if arcanum != null:
-			account.owned_arcanum_ids.append(String(arcanum.get_id()))
+			run_state.owned_arcanum_ids.append(String(arcanum.get_id()))
 	print("run.gd STARTING RUN WITH NEW CHARACTER")
 	SaveService.save_profile(profile_data)
 	_start_run()
 
 
 func _continue_saved_run() -> void:
-	account = SaveService.load_active_run()
-	if account == null:
+	run_state = SaveService.load_active_run()
+	if run_state == null:
 		push_warning("Run._continue_saved_run(): no active run save found")
 		return
 
-	if account.player_definition == null:
-		push_warning("Run._continue_saved_run(): saved run missing player_definition")
+	if run_state.player_data == null:
+		push_warning("Run._continue_saved_run(): saved run missing player_data")
 		return
 
-	player_definition = account.player_definition
-	player_data = player_definition.create_instance()
-	if account.player_run_state != null:
-		player_data.set_health(account.player_run_state.current_health)
-	else:
-		player_data.set_health(player_definition.max_health)
+	player_data = run_state.player_data
 
-	draftable_cards = account.draftable_cards if account.draftable_cards != null else player_definition.draftable_cards.duplicate()
-	run_deck = account.run_deck if account.run_deck != null else RunDeck.new()
+	draftable_cards = run_state.draftable_cards if run_state.draftable_cards != null else player_data.draftable_cards.duplicate()
+	run_deck = run_state.run_deck if run_state.run_deck != null else RunDeck.new()
 	if run_deck.card_collection == null:
-		run_deck.card_collection = player_definition.starting_deck.duplicate()
-	run_seed = int(account.run_seed)
+		run_deck.card_collection = player_data.starting_deck.duplicate()
+	run_seed = int(run_state.run_seed)
 	run_rng = RunRNG.new(run_seed)
 	arcana_catalog = run_startup.arcana_catalog.duplicate() if run_startup.arcana_catalog != null else arcanum_catalog.duplicate()
 	_start_run()
@@ -348,54 +342,54 @@ func _generate_or_restore_map() -> void:
 	var rng := run_rng.get_stream("map")
 	map.generate_new_map(rng)
 	run_rng.commit(rng)
-	if account != null and !account.cleared_room_coords.is_empty():
-		map.restore_progress(account.cleared_room_coords)
+	if run_state != null and !run_state.cleared_room_coords.is_empty():
+		map.restore_progress(run_state.cleared_room_coords)
 	else:
 		map.unlock_encounter_column(0)
 
 
 func _record_cleared_room(room: Room) -> void:
-	if account == null or room == null:
+	if run_state == null or room == null:
 		return
 	var coord := Vector2i(int(room.column), int(room.row))
-	if account.cleared_room_coords.has(coord):
+	if run_state.cleared_room_coords.has(coord):
 		return
-	account.cleared_room_coords.append(coord)
+	run_state.cleared_room_coords.append(coord)
 
 
 func _set_location_for_room(room: Room) -> void:
-	if account == null or room == null:
+	if run_state == null or room == null:
 		return
-	account.pending_room_coord = Vector2i(int(room.column), int(room.row))
+	run_state.pending_room_coord = Vector2i(int(room.column), int(room.row))
 	match int(room.type):
 		Room.RoomType.BATTLE, Room.RoomType.BOSS:
-			account.location_kind = RunAccount.LocationKind.ROOM_PENDING_BATTLE
+			run_state.location_kind = RunState.LocationKind.ROOM_PENDING_BATTLE
 		Room.RoomType.TREASURE:
-			account.location_kind = RunAccount.LocationKind.ROOM_PENDING_TREASURE
+			run_state.location_kind = RunState.LocationKind.ROOM_PENDING_TREASURE
 		Room.RoomType.REST:
-			account.location_kind = RunAccount.LocationKind.ROOM_PENDING_REST
+			run_state.location_kind = RunState.LocationKind.ROOM_PENDING_REST
 		Room.RoomType.SHOP:
-			account.location_kind = RunAccount.LocationKind.ROOM_PENDING_SHOP
+			run_state.location_kind = RunState.LocationKind.ROOM_PENDING_SHOP
 		_:
-			account.location_kind = RunAccount.LocationKind.MAP
+			run_state.location_kind = RunState.LocationKind.MAP
 
 
 func _set_location_map() -> void:
-	if account == null:
+	if run_state == null:
 		return
-	account.location_kind = RunAccount.LocationKind.MAP
-	account.pending_room_coord = Vector2i(-1, -1)
+	run_state.location_kind = RunState.LocationKind.MAP
+	run_state.pending_room_coord = Vector2i(-1, -1)
 
 
 func _restore_saved_location() -> void:
-	if account == null:
+	if run_state == null:
 		return
-	match int(account.location_kind):
-		RunAccount.LocationKind.ROOM_PENDING_BATTLE, \
-		RunAccount.LocationKind.ROOM_PENDING_TREASURE, \
-		RunAccount.LocationKind.ROOM_PENDING_REST, \
-		RunAccount.LocationKind.ROOM_PENDING_SHOP:
-			var room := map.get_room_at(int(account.pending_room_coord.x), int(account.pending_room_coord.y))
+	match int(run_state.location_kind):
+		RunState.LocationKind.ROOM_PENDING_BATTLE, \
+		RunState.LocationKind.ROOM_PENDING_TREASURE, \
+		RunState.LocationKind.ROOM_PENDING_REST, \
+		RunState.LocationKind.ROOM_PENDING_SHOP:
+			var room := map.get_room_at(int(run_state.pending_room_coord.x), int(run_state.pending_room_coord.y))
 			if room != null:
 				_on_map_exited(room)
 				return
@@ -408,32 +402,51 @@ func _clear_run_arcana() -> void:
 			arcana_container.remove_arcanum(arcanum.get_id())
 
 
-func _sync_account_from_live_state() -> void:
-	if account == null:
+func _sync_run_state_from_live_state() -> void:
+	if run_state == null:
 		return
-	account.run_seed = run_seed
-	account.player_definition = player_definition
-	if account.player_run_state == null:
-		account.player_run_state = PlayerRunState.new()
-	if player_data != null:
-		account.player_run_state.current_health = int(player_data.health)
-	account.run_deck = run_deck
-	account.draftable_cards = draftable_cards
+	run_state.run_seed = run_seed
+	run_state.player_data = player_data
+	if run_state.player_run_state == null:
+		run_state.player_run_state = PlayerRunState.new()
+	run_state.run_deck = run_deck
+	run_state.draftable_cards = draftable_cards
 	var owned_ids := PackedStringArray()
 	for arcanum_id in arcana_system.get_my_arcana():
 		owned_ids.append(String(arcanum_id))
-	account.owned_arcanum_ids = owned_ids
+	run_state.owned_arcanum_ids = owned_ids
 
 
 func _persist_active_run() -> void:
-	if account == null:
+	if run_state == null:
 		return
-	_sync_account_from_live_state()
-	SaveService.save_active_run(account)
+	_sync_run_state_from_live_state()
+	SaveService.save_active_run(run_state)
 
 
 func _on_run_defeat() -> void:
 	SaveService.clear_active_run()
+
+func _get_current_run_health() -> int:
+	if run_state == null or run_state.player_run_state == null:
+		return int(player_data.max_health) if player_data != null else 0
+	return int(run_state.player_run_state.current_health)
+
+func _refresh_top_bar_health() -> void:
+	if health_panel == null or player_data == null:
+		return
+	health_panel.update_health_view(int(player_data.max_health), _get_current_run_health())
+
+func _sync_player_health_from_active_battle() -> void:
+	if run_state == null or run_state.player_run_state == null:
+		return
+	if current_view == null or current_view.get_child_count() == 0:
+		return
+	var battle := current_view.get_child(0) as Battle
+	if battle == null:
+		return
+	run_state.player_run_state.current_health = int(battle.get_player_current_health())
+	_refresh_top_bar_health()
 	
 #func get_modifier_tokens_for(target: Node) -> Array[ModifierToken]:
 	##print("run.gd get_modifier_tokens()")

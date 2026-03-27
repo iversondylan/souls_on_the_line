@@ -61,6 +61,7 @@ const ENEMY := 1
 # -------------------------
 
 var player_data: PlayerData
+var run_state: RunState
 var run_deck: RunDeck : set = _set_run_deck
 var run: Run : set = _set_run
 var run_seed: int
@@ -213,9 +214,8 @@ func _spawn_from_battle_data() -> void:
 		return
 
 	if player_data != null:
-		player_data.alive = true
-		#hand.player_data = player_data
-		runtime.add_combatant_from_data(player_data, FRIENDLY, 0, true)
+		var current_health := _get_player_spawn_health()
+		runtime.add_combatant_from_data(player_data, FRIENDLY, 0, true, current_health)
 
 	if battle_data == null:
 		thank_you_box.show()
@@ -226,7 +226,6 @@ func _spawn_from_battle_data() -> void:
 			continue
 
 		var new_data: CombatantData = enemy_data.duplicate()
-		new_data.init()
 		runtime.add_combatant_from_data(new_data, ENEMY, -1, false)
 
 
@@ -352,6 +351,23 @@ func _on_request_defeat() -> void:
 
 func _on_request_victory() -> void:
 	Events.battle_over_screen_requested.emit("PATH CLEARED", BattleOverPanel.Outcome.WIN)
+
+func get_player_current_health() -> int:
+	var api := sim_host.get_main_api() if sim_host != null else null
+	if api == null or api.state == null:
+		return _get_player_spawn_health()
+	var player_id := int(api.get_player_id())
+	if player_id <= 0:
+		return _get_player_spawn_health()
+	var unit := api.state.get_unit(player_id)
+	if unit == null:
+		return _get_player_spawn_health()
+	return int(unit.health)
+
+func _get_player_spawn_health() -> int:
+	if run_state != null and run_state.player_run_state != null:
+		return int(run_state.player_run_state.current_health)
+	return int(player_data.max_health) if player_data != null else 0
 
 
 # -------------------------

@@ -8,12 +8,7 @@ static func run(ctx: NPCAIContext) -> bool:
 	if ctx == null:
 		return false
 
-	var attacker_id := 0
-	if ctx.combatant:
-		attacker_id = int(ctx.combatant.combat_id)
-	elif ctx.combatant_data:
-		attacker_id = int(ctx.combatant_data.combat_id)
-
+	var attacker_id := int(ParamModel._actor_id(ctx))
 	if attacker_id <= 0:
 		return false
 

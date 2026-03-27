@@ -24,8 +24,4 @@ static func _actor_id(ctx: NPCAIContext) -> int:
 	if ctx.combatant != null and is_instance_valid(ctx.combatant):
 		return int(ctx.combatant.combat_id)
 
-	# Data fallback
-	if ctx.combatant_data != null:
-		return int(ctx.combatant_data.combat_id)
-
 	return 0

@@ -3,21 +3,13 @@
 [ext_resource type="Resource" uid="uid://xw2ha8sh5j4f" path="res://fighters/BufferBird/buffer_bird_ai_profile.tres" id="1_0aghq"]
 [ext_resource type="Texture2D" uid="uid://bb2atap1ej445" path="res://assets/character_visuals/buffer_bird/DemonRaven (1).png" id="1_7ocbv"]
 [ext_resource type="Script" uid="uid://cfatj0ryn8uv3" path="res://custom_resources/combatant_data.gd" id="1_rmw54"]
-[ext_resource type="Script" uid="uid://03807i8cp3r3" path="res://scenes/turn_takers/behaviors/fighter_behavior.gd" id="2_bmpyv"]
-[ext_resource type="Script" uid="uid://csljslxfgnidf" path="res://scenes/turn_takers/behaviors/npcai_behavior.gd" id="3_lla1n"]
-
-[sub_resource type="Resource" id="Resource_mmvx8"]
-script = ExtResource("3_lla1n")
-metadata/_custom_type_script = "uid://csljslxfgnidf"
 
 [resource]
 script = ExtResource("1_rmw54")
 name = "Buffer Bird"
-character_art = ExtResource("1_7ocbv")
-portrait = ExtResource("1_7ocbv")
-character_scale = 0.25
+character_art_uid = "uid://bb2atap1ej445"
+portrait_art_uid = "uid://bb2atap1ej445"
 height = 270
 max_health = 12
-behaviors = Array[ExtResource("2_bmpyv")]([SubResource("Resource_mmvx8")])
 ai = ExtResource("1_0aghq")
 metadata/_custom_type_script = "uid://cfatj0ryn8uv3"

@@ -11,7 +11,7 @@ const GOLD_TEXT := "%s gold"
 const CARD_TEXTURE := preload("res://assets/sprites/assorted/diamond_white.png")
 const CARD_TEXT := "Add New Card"
 
-@export var run_account: RunAccount
+@export var run_state: RunState
 @export var player_data: PlayerData
 var arcanum_system: ArcanaSystem
 var run: Run
@@ -74,7 +74,7 @@ func _on_arcanum_reward_taken(arcanum: Arcanum) -> void:
 		run._persist_active_run()
 
 func _show_card_reward() -> void:
-	if !run_account or !player_data:
+	if !run_state or !player_data:
 		return
 	
 	var card_reward := CARD_REWARD.instantiate() as CardReward
@@ -82,9 +82,9 @@ func _show_card_reward() -> void:
 	card_reward.card_reward_selected.connect(_on_card_reward_taken)
 	
 	var card_choices: Array[CardData] = []
-	var possible_cards: Array[CardData] = run_account.draftable_cards.cards.duplicate()
+	var possible_cards: Array[CardData] = run_state.draftable_cards.cards.duplicate()
 	#print("battle_rewards.gd _show_card_reward() possible cards: ", possible_cards.size())
-	for i in run_account.card_reward_choices:
+	for i in run_state.card_reward_choices:
 		_calculate_card_chances()
 		var roll := randf_range(0.0, card_reward_total_weight)
 		
@@ -96,23 +96,23 @@ func _show_card_reward() -> void:
 				card_choices.append(rolled_card)
 				#THIS NEEDS TO BE REVISITED BECAUSE CARDS SHOULD POSSIBLY BE REMOVED FROM THE POOL
 				#BUT IT WAS CAUSING AN ERROR WHEN NO CARDS OF A CERTAIN RARITY WERE LEFT
-				#possible_cards.erase(rolled_card) #is this erasing the rolled card from run_account.draftable_cards.cards?
+				#possible_cards.erase(rolled_card) #is this erasing the rolled card from run_state.draftable_cards.cards?
 				break
 	
 	card_reward.card_choices = card_choices
 	card_reward.show()
 
 func _calculate_card_chances() -> void:
-	card_reward_total_weight = run_account.common_weight + run_account.uncommon_weight + run_account.rare_weight
-	card_rarity_weights[CardData.Rarity.COMMON] = run_account.common_weight
-	card_rarity_weights[CardData.Rarity.UNCOMMON] = run_account.common_weight + run_account.uncommon_weight
+	card_reward_total_weight = run_state.common_weight + run_state.uncommon_weight + run_state.rare_weight
+	card_rarity_weights[CardData.Rarity.COMMON] = run_state.common_weight
+	card_rarity_weights[CardData.Rarity.UNCOMMON] = run_state.common_weight + run_state.uncommon_weight
 	card_rarity_weights[CardData.Rarity.RARE] = card_reward_total_weight
 
 func _modify_weights(rarity_rolled: CardData.Rarity) -> void:
 	if rarity_rolled == CardData.Rarity.RARE:
-		run_account.rare_weight = RunAccount.BASE_RARE_WEIGHT
+		run_state.rare_weight = RunState.BASE_RARE_WEIGHT
 	else:
-		run_account.rare_weight = clampf(run_account.rare_weight + 0.3, run_account.BASE_RARE_WEIGHT, 5.0)
+		run_state.rare_weight = clampf(run_state.rare_weight + 0.3, RunState.BASE_RARE_WEIGHT, 5.0)
 
 func _get_random_possible_card(possible_cards: Array[CardData], rarity: CardData.Rarity) -> CardData:
 	var all_possible_cards := possible_cards.filter(
@@ -124,16 +124,16 @@ func _get_random_possible_card(possible_cards: Array[CardData], rarity: CardData
 	return all_possible_cards.pick_random()
 
 func _on_gold_reward_taken(n_gold: int) -> void:
-	if !run_account:
+	if !run_state:
 		return
-	run_account.gold += n_gold
+	run_state.gold += n_gold
 	if run != null:
 		run._persist_active_run()
 
 func _on_card_reward_taken(card: CardData) -> void:
-	if !player_data or !card or !run_account.run_deck:
+	if !player_data or !card or !run_state.run_deck:
 		return
-	run_account.run_deck.add_card(card)
+	run_state.run_deck.add_card(card)
 	if run != null:
 		run._persist_active_run()
 

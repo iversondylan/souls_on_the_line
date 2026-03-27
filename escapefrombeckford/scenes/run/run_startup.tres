@@ -6,6 +6,6 @@
 
 [resource]
 script = ExtResource("1_ujbn8")
-player_data = ExtResource("3_onvgd")
+player_definition = ExtResource("3_onvgd")
 arcana_catalog = ExtResource("1_fwnab")
 metadata/_custom_type_script = "uid://dlxexdxlypm2o"

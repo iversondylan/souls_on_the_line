@@ -45,25 +45,23 @@ func save_profile(profile: ProfileData) -> bool:
 	return _save_resource(profile, PROFILE_SAVE_PATH)
 
 
-func load_active_run() -> RunAccount:
-	var loaded := _load_resource(ACTIVE_RUN_SAVE_PATH) as RunAccount
+func load_active_run() -> RunState:
+	var loaded := _load_resource(ACTIVE_RUN_SAVE_PATH)
 	if loaded == null:
 		return null
-	if loaded.player_run_state == null:
-		loaded.player_run_state = PlayerRunState.new()
-	if loaded.run_deck == null:
-		loaded.run_deck = RunDeck.new()
-	if loaded.run_deck.card_collection == null:
-		loaded.run_deck.card_collection = CardPile.new()
-	if loaded.owned_arcanum_ids == null:
-		loaded.owned_arcanum_ids = PackedStringArray()
-	return loaded
+
+	var migrated := _normalize_active_run(loaded)
+	if migrated == null:
+		return null
+	if loaded is RunAccount:
+		save_active_run(migrated)
+	return migrated
 
 
-func save_active_run(run_account: RunAccount) -> bool:
-	if run_account == null:
+func save_active_run(run_state: RunState) -> bool:
+	if run_state == null:
 		return false
-	return _save_resource(run_account, ACTIVE_RUN_SAVE_PATH)
+	return _save_resource(run_state, ACTIVE_RUN_SAVE_PATH)
 
 
 func _load_resource(path: String) -> Resource:
@@ -80,3 +78,39 @@ func _save_resource(resource: Resource, path: String) -> bool:
 		push_warning("SaveService: failed to save %s err=%s" % [path, err])
 		return false
 	return true
+
+func _normalize_active_run(resource: Resource) -> RunState:
+	var run_state: RunState = null
+	if resource is RunAccount:
+		var legacy := resource as RunAccount
+		run_state = RunState.new()
+		run_state.gold = legacy.gold
+		run_state.card_reward_choices = legacy.card_reward_choices
+		run_state.common_weight = legacy.common_weight
+		run_state.uncommon_weight = legacy.uncommon_weight
+		run_state.rare_weight = legacy.rare_weight
+		run_state.run_seed = legacy.run_seed
+		run_state.player_data = legacy.player_data if legacy.player_data != null else legacy.player_definition
+		run_state.player_run_state = legacy.player_run_state
+		run_state.cleared_room_coords = legacy.cleared_room_coords
+		run_state.location_kind = legacy.location_kind
+		run_state.pending_room_coord = legacy.pending_room_coord
+		run_state.owned_arcanum_ids = legacy.owned_arcanum_ids
+		run_state.draftable_cards = legacy.draftable_cards
+		run_state.run_deck = legacy.run_deck
+	elif resource is RunState:
+		run_state = resource as RunState
+	else:
+		return null
+
+	if run_state.player_run_state == null:
+		run_state.player_run_state = PlayerRunState.new()
+	if run_state.player_data == null and resource is RunAccount:
+		run_state.player_data = (resource as RunAccount).player_definition
+	if run_state.run_deck == null:
+		run_state.run_deck = RunDeck.new()
+	if run_state.run_deck.card_collection == null:
+		run_state.run_deck.card_collection = CardPile.new()
+	if run_state.owned_arcanum_ids == null:
+		run_state.owned_arcanum_ids = PackedStringArray()
+	return run_state

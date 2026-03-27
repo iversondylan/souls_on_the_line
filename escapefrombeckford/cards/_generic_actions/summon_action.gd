@@ -97,7 +97,6 @@ func activate_sim(ctx: CardContext) -> bool:
 
 func _build_clone_data_sim() -> CombatantData:
 	var data := summon_data.duplicate()
-	data.init()
 	return data
 
 

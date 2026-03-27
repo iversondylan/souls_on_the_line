@@ -193,8 +193,6 @@ func _discard_cards_internal(usable_cards: Array[UsableCard], emit_discard_anima
 
 	# Nothing to do
 	if cards.is_empty():
-		if emit_discard_animation_finished:
-			Events.hand_discard_animation_finished.emit()
 		discard_animation_completed.emit()
 		return
 
@@ -204,8 +202,6 @@ func _discard_cards_internal(usable_cards: Array[UsableCard], emit_discard_anima
 		for c in cards:
 			c.queue_free()
 		reposition_hand_cards()
-		if emit_discard_animation_finished:
-			Events.hand_discard_animation_finished.emit()
 		discard_animation_completed.emit()
 		return
 
@@ -263,11 +259,7 @@ func _on_one_discard_complete() -> void:
 
 	_is_discarding = false
 	reposition_hand_cards()
-	if _emit_discard_animation_finished_on_complete:
-		_emit_discard_animation_finished_on_complete = false
-		Events.hand_discard_animation_finished.emit()
-	else:
-		_emit_discard_animation_finished_on_complete = false
+	_emit_discard_animation_finished_on_complete = false
 	discard_animation_completed.emit()
 
 

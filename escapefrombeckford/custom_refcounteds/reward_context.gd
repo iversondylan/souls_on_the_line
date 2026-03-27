@@ -9,7 +9,7 @@ enum SourceKind {
 
 var source_kind: int = SourceKind.UNKNOWN
 
-var run_account: RunAccount
+var run_state: RunState
 var player_data: PlayerData
 var arcana_system: ArcanaSystem
 

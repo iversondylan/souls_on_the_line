@@ -3,19 +3,12 @@ class_name DrawAction extends CardAction
 
 @export var base_draw: int = 1
 
-#func activate(ctx: CardActionContext) -> bool:
-	#var draw_effect := CardDrawEffect.new()
-	#draw_effect.amount = base_draw
-	#draw_effect.source = ctx.player
-	#draw_effect.execute(ctx.battle_scene.api)
-	#return true
-
 func activate_sim(ctx: CardContext) -> bool:
-	var draw_effect := CardDrawEffect.new()
-	draw_effect.amount = base_draw
-	draw_effect.source = ctx.api.get_player_id()
-	draw_effect.reason = "CardAction"
-	draw_effect.execute(ctx.api)
+	var draw_ctx := DrawContext.new()
+	draw_ctx.amount = int(base_draw)
+	draw_ctx.source_id = int(ctx.api.get_player_id())
+	draw_ctx.reason = "CardAction"
+	Events.request_draw_cards.emit(draw_ctx)
 	return true
 
 func description_arity() -> int:

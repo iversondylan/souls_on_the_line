@@ -5,7 +5,7 @@ const SHOP_ARCANUM_SCN = preload("res://scenes/shop/shop_arcanum.tscn")
 
 @export var shop_arcana: Arcana
 @export var player_data: PlayerData
-@export var run_account: RunAccount
+@export var run_state: RunState
 var arcana_system: ArcanaSystem
 
 @onready var card_container: HBoxContainer = %Cards
@@ -35,7 +35,6 @@ func _ready() -> void:
 	
 	Events.shop_card_bought.connect(_on_shop_card_bought)
 	Events.shop_arcanum_bought.connect(_on_shop_arcanum_bought)
-	#Events.shop_modifier_acquired.connect(_on_shop_modifier_acquired)
 	modifier_system.modifier_changed.connect(_recalculate_prices)
 	
 	_blink_timer_setup()
@@ -60,7 +59,7 @@ func populate_shop() -> void:
 func build_opening_context() -> ShopContext:
 	var ctx := ShopContext.new()
 	ctx.run = run
-	ctx.run_account = run_account
+	ctx.run_state = run_state
 	ctx.player_data = player_data
 	ctx.arcana_system = arcana_system
 	ctx.arcana_catalog = arcana_catalog
@@ -102,7 +101,7 @@ func _populate_shop_cards(shop_cards: Array[CardData]) -> void:
 		new_shop_card.card_data = card_data
 		new_shop_card.current_menu_card.tooltip_requested.connect(card_tooltip_popup.show_tooltip)
 		new_shop_card.gold_cost = _get_updated_shop_cost(new_shop_card.gold_cost)
-		new_shop_card.update(run_account)
+		new_shop_card.update(run_state)
 
 func _build_shop_arcanum_offers() -> Array[Arcanum]:
 	var eligible_arcana: Array[Arcanum] = []
@@ -127,7 +126,7 @@ func _populate_shop_arcana(shop_arcana: Array[Arcanum]) -> void:
 		arcanum_container.add_child(shop_arcanum)
 		shop_arcanum.arcanum = arcanum
 		shop_arcanum.gold_cost = _get_updated_shop_cost(shop_arcanum.gold_cost)
-		shop_arcanum.update(run_account)
+		shop_arcanum.update(run_state)
 	#var shop_arcanaz: Array[Arcanum] = []
 	#var available_arcana := player_data.possible_arcana.arcana.filter(
 		#func(arcanum: Arcanum):
@@ -141,7 +140,7 @@ func _populate_shop_arcana(shop_arcana: Array[Arcanum]) -> void:
 		#arcanum_container.add_child(new_shop_arcanum)
 		#new_shop_arcanum.arcanum = arcanum
 		#new_shop_arcanum.gold_cost = _get_updated_shop_cost(new_shop_arcanum.gold_cost)
-		#new_shop_arcanum.update(run_account)
+		#new_shop_arcanum.update(run_state)
 
 #func get_modifier_tokens() -> Array[ModifierToken]:
 	#if arcana_system:
@@ -153,38 +152,34 @@ func _get_updated_shop_cost(orig_cost: int) -> int:
 
 func _update_items() -> void:
 	for shop_arcanum: ShopArcanum in arcanum_container.get_children():
-		shop_arcanum.update(run_account)
+		shop_arcanum.update(run_state)
 	for shop_card: ShopCard in card_container.get_children():
-		shop_card.update(run_account)
+		shop_card.update(run_state)
 
 func _recalculate_prices() -> void:
 	for shop_arcanum: ShopArcanum in arcanum_container.get_children():
 		shop_arcanum.gold_cost = _get_updated_shop_cost(shop_arcanum.original_gold_cost)
-		shop_arcanum.update(run_account)
+		shop_arcanum.update(run_state)
 	for shop_card: ShopCard in card_container.get_children():
 		shop_card.gold_cost = _get_updated_shop_cost(shop_card.original_gold_cost)
-		shop_card.update(run_account)
+		shop_card.update(run_state)
 
 func _on_back_button_pressed() -> void:
 	Events.shop_exited.emit()
 
 func _on_shop_card_bought(card_data: CardData, gold_cost: int) -> void:
-	run_account.run_deck.add_card(card_data)
-	run_account.gold -= gold_cost
+	run_state.run_deck.add_card(card_data)
+	run_state.gold -= gold_cost
 	_update_items()
 	if run != null:
 		run._persist_active_run()
 
 func _on_shop_arcanum_bought(arcanum: Arcanum, gold_cost: int) -> void:
 	arcana_system.add_arcanum(arcanum)
-	run_account.gold -= gold_cost
+	run_state.gold -= gold_cost
 	_update_items()
 	if run != null:
 		run._persist_active_run()
-
-#func _on_shop_modifier_acquired() -> void:
-	#print("_on_shop_modifier_acquired")
-	#Events.request_shop_modifiers.emit(self)
 
 func on_modifier_tokens_changed(mod_type: Modifier.Type) -> void:
 	modifier_system.mark_dirty(mod_type)

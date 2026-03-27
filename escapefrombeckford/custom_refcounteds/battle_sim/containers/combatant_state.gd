@@ -47,22 +47,22 @@ func init_unit_rng(seed: int) -> void:
 func is_alive() -> bool:
 	return alive and health > 0
 
-func init_from_combatant_data(data: CombatantData) -> void:
+func init_from_combatant_data(data: CombatantData, current_health_override: int = -1) -> void:
 	if !data:
 		return
 	combatant_data = data
 	name = data.name
 	max_health = int(data.max_health)
-	health = clampi(int(data.health if data.health >= 0 else data.max_health), 0, max_health)
-	armor = int(data.armor)
+	health = clampi(int(current_health_override if current_health_override >= 0 else data.max_health), 0, max_health)
+	armor = 0
 	ai_profile = data.ai
 	max_mana = maxi(int(data.max_mana), 0)
-	mana = clampi(int(data.mana), 0, max_mana)
+	mana = max_mana
 
 	apm = maxi(int(data.apm), 0)
 	apr = maxi(int(data.apr), 0)
 
-	alive = data.is_alive()
+	alive = max_health > 0
 
 func clone() -> CombatantState:
 	var c := CombatantState.new()
