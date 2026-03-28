@@ -60,7 +60,6 @@ func _ready() -> void:
 	if player_catalog != null:
 		player_catalog.build_index()
 	arcana_system = arcana_container.system
-	arcana_system.modifier_tokens_changed.connect(_on_modifier_tokens_changed)
 	
 	if !run_startup:
 		return
@@ -87,6 +86,7 @@ func _start_run() -> void:
 	##This is for messing around with extra starting gold
 	if run_startup != null and int(run_startup.startup_type) == int(RunStartup.StartupType.NEW_RUN):
 		run_state.gold += player_data.bonus_starting_gold
+	_ensure_player_run_state_initialized()
 	
 	_connect_signals()
 	_init_top_bar()
@@ -138,7 +138,7 @@ func _connect_signals() -> void:
 	treasure_button.pressed.connect(_on_treasure_room_entered)
 
 func _init_top_bar() -> void:
-	health_panel.update_health_view(int(player_data.max_health), _get_current_run_health())
+	health_panel.update_health_view(_get_current_run_max_health(), _get_current_run_health())
 	gold_display.run_state = run_state
 	
 	_clear_run_arcana()
@@ -194,15 +194,16 @@ func _on_battle_entered_with_seed(room: Room, existing_battle_seed: int = -1) ->
 func _on_rest_site_entered(room: Room = map.last_room) -> void:
 	map.set_active_room(room)
 	_set_location_for_room(room)
+	if int(run_state.pending_room_seed) == 0:
+		run_state.pending_room_seed = _derive_room_seed(room, "rest")
 	_persist_active_run()
 	var campfire := _change_view(CAMPFIRE_SCN) as Campfire
-	campfire.player_data = player_data
 	campfire.run_state = run_state
 
 func _on_shop_entered(room: Room = map.last_room) -> void:
-	#print("run.gd _on_shop_entered()")
 	map.set_active_room(room)
 	_set_location_for_room(room)
+	_build_pending_shop_checkpoint(room)
 	_persist_active_run()
 	var shop := _change_view(SHOP_SCN) as Shop
 	shop.run = self
@@ -211,58 +212,31 @@ func _on_shop_entered(room: Room = map.last_room) -> void:
 	shop.arcana_system = arcana_container.system
 	shop.arcana_catalog = arcana_catalog
 	shop.arcana_reward_pool = player_data.arcana_reward_pool
-	var shop_ctx := shop.build_opening_context()
-	if arcana_system != null:
-		arcana_system.on_shop_context_started(shop_ctx)
+	var shop_ctx := _build_pending_shop_context()
 	shop.populate_from_context(shop_ctx)
 
 func _on_battle_won() -> void:
 	_sync_player_health_from_active_battle()
-	var rewards_scn := _change_view(BATTLE_REWARDS_SCN) as BattleRewardsScreen
-	rewards_scn.run_state = run_state
-	rewards_scn.player_data = player_data
-	rewards_scn.arcanum_system = arcana_system
-	rewards_scn.run = self
-
-	var reward_ctx := RewardContext.new()
-	reward_ctx.source_kind = int(RewardContext.SourceKind.BATTLE)
-	reward_ctx.run_state = run_state
-	reward_ctx.player_data = player_data
-	reward_ctx.arcana_system = arcana_system
-	reward_ctx.battle_data = map.last_room.battle_data if map != null and map.last_room != null else null
-	if reward_ctx.battle_data != null:
-		reward_ctx.gold_rewards.append(int(reward_ctx.battle_data.roll_gold_reward()))
-	reward_ctx.include_card_reward = true
-	if arcana_system != null:
-		arcana_system.on_reward_context_started(reward_ctx)
-	rewards_scn.populate_from_context(reward_ctx)
+	_prepare_pending_reward_checkpoint(int(RewardContext.SourceKind.BATTLE), map.last_room)
+	_persist_active_run()
+	_open_pending_reward_screen()
 
 func _on_treasure_room_entered(room: Room = map.last_room) -> void:
 	map.set_active_room(room)
 	_set_location_for_room(room)
+	_build_pending_treasure_checkpoint(room)
 	_persist_active_run()
 	var treasure_scn := _change_view(TREASURE_SCN) as TreasureRoom
 	treasure_scn.arcanum_system = arcana_container.system
 	treasure_scn.player_data = player_data
-	treasure_scn.generate_arcanum()
+	treasure_scn.set_found_arcanum(_resolve_pending_treasure_arcanum())
 
 func _on_treasure_room_exited(arcanum: Arcanum) -> void:
-	var reward_scn := _change_view(BATTLE_REWARDS_SCN) as BattleRewardsScreen
-	reward_scn.run_state = run_state
-	reward_scn.player_data = player_data
-	reward_scn.arcanum_system = arcana_container.system
-	reward_scn.run = self
-
-	var reward_ctx := RewardContext.new()
-	reward_ctx.source_kind = int(RewardContext.SourceKind.TREASURE)
-	reward_ctx.run_state = run_state
-	reward_ctx.player_data = player_data
-	reward_ctx.arcana_system = arcana_system
-	if arcanum != null:
-		reward_ctx.arcanum_rewards.append(arcanum)
-	if arcana_system != null:
-		arcana_system.on_reward_context_started(reward_ctx)
-	reward_scn.populate_from_context(reward_ctx)
+	if arcanum != null and run_state != null and run_state.pending_treasure_arcanum_id.is_empty():
+		run_state.pending_treasure_arcanum_id = String(arcanum.get_id())
+	_prepare_pending_reward_checkpoint(int(RewardContext.SourceKind.TREASURE), map.last_room)
+	_persist_active_run()
+	_open_pending_reward_screen()
 
 func _on_map_exited(room: Room) -> void:
 	match room.type:
@@ -314,7 +288,7 @@ func _start_new_run() -> void:
 	run_state.run_rng_snapshot = run_rng.snapshot()
 	run_state.player_profile_id = String(player_data.profile_id)
 	run_state.player_run_state = PlayerRunState.new()
-	run_state.player_run_state.current_health = int(player_data.max_health)
+	run_state.player_run_state.initialize_from_player_data(player_data)
 	run_state.owned_arcanum_ids = PackedStringArray([String(player_data.starting_arcanum.get_id())]) if player_data.starting_arcanum != null else PackedStringArray()
 	run_deck = RunDeck.new()
 	run_deck.card_collection = starting_deck
@@ -339,6 +313,7 @@ func _continue_saved_run() -> void:
 		return
 	if run_state.player_profile_id.is_empty():
 		run_state.player_profile_id = String(player_data.profile_id)
+	_ensure_player_run_state_initialized()
 
 	draftable_cards = run_state.draftable_cards if run_state.draftable_cards != null else player_data.draftable_cards.duplicate()
 	run_deck = run_state.run_deck if run_state.run_deck != null else RunDeck.new()
@@ -363,6 +338,298 @@ func _generate_or_restore_map() -> void:
 		map.restore_progress(run_state.cleared_room_coords)
 	else:
 		map.unlock_encounter_column(0)
+
+
+func _derive_room_seed(room: Room, kind: String) -> int:
+	if room == null:
+		return 0
+	return RNGUtil.seed_from_label(run_seed, "room:%d:%d:%s" % [room.row, room.column, kind])
+
+
+func _derive_reward_seed(room: Room, kind: String) -> int:
+	if room == null:
+		return 0
+	return RNGUtil.seed_from_label(run_seed, "room:%d:%d:%s_rewards" % [room.row, room.column, kind])
+
+
+func _card_proto_path(card_data: CardData) -> String:
+	if card_data == null:
+		return ""
+	if !String(card_data.base_proto_path).is_empty():
+		return String(card_data.base_proto_path)
+	return String(card_data.resource_path)
+
+
+func _resolve_card_from_path(path: String) -> CardData:
+	if path.is_empty():
+		return null
+	return load(path) as CardData
+
+
+func _resolve_card_paths(paths: PackedStringArray) -> Array[CardData]:
+	var resolved: Array[CardData] = []
+	for path in paths:
+		var card := _resolve_card_from_path(String(path))
+		if card != null:
+			resolved.append(card)
+	return resolved
+
+
+func _resolve_arcanum_id(arcanum_id: String) -> Arcanum:
+	if arcanum_id.is_empty() or arcanum_catalog == null:
+		return null
+	return arcanum_catalog.get_proto(StringName(arcanum_id))
+
+
+func _resolve_arcanum_ids(ids: PackedStringArray) -> Array[Arcanum]:
+	var resolved: Array[Arcanum] = []
+	for arcanum_id in ids:
+		var proto := _resolve_arcanum_id(String(arcanum_id))
+		if proto != null:
+			resolved.append(proto)
+	return resolved
+
+
+func _clear_pending_generated_state() -> void:
+	if run_state == null:
+		return
+	run_state.pending_room_seed = 0
+	run_state.pending_reward_seed = 0
+	run_state.pending_treasure_arcanum_id = ""
+	run_state.pending_shop_card_offer_paths = PackedStringArray()
+	run_state.pending_shop_card_offer_costs = []
+	run_state.pending_shop_claimed_card_offer_indices = []
+	run_state.pending_shop_arcanum_offer_ids = PackedStringArray()
+	run_state.pending_shop_arcanum_offer_costs = []
+	run_state.pending_shop_claimed_arcanum_offer_indices = []
+	run_state.pending_reward_gold_rewards = []
+	run_state.pending_reward_card_choice_paths = PackedStringArray()
+	run_state.pending_reward_arcanum_ids = PackedStringArray()
+	run_state.pending_reward_claimed_gold_indices = []
+	run_state.pending_reward_card_claimed = false
+	run_state.pending_reward_claimed_arcanum_indices = []
+
+
+func _build_pending_shop_checkpoint(room: Room) -> void:
+	if run_state == null or room == null:
+		return
+	if !run_state.pending_shop_card_offer_paths.is_empty() or !run_state.pending_shop_arcanum_offer_ids.is_empty():
+		return
+	run_state.pending_room_seed = _derive_room_seed(room, "shop")
+	var rng := RNG.new(int(run_state.pending_room_seed))
+	var ctx := ShopContext.new()
+	ctx.run = self
+	ctx.run_state = run_state
+	ctx.player_data = player_data
+	ctx.arcana_system = arcana_system
+	ctx.arcana_catalog = arcana_catalog
+	ctx.arcana_reward_pool = player_data.arcana_reward_pool if player_data != null else null
+
+	var source_pile := run_state.draftable_cards if run_state != null and run_state.draftable_cards != null else (player_data.draftable_cards if player_data != null else null)
+	var available_cards: Array[CardData] = []
+	if source_pile != null:
+		for card_data in source_pile.cards:
+			available_cards.append(card_data)
+	for _i in range(mini(3, available_cards.size())):
+		var card_index := rng.debug_range_i(0, available_cards.size() - 1, "shop_card_offer")
+		var card := available_cards[card_index]
+		available_cards.remove_at(card_index)
+		if card == null:
+			continue
+		ctx.card_offers.append(card)
+		ctx.card_offer_costs.append(rng.debug_range_i(100, 300, "shop_card_cost"))
+
+	var eligible_arcana: Array[Arcanum] = []
+	if arcana_catalog != null and ctx.arcana_reward_pool != null:
+		for arcanum: Arcanum in arcana_catalog.arcana:
+			if arcanum == null:
+				continue
+			if arcanum.starter_arcanum:
+				continue
+			if !ctx.arcana_reward_pool.allowed_ids.has(arcanum.get_id()):
+				continue
+			if arcana_system != null and arcana_system.has_arcanum(arcanum.get_id()):
+				continue
+			eligible_arcana.append(arcanum)
+	for _i in range(mini(3, eligible_arcana.size())):
+		var arcanum_index := rng.debug_range_i(0, eligible_arcana.size() - 1, "shop_arcanum_offer")
+		var arcanum := eligible_arcana[arcanum_index]
+		eligible_arcana.remove_at(arcanum_index)
+		if arcanum == null:
+			continue
+		ctx.arcanum_offers.append(arcanum)
+		ctx.arcanum_offer_costs.append(rng.debug_range_i(100, 300, "shop_arcanum_cost"))
+
+	if arcana_system != null:
+		arcana_system.on_shop_context_started(ctx)
+
+	run_state.pending_shop_card_offer_paths = PackedStringArray()
+	for card in ctx.card_offers:
+		run_state.pending_shop_card_offer_paths.append(_card_proto_path(card))
+	run_state.pending_shop_card_offer_costs = ctx.card_offer_costs.duplicate()
+	run_state.pending_shop_claimed_card_offer_indices = []
+	run_state.pending_shop_arcanum_offer_ids = PackedStringArray()
+	for arcanum in ctx.arcanum_offers:
+		run_state.pending_shop_arcanum_offer_ids.append(String(arcanum.get_id()))
+	run_state.pending_shop_arcanum_offer_costs = ctx.arcanum_offer_costs.duplicate()
+	run_state.pending_shop_claimed_arcanum_offer_indices = []
+
+
+func _build_pending_shop_context() -> ShopContext:
+	var ctx := ShopContext.new()
+	ctx.run = self
+	ctx.run_state = run_state
+	ctx.player_data = player_data
+	ctx.arcana_system = arcana_system
+	ctx.arcana_catalog = arcana_catalog
+	ctx.arcana_reward_pool = player_data.arcana_reward_pool if player_data != null else null
+	ctx.card_offers = _resolve_card_paths(run_state.pending_shop_card_offer_paths)
+	ctx.card_offer_costs = run_state.pending_shop_card_offer_costs.duplicate()
+	ctx.claimed_card_offer_indices = run_state.pending_shop_claimed_card_offer_indices.duplicate()
+	ctx.arcanum_offers = _resolve_arcanum_ids(run_state.pending_shop_arcanum_offer_ids)
+	ctx.arcanum_offer_costs = run_state.pending_shop_arcanum_offer_costs.duplicate()
+	ctx.claimed_arcanum_offer_indices = run_state.pending_shop_claimed_arcanum_offer_indices.duplicate()
+	return ctx
+
+
+func _build_pending_treasure_checkpoint(room: Room) -> void:
+	if run_state == null or room == null:
+		return
+	if !run_state.pending_treasure_arcanum_id.is_empty():
+		return
+	run_state.pending_room_seed = _derive_room_seed(room, "treasure")
+	var rng := RNG.new(int(run_state.pending_room_seed))
+	var available_arcana: Array[Arcanum] = []
+	if player_data != null and player_data.possible_arcana != null:
+		for arcanum: Arcanum in player_data.possible_arcana.arcana:
+			if arcanum == null:
+				continue
+			if arcana_system != null and arcana_system.has_arcanum(arcanum.get_id()):
+				continue
+			available_arcana.append(arcanum)
+	if available_arcana.is_empty():
+		return
+	var selected_index := rng.debug_range_i(0, available_arcana.size() - 1, "treasure_arcanum")
+	run_state.pending_treasure_arcanum_id = String(available_arcana[selected_index].get_id())
+
+
+func _resolve_pending_treasure_arcanum() -> Arcanum:
+	if run_state == null:
+		return null
+	return _resolve_arcanum_id(run_state.pending_treasure_arcanum_id)
+
+
+func _build_reward_card_choices(seed: int) -> PackedStringArray:
+	var chosen_paths := PackedStringArray()
+	if run_state == null:
+		return chosen_paths
+	var source_pile := run_state.draftable_cards if run_state.draftable_cards != null else (player_data.draftable_cards if player_data != null else null)
+	if source_pile == null:
+		return chosen_paths
+
+	var rng := RNG.new(seed)
+	var possible_cards: Array[CardData] = []
+	for card_data in source_pile.cards:
+		possible_cards.append(card_data)
+	for _i in range(run_state.card_reward_choices):
+		if possible_cards.is_empty():
+			break
+		var total_weight := run_state.common_weight + run_state.uncommon_weight + run_state.rare_weight
+		var roll := rng.debug_range_f(0.0, total_weight, "reward_card_roll")
+		var target_rarity := CardData.Rarity.RARE
+		if roll <= run_state.common_weight:
+			target_rarity = CardData.Rarity.COMMON
+		elif roll <= run_state.common_weight + run_state.uncommon_weight:
+			target_rarity = CardData.Rarity.UNCOMMON
+		if target_rarity == CardData.Rarity.RARE:
+			run_state.rare_weight = RunState.BASE_RARE_WEIGHT
+		else:
+			run_state.rare_weight = clampf(run_state.rare_weight + 0.3, RunState.BASE_RARE_WEIGHT, 5.0)
+
+		var matching_indices: Array[int] = []
+		for idx in range(possible_cards.size()):
+			var candidate: CardData = possible_cards[idx]
+			if candidate != null and candidate.rarity == target_rarity:
+				matching_indices.append(idx)
+		if matching_indices.is_empty():
+			for idx in range(possible_cards.size()):
+				matching_indices.append(idx)
+		var selected_slot := matching_indices[rng.debug_range_i(0, matching_indices.size() - 1, "reward_card_pick")]
+		var selected_card := possible_cards[selected_slot]
+		possible_cards.remove_at(selected_slot)
+		if selected_card == null:
+			continue
+		chosen_paths.append(_card_proto_path(selected_card))
+	return chosen_paths
+
+
+func _prepare_pending_reward_checkpoint(source_kind: int, room: Room) -> void:
+	if run_state == null or room == null:
+		return
+	var reward_kind := "battle" if int(source_kind) == int(RewardContext.SourceKind.BATTLE) else "treasure"
+	run_state.pending_reward_seed = _derive_reward_seed(room, reward_kind)
+	run_state.pending_reward_gold_rewards = []
+	run_state.pending_reward_card_choice_paths = PackedStringArray()
+	run_state.pending_reward_arcanum_ids = PackedStringArray()
+	run_state.pending_reward_claimed_gold_indices = []
+	run_state.pending_reward_card_claimed = false
+	run_state.pending_reward_claimed_arcanum_indices = []
+
+	var reward_ctx := RewardContext.new()
+	reward_ctx.source_kind = source_kind
+	reward_ctx.run_state = run_state
+	reward_ctx.player_data = player_data
+	reward_ctx.arcana_system = arcana_system
+	reward_ctx.battle_data = room.battle_data if int(source_kind) == int(RewardContext.SourceKind.BATTLE) else null
+
+	if reward_ctx.battle_data != null:
+		var gold_rng := RNG.new(int(run_state.pending_reward_seed))
+		reward_ctx.gold_rewards.append(int(reward_ctx.battle_data.roll_gold_reward_with_rng(gold_rng)))
+		reward_ctx.include_card_reward = true
+		reward_ctx.card_choices = _resolve_card_paths(_build_reward_card_choices(int(run_state.pending_reward_seed)))
+	elif int(source_kind) == int(RewardContext.SourceKind.TREASURE):
+		var treasure_arcanum := _resolve_pending_treasure_arcanum()
+		if treasure_arcanum != null:
+			reward_ctx.arcanum_rewards.append(treasure_arcanum)
+
+	if arcana_system != null:
+		arcana_system.on_reward_context_started(reward_ctx)
+
+	run_state.pending_reward_gold_rewards = reward_ctx.gold_rewards.duplicate()
+	run_state.pending_reward_card_choice_paths = PackedStringArray()
+	for card in reward_ctx.card_choices:
+		run_state.pending_reward_card_choice_paths.append(_card_proto_path(card))
+	run_state.pending_reward_arcanum_ids = PackedStringArray()
+	for arcanum in reward_ctx.arcanum_rewards:
+		run_state.pending_reward_arcanum_ids.append(String(arcanum.get_id()))
+	run_state.location_kind = RunState.LocationKind.ROOM_PENDING_BATTLE_REWARDS if int(source_kind) == int(RewardContext.SourceKind.BATTLE) else RunState.LocationKind.ROOM_PENDING_TREASURE_REWARDS
+
+
+func _build_pending_reward_context() -> RewardContext:
+	var reward_ctx := RewardContext.new()
+	reward_ctx.source_kind = RewardContext.SourceKind.BATTLE if int(run_state.location_kind) == int(RunState.LocationKind.ROOM_PENDING_BATTLE_REWARDS) else RewardContext.SourceKind.TREASURE
+	reward_ctx.run_state = run_state
+	reward_ctx.player_data = player_data
+	reward_ctx.arcana_system = arcana_system
+	var room := map.get_room_at(int(run_state.pending_room_coord.x), int(run_state.pending_room_coord.y))
+	reward_ctx.battle_data = room.battle_data if room != null and int(reward_ctx.source_kind) == int(RewardContext.SourceKind.BATTLE) else null
+	reward_ctx.gold_rewards = run_state.pending_reward_gold_rewards.duplicate()
+	reward_ctx.card_choices = _resolve_card_paths(run_state.pending_reward_card_choice_paths)
+	reward_ctx.include_card_reward = !run_state.pending_reward_card_choice_paths.is_empty()
+	reward_ctx.arcanum_rewards = _resolve_arcanum_ids(run_state.pending_reward_arcanum_ids)
+	reward_ctx.claimed_gold_indices = run_state.pending_reward_claimed_gold_indices.duplicate()
+	reward_ctx.card_reward_claimed = run_state.pending_reward_card_claimed
+	reward_ctx.claimed_arcanum_indices = run_state.pending_reward_claimed_arcanum_indices.duplicate()
+	return reward_ctx
+
+
+func _open_pending_reward_screen() -> void:
+	var rewards_scn := _change_view(BATTLE_REWARDS_SCN) as BattleRewardsScreen
+	rewards_scn.run_state = run_state
+	rewards_scn.player_data = player_data
+	rewards_scn.arcanum_system = arcana_system
+	rewards_scn.run = self
+	rewards_scn.populate_from_context(_build_pending_reward_context())
 
 
 func _record_cleared_room(room: Room) -> void:
@@ -417,6 +684,7 @@ func _set_location_map() -> void:
 	run_state.location_kind = RunState.LocationKind.MAP
 	run_state.pending_room_coord = Vector2i(-1, -1)
 	run_state.pending_battle_seed = 0
+	_clear_pending_generated_state()
 
 
 func _restore_saved_location() -> void:
@@ -426,7 +694,9 @@ func _restore_saved_location() -> void:
 		RunState.LocationKind.ROOM_PENDING_BATTLE, \
 		RunState.LocationKind.ROOM_PENDING_TREASURE, \
 		RunState.LocationKind.ROOM_PENDING_REST, \
-		RunState.LocationKind.ROOM_PENDING_SHOP:
+		RunState.LocationKind.ROOM_PENDING_SHOP, \
+		RunState.LocationKind.ROOM_PENDING_BATTLE_REWARDS, \
+		RunState.LocationKind.ROOM_PENDING_TREASURE_REWARDS:
 			var room := map.get_room_at(int(run_state.pending_room_coord.x), int(run_state.pending_room_coord.y))
 			if room != null:
 				map.set_active_room(room)
@@ -438,6 +708,8 @@ func _restore_saved_location() -> void:
 					_on_rest_site_entered(room)
 				elif int(run_state.location_kind) == int(RunState.LocationKind.ROOM_PENDING_SHOP):
 					_on_shop_entered(room)
+				elif int(run_state.location_kind) == int(RunState.LocationKind.ROOM_PENDING_BATTLE_REWARDS) or int(run_state.location_kind) == int(RunState.LocationKind.ROOM_PENDING_TREASURE_REWARDS):
+					_open_pending_reward_screen()
 				else:
 					_show_map()
 				return
@@ -479,15 +751,31 @@ func _persist_active_run() -> void:
 func _on_run_defeat() -> void:
 	SaveService.clear_active_run()
 
-func _get_current_run_health() -> int:
+func _get_current_run_max_health() -> int:
 	if run_state == null or run_state.player_run_state == null:
 		return int(player_data.max_health) if player_data != null else 0
+	return int(run_state.player_run_state.max_health)
+
+func _get_current_run_health() -> int:
+	if run_state == null or run_state.player_run_state == null:
+		return _get_current_run_max_health()
 	return int(run_state.player_run_state.current_health)
 
 func _refresh_top_bar_health() -> void:
-	if health_panel == null or player_data == null:
+	if health_panel == null:
 		return
-	health_panel.update_health_view(int(player_data.max_health), _get_current_run_health())
+	health_panel.update_health_view(_get_current_run_max_health(), _get_current_run_health())
+
+func _ensure_player_run_state_initialized() -> void:
+	if run_state == null:
+		return
+	if run_state.player_run_state == null:
+		run_state.player_run_state = PlayerRunState.new()
+	if player_data != null and int(run_state.player_run_state.max_health) <= 0:
+		run_state.player_run_state.max_health = maxi(int(player_data.max_health), 0)
+	if int(run_state.player_run_state.current_health) <= 0 and int(run_state.player_run_state.max_health) > 0:
+		run_state.player_run_state.current_health = int(run_state.player_run_state.max_health)
+	run_state.player_run_state.clamp_health()
 
 func _sync_player_health_from_active_battle() -> void:
 	if run_state == null or run_state.player_run_state == null:
@@ -498,40 +786,9 @@ func _sync_player_health_from_active_battle() -> void:
 	if battle == null:
 		return
 	run_state.player_run_state.current_health = int(battle.get_player_current_health())
+	run_state.player_run_state.max_health = int(battle.get_player_max_health())
 	_refresh_top_bar_health()
 	
-#func get_modifier_tokens_for(target: Node) -> Array[ModifierToken]:
-	##print("run.gd get_modifier_tokens()")
-	#var tokens: Array[ModifierToken] = []
-	#
-	## 1. Arcana (global, persistent)
-	#tokens.append_array(arcana_container.get_modifier_tokens_for(target))
-	## (or arcana_system.get_modifier_tokens_for, both work)
-#
-	#
-	## 2. Combat-only tokens (if in battle)
-	##var battle_scene := _get_active_battle_scene()
-	##if battle_scene and target is Fighter:
-		##tokens.append_array(battle_scene.get_modifier_tokens_for(target))
-	#
-	#return tokens
-
-#func _get_active_battle_scene() -> BattleScene:
-	#var view: Node = current_view.get_child(0)
-	#if view is Battle:
-		#return view.battle_scene
-	#return null
-	
-func _on_modifier_tokens_changed(mod_type: Modifier.Type) -> void:
-	if current_view.get_child_count() == 0:
-		return
-	
-	var view := current_view.get_child(0)
-	
-	if view.has_method("on_modifier_tokens_changed"):
-		view.on_modifier_tokens_changed(mod_type)
-
-
 func _resolve_player_profile(profile_id: String) -> PlayerData:
 	if player_catalog == null:
 		return null

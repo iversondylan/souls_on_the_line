@@ -13,6 +13,6 @@ class_name Arcana extends Resource
 func get_ids() -> Array[String]:
 	var ids: Array[String] = []
 	for arcanum: Arcanum in arcana:
-		ids.push_back(arcanum.id)
+		ids.push_back(String(arcanum.get_id()))
 	return ids
 		

@@ -9,17 +9,7 @@ const ID := "favoring_scales"
 func get_id() -> StringName:
 	return ID
 
-func get_modifier_tokens_for(_target: Node) -> Array[ModifierToken]:
-	var token := ModifierToken.new()
-	token.type = Modifier.Type.SHOP_COST
-	token.mult_value = -discount / 100.0
-	token.scope = ModifierToken.ModScope.GLOBAL
-	token.source_id = get_id()
-	token.owner = arcanum_display
-	return [token]
-
-func contributes_modifier() -> bool:
-	return true
-
-func get_contributed_modifier_types() -> Array[Modifier.Type]:
-	return [Modifier.Type.SHOP_COST]
+func on_shop_context_started(ctx: ShopContext) -> void:
+	if ctx == null:
+		return
+	ctx.apply_all_discount_percent(discount)

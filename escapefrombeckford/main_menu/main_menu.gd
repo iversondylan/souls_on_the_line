@@ -1,6 +1,6 @@
 extends Control
 
-const CHAR_SELECTOR_SCENE := preload("res://run/menu/character_selector.tscn")
+const CHAR_SELECTOR_SCENE := preload("res://main_menu/character_selector.tscn")
 const RUN_SCENE := preload("res://run/flow/run.tscn")
 
 @export var run_startup: RunStartup = preload("res://run/flow/run_startup.tres")

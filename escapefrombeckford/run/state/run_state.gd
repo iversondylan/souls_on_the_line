@@ -10,6 +10,8 @@ enum LocationKind {
 	ROOM_PENDING_TREASURE,
 	ROOM_PENDING_REST,
 	ROOM_PENDING_SHOP,
+	ROOM_PENDING_BATTLE_REWARDS,
+	ROOM_PENDING_TREASURE_REWARDS,
 }
 
 const BASE_STARTING_GOLD: int = 50
@@ -34,6 +36,21 @@ const BASE_RARE_WEIGHT := 0.3
 @export var location_kind: int = LocationKind.MAP
 @export var pending_room_coord: Vector2i = Vector2i(-1, -1)
 @export var pending_battle_seed: int = 0
+@export var pending_room_seed: int = 0
+@export var pending_reward_seed: int = 0
+@export var pending_treasure_arcanum_id: String = ""
+@export var pending_shop_card_offer_paths: PackedStringArray = []
+@export var pending_shop_card_offer_costs: Array[int] = []
+@export var pending_shop_claimed_card_offer_indices: Array[int] = []
+@export var pending_shop_arcanum_offer_ids: PackedStringArray = []
+@export var pending_shop_arcanum_offer_costs: Array[int] = []
+@export var pending_shop_claimed_arcanum_offer_indices: Array[int] = []
+@export var pending_reward_gold_rewards: Array[int] = []
+@export var pending_reward_card_choice_paths: PackedStringArray = []
+@export var pending_reward_arcanum_ids: PackedStringArray = []
+@export var pending_reward_claimed_gold_indices: Array[int] = []
+@export var pending_reward_card_claimed: bool = false
+@export var pending_reward_claimed_arcanum_indices: Array[int] = []
 @export var owned_arcanum_ids: PackedStringArray = []
 @export var draftable_cards: CardPile
 @export var run_deck: RunDeck

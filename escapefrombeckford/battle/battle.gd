@@ -215,7 +215,7 @@ func _spawn_from_battle_data() -> void:
 
 	if player_data != null:
 		var current_health := _get_player_spawn_health()
-		runtime.add_combatant_from_data(player_data, FRIENDLY, 0, true, current_health)
+		runtime.add_combatant_from_data(_get_player_battle_data(), FRIENDLY, 0, true, current_health)
 
 	if battle_data == null:
 		thank_you_box.show()
@@ -364,10 +364,39 @@ func get_player_current_health() -> int:
 		return _get_player_spawn_health()
 	return int(unit.health)
 
+func get_player_max_health() -> int:
+	var api := sim_host.get_main_api() if sim_host != null else null
+	if api == null or api.state == null:
+		return _get_player_spawn_max_health()
+	var player_id := int(api.get_player_id())
+	if player_id <= 0:
+		return _get_player_spawn_max_health()
+	var unit := api.state.get_unit(player_id)
+	if unit == null:
+		return _get_player_spawn_max_health()
+	return int(unit.max_health)
+
 func _get_player_spawn_health() -> int:
 	if run_state != null and run_state.player_run_state != null:
 		return int(run_state.player_run_state.current_health)
 	return int(player_data.max_health) if player_data != null else 0
+
+func _get_player_spawn_max_health() -> int:
+	if run_state != null and run_state.player_run_state != null and int(run_state.player_run_state.max_health) > 0:
+		return int(run_state.player_run_state.max_health)
+	return int(player_data.max_health) if player_data != null else 0
+
+func _get_player_battle_data() -> CombatantData:
+	if player_data == null:
+		return null
+	var effective_max_health := _get_player_spawn_max_health()
+	if int(player_data.max_health) == effective_max_health:
+		return player_data
+	var battle_player_data := player_data.duplicate(true) as PlayerData
+	if battle_player_data == null:
+		return player_data
+	battle_player_data.max_health = effective_max_health
+	return battle_player_data
 
 
 # -------------------------

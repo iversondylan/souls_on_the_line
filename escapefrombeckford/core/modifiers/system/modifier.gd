@@ -13,6 +13,5 @@ enum Type {
 	DMG_DEALT, 
 	DMG_TAKEN, 
 	CARD_COST, 
-	SHOP_COST, 
 	NO_MODIFIER
 	}

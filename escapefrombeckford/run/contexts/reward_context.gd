@@ -17,4 +17,8 @@ var battle_data: BattleData = null
 
 var gold_rewards: Array[int] = []
 var include_card_reward: bool = false
+var card_choices: Array[CardData] = []
 var arcanum_rewards: Array[Arcanum] = []
+var claimed_gold_indices: Array[int] = []
+var card_reward_claimed: bool = false
+var claimed_arcanum_indices: Array[int] = []

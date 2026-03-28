@@ -11,3 +11,9 @@ var accumulated_weight: float = 0.0
 
 func roll_gold_reward() -> int:
 	return randi_range(gold_reward_min, gold_reward_max)
+
+
+func roll_gold_reward_with_rng(rng: RNG) -> int:
+	if rng == null:
+		return roll_gold_reward()
+	return rng.debug_range_i(gold_reward_min, gold_reward_max, "battle_gold_reward")

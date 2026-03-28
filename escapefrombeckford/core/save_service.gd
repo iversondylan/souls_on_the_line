@@ -62,13 +62,13 @@ func load_active_run() -> RunState:
 	if loaded == null:
 		return null
 	var needs_resave := false
-	if loaded is RunAccount:
-		needs_resave = true
-	elif loaded is RunState:
+	if loaded is RunState:
 		var loaded_run := loaded as RunState
 		needs_resave = loaded_run.player_data != null \
 			or String(loaded_run.player_profile_id).is_empty() \
 			or int(loaded_run.map_seed) == 0 \
+			or loaded_run.player_run_state == null \
+			or int(loaded_run.player_run_state.max_health) <= 0 \
 			or _pending_room_in_cleared(loaded_run)
 
 	var migrated := _normalize_active_run(loaded)
@@ -90,7 +90,7 @@ func _load_resource(path: String) -> Resource:
 	if !FileAccess.file_exists(path):
 		return null
 	_migrate_legacy_save_paths(path)
-	return ResourceLoader.load(path)
+	return ResourceLoader.load(path) # oops I moved stuff around now this was called with a bad path
 
 
 func _save_resource(resource: Resource, path: String) -> bool:
@@ -104,37 +104,20 @@ func _save_resource(resource: Resource, path: String) -> bool:
 
 func _normalize_active_run(resource: Resource) -> RunState:
 	var run_state: RunState = null
-	if resource is RunAccount:
-		var legacy := resource as RunAccount
-		run_state = RunState.new()
-		run_state.gold = legacy.gold
-		run_state.card_reward_choices = legacy.card_reward_choices
-		run_state.common_weight = legacy.common_weight
-		run_state.uncommon_weight = legacy.uncommon_weight
-		run_state.rare_weight = legacy.rare_weight
-		run_state.run_seed = legacy.run_seed
-		run_state.map_seed = int(legacy.map_seed) if "map_seed" in legacy else 0
-		run_state.run_rng_snapshot = legacy.run_rng_snapshot.duplicate(true) if "run_rng_snapshot" in legacy else {}
-		run_state.player_data = legacy.player_data if legacy.player_data != null else legacy.player_definition
-		run_state.player_run_state = legacy.player_run_state
-		run_state.cleared_room_coords = legacy.cleared_room_coords
-		run_state.location_kind = legacy.location_kind
-		run_state.pending_room_coord = legacy.pending_room_coord
-		run_state.pending_battle_seed = int(legacy.pending_battle_seed) if "pending_battle_seed" in legacy else 0
-		run_state.owned_arcanum_ids = legacy.owned_arcanum_ids
-		run_state.draftable_cards = legacy.draftable_cards
-		run_state.run_deck = legacy.run_deck
-	elif resource is RunState:
+	if resource is RunState:
 		run_state = resource as RunState
 	else:
 		return null
 
 	if run_state.player_run_state == null:
 		run_state.player_run_state = PlayerRunState.new()
-	if run_state.player_data == null and resource is RunAccount:
-		run_state.player_data = (resource as RunAccount).player_definition
 	if run_state.player_profile_id.is_empty() and run_state.player_data != null:
 		run_state.player_profile_id = _derive_player_profile_id(run_state.player_data)
+	if int(run_state.player_run_state.max_health) <= 0 and run_state.player_data != null:
+		run_state.player_run_state.max_health = maxi(int(run_state.player_data.max_health), 0)
+	if int(run_state.player_run_state.current_health) <= 0 and int(run_state.player_run_state.max_health) > 0:
+		run_state.player_run_state.current_health = int(run_state.player_run_state.max_health)
+	run_state.player_run_state.clamp_health()
 	if run_state.run_deck == null:
 		run_state.run_deck = RunDeck.new()
 	if run_state.run_deck.card_collection == null:
@@ -142,6 +125,20 @@ func _normalize_active_run(resource: Resource) -> RunState:
 	run_state.run_deck.normalize_cards()
 	if run_state.cleared_room_coords == null:
 		run_state.cleared_room_coords = []
+	if run_state.pending_shop_card_offer_costs == null:
+		run_state.pending_shop_card_offer_costs = []
+	if run_state.pending_shop_claimed_card_offer_indices == null:
+		run_state.pending_shop_claimed_card_offer_indices = []
+	if run_state.pending_shop_arcanum_offer_costs == null:
+		run_state.pending_shop_arcanum_offer_costs = []
+	if run_state.pending_shop_claimed_arcanum_offer_indices == null:
+		run_state.pending_shop_claimed_arcanum_offer_indices = []
+	if run_state.pending_reward_gold_rewards == null:
+		run_state.pending_reward_gold_rewards = []
+	if run_state.pending_reward_claimed_gold_indices == null:
+		run_state.pending_reward_claimed_gold_indices = []
+	if run_state.pending_reward_claimed_arcanum_indices == null:
+		run_state.pending_reward_claimed_arcanum_indices = []
 	if int(run_state.map_seed) == 0:
 		run_state.map_seed = RNGUtil.seed_from_label(int(run_state.run_seed), "map")
 	if run_state.run_rng_snapshot == null:

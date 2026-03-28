@@ -8,8 +8,9 @@ const MENU_CARD_SCN = preload("res://cards/menu_card/menu_card.tscn")
 @onready var price: HBoxContainer = %Price
 @onready var price_label: Label = %PriceLabel
 @onready var buy_button: Button = %BuyButton
-@onready var original_gold_cost := randi_range(100, 300)
-@onready var gold_cost: int = original_gold_cost
+@export var offer_index: int = -1
+@export var original_gold_cost: int = 100
+var gold_cost: int = 100
 
 var current_menu_card: MenuCard
 
@@ -43,7 +44,7 @@ func _set_card(new_card_data: CardData) -> void:
 
 
 func _on_buy_button_pressed() -> void:
-	Events.shop_card_bought.emit(card_data, gold_cost)
+	Events.shop_card_bought.emit(card_data, gold_cost, offer_index)
 	card_container.queue_free()
 	price.queue_free()
 	buy_button.queue_free()

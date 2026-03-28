@@ -14,20 +14,11 @@ var arcana_system: ArcanaSystem
 @onready var blink_timer: Timer = %BlinkTimer
 @onready var card_tooltip_popup: CardTooltipPopup = %CardTooltipPopup
 
-var modifier_system: ModifierSystem
-
-var run: Run: set = _set_run
+var run: Run
 var arcana_reward_pool: ArcanaRewardPool
 var arcana_catalog: ArcanaCatalog
 
-func _set_run(value) -> void:
-		run = value
-		if modifier_system:
-			modifier_system.run = run
-
 func _ready() -> void:
-	if !modifier_system:
-		modifier_system = ModifierSystem.new(self)
 	for shop_card: ShopCard in card_container.get_children():
 		shop_card.queue_free()
 	for shop_arcanum: ShopArcanum in arcanum_container.get_children():
@@ -35,7 +26,6 @@ func _ready() -> void:
 	
 	Events.shop_card_bought.connect(_on_shop_card_bought)
 	Events.shop_arcanum_bought.connect(_on_shop_arcanum_bought)
-	modifier_system.modifier_changed.connect(_recalculate_prices)
 	
 	_blink_timer_setup()
 	blink_timer.timeout.connect(_on_blink_timer_timeout)
@@ -65,15 +55,23 @@ func build_opening_context() -> ShopContext:
 	ctx.arcana_catalog = arcana_catalog
 	ctx.arcana_reward_pool = arcana_reward_pool
 	ctx.card_offers = _build_shop_card_offers()
+	ctx.card_offer_costs = []
+	for _i in ctx.card_offers.size():
+		ctx.card_offer_costs.append(100)
 	ctx.arcanum_offers = _build_shop_arcanum_offers()
+	ctx.arcanum_offer_costs = []
+	for _i in ctx.arcanum_offers.size():
+		ctx.arcanum_offer_costs.append(100)
+	if arcana_system != null:
+		arcana_system.on_shop_context_started(ctx)
 	return ctx
 
 func populate_from_context(ctx: ShopContext) -> void:
 	if ctx == null:
 		return
 	_clear_shop_items()
-	_populate_shop_cards(ctx.card_offers)
-	_populate_shop_arcana(ctx.arcanum_offers)
+	_populate_shop_cards(ctx.card_offers, ctx.card_offer_costs, ctx.claimed_card_offer_indices)
+	_populate_shop_arcana(ctx.arcanum_offers, ctx.arcanum_offer_costs, ctx.claimed_arcanum_offer_indices)
 
 func _clear_shop_items() -> void:
 	for shop_card: ShopCard in card_container.get_children():
@@ -97,13 +95,19 @@ func _build_shop_card_offers() -> Array[CardData]:
 			break
 	return shop_cards
 
-func _populate_shop_cards(shop_cards: Array[CardData]) -> void:
-	for card_data: CardData in shop_cards:
+func _populate_shop_cards(shop_cards: Array[CardData], costs: Array[int] = [], claimed_indices: Array[int] = []) -> void:
+	for i in range(shop_cards.size()):
+		if claimed_indices.has(i):
+			continue
+		var card_data: CardData = shop_cards[i]
 		var new_shop_card := SHOP_CARD_SCN.instantiate() as ShopCard
 		card_container.add_child(new_shop_card)
 		new_shop_card.card_data = card_data
+		new_shop_card.offer_index = i
+		var cost := costs[i] if i < costs.size() else 100
+		new_shop_card.original_gold_cost = cost
+		new_shop_card.gold_cost = cost
 		new_shop_card.current_menu_card.tooltip_requested.connect(card_tooltip_popup.show_tooltip)
-		new_shop_card.gold_cost = _get_updated_shop_cost(new_shop_card.gold_cost)
 		new_shop_card.update(run_state)
 
 func _build_shop_arcanum_offers() -> Array[Arcanum]:
@@ -112,46 +116,29 @@ func _build_shop_arcanum_offers() -> Array[Arcanum]:
 	for arcanum_id: String in arcana_reward_pool.allowed_ids:
 		print("_generate_shop_arcana() arcanum_id: %s" % arcanum_id)
 	for arcanum: Arcanum in arcana_catalog.arcana:
-		print("shop.gd _generate_shop_arcana() looping arcana: %s" % arcanum.id)
+		print("shop.gd _generate_shop_arcana() looping arcana: %s" % arcanum.get_id())
 		if is_arcanum_eligible(arcanum):
 			eligible_arcana.append(arcanum)
 
 	if eligible_arcana.is_empty():
 		print("shop.gd _generate_shop_arcana() arcana empty" % eligible_arcana)
 		return []
-	#print("shop.gd _generate_shop_arcana() eligible_arcana: %s" % eligible_arcana)
 	eligible_arcana.shuffle()
 	return eligible_arcana.slice(0, 3)
 
-func _populate_shop_arcana(shop_arcana: Array[Arcanum]) -> void:
-	for arcanum: Arcanum in shop_arcana:
+func _populate_shop_arcana(shop_arcana: Array[Arcanum], costs: Array[int] = [], claimed_indices: Array[int] = []) -> void:
+	for i in range(shop_arcana.size()):
+		if claimed_indices.has(i):
+			continue
+		var arcanum: Arcanum = shop_arcana[i]
 		var shop_arcanum := SHOP_ARCANUM_SCN.instantiate() as ShopArcanum
 		arcanum_container.add_child(shop_arcanum)
 		shop_arcanum.arcanum = arcanum
-		shop_arcanum.gold_cost = _get_updated_shop_cost(shop_arcanum.gold_cost)
+		shop_arcanum.offer_index = i
+		var cost := costs[i] if i < costs.size() else 100
+		shop_arcanum.original_gold_cost = cost
+		shop_arcanum.gold_cost = cost
 		shop_arcanum.update(run_state)
-	#var shop_arcanaz: Array[Arcanum] = []
-	#var available_arcana := player_data.possible_arcana.arcana.filter(
-		#func(arcanum: Arcanum):
-			#return !arcana_system.has_arcanum(arcanum.id)
-	#) as Array[Arcanum]
-	#available_arcana.shuffle()
-	#shop_arcanaz = available_arcana.slice(0, 3)
-	#
-	#for arcanum: Arcanum in shop_arcanaz:
-		#var new_shop_arcanum := SHOP_ARCANUM_SCN.instantiate() as ShopArcanum
-		#arcanum_container.add_child(new_shop_arcanum)
-		#new_shop_arcanum.arcanum = arcanum
-		#new_shop_arcanum.gold_cost = _get_updated_shop_cost(new_shop_arcanum.gold_cost)
-		#new_shop_arcanum.update(run_state)
-
-#func get_modifier_tokens() -> Array[ModifierToken]:
-	#if arcana_system:
-		#return arcana_system.get_modifier_tokens()
-	#return []
-
-func _get_updated_shop_cost(orig_cost: int) -> int:
-	return modifier_system.get_modified_value(orig_cost, Modifier.Type.SHOP_COST)
 
 func _update_items() -> void:
 	for shop_arcanum: ShopArcanum in arcanum_container.get_children():
@@ -159,33 +146,26 @@ func _update_items() -> void:
 	for shop_card: ShopCard in card_container.get_children():
 		shop_card.update(run_state)
 
-func _recalculate_prices() -> void:
-	for shop_arcanum: ShopArcanum in arcanum_container.get_children():
-		shop_arcanum.gold_cost = _get_updated_shop_cost(shop_arcanum.original_gold_cost)
-		shop_arcanum.update(run_state)
-	for shop_card: ShopCard in card_container.get_children():
-		shop_card.gold_cost = _get_updated_shop_cost(shop_card.original_gold_cost)
-		shop_card.update(run_state)
-
 func _on_back_button_pressed() -> void:
 	Events.shop_exited.emit()
 
-func _on_shop_card_bought(card_data: CardData, gold_cost: int) -> void:
+func _on_shop_card_bought(card_data: CardData, gold_cost: int, offer_index: int) -> void:
 	run_state.run_deck.add_card(card_data)
 	run_state.gold -= gold_cost
+	if !run_state.pending_shop_claimed_card_offer_indices.has(offer_index):
+		run_state.pending_shop_claimed_card_offer_indices.append(offer_index)
 	_update_items()
 	if run != null:
 		run._persist_active_run()
 
-func _on_shop_arcanum_bought(arcanum: Arcanum, gold_cost: int) -> void:
+func _on_shop_arcanum_bought(arcanum: Arcanum, gold_cost: int, offer_index: int) -> void:
 	arcana_system.add_arcanum(arcanum)
 	run_state.gold -= gold_cost
+	if !run_state.pending_shop_claimed_arcanum_offer_indices.has(offer_index):
+		run_state.pending_shop_claimed_arcanum_offer_indices.append(offer_index)
 	_update_items()
 	if run != null:
 		run._persist_active_run()
-
-func on_modifier_tokens_changed(mod_type: Modifier.Type) -> void:
-	modifier_system.mark_dirty(mod_type)
 
 func is_arcanum_eligible(arcanum: Arcanum) -> bool:
 	if arcanum.starter_arcanum:
@@ -194,10 +174,10 @@ func is_arcanum_eligible(arcanum: Arcanum) -> bool:
 	##Note
 	##If performance ever matters:
 	##replace Array.has() with Dictionary or Set
-	if !arcana_reward_pool.allowed_ids.has(arcanum.id):
+	if !arcana_reward_pool.allowed_ids.has(arcanum.get_id()):
 		print("it's not in arcana_reward_pool.allowed_ids")
 		return false
-	if arcana_system.has_arcanum(arcanum.id):
+	if arcana_system.has_arcanum(arcanum.get_id()):
 		print("the arcana system already has it")
 		return false
 	print("it's eligible")

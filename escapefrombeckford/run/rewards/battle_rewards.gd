@@ -17,6 +17,7 @@ var arcanum_system: ArcanaSystem
 var run: Run
 
 @onready var rewards: VBoxContainer = %Rewards
+var reward_context: RewardContext
 
 var card_reward_total_weight : float = 0.0
 
@@ -32,76 +33,62 @@ func _ready() -> void:
 func populate_from_context(ctx: RewardContext) -> void:
 	if ctx == null:
 		return
+	reward_context = ctx
 	_clear_rewards()
 
-	for n_gold in ctx.gold_rewards:
-		add_gold_reward(int(n_gold))
+	for i in range(ctx.gold_rewards.size()):
+		if ctx.claimed_gold_indices.has(i):
+			continue
+		add_gold_reward(int(ctx.gold_rewards[i]), i)
 
-	if bool(ctx.include_card_reward):
-		add_card_reward()
+	if bool(ctx.include_card_reward) and !ctx.card_reward_claimed:
+		add_card_reward(ctx.card_choices)
 
-	for arcanum: Arcanum in ctx.arcanum_rewards:
+	for i in range(ctx.arcanum_rewards.size()):
+		if ctx.claimed_arcanum_indices.has(i):
+			continue
+		var arcanum: Arcanum = ctx.arcanum_rewards[i]
 		if arcanum != null:
-			add_arcanum_reward(arcanum)
+			add_arcanum_reward(arcanum, i)
 
-func add_gold_reward(n_gold: int) -> void:
+func add_gold_reward(n_gold: int, reward_index: int) -> void:
 	var gold_reward := REWARD_BUTTON.instantiate() as RewardButton
 	gold_reward.reward_texture = GOLD_TEXTURE
 	gold_reward.reward_text = GOLD_TEXT % n_gold
-	gold_reward.pressed.connect(_on_gold_reward_taken.bind(n_gold))
+	gold_reward.pressed.connect(_on_gold_reward_taken.bind(n_gold, reward_index))
 	rewards.add_child.call_deferred(gold_reward)
 
-func add_card_reward() -> void:
+func add_card_reward(card_choices: Array[CardData]) -> void:
 	var card_reward_button := REWARD_BUTTON.instantiate() as RewardButton
 	card_reward_button.reward_texture = CARD_TEXTURE
 	card_reward_button.reward_text = CARD_TEXT
-	card_reward_button.pressed.connect(_show_card_reward)
+	card_reward_button.pressed.connect(_show_card_reward.bind(card_choices))
 	rewards.add_child.call_deferred(card_reward_button)
 
-func add_arcanum_reward(arcanum: Arcanum) -> void:
+func add_arcanum_reward(arcanum: Arcanum, reward_index: int) -> void:
 	var arcanum_reward := REWARD_BUTTON.instantiate() as RewardButton
 	arcanum_reward.reward_texture = arcanum.icon
 	arcanum_reward.reward_text = arcanum.arcanum_name
-	arcanum_reward.pressed.connect(_on_arcanum_reward_taken.bind(arcanum))
+	arcanum_reward.pressed.connect(_on_arcanum_reward_taken.bind(arcanum, reward_index))
 	rewards.add_child.call_deferred(arcanum_reward)
 
-func _on_arcanum_reward_taken(arcanum: Arcanum) -> void:
+func _on_arcanum_reward_taken(arcanum: Arcanum, reward_index: int) -> void:
 	if !arcanum or !arcanum_system:
 		return
 	
 	arcanum_system.add_arcanum(arcanum)
+	if run_state != null and !run_state.pending_reward_claimed_arcanum_indices.has(reward_index):
+		run_state.pending_reward_claimed_arcanum_indices.append(reward_index)
 	if run != null:
 		run._persist_active_run()
 
-func _show_card_reward() -> void:
-	if !run_state:
-		return
-	var source_pile := run_state.draftable_cards if run_state.draftable_cards != null else (player_data.draftable_cards if player_data != null else null)
-	if source_pile == null:
+func _show_card_reward(card_choices: Array[CardData]) -> void:
+	if !run_state or card_choices.is_empty():
 		return
 	
 	var card_reward := CARD_REWARD.instantiate() as CardReward
 	add_child(card_reward)
 	card_reward.card_reward_selected.connect(_on_card_reward_taken)
-	
-	var card_choices: Array[CardData] = []
-	var possible_cards: Array[CardData] = source_pile.cards.duplicate()
-	#print("battle_rewards.gd _show_card_reward() possible cards: ", possible_cards.size())
-	for i in run_state.card_reward_choices:
-		_calculate_card_chances()
-		var roll := randf_range(0.0, card_reward_total_weight)
-		
-		for rarity: CardData.Rarity in card_rarity_weights:
-			if card_rarity_weights[rarity] > roll:
-				_modify_weights(rarity)
-				var rolled_card := _get_random_possible_card(possible_cards, rarity)
-				possible_cards.erase(rolled_card)
-				card_choices.append(rolled_card)
-				#THIS NEEDS TO BE REVISITED BECAUSE CARDS SHOULD POSSIBLY BE REMOVED FROM THE POOL
-				#BUT IT WAS CAUSING AN ERROR WHEN NO CARDS OF A CERTAIN RARITY WERE LEFT
-				#possible_cards.erase(rolled_card) #is this erasing the rolled card from run_state.draftable_cards.cards?
-				break
-	
 	card_reward.card_choices = card_choices
 	card_reward.show()
 
@@ -117,26 +104,21 @@ func _modify_weights(rarity_rolled: CardData.Rarity) -> void:
 	else:
 		run_state.rare_weight = clampf(run_state.rare_weight + 0.3, RunState.BASE_RARE_WEIGHT, 5.0)
 
-func _get_random_possible_card(possible_cards: Array[CardData], rarity: CardData.Rarity) -> CardData:
-	var all_possible_cards := possible_cards.filter(
-		func(card: CardData):
-			if !card:
-				return false
-			return card.rarity == rarity
-	)
-	return all_possible_cards.pick_random()
-
-func _on_gold_reward_taken(n_gold: int) -> void:
+func _on_gold_reward_taken(n_gold: int, reward_index: int) -> void:
 	if !run_state:
 		return
 	run_state.gold += n_gold
+	if !run_state.pending_reward_claimed_gold_indices.has(reward_index):
+		run_state.pending_reward_claimed_gold_indices.append(reward_index)
 	if run != null:
 		run._persist_active_run()
 
 func _on_card_reward_taken(card: CardData) -> void:
-	if !card or !run_state.run_deck:
+	if run_state == null:
 		return
-	run_state.run_deck.add_card(card)
+	if card != null and run_state.run_deck:
+		run_state.run_deck.add_card(card)
+	run_state.pending_reward_card_claimed = true
 	if run != null:
 		run._persist_active_run()
 

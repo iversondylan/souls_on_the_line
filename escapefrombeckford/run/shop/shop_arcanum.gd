@@ -8,8 +8,9 @@ const ARCANUM_DISPLAY_SCN = preload("res://arcana/arcanum_display.tscn")
 @onready var price: HBoxContainer = %Price
 @onready var price_label: Label = %PriceLabel
 @onready var buy_button: Button = %BuyButton
-@onready var original_gold_cost := randi_range(100, 300)
-@onready var gold_cost: int = original_gold_cost
+@export var offer_index: int = -1
+@export var original_gold_cost: int = 100
+var gold_cost: int = 100
 
 func update(run_state: RunState) -> void:
 	if !arcanum_container or !price or !buy_button:
@@ -38,7 +39,7 @@ func _set_arcanum(new_arcanum: Arcanum) -> void:
 	new_arcanum_display.arcanum = arcanum
 
 func _on_buy_button_pressed() -> void:
-	Events.shop_arcanum_bought.emit(arcanum, gold_cost)
+	Events.shop_arcanum_bought.emit(arcanum, gold_cost, offer_index)
 	arcanum_container.queue_free()
 	price.queue_free()
 	buy_button.queue_free()

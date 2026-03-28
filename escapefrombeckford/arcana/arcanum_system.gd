@@ -1,8 +1,6 @@
 # arcanum_system.gd
 class_name ArcanaSystem extends RefCounted
 
-signal modifier_tokens_changed(mod_type: Modifier.Type)
-
 const ARCANUM_APPLY_INTERVAL := 0.5
 
 var api: SimBattleAPI = null
@@ -82,10 +80,6 @@ func add_arcanum(arcanum: Arcanum) -> void:
 	_arcana.push_back(arcanum)
 	_by_id[arcanum.get_id()] = arcanum
 
-	if arcanum.contributes_modifier():
-		for mod_type in arcanum.get_contributed_modifier_types():
-			modifier_tokens_changed.emit(mod_type)
-
 func remove_arcanum(id: StringName) -> void:
 	if id == &"" or !_by_id.has(id):
 		return
@@ -99,10 +93,6 @@ func remove_arcanum(id: StringName) -> void:
 	var d := _get_display(id)
 	arcanum.deactivate_arcanum(d)
 	unbind_display(id)
-
-	if arcanum.contributes_modifier():
-		for mod_type in arcanum.get_contributed_modifier_types():
-			modifier_tokens_changed.emit(mod_type)
 
 func get_modifier_tokens_for(target: Node) -> Array[ModifierToken]:
 	var tokens: Array[ModifierToken] = []

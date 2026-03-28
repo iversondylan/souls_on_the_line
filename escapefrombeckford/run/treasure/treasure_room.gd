@@ -7,12 +7,8 @@ var arcanum_system: ArcanaSystem
 @onready var animation_player: AnimationPlayer = %AnimationPlayer
 var found_arcanum: Arcanum
 
-func generate_arcanum() -> void:
-	var available_arcana: Array[Arcanum] = player_data.possible_arcana.arcana.filter(
-		func(arcanum: Arcanum):
-			return !arcanum_system.has_arcanum(arcanum.id)
-	)
-	found_arcanum = available_arcana.pick_random()
+func set_found_arcanum(arcanum: Arcanum) -> void:
+	found_arcanum = arcanum
 
 # Called from the AnimationPlayer, at the end of the 'open' animation
 func _on_treasure_opened() -> void:

@@ -1,8 +1,8 @@
-[gd_scene load_steps=14 format=3 uid="uid://ba6ifh3shnl1d"]
+[gd_scene format=3 uid="uid://ba6ifh3shnl1d"]
 
-[ext_resource type="Script" uid="uid://bfjw1vt2woiko" path="res://run/menu/character_selector.gd" id="1_cl78x"]
+[ext_resource type="Script" uid="uid://bfjw1vt2woiko" path="res://main_menu/character_selector.gd" id="1_cl78x"]
 [ext_resource type="Resource" uid="uid://ck8qxvs3me11h" path="res://run/flow/run_startup.tres" id="2_4xi2e"]
-[ext_resource type="Resource" path="res://character_profiles/player_catalog.tres" id="2_oh4nh"]
+[ext_resource type="Resource" uid="uid://b2ewfy12rhm0l" path="res://character_profiles/player_catalog.tres" id="2_oh4nh"]
 [ext_resource type="FontFile" uid="uid://bghjbryekmnis" path="res://assets/fonts/linux-libertine/LinLibertine_5.3.0_2012_07_02/LinLibertineOTF_5.3.0_2012_07_02/LinLibertine_R.otf" id="2_otyuf"]
 [ext_resource type="FontFile" uid="uid://b1ahfe6v5ucl7" path="res://assets/fonts/linux-libertine/LinLibertine_5.3.0_2012_07_02/LinLibertineOTF_5.3.0_2012_07_02/LinLibertine_RBI.otf" id="2_wamhw"]
 [ext_resource type="Theme" uid="uid://d2wc7fposrlqs" path="res://themes/wizard_theme.tres" id="3_otyuf"]

@@ -43,7 +43,7 @@ func get_modifier_tokens_for(type: Modifier.Type) -> Array[ModifierToken]:
 	if !run:
 		return []
 	
-	var all_tokens: Array[ModifierToken] = run.get_modifier_tokens_for(owner)
+	var all_tokens: Array[ModifierToken] = run.get_modifier_tokens_for(owner) # Invalid call. Nonexistent function 'get_modifier_tokens_for' in base 'Node (Run)'.
 	
 	var relevant: Array[ModifierToken] = []
 	for token in all_tokens:
