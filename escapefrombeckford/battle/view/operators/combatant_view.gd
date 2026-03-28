@@ -36,7 +36,7 @@ extends Node2D
 @onready var pending_turn_glow: Sprite2D = $PendingTurnGlow
 @onready var combat_preview_overlay: CombatPreviewOverlay = $CombatPreviewOverlay
 
-const DAMAGE_NUMBER_SCN_PATH := "res://battle/ui/damage_number.tscn"
+const DAMAGE_NUMBER_SCN_PATH := "uid://bubk456bw3da4"
 const FOCUS_SOUND_KEY := &"focus_sound"
 const CLEAR_FOCUS_SOUND_KEY := &"clear_focus_sound"
 const WINDUP_SOUND_KEY := &"windup_sound"
@@ -45,13 +45,13 @@ const FIRE_PROJECTILE_SOUND_KEY := &"fire_projectile_sound"
 const FIREBALL_IMPACT_SOUND_KEY := &"fireball_impact_sound"
 const STATUS_SOUND_KEY := &"status_sound"
 
-const DEFAULT_FOCUS_SOUND := preload("res://audio/focus.tres")
-const DEFAULT_CLEAR_FOCUS_SOUND := preload("res://audio/clear_focus.tres")
-const DEFAULT_WINDUP_SOUND := preload("res://audio/windup.tres")
-const DEFAULT_MELEE_IMPACT_SOUND := preload("res://audio/melee_impact.tres")
-const DEFAULT_FIRE_PROJECTILE_SOUND := preload("res://audio/fire_projectile.tres")
-const DEFAULT_FIREBALL_IMPACT_SOUND := preload("res://audio/fireball_impact.tres")
-const DEFAULT_STATUS_SOUND := preload("res://audio/status.tres")
+const DEFAULT_FOCUS_SOUND := preload("uid://crxdrboqk438e")
+const DEFAULT_CLEAR_FOCUS_SOUND := preload("uid://behqvr7ofgtw0")
+const DEFAULT_WINDUP_SOUND := preload("uid://u6i36p7jadxm")
+const DEFAULT_MELEE_IMPACT_SOUND := preload("uid://ddrxex8lotgxn")
+const DEFAULT_FIRE_PROJECTILE_SOUND := preload("uid://20341tfvmh04")
+const DEFAULT_FIREBALL_IMPACT_SOUND := preload("uid://c6myiupet7ros")
+const DEFAULT_STATUS_SOUND := preload("uid://doh4nvpl4srwy")
 
 # ------------------------------------------------------------------------------
 # Core state
@@ -847,7 +847,7 @@ func _spawn_projectile_async(
 
 	var proj_path := String(order.projectile_scene_path)
 	if proj_path == "":
-		proj_path = "res://VFX/projectiles/fireball/fireball.tscn"
+		proj_path = "uid://bxmhi3urqmpfh"
 
 	var scene: PackedScene = FxLibrary.get_scene(proj_path)
 	if scene == null:

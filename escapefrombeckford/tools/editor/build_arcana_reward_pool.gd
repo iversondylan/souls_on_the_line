@@ -1,7 +1,7 @@
 @tool
 extends EditorScript
 
-const POOL_PATH := "res://character_profiles/Cole/arcana_reward_pool.tres"
+const POOL_PATH := "uid://c8kt337vs6465"
 const ARCANA_ROOT := "res://arcana/general/"
 
 func _run():

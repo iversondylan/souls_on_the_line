@@ -1,7 +1,7 @@
 # arcana_container.gd
 class_name ArcanaContainer extends HBoxContainer
 
-const ARCANUM_DISPLAY := preload("res://arcana/arcanum_display.tscn")
+const ARCANUM_DISPLAY := preload("uid://k1sxcd5o2me7")
 
 @onready var arcana_control: ArcanaControl = $ArcanaControl
 @onready var arcana_row: HBoxContainer = %ArcanaContainer

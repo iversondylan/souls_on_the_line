@@ -20,7 +20,7 @@ class_name CardVisuals extends Control
 @export var card_angle_limit_flt: float = 180
 @export var max_card_spread_angle_flt: float = 38
 
-const OVERLOAD_PIP := preload("res://cards/overload_pip.tscn")
+const OVERLOAD_PIP := preload("uid://pe4lgl2dwu32")
 
 @export var card_data: CardData : set = _set_card_data
 var cost_red: int = 0 : set = set_cost_red

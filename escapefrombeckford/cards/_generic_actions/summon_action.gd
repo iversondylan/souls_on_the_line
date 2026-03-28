@@ -2,7 +2,7 @@
 class_name SummonAction extends CardAction
 
 @export var summon_data: CombatantData
-@export var sound: Sound = load("res://audio/summon_zap.tres")
+@export var sound: Sound = load("uid://c0cllss7w30rn")
 
 func get_interaction_mode(ctx: CardContext) -> int:
 	if ctx == null or ctx.api == null:

@@ -2,18 +2,6 @@ extends Node
 
 const PROFILE_SAVE_PATH := "user://profile_data.tres"
 const ACTIVE_RUN_SAVE_PATH := "user://active_run.tres"
-const LEGACY_SAVE_PATH_REPLACEMENTS := {
-	"res://custom_resources/profile_data.gd": "res://run/state/profile_data.gd",
-	"res://custom_resources/soul_recess_state.gd": "res://run/state/soul_recess_state.gd",
-	"res://custom_resources/card_snapshot.gd": "res://cards/core/card_snapshot.gd",
-	"res://custom_resources/run_account.gd": "res://run/state/run_account.gd",
-	"res://custom_resources/run_state.gd": "res://run/state/run_state.gd",
-	"res://custom_resources/player_run_state.gd": "res://run/state/player_run_state.gd",
-	"res://custom_resources/player_data.gd": "res://character_profiles/player_data.gd",
-	"res://custom_resources/card_pile.gd": "res://cards/core/card_pile.gd",
-	"res://custom_resources/card_data.gd": "res://cards/core/card_data.gd",
-	"res://scenes/run_deck.gd": "res://run/state/run_deck.gd",
-}
 
 var _profile_cache: ProfileData = null
 
@@ -64,8 +52,7 @@ func load_active_run() -> RunState:
 	var needs_resave := false
 	if loaded is RunState:
 		var loaded_run := loaded as RunState
-		needs_resave = loaded_run.player_data != null \
-			or String(loaded_run.player_profile_id).is_empty() \
+		needs_resave = String(loaded_run.player_profile_id).is_empty() \
 			or int(loaded_run.map_seed) == 0 \
 			or loaded_run.player_run_state == null \
 			or int(loaded_run.player_run_state.max_health) <= 0 \
@@ -73,6 +60,10 @@ func load_active_run() -> RunState:
 
 	var migrated := _normalize_active_run(loaded)
 	if migrated == null:
+		return null
+	if String(migrated.player_profile_id).is_empty():
+		push_warning("SaveService: active run is missing player_profile_id; clearing incompatible save")
+		clear_active_run()
 		return null
 	if needs_resave:
 		save_active_run(migrated)
@@ -82,15 +73,13 @@ func load_active_run() -> RunState:
 func save_active_run(run_state: RunState) -> bool:
 	if run_state == null:
 		return false
-	run_state.player_data = null
 	return _save_resource(run_state, ACTIVE_RUN_SAVE_PATH)
 
 
 func _load_resource(path: String) -> Resource:
 	if !FileAccess.file_exists(path):
 		return null
-	_migrate_legacy_save_paths(path)
-	return ResourceLoader.load(path) # oops I moved stuff around now this was called with a bad path
+	return ResourceLoader.load(path)
 
 
 func _save_resource(resource: Resource, path: String) -> bool:
@@ -111,10 +100,6 @@ func _normalize_active_run(resource: Resource) -> RunState:
 
 	if run_state.player_run_state == null:
 		run_state.player_run_state = PlayerRunState.new()
-	if run_state.player_profile_id.is_empty() and run_state.player_data != null:
-		run_state.player_profile_id = _derive_player_profile_id(run_state.player_data)
-	if int(run_state.player_run_state.max_health) <= 0 and run_state.player_data != null:
-		run_state.player_run_state.max_health = maxi(int(run_state.player_data.max_health), 0)
 	if int(run_state.player_run_state.current_health) <= 0 and int(run_state.player_run_state.max_health) > 0:
 		run_state.player_run_state.current_health = int(run_state.player_run_state.max_health)
 	run_state.player_run_state.clamp_health()
@@ -146,45 +131,7 @@ func _normalize_active_run(resource: Resource) -> RunState:
 	if run_state.owned_arcanum_ids == null:
 		run_state.owned_arcanum_ids = PackedStringArray()
 	_remove_pending_room_from_cleared(run_state)
-	run_state.player_data = null
 	return run_state
-
-
-func _derive_player_profile_id(player_data: PlayerData) -> String:
-	if player_data == null:
-		return ""
-	if !String(player_data.profile_id).is_empty():
-		return String(player_data.profile_id)
-	if !String(player_data.resource_path).is_empty():
-		var file_name := player_data.resource_path.get_file().get_basename()
-		if file_name.ends_with("_data"):
-			file_name = file_name.trim_suffix("_data")
-		return file_name.to_lower()
-	return ""
-
-
-func _migrate_legacy_save_paths(path: String) -> void:
-	if !path.ends_with(".tres") and !path.ends_with(".tscn"):
-		return
-	var file := FileAccess.open(path, FileAccess.READ)
-	if file == null:
-		return
-	var contents := file.get_as_text()
-	file.close()
-
-	var migrated := contents
-	for from_path in LEGACY_SAVE_PATH_REPLACEMENTS:
-		migrated = migrated.replace(from_path, LEGACY_SAVE_PATH_REPLACEMENTS[from_path])
-
-	if migrated == contents:
-		return
-
-	file = FileAccess.open(path, FileAccess.WRITE)
-	if file == null:
-		push_warning("SaveService: failed to rewrite legacy save paths for %s" % path)
-		return
-	file.store_string(migrated)
-	file.close()
 
 
 func _pending_room_in_cleared(run_state: RunState) -> bool:

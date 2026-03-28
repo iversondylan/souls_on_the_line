@@ -1,7 +1,7 @@
 class_name CardsViewWindow extends Node2D
 
-@onready var card_container_scn: PackedScene = preload("res://ui/card_container.tscn")
-#@onready var usable_card_scn: PackedScene = preload("res://cards/UsableCard.tscn")
+@onready var card_container_scn: PackedScene = preload("uid://4kxymj720cw")
+#@onready var usable_card_scn: PackedScene = preload("uid://cd6j7t8hq3we3")
 @onready var flow_container = $ScrollContainer/HFlowContainer
 
 var cached_card_containers: Array[CardContainer] = []

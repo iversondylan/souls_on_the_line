@@ -1,9 +1,9 @@
 extends CardAction
 
-#const PINPOINT_STATUS := preload("res://statuses/pinpoint.tres")
+#const PINPOINT_STATUS := preload("uid://bh05r8var8mj3")
 
 @export var duration: int = 2
-@export var sound: Sound = preload("res://audio/pinpoint_buzz.tres")
+@export var sound: Sound = preload("uid://dg4xayxef851q")
 
 #func activate(ctx: CardActionContext) -> bool:
 	#var targets := ctx.resolved_target.fighters

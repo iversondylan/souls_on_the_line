@@ -2,7 +2,7 @@ class_name CruelDominionStatus extends Status
 
 const ID := &"cruel_dominion"
 
-const ECHOED_CRUELTY_STATUS := preload("res://statuses/echoed_cruelty.tres")
+const ECHOED_CRUELTY_STATUS := preload("uid://da5t2wbovt8qx")
 
 func get_id() -> StringName:
 	return ID

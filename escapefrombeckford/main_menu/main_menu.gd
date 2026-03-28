@@ -1,9 +1,9 @@
 extends Control
 
-const CHAR_SELECTOR_SCENE := preload("res://main_menu/character_selector.tscn")
-const RUN_SCENE := preload("res://run/flow/run.tscn")
+const CHAR_SELECTOR_SCENE := preload("uid://ba6ifh3shnl1d")
+const RUN_SCENE := preload("uid://ceemxcslkt31b")
 
-@export var run_startup: RunStartup = preload("res://run/flow/run_startup.tres")
+@export var run_startup: RunStartup = preload("uid://ck8qxvs3me11h")
 
 @onready var continue_button: Button = %Continue
 

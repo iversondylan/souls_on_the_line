@@ -2,7 +2,7 @@
 
 class_name StatusViewGrid extends GridContainer
 
-const STATUS_DISPLAY_SCN := preload("res://battle/view/status_display.tscn")
+const STATUS_DISPLAY_SCN := preload("uid://cd15ukicbp7fj")
 
 # id -> StatusDisplay
 var _displays_by_id: Dictionary = {}

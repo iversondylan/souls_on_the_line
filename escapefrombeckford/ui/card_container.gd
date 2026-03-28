@@ -1,7 +1,7 @@
 class_name CardContainer extends Container
 
 const CARD_COMPONENT_POSITION: Vector2 = Vector2(66, 94)
-@onready var usable_card_scn = preload("res://cards/usable_card.tscn")
+@onready var usable_card_scn = preload("uid://cd6j7t8hq3we3")
 var usable_card: UsableCard
 
 var card_data : CardData:

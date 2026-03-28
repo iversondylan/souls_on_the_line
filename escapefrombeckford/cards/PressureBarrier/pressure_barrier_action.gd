@@ -2,10 +2,10 @@
 
 extends CardAction
 
-#const PRESSURE_BARRIER_STATUS := preload("res://statuses/pressure_barrier.tres")
+#const PRESSURE_BARRIER_STATUS := preload("uid://dsl60qwx3ugb")
 
 @export var pressure_barrier_intensity: int = 2
-@export var amplify_sound: Sound# = preload("res://audio/supercharge_application.tres")
+@export var amplify_sound: Sound# = preload("uid://bwbxpiia8trvh")
 
 #func activate(ctx: CardActionContext) -> bool:
 	#var targets := ctx.resolved_target.fighters

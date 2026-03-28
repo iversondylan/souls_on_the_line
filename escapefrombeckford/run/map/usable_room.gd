@@ -4,11 +4,11 @@ signal room_selected(room: Room)
 
 const ICONS := {
 	Room.RoomType.NOT_ASSIGNED: [null, Vector2.ONE],
-	Room.RoomType.BATTLE: [preload("res://assets/sprites/assorted/crossed-swords_48_w.png"), Vector2.ONE],
-	Room.RoomType.TREASURE: [preload("res://assets/sprites/assorted/chest_48_w.png"), Vector2.ONE],
-	Room.RoomType.REST: [preload("res://assets/sprites/assorted/campfire_48_w.png"), Vector2.ONE],
-	Room.RoomType.SHOP: [preload("res://assets/sprites/assorted/village_48_w.png"), Vector2.ONE],
-	Room.RoomType.BOSS: [preload("res://assets/sprites/assorted/bossskull_48_w.png"), Vector2(1.25, 1.25)]
+	Room.RoomType.BATTLE: [preload("uid://bmltytv6xalgo"), Vector2.ONE],
+	Room.RoomType.TREASURE: [preload("uid://bgbrkwkwvmoej"), Vector2.ONE],
+	Room.RoomType.REST: [preload("uid://7jdcjj2du3bl"), Vector2.ONE],
+	Room.RoomType.SHOP: [preload("uid://ciikk3c2qumcw"), Vector2.ONE],
+	Room.RoomType.BOSS: [preload("uid://dugkletdjcpt4"), Vector2(1.25, 1.25)]
 }
 
 @onready var sprite_2d: Sprite2D = $Visuals/Sprite2D

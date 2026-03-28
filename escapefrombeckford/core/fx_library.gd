@@ -6,8 +6,8 @@ var _scenes: Dictionary = {} # String -> PackedScene
 
 # Optional: warm-up list (paths you know you’ll use often)
 @export var warm_paths: PackedStringArray = [
-	"res://VFX/projectiles/fireball/fireball.tscn",
-	"res://battle/ui/damage_number.tscn"
+	"uid://bxmhi3urqmpfh",
+	"uid://bubk456bw3da4"
 ]
 
 func _ready() -> void:

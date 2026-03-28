@@ -3,7 +3,7 @@ extends CardAction
 
 @export var base_damage: int = 5
 @export var attack_count: int = 1
-@export var sound: Sound = preload("res://audio/fireball_impact.tres")
+@export var sound: Sound = preload("uid://c6myiupet7ros")
 
 #func activate(ctx: CardActionContext) -> bool:
 	#var targets := ctx.resolved_target.fighters

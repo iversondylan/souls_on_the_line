@@ -1,6 +1,6 @@
 class_name CardTooltipPopup extends Control
 
-const MENU_CARD_SCENE := preload("res://cards/menu_card/menu_card.tscn")
+const MENU_CARD_SCENE := preload("uid://d4g7iin5x7648")
 
 @export var background_color: Color = Color("0d11259e")
 

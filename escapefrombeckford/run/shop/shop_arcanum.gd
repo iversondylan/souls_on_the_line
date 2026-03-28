@@ -1,6 +1,6 @@
 class_name ShopArcanum extends VBoxContainer
 
-const ARCANUM_DISPLAY_SCN = preload("res://arcana/arcanum_display.tscn")
+const ARCANUM_DISPLAY_SCN = preload("uid://k1sxcd5o2me7")
 
 @export var arcanum: Arcanum : set = _set_arcanum
 

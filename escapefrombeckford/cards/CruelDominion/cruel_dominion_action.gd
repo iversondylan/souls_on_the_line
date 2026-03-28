@@ -1,7 +1,7 @@
 extends CardAction
 
 @export var cruel_dominion_intensity: int = 2
-@export var sound: Sound = preload("res://audio/haunting_gloom.tres")
+@export var sound: Sound = preload("uid://bpcpnxremq4xv")
 
 func activate_sim(ctx: CardContext) -> bool:
 	if ctx == null or ctx.api == null:

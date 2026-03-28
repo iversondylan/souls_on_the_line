@@ -776,7 +776,7 @@ func _on_strike_windup(e: EventPackage) -> void:
 	o.attacker_id = _source_id(e)
 	o.target_ids = _target_ids(e)
 	o.attack_mode = int(d.get(Keys.ATTACK_MODE, Attack.Mode.MELEE))
-	o.projectile_scene_path = String(d.get(Keys.PROJECTILE_SCENE, "res://VFX/projectiles/fireball/fireball.tscn"))
+	o.projectile_scene_path = String(d.get(Keys.PROJECTILE_SCENE, "uid://bxmhi3urqmpfh"))
 	o.strike_count = int(d.get(Keys.STRIKE_COUNT, 1))
 
 	attacker.play_strike_windup(o, battle_view)

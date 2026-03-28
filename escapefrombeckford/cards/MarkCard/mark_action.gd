@@ -2,7 +2,7 @@
 extends CardAction
 
 @export var duration: int = 2
-@export var sound: Sound = preload("res://audio/mark_zap.tres")
+@export var sound: Sound = preload("uid://bo75oc63x12b6")
 
 
 func activate_sim(ctx: CardContext) -> bool:

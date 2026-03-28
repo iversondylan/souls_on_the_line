@@ -1,7 +1,7 @@
 class_name Shop extends Control
 
-const SHOP_CARD_SCN = preload("res://run/shop/shop_card.tscn")
-const SHOP_ARCANUM_SCN = preload("res://run/shop/shop_arcanum.tscn")
+const SHOP_CARD_SCN = preload("uid://bsiw7kxq3vytd")
+const SHOP_ARCANUM_SCN = preload("uid://6rwtjllgr66t")
 
 @export var shop_arcana: Arcana
 @export var player_data: PlayerData

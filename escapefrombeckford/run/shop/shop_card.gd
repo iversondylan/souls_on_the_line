@@ -1,6 +1,6 @@
 class_name ShopCard extends VBoxContainer
 
-const MENU_CARD_SCN = preload("res://cards/menu_card/menu_card.tscn")
+const MENU_CARD_SCN = preload("uid://d4g7iin5x7648")
 
 @export var card_data: CardData : set = _set_card
 

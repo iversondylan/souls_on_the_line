@@ -1,8 +1,8 @@
 @tool
 extends EditorScript
 
-const ARCANA_COLLECTION_PATH := "res://arcana/arcana_catalog.tres"
-const ARCANUM_CATALOG_PATH := "res://arcana/arcanum_catalog.tres"
+const ARCANA_COLLECTION_PATH := "uid://dk5tv1hrr615d"
+const ARCANUM_CATALOG_PATH := "uid://cd45rlmihsfvb"
 const ARCANA_ROOT := "res://arcana/general"
 
 func _run() -> void:

@@ -30,7 +30,6 @@ const BASE_RARE_WEIGHT := 0.3
 @export var map_seed: int = 0
 @export var run_rng_snapshot: Dictionary = {}
 @export var player_profile_id: String = ""
-@export var player_data: PlayerData # Legacy save compatibility only.
 @export var player_run_state: PlayerRunState = PlayerRunState.new()
 @export var cleared_room_coords: Array[Vector2i] = []
 @export var location_kind: int = LocationKind.MAP

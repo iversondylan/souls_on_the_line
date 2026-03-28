@@ -3,7 +3,7 @@ class_name NPCSummonSequence
 extends NPCEffectSequence
 
 const MAX_UNITS_PER_GROUP := 7
-const DEFAULT_SUMMON_DATA_PATH := "res://combatants/BasicClone/basic_clone_data.tres"
+const DEFAULT_SUMMON_DATA_PATH := "uid://dwy6ym7cfiix7"
 
 func execute(ctx: NPCAIContext, on_done: Callable) -> void:
 	if !ctx:

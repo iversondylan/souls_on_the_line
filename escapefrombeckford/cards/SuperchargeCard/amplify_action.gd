@@ -2,7 +2,7 @@
 extends CardAction
 
 @export var amplify_duration: int = 2
-@export var amplify_sound: Sound = preload("res://audio/supercharge_application.tres")
+@export var amplify_sound: Sound = preload("uid://bwbxpiia8trvh")
 
 #func activate(ctx: CardActionContext) -> bool:
 	#var targets := ctx.resolved_target.fighters

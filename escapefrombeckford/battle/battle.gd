@@ -31,7 +31,7 @@ const ENEMY := 1
 @onready var sim_host: SimHost = $SimHost
 @onready var battle_view: BattleView = $BattleView
 
-@onready var perspective_card_scn: PackedScene = preload("res://battle/view/perspective_card.tscn")
+@onready var perspective_card_scn: PackedScene = preload("uid://bhyvpe6l2eymv")
 
 @onready var draw_view_overlay: CardsViewWindow = $Visual_Overlays/DrawViewWindow
 @onready var discard_view_overlay: CardsViewWindow = $Visual_Overlays/DiscardViewWindow

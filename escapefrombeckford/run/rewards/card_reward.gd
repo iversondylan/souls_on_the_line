@@ -4,7 +4,7 @@ class_name CardReward extends ColorRect
 
 signal card_reward_selected(card_data: CardData)
 
-const MENU_CARD = preload("res://cards/menu_card/menu_card.tscn")
+const MENU_CARD = preload("uid://d4g7iin5x7648")
 
 @export var card_choices: Array[CardData] : set = set_card_choices
 

@@ -2,7 +2,7 @@ extends CardAction
 
 @export var bonus_damage: int = 2
 @export var attacks: int = 1
-@export var melee_impact_sound: Sound = preload("res://audio/aoe_explosion.tres")
+@export var melee_impact_sound: Sound = preload("uid://c73sgxbquj1ks")
 
 func activate_sim(ctx: CardContext) -> bool:
 	if ctx == null or ctx.api == null or ctx.runtime == null:

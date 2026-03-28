@@ -3,17 +3,17 @@
 class_name Run
 extends Node
 
-const BATTLE_SCN := preload("res://battle/battle.tscn")
-const BATTLE_REWARDS_SCN := preload("res://run/rewards/battle_rewards.tscn")
-const CAMPFIRE_SCN := preload("res://run/campfire/campfire.tscn")
-#const MAP_SCENE := preload("res://run/map/map.tscn")
-const SHOP_SCN := preload("res://run/shop/shop.tscn")
-const TREASURE_SCN := preload("res://run/treasure/treasure_room.tscn")
+const BATTLE_SCN := preload("uid://k11cug4p8o3l")
+const BATTLE_REWARDS_SCN := preload("uid://dg2swwanmuywt")
+const CAMPFIRE_SCN := preload("uid://cc8jy5tcqxyuv")
+#const MAP_SCENE := preload("uid://6p15tduy6cd2")
+const SHOP_SCN := preload("uid://csf5mgsw4psnr")
+const TREASURE_SCN := preload("uid://c4tto5c3yx2dt")
 
 
 
-@export var run_startup: RunStartup = preload("res://run/flow/run_startup.tres")
-@export var player_catalog: PlayerCatalog = preload("res://character_profiles/player_catalog.tres")
+@export var run_startup: RunStartup = preload("uid://ck8qxvs3me11h")
+@export var player_catalog: PlayerCatalog = preload("uid://b2ewfy12rhm0l")
 @export var status_catalog: StatusCatalog
 ##Main menu startup will need to populate 
 ##this variable before changing scenes.
@@ -730,7 +730,6 @@ func _sync_run_state_from_live_state() -> void:
 		run_state.map_seed = RNGUtil.seed_from_label(run_seed, "map")
 	run_state.run_rng_snapshot = run_rng.snapshot() if run_rng != null else {}
 	run_state.player_profile_id = String(player_data.profile_id) if player_data != null else ""
-	run_state.player_data = null
 	if run_state.player_run_state == null:
 		run_state.player_run_state = PlayerRunState.new()
 	run_state.run_deck = run_deck

@@ -1,10 +1,10 @@
 extends Control
 
-const RUN_SCENE = preload("res://run/flow/run.tscn")
+const RUN_SCENE = preload("uid://ceemxcslkt31b")
 const DEFAULT_PROFILE_ID := "cole"
 
-@export var run_startup: RunStartup = preload("res://run/flow/run_startup.tres")
-@export var player_catalog: PlayerCatalog = preload("res://character_profiles/player_catalog.tres")
+@export var run_startup: RunStartup = preload("uid://ck8qxvs3me11h")
+@export var player_catalog: PlayerCatalog = preload("uid://b2ewfy12rhm0l")
 
 @onready var title: Label = %Title
 @onready var description: Label = %Description

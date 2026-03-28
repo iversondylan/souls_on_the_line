@@ -9,10 +9,10 @@ const TARGET_ALL := "target_all"
 #const ATTACK_MODE_MELEE := "melee"
 #const ATTACK_MODE_RANGED := "ranged"
 
-const DEFAULT_PROJECTILE_SCENE := "res://VFX/projectiles/fireball/fireball.tscn"
+const DEFAULT_PROJECTILE_SCENE := "uid://bxmhi3urqmpfh"
 #
-#@export var melee_impact_sound: Sound = preload("res://audio/melee_impact.tres")
-#@export var ranged_impact_sound: Sound = preload("res://audio/fireball_impact.tres")
+#@export var melee_impact_sound: Sound = preload("uid://ddrxex8lotgxn")
+#@export var ranged_impact_sound: Sound = preload("uid://c6myiupet7ros")
 #
 ## Old signature kept for compatibility
 #func execute(ctx: NPCAIContext, on_done: Callable) -> void:

@@ -2,7 +2,7 @@
 
 class_name SwapWithTargetAction extends CardAction
 
-@export var sound: Sound = preload("res://audio/warp_zap.tres")
+@export var sound: Sound = preload("uid://duvojjmcskogd")
 
 func activate_interaction(ctx: CardContext) -> bool:
 	if ctx == null or ctx.runtime == null:

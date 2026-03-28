@@ -4,11 +4,11 @@ class_name BattleRewardsScreen extends Control
 
 #enum Type {GOLD, NEW_CARD, RELIC}
 
-const CARD_REWARD = preload("res://run/rewards/card_reward.tscn")
-const REWARD_BUTTON := preload("res://ui/reward_button.tscn")
-const GOLD_TEXTURE := preload("res://assets/sprites/assorted/coin.PNG")
+const CARD_REWARD = preload("uid://dlq3idvfn5vil")
+const REWARD_BUTTON := preload("uid://clfrebjlfonlo")
+const GOLD_TEXTURE := preload("uid://cbbohhy0ybxvy")
 const GOLD_TEXT := "%s gold"
-const CARD_TEXTURE := preload("res://assets/sprites/assorted/diamond_white.png")
+const CARD_TEXTURE := preload("uid://cptf1w3wpa2ah")
 const CARD_TEXT := "Add New Card"
 
 @export var run_state: RunState

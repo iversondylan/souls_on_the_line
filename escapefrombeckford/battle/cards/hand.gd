@@ -20,7 +20,7 @@ signal discard_animation_completed()
 
 @onready var collision_shape: CollisionShape2D = $DebugShape
 @onready var hand_radius_flt: float = collision_shape.shape.radius
-@onready var usable_card_scn: PackedScene = preload("res://cards/usable_card.tscn")
+@onready var usable_card_scn: PackedScene = preload("uid://cd6j7t8hq3we3")
 
 const CARD_DRAW_INTERVAL: float = 0.1
 const CARD_DISCARD_INTERVAL: float = 0.1

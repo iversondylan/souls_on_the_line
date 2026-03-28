@@ -1,6 +1,6 @@
 class_name CardPileView extends Control
 
-const MENU_CARD_SCENE := preload("res://cards/menu_card/menu_card.tscn")
+const MENU_CARD_SCENE := preload("uid://d4g7iin5x7648")
 
 @export var card_pile: CardPile
 
@@ -21,7 +21,7 @@ func _ready() -> void:
 	card_tooltip_popup.hide_tooltip()
 	
 	#await get_tree().create_timer(1.5).timeout
-	#card_pile = preload("res://character_profiles/Cole/cole_basic_deck.tres")
+	#card_pile = preload("uid://gsb7q5fcn68v")
 	#show_current_view("Collection", true)
 
 func _input(event: InputEvent) -> void:

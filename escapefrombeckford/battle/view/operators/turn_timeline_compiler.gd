@@ -476,7 +476,7 @@ func _make_ranged_fire_order(analysis: AttackAnalysis, strike_index: int) -> Ran
 	o.strikes_total = analysis.strike_count
 	o.total_hit_count = strike.hit_count
 	o.has_lethal = strike.has_lethal_hit
-	o.projectile_scene_path = "res://VFX/projectiles/fireball/fireball.tscn"
+	o.projectile_scene_path = "uid://bxmhi3urqmpfh"
 
 	return o
 

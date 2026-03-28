@@ -1,6 +1,6 @@
 class_name StatusOverlay extends Control
 
-const STATUS_ENTRY_ROW_SCN = preload("res://ui/status_entry_row.tscn")
+const STATUS_ENTRY_ROW_SCN = preload("uid://buo1rmesoj57w")
 
 @onready var status_vbox: VBoxContainer = %StatusVBox
 
