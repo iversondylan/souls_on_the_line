@@ -2,7 +2,7 @@
 
 class_name FavoringScales extends Arcanum
 
-const ID := "favoring_scales"
+const ID := &"favoring_scales"
 
 @export_range(1, 100) var discount := 50
 

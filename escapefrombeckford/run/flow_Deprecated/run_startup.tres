@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="RunStartup" format=3 uid="uid://ck8qxvs3me11h"]
 
-[ext_resource type="Script" uid="uid://dlxexdxlypm2o" path="res://run/flow/run_startup.gd" id="1_ujbn8"]
+[ext_resource type="Script" uid="uid://dlxexdxlypm2o" path="res://run/flow_Deprecated/run_startup.gd" id="1_ujbn8"]
 
 [resource]
 script = ExtResource("1_ujbn8")

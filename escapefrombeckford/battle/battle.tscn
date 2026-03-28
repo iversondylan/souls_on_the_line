@@ -13,7 +13,7 @@
 [ext_resource type="Script" uid="uid://ckq1sgjqlphh3" path="res://battle/ui/battle_ui.gd" id="9_jujjx"]
 [ext_resource type="Script" uid="uid://b0ws73jyx6b4c" path="res://battle/view/battlefield_target_arrow.gd" id="9_p0caf"]
 [ext_resource type="Script" uid="uid://8uvr4kljlbkb" path="res://battle/view/battle_camera_rig.gd" id="10_dd63g"]
-[ext_resource type="PackedScene" uid="uid://cy1kfsc2qfglo" path="res://battle/cards/hand.tscn" id="15_wvgjd"]
+[ext_resource type="PackedScene" uid="uid://cy1kfsc2qfglo" path="res://battle/card_mgmt/hand.tscn" id="15_wvgjd"]
 [ext_resource type="PackedScene" uid="uid://chyl400nmwlxo" path="res://battle/ui/selection_prompt.tscn" id="16_61i1y"]
 [ext_resource type="PackedScene" uid="uid://bxtf6la07t0t5" path="res://ui/card_pile_opener.tscn" id="17_ariee"]
 [ext_resource type="PackedScene" uid="uid://bhps5rw0coka5" path="res://VFX/turn_order_spark_controller.tscn" id="17_saiin"]

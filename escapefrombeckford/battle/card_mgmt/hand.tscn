@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://cy1kfsc2qfglo"]
 
-[ext_resource type="Script" uid="uid://hl2ey2v5qhl1" path="res://battle/cards/hand.gd" id="1_eyfoh"]
+[ext_resource type="Script" uid="uid://hl2ey2v5qhl1" path="res://battle/card_mgmt/hand.gd" id="1_eyfoh"]
 [ext_resource type="PackedScene" uid="uid://c477qukem6kmd" path="res://battle/interactions/card_target_selector.tscn" id="2_yinqy"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_eyfoh"]

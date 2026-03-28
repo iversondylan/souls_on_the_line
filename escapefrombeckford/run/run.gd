@@ -11,12 +11,8 @@ const SHOP_SCN := preload("uid://csf5mgsw4psnr")
 const TREASURE_SCN := preload("uid://c4tto5c3yx2dt")
 
 
-
-@export var run_startup: RunStartup = preload("uid://ck8qxvs3me11h")
 @export var player_catalog: PlayerCatalog = preload("uid://b2ewfy12rhm0l")
 @export var status_catalog: StatusCatalog
-##Main menu startup will need to populate 
-##this variable before changing scenes.
 @export var arcanum_catalog: ArcanaCatalog
 
 # TEMPORARY v
@@ -28,7 +24,7 @@ const TREASURE_SCN := preload("uid://c4tto5c3yx2dt")
 @onready var current_view: Node = $CurrentView
 @onready var gold_display: GoldDisplay = %GoldDisplay
 #@onready var arcana_system: ArcanaSystem = %ArcanaSystem
-@onready var arcana_container: ArcanaContainer = %ArcanaContainer
+@onready var arcana_system_container: ArcanaSystemContainer = %ArcanaSystemContainer
 
 @onready var collection_button: CardPileOpener = %CollectionButton
 @onready var collection_pile_view: CardPileView = %CollectionPileView
@@ -51,6 +47,7 @@ var arcana_catalog: ArcanaCatalog
 var draftable_cards: CardPile
 var run_deck: RunDeck
 var run_rng: RunRNG
+var startup_mode: int = -1
 
 
 func _ready() -> void:
@@ -59,16 +56,22 @@ func _ready() -> void:
 	arcanum_catalog.build_index()
 	if player_catalog != null:
 		player_catalog.build_index()
-	arcana_system = arcana_container.system
-	
-	if !run_startup:
+	arcana_system = arcana_system_container.system
+
+	var run_profile := Autoload.consume_run_profile()
+	if run_profile == null:
+		push_warning("Run._ready(): opened without a pending RunProfile.")
 		return
+
 	profile_data = SaveService.load_or_create_profile()
-	match run_startup.startup_type:
-		RunStartup.StartupType.NEW_RUN:
-			_start_new_run()
-		RunStartup.StartupType.CONTINUED_RUN:
+	startup_mode = int(run_profile.start_mode)
+	match int(run_profile.start_mode):
+		RunProfile.StartMode.NEW_RUN:
+			_start_new_run_from_profile(run_profile)
+		RunProfile.StartMode.CONTINUE_RUN:
 			_continue_saved_run()
+		_:
+			push_warning("Run._ready(): unknown RunProfile.start_mode '%s'" % run_profile.start_mode)
 
 func _start_run() -> void:
 	if run_state == null:
@@ -84,7 +87,7 @@ func _start_run() -> void:
 		run_deck = run_state.run_deck
 	
 	##This is for messing around with extra starting gold
-	if run_startup != null and int(run_startup.startup_type) == int(RunStartup.StartupType.NEW_RUN):
+	if startup_mode == int(RunProfile.StartMode.NEW_RUN):
 		run_state.gold += player_data.bonus_starting_gold
 	_ensure_player_run_state_initialized()
 	
@@ -146,14 +149,14 @@ func _init_top_bar() -> void:
 		for arcanum_id in run_state.owned_arcanum_ids:
 			var proto := arcanum_catalog.get_proto(StringName(arcanum_id))
 			if proto != null:
-				arcana_container.add_arcanum(proto)
+				arcana_system_container.add_arcanum(proto)
 	elif player_data != null and player_data.starting_arcanum != null:
-		arcana_container.add_arcanum(player_data.starting_arcanum)
+		arcana_system_container.add_arcanum(player_data.starting_arcanum)
 	
 # TEMPORARY v
 	if run_state != null and run_state.owned_arcanum_ids.is_empty():
 		for arcanum: Arcanum in extra_arcana:
-			arcana_container.add_arcana([arcanum])
+			arcana_system_container.add_arcana([arcanum])
 # TEMPORARY ^
 
 	
@@ -187,7 +190,7 @@ func _on_battle_entered_with_seed(room: Room, existing_battle_seed: int = -1) ->
 	battle_scn.player_data = player_data
 	battle_scn.run_deck = run_deck
 	battle_scn.battle_data = room.battle_data
-	#battle_scn.arcana = arcana_container.system
+	#battle_scn.arcana = arcana_system_container.system
 	battle_scn.my_arcana = arcana_system.get_my_arcana()
 	battle_scn.start_battle()
 
@@ -209,7 +212,8 @@ func _on_shop_entered(room: Room = map.last_room) -> void:
 	shop.run = self
 	shop.player_data = player_data
 	shop.run_state = run_state
-	shop.arcana_system = arcana_container.system
+	shop.arcana_system = arcana_system
+	shop.arcana_system_container = arcana_system_container
 	shop.arcana_catalog = arcana_catalog
 	shop.arcana_reward_pool = player_data.arcana_reward_pool
 	var shop_ctx := _build_pending_shop_context()
@@ -227,7 +231,6 @@ func _on_treasure_room_entered(room: Room = map.last_room) -> void:
 	_build_pending_treasure_checkpoint(room)
 	_persist_active_run()
 	var treasure_scn := _change_view(TREASURE_SCN) as TreasureRoom
-	treasure_scn.arcanum_system = arcana_container.system
 	treasure_scn.player_data = player_data
 	treasure_scn.set_found_arcanum(_resolve_pending_treasure_arcanum())
 
@@ -252,19 +255,18 @@ func _on_map_exited(room: Room) -> void:
 			_on_battle_entered(room)
 
 
-func _start_new_run() -> void:
-	run_seed = run_startup.run_seed
+func _start_new_run_from_profile(profile: RunProfile) -> void:
+	run_seed = profile.seed
 	if run_seed == 0:
 		var rng := RandomNumberGenerator.new()
 		rng.randomize()
 		run_seed = int(rng.randi())
-		run_startup.run_seed = run_seed
 	print("run.gd new run startup seed: ", run_seed)
 	run_rng = RunRNG.new(run_seed)
 
-	player_data = _resolve_player_profile(run_startup.player_profile_id)
+	player_data = _resolve_player_profile(profile.player_profile_id)
 	if player_data == null:
-		push_warning("Run._start_new_run(): no player profile found for id '%s'" % run_startup.player_profile_id)
+		push_warning("Run._start_new_run_from_profile(): no player profile found for id '%s'" % profile.player_profile_id)
 		return
 
 	var starting_deck := player_data.starting_deck.duplicate()
@@ -272,8 +274,8 @@ func _start_new_run() -> void:
 
 	var soul_snapshot: CardSnapshot = null
 	if profile_data != null and profile_data.soul_recess_state != null:
-		if run_startup != null and !run_startup.selected_starting_soul_uid.is_empty():
-			soul_snapshot = profile_data.soul_recess_state.get_attuned_soul_snapshot(run_startup.selected_starting_soul_uid)
+		if !profile.selected_starting_soul_uid.is_empty():
+			soul_snapshot = profile_data.soul_recess_state.get_attuned_soul_snapshot(profile.selected_starting_soul_uid)
 		if soul_snapshot == null:
 			soul_snapshot = profile_data.soul_recess_state.get_selected_starting_soul_snapshot()
 	if soul_snapshot != null:
@@ -628,6 +630,7 @@ func _open_pending_reward_screen() -> void:
 	rewards_scn.run_state = run_state
 	rewards_scn.player_data = player_data
 	rewards_scn.arcanum_system = arcana_system
+	rewards_scn.arcana_system_container = arcana_system_container
 	rewards_scn.run = self
 	rewards_scn.populate_from_context(_build_pending_reward_context())
 
@@ -717,9 +720,9 @@ func _restore_saved_location() -> void:
 
 
 func _clear_run_arcana() -> void:
-	for arcanum in arcana_container.get_all_arcana():
+	for arcanum in arcana_system_container.get_all_arcana():
 		if arcanum != null:
-			arcana_container.remove_arcanum(arcanum.get_id())
+			arcana_system_container.remove_arcanum(arcanum.get_id())
 
 
 func _sync_run_state_from_live_state() -> void:
@@ -796,13 +799,9 @@ func _resolve_player_profile(profile_id: String) -> PlayerData:
 		return resolved
 	return player_catalog.get_default_profile()
 
-#func make_rng(label: String) -> RandomNumberGenerator:
-	#var rng := RandomNumberGenerator.new()
-	#rng.seed = RNGUtil.seed_from_strings(run_seed, label)
-	#return rng
-
-#static func rc_hash(row: int, col: int) -> int:
-	#return ("%d,%d" % [row, col]).hash()
-
 func _print_tree() -> void:
 	print_tree_pretty()
+
+
+func _on_menu_button_pressed() -> void:
+	pass # Replace with function body.

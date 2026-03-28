@@ -14,6 +14,7 @@ const CARD_TEXT := "Add New Card"
 @export var run_state: RunState
 @export var player_data: PlayerData
 var arcanum_system: ArcanaSystem
+var arcana_system_container: ArcanaSystemContainer
 var run: Run
 
 @onready var rewards: VBoxContainer = %Rewards
@@ -73,10 +74,10 @@ func add_arcanum_reward(arcanum: Arcanum, reward_index: int) -> void:
 	rewards.add_child.call_deferred(arcanum_reward)
 
 func _on_arcanum_reward_taken(arcanum: Arcanum, reward_index: int) -> void:
-	if !arcanum or !arcanum_system:
+	if !arcanum or !arcana_system_container:
 		return
 	
-	arcanum_system.add_arcanum(arcanum)
+	arcana_system_container.add_arcanum(arcanum)
 	if run_state != null and !run_state.pending_reward_claimed_arcanum_indices.has(reward_index):
 		run_state.pending_reward_claimed_arcanum_indices.append(reward_index)
 	if run != null:

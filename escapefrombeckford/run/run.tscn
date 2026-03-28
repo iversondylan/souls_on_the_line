@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://ceemxcslkt31b"]
 
-[ext_resource type="Script" uid="uid://c0e8h833ypklr" path="res://run/flow/run.gd" id="1_l7o68"]
+[ext_resource type="Script" uid="uid://c0e8h833ypklr" path="res://run/run.gd" id="1_l7o68"]
 [ext_resource type="PackedScene" uid="uid://6p15tduy6cd2" path="res://run/map/map.tscn" id="2_wdonh"]
 [ext_resource type="Resource" uid="uid://bqr4wekgibhim" path="res://statuses/status_utils/status_catalog.tres" id="3_7yo0l"]
 [ext_resource type="Resource" uid="uid://cd45rlmihsfvb" path="res://arcana/arcanum_catalog.tres" id="4_fo0ly"]
@@ -12,9 +12,14 @@
 [ext_resource type="Resource" uid="uid://dohwwwoux6ubx" path="res://arcana/general/unruly_pyric_wraps.tres" id="6_kdgoc"]
 [ext_resource type="Theme" uid="uid://1dr1eewpv0jd" path="res://themes/ui_theme.tres" id="6_wo0nw"]
 [ext_resource type="PackedScene" uid="uid://c634qgskmd0a" path="res://ui/card_pile_view.tscn" id="7_0tt4g"]
-[ext_resource type="PackedScene" uid="uid://c2yr5yhrn3jcb" path="res://arcana/arcana_container.tscn" id="7_yeia0"]
+[ext_resource type="Script" uid="uid://5lbmyp40fhgy" path="res://arcana/arcana_system_container.gd" id="7_y5iaq"]
+[ext_resource type="Texture2D" uid="uid://6uxtaq6s35em" path="res://assets/sprites/assorted/white_arrow_transparent.png" id="8_i51gm"]
+[ext_resource type="Texture2D" uid="uid://dpjk5oo5ma48q" path="res://assets/sprites/assorted/white-arrow-50alpha.png" id="9_rq1c8"]
+[ext_resource type="Script" uid="uid://d2gy2gc44vh3k" path="res://arcana/arcana_control.gd" id="10_or2k3"]
 [ext_resource type="PackedScene" uid="uid://b32tn7y6k3shn" path="res://ui/arcanum_tooltip_popup.tscn" id="11_cnkn7"]
 [ext_resource type="PackedScene" uid="uid://3hsvnd70wteq" path="res://ui/tooltip.tscn" id="11_g42ja"]
+[ext_resource type="Texture2D" uid="uid://c67s22088x4tf" path="res://assets/sprites/assorted/cog.png" id="13_dbkmk"]
+[ext_resource type="Texture2D" uid="uid://djvoybbgewqqo" path="res://assets/sprites/assorted/cog_darker.png" id="14_i44wd"]
 
 [node name="Run" type="Node" unique_id=13304911]
 script = ExtResource("1_l7o68")
@@ -99,13 +104,53 @@ font_size = 36
 unique_name_in_owner = true
 layout_mode = 2
 
-[node name="ArcanaSystemContainer" type="CenterContainer" parent="TopBar/Items" unique_id=2083010515]
-layout_mode = 2
-size_flags_horizontal = 3
-
-[node name="ArcanaContainer" parent="TopBar/Items/ArcanaSystemContainer" unique_id=776093882 instance=ExtResource("7_yeia0")]
+[node name="ArcanaSystemContainer" type="HBoxContainer" parent="TopBar/Items" unique_id=2083010515]
 unique_name_in_owner = true
 layout_mode = 2
+size_flags_horizontal = 3
+script = ExtResource("7_y5iaq")
+
+[node name="LeftButton" type="TextureButton" parent="TopBar/Items/ArcanaSystemContainer" unique_id=1752536203]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+disabled = true
+texture_normal = ExtResource("8_i51gm")
+texture_pressed = ExtResource("8_i51gm")
+texture_hover = ExtResource("8_i51gm")
+texture_disabled = ExtResource("9_rq1c8")
+ignore_texture_size = true
+stretch_mode = 5
+flip_h = true
+
+[node name="ArcanaControl" type="Control" parent="TopBar/Items/ArcanaSystemContainer" unique_id=619053241 node_paths=PackedStringArray("left_button", "right_button")]
+clip_contents = true
+custom_minimum_size = Vector2(448, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+script = ExtResource("10_or2k3")
+left_button = NodePath("../LeftButton")
+right_button = NodePath("../RightButton")
+
+[node name="ArcanaContainer" type="HBoxContainer" parent="TopBar/Items/ArcanaSystemContainer/ArcanaControl" unique_id=1060101209]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(448, 0)
+layout_mode = 0
+offset_right = 1560.0
+offset_bottom = 64.0
+theme_override_constants/separation = 0
+
+[node name="RightButton" type="TextureButton" parent="TopBar/Items/ArcanaSystemContainer" unique_id=2092973501]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+disabled = true
+texture_normal = ExtResource("8_i51gm")
+texture_pressed = ExtResource("8_i51gm")
+texture_hover = ExtResource("8_i51gm")
+texture_disabled = ExtResource("9_rq1c8")
+ignore_texture_size = true
+stretch_mode = 5
 
 [node name="CollectionButton" parent="TopBar/Items" unique_id=539564306 node_paths=PackedStringArray("counter") instance=ExtResource("5_0tt4g")]
 unique_name_in_owner = true
@@ -123,6 +168,15 @@ theme_override_colors/font_color = Color(0.450155, 0.160414, 0.275357, 1)
 text = "99"
 horizontal_alignment = 1
 
+[node name="MenuButton" type="TextureButton" parent="TopBar/Items" unique_id=312219928]
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+texture_normal = ExtResource("14_i44wd")
+texture_pressed = ExtResource("14_i44wd")
+texture_hover = ExtResource("13_dbkmk")
+ignore_texture_size = true
+stretch_mode = 0
+
 [node name="CollectionPileView" parent="TopBar" unique_id=343482384 instance=ExtResource("7_0tt4g")]
 unique_name_in_owner = true
 visible = false
@@ -132,3 +186,5 @@ unique_name_in_owner = true
 visible = false
 
 [node name="Tooltip" parent="." unique_id=2137160839 instance=ExtResource("11_g42ja")]
+
+[connection signal="pressed" from="TopBar/Items/MenuButton" to="." method="_on_menu_button_pressed"]

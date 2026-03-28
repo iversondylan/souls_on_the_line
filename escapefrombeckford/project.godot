@@ -31,6 +31,7 @@ MusicPlayer="*res://core/music_player.tscn"
 SFXPlayer="*res://core/sfx_player.tscn"
 FxLibrary="*uid://bvxmtkalwcaf"
 SaveService="*res://core/save_service.gd"
+Autoload="*uid://di0s621fw27gb"
 
 [debug]
 

@@ -7,6 +7,7 @@ const SHOP_ARCANUM_SCN = preload("uid://6rwtjllgr66t")
 @export var player_data: PlayerData
 @export var run_state: RunState
 var arcana_system: ArcanaSystem
+var arcana_system_container: ArcanaSystemContainer
 
 @onready var card_container: HBoxContainer = %Cards
 @onready var arcanum_container: HBoxContainer = %Arcana
@@ -159,7 +160,9 @@ func _on_shop_card_bought(card_data: CardData, gold_cost: int, offer_index: int)
 		run._persist_active_run()
 
 func _on_shop_arcanum_bought(arcanum: Arcanum, gold_cost: int, offer_index: int) -> void:
-	arcana_system.add_arcanum(arcanum)
+	if arcana_system_container == null:
+		return
+	arcana_system_container.add_arcanum(arcanum)
 	run_state.gold -= gold_cost
 	if !run_state.pending_shop_claimed_arcanum_offer_indices.has(offer_index):
 		run_state.pending_shop_claimed_arcanum_offer_indices.append(offer_index)

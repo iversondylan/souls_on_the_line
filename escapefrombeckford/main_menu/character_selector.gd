@@ -1,9 +1,7 @@
 extends Control
 
-const RUN_SCENE = preload("uid://ceemxcslkt31b")
 const DEFAULT_PROFILE_ID := "cole"
 
-@export var run_startup: RunStartup = preload("uid://ck8qxvs3me11h")
 @export var player_catalog: PlayerCatalog = preload("uid://b2ewfy12rhm0l")
 
 @onready var title: Label = %Title
@@ -42,11 +40,12 @@ func _on_start_button_pressed() -> void:
 	if current_character == null:
 		return
 	print("Start new escape attempt with %s" % current_character.name)
-	run_startup.startup_type = RunStartup.StartupType.NEW_RUN
-	run_startup.run_seed = 0
-	run_startup.selected_starting_soul_uid = ""
-	run_startup.player_profile_id = current_profile_id
-	get_tree().change_scene_to_packed(RUN_SCENE)
+	var profile := RunProfile.new()
+	profile.start_mode = RunProfile.StartMode.NEW_RUN
+	profile.seed = 0
+	profile.selected_starting_soul_uid = ""
+	profile.player_profile_id = current_profile_id
+	Autoload.begin_new_run(profile)
 
 
 func _on_cole_button_pressed() -> void:

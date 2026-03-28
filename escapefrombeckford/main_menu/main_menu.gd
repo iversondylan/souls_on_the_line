@@ -1,9 +1,6 @@
 extends Control
 
 const CHAR_SELECTOR_SCENE := preload("uid://ba6ifh3shnl1d")
-const RUN_SCENE := preload("uid://ceemxcslkt31b")
-
-@export var run_startup: RunStartup = preload("uid://ck8qxvs3me11h")
 
 @onready var continue_button: Button = %Continue
 
@@ -15,8 +12,7 @@ func _ready() -> void:
 
 
 func _on_continue_pressed() -> void:
-	run_startup.startup_type = RunStartup.StartupType.CONTINUED_RUN
-	get_tree().change_scene_to_packed(RUN_SCENE)
+	Autoload.begin_continue_run()
 
 func _on_new_run_pressed() -> void:
 	get_tree().change_scene_to_packed(CHAR_SELECTOR_SCENE)
