@@ -20,6 +20,7 @@
 [ext_resource type="PackedScene" uid="uid://3hsvnd70wteq" path="res://ui/tooltip.tscn" id="11_g42ja"]
 [ext_resource type="Texture2D" uid="uid://c67s22088x4tf" path="res://assets/sprites/assorted/cog.png" id="13_dbkmk"]
 [ext_resource type="Texture2D" uid="uid://djvoybbgewqqo" path="res://assets/sprites/assorted/cog_darker.png" id="14_i44wd"]
+[ext_resource type="PackedScene" uid="uid://c6h75jpp4xd3w" path="res://run/pause_menu/pause_menu.tscn" id="21_svaf3"]
 
 [node name="Run" type="Node" unique_id=13304911]
 script = ExtResource("1_l7o68")
@@ -79,38 +80,38 @@ unique_name_in_owner = true
 layout_mode = 2
 text = "Campfire"
 
-[node name="TopBar" type="CanvasLayer" parent="." unique_id=40224624]
+[node name="UI" type="CanvasLayer" parent="." unique_id=40224624]
 layer = 3
 
-[node name="Background" type="ColorRect" parent="TopBar" unique_id=2076293937]
+[node name="Background" type="ColorRect" parent="UI" unique_id=2076293937]
 custom_minimum_size = Vector2(0, 64)
 anchors_preset = 10
 anchor_right = 1.0
 grow_horizontal = 2
 color = Color(0.0990533, 0.0897, 0.23, 0.690196)
 
-[node name="Items" type="HBoxContainer" parent="TopBar" unique_id=1631769811]
+[node name="Items" type="HBoxContainer" parent="UI" unique_id=1631769811]
 custom_minimum_size = Vector2(0, 64)
 anchors_preset = 10
 anchor_right = 1.0
 grow_horizontal = 2
 
-[node name="HealthPanel" parent="TopBar/Items" unique_id=132000857 instance=ExtResource("5_ux63y")]
+[node name="HealthPanel" parent="UI/Items" unique_id=132000857 instance=ExtResource("5_ux63y")]
 layout_mode = 2
 inside_control = true
 font_size = 36
 
-[node name="GoldDisplay" parent="TopBar/Items" unique_id=1342691864 instance=ExtResource("5_wo0nw")]
+[node name="GoldDisplay" parent="UI/Items" unique_id=1342691864 instance=ExtResource("5_wo0nw")]
 unique_name_in_owner = true
 layout_mode = 2
 
-[node name="ArcanaSystemContainer" type="HBoxContainer" parent="TopBar/Items" unique_id=2083010515]
+[node name="ArcanaSystemContainer" type="HBoxContainer" parent="UI/Items" unique_id=2083010515]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 script = ExtResource("7_y5iaq")
 
-[node name="LeftButton" type="TextureButton" parent="TopBar/Items/ArcanaSystemContainer" unique_id=1752536203]
+[node name="LeftButton" type="TextureButton" parent="UI/Items/ArcanaSystemContainer" unique_id=1752536203]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(64, 64)
 layout_mode = 2
@@ -123,7 +124,7 @@ ignore_texture_size = true
 stretch_mode = 5
 flip_h = true
 
-[node name="ArcanaControl" type="Control" parent="TopBar/Items/ArcanaSystemContainer" unique_id=619053241 node_paths=PackedStringArray("left_button", "right_button")]
+[node name="ArcanaControl" type="Control" parent="UI/Items/ArcanaSystemContainer" unique_id=619053241 node_paths=PackedStringArray("left_button", "right_button")]
 clip_contents = true
 custom_minimum_size = Vector2(448, 0)
 layout_mode = 2
@@ -132,7 +133,7 @@ script = ExtResource("10_or2k3")
 left_button = NodePath("../LeftButton")
 right_button = NodePath("../RightButton")
 
-[node name="ArcanaContainer" type="HBoxContainer" parent="TopBar/Items/ArcanaSystemContainer/ArcanaControl" unique_id=1060101209]
+[node name="ArcanaContainer" type="HBoxContainer" parent="UI/Items/ArcanaSystemContainer/ArcanaControl" unique_id=1060101209]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(448, 0)
 layout_mode = 0
@@ -140,7 +141,7 @@ offset_right = 1560.0
 offset_bottom = 64.0
 theme_override_constants/separation = 0
 
-[node name="RightButton" type="TextureButton" parent="TopBar/Items/ArcanaSystemContainer" unique_id=2092973501]
+[node name="RightButton" type="TextureButton" parent="UI/Items/ArcanaSystemContainer" unique_id=2092973501]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(64, 64)
 layout_mode = 2
@@ -152,12 +153,12 @@ texture_disabled = ExtResource("9_rq1c8")
 ignore_texture_size = true
 stretch_mode = 5
 
-[node name="CollectionButton" parent="TopBar/Items" unique_id=539564306 node_paths=PackedStringArray("counter") instance=ExtResource("5_0tt4g")]
+[node name="CollectionButton" parent="UI/Items" unique_id=539564306 node_paths=PackedStringArray("counter") instance=ExtResource("5_0tt4g")]
 unique_name_in_owner = true
 layout_mode = 2
 counter = NodePath("Label")
 
-[node name="Label" type="Label" parent="TopBar/Items/CollectionButton" unique_id=983631839]
+[node name="Label" type="Label" parent="UI/Items/CollectionButton" unique_id=983631839]
 layout_mode = 0
 offset_left = 12.0
 offset_top = 22.0
@@ -168,7 +169,7 @@ theme_override_colors/font_color = Color(0.450155, 0.160414, 0.275357, 1)
 text = "99"
 horizontal_alignment = 1
 
-[node name="MenuButton" type="TextureButton" parent="TopBar/Items" unique_id=312219928]
+[node name="MenuButton" type="TextureButton" parent="UI/Items" unique_id=312219928]
 custom_minimum_size = Vector2(64, 64)
 layout_mode = 2
 texture_normal = ExtResource("14_i44wd")
@@ -177,14 +178,16 @@ texture_hover = ExtResource("13_dbkmk")
 ignore_texture_size = true
 stretch_mode = 0
 
-[node name="CollectionPileView" parent="TopBar" unique_id=343482384 instance=ExtResource("7_0tt4g")]
+[node name="CollectionPileView" parent="UI" unique_id=343482384 instance=ExtResource("7_0tt4g")]
 unique_name_in_owner = true
 visible = false
 
-[node name="ArcanumTooltipPopup" parent="TopBar" unique_id=1631975796 instance=ExtResource("11_cnkn7")]
+[node name="ArcanumTooltipPopup" parent="UI" unique_id=1631975796 instance=ExtResource("11_cnkn7")]
 unique_name_in_owner = true
 visible = false
+
+[node name="PauseMenu" parent="UI" unique_id=403785110 instance=ExtResource("21_svaf3")]
 
 [node name="Tooltip" parent="." unique_id=2137160839 instance=ExtResource("11_g42ja")]
 
-[connection signal="pressed" from="TopBar/Items/MenuButton" to="." method="_on_menu_button_pressed"]
+[connection signal="pressed" from="UI/Items/MenuButton" to="." method="_on_menu_button_pressed"]

@@ -801,8 +801,14 @@ func _play_ranged_fire_pulse(_order: StrikeWindupOrder, gen: int) -> void:
 
 
 func _ranged_pulse_async(delay_sec: float, up_t: float, down_t: float, gen: int) -> void:
+	var battle_view := get_parent()
+	if battle_view is GroupView:
+		battle_view = (battle_view as GroupView).get_parent()
 	if delay_sec > 0.0:
-		await get_tree().create_timer(delay_sec).timeout
+		if battle_view is BattleView and (battle_view as BattleView).clock != null:
+			await (battle_view as BattleView).clock.wait_seconds(delay_sec)
+		else:
+			await get_tree().create_timer(delay_sec).timeout
 	if !is_instance_valid(self) or gen != _strike_gen:
 		return
 
@@ -840,7 +846,10 @@ func _spawn_projectile_async(
 	target_ids: Array[int]
 ) -> void:
 	if spawn_t > 0.0:
-		await get_tree().create_timer(spawn_t).timeout
+		if battle_view != null and battle_view.clock != null:
+			await battle_view.clock.wait_seconds(spawn_t)
+		else:
+			await get_tree().create_timer(spawn_t).timeout
 
 	if !is_instance_valid(self) or gen != _strike_gen:
 		return

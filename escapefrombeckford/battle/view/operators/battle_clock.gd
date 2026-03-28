@@ -4,11 +4,16 @@ extends RefCounted
 
 func start() -> void: pass
 func stop() -> void: pass
+func pause() -> void: pass
+func resume() -> void: pass
 func now_sec() -> float: return 0.0
 func seconds_per_quarter() -> float: return 0.5
 
-func wait_until(t_sec: float) -> Signal:
-	return Signal()
+func wait_until(_t_sec: float) -> void:
+	return
+
+func wait_seconds(_delta_sec: float) -> void:
+	return
 
 func next_grid_time(now_sec: float, grid_quarters: float) -> float:
 	# Default: quantize to quarter-notes

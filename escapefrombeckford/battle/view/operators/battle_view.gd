@@ -13,7 +13,7 @@ var battle_ui: BattleUI
 
 var event_player: BattleEventPlayer
 var event_director: BattleEventDirector
-var transport: BattleTransport
+var transport_session: BattleTransportSession
 var scheduler: BeatScheduler
 var clock: BattleClock
 var cue_scheduler: CueScheduler
@@ -36,30 +36,27 @@ var tween_bg: Tween
 
 
 func _ready() -> void:
-	transport = BattleTransport.new()
-	transport.tempo_bpm = tempo
 	cue_scheduler = CueScheduler.new()
 	scheduler = BeatScheduler.new()
 	event_player = BattleEventPlayer.new()
 	event_director = BattleEventDirector.new()
 	event_director.bind(self)
-	#print("MusicPlayer = ", MusicPlayer)
-	#print("metronome_player = ", MusicPlayer.metronome_player)
-	var p: AudioStreamPlayer = MusicPlayer.metronome_player
-	p.stream = metronome_sound.stream #Invalid access to property or key 'stream' on a base object of type 'Nil'.
-	p.bus = "Music"
-	p.volume_db = metronome_sound.volume_db
-	p.pitch_scale = metronome_sound.pitch
-
-	clock = MetronomeClock.new(p, tempo, offset_s, get_tree())
 
 
 func bind_log(log: BattleEventLog) -> void:
 	event_player.bind_log(log)
 
 
+func bind_transport_session(session: BattleTransportSession) -> void:
+	transport_session = session
+	clock = session
+
+
 func start_playback() -> void:
 	if _playing:
+		return
+	if clock == null:
+		push_warning("BattleView.start_playback(): missing battle clock/transport session.")
 		return
 
 	_playing = true
@@ -76,6 +73,16 @@ func stop_playback() -> void:
 	_playback_gen += 1
 	if clock != null:
 		clock.stop()
+
+
+func pause_playback() -> void:
+	if clock != null:
+		clock.pause()
+
+
+func resume_playback() -> void:
+	if clock != null:
+		clock.resume()
 
 func _playback_loop(gen: int) -> void:
 	var schedule_t := clock.now_sec()
@@ -120,7 +127,11 @@ func _playback_loop(gen: int) -> void:
 			#print(_debug_timeline_line(timeline, actor_turn))
 
 			var plan_builder := TurnTimelineToDirectorPlan.new()
-			var plan := plan_builder.build_plan(timeline, t_start, transport.tempo_bpm)
+			var plan := plan_builder.build_plan(
+				timeline,
+				t_start,
+				transport_session.tempo_bpm if transport_session != null else tempo
+			)
 			#print(_debug_director_plan_line(plan, actor_turn, clock.now_sec(), schedule_t))
 
 			await cue_scheduler.play_plan(clock, event_director, plan, gen)

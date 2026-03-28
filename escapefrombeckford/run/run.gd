@@ -6,6 +6,7 @@ extends Node
 const BATTLE_SCN := preload("uid://k11cug4p8o3l")
 const BATTLE_REWARDS_SCN := preload("uid://dg2swwanmuywt")
 const CAMPFIRE_SCN := preload("uid://cc8jy5tcqxyuv")
+const MAIN_MENU_SCN := preload("uid://byfyjsj2j7wh")
 #const MAP_SCENE := preload("uid://6p15tduy6cd2")
 const SHOP_SCN := preload("uid://csf5mgsw4psnr")
 const TREASURE_SCN := preload("uid://c4tto5c3yx2dt")
@@ -29,6 +30,8 @@ const TREASURE_SCN := preload("uid://c4tto5c3yx2dt")
 @onready var collection_button: CardPileOpener = %CollectionButton
 @onready var collection_pile_view: CardPileView = %CollectionPileView
 @onready var arcanum_tooltip_popup: ArcanumTooltipPopup = %ArcanumTooltipPopup
+@onready var pause_menu: Control = $UI/PauseMenu
+@onready var resume_game_button: Button = $UI/PauseMenu/PanelContainer/MarginContainer/Content/Buttons/ResumeGameButton
 
 @onready var map_button: Button = %MapButton
 @onready var battle_button: Button = %BattleButton
@@ -36,7 +39,7 @@ const TREASURE_SCN := preload("uid://c4tto5c3yx2dt")
 @onready var treasure_button: Button = %TreasureButton
 @onready var rewards_button: Button = %RewardsButton
 @onready var campfire_button: Button = %CampfireButton
-@onready var health_panel: HealthBar = $TopBar/Items/HealthPanel
+@onready var health_panel: HealthBar = $UI/Items/HealthPanel
 
 var run_state: RunState
 var profile_data: ProfileData
@@ -57,6 +60,8 @@ func _ready() -> void:
 	if player_catalog != null:
 		player_catalog.build_index()
 	arcana_system = arcana_system_container.system
+	pause_menu.visible = false
+	resume_game_button.pressed.connect(_close_pause_menu)
 
 	var run_profile := Autoload.consume_run_profile_or_default()
 	if run_profile == null:
@@ -99,6 +104,7 @@ func _start_run() -> void:
 	_persist_active_run()
 
 func _change_view(scene: PackedScene) -> Node:
+	_force_close_pause_menu()
 	if current_view.get_child_count() > 0:
 		current_view.get_child(0).queue_free()
 	
@@ -112,6 +118,7 @@ func _change_view(scene: PackedScene) -> Node:
 
 
 func _show_map() -> void:
+	_force_close_pause_menu()
 	if current_view.get_child_count() > 0:
 		current_view.get_child(0).queue_free()
 	
@@ -751,6 +758,7 @@ func _persist_active_run() -> void:
 
 
 func _on_run_defeat() -> void:
+	_force_close_pause_menu()
 	SaveService.clear_active_run()
 
 func _get_current_run_max_health() -> int:
@@ -804,4 +812,45 @@ func _print_tree() -> void:
 
 
 func _on_menu_button_pressed() -> void:
-	pass # Replace with function body.
+	if pause_menu.visible:
+		_close_pause_menu()
+		return
+	_open_pause_menu()
+
+
+func _open_pause_menu() -> void:
+	if pause_menu.visible:
+		return
+
+	var battle := _get_active_battle()
+	if battle != null:
+		battle.pause_for_menu()
+
+	get_tree().paused = true
+	pause_menu.visible = true
+
+
+func _close_pause_menu() -> void:
+	if !pause_menu.visible:
+		get_tree().paused = false
+		return
+	var battle := _get_active_battle()
+	if battle != null:
+		battle.resume_from_menu()
+
+	get_tree().paused = false
+	pause_menu.visible = false
+
+
+func _force_close_pause_menu() -> void:
+	var battle := _get_active_battle()
+	if battle != null:
+		battle.stop_playback()
+	get_tree().paused = false
+	pause_menu.visible = false
+
+
+func _get_active_battle() -> Battle:
+	if current_view == null or current_view.get_child_count() <= 0:
+		return null
+	return current_view.get_child(0) as Battle

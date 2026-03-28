@@ -72,6 +72,7 @@ var wait_for_anims: bool = false
 var _player_end_turn_armed: bool = false
 var card_bins: BattleCardBins
 var card_bin_rule_host: CardBinRuleHost
+var transport_session: BattleTransportSession
 
 
 # -------------------------
@@ -101,6 +102,15 @@ func _ready() -> void:
 
 	get_tree().paused = false
 	set_process(true)
+
+
+func _process(_delta: float) -> void:
+	if transport_session != null:
+		transport_session.update()
+
+
+func _exit_tree() -> void:
+	stop_playback()
 
 
 func _connect_events() -> void:
@@ -182,6 +192,8 @@ func start_battle() -> void:
 
 	sim_host.seed_arcana_from_ids(my_arcana)
 
+	transport_session = _build_transport_session()
+	battle_view.bind_transport_session(transport_session)
 	battle_view.bind_log(sim_host.get_event_log())
 	battle_view.start_playback()
 
@@ -198,7 +210,6 @@ func start_battle() -> void:
 		if run_deck != null and run_deck.card_collection != null:
 			card_bins.seed_card_collection(run_deck.card_collection)
 		card_bins.make_draw_pile()
-	MusicPlayer.play(music, true)
 	initialize_card_pile_ui()
 
 	sim_host.end_setup()
@@ -206,6 +217,45 @@ func start_battle() -> void:
 	var runtime := _runtime()
 	if runtime != null:
 		runtime.begin_group_turn_flow(FRIENDLY, true)
+
+
+func pause_for_menu() -> void:
+	if battle_view != null:
+		battle_view.pause_playback()
+
+
+func resume_from_menu() -> void:
+	if battle_view != null:
+		battle_view.resume_playback()
+
+
+func stop_playback() -> void:
+	if battle_view != null:
+		battle_view.stop_playback()
+
+
+func _build_transport_session() -> BattleTransportSession:
+	var resolved_stream: AudioStream = music
+	var resolved_volume_db := 0.0
+	var resolved_pitch_scale := 1.0
+	var resolved_metronome: Sound = null
+	if battle_view != null and battle_view.metronome_sound != null:
+		if resolved_stream == null:
+			resolved_stream = battle_view.metronome_sound.stream
+			resolved_volume_db = battle_view.metronome_sound.volume_db
+			resolved_pitch_scale = battle_view.metronome_sound.pitch
+		else:
+			resolved_metronome = battle_view.metronome_sound
+
+	return BattleTransportSession.new(
+		get_tree(),
+		resolved_stream,
+		battle_view.tempo if battle_view != null else 120.0,
+		battle_view.offset_s if battle_view != null else 0.0,
+		resolved_metronome,
+		resolved_volume_db,
+		resolved_pitch_scale
+	)
 
 
 func _spawn_from_battle_data() -> void:

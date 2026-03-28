@@ -967,7 +967,10 @@ func _on_death_followthrough(e: EventPackage) -> void:
 	dead_view.play_death_reaction(dur)
 	dead_view.is_alive = false
 
-	await battle_view.get_tree().create_timer(dur).timeout
+	if battle_view.clock != null:
+		await battle_view.clock.wait_seconds(dur)
+	else:
+		await battle_view.get_tree().create_timer(dur).timeout
 
 	if is_instance_valid(dead_view):
 		dead_view.queue_free()

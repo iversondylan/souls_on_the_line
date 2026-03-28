@@ -3,6 +3,7 @@
 [ext_resource type="Theme" uid="uid://d2wc7fposrlqs" path="res://themes/wizard_theme.tres" id="1_f0jds"]
 
 [node name="PauseMenu" type="Control"]
+process_mode = 3
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -56,10 +57,18 @@ vertical_alignment = 1
 layout_mode = 2
 theme_override_constants/separation = 10
 
+[node name="ResumeGameButton" type="Button" parent="PanelContainer/MarginContainer/Content/Buttons"]
+custom_minimum_size = Vector2(0, 58)
+layout_mode = 2
+size_flags_horizontal = 3
+theme = ExtResource("1_f0jds")
+text = "Resume Game"
+
 [node name="SettingsButton" type="Button" parent="PanelContainer/MarginContainer/Content/Buttons"]
 custom_minimum_size = Vector2(0, 58)
 layout_mode = 2
 size_flags_horizontal = 3
+disabled = true
 theme = ExtResource("1_f0jds")
 text = "Settings"
 
@@ -67,6 +76,7 @@ text = "Settings"
 custom_minimum_size = Vector2(0, 58)
 layout_mode = 2
 size_flags_horizontal = 3
+disabled = true
 theme = ExtResource("1_f0jds")
 text = "Return to Main Menu"
 
@@ -74,6 +84,7 @@ text = "Return to Main Menu"
 custom_minimum_size = Vector2(0, 58)
 layout_mode = 2
 size_flags_horizontal = 3
+disabled = true
 theme = ExtResource("1_f0jds")
 text = "Exit Game"
 
@@ -86,6 +97,7 @@ theme_override_constants/separation = 10
 custom_minimum_size = Vector2(0, 52)
 layout_mode = 2
 size_flags_horizontal = 3
+disabled = true
 theme = ExtResource("1_f0jds")
 text = "Debug Save"
 
@@ -93,5 +105,6 @@ text = "Debug Save"
 custom_minimum_size = Vector2(0, 52)
 layout_mode = 2
 size_flags_horizontal = 3
+disabled = true
 theme = ExtResource("1_f0jds")
 text = "Debug Load"
