@@ -58,7 +58,7 @@ func _ready() -> void:
 		player_catalog.build_index()
 	arcana_system = arcana_system_container.system
 
-	var run_profile := Autoload.consume_run_profile()
+	var run_profile := Autoload.consume_run_profile_or_default()
 	if run_profile == null:
 		push_warning("Run._ready(): opened without a pending RunProfile.")
 		return
