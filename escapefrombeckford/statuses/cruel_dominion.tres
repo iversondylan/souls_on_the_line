@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="CruelDominionStatus" format=3 uid="uid://nnor45w1kk5c"]
 
-[ext_resource type="Texture2D" uid="uid://cytppmfrdmnxn" path="res://assets/sprites/card_elements/wrathful_intent/wrath_icon.png" id="1_2s5rg"]
+[ext_resource type="Texture2D" uid="uid://cytppmfrdmnxn" path="res://_assets/sprites/card_elements/wrathful_intent/wrath_icon.png" id="1_2s5rg"]
 [ext_resource type="Script" uid="uid://megrskhfwgop" path="res://statuses/cruel_dominion.gd" id="2_pyaau"]
 
 [resource]

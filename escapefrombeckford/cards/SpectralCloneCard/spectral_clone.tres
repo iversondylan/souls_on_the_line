@@ -1,9 +1,9 @@
 [gd_resource type="Resource" script_class="CardData" format=3 uid="uid://b7txf6d8vmjkk"]
 
-[ext_resource type="Script" uid="uid://wtk5v77fcqvn" path="res://cards/core/card_action.gd" id="1_nt5vi"]
-[ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://cards/core/card_data.gd" id="2_nt5vi"]
+[ext_resource type="Script" uid="uid://wtk5v77fcqvn" path="res://cards/_core/card_action.gd" id="1_nt5vi"]
+[ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://cards/_core/card_data.gd" id="2_nt5vi"]
 [ext_resource type="Resource" uid="uid://c5qjmc4akover" path="res://cards/SpectralCloneCard/spectral_clone_action.tres" id="3_80tus"]
-[ext_resource type="Texture2D" uid="uid://boidn5bneb5f0" path="res://assets/sprites/assorted/player_mage.png" id="4_5lags"]
+[ext_resource type="Texture2D" uid="uid://boidn5bneb5f0" path="res://_assets/sprites/assorted/player_mage.png" id="4_5lags"]
 
 [resource]
 script = ExtResource("2_nt5vi")

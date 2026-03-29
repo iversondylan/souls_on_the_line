@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://c02eie7bv4g23"
+path="res://.godot/imported/transition elastic 102.wav-a1063c314599280c9bba979e0eea0194.sample"
+
+[deps]
+
+source_file="res://_assets/sfx/transition elastic 102.wav"
+dest_files=["res://.godot/imported/transition elastic 102.wav-a1063c314599280c9bba979e0eea0194.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

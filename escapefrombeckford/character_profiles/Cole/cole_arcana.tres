@@ -1,7 +1,7 @@
-[gd_resource type="Resource" script_class="Arcana" load_steps=3 format=3 uid="uid://c2vwnaxjh24mf"]
+[gd_resource type="Resource" script_class="Arcana" format=3 uid="uid://c2vwnaxjh24mf"]
 
-[ext_resource type="Script" uid="uid://cnmucv1qsei4i" path="res://arcana/core/arcanum.gd" id="1_h3ru2"]
-[ext_resource type="Script" uid="uid://ohjvtcorpcp4" path="res://arcana/core/arcana.gd" id="2_q47en"]
+[ext_resource type="Script" uid="uid://cnmucv1qsei4i" path="res://arcana/_core/arcanum.gd" id="1_h3ru2"]
+[ext_resource type="Script" uid="uid://ohjvtcorpcp4" path="res://arcana/_core/arcana.gd" id="2_q47en"]
 
 [resource]
 script = ExtResource("2_q47en")

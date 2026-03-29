@@ -157,13 +157,25 @@ func _on_preview_button_pressed() -> void:
 
 func _restart_preview_display_timer(delay_sec: float = PREVIEW_DISPLAY_DELAY_SEC) -> void:
 	#print("battle_preview_coordinator.gd _restart_preview_display_timer()")
-	var tree := get_tree()
-	if tree == null:
-		return
-
 	_preview_display_request_id += 1
 	var request_id := _preview_display_request_id
-	tree.create_timer(delay_sec).timeout.connect(_on_preview_display_delay_elapsed.bind(request_id), CONNECT_ONE_SHOT)
+	_wait_for_preview_display_delay(request_id, delay_sec)
+
+
+func _get_battle_clock() -> BattleClock:
+	if battle_view == null:
+		return null
+	return battle_view.clock
+
+
+func _wait_for_preview_display_delay(request_id: int, delay_sec: float) -> void:
+	var clock := _get_battle_clock()
+	if clock == null:
+		push_warning("BattlePreviewCoordinator: missing battle clock; skipping preview display delay")
+		_on_preview_display_delay_elapsed(request_id)
+		return
+	await clock.wait_seconds(delay_sec)
+	_on_preview_display_delay_elapsed(request_id)
 
 
 func _on_preview_display_delay_elapsed(request_id: int) -> void:

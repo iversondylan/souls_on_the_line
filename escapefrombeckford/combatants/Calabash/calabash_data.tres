@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="CombatantData" format=3 uid="uid://bsws0q8so6vua"]
 
-[ext_resource type="Texture2D" uid="uid://dk4vomqg8838f" path="res://assets/character_visuals/calabash/calabash.PNG" id="1_0je4i"]
+[ext_resource type="Texture2D" uid="uid://dk4vomqg8838f" path="res://_assets/character_visuals/calabash/calabash.PNG" id="1_0je4i"]
 [ext_resource type="Resource" uid="uid://bpojfbmj1ij4a" path="res://combatants/Calabash/calabash_ai_profile.tres" id="1_ddxw7"]
 [ext_resource type="Script" uid="uid://cfatj0ryn8uv3" path="res://combatants/combatant_data.gd" id="1_ihj0n"]
 

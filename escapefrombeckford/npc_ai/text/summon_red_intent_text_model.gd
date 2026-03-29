@@ -12,7 +12,7 @@ func get_text(ctx: NPCAIContext) -> String:
 		return "error"
 	
 	# NOTE: requires Keys.SUMMON_DATA to be set by a ParamModel, but defaults safely.
-	var fallback: CombatantData = load(NPCSummonSequence.DEFAULT_SUMMON_DATA_PATH)
+	var fallback: CombatantData = load(Keys.DEFAULT_SUMMON_DATA_PATH)
 	var data: CombatantData = ctx.params.get(Keys.SUMMON_DATA, fallback)
 	
 	if !data:
@@ -30,7 +30,7 @@ func get_text_sim(ctx: NPCAIContext) -> String:
 	if ctx == null:
 		return "error"
 
-	var fallback: CombatantData = load(NPCSummonSequence.DEFAULT_SUMMON_DATA_PATH)
+	var fallback: CombatantData = load(Keys.DEFAULT_SUMMON_DATA_PATH)
 	var data: CombatantData = _param_v(ctx, Keys.SUMMON_DATA, fallback)
 
 	if data == null:

@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="CardPile" format=3 uid="uid://gsb7q5fcn68v"]
 
-[ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://cards/core/card_data.gd" id="1_rilno"]
-[ext_resource type="Script" uid="uid://dnybrgm0o6gjj" path="res://cards/core/card_pile.gd" id="2_nkp8v"]
+[ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://cards/_core/card_data.gd" id="1_rilno"]
+[ext_resource type="Script" uid="uid://dnybrgm0o6gjj" path="res://cards/_core/card_pile.gd" id="2_nkp8v"]
 [ext_resource type="Resource" uid="uid://b7txf6d8vmjkk" path="res://cards/SpectralCloneCard/spectral_clone.tres" id="3_miprr"]
 [ext_resource type="Resource" uid="uid://dqmjfqr0ijgwh" path="res://cards/TemperedSilverbackCard/tempered_silverback_card.tres" id="3_pvg2w"]
 [ext_resource type="Resource" uid="uid://bbmoxyo3717yg" path="res://cards/DecisiveChoice/decisive_choice_data.tres" id="5_y6xy8"]

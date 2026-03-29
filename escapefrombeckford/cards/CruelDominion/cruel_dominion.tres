@@ -1,9 +1,9 @@
 [gd_resource type="Resource" script_class="CardData" format=3 uid="uid://qoedpmaije5m"]
 
-[ext_resource type="Script" uid="uid://wtk5v77fcqvn" path="res://cards/core/card_action.gd" id="1_dlq1m"]
+[ext_resource type="Script" uid="uid://wtk5v77fcqvn" path="res://cards/_core/card_action.gd" id="1_dlq1m"]
 [ext_resource type="Resource" uid="uid://dqpfr84hqn454" path="res://cards/CruelDominion/cruel_dominion_action.tres" id="2_16jh5"]
-[ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://cards/core/card_data.gd" id="2_yf47j"]
-[ext_resource type="Texture2D" uid="uid://c7co4hctuwrut" path="res://assets/sprites/card_elements/wrathful_intent/wrath_card_art.png" id="4_kand5"]
+[ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://cards/_core/card_data.gd" id="2_yf47j"]
+[ext_resource type="Texture2D" uid="uid://c7co4hctuwrut" path="res://_assets/sprites/card_elements/wrathful_intent/wrath_card_art.png" id="4_kand5"]
 
 [resource]
 script = ExtResource("2_yf47j")

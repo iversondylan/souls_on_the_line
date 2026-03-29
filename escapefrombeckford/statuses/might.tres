@@ -1,6 +1,6 @@
-[gd_resource type="Resource" script_class="Might" load_steps=3 format=3 uid="uid://7x55fawjrwf4"]
+[gd_resource type="Resource" script_class="Might" format=3 uid="uid://7x55fawjrwf4"]
 
-[ext_resource type="Texture2D" uid="uid://18cekuhyx78p" path="res://assets/sprites/arcana_placeholders/biceps.png" id="1_u532r"]
+[ext_resource type="Texture2D" uid="uid://18cekuhyx78p" path="res://_assets/sprites/arcana_placeholders/biceps.png" id="1_u532r"]
 [ext_resource type="Script" uid="uid://cq5fs0b07wjcl" path="res://statuses/might.gd" id="2_nj4t5"]
 
 [resource]

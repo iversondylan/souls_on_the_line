@@ -1,7 +1,7 @@
-[gd_scene load_steps=8 format=3 uid="uid://chlyh1tfceais"]
+[gd_scene format=3 uid="uid://chlyh1tfceais"]
 
 [ext_resource type="Script" uid="uid://dcus4fqkwgrtw" path="res://run/map/usable_room.gd" id="1_7itjm"]
-[ext_resource type="Texture2D" uid="uid://bmltytv6xalgo" path="res://assets/sprites/assorted/crossed-swords_48_w.png" id="2_7itjm"]
+[ext_resource type="Texture2D" uid="uid://bmltytv6xalgo" path="res://_assets/sprites/assorted/crossed-swords_48_w.png" id="2_7itjm"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_f2tv2"]
 size = Vector2(48, 48)

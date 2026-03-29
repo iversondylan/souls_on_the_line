@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="FavoringScales" format=3 uid="uid://dql6u88u21l6o"]
+
+[ext_resource type="Texture2D" uid="uid://dtasin1f5vfg7" path="res://_assets/sprites/arcana_placeholders/scales.png" id="1_s5oc5"]
+[ext_resource type="Script" uid="uid://cwgfwu6g7fekf" path="res://arcana/favoring_scales.gd" id="2_hn816"]
+
+[resource]
+script = ExtResource("2_hn816")
+arcanum_name = "Favoring Scales"
+type = 4
+icon = ExtResource("1_s5oc5")
+tooltip_description = "Decrease Shop prices by 50%"
+metadata/_custom_type_script = "uid://cnmucv1qsei4i"

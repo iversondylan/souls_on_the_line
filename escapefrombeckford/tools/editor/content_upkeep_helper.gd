@@ -2,16 +2,25 @@
 class_name ContentUpkeepHelper
 extends RefCounted
 
-const ARCANA_COLLECTION_PATH := "uid://dk5tv1hrr615d"
-const ARCANUM_CATALOG_PATH := "uid://cd45rlmihsfvb"
-const ARCANA_REWARD_POOL_PATH := "uid://c8kt337vs6465"
-const STATUS_CATALOG_PATH := "uid://bqr4wekgibhim"
+## ============================================================
+## USER-EDITABLE PATHS
+## Change these if you want the upkeep outputs or scan roots to
+## live somewhere else.
+## Existing files at these paths are updated in place.
+## Missing files at these paths are created automatically.
+## ============================================================
+const ARCANUM_CATALOG_PATH := "res://arcana/_core/arcanum_catalog.tres"
+const ARCANA_REWARD_POOL_PATH := "res://character_profiles/Cole/arcana_reward_pool.tres"
+const STATUS_CATALOG_PATH := "res://statuses/_core/status_catalog.tres"
 
-const ARCANA_ROOT := "res://arcana/general"
-const STATUS_ROOT := "res://statuses"
+const ARCANA_ROOT := "res://arcana/"
+const STATUS_ROOT := "res://statuses/"
+
+## Script source is scanned for `const ID = &"..."` or `:=`.
+const ID_CONST_PATTERN := 'const\\s+ID\\s*(?::=|=)\\s*&"([^"]+)"'
 
 
-static func run_all() -> Dictionary:
+func run_all() -> Dictionary:
 	var results := {
 		"arcana_catalog": rebuild_arcana_catalogs(),
 		"arcana_reward_pool": rebuild_arcana_reward_pool(),
@@ -23,7 +32,7 @@ static func run_all() -> Dictionary:
 	return results
 
 
-static func rebuild_arcana_catalogs() -> Dictionary:
+func rebuild_arcana_catalogs() -> Dictionary:
 	var found_arcana := _load_resources_recursive(ARCANA_ROOT, Arcanum)
 	found_arcana.sort_custom(func(a: Arcanum, b: Arcanum) -> bool:
 		return str(a.resource_path) < str(b.resource_path)
@@ -33,23 +42,18 @@ static func rebuild_arcana_catalogs() -> Dictionary:
 	if !bool(validation.get("ok", false)):
 		return validation
 
-	var collection := load(ARCANA_COLLECTION_PATH)
-	if !(collection is Arcana):
-		return _error_result("Arcana collection at %s is not an Arcana resource." % ARCANA_COLLECTION_PATH)
-
-	var catalog := load(ARCANUM_CATALOG_PATH)
+	var catalog := _load_or_create_resource(
+		ARCANUM_CATALOG_PATH,
+		func() -> Resource: return ArcanaCatalog.new(),
+		"arcanum catalog"
+	)
 	if !(catalog is ArcanaCatalog):
 		return _error_result("Arcanum catalog at %s is not an ArcanaCatalog resource." % ARCANUM_CATALOG_PATH)
 
-	collection.arcana.clear()
-	collection.arcana.append_array(found_arcana)
 	catalog.arcana.clear()
 	catalog.arcana.append_array(found_arcana)
 
-	var save_result := _save_resource(collection)
-	if !bool(save_result.get("ok", false)):
-		return save_result
-	save_result = _save_resource(catalog)
+	var save_result := _save_resource(catalog, ARCANUM_CATALOG_PATH)
 	if !bool(save_result.get("ok", false)):
 		return save_result
 
@@ -60,7 +64,7 @@ static func rebuild_arcana_catalogs() -> Dictionary:
 	}
 
 
-static func rebuild_arcana_reward_pool() -> Dictionary:
+func rebuild_arcana_reward_pool() -> Dictionary:
 	var found_arcana := _load_resources_recursive(ARCANA_ROOT, Arcanum)
 	found_arcana.sort_custom(func(a: Arcanum, b: Arcanum) -> bool:
 		return str(a.resource_path) < str(b.resource_path)
@@ -70,7 +74,11 @@ static func rebuild_arcana_reward_pool() -> Dictionary:
 	if !bool(validation.get("ok", false)):
 		return validation
 
-	var pool := load(ARCANA_REWARD_POOL_PATH)
+	var pool := _load_or_create_resource(
+		ARCANA_REWARD_POOL_PATH,
+		func() -> Resource: return ArcanaRewardPool.new(),
+		"arcana reward pool"
+	)
 	if !(pool is ArcanaRewardPool):
 		return _error_result("Arcana reward pool at %s is not an ArcanaRewardPool resource." % ARCANA_REWARD_POOL_PATH)
 
@@ -78,11 +86,11 @@ static func rebuild_arcana_reward_pool() -> Dictionary:
 	for arcanum: Arcanum in found_arcana:
 		if arcanum.starter_arcanum:
 			continue
-		allowed_ids.append(str(arcanum.get_id()))
+		allowed_ids.append(str(_extract_resource_id(arcanum)))
 	allowed_ids.sort()
 	pool.allowed_ids = PackedStringArray(allowed_ids)
 
-	var save_result := _save_resource(pool)
+	var save_result := _save_resource(pool, ARCANA_REWARD_POOL_PATH)
 	if !bool(save_result.get("ok", false)):
 		return save_result
 
@@ -93,7 +101,7 @@ static func rebuild_arcana_reward_pool() -> Dictionary:
 	}
 
 
-static func rebuild_status_catalog() -> Dictionary:
+func rebuild_status_catalog() -> Dictionary:
 	var found_statuses := _load_resources_recursive(STATUS_ROOT, Status)
 	found_statuses.sort_custom(func(a: Status, b: Status) -> bool:
 		return str(a.resource_path) < str(b.resource_path)
@@ -103,14 +111,18 @@ static func rebuild_status_catalog() -> Dictionary:
 	if !bool(validation.get("ok", false)):
 		return validation
 
-	var catalog := load(STATUS_CATALOG_PATH)
+	var catalog := _load_or_create_resource(
+		STATUS_CATALOG_PATH,
+		func() -> Resource: return StatusCatalog.new(),
+		"status catalog"
+	)
 	if !(catalog is StatusCatalog):
 		return _error_result("Status catalog at %s is not a StatusCatalog resource." % STATUS_CATALOG_PATH)
 
 	catalog.statuses.clear()
 	catalog.statuses.append_array(found_statuses)
 
-	var save_result := _save_resource(catalog)
+	var save_result := _save_resource(catalog, STATUS_CATALOG_PATH)
 	if !bool(save_result.get("ok", false)):
 		return save_result
 
@@ -121,7 +133,7 @@ static func rebuild_status_catalog() -> Dictionary:
 	}
 
 
-static func _load_resources_recursive(root_path: String, expected_type) -> Array:
+func _load_resources_recursive(root_path: String, expected_type) -> Array:
 	var results: Array = []
 	var dir := DirAccess.open(root_path)
 	if dir == null:
@@ -147,12 +159,12 @@ static func _load_resources_recursive(root_path: String, expected_type) -> Array
 	return results
 
 
-static func _validate_resource_ids(resources: Array, label: String) -> Dictionary:
+func _validate_resource_ids(resources: Array, label: String) -> Dictionary:
 	var by_id := {}
 	for resource in resources:
 		if resource == null:
 			continue
-		var id := resource.get_id()
+		var id := _extract_resource_id(resource)
 		if id == &"":
 			return _error_result("Found %s with empty id: %s" % [label, str(resource.resource_path)])
 		if by_id.has(id):
@@ -171,10 +183,55 @@ static func _validate_resource_ids(resources: Array, label: String) -> Dictionar
 	}
 
 
-static func _save_resource(resource: Resource) -> Dictionary:
+func _extract_resource_id(resource: Resource) -> StringName:
+	if resource == null:
+		return &""
+	var script := resource.get_script() as Script
+	if script == null:
+		push_warning("ContentUpkeepHelper: resource %s is missing a script" % str(resource.resource_path))
+		return &""
+	var script_path := str(script.resource_path)
+	if script_path.is_empty():
+		push_warning("ContentUpkeepHelper: resource %s has a script with no path" % str(resource.resource_path))
+		return &""
+	var file := FileAccess.open(script_path, FileAccess.READ)
+	if file == null:
+		push_warning("ContentUpkeepHelper: failed to open script %s" % script_path)
+		return &""
+	var source := file.get_as_text()
+	var regex := RegEx.new()
+	var err := regex.compile(ID_CONST_PATTERN)
+	if err != OK:
+		push_warning("ContentUpkeepHelper: failed to compile ID regex")
+		return &""
+	var match := regex.search(source)
+	if match == null or match.get_group_count() < 1:
+		push_warning("ContentUpkeepHelper: could not find const ID in %s" % script_path)
+		return &""
+	return StringName(match.get_string(1))
+
+
+func _load_or_create_resource(path: String, factory: Callable, label: String) -> Resource:
+	var resource: Resource = null
+	if ResourceLoader.exists(path):
+		resource = load(path)
+	if resource != null:
+		return resource
+	if !factory.is_valid():
+		push_error("ContentUpkeepHelper: no factory provided for %s at %s" % [label, path])
+		return null
+	resource = factory.call()
+	if resource == null:
+		push_error("ContentUpkeepHelper: failed to create %s at %s" % [label, path])
+		return null
+	resource.resource_path = path
+	return resource
+
+
+func _save_resource(resource: Resource, path_override: String = "") -> Dictionary:
 	if resource == null:
 		return _error_result("Tried to save a null resource.")
-	var path := str(resource.resource_path)
+	var path := path_override if !path_override.is_empty() else str(resource.resource_path)
 	if path.is_empty():
 		return _error_result("Resource %s is missing a resource_path." % resource.get_class())
 	var err := ResourceSaver.save(resource, path)
@@ -186,7 +243,7 @@ static func _save_resource(resource: Resource) -> Dictionary:
 	}
 
 
-static func _error_result(message: String) -> Dictionary:
+func _error_result(message: String) -> Dictionary:
 	push_error("ContentUpkeepHelper: %s" % message)
 	return {
 		"ok": false,

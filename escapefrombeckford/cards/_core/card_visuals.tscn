@@ -1,0 +1,236 @@
+[gd_scene format=3 uid="uid://dlpbxdm81neil"]
+
+[ext_resource type="Script" uid="uid://ds2ql77j3pbxq" path="res://cards/_core/card_visuals.gd" id="1_2ndsp"]
+[ext_resource type="Texture2D" uid="uid://7wqf7vhvv0ae" path="res://_assets/sprites/assorted/card_glow.PNG" id="1_w227c"]
+[ext_resource type="Resource" uid="uid://b7txf6d8vmjkk" path="res://cards/SpectralCloneCard/spectral_clone.tres" id="2_e5rkb"]
+[ext_resource type="Theme" uid="uid://1dr1eewpv0jd" path="res://themes/ui_theme.tres" id="3_2ndsp"]
+[ext_resource type="Texture2D" uid="uid://cvvxggb32iq5y" path="res://_assets/sprites/assorted/warp_weasel.png" id="4_e5rkb"]
+[ext_resource type="Texture2D" uid="uid://b7vtyi61om1lo" path="res://_assets/sprites/card_elements/brass_instrument_card_front_vectors_main.png" id="5_d6xg4"]
+[ext_resource type="Texture2D" uid="uid://c2cpjnsgjdd1x" path="res://_assets/sprites/assorted/card_back_1.PNG" id="6_spa0x"]
+[ext_resource type="Texture2D" uid="uid://cdap6hv4e5qcw" path="res://_assets/sprites/assorted/tri_white.png" id="7_fq4np"]
+[ext_resource type="Texture2D" uid="uid://bmcmfx1vvvaeg" path="res://_assets/sprites/card_elements/brass_instrument_cost_panel.png" id="8_kvkof"]
+[ext_resource type="Texture2D" uid="uid://bsuuga4ljrlnd" path="res://_assets/sprites/card_elements/card_name_box.png" id="8_q02fp"]
+[ext_resource type="Texture2D" uid="uid://cjb0lvcy0m405" path="res://_assets/sprites/card_elements/cost_circle_T_gray.png" id="9_da2py"]
+[ext_resource type="Texture2D" uid="uid://bfra4egurcd6k" path="res://_assets/sprites/card_elements/brass_instrument_cost_outline.png" id="9_ytu8h"]
+[ext_resource type="Texture2D" uid="uid://b7smcstu031ke" path="res://_assets/sprites/card_elements/cost_circle_T_blue1.png" id="10_ytu8h"]
+[ext_resource type="Texture2D" uid="uid://bvwjmd1ch5b4o" path="res://_assets/sprites/card_elements/cost_circle_L_gray.png" id="11_ss3dn"]
+[ext_resource type="Texture2D" uid="uid://cdv0klth22vog" path="res://_assets/sprites/card_elements/cost_circle_L_red1.png" id="12_gqdbl"]
+[ext_resource type="Texture2D" uid="uid://csxfvex0guwsl" path="res://_assets/sprites/card_elements/cost_circle_R_gray.png" id="13_s0hpw"]
+[ext_resource type="Texture2D" uid="uid://bie3ywpj1wrhn" path="res://_assets/sprites/card_elements/cost_circle_R_green1.png" id="14_x7t2n"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_g488w"]
+size = Vector2(225, 315)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_ei7xy"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("9_da2py")
+}, {
+"duration": 1.0,
+"texture": ExtResource("10_ytu8h")
+}],
+"loop": true,
+"name": &"default",
+"speed": 5.0
+}]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_r0xwb"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("11_ss3dn")
+}, {
+"duration": 1.0,
+"texture": ExtResource("12_gqdbl")
+}],
+"loop": true,
+"name": &"default",
+"speed": 5.0
+}]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_kt7gq"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("13_s0hpw")
+}, {
+"duration": 1.0,
+"texture": ExtResource("14_x7t2n")
+}],
+"loop": true,
+"name": &"default",
+"speed": 5.0
+}]
+
+[node name="CardVisuals" type="Control" unique_id=23697316]
+custom_minimum_size = Vector2(225, 315)
+layout_mode = 3
+anchors_preset = 0
+script = ExtResource("1_2ndsp")
+card_data = ExtResource("2_e5rkb")
+
+[node name="ClickArea" type="Area2D" parent="." unique_id=522620299]
+position = Vector2(66, 94)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ClickArea" unique_id=2036560496]
+position = Vector2(46.5, 63.5)
+shape = SubResource("RectangleShape2D_g488w")
+
+[node name="CardStrictlyVisuals" type="Node2D" parent="." unique_id=1041769440]
+position = Vector2(112.5, 157.5)
+
+[node name="CornerMan" type="Node2D" parent="CardStrictlyVisuals" unique_id=523276062]
+position = Vector2(-112.5, -157.5)
+
+[node name="Glow" type="Sprite2D" parent="CardStrictlyVisuals/CornerMan" unique_id=942930438]
+unique_name_in_owner = true
+visible = false
+z_index = -1
+position = Vector2(114.5, 159.9)
+scale = Vector2(1.85, 1.85)
+texture = ExtResource("1_w227c")
+
+[node name="ColorRect" type="ColorRect" parent="CardStrictlyVisuals/CornerMan" unique_id=90343212]
+offset_left = 10.0
+offset_top = 22.0
+offset_right = 216.0
+offset_bottom = 157.0
+mouse_filter = 2
+color = Color(0.1612, 0.19907331, 0.26, 1)
+
+[node name="CardArtRect" type="TextureRect" parent="CardStrictlyVisuals/CornerMan" unique_id=1389538820]
+unique_name_in_owner = true
+offset_left = 15.0
+offset_top = 28.0
+offset_right = 210.0
+offset_bottom = 154.0
+mouse_filter = 2
+texture = ExtResource("4_e5rkb")
+expand_mode = 2
+
+[node name="CardFront" type="TextureRect" parent="CardStrictlyVisuals/CornerMan" unique_id=2016016968]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(225, 315)
+offset_right = 225.0
+mouse_filter = 2
+texture = ExtResource("5_d6xg4")
+expand_mode = 3
+stretch_mode = 4
+
+[node name="CardDescription" type="Node2D" parent="CardStrictlyVisuals/CornerMan" unique_id=816015738]
+position = Vector2(20, 121)
+
+[node name="Description" type="RichTextLabel" parent="CardStrictlyVisuals/CornerMan/CardDescription" unique_id=867830151]
+unique_name_in_owner = true
+offset_left = -3.0
+offset_top = 43.0
+offset_right = 189.0
+offset_bottom = 178.0
+mouse_filter = 2
+theme = ExtResource("3_2ndsp")
+theme_override_font_sizes/normal_font_size = 14
+theme_override_font_sizes/bold_font_size = 14
+theme_override_font_sizes/italics_font_size = 14
+bbcode_enabled = true
+text = "Card Description"
+scroll_active = false
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="CardNameBox" type="Sprite2D" parent="CardStrictlyVisuals/CornerMan" unique_id=1232157855]
+unique_name_in_owner = true
+visible = false
+position = Vector2(112, 159)
+scale = Vector2(0.39, 0.39)
+texture = ExtResource("8_q02fp")
+
+[node name="CostDisplay" type="Node2D" parent="CardStrictlyVisuals/CornerMan" unique_id=764598444]
+unique_name_in_owner = true
+position = Vector2(13, 14)
+
+[node name="CostContainer" type="Sprite2D" parent="CardStrictlyVisuals/CornerMan/CostDisplay" unique_id=1730762884]
+unique_name_in_owner = true
+scale = Vector2(0.24, 0.24)
+texture = ExtResource("8_kvkof")
+
+[node name="CostOutline" type="Sprite2D" parent="CardStrictlyVisuals/CornerMan/CostDisplay/CostContainer" unique_id=351788112]
+z_index = -1
+texture = ExtResource("9_ytu8h")
+
+[node name="CostBlue" type="AnimatedSprite2D" parent="CardStrictlyVisuals/CornerMan/CostDisplay" unique_id=619611917]
+unique_name_in_owner = true
+visible = false
+scale = Vector2(0.4, 0.4)
+sprite_frames = SubResource("SpriteFrames_ei7xy")
+
+[node name="CostRed" type="AnimatedSprite2D" parent="CardStrictlyVisuals/CornerMan/CostDisplay" unique_id=1703145274]
+unique_name_in_owner = true
+visible = false
+scale = Vector2(0.4, 0.4)
+sprite_frames = SubResource("SpriteFrames_r0xwb")
+
+[node name="CostGreen" type="AnimatedSprite2D" parent="CardStrictlyVisuals/CornerMan/CostDisplay" unique_id=1030610830]
+unique_name_in_owner = true
+visible = false
+scale = Vector2(0.4, 0.4)
+sprite_frames = SubResource("SpriteFrames_kt7gq")
+
+[node name="CostLabel" type="Label" parent="CardStrictlyVisuals/CornerMan/CostDisplay" unique_id=1696505696]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -29.5
+offset_right = 20.0
+offset_bottom = 29.5
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("3_2ndsp")
+theme_override_font_sizes/font_size = 34
+text = "1"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="CardBack" type="Sprite2D" parent="CardStrictlyVisuals/CornerMan" unique_id=732866215]
+visible = false
+position = Vector2(-20, -20)
+texture = ExtResource("6_spa0x")
+
+[node name="Rarity" type="TextureRect" parent="CardStrictlyVisuals/CornerMan" unique_id=308798412]
+unique_name_in_owner = true
+visible = false
+anchors_preset = 6
+anchor_left = 1.0
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_left = 209.0
+offset_top = 151.0
+offset_right = 221.0
+offset_bottom = 163.0
+grow_horizontal = 0
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("7_fq4np")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="NameLabel" type="RichTextLabel" parent="CardStrictlyVisuals/CornerMan" unique_id=1888106854]
+unique_name_in_owner = true
+offset_left = 40.0
+offset_top = 3.0
+offset_right = 194.0
+offset_bottom = 33.0
+mouse_filter = 2
+theme = ExtResource("3_2ndsp")
+theme_override_font_sizes/normal_font_size = 18
+theme_override_font_sizes/italics_font_size = 18
+bbcode_enabled = true
+text = "[i]Card Name[/i]"
+scroll_active = false
+autowrap_mode = 0
+horizontal_alignment = 1
+vertical_alignment = 1

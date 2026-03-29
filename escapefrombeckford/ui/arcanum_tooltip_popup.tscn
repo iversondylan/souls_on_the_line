@@ -1,7 +1,7 @@
-[gd_scene load_steps=3 format=3 uid="uid://b32tn7y6k3shn"]
+[gd_scene format=3 uid="uid://b32tn7y6k3shn"]
 
 [ext_resource type="Script" uid="uid://dehd0604e4lrd" path="res://ui/arcanum_tooltip_popup.gd" id="1_b5a31"]
-[ext_resource type="Texture2D" uid="uid://dqw3vrvo72rls" path="res://assets/sprites/arcana_placeholders/clone.png" id="2_0n13h"]
+[ext_resource type="Texture2D" uid="uid://dqw3vrvo72rls" path="res://_assets/sprites/arcana_placeholders/clone.png" id="2_0n13h"]
 
 [node name="ArcanumTooltipPopup" type="Control"]
 layout_mode = 3

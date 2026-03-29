@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="Sound" format=3 uid="uid://ddrxex8lotgxn"]
 
-[ext_resource type="Script" path="res://audio/sound.gd" id="1_k5uxk"]
-[ext_resource type="AudioStream" uid="uid://5buss22qggjn" path="res://assets/sfx/thrall_hit.wav" id="2_sbf4m"]
+[ext_resource type="Script" uid="uid://bjedhaqsbwou7" path="res://audio/sound.gd" id="1_k5uxk"]
+[ext_resource type="AudioStream" uid="uid://5buss22qggjn" path="res://_assets/sfx/thrall_hit.wav" id="2_sbf4m"]
 
 [resource]
 script = ExtResource("1_k5uxk")

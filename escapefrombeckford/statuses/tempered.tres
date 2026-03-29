@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="TemperedStatus" format=3 uid="uid://tioo1cbmio6m"]
 
-[ext_resource type="Texture2D" uid="uid://wkbyd07gtfgk" path="res://assets/sprites/statuses/anvil-impact.png" id="1_3fj7w"]
+[ext_resource type="Texture2D" uid="uid://wkbyd07gtfgk" path="res://_assets/sprites/statuses/anvil-impact.png" id="1_3fj7w"]
 [ext_resource type="Script" uid="uid://dt5n6oivqq012" path="res://statuses/tempered.gd" id="2_adcuq"]
 
 [resource]

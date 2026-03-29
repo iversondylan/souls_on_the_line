@@ -3,10 +3,9 @@ extends EditorScript
 
 ## RUN THIS AFTER YOU ADD / REMOVE / RENAME / EDIT ANY ARCANA OR STATUS .tres FILE.
 ## THIS SCRIPT UPDATES:
-##   1. THE ARCANA COLLECTION
-##   2. THE ARCANUM CATALOG
-##   3. THE ARCANA REWARD POOL
-##   4. THE STATUS CATALOG
+##   1. THE ARCANUM CATALOG
+##   2. THE ARCANA REWARD POOL
+##   3. THE STATUS CATALOG
 ##
 ## HOW TO RUN IT IN GODOT:
 ##   1. OPEN THIS FILE: res://tools/editor/upkeep_run_me.gd
@@ -20,11 +19,13 @@ extends EditorScript
 ## AFTER RUNNING:
 ##   IF THIS SCRIPT CHANGES .tres FILES, SAVE / REVIEW / COMMIT THOSE CHANGES.
 
-const ContentUpkeepHelper = preload("res://tools/editor/content_upkeep_helper.gd")
+const ContentUpkeepHelperScript = preload("res://tools/editor/content_upkeep_helper.gd")
 
 
 func _run() -> void:
-	var results := ContentUpkeepHelper.run_all()
+	var helper := ContentUpkeepHelperScript.new() as ContentUpkeepHelper
+	var results := helper.run_all()
+
 	_print_step_result(results.get("arcana_catalog", {}), "arcanum catalog")
 	_print_step_result(results.get("arcana_reward_pool", {}), "arcana reward pool")
 	_print_step_result(results.get("status_catalog", {}), "status catalog")

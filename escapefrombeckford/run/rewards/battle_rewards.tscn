@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://dg2swwanmuywt"]
 
 [ext_resource type="Script" uid="uid://sh8rje2wv580" path="res://run/rewards/battle_rewards.gd" id="1_qeoyd"]
-[ext_resource type="Texture2D" uid="uid://boe18x28cbaaf" path="res://assets/backgrounds/DF_Path_NoRorik_1080.png" id="2_dw2ox"]
+[ext_resource type="Texture2D" uid="uid://boe18x28cbaaf" path="res://_assets/backgrounds/DF_Path_NoRorik_1080.png" id="2_dw2ox"]
 [ext_resource type="Theme" uid="uid://d2wc7fposrlqs" path="res://themes/wizard_theme.tres" id="2_nyf7h"]
 [ext_resource type="PackedScene" uid="uid://clfrebjlfonlo" path="res://ui/reward_button.tscn" id="4_kxtc4"]
 

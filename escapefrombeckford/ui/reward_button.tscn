@@ -1,7 +1,7 @@
-[gd_scene load_steps=4 format=3 uid="uid://clfrebjlfonlo"]
+[gd_scene format=3 uid="uid://clfrebjlfonlo"]
 
 [ext_resource type="Script" uid="uid://cuk1enmwc4toj" path="res://ui/reward_button.gd" id="1_8fbqs"]
-[ext_resource type="Texture2D" uid="uid://cbbohhy0ybxvy" path="res://assets/sprites/assorted/coin.PNG" id="1_y2wrr"]
+[ext_resource type="Texture2D" uid="uid://cbbohhy0ybxvy" path="res://_assets/sprites/assorted/coin.PNG" id="1_y2wrr"]
 [ext_resource type="Theme" uid="uid://1dr1eewpv0jd" path="res://themes/ui_theme.tres" id="2_8fbqs"]
 
 [node name="RewardButton" type="Button"]

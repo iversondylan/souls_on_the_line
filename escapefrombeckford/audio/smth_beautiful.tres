@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="Sound" format=3 uid="uid://dxy3rsc21a2l"]
 
 [ext_resource type="Script" uid="uid://bjedhaqsbwou7" path="res://audio/sound.gd" id="1_fvqco"]
-[ext_resource type="AudioStream" uid="uid://x8xp4rdhs6lx" path="res://assets/music/Something+Beautiful+Is+Going+To+Happen.mp3" id="2_gw44t"]
+[ext_resource type="AudioStream" uid="uid://x8xp4rdhs6lx" path="res://_assets/music/Something+Beautiful+Is+Going+To+Happen.mp3" id="2_gw44t"]
 
 [resource]
 script = ExtResource("1_fvqco")

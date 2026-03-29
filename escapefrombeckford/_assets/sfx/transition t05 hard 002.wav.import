@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://cdl31i3vlhnay"
+path="res://.godot/imported/transition t05 hard 002.wav-9d2b69918e9606538c49e4b984959e92.sample"
+
+[deps]
+
+source_file="res://_assets/sfx/transition t05 hard 002.wav"
+dest_files=["res://.godot/imported/transition t05 hard 002.wav-9d2b69918e9606538c49e4b984959e92.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

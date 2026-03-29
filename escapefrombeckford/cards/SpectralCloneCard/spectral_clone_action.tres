@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://buhtw3540mbls" path="res://cards/_generic_actions/summon_action.gd" id="1_uj6cq"]
 [ext_resource type="Resource" uid="uid://dwy6ym7cfiix7" path="res://combatants/BasicClone/basic_clone_data.tres" id="2_brs4w"]
-[ext_resource type="AudioStream" uid="uid://bhgtqvxlst0g" path="res://assets/sfx/summon_zap.wav" id="2_gj3hl"]
+[ext_resource type="AudioStream" uid="uid://bhgtqvxlst0g" path="res://_assets/sfx/summon_zap.wav" id="2_gj3hl"]
 
 [resource]
 script = ExtResource("1_uj6cq")

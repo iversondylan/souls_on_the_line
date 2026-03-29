@@ -1,7 +1,7 @@
-[gd_resource type="Resource" script_class="NPCAIProfile" load_steps=4 format=3 uid="uid://ci0r20871m74q"]
+[gd_resource type="Resource" script_class="NPCAIProfile" format=3 uid="uid://ci0r20871m74q"]
 
-[ext_resource type="Script" uid="uid://bcih413oy6v73" path="res://npc_ai/core/npc_action.gd" id="1_q44wx"]
-[ext_resource type="Script" uid="uid://bdsvca1cpka5s" path="res://npc_ai/core/npc_ai_profile.gd" id="2_85h7n"]
+[ext_resource type="Script" uid="uid://bcih413oy6v73" path="res://npc_ai/_core/npc_action.gd" id="1_q44wx"]
+[ext_resource type="Script" uid="uid://bdsvca1cpka5s" path="res://npc_ai/_core/npc_ai_profile.gd" id="2_85h7n"]
 [ext_resource type="Resource" uid="uid://kxpsrni2aq0l" path="res://combatants/BlastingMite/blast_attack_action.tres" id="2_hky4u"]
 
 [resource]

@@ -1,9 +1,9 @@
 [gd_resource type="Resource" script_class="CardData" format=3 uid="uid://bhqq2dr8db5pn"]
 
-[ext_resource type="Script" uid="uid://wtk5v77fcqvn" path="res://cards/core/card_action.gd" id="1_action"]
-[ext_resource type="Resource" path="res://cards/ResonanceSpikeCard/resonance_spike_action.tres" id="2_action_res"]
-[ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://cards/core/card_data.gd" id="3_card_data"]
-[ext_resource type="Texture2D" uid="uid://cnj435rpb1haa" path="res://assets/sprites/statuses/resonance_spike.png" id="4_texture"]
+[ext_resource type="Script" uid="uid://wtk5v77fcqvn" path="res://cards/_core/card_action.gd" id="1_action"]
+[ext_resource type="Resource" uid="uid://cnn6manny0p16" path="res://cards/ResonanceSpikeCard/resonance_spike_action.tres" id="2_action_res"]
+[ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://cards/_core/card_data.gd" id="3_card_data"]
+[ext_resource type="Texture2D" uid="uid://cnj435rpb1haa" path="res://_assets/sprites/statuses/resonance_spike.png" id="4_texture"]
 
 [resource]
 script = ExtResource("3_card_data")

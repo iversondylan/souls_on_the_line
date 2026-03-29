@@ -1,0 +1,33 @@
+[gd_scene format=3 uid="uid://dgbw3in30hd1"]
+
+[ext_resource type="Texture2D" uid="uid://b3jac0y1tf60v" path="res://_assets/sprites/assorted/energy_ball.png" id="1_c0sk2"]
+
+[sub_resource type="Curve" id="Curve_ikhnk"]
+_data = [Vector2(0, 0), 0.0, 1.828652, 0, 0, Vector2(0.52073735, 0.8314607), 0.0, 0.0, 0, 0, Vector2(1, 0), -4.368448, 0.0, 0, 0]
+point_count = 3
+
+[sub_resource type="CurveTexture" id="CurveTexture_gwi4l"]
+curve = SubResource("Curve_ikhnk")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_qg8le"]
+particle_flag_disable_z = true
+emission_shape_scale = Vector3(100, 20, 1)
+emission_shape = 6
+emission_ring_axis = Vector3(1, 1, 1)
+emission_ring_height = 1.0
+emission_ring_radius = 1.0
+emission_ring_inner_radius = 0.0
+emission_ring_cone_angle = 90.0
+spread = 0.0
+gravity = Vector3(0, 0, 0)
+radial_accel_min = -25.100002
+radial_accel_max = -25.100002
+scale_min = 0.099999994
+scale_max = 0.099999994
+scale_curve = SubResource("CurveTexture_gwi4l")
+
+[node name="TurnStartSwirl" type="Node2D" unique_id=1349972811]
+
+[node name="GPUParticles2D" type="GPUParticles2D" parent="." unique_id=948314229]
+texture = ExtResource("1_c0sk2")
+process_material = SubResource("ParticleProcessMaterial_qg8le")

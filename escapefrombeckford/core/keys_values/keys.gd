@@ -49,19 +49,8 @@ const PARENT_SCOPE_ID := &"parent_scope_id"
 const SCOPE_KIND := &"kind"
 const SCOPE_LABEL := &"label"
 
-## Scope kinds (these are *values* used in BattleScopeManager / writer)
-#const SCOPE_BATTLE := &"battle"
-#const SCOPE_GROUP_TURN := &"group_turn"
-#const SCOPE_ACTOR_TURN := &"actor_turn"
-#const SCOPE_CARD := &"card"
-#const SCOPE_ATTACK := &"attack"
-#const SCOPE_DAMAGE := &"damage"
-#const SCOPE_STATUS := &"status"
-#const SCOPE_SUMMON := &"summon"
-#const SCOPE_MOVE := &"move"
-#const SCOPE_ARCANA := &"arcana"
-#const SCOPE_STRIKE := &"strike"
-#const SCOPE_HIT := &"hit"
+const DEFAULT_SUMMON_DATA_PATH := &"DEFAULT_SUMMON_DATA_PATH"
+const DEFAULT_SUMMON_DATA_UID := &"DEFAULT_SUMMON_DATA_UID"
 # -------------------------
 # Event data keys
 # -------------------------

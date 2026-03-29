@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="AmplifyStatus" format=3 uid="uid://bd1ti361ucok5"]
 
 [ext_resource type="Script" uid="uid://c7h3jkrqud34y" path="res://statuses/amplify.gd" id="1_7ubsa"]
-[ext_resource type="Texture2D" uid="uid://dhtbmqc74eaby" path="res://assets/sprites/assorted/lightning-bolt-set-neon-signs-600nw-2303216923.webp" id="1_pto7b"]
+[ext_resource type="Texture2D" uid="uid://dhtbmqc74eaby" path="res://_assets/sprites/assorted/lightning-bolt-set-neon-signs-600nw-2303216923.webp" id="1_pto7b"]
 
 [resource]
 script = ExtResource("1_7ubsa")

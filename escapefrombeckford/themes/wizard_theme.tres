@@ -1,11 +1,11 @@
 [gd_resource type="Theme" format=3 uid="uid://d2wc7fposrlqs"]
 
-[ext_resource type="FontFile" uid="uid://d37icxdfe1ifl" path="res://assets/fonts/linux-libertine/LinLibertine_5.3.0_2012_07_02/LinLibertineOTF_5.3.0_2012_07_02/LinLibertine_RB.otf" id="1_30ffg"]
+[ext_resource type="FontFile" uid="uid://d37icxdfe1ifl" path="res://_assets/fonts/linux-libertine/LinLibertine_5.3.0_2012_07_02/LinLibertineOTF_5.3.0_2012_07_02/LinLibertine_RB.otf" id="1_30ffg"]
 [ext_resource type="StyleBox" uid="uid://fiwacm3v2m8u" path="res://themes/styles/wizard_StyleBoxFlat.tres" id="1_bp8xa"]
 [ext_resource type="StyleBox" uid="uid://b5ppoh5gmxraw" path="res://themes/styles/new_style_box_flat_3.tres" id="2_at6al"]
 [ext_resource type="StyleBox" uid="uid://b0yw5dt4p5ib0" path="res://themes/styles/new_style_box_flat_2.tres" id="3_6vgp1"]
-[ext_resource type="FontFile" uid="uid://bghjbryekmnis" path="res://assets/fonts/linux-libertine/LinLibertine_5.3.0_2012_07_02/LinLibertineOTF_5.3.0_2012_07_02/LinLibertine_R.otf" id="4_u42fm"]
-[ext_resource type="FontFile" uid="uid://b1ahfe6v5ucl7" path="res://assets/fonts/linux-libertine/LinLibertine_5.3.0_2012_07_02/LinLibertineOTF_5.3.0_2012_07_02/LinLibertine_RBI.otf" id="6_at6al"]
+[ext_resource type="FontFile" uid="uid://bghjbryekmnis" path="res://_assets/fonts/linux-libertine/LinLibertine_5.3.0_2012_07_02/LinLibertineOTF_5.3.0_2012_07_02/LinLibertine_R.otf" id="4_u42fm"]
+[ext_resource type="FontFile" uid="uid://b1ahfe6v5ucl7" path="res://_assets/fonts/linux-libertine/LinLibertine_5.3.0_2012_07_02/LinLibertineOTF_5.3.0_2012_07_02/LinLibertine_RBI.otf" id="6_at6al"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_u42fm"]
 

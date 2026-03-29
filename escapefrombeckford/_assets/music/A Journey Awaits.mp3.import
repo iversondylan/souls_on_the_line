@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://c82p37a2b0tle"
+path="res://.godot/imported/A Journey Awaits.mp3-b8d030e26a629bde7dff3d0f5d2d31ed.mp3str"
+
+[deps]
+
+source_file="res://_assets/music/A Journey Awaits.mp3"
+dest_files=["res://.godot/imported/A Journey Awaits.mp3-b8d030e26a629bde7dff3d0f5d2d31ed.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

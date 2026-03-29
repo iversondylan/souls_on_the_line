@@ -1,10 +1,10 @@
-[gd_scene load_steps=6 format=3 uid="uid://bsiw7kxq3vytd"]
+[gd_scene format=3 uid="uid://bsiw7kxq3vytd"]
 
-[ext_resource type="PackedScene" uid="uid://d4g7iin5x7648" path="res://cards/menu_card/menu_card.tscn" id="1_q5376"]
+[ext_resource type="PackedScene" uid="uid://d4g7iin5x7648" path="res://cards/_core/menu_card.tscn" id="1_q5376"]
 [ext_resource type="Script" uid="uid://bqo2pqdv1i2f3" path="res://run/shop/shop_card.gd" id="1_w7nxn"]
 [ext_resource type="Resource" uid="uid://qoedpmaije5m" path="res://cards/CruelDominion/cruel_dominion.tres" id="2_ve2vk"]
 [ext_resource type="Theme" uid="uid://d2wc7fposrlqs" path="res://themes/wizard_theme.tres" id="2_w7nxn"]
-[ext_resource type="Texture2D" uid="uid://cbbohhy0ybxvy" path="res://assets/sprites/assorted/coin.PNG" id="3_ve2vk"]
+[ext_resource type="Texture2D" uid="uid://cbbohhy0ybxvy" path="res://_assets/sprites/assorted/coin.PNG" id="3_ve2vk"]
 
 [node name="ShopCard" type="VBoxContainer"]
 custom_minimum_size = Vector2(225, 436)

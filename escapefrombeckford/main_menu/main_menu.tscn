@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://byfyjsj2j7wh"]
 
 [ext_resource type="Script" uid="uid://c82r707xq7wjh" path="res://main_menu/main_menu.gd" id="1_main"]
-[ext_resource type="FontFile" uid="uid://b1ahfe6v5ucl7" path="res://assets/fonts/linux-libertine/LinLibertine_5.3.0_2012_07_02/LinLibertineOTF_5.3.0_2012_07_02/LinLibertine_RBI.otf" id="2_font"]
+[ext_resource type="FontFile" uid="uid://b1ahfe6v5ucl7" path="res://_assets/fonts/linux-libertine/LinLibertine_5.3.0_2012_07_02/LinLibertineOTF_5.3.0_2012_07_02/LinLibertine_RBI.otf" id="2_font"]
 [ext_resource type="Theme" uid="uid://d2wc7fposrlqs" path="res://themes/wizard_theme.tres" id="3_theme"]
 
 [sub_resource type="Gradient" id="Gradient_ekxnf"]

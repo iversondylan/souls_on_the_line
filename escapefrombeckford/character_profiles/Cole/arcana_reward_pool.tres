@@ -1,8 +1,8 @@
 [gd_resource type="Resource" script_class="ArcanaRewardPool" format=3 uid="uid://c8kt337vs6465"]
 
-[ext_resource type="Script" uid="uid://l5htcqf6312n" path="res://arcana/core/arcana_reward_pool.gd" id="1_ghr83"]
+[ext_resource type="Script" uid="uid://l5htcqf6312n" path="res://arcana/_core/arcana_reward_pool.gd" id="1_taipw"]
 
 [resource]
-script = ExtResource("1_ghr83")
-allowed_ids = PackedStringArray("unruly_pyric_wraps", "sigil_of_mana", "thales_flask", "favoring_scales", "vennards_vauxite")
+script = ExtResource("1_taipw")
+allowed_ids = PackedStringArray("favoring_scales", "sigil_of_mana", "thales_flask", "unruly_pyric_wraps", "vennards_vauxite.gd")
 metadata/_custom_type_script = "uid://l5htcqf6312n"

@@ -1,0 +1,20 @@
+[gd_scene format=3 uid="uid://bhyvpe6l2eymv"]
+
+[ext_resource type="Shader" uid="uid://b7sehxunt0dd7" path="res://shaders/four_pt_perspective.gdshader" id="1_di018"]
+[ext_resource type="Script" uid="uid://cdg3c1kte4rnx" path="res://battle/view/scenes/perspective_card.gd" id="1_y02bd"]
+[ext_resource type="Texture2D" uid="uid://c2cpjnsgjdd1x" path="res://_assets/sprites/assorted/card_back_1.PNG" id="2_y02bd"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_wmyp0"]
+shader = ExtResource("1_di018")
+shader_parameter/up_left = Vector2(0, 0)
+shader_parameter/up_right = Vector2(1, 0)
+shader_parameter/down_right = Vector2(1, 1)
+shader_parameter/down_left = Vector2(0, 1)
+shader_parameter/plane_size = Vector2(0, 0)
+
+[node name="PerspectiveCard" type="Node2D"]
+script = ExtResource("1_y02bd")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+material = SubResource("ShaderMaterial_wmyp0")
+texture = ExtResource("2_y02bd")

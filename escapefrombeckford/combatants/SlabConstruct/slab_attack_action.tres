@@ -1,12 +1,12 @@
 [gd_resource type="Resource" script_class="NPCAction" format=3 uid="uid://v3vj3p02g7i2"]
 
-[ext_resource type="Script" uid="uid://3jde7uhq2yho" path="res://npc_ai/core/npc_effect_package.gd" id="1_d0vgo"]
+[ext_resource type="Script" uid="uid://3jde7uhq2yho" path="res://npc_ai/_core/npc_effect_package.gd" id="1_d0vgo"]
 [ext_resource type="Resource" uid="uid://cvbnxm3mwsp72" path="res://combatants/SlabConstruct/slab_attack_package.tres" id="2_44bx1"]
-[ext_resource type="Script" uid="uid://dtwuyctovqk5r" path="res://npc_ai/core/intent_lifecycle_model.gd" id="2_64b5x"]
-[ext_resource type="Script" uid="uid://q408gy2b4q6a" path="res://npc_ai/core/performable_model.gd" id="3_44bx1"]
-[ext_resource type="Texture2D" uid="uid://c54dbo8n7r3g" path="res://assets/sprites/assorted/attack.PNG" id="3_cerd5"]
-[ext_resource type="Script" uid="uid://bcih413oy6v73" path="res://npc_ai/core/npc_action.gd" id="4_u8onn"]
-[ext_resource type="Script" uid="uid://cuj4qvyx6dedj" path="res://npc_ai/core/state_model.gd" id="5_cerd5"]
+[ext_resource type="Script" uid="uid://dtwuyctovqk5r" path="res://npc_ai/_core/intent_lifecycle_model.gd" id="2_64b5x"]
+[ext_resource type="Script" uid="uid://q408gy2b4q6a" path="res://npc_ai/_core/performable_model.gd" id="3_44bx1"]
+[ext_resource type="Texture2D" uid="uid://c54dbo8n7r3g" path="res://_assets/sprites/assorted/attack.PNG" id="3_cerd5"]
+[ext_resource type="Script" uid="uid://bcih413oy6v73" path="res://npc_ai/_core/npc_action.gd" id="4_u8onn"]
+[ext_resource type="Script" uid="uid://cuj4qvyx6dedj" path="res://npc_ai/_core/state_model.gd" id="5_cerd5"]
 [ext_resource type="Resource" uid="uid://7gggk4mmejsq" path="res://npc_ai/text/attack_intent_text_model.tres" id="5_h5mot"]
 [ext_resource type="Resource" uid="uid://ivsvxo0vj72x" path="res://npc_ai/text/attack_intent_tooltip_text_model.tres" id="9_e84wf"]
 

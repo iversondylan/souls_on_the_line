@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://cyg85d6gbb8yp"]
 
 [ext_resource type="Script" uid="uid://bdaa57dmtqmmr" path="res://battle/ui/intent_display.gd" id="1_4pq5i"]
-[ext_resource type="Texture2D" uid="uid://c54dbo8n7r3g" path="res://assets/sprites/assorted/attack.PNG" id="2_ofwrp"]
+[ext_resource type="Texture2D" uid="uid://c54dbo8n7r3g" path="res://_assets/sprites/assorted/attack.PNG" id="2_ofwrp"]
 [ext_resource type="Theme" uid="uid://1dr1eewpv0jd" path="res://themes/ui_theme.tres" id="3_mp7f7"]
 
 [sub_resource type="LabelSettings" id="LabelSettings_np844"]

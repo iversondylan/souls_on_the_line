@@ -1,0 +1,43 @@
+[gd_scene format=3 uid="uid://cd15ukicbp7fj"]
+
+[ext_resource type="Texture2D" uid="uid://delb6dvd52afu" path="res://_assets/sprites/assorted/afflict.PNG" id="1_71ask"]
+[ext_resource type="Script" uid="uid://dgjgtflakvpbf" path="res://battle/view/scenes/status_display.gd" id="1_movl6"]
+[ext_resource type="Resource" uid="uid://bh05r8var8mj3" path="res://statuses/pinpoint.tres" id="2_c5udy"]
+[ext_resource type="Theme" uid="uid://1dr1eewpv0jd" path="res://themes/ui_theme.tres" id="2_movl6"]
+
+[node name="StatusDisplay" type="Control"]
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 3
+anchors_preset = 0
+mouse_filter = 2
+script = ExtResource("1_movl6")
+status = ExtResource("2_c5udy")
+
+[node name="Icon" type="TextureRect" parent="."]
+layout_mode = 1
+offset_right = 64.0
+offset_bottom = 64.0
+texture = ExtResource("1_71ask")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Duration" type="Label" parent="."]
+layout_mode = 1
+offset_left = 36.0
+offset_top = 28.0
+offset_right = 68.0
+offset_bottom = 68.0
+theme = ExtResource("2_movl6")
+text = "99"
+vertical_alignment = 1
+
+[node name="Stacks" type="Label" parent="."]
+visible = false
+layout_mode = 1
+offset_left = 36.0
+offset_top = 28.0
+offset_right = 68.0
+offset_bottom = 68.0
+theme = ExtResource("2_movl6")
+text = "99"
+vertical_alignment = 1

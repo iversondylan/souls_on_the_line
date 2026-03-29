@@ -1,12 +1,12 @@
 [gd_resource type="Resource" script_class="NPCEffectPackage" format=3 uid="uid://c6l1vg0cltw6p"]
 
 [ext_resource type="Resource" uid="uid://ddrxex8lotgxn" path="res://audio/melee_impact.tres" id="1_sacvn"]
-[ext_resource type="Script" uid="uid://c4bdbfkkrojcr" path="res://npc_ai/npc_attack_sequence.gd" id="1_wwl2o"]
+[ext_resource type="Script" path="res://npc_ai/npc_attack_sequence.gd" id="1_wwl2o"]
 [ext_resource type="Resource" uid="uid://c6myiupet7ros" path="res://audio/fireball_impact.tres" id="2_seq3t"]
-[ext_resource type="Script" uid="uid://b8d5j6ne4mt88" path="res://npc_ai/core/param_model.gd" id="2_swyxl"]
-[ext_resource type="Script" uid="uid://3jde7uhq2yho" path="res://npc_ai/core/npc_effect_package.gd" id="4_seq3t"]
+[ext_resource type="Script" uid="uid://b8d5j6ne4mt88" path="res://npc_ai/_core/param_model.gd" id="2_swyxl"]
+[ext_resource type="Script" uid="uid://3jde7uhq2yho" path="res://npc_ai/_core/npc_effect_package.gd" id="4_seq3t"]
 [ext_resource type="Script" uid="uid://db3rq0sfeqpw1" path="res://npc_ai/damage/flat_damage_model.gd" id="4_swyxl"]
-[ext_resource type="Script" uid="uid://cuj4qvyx6dedj" path="res://npc_ai/core/state_model.gd" id="5_68l43"]
+[ext_resource type="Script" uid="uid://cuj4qvyx6dedj" path="res://npc_ai/_core/state_model.gd" id="5_68l43"]
 
 [sub_resource type="Resource" id="Resource_seq3t"]
 script = ExtResource("1_wwl2o")

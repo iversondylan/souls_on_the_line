@@ -1,14 +1,12 @@
 [gd_resource type="Resource" script_class="NPCEffectPackage" format=3 uid="uid://cc04i46wsvhqo"]
 
-[ext_resource type="Script" uid="uid://b8d5j6ne4mt88" path="res://npc_ai/core/param_model.gd" id="1_waeop"]
-[ext_resource type="Script" uid="uid://c4bdbfkkrojcr" path="res://npc_ai/npc_attack_sequence.gd" id="1_y5jhk"]
-[ext_resource type="Script" uid="uid://3jde7uhq2yho" path="res://npc_ai/core/npc_effect_package.gd" id="2_rd7he"]
-[ext_resource type="Script" uid="uid://cuj4qvyx6dedj" path="res://npc_ai/core/state_model.gd" id="3_npohi"]
+[ext_resource type="Script" uid="uid://b8d5j6ne4mt88" path="res://npc_ai/_core/param_model.gd" id="1_waeop"]
+[ext_resource type="Script" uid="uid://3jde7uhq2yho" path="res://npc_ai/_core/npc_effect_package.gd" id="2_rd7he"]
+[ext_resource type="Script" uid="uid://cuj4qvyx6dedj" path="res://npc_ai/_core/state_model.gd" id="3_npohi"]
 [ext_resource type="Resource" uid="uid://b6vgjaovptslx" path="res://combatants/BasicClone/ap_plus_0_damage.tres" id="3_y5jhk"]
 [ext_resource type="Script" uid="uid://ciectlejwqbj" path="res://npc_ai/attack_mode/ranged_behind_player_model.gd" id="4_y5jhk"]
 
 [sub_resource type="Resource" id="Resource_byb7d"]
-script = ExtResource("1_y5jhk")
 metadata/_custom_type_script = "uid://c4bdbfkkrojcr"
 
 [sub_resource type="Resource" id="Resource_373j8"]

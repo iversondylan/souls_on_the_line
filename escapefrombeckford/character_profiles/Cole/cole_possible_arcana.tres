@@ -1,12 +1,12 @@
 [gd_resource type="Resource" script_class="Arcana" format=3 uid="uid://vnoxk6md128x"]
 
-[ext_resource type="Script" uid="uid://cnmucv1qsei4i" path="res://arcana/core/arcanum.gd" id="1_ndmtf"]
-[ext_resource type="Resource" uid="uid://dql6u88u21l6o" path="res://arcana/general/favoring_scales.tres" id="2_i7anr"]
-[ext_resource type="Script" uid="uid://ohjvtcorpcp4" path="res://arcana/core/arcana.gd" id="2_uyqbj"]
-[ext_resource type="Resource" uid="uid://dvvb4if62jfkx" path="res://arcana/general/sigil_of_mana.tres" id="3_8wgq8"]
-[ext_resource type="Resource" uid="uid://bj2ud7b8ci4bm" path="res://arcana/general/thales_flask.tres" id="4_1lsw5"]
-[ext_resource type="Resource" uid="uid://dohwwwoux6ubx" path="res://arcana/general/unruly_pyric_wraps.tres" id="5_7b51l"]
-[ext_resource type="Resource" uid="uid://ddk882ai8akyt" path="res://arcana/general/vennards_vauxite.tres" id="6_ojet2"]
+[ext_resource type="Script" uid="uid://cnmucv1qsei4i" path="res://arcana/_core/arcanum.gd" id="1_ndmtf"]
+[ext_resource type="Resource" uid="uid://dql6u88u21l6o" path="res://arcana/favoring_scales.tres" id="2_i7anr"]
+[ext_resource type="Script" uid="uid://ohjvtcorpcp4" path="res://arcana/_core/arcana.gd" id="2_uyqbj"]
+[ext_resource type="Resource" uid="uid://dvvb4if62jfkx" path="res://arcana/sigil_of_mana.tres" id="3_8wgq8"]
+[ext_resource type="Resource" uid="uid://bj2ud7b8ci4bm" path="res://arcana/thales_flask.tres" id="4_1lsw5"]
+[ext_resource type="Resource" uid="uid://dohwwwoux6ubx" path="res://arcana/unruly_pyric_wraps.tres" id="5_7b51l"]
+[ext_resource type="Resource" uid="uid://ddk882ai8akyt" path="res://arcana/vennards_vauxite.tres" id="6_ojet2"]
 
 [resource]
 script = ExtResource("2_uyqbj")
