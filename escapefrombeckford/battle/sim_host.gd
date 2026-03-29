@@ -282,7 +282,9 @@ func _configure_preview_api_logging() -> void:
 
 	preview.api.scopes = scopes
 	preview.api.writer = BattleEventWriter.new(EventSinkPreview.new(), scopes)
-	preview.api.writer.allow_unscoped_events = false
+	# Preview logging is discarded, so cloned runtime resumes should not warn
+	# when the preview writer does not inherit the live scope stack.
+	preview.api.writer.allow_unscoped_events = true
 
 
 func _bind_runtime_callbacks(sim: Sim) -> void:

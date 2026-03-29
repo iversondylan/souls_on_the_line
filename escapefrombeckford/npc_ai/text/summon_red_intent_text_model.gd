@@ -7,12 +7,19 @@
 class_name SummonRedIntentTextModel
 extends TextModel
 
+func _fallback_summon_data(ctx: NPCAIContext) -> CombatantData:
+	var path := String(_param_v(ctx, Keys.DEFAULT_SUMMON_DATA_PATH, ""))
+	if path.is_empty():
+		return null
+	var data := load(path)
+	return data if data is CombatantData else null
+
 func get_text(ctx: NPCAIContext) -> String:
 	if !ctx:
 		return "error"
 	
 	# NOTE: requires Keys.SUMMON_DATA to be set by a ParamModel, but defaults safely.
-	var fallback: CombatantData = load(Keys.DEFAULT_SUMMON_DATA_PATH)
+	var fallback := _fallback_summon_data(ctx)
 	var data: CombatantData = ctx.params.get(Keys.SUMMON_DATA, fallback)
 	
 	if !data:
@@ -30,7 +37,7 @@ func get_text_sim(ctx: NPCAIContext) -> String:
 	if ctx == null:
 		return "error"
 
-	var fallback: CombatantData = load(Keys.DEFAULT_SUMMON_DATA_PATH)
+	var fallback := _fallback_summon_data(ctx)
 	var data: CombatantData = _param_v(ctx, Keys.SUMMON_DATA, fallback)
 
 	if data == null:

@@ -1,0 +1,7 @@
+[gd_resource type="Resource" script_class="HalfExponentialSpreeChanceStateModel" format=3 uid="uid://btgtvs6ab0nsg"]
+
+[ext_resource type="Script" uid="uid://da54s6dicd5cm" path="res://npc_ai/chance/half_exponential_spree_chance_state_model.gd" id="1_umfjo"]
+
+[resource]
+script = ExtResource("1_umfjo")
+metadata/_custom_type_script = "uid://da54s6dicd5cm"

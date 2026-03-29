@@ -1,12 +1,10 @@
 [gd_resource type="Resource" script_class="NPCEffectPackage" format=3 uid="uid://dhh24wmkgmsu8"]
 
 [ext_resource type="Script" uid="uid://b8d5j6ne4mt88" path="res://npc_ai/_core/param_model.gd" id="1_3q3rh"]
+[ext_resource type="Resource" uid="uid://bnqqhpu1itcb3" path="res://npc_ai/npc_attack_sequence.tres" id="1_attack"]
 [ext_resource type="Script" uid="uid://3jde7uhq2yho" path="res://npc_ai/_core/npc_effect_package.gd" id="2_fkvwt"]
 [ext_resource type="Script" uid="uid://cuj4qvyx6dedj" path="res://npc_ai/_core/state_model.gd" id="3_ekux4"]
 [ext_resource type="Script" uid="uid://db3rq0sfeqpw1" path="res://npc_ai/damage/flat_damage_model.gd" id="3_kwlb0"]
-
-[sub_resource type="Resource" id="Resource_g1c4o"]
-metadata/_custom_type_script = "uid://c4bdbfkkrojcr"
 
 [sub_resource type="Resource" id="Resource_vhqw7"]
 script = ExtResource("3_kwlb0")
@@ -15,6 +13,6 @@ metadata/_custom_type_script = "uid://db3rq0sfeqpw1"
 
 [resource]
 script = ExtResource("2_fkvwt")
-effect = SubResource("Resource_g1c4o")
+effect = ExtResource("1_attack")
 param_models = Array[ExtResource("1_3q3rh")]([SubResource("Resource_vhqw7")])
 metadata/_custom_type_script = "uid://3jde7uhq2yho"

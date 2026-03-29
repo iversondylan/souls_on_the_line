@@ -188,6 +188,8 @@ const REPLAN_DIRTY := &"replan_dirty"
 const INTENT_DIRTY := &"intent_dirty"
 const IS_ACTING := &"is_acting"
 const FIRST_INTENTS_READY := &"first_intent_ready"
+const ACTION_STATE := &"action_state"
+const SPREE := &"spree"
 
 # Chance-weight protocol
 const CHANCE_ADD := &"chance_add"        # float, default 0.0

@@ -49,6 +49,8 @@ static func ensure_ai_state_initialized(u: CombatantState) -> void:
 		s[STABILITY_BROKEN] = false
 	if !s.has(ACTIONS_TAKEN):
 		s[ACTIONS_TAKEN] = 0
+	if !(s.get(Keys.ACTION_STATE, null) is Dictionary):
+		s[Keys.ACTION_STATE] = {}
 
 
 static func ensure_valid_plan_sim(profile: NPCAIProfile, ctx: NPCAIContext, allow_hooks := true) -> void:
@@ -149,12 +151,17 @@ static func _roll_chance_idx_sim(profile: NPCAIProfile, ctx: NPCAIContext) -> in
 	for i in range(profile.actions.size()):
 		var action := profile.actions[i]
 		if action != null and action.choice_type == NPCAction.ChoiceType.CHANCE and _is_action_performable_sim(action, ctx):
-			var w := _get_action_chance_weight_sim(action, ctx)
+			var w := _get_action_chance_weight_sim(action, i, ctx)
 			if w > 0.0:
 				total += w
 				pool.append(i)
 
 	if pool.is_empty() or total <= 0.0:
+		push_warning("SIM AI: no valid chance action (cid=%d, total=%f, chance_actions=%d)" % [
+			int(ctx.cid if ctx != null else -1),
+			total,
+			pool.size()
+		])
 		return -1
 
 	if ctx.rng == null:
@@ -168,22 +175,64 @@ static func _roll_chance_idx_sim(profile: NPCAIProfile, ctx: NPCAIContext) -> in
 
 	var acc := 0.0
 	for i in pool:
-		acc += _get_action_chance_weight_sim(profile.actions[i], ctx)
+		acc += _get_action_chance_weight_sim(profile.actions[i], i, ctx)
 		if roll <= acc:
 			return i
 
 	return pool[-1]
 
 
-static func _get_action_chance_weight_sim(action: NPCAction, ctx: NPCAIContext) -> float:
+static func get_action_state_bucket_sim(state: Dictionary) -> Dictionary:
+	if state == null:
+		return {}
+
+	var bucket = state.get(Keys.ACTION_STATE, null)
+	if bucket is Dictionary:
+		return bucket
+
+	bucket = {}
+	state[Keys.ACTION_STATE] = bucket
+	return bucket
+
+
+static func ensure_action_state_sim(state: Dictionary, action_idx: int) -> Dictionary:
+	if state == null or action_idx < 0:
+		return {}
+
+	var bucket := get_action_state_bucket_sim(state)
+	var action_state = bucket.get(action_idx, null)
+	if action_state is Dictionary:
+		return action_state
+
+	action_state = {}
+	bucket[action_idx] = action_state
+	return action_state
+
+
+static func _reset_action_chance_state_scratch(action_state: Dictionary) -> void:
+	action_state[Keys.CHANCE_ADD] = 0.0
+	action_state[Keys.CHANCE_MULT] = 1.0
+
+
+static func _get_action_chance_weight_sim(action: NPCAction, action_idx: int, ctx: NPCAIContext) -> float:
 	var weight := float(action.chance_weight)
 	var state := ctx.state if ctx != null and ctx.state else {}
+	var action_state := ensure_action_state_sim(state, action_idx)
 
 	if bool(state.get(Keys.CHANCE_DISABLED, false)):
 		return 0.0
 
+	_reset_action_chance_state_scratch(action_state)
+
+	var state_models := action.state_models if action.state_models != null else []
+	for m: StateModel in state_models:
+		if m != null:
+			m.change_chance_weight_state_sim(ctx, action_state)
+
 	weight += float(state.get(Keys.CHANCE_ADD, 0.0))
+	weight += float(action_state.get(Keys.CHANCE_ADD, 0.0))
 	weight *= float(state.get(Keys.CHANCE_MULT, 1.0))
+	weight *= float(action_state.get(Keys.CHANCE_MULT, 1.0))
 	return maxf(weight, 0.0)
 
 
