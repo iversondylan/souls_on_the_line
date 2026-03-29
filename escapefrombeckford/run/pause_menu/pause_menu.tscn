@@ -76,7 +76,6 @@ text = "Settings"
 custom_minimum_size = Vector2(0, 58)
 layout_mode = 2
 size_flags_horizontal = 3
-disabled = true
 theme = ExtResource("1_f0jds")
 text = "Return to Main Menu"
 
@@ -97,7 +96,6 @@ theme_override_constants/separation = 10
 custom_minimum_size = Vector2(0, 52)
 layout_mode = 2
 size_flags_horizontal = 3
-disabled = true
 theme = ExtResource("1_f0jds")
 text = "Debug Save"
 
@@ -105,6 +103,5 @@ text = "Debug Save"
 custom_minimum_size = Vector2(0, 52)
 layout_mode = 2
 size_flags_horizontal = 3
-disabled = true
 theme = ExtResource("1_f0jds")
 text = "Debug Load"

@@ -10,12 +10,16 @@ const ENEMY := 1
 # Inspector
 # -------------------------
 
+var _debug_mode: bool = true
+
 @export var debug_mode: bool = true:
 	set(value):
 		if !is_node_ready():
 			await ready
-		debug_mode = value
-		$Debug_UI.visible = debug_mode
+		_debug_mode = value
+		$Debug_UI.visible = _debug_mode
+	get:
+		return _debug_mode
 
 @export var music: AudioStream
 @export var battle_data: BattleData
@@ -81,6 +85,7 @@ var transport_session: BattleTransportSession
 
 func _ready() -> void:
 	_ensure_card_bins()
+	debug_mode = Autoload.is_debug_mode_enabled()
 
 	battle_view.sim_host = sim_host
 	battle_view.battle_ui = battle_ui

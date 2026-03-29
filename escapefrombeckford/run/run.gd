@@ -10,6 +10,8 @@ const MAIN_MENU_SCN := preload("uid://byfyjsj2j7wh")
 #const MAP_SCENE := preload("uid://6p15tduy6cd2")
 const SHOP_SCN := preload("uid://csf5mgsw4psnr")
 const TREASURE_SCN := preload("uid://c4tto5c3yx2dt")
+const RUN_SAVE_PICKER_SCN := preload("res://ui/run_save_picker.tscn")
+const SAVE_NAME_DIALOG_SCN := preload("res://ui/save_name_dialog.tscn")
 
 
 @export var player_catalog: PlayerCatalog = preload("uid://b2ewfy12rhm0l")
@@ -32,6 +34,11 @@ const TREASURE_SCN := preload("uid://c4tto5c3yx2dt")
 @onready var arcanum_tooltip_popup: ArcanumTooltipPopup = %ArcanumTooltipPopup
 @onready var pause_menu: Control = $UI/PauseMenu
 @onready var resume_game_button: Button = $UI/PauseMenu/PanelContainer/MarginContainer/Content/Buttons/ResumeGameButton
+@onready var return_to_main_menu_button: Button = $UI/PauseMenu/PanelContainer/MarginContainer/Content/Buttons/ReturnToMainMenuButton
+@onready var pause_debug_buttons: Control = $UI/PauseMenu/PanelContainer/MarginContainer/Content/DebugButtons
+@onready var pause_debug_save_button: Button = $UI/PauseMenu/PanelContainer/MarginContainer/Content/DebugButtons/DebugSaveButton
+@onready var pause_debug_load_button: Button = $UI/PauseMenu/PanelContainer/MarginContainer/Content/DebugButtons/DebugLoadButton
+@onready var debug_ui: CanvasLayer = $DebugUI
 
 @onready var map_button: Button = %MapButton
 @onready var battle_button: Button = %BattleButton
@@ -51,6 +58,8 @@ var draftable_cards: CardPile
 var run_deck: RunDeck
 var run_rng: RunRNG
 var startup_mode: int = -1
+var run_save_picker: RunSavePicker
+var save_name_dialog: SaveNameDialog
 
 
 func _ready() -> void:
@@ -60,8 +69,13 @@ func _ready() -> void:
 	if player_catalog != null:
 		player_catalog.build_index()
 	arcana_system = arcana_system_container.system
+	_ensure_debug_tools()
 	pause_menu.visible = false
+	_refresh_debug_ui()
 	resume_game_button.pressed.connect(_close_pause_menu)
+	return_to_main_menu_button.pressed.connect(_return_to_main_menu_from_pause)
+	pause_debug_save_button.pressed.connect(_on_pause_debug_save_pressed)
+	pause_debug_load_button.pressed.connect(_on_pause_debug_load_pressed)
 
 	var run_profile := Autoload.consume_run_profile_or_default()
 	if run_profile == null:
@@ -69,12 +83,18 @@ func _ready() -> void:
 		return
 
 	profile_data = SaveService.load_or_create_profile()
+	if profile_data == null:
+		push_warning("Run._ready(): opened without an active user profile.")
+		get_tree().change_scene_to_packed(MAIN_MENU_SCN)
+		return
 	startup_mode = int(run_profile.start_mode)
 	match int(run_profile.start_mode):
 		RunProfile.StartMode.NEW_RUN:
 			_start_new_run_from_profile(run_profile)
 		RunProfile.StartMode.CONTINUE_RUN:
 			_continue_saved_run()
+		RunProfile.StartMode.LOAD_DEBUG_SLOT:
+			_load_debug_slot_run(run_profile.debug_slot_name)
 		_:
 			push_warning("Run._ready(): unknown RunProfile.start_mode '%s'" % run_profile.start_mode)
 
@@ -311,14 +331,27 @@ func _start_new_run_from_profile(profile: RunProfile) -> void:
 
 
 func _continue_saved_run() -> void:
-	run_state = SaveService.load_active_run()
-	if run_state == null:
+	var loaded_run_state := SaveService.load_active_run()
+	if loaded_run_state == null:
 		push_warning("Run._continue_saved_run(): no active run save found")
 		return
+	_boot_from_loaded_run_state(loaded_run_state)
 
+
+func _load_debug_slot_run(slot_name: String) -> void:
+	var loaded_run_state := SaveService.load_debug_run(slot_name)
+	if loaded_run_state == null:
+		push_warning("Run._load_debug_slot_run(): no debug save found for slot '%s'" % slot_name)
+		get_tree().change_scene_to_packed(MAIN_MENU_SCN)
+		return
+	_boot_from_loaded_run_state(loaded_run_state)
+
+
+func _boot_from_loaded_run_state(loaded_run_state: RunState) -> void:
+	run_state = loaded_run_state
 	player_data = _resolve_player_profile(run_state.player_profile_id)
 	if player_data == null:
-		push_warning("Run._continue_saved_run(): unknown player_profile_id '%s'" % run_state.player_profile_id)
+		push_warning("Run._boot_from_loaded_run_state(): unknown player_profile_id '%s'" % run_state.player_profile_id)
 		return
 	if run_state.player_profile_id.is_empty():
 		run_state.player_profile_id = String(player_data.profile_id)
@@ -821,6 +854,7 @@ func _on_menu_button_pressed() -> void:
 func _open_pause_menu() -> void:
 	if pause_menu.visible:
 		return
+	_refresh_debug_ui()
 
 	var battle := _get_active_battle()
 	if battle != null:
@@ -831,6 +865,7 @@ func _open_pause_menu() -> void:
 
 
 func _close_pause_menu() -> void:
+	_hide_debug_overlays()
 	if !pause_menu.visible:
 		get_tree().paused = false
 		return
@@ -843,6 +878,7 @@ func _close_pause_menu() -> void:
 
 
 func _force_close_pause_menu() -> void:
+	_hide_debug_overlays()
 	var battle := _get_active_battle()
 	if battle != null:
 		battle.stop_playback()
@@ -850,7 +886,66 @@ func _force_close_pause_menu() -> void:
 	pause_menu.visible = false
 
 
+func _return_to_main_menu_from_pause() -> void:
+	_force_close_pause_menu()
+	get_tree().change_scene_to_packed(MAIN_MENU_SCN)
+
+
 func _get_active_battle() -> Battle:
 	if current_view == null or current_view.get_child_count() <= 0:
 		return null
 	return current_view.get_child(0) as Battle
+
+
+func _ensure_debug_tools() -> void:
+	run_save_picker = RUN_SAVE_PICKER_SCN.instantiate() as RunSavePicker
+	save_name_dialog = SAVE_NAME_DIALOG_SCN.instantiate() as SaveNameDialog
+	if run_save_picker != null:
+		$UI.add_child(run_save_picker)
+		run_save_picker.entry_selected.connect(_on_pause_debug_slot_selected)
+	if save_name_dialog != null:
+		$UI.add_child(save_name_dialog)
+		save_name_dialog.save_requested.connect(_on_pause_debug_save_requested)
+
+
+func _refresh_debug_ui() -> void:
+	var enabled := Autoload.is_debug_mode_enabled()
+	debug_ui.visible = enabled
+	pause_debug_buttons.visible = enabled
+	pause_debug_save_button.disabled = !enabled
+	pause_debug_load_button.disabled = !enabled
+
+
+func _hide_debug_overlays() -> void:
+	if run_save_picker != null:
+		run_save_picker.hide_picker()
+	if save_name_dialog != null:
+		save_name_dialog.hide_dialog()
+
+
+func _on_pause_debug_save_pressed() -> void:
+	if !Autoload.is_debug_mode_enabled() or run_state == null or save_name_dialog == null:
+		return
+	var existing_slot_keys := PackedStringArray()
+	for info in SaveService.list_debug_run_saves():
+		existing_slot_keys.append(info.slot_key)
+	save_name_dialog.open(existing_slot_keys, "run_%d" % int(run_seed))
+
+
+func _on_pause_debug_load_pressed() -> void:
+	if !Autoload.is_debug_mode_enabled() or run_save_picker == null:
+		return
+	run_save_picker.show_slots("Load Debug Save", SaveService.list_debug_run_saves())
+
+
+func _on_pause_debug_save_requested(slot_name: String) -> void:
+	if run_state == null:
+		return
+	_sync_player_health_from_active_battle()
+	_sync_run_state_from_live_state()
+	SaveService.save_debug_run(run_state, slot_name)
+
+
+func _on_pause_debug_slot_selected(slot_key: String) -> void:
+	_force_close_pause_menu()
+	Autoload.begin_load_debug_run(slot_key)
