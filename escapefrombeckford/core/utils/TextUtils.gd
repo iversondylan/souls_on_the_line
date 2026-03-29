@@ -95,8 +95,8 @@ static func _description_values_for_action(action: CardAction) -> Array:
 		return [int(action.get("n_armor"))]
 	if _has_property(action, "pressure_barrier_intensity"):
 		return [int(action.get("pressure_barrier_intensity"))]
-	if _has_property(action, "cruel_dominion_intensity"):
-		return [int(action.get("cruel_dominion_intensity"))]
+	if _has_property(action, "growing_fervor_intensity"):
+		return [int(action.get("growing_fervor_intensity"))]
 	if _has_property(action, "duration"):
 		return [int(action.get("duration"))]
 	if _has_property(action, "base_damage"):

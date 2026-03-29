@@ -1,6 +1,6 @@
 extends CardAction
 
-@export var cruel_dominion_intensity: int = 2
+@export var growing_fervor_intensity: int = 2
 @export var sound: Sound = preload("uid://bpcpnxremq4xv")
 
 func activate_sim(ctx: CardContext) -> bool:
@@ -16,8 +16,8 @@ func activate_sim(ctx: CardContext) -> bool:
 	var s := StatusContext.new()
 	s.source_id = int(ctx.source_id)
 	s.target_id = target_id
-	s.status_id = CruelDominionStatus.ID
-	s.intensity = int(cruel_dominion_intensity)
+	s.status_id = SharedFervorStatus.ID
+	s.intensity = int(growing_fervor_intensity)
 
 	ctx.api.apply_status(s)
 
@@ -33,4 +33,4 @@ func description_arity() -> int:
 	return 1
 
 func get_description_values(_ctx: CardActionContext) -> Array:
-	return [cruel_dominion_intensity]
+	return [growing_fervor_intensity]

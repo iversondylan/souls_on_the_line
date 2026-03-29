@@ -3,19 +3,19 @@
 [ext_resource type="Script" uid="uid://dgq1lfjmf2yfl" path="res://statuses/_core/status_catalog.gd" id="1_2sbnh"]
 [ext_resource type="Script" uid="uid://cueedkb1u8vxy" path="res://statuses/_core/status.gd" id="2_mko5r"]
 [ext_resource type="Resource" uid="uid://bd1ti361ucok5" path="res://statuses/amplify.tres" id="3_uxogt"]
-[ext_resource type="Resource" uid="uid://nnor45w1kk5c" path="res://statuses/cruel_dominion.tres" id="4_6mtxw"]
-[ext_resource type="Resource" uid="uid://da5t2wbovt8qx" path="res://statuses/echoed_cruelty.tres" id="5_v0iht"]
+[ext_resource type="Resource" path="res://statuses/growing_fervor.tres" id="5_2sbnh"]
 [ext_resource type="Resource" uid="uid://v08f4neq881h" path="res://statuses/explosive_ambition.tres" id="6_00ab0"]
 [ext_resource type="Resource" uid="uid://blu8qhnwmlstx" path="res://statuses/marked.tres" id="7_fjt00"]
 [ext_resource type="Resource" uid="uid://7x55fawjrwf4" path="res://statuses/might.tres" id="8_ho33y"]
 [ext_resource type="Resource" uid="uid://bh05r8var8mj3" path="res://statuses/pinpoint.tres" id="9_6ckqc"]
 [ext_resource type="Resource" uid="uid://dsl60qwx3ugb" path="res://statuses/pressure_barrier.tres" id="10_cbbgy"]
 [ext_resource type="Resource" uid="uid://bfon8dtpvipfp" path="res://statuses/resonance_spike.tres" id="11_6ocio"]
+[ext_resource type="Resource" uid="uid://c851i8op6ei1" path="res://statuses/shared_fervor.tres" id="11_mko5r"]
 [ext_resource type="Resource" uid="uid://cyf7n0vefm434" path="res://statuses/stability_status.tres" id="12_kw06w"]
 [ext_resource type="Resource" uid="uid://tioo1cbmio6m" path="res://statuses/tempered.tres" id="13_djvpr"]
 [ext_resource type="Resource" uid="uid://wi2vw1fnar8g" path="res://statuses/terminal_glory.tres" id="14_gyvsg"]
 
 [resource]
 script = ExtResource("1_2sbnh")
-statuses = Array[ExtResource("2_mko5r")]([ExtResource("3_uxogt"), ExtResource("4_6mtxw"), ExtResource("5_v0iht"), ExtResource("6_00ab0"), ExtResource("7_fjt00"), ExtResource("8_ho33y"), ExtResource("9_6ckqc"), ExtResource("10_cbbgy"), ExtResource("11_6ocio"), ExtResource("12_kw06w"), ExtResource("13_djvpr"), ExtResource("14_gyvsg")])
+statuses = Array[ExtResource("2_mko5r")]([ExtResource("3_uxogt"), ExtResource("6_00ab0"), ExtResource("5_2sbnh"), ExtResource("7_fjt00"), ExtResource("8_ho33y"), ExtResource("9_6ckqc"), ExtResource("10_cbbgy"), ExtResource("11_6ocio"), ExtResource("11_mko5r"), ExtResource("12_kw06w"), ExtResource("13_djvpr"), ExtResource("14_gyvsg")])
 metadata/_custom_type_script = "uid://dgq1lfjmf2yfl"

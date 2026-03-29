@@ -1,7 +1,7 @@
-[gd_resource type="Resource" script_class="CruelDominionStatus" format=3 uid="uid://nnor45w1kk5c"]
+[gd_resource type="Resource" script_class="GrowingFervorStatus" format=3 uid="uid://nnor45w1kk5c"]
 
 [ext_resource type="Texture2D" uid="uid://cytppmfrdmnxn" path="res://_assets/sprites/card_elements/wrathful_intent/wrath_icon.png" id="1_2s5rg"]
-[ext_resource type="Script" uid="uid://megrskhfwgop" path="res://statuses/cruel_dominion.gd" id="2_pyaau"]
+[ext_resource type="Script" uid="uid://megrskhfwgop" path="res://statuses/growing_fervor.gd" id="2_pyaau"]
 
 [resource]
 script = ExtResource("2_pyaau")
@@ -9,5 +9,5 @@ number_display_type = 1
 intensity = 2
 icon = ExtResource("1_2s5rg")
 tooltip = "TO DO
-This is a 'power' status that adds stacks of echoed cruelty each turn, which makes summons deal more damage."
+Growing Fervor is the parent effect that grants Shared Fervor."
 metadata/_custom_type_script = "uid://cueedkb1u8vxy"

@@ -1,8 +1,8 @@
-class_name CruelDominionStatus extends Status
+class_name GrowingFervorStatus extends Status
 
-const ID := &"cruel_dominion"
+const ID := &"growing_fervor"
 
-const ECHOED_CRUELTY_STATUS := preload("uid://da5t2wbovt8qx")
+const SHARED_FERVOR_STATUS := preload("uid://c851i8op6ei1")
 
 func get_id() -> StringName:
 	return ID
@@ -22,4 +22,4 @@ func get_id() -> StringName:
 	#status_applied.emit(self)
 
 func get_tooltip(intensity: int = 0, _duration: int = 0) -> String:
-	return "Cruel Dominion: each turn, empower your allies to deal %s additional damage." % intensity
+	return "Growing Fervor: grants Shared Fervor, causing allies to deal +%s damage." % intensity

@@ -4,7 +4,7 @@
 [ext_resource type="Script" uid="uid://dnybrgm0o6gjj" path="res://cards/_core/card_pile.gd" id="2_a8mjb"]
 [ext_resource type="Resource" uid="uid://dfgkvy2yw1a3e" path="res://cards/AttackCard/attack_card.tres" id="2_fv5yh"]
 [ext_resource type="Resource" uid="uid://ds3np5rpek8ot" path="res://cards/BerserkersFury/berserkers_fury.tres" id="3_8eqlo"]
-[ext_resource type="Resource" uid="uid://qoedpmaije5m" path="res://cards/CruelDominion/cruel_dominion.tres" id="4_22mo8"]
+[ext_resource type="Resource" uid="uid://qoedpmaije5m" path="res://cards/GrowingFervor/growing_fervor.tres" id="4_22mo8"]
 [ext_resource type="Resource" uid="uid://u3qjjn0pwawp" path="res://cards/DefendCard/defend_card.tres" id="5_bnr1j"]
 [ext_resource type="Resource" uid="uid://daxsngijhqe3k" path="res://cards/FocusFireCard/focus_fire.tres" id="6_lex8d"]
 [ext_resource type="Resource" uid="uid://b7txf6d8vmjkk" path="res://cards/SpectralCloneCard/spectral_clone.tres" id="6_ltswl"]

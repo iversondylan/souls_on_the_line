@@ -1,8 +1,8 @@
-# echoed_cruelty.gd
+# shared_fervor.gd
 
-class_name EchoedCrueltyStatus extends Aura
+class_name SharedFervorStatus extends Aura
 
-const ID := &"echoed_cruelty"
+const ID := &"shared_fervor"
 
 func get_id() -> StringName:
 	return ID
@@ -33,4 +33,4 @@ func get_modifier_tokens(ctx: StatusTokenContext) -> Array[ModifierToken]:
 
 
 func get_tooltip(intensity: int = 0, _duration: int = 0) -> String:
-	return "Echoed Cruelty [Aura]: allies deal %s additional damage." % intensity
+	return "Shared Fervor [Aura]: allies deal +%s damage." % intensity

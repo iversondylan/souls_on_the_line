@@ -1,0 +1,7 @@
+[gd_resource type="Resource" script_class="SharedFervorStatus" format=3 uid="uid://c851i8op6ei1"]
+
+[ext_resource type="Script" path="res://statuses/shared_fervor.gd" id="1_nvv4x"]
+
+[resource]
+script = ExtResource("1_nvv4x")
+metadata/_custom_type_script = "uid://0oai3oy81n86"

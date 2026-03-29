@@ -773,11 +773,11 @@ cards
   card_visuals.gd
   card_visuals.gd.uid
   card_visuals.tscn
-  CruelDominion
-    cruel_dominion.tres
-    cruel_dominion_action.gd
-    cruel_dominion_action.gd.uid
-    cruel_dominion_action.tres
+  GrowingFervor
+    growing_fervor.tres
+    growing_fervor_action.gd
+    growing_fervor_action.gd.uid
+    growing_fervor_action.tres
   DefendCard
     defend_action.gd
     defend_action.gd.uid
@@ -1273,12 +1273,12 @@ statuses
   amplify.gd
   amplify.gd.uid
   amplify.tres
-  cruel_dominion.gd
-  cruel_dominion.gd.uid
-  cruel_dominion.tres
-  echoed_cruelty.gd
-  echoed_cruelty.gd.uid
-  echoed_cruelty.tres
+  growing_fervor.gd
+  growing_fervor.gd.uid
+  growing_fervor.tres
+  shared_fervor.gd
+  shared_fervor.gd.uid
+  shared_fervor.tres
   explosive_ambition.gd
   explosive_ambition.gd.uid
   explosive_ambition.tres

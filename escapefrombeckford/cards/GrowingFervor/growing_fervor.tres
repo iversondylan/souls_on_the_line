@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="CardData" format=3 uid="uid://qoedpmaije5m"]
 
 [ext_resource type="Script" uid="uid://wtk5v77fcqvn" path="res://cards/_core/card_action.gd" id="1_dlq1m"]
-[ext_resource type="Resource" uid="uid://dqpfr84hqn454" path="res://cards/CruelDominion/cruel_dominion_action.tres" id="2_16jh5"]
+[ext_resource type="Resource" uid="uid://dqpfr84hqn454" path="res://cards/GrowingFervor/growing_fervor_action.tres" id="2_16jh5"]
 [ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://cards/_core/card_data.gd" id="2_yf47j"]
 [ext_resource type="Texture2D" uid="uid://c7co4hctuwrut" path="res://_assets/sprites/card_elements/wrathful_intent/wrath_card_art.png" id="4_kand5"]
 
@@ -9,9 +9,9 @@
 script = ExtResource("2_yf47j")
 card_type = 2
 rarity = 2
-name = "Cruel Dominion"
+name = "Growing Fervor"
 deplete = true
-description = "At the start of each of your turns, empower your allies to deal %s additional damage."
+description = "Give an ally Shared Fervor. Allies deal +%s damage."
 texture = ExtResource("4_kand5")
 actions = Array[ExtResource("1_dlq1m")]([ExtResource("2_16jh5")])
 metadata/_custom_type_script = "uid://d2f0qepe047dc"
