@@ -42,8 +42,6 @@ const RARITY_COLORS := {
 @export var base_proto_path: String = ""	# optional: template origin
 
 @export_group("Card Attributes")
-@export var id: int
-
 @export var card_type: CardType
 @export var target_type: TargetType
 @export var rarity: Rarity
@@ -90,7 +88,6 @@ static func _copy_runtime_overrides(from: CardData, to: CardData) -> void:
 	to.uid = from.uid
 	to.version = from.version
 	to.base_proto_path = String(from.base_proto_path if !from.base_proto_path.is_empty() else to.base_proto_path)
-	to.id = from.id
 	to.card_type = from.card_type
 	to.target_type = from.target_type
 	to.rarity = from.rarity

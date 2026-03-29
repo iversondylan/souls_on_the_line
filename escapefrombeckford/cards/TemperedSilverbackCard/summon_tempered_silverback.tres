@@ -8,5 +8,4 @@
 script = ExtResource("1_extil")
 summon_data = ExtResource("3_boald")
 sound = ExtResource("2_65k5t")
-action_type = 5
 metadata/_custom_type_script = "uid://buhtw3540mbls"

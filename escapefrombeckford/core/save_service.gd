@@ -1,19 +1,31 @@
 extends Node
 
-const APP_STATE_SAVE_PATH := "user://app_state.tres"
+const APP_STATE_SAVE_PATH := "user://app.json"
 const PROFILES_DIR_PATH := "user://profiles"
-const PROFILE_DATA_FILENAME := "profile_data.tres"
-const ACTIVE_RUN_FILENAME := "active_run.tres"
+const PROFILE_DATA_FILENAME := "profile.json"
+const ACTIVE_RUN_FILENAME := "active_run.json"
 const DEBUG_RUN_DIRNAME := "debug_runs"
 
-const LEGACY_PROFILE_SAVE_PATH := "user://profile_data.tres"
-const LEGACY_ACTIVE_RUN_SAVE_PATH := "user://active_run.tres"
-const LEGACY_DEBUG_RUN_DIR_PATH := "user://debug_runs"
-const LEGACY_DEFAULT_PROFILE_NAME := "Default Profile"
+const FILE_TYPE_APP := "app"
+const FILE_TYPE_PROFILE := "profile"
+const FILE_TYPE_RUN := "run"
+const SAVE_VERSION := 3
+
+const SERIALIZED_KIND_STRING_NAME := "string_name"
+const SERIALIZED_KIND_COLOR := "color"
+const SERIALIZED_KIND_VECTOR2 := "vector2"
+const SERIALIZED_KIND_VECTOR2I := "vector2i"
+const SERIALIZED_KIND_VECTOR3 := "vector3"
+const SERIALIZED_KIND_PACKED_STRING_ARRAY := "packed_string_array"
+const SERIALIZED_KIND_PACKED_INT32_ARRAY := "packed_int32_array"
+const SERIALIZED_KIND_EXTERNAL_RESOURCE := "external_resource"
+const SERIALIZED_KIND_SCRIPTED_RESOURCE := "scripted_resource"
 
 var _app_state_cache: AppStateData = null
 var _profile_cache: ProfileData = null
 var _profile_cache_key: String = ""
+var _script_uid_path_cache: Dictionary = {}
+var _script_uid_cache_ready: bool = false
 
 
 func _ready() -> void:
@@ -24,16 +36,15 @@ func _ready() -> void:
 
 func load_or_create_app_state() -> AppStateData:
 	if _app_state_cache == null:
-		var had_saved_app_state := FileAccess.file_exists(APP_STATE_SAVE_PATH)
 		_app_state_cache = load_app_state()
-		if !had_saved_app_state:
-			_migrate_legacy_single_profile_if_needed()
+		if !FileAccess.file_exists(APP_STATE_SAVE_PATH):
 			save_app_state(_app_state_cache)
 	return _app_state_cache
 
 
 func load_app_state() -> AppStateData:
-	var loaded := _load_resource(APP_STATE_SAVE_PATH) as AppStateData
+	var envelope := _read_json_file(APP_STATE_SAVE_PATH)
+	var loaded := _decode_app_state(envelope)
 	if loaded == null:
 		loaded = AppStateData.new()
 	_normalize_app_state(loaded)
@@ -45,7 +56,7 @@ func save_app_state(app_state: AppStateData) -> bool:
 		return false
 	_normalize_app_state(app_state)
 	_app_state_cache = app_state
-	return _save_resource(app_state, APP_STATE_SAVE_PATH)
+	return _write_json_file(APP_STATE_SAVE_PATH, _encode_app_state(app_state))
 
 
 func list_user_profiles() -> Array[UserProfileInfo]:
@@ -60,7 +71,7 @@ func get_user_profile_info(profile_key: String) -> UserProfileInfo:
 		return null
 	var app_state := load_or_create_app_state()
 	for info in app_state.profiles:
-		if info != null and String(info.profile_key) == profile_key:
+		if info != null and str(info.profile_key) == profile_key:
 			return info
 	return null
 
@@ -75,7 +86,7 @@ func has_active_user_profile() -> bool:
 
 func get_active_user_profile_key() -> String:
 	var app_state := load_or_create_app_state()
-	var profile_key := String(app_state.active_user_profile_key)
+	var profile_key := str(app_state.active_user_profile_key)
 	if profile_key.is_empty():
 		return ""
 	return profile_key if get_user_profile_info(profile_key) != null else ""
@@ -85,7 +96,7 @@ func set_active_user_profile(profile_key: String) -> bool:
 	if get_user_profile_info(profile_key) == null:
 		return false
 	var app_state := load_or_create_app_state()
-	if String(app_state.active_user_profile_key) == profile_key:
+	if str(app_state.active_user_profile_key) == profile_key:
 		return true
 	app_state.active_user_profile_key = profile_key
 	_profile_cache = null
@@ -95,7 +106,7 @@ func set_active_user_profile(profile_key: String) -> bool:
 
 func clear_active_user_profile() -> void:
 	var app_state := load_or_create_app_state()
-	if String(app_state.active_user_profile_key).is_empty():
+	if str(app_state.active_user_profile_key).is_empty():
 		return
 	app_state.active_user_profile_key = ""
 	_profile_cache = null
@@ -141,7 +152,6 @@ func load_or_create_profile(user_profile_key: String = "") -> ProfileData:
 
 	_profile_cache_key = resolved_key
 	_profile_cache = load_profile(resolved_key)
-	_migrate_legacy_debug_mode_to_profile(_profile_cache, resolved_key)
 	if !FileAccess.file_exists(_profile_data_path(resolved_key)):
 		save_profile(_profile_cache, resolved_key)
 	return _profile_cache
@@ -151,7 +161,8 @@ func load_profile(user_profile_key: String = "") -> ProfileData:
 	var resolved_key := _resolve_user_profile_key(user_profile_key)
 	if resolved_key.is_empty():
 		return null
-	var loaded := _load_resource(_profile_data_path(resolved_key)) as ProfileData
+	var envelope := _read_json_file(_profile_data_path(resolved_key))
+	var loaded := _decode_profile(envelope)
 	if loaded == null:
 		loaded = ProfileData.new()
 	_normalize_profile_data(loaded)
@@ -166,7 +177,7 @@ func save_profile(profile: ProfileData, user_profile_key: String = "") -> bool:
 	_ensure_profile_dir_exists(resolved_key)
 	_profile_cache = profile
 	_profile_cache_key = resolved_key
-	return _save_resource(profile, _profile_data_path(resolved_key))
+	return _write_json_file(_profile_data_path(resolved_key), _encode_profile(profile))
 
 
 func has_active_run(user_profile_key: String = "") -> bool:
@@ -187,14 +198,7 @@ func load_active_run(user_profile_key: String = "") -> RunState:
 	var resolved_key := _resolve_user_profile_key(user_profile_key)
 	if resolved_key.is_empty():
 		return null
-	var result := _load_run_state_from_path(_active_run_path(resolved_key), true)
-	if result == null:
-		return null
-	if String(result.player_profile_id).is_empty():
-		push_warning("SaveService: active run is missing player_profile_id; clearing incompatible save")
-		clear_active_run(resolved_key)
-		return null
-	return result
+	return _load_run_state_from_path(_active_run_path(resolved_key))
 
 
 func save_active_run(run_state: RunState, user_profile_key: String = "") -> bool:
@@ -202,7 +206,7 @@ func save_active_run(run_state: RunState, user_profile_key: String = "") -> bool
 	if run_state == null or resolved_key.is_empty():
 		return false
 	_ensure_profile_dir_exists(resolved_key)
-	return _save_resource(run_state, _active_run_path(resolved_key))
+	return _write_json_file(_active_run_path(resolved_key), _encode_run_state(run_state))
 
 
 func list_debug_run_saves(user_profile_key: String = "") -> Array[DebugRunSaveInfo]:
@@ -221,21 +225,12 @@ func list_debug_run_saves(user_profile_key: String = "") -> Array[DebugRunSaveIn
 	dir.list_dir_begin()
 	var entry := dir.get_next()
 	while !entry.is_empty():
-		if !dir.current_is_dir() and entry.get_extension() == "tres":
+		if !dir.current_is_dir() and entry.get_extension() == "json":
 			var slot_key := entry.get_basename()
 			var path := _debug_run_path_from_key(slot_key, resolved_key)
-			var info := DebugRunSaveInfo.new()
-			info.slot_key = slot_key
-			info.file_name = entry
-			info.modified_unix_time = int(FileAccess.get_modified_time(ProjectSettings.globalize_path(path)))
-			var loaded := _load_run_state_from_path(path, false)
-			if loaded != null:
-				info.display_name = loaded.resource_name if !loaded.resource_name.is_empty() else slot_key
-				info.player_profile_id = String(loaded.player_profile_id)
-				info.gold = int(loaded.gold)
-			else:
-				info.display_name = slot_key
-			saves.append(info)
+			var info := _build_debug_run_info_from_path(slot_key, entry, path)
+			if info != null:
+				saves.append(info)
 		entry = dir.get_next()
 	dir.list_dir_end()
 	saves.sort_custom(_sort_debug_run_info_newest_first)
@@ -248,11 +243,7 @@ func save_debug_run(run_state: RunState, slot_name: String, user_profile_key: St
 		return false
 	_ensure_debug_run_dir_exists(resolved_key)
 	var key := debug_slot_key_from_name(slot_name)
-	var snapshot := run_state.duplicate(true) as RunState
-	if snapshot == null:
-		snapshot = run_state
-	snapshot.resource_name = slot_name.strip_edges()
-	return _save_resource(snapshot, _debug_run_path_from_key(key, resolved_key))
+	return _write_json_file(_debug_run_path_from_key(key, resolved_key), _encode_run_state(run_state, slot_name.strip_edges()))
 
 
 func load_debug_run(slot_name: String, user_profile_key: String = "") -> RunState:
@@ -260,7 +251,7 @@ func load_debug_run(slot_name: String, user_profile_key: String = "") -> RunStat
 	if resolved_key.is_empty():
 		return null
 	var key := debug_slot_key_from_name(slot_name)
-	return _load_run_state_from_path(_debug_run_path_from_key(key, resolved_key), false)
+	return _load_run_state_from_path(_debug_run_path_from_key(key, resolved_key))
 
 
 func delete_debug_run(slot_name: String, user_profile_key: String = "") -> bool:
@@ -274,20 +265,33 @@ func delete_debug_run(slot_name: String, user_profile_key: String = "") -> bool:
 	return DirAccess.remove_absolute(ProjectSettings.globalize_path(path)) == OK
 
 
-func _load_resource(path: String) -> Resource:
+func _read_json_file(path: String) -> Dictionary:
 	if !FileAccess.file_exists(path):
-		return null
-	return ResourceLoader.load(path)
+		return {}
+	var file := FileAccess.open(path, FileAccess.READ)
+	if file == null:
+		push_warning("SaveService: failed to open %s for read" % path)
+		return {}
+	var text := file.get_as_text()
+	if text.strip_edges().is_empty():
+		push_warning("SaveService: empty save file %s" % path)
+		return {}
+	var parsed = JSON.parse_string(text)
+	if typeof(parsed) != TYPE_DICTIONARY:
+		push_warning("SaveService: invalid JSON envelope in %s" % path)
+		return {}
+	return parsed
 
 
-func _save_resource(resource: Resource, path: String) -> bool:
-	if resource == null:
+func _write_json_file(path: String, dto: Dictionary) -> bool:
+	if dto.is_empty():
 		return false
 	_ensure_parent_dir_exists(path)
-	var err := ResourceSaver.save(resource, path)
-	if err != OK:
-		push_warning("SaveService: failed to save %s err=%s" % [path, err])
+	var file := FileAccess.open(path, FileAccess.WRITE)
+	if file == null:
+		push_warning("SaveService: failed to open %s for write" % path)
 		return false
+	file.store_string(JSON.stringify(dto, "\t"))
 	return true
 
 
@@ -320,7 +324,7 @@ func _debug_run_dir_path(user_profile_key: String) -> String:
 
 
 func _debug_run_path_from_key(slot_key: String, user_profile_key: String) -> String:
-	return "%s/%s.tres" % [_debug_run_dir_path(user_profile_key), slot_key]
+	return "%s/%s.json" % [_debug_run_dir_path(user_profile_key), slot_key]
 
 
 func _ensure_profile_dir_exists(user_profile_key: String) -> void:
@@ -338,13 +342,13 @@ func _normalize_app_state(app_state: AppStateData) -> void:
 	for info in app_state.profiles:
 		if info == null:
 			continue
-		if String(info.profile_key).is_empty():
-			info.profile_key = user_profile_key_from_name(String(info.display_name))
-		if String(info.display_name).is_empty():
-			info.display_name = String(info.profile_key).capitalize()
+		if str(info.profile_key).is_empty():
+			info.profile_key = user_profile_key_from_name(str(info.display_name))
+		if str(info.display_name).is_empty():
+			info.display_name = str(info.profile_key).capitalize()
 		normalized_profiles.append(info)
 	app_state.profiles = normalized_profiles
-	if !String(app_state.active_user_profile_key).is_empty() and _find_user_profile_info(app_state, String(app_state.active_user_profile_key)) == null:
+	if !str(app_state.active_user_profile_key).is_empty() and _find_user_profile_info(app_state, str(app_state.active_user_profile_key)) == null:
 		app_state.active_user_profile_key = ""
 
 
@@ -371,13 +375,13 @@ func _find_user_profile_info(app_state: AppStateData, profile_key: String) -> Us
 	if app_state == null:
 		return null
 	for info in app_state.profiles:
-		if info != null and String(info.profile_key) == profile_key:
+		if info != null and str(info.profile_key) == profile_key:
 			return info
 	return null
 
 
 func _sort_user_profiles(a: UserProfileInfo, b: UserProfileInfo) -> bool:
-	return String(a.display_name).to_lower() < String(b.display_name).to_lower()
+	return str(a.display_name).to_lower() < str(b.display_name).to_lower()
 
 
 func _sort_debug_run_info_newest_first(a: DebugRunSaveInfo, b: DebugRunSaveInfo) -> bool:
@@ -410,131 +414,824 @@ func _sanitize_key_from_name(name: String, empty_default: String) -> String:
 	return key
 
 
-func _migrate_legacy_single_profile_if_needed() -> void:
-	if !_legacy_data_exists():
-		return
-	var app_state := _app_state_cache if _app_state_cache != null else AppStateData.new()
-	var info := _create_user_profile_info(app_state, LEGACY_DEFAULT_PROFILE_NAME)
-	if info == null:
-		return
-
-	var profile_key := info.profile_key
-	var legacy_profile := _load_resource(LEGACY_PROFILE_SAVE_PATH) as ProfileData
-	if legacy_profile != null:
-		_normalize_profile_data(legacy_profile)
-		app_state.debug_mode = bool(legacy_profile.debug_mode)
-		save_profile(legacy_profile, profile_key)
-	else:
-		save_profile(ProfileData.new(), profile_key)
-
-	var legacy_run := _load_run_state_from_path(LEGACY_ACTIVE_RUN_SAVE_PATH, false)
-	if legacy_run != null:
-		save_active_run(legacy_run, profile_key)
-
-	_migrate_legacy_debug_runs(profile_key)
-	app_state.active_user_profile_key = profile_key
-	_app_state_cache = app_state
-	save_app_state(app_state)
-	_remove_legacy_data()
+func _load_run_state_from_path(path: String) -> RunState:
+	var envelope := _read_json_file(path)
+	var run_state := _decode_run_state(envelope)
+	if run_state == null:
+		return null
+	if str(run_state.player_profile_id).is_empty():
+		push_warning("SaveService: run at %s is missing player_profile_id" % path)
+		return null
+	return run_state
 
 
-func _migrate_legacy_debug_mode_to_profile(profile: ProfileData, profile_key: String) -> void:
-	if profile == null:
-		return
-	var app_state := load_or_create_app_state()
-	if app_state == null or !bool(app_state.debug_mode) or bool(profile.debug_mode):
-		return
-	if profile_key != get_active_user_profile_key():
-		return
-	profile.debug_mode = true
-	app_state.debug_mode = false
-	save_profile(profile, profile_key)
-	save_app_state(app_state)
+func _decode_app_state(envelope: Dictionary) -> AppStateData:
+	var data := _extract_envelope_data(envelope, FILE_TYPE_APP)
+	if data.is_empty():
+		return null
+
+	var app_state := AppStateData.new()
+	app_state.active_user_profile_key = str(data.get("active_user_profile_key", ""))
+	var profile_dicts = data.get("profiles", [])
+	if typeof(profile_dicts) == TYPE_ARRAY:
+		for value in profile_dicts:
+			if typeof(value) != TYPE_DICTIONARY:
+				continue
+			var info := _decode_user_profile_info(value)
+			if info != null:
+				app_state.profiles.append(info)
+	_normalize_app_state(app_state)
+	return app_state
 
 
-func _legacy_data_exists() -> bool:
-	if FileAccess.file_exists(LEGACY_PROFILE_SAVE_PATH):
+func _encode_app_state(app_state: AppStateData) -> Dictionary:
+	var profiles: Array[Dictionary] = []
+	for info in app_state.profiles:
+		if info == null:
+			continue
+		profiles.append(_encode_user_profile_info(info))
+	return {
+		"file_type": FILE_TYPE_APP,
+		"version": SAVE_VERSION,
+		"data": {
+			"active_user_profile_key": str(app_state.active_user_profile_key),
+			"profiles": profiles,
+		},
+	}
+
+
+func _decode_profile(envelope: Dictionary) -> ProfileData:
+	var data := _extract_envelope_data(envelope, FILE_TYPE_PROFILE)
+	if data.is_empty():
+		return null
+
+	var profile := ProfileData.new()
+	profile.xp = int(data.get("xp", 0))
+	profile.debug_mode = bool(data.get("debug_mode", false))
+	profile.unlocked_content_ids = _decode_packed_string_array(data.get("unlocked_content_ids", []))
+	profile.soul_recess_state = _decode_soul_recess_state(data.get("soul_recess_state", {}))
+	_normalize_profile_data(profile)
+	return profile
+
+
+func _encode_profile(profile: ProfileData) -> Dictionary:
+	return {
+		"file_type": FILE_TYPE_PROFILE,
+		"version": SAVE_VERSION,
+		"data": {
+			"xp": int(profile.xp),
+			"debug_mode": bool(profile.debug_mode),
+			"unlocked_content_ids": _encode_packed_string_array(profile.unlocked_content_ids),
+			"soul_recess_state": _encode_soul_recess_state(profile.soul_recess_state),
+		},
+	}
+
+
+func _decode_run_state(envelope: Dictionary) -> RunState:
+	var data := _extract_envelope_data(envelope, FILE_TYPE_RUN)
+	if data.is_empty():
+		return null
+
+	var run_state := RunState.new()
+	run_state.resource_name = str(data.get("save_name", ""))
+	run_state.gold = int(data.get("gold", RunState.BASE_STARTING_GOLD))
+	run_state.card_reward_choices = int(data.get("card_reward_choices", RunState.BASE_CARD_REWARD_CHOICES))
+	run_state.common_weight = float(data.get("common_weight", RunState.BASE_COMMON_WEIGHT))
+	run_state.uncommon_weight = float(data.get("uncommon_weight", RunState.BASE_UNCOMMON_WEIGHT))
+	run_state.rare_weight = float(data.get("rare_weight", RunState.BASE_RARE_WEIGHT))
+	run_state.run_seed = int(data.get("run_seed", 0))
+	run_state.map_seed = int(data.get("map_seed", 0))
+	run_state.run_rng_snapshot = _decode_run_rng_snapshot(data.get("run_rng_snapshot", {}))
+	run_state.player_profile_id = str(data.get("player_profile_id", ""))
+	run_state.player_run_state = _decode_player_run_state(data.get("player_run_state", {}))
+	run_state.cleared_room_coords = _decode_vector2i_array(data.get("cleared_room_coords", []))
+	run_state.location_kind = int(data.get("location_kind", RunState.LocationKind.MAP))
+	run_state.pending_room_coord = _decode_vector2i(data.get("pending_room_coord", []), Vector2i(-1, -1))
+	run_state.pending_battle_seed = int(data.get("pending_battle_seed", 0))
+	run_state.pending_room_seed = int(data.get("pending_room_seed", 0))
+	run_state.pending_reward_seed = int(data.get("pending_reward_seed", 0))
+	run_state.pending_treasure_arcanum_id = str(data.get("pending_treasure_arcanum_id", ""))
+	run_state.pending_shop_card_offer_paths = _decode_packed_string_array(data.get("pending_shop_card_offer_paths", []))
+	run_state.pending_shop_card_offer_costs = _decode_int_array(data.get("pending_shop_card_offer_costs", []))
+	run_state.pending_shop_claimed_card_offer_indices = _decode_int_array(data.get("pending_shop_claimed_card_offer_indices", []))
+	run_state.pending_shop_arcanum_offer_ids = _decode_packed_string_array(data.get("pending_shop_arcanum_offer_ids", []))
+	run_state.pending_shop_arcanum_offer_costs = _decode_int_array(data.get("pending_shop_arcanum_offer_costs", []))
+	run_state.pending_shop_claimed_arcanum_offer_indices = _decode_int_array(data.get("pending_shop_claimed_arcanum_offer_indices", []))
+	run_state.pending_reward_gold_rewards = _decode_int_array(data.get("pending_reward_gold_rewards", []))
+	run_state.pending_reward_card_choice_paths = _decode_packed_string_array(data.get("pending_reward_card_choice_paths", []))
+	run_state.pending_reward_arcanum_ids = _decode_packed_string_array(data.get("pending_reward_arcanum_ids", []))
+	run_state.pending_reward_claimed_gold_indices = _decode_int_array(data.get("pending_reward_claimed_gold_indices", []))
+	run_state.pending_reward_card_claimed = bool(data.get("pending_reward_card_claimed", false))
+	run_state.pending_reward_claimed_arcanum_indices = _decode_int_array(data.get("pending_reward_claimed_arcanum_indices", []))
+	run_state.owned_arcanum_ids = _decode_packed_string_array(data.get("owned_arcanum_ids", []))
+	run_state.draftable_cards = _decode_card_pile_from_refs(data.get("draftable_card_refs", []))
+	run_state.run_deck = _decode_run_deck(data.get("run_deck", {}))
+	_normalize_active_run(run_state)
+	return run_state
+
+
+func _encode_run_state(run_state: RunState, save_name: String = "") -> Dictionary:
+	return {
+		"file_type": FILE_TYPE_RUN,
+		"version": SAVE_VERSION,
+		"data": {
+			"save_name": save_name,
+			"gold": int(run_state.gold),
+			"card_reward_choices": int(run_state.card_reward_choices),
+			"common_weight": float(run_state.common_weight),
+			"uncommon_weight": float(run_state.uncommon_weight),
+			"rare_weight": float(run_state.rare_weight),
+			"run_seed": int(run_state.run_seed),
+			"map_seed": int(run_state.map_seed),
+			"run_rng_snapshot": _encode_run_rng_snapshot(run_state.run_rng_snapshot),
+			"player_profile_id": str(run_state.player_profile_id),
+			"player_run_state": _encode_player_run_state(run_state.player_run_state),
+			"cleared_room_coords": _encode_vector2i_array(run_state.cleared_room_coords),
+			"location_kind": int(run_state.location_kind),
+			"pending_room_coord": _encode_vector2i(run_state.pending_room_coord),
+			"pending_battle_seed": int(run_state.pending_battle_seed),
+			"pending_room_seed": int(run_state.pending_room_seed),
+			"pending_reward_seed": int(run_state.pending_reward_seed),
+			"pending_treasure_arcanum_id": str(run_state.pending_treasure_arcanum_id),
+			"pending_shop_card_offer_paths": _encode_packed_string_array(run_state.pending_shop_card_offer_paths),
+			"pending_shop_card_offer_costs": _encode_int_array(run_state.pending_shop_card_offer_costs),
+			"pending_shop_claimed_card_offer_indices": _encode_int_array(run_state.pending_shop_claimed_card_offer_indices),
+			"pending_shop_arcanum_offer_ids": _encode_packed_string_array(run_state.pending_shop_arcanum_offer_ids),
+			"pending_shop_arcanum_offer_costs": _encode_int_array(run_state.pending_shop_arcanum_offer_costs),
+			"pending_shop_claimed_arcanum_offer_indices": _encode_int_array(run_state.pending_shop_claimed_arcanum_offer_indices),
+			"pending_reward_gold_rewards": _encode_int_array(run_state.pending_reward_gold_rewards),
+			"pending_reward_card_choice_paths": _encode_packed_string_array(run_state.pending_reward_card_choice_paths),
+			"pending_reward_arcanum_ids": _encode_packed_string_array(run_state.pending_reward_arcanum_ids),
+			"pending_reward_claimed_gold_indices": _encode_int_array(run_state.pending_reward_claimed_gold_indices),
+			"pending_reward_card_claimed": bool(run_state.pending_reward_card_claimed),
+			"pending_reward_claimed_arcanum_indices": _encode_int_array(run_state.pending_reward_claimed_arcanum_indices),
+			"owned_arcanum_ids": _encode_packed_string_array(run_state.owned_arcanum_ids),
+			"draftable_card_refs": _encode_card_pile_refs(run_state.draftable_cards),
+			"run_deck": _encode_run_deck(run_state.run_deck),
+		},
+	}
+
+
+func _extract_envelope_data(envelope: Dictionary, expected_type: String) -> Dictionary:
+	if envelope.is_empty():
+		return {}
+	if str(envelope.get("file_type", "")) != expected_type:
+		push_warning("SaveService: expected %s save, got %s" % [expected_type, str(envelope.get("file_type", "<missing>"))])
+		return {}
+	if int(envelope.get("version", -1)) != SAVE_VERSION:
+		push_warning("SaveService: unsupported %s save version %s" % [expected_type, str(envelope.get("version", "<missing>"))])
+		return {}
+	var data = envelope.get("data", {})
+	if typeof(data) != TYPE_DICTIONARY:
+		push_warning("SaveService: %s save is missing object data" % expected_type)
+		return {}
+	return data
+
+
+func _decode_user_profile_info(data: Dictionary) -> UserProfileInfo:
+	var info := UserProfileInfo.new()
+	info.profile_key = str(data.get("profile_key", ""))
+	info.display_name = str(data.get("display_name", ""))
+	info.created_unix_time = int(data.get("created_unix_time", 0))
+	if info.profile_key.is_empty():
+		return null
+	return info
+
+
+func _encode_user_profile_info(info: UserProfileInfo) -> Dictionary:
+	return {
+		"profile_key": str(info.profile_key),
+		"display_name": str(info.display_name),
+		"created_unix_time": int(info.created_unix_time),
+	}
+
+
+func _decode_run_rng_snapshot(value: Variant) -> Dictionary:
+	if typeof(value) != TYPE_DICTIONARY:
+		return {}
+	var snapshot_data := value as Dictionary
+	var decoded_streams := {}
+	var raw_streams := _as_dictionary(snapshot_data.get("streams", {}))
+	for key in raw_streams.keys():
+		var label := str(key)
+		var raw_stream := _as_dictionary(raw_streams[key])
+		if raw_stream.is_empty():
+			continue
+		decoded_streams[label] = {
+			"seed": int(raw_stream.get("seed", 0)),
+			"rolls": int(raw_stream.get("rolls", 0)),
+		}
+	return {
+		"run_seed": int(snapshot_data.get("run_seed", 0)),
+		"streams": decoded_streams,
+	}
+
+
+func _encode_run_rng_snapshot(snapshot: Variant) -> Dictionary:
+	if typeof(snapshot) != TYPE_DICTIONARY:
+		return {}
+	var snapshot_data := snapshot as Dictionary
+	var encoded_streams := {}
+	var raw_streams := _as_dictionary(snapshot_data.get("streams", {}))
+	for key in raw_streams.keys():
+		var label := str(key)
+		var raw_stream := _as_dictionary(raw_streams[key])
+		if raw_stream.is_empty():
+			continue
+		encoded_streams[label] = {
+			"seed": int(raw_stream.get("seed", 0)),
+			"rolls": int(raw_stream.get("rolls", 0)),
+		}
+	return {
+		"run_seed": int(snapshot_data.get("run_seed", 0)),
+		"streams": encoded_streams,
+	}
+
+
+func _decode_player_run_state(data: Variant) -> PlayerRunState:
+	var result := PlayerRunState.new()
+	if typeof(data) != TYPE_DICTIONARY:
+		return result
+	result.current_health = int(data.get("current_health", 0))
+	result.max_health = int(data.get("max_health", 0))
+	result.clamp_health()
+	return result
+
+
+func _encode_player_run_state(state: PlayerRunState) -> Dictionary:
+	return {
+		"current_health": int(state.current_health) if state != null else 0,
+		"max_health": int(state.max_health) if state != null else 0,
+	}
+
+
+func _decode_soul_recess_state(data: Variant) -> SoulRecessState:
+	var state := SoulRecessState.new()
+	if typeof(data) != TYPE_DICTIONARY:
+		return state
+	state.unlocked_slot_count = int(data.get("unlocked_slot_count", 1))
+	state.selected_starting_soul_uid = str(data.get("selected_starting_soul_uid", ""))
+	state.slot_souls = _decode_card_snapshot_array(data.get("slot_souls", []))
+	state.attuned_souls = _decode_card_snapshot_array(data.get("attuned_souls", []))
+	return state
+
+
+func _encode_soul_recess_state(state: SoulRecessState) -> Dictionary:
+	if state == null:
+		return {
+			"unlocked_slot_count": 1,
+			"selected_starting_soul_uid": "",
+			"slot_souls": [],
+			"attuned_souls": [],
+		}
+	return {
+		"unlocked_slot_count": int(state.unlocked_slot_count),
+		"selected_starting_soul_uid": str(state.selected_starting_soul_uid),
+		"slot_souls": _encode_card_snapshot_array(state.slot_souls),
+		"attuned_souls": _encode_card_snapshot_array(state.attuned_souls),
+	}
+
+
+func _decode_run_deck(data: Variant) -> RunDeck:
+	var deck := RunDeck.new()
+	if typeof(data) != TYPE_DICTIONARY:
+		return deck
+	deck.card_collection = _build_card_pile_from_cards(_decode_card_array(data.get("cards", [])))
+	return deck
+
+
+func _encode_run_deck(run_deck: RunDeck) -> Dictionary:
+	if run_deck == null:
+		return {
+			"cards": [],
+		}
+	return {
+		"cards": _encode_card_array(run_deck.card_collection.cards if run_deck.card_collection != null else []),
+	}
+
+
+func _build_card_pile_from_cards(cards: Array[CardData]) -> CardPile:
+	var pile := CardPile.new()
+	for card in cards:
+		if card == null:
+			continue
+		pile.add_back(card)
+	return pile
+
+
+func _decode_card_pile_from_refs(values: Variant) -> CardPile:
+	var pile := CardPile.new()
+	if typeof(values) != TYPE_ARRAY:
+		return pile
+	for value in values:
+		var ref := str(value)
+		if ref.is_empty():
+			continue
+		var card := load(ref) as CardData
+		if card == null:
+			push_warning("SaveService: failed to load draftable card ref %s" % ref)
+			continue
+		pile.add_back(card)
+	return pile
+
+
+func _encode_card_pile_refs(pile: CardPile) -> Array[String]:
+	var refs: Array[String] = []
+	if pile == null:
+		return refs
+	for card_data in pile.cards:
+		if card_data == null:
+			continue
+		var ref := _card_resource_uid_ref(card_data)
+		if ref.is_empty():
+			push_warning("SaveService: draftable card is missing a resource uid/path; skipping %s" % str(card_data.name))
+			continue
+		refs.append(ref)
+	return refs
+
+
+func _card_resource_uid_ref(card_data: CardData) -> String:
+	if card_data == null:
+		return ""
+	var path := str(card_data.resource_path)
+	if path.is_empty():
+		return ""
+	if path.begins_with("uid://"):
+		return path
+	var uid := ResourceLoader.get_resource_uid(path)
+	if uid > 0:
+		return ResourceUID.id_to_text(uid)
+	return ""
+
+
+func _decode_card_array(values: Variant) -> Array[CardData]:
+	var cards: Array[CardData] = []
+	if typeof(values) != TYPE_ARRAY:
+		return cards
+	for value in values:
+		if typeof(value) != TYPE_DICTIONARY:
+			continue
+		var card := _decode_card_data(value)
+		if card != null:
+			cards.append(card)
+	return cards
+
+
+func _encode_card_array(values: Array) -> Array[Dictionary]:
+	var cards: Array[Dictionary] = []
+	for value in values:
+		var card_data := value as CardData
+		if card_data == null:
+			continue
+		cards.append(_encode_card_data(card_data))
+	return cards
+
+
+func _decode_card_snapshot_array(values: Variant) -> Array[CardSnapshot]:
+	var snapshots: Array[CardSnapshot] = []
+	if typeof(values) != TYPE_ARRAY:
+		return snapshots
+	for value in values:
+		if typeof(value) != TYPE_DICTIONARY:
+			continue
+		var snapshot := _decode_card_snapshot(value)
+		if snapshot != null:
+			snapshots.append(snapshot)
+	return snapshots
+
+
+func _encode_card_snapshot_array(values: Array) -> Array[Dictionary]:
+	var encoded: Array[Dictionary] = []
+	for value in values:
+		var snapshot := value as CardSnapshot
+		if snapshot == null:
+			continue
+		encoded.append(_encode_card_snapshot(snapshot))
+	return encoded
+
+
+func _decode_card_snapshot(data: Dictionary) -> CardSnapshot:
+	var snapshot := CardSnapshot.new()
+	snapshot.template_hint_path = str(data.get("template_hint_path", ""))
+	snapshot.card = _decode_card_data(_as_dictionary(data.get("card", {})))
+	if snapshot.card == null:
+		return null
+	return snapshot
+
+
+func _encode_card_snapshot(snapshot: CardSnapshot) -> Dictionary:
+	return {
+		"template_hint_path": str(snapshot.template_hint_path if snapshot != null else ""),
+		"card": _encode_card_data(snapshot.card if snapshot != null else null),
+	}
+
+
+func _decode_card_data(data: Dictionary) -> CardData:
+	if data.is_empty():
+		return null
+	var card := CardData.new()
+	card.uid = str(data.get("uid", ""))
+	card.version = int(data.get("version", 1))
+	card.card_type = int(data.get("card_type", 0))
+	card.target_type = int(data.get("target_type", 0))
+	card.rarity = int(data.get("rarity", 0))
+	card.name = str(data.get("name", ""))
+	card.deplete = bool(data.get("deplete", false))
+	card.description = str(data.get("description", ""))
+	card.cost = int(data.get("cost", 0))
+	card.texture = _load_external_resource_ref(str(data.get("texture_ref", ""))) as Texture2D
+	card.actions = _decode_card_action_array(data.get("actions", []))
+	card.ensure_uid()
+	return card
+
+
+func _encode_card_data(card_data: CardData) -> Dictionary:
+	if card_data == null:
+		return {}
+	card_data.ensure_uid()
+	var encoded_actions: Array[Dictionary] = []
+	for action in card_data.actions:
+		var action_dto := _encode_scripted_resource(action)
+		if action_dto.is_empty():
+			continue
+		encoded_actions.append(action_dto)
+	return {
+		"uid": str(card_data.uid),
+		"version": int(card_data.version),
+		"card_type": int(card_data.card_type),
+		"target_type": int(card_data.target_type),
+		"rarity": int(card_data.rarity),
+		"name": str(card_data.name),
+		"deplete": bool(card_data.deplete),
+		"description": str(card_data.description),
+		"cost": int(card_data.cost),
+		"texture_ref": _external_resource_ref_string(card_data.texture),
+		"actions": encoded_actions,
+	}
+
+
+func _decode_card_action_array(values: Variant) -> Array[CardAction]:
+	var actions: Array[CardAction] = []
+	if typeof(values) != TYPE_ARRAY:
+		return actions
+	for value in values:
+		var action := _decode_scripted_resource(value) as CardAction
+		if action != null:
+			actions.append(action)
+	return actions
+
+
+func _encode_scripted_resource(resource: Resource) -> Dictionary:
+	if resource == null:
+		return {}
+	var script := resource.get_script() as Script
+	if script == null:
+		push_warning("SaveService: missing script for resource class=%s" % resource.get_class())
+		return {}
+	var script_uid := _script_uid_for_script(script)
+	if script_uid.is_empty():
+		push_warning("SaveService: missing script uid for %s" % str(script.resource_path))
+		return {}
+	return {
+		"script_uid": script_uid,
+		"values": _encode_resource_values(resource),
+	}
+
+
+func _decode_scripted_resource(value: Variant) -> Resource:
+	if typeof(value) != TYPE_DICTIONARY:
+		return null
+	var data := value as Dictionary
+	var script_uid := str(data.get("script_uid", ""))
+	if script_uid.is_empty():
+		push_warning("SaveService: scripted resource is missing script_uid")
+		return null
+	var script_path := _script_path_for_uid(script_uid)
+	if script_path.is_empty():
+		push_warning("SaveService: unable to resolve script uid %s" % script_uid)
+		return null
+	var script := load(script_path) as Script
+	if script == null:
+		push_warning("SaveService: failed to load script at %s" % script_path)
+		return null
+	var resource = script.new()
+	if !(resource is Resource):
+		push_warning("SaveService: script %s did not instantiate a Resource" % script_path)
+		return null
+	_apply_decoded_resource_values(resource, _as_dictionary(data.get("values", {})))
+	return resource
+
+
+func _encode_resource_values(resource: Resource) -> Dictionary:
+	var values := {}
+	for property_data in resource.get_property_list():
+		if !_should_encode_resource_property(property_data):
+			continue
+		var property_name := str(property_data.name)
+		values[property_name] = _encode_variant_value(resource.get(property_name))
+	return values
+
+
+func _apply_decoded_resource_values(resource: Resource, values: Dictionary) -> void:
+	for key in values.keys():
+		var property_name := str(key)
+		if !_resource_has_property(resource, property_name):
+			continue
+		resource.set(property_name, _decode_variant_value(values[key]))
+
+
+func _resource_has_property(resource: Resource, property_name: String) -> bool:
+	if resource == null or property_name.is_empty():
+		return false
+	for property_data in resource.get_property_list():
+		if str(property_data.get("name", "")) == property_name:
+			return true
+	return false
+
+
+func _should_encode_resource_property(property_data: Dictionary) -> bool:
+	var property_name := str(property_data.get("name", ""))
+	if property_name.is_empty():
+		return false
+	if property_name == "metadata/_custom_type_script":
+		return false
+	if property_name in ["resource_local_to_scene", "resource_name", "resource_path", "resource_scene_unique_id", "script"]:
+		return false
+	var usage := int(property_data.get("usage", 0))
+	if (usage & PROPERTY_USAGE_STORAGE) == 0:
+		return false
+	return true
+
+
+func _encode_variant_value(value: Variant) -> Variant:
+	match typeof(value):
+		TYPE_NIL, TYPE_BOOL, TYPE_INT, TYPE_FLOAT, TYPE_STRING:
+			return value
+		TYPE_STRING_NAME:
+			return {
+				"__kind": SERIALIZED_KIND_STRING_NAME,
+				"value": str(value),
+			}
+		TYPE_COLOR:
+			var color := value as Color
+			return {
+				"__kind": SERIALIZED_KIND_COLOR,
+				"r": color.r,
+				"g": color.g,
+				"b": color.b,
+				"a": color.a,
+			}
+		TYPE_VECTOR2:
+			var vector2 := value as Vector2
+			return {
+				"__kind": SERIALIZED_KIND_VECTOR2,
+				"x": float(vector2.x),
+				"y": float(vector2.y),
+			}
+		TYPE_VECTOR2I:
+			var vector2i := value as Vector2i
+			return {
+				"__kind": SERIALIZED_KIND_VECTOR2I,
+				"x": int(vector2i.x),
+				"y": int(vector2i.y),
+			}
+		TYPE_VECTOR3:
+			var vector3 := value as Vector3
+			return {
+				"__kind": SERIALIZED_KIND_VECTOR3,
+				"x": float(vector3.x),
+				"y": float(vector3.y),
+				"z": float(vector3.z),
+			}
+		TYPE_ARRAY:
+			var encoded_array: Array = []
+			for entry in value:
+				encoded_array.append(_encode_variant_value(entry))
+			return encoded_array
+		TYPE_DICTIONARY:
+			var encoded_dict := {}
+			for key in value.keys():
+				encoded_dict[str(key)] = _encode_variant_value(value[key])
+			return encoded_dict
+		TYPE_PACKED_STRING_ARRAY:
+			return {
+				"__kind": SERIALIZED_KIND_PACKED_STRING_ARRAY,
+				"values": _encode_packed_string_array(value),
+			}
+		TYPE_PACKED_INT32_ARRAY:
+			return {
+				"__kind": SERIALIZED_KIND_PACKED_INT32_ARRAY,
+				"values": _encode_int_array(value),
+			}
+		TYPE_OBJECT:
+			if value is Resource:
+				var resource := value as Resource
+				if _should_store_resource_as_reference(resource):
+					return {
+						"__kind": SERIALIZED_KIND_EXTERNAL_RESOURCE,
+						"path": _external_resource_ref_string(resource),
+					}
+				return {
+					"__kind": SERIALIZED_KIND_SCRIPTED_RESOURCE,
+					"data": _encode_scripted_resource(resource),
+				}
+	push_warning("SaveService: unsupported save variant type %s" % typeof(value))
+	return null
+
+
+func _decode_variant_value(value: Variant) -> Variant:
+	if typeof(value) == TYPE_ARRAY:
+		var decoded_array: Array = []
+		for entry in value:
+			decoded_array.append(_decode_variant_value(entry))
+		return decoded_array
+	if typeof(value) != TYPE_DICTIONARY:
+		return value
+
+	var dict := value as Dictionary
+	var kind := str(dict.get("__kind", ""))
+	match kind:
+		"":
+			var decoded_dict := {}
+			for key in dict.keys():
+				decoded_dict[str(key)] = _decode_variant_value(dict[key])
+			return decoded_dict
+		SERIALIZED_KIND_STRING_NAME:
+			return StringName(str(dict.get("value", "")))
+		SERIALIZED_KIND_COLOR:
+			return Color(
+				float(dict.get("r", 1.0)),
+				float(dict.get("g", 1.0)),
+				float(dict.get("b", 1.0)),
+				float(dict.get("a", 1.0))
+			)
+		SERIALIZED_KIND_VECTOR2:
+			return Vector2(float(dict.get("x", 0.0)), float(dict.get("y", 0.0)))
+		SERIALIZED_KIND_VECTOR2I:
+			return Vector2i(int(dict.get("x", 0)), int(dict.get("y", 0)))
+		SERIALIZED_KIND_VECTOR3:
+			return Vector3(float(dict.get("x", 0.0)), float(dict.get("y", 0.0)), float(dict.get("z", 0.0)))
+		SERIALIZED_KIND_PACKED_STRING_ARRAY:
+			return _decode_packed_string_array(dict.get("values", []))
+		SERIALIZED_KIND_PACKED_INT32_ARRAY:
+			return PackedInt32Array(_decode_int_array(dict.get("values", [])))
+		SERIALIZED_KIND_EXTERNAL_RESOURCE:
+			return _load_external_resource_ref(str(dict.get("path", "")))
+		SERIALIZED_KIND_SCRIPTED_RESOURCE:
+			return _decode_scripted_resource(dict.get("data", {}))
+	return dict
+
+
+func _should_store_resource_as_reference(resource: Resource) -> bool:
+	if resource == null:
 		return true
-	if FileAccess.file_exists(LEGACY_ACTIVE_RUN_SAVE_PATH):
-		return true
-	return DirAccess.dir_exists_absolute(ProjectSettings.globalize_path(LEGACY_DEBUG_RUN_DIR_PATH))
+	return !str(resource.resource_path).is_empty() or resource.get_script() == null or resource is Sound or resource is PackedScene
 
 
-func _migrate_legacy_debug_runs(profile_key: String) -> void:
-	if !DirAccess.dir_exists_absolute(ProjectSettings.globalize_path(LEGACY_DEBUG_RUN_DIR_PATH)):
+func _external_resource_ref_string(resource: Resource) -> String:
+	if resource == null:
+		return ""
+	var path := str(resource.resource_path)
+	if path.is_empty():
+		return ""
+	if path.begins_with("uid://"):
+		return path
+	var uid := ResourceLoader.get_resource_uid(path)
+	if uid > 0:
+		return ResourceUID.id_to_text(uid)
+	return path
+
+
+func _load_external_resource_ref(path: String) -> Resource:
+	if path.is_empty():
+		return null
+	var resource := load(path) as Resource
+	if resource == null:
+		push_warning("SaveService: failed to load external resource %s" % path)
+	return resource
+
+
+func _script_uid_for_script(script: Script) -> String:
+	if script == null:
+		return ""
+	var uid_path := "%s.uid" % str(script.resource_path)
+	if !FileAccess.file_exists(uid_path):
+		return ""
+	var file := FileAccess.open(uid_path, FileAccess.READ)
+	if file == null:
+		return ""
+	return file.get_as_text().strip_edges()
+
+
+func _script_path_for_uid(script_uid: String) -> String:
+	if script_uid.is_empty():
+		return ""
+	_ensure_script_uid_cache()
+	return str(_script_uid_path_cache.get(script_uid, ""))
+
+
+func _ensure_script_uid_cache() -> void:
+	if _script_uid_cache_ready:
 		return
-	_ensure_debug_run_dir_exists(profile_key)
-	var dir := DirAccess.open(ProjectSettings.globalize_path(LEGACY_DEBUG_RUN_DIR_PATH))
+	_script_uid_cache_ready = true
+	_index_script_uid_dir("res://")
+
+
+func _index_script_uid_dir(local_dir: String) -> void:
+	var dir := DirAccess.open(ProjectSettings.globalize_path(local_dir))
 	if dir == null:
 		return
 	dir.list_dir_begin()
 	var entry := dir.get_next()
 	while !entry.is_empty():
-		if !dir.current_is_dir() and entry.get_extension() == "tres":
-			var legacy_path := "%s/%s" % [LEGACY_DEBUG_RUN_DIR_PATH, entry]
-			var loaded := _load_run_state_from_path(legacy_path, false)
-			if loaded != null:
-				_save_resource(loaded, _debug_run_path_from_key(entry.get_basename(), profile_key))
+		var child_path := _join_local_path(local_dir, entry)
+		if dir.current_is_dir():
+			if entry != "." and entry != "..":
+				_index_script_uid_dir(child_path)
+		elif entry.ends_with(".gd.uid"):
+			var file := FileAccess.open(child_path, FileAccess.READ)
+			if file != null:
+				var uid_text := file.get_as_text().strip_edges()
+				if !uid_text.is_empty():
+					_script_uid_path_cache[uid_text] = child_path.trim_suffix(".uid")
 		entry = dir.get_next()
 	dir.list_dir_end()
 
 
-func _remove_legacy_data() -> void:
-	_remove_file_if_exists(LEGACY_PROFILE_SAVE_PATH)
-	_remove_file_if_exists(LEGACY_ACTIVE_RUN_SAVE_PATH)
-	_remove_directory_if_exists(LEGACY_DEBUG_RUN_DIR_PATH)
+func _join_local_path(base_path: String, child: String) -> String:
+	if base_path.ends_with("://"):
+		return "%s%s" % [base_path, child]
+	if base_path.ends_with("/"):
+		return "%s%s" % [base_path, child]
+	return "%s/%s" % [base_path, child]
 
 
-func _remove_file_if_exists(path: String) -> void:
-	if FileAccess.file_exists(path):
-		DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
+func _decode_vector2i(value: Variant, default_value: Vector2i = Vector2i.ZERO) -> Vector2i:
+	if typeof(value) != TYPE_ARRAY:
+		return default_value
+	var values: Array = value
+	if values.size() != 2:
+		return default_value
+	return Vector2i(int(values[0]), int(values[1]))
 
 
-func _remove_directory_if_exists(path: String) -> void:
-	var global_path := ProjectSettings.globalize_path(path)
-	if !DirAccess.dir_exists_absolute(global_path):
-		return
-	var dir := DirAccess.open(global_path)
-	if dir == null:
-		return
-	dir.list_dir_begin()
-	var entry := dir.get_next()
-	while !entry.is_empty():
-		if !dir.current_is_dir():
-			DirAccess.remove_absolute("%s/%s" % [global_path, entry])
-		entry = dir.get_next()
-	dir.list_dir_end()
-	DirAccess.remove_absolute(global_path)
+func _encode_vector2i(value: Vector2i) -> Array[int]:
+	return [int(value.x), int(value.y)]
 
 
-func _load_run_state_from_path(path: String, resave_if_needed: bool) -> RunState:
-	var loaded := _load_resource(path)
-	if loaded == null:
-		return null
-	var needs_resave := false
-	if loaded is RunState:
-		var loaded_run := loaded as RunState
-		needs_resave = String(loaded_run.player_profile_id).is_empty() \
-			or int(loaded_run.map_seed) == 0 \
-			or loaded_run.player_run_state == null \
-			or int(loaded_run.player_run_state.max_health) <= 0 \
-			or _pending_room_in_cleared(loaded_run)
-
-	var migrated := _normalize_active_run(loaded)
-	if migrated == null:
-		return null
-	if resave_if_needed and needs_resave:
-		_save_resource(migrated, path)
-	return migrated
+func _decode_vector2i_array(value: Variant) -> Array[Vector2i]:
+	var coords: Array[Vector2i] = []
+	if typeof(value) != TYPE_ARRAY:
+		return coords
+	for entry in value:
+		coords.append(_decode_vector2i(entry, Vector2i.ZERO))
+	return coords
 
 
-func _normalize_active_run(resource: Resource) -> RunState:
-	var run_state: RunState = null
-	if resource is RunState:
-		run_state = resource as RunState
-	else:
-		return null
+func _encode_vector2i_array(values: Array[Vector2i]) -> Array[Array]:
+	var encoded: Array[Array] = []
+	for value in values:
+		encoded.append(_encode_vector2i(value))
+	return encoded
 
+
+func _decode_int_array(value: Variant) -> Array[int]:
+	var ints: Array[int] = []
+	if typeof(value) != TYPE_ARRAY:
+		return ints
+	for entry in value:
+		ints.append(int(entry))
+	return ints
+
+
+func _encode_int_array(values: Array[int]) -> Array[int]:
+	var ints: Array[int] = []
+	for value in values:
+		ints.append(int(value))
+	return ints
+
+
+func _decode_packed_string_array(value: Variant) -> PackedStringArray:
+	var strings := PackedStringArray()
+	if typeof(value) != TYPE_ARRAY:
+		return strings
+	for entry in value:
+		strings.append(str(entry))
+	return strings
+
+
+func _encode_packed_string_array(values: PackedStringArray) -> Array[String]:
+	var strings: Array[String] = []
+	for value in values:
+		strings.append(str(value))
+	return strings
+
+
+func _as_dictionary(value: Variant) -> Dictionary:
+	return value if typeof(value) == TYPE_DICTIONARY else {}
+
+
+func _normalize_active_run(run_state: RunState) -> void:
 	if run_state.player_run_state == null:
 		run_state.player_run_state = PlayerRunState.new()
 	if int(run_state.player_run_state.current_health) <= 0 and int(run_state.player_run_state.max_health) > 0:
@@ -545,6 +1242,8 @@ func _normalize_active_run(resource: Resource) -> RunState:
 	if run_state.run_deck.card_collection == null:
 		run_state.run_deck.card_collection = CardPile.new()
 	run_state.run_deck.normalize_cards()
+	if run_state.draftable_cards == null:
+		run_state.draftable_cards = CardPile.new()
 	if run_state.cleared_room_coords == null:
 		run_state.cleared_room_coords = []
 	if run_state.pending_shop_card_offer_costs == null:
@@ -568,7 +1267,6 @@ func _normalize_active_run(resource: Resource) -> RunState:
 	if run_state.owned_arcanum_ids == null:
 		run_state.owned_arcanum_ids = PackedStringArray()
 	_remove_pending_room_from_cleared(run_state)
-	return run_state
 
 
 func _pending_room_in_cleared(run_state: RunState) -> bool:
@@ -585,3 +1283,19 @@ func _remove_pending_room_from_cleared(run_state: RunState) -> void:
 	if !_pending_room_in_cleared(run_state):
 		return
 	run_state.cleared_room_coords.erase(run_state.pending_room_coord)
+
+
+func _build_debug_run_info_from_path(slot_key: String, file_name: String, path: String) -> DebugRunSaveInfo:
+	var envelope := _read_json_file(path)
+	var data := _extract_envelope_data(envelope, FILE_TYPE_RUN)
+	if data.is_empty():
+		return null
+	var info := DebugRunSaveInfo.new()
+	info.slot_key = slot_key
+	info.file_name = file_name
+	info.modified_unix_time = int(FileAccess.get_modified_time(ProjectSettings.globalize_path(path)))
+	var display_name := str(data.get("save_name", "")).strip_edges()
+	info.display_name = display_name if !display_name.is_empty() else slot_key
+	info.player_profile_id = str(data.get("player_profile_id", ""))
+	info.gold = int(data.get("gold", 0))
+	return info

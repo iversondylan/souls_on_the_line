@@ -2,27 +2,11 @@
 
 class_name CardAction extends Resource
 
-enum ActionType {
-	MELEE_ATTACK,
-	DAMAGE,
-	BLOCK,
-	MOVE,
-	STATUS,
-	SUMMON,
-	HEAL,
-	DRAW
-}
-
 enum InteractionMode {
 	NONE,
 	ESCROW,
 	CONFIRM
 }
-
-@export var action_type: ActionType
-
-@export var requires_enemy: bool = false
-@export var requires_target: bool = true
 
 func activate_sim(ctx: CardContext) -> bool:
 	var cname := ctx.card_data.name if ctx and ctx.card_data else "<no card/ctx>"

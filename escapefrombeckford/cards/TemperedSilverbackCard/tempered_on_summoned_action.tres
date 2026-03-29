@@ -6,6 +6,4 @@
 [resource]
 script = ExtResource("1_we4pk")
 status = ExtResource("2_we4pk")
-action_type = 5
-requires_target = false
 metadata/_custom_type_script = "uid://cpalremmeq4o"

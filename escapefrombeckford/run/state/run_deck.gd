@@ -3,44 +3,40 @@
 class_name RunDeck extends Resource
 
 @export var card_collection: CardPile = CardPile.new() : set = _set_card_collection
-@export var id_counter: int = 0
 
 
 func add_card(card_data: CardData) -> void:
-	var new_card := _instantiate_card(card_data)
+	var new_card := _instantiate_card(card_data, true)
 	if new_card == null:
 		return
-	new_card.id = id_counter
 	new_card.ensure_uid()
 	card_collection.add_back(new_card)
-	id_counter += 1
 
 
 func _set_card_collection(card_pile: CardPile) -> void:
 	card_collection = CardPile.new()
-	id_counter = 0
 	if card_pile == null:
 		return
 	for card_data: CardData in card_pile.cards:
-		var new_card := _instantiate_card(card_data)
+		var new_card := _instantiate_card(card_data, false)
 		if new_card == null:
 			continue
-		new_card.id = id_counter
 		new_card.ensure_uid()
 		card_collection.add_back(new_card)
-		id_counter += 1
 
 
-func remove_card(card_id: int) -> void:
-	card_collection.erase(card_id)
+func remove_card(card_uid: String) -> void:
+	if card_collection == null or card_uid.is_empty():
+		return
+	for i in range(card_collection.cards.size() - 1, -1, -1):
+		var card := card_collection.cards[i]
+		if card != null and card.uid == card_uid:
+			card_collection.cards.remove_at(i)
+			card_collection.card_pile_size_changed.emit(card_collection.cards.size())
+			return
 
 
-func _generate_card_id(card_data: CardData) -> int:
-	card_data.id = id_counter
-	return id_counter
-
-
-func _instantiate_card(card_data: CardData) -> CardData:
+func _instantiate_card(card_data: CardData, regenerate_uid: bool) -> CardData:
 	if card_data == null:
 		return null
 	var new_card := card_data.make_runtime_instance()
@@ -48,7 +44,8 @@ func _instantiate_card(card_data: CardData) -> CardData:
 		return null
 	if new_card.base_proto_path.is_empty():
 		new_card.base_proto_path = String(card_data.base_proto_path if !card_data.base_proto_path.is_empty() else card_data.resource_path)
-	new_card.uid = ""
+	if regenerate_uid:
+		new_card.uid = ""
 	return new_card
 
 
@@ -57,17 +54,18 @@ func normalize_cards() -> void:
 		card_collection = CardPile.new()
 		return
 	var normalized := CardPile.new()
-	var next_id := 0
+	var seen_uids := {}
 	for card_data in card_collection.cards:
-		var new_card := _instantiate_card(card_data)
+		var new_card := _instantiate_card(card_data, false)
 		if new_card == null:
 			continue
-		new_card.id = next_id
 		new_card.ensure_uid()
+		if seen_uids.has(new_card.uid):
+			new_card.uid = ""
+			new_card.ensure_uid()
+		seen_uids[new_card.uid] = true
 		normalized.add_back(new_card)
-		next_id += 1
 	card_collection = normalized
-	id_counter = next_id
 
 
 func serialize_cards() -> Array[CardSnapshot]:
@@ -83,13 +81,11 @@ func serialize_cards() -> Array[CardSnapshot]:
 
 func deserialize_cards(snapshots: Array[CardSnapshot]) -> void:
 	card_collection = CardPile.new()
-	id_counter = 0
 	for snapshot in snapshots:
 		if snapshot == null:
 			continue
 		var restored := snapshot.instantiate_card()
 		if restored == null:
 			continue
-		restored.id = id_counter
+		restored.ensure_uid()
 		card_collection.add_back(restored)
-		id_counter += 1

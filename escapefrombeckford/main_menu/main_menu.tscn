@@ -23,7 +23,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_main")
 
-[node name="Background" type="TextureRect" parent="."]
+[node name="Background" type="TextureRect" parent="." unique_id=1172222156]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -32,7 +32,7 @@ grow_horizontal = 2
 grow_vertical = 2
 texture = SubResource("GradientTexture1D_bqqt6")
 
-[node name="Title" type="Label" parent="."]
+[node name="Title" type="Label" parent="." unique_id=1686366063]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -50,7 +50,7 @@ label_settings = SubResource("LabelSettings_wu84c")
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="ProfileHubMenu" type="VBoxContainer" parent="."]
+[node name="ProfileHubMenu" type="VBoxContainer" parent="." unique_id=200837388]
 unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 8
@@ -67,29 +67,29 @@ grow_vertical = 2
 theme = ExtResource("3_theme")
 theme_override_constants/separation = 8
 
-[node name="ChooseProfile" type="Button" parent="ProfileHubMenu"]
+[node name="ChooseProfile" type="Button" parent="ProfileHubMenu" unique_id=799270772]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 50)
 layout_mode = 2
 text = "Choose Profile"
 
-[node name="CreateProfile" type="Button" parent="ProfileHubMenu"]
+[node name="CreateProfile" type="Button" parent="ProfileHubMenu" unique_id=1314298837]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 50)
 layout_mode = 2
 text = "Create Profile"
 
-[node name="Settings" type="Button" parent="ProfileHubMenu"]
+[node name="Settings" type="Button" parent="ProfileHubMenu" unique_id=906316721]
 custom_minimum_size = Vector2(0, 50)
 layout_mode = 2
 text = "Settings"
 
-[node name="Exit" type="Button" parent="ProfileHubMenu"]
+[node name="Exit" type="Button" parent="ProfileHubMenu" unique_id=1951835257]
 custom_minimum_size = Vector2(0, 50)
 layout_mode = 2
 text = "Exit"
 
-[node name="ProfileMenu" type="VBoxContainer" parent="."]
+[node name="ProfileMenu" type="VBoxContainer" parent="." unique_id=1640313993]
 unique_name_in_owner = true
 visible = false
 layout_mode = 1
@@ -107,53 +107,50 @@ grow_vertical = 2
 theme = ExtResource("3_theme")
 theme_override_constants/separation = 8
 
-[node name="CurrentProfileLabel" type="Label" parent="ProfileMenu"]
+[node name="CurrentProfileLabel" type="Label" parent="ProfileMenu" unique_id=555319013]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 36)
 layout_mode = 2
 text = "Profile:"
 horizontal_alignment = 1
 
-[node name="Continue" type="Button" parent="ProfileMenu"]
+[node name="Continue" type="Button" parent="ProfileMenu" unique_id=285369729]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 50)
 layout_mode = 2
 text = "Continue"
 
-[node name="LoadGame" type="Button" parent="ProfileMenu"]
+[node name="LoadGame" type="Button" parent="ProfileMenu" unique_id=392989003]
 unique_name_in_owner = true
 visible = false
 custom_minimum_size = Vector2(0, 50)
 layout_mode = 2
 text = "Load Game"
 
-[node name="NewRun" type="Button" parent="ProfileMenu"]
+[node name="NewRun" type="Button" parent="ProfileMenu" unique_id=985709527]
 custom_minimum_size = Vector2(0, 50)
 layout_mode = 2
 text = "New Run"
 
-[node name="Back" type="Button" parent="ProfileMenu"]
+[node name="Back" type="Button" parent="ProfileMenu" unique_id=1620146413]
 custom_minimum_size = Vector2(0, 50)
 layout_mode = 2
 text = "Back"
 
-[node name="ProfileSettings" type="Button" parent="ProfileMenu"]
+[node name="ProfileSettings" type="Button" parent="ProfileMenu" unique_id=1380998898]
 custom_minimum_size = Vector2(0, 50)
 layout_mode = 2
 text = "Settings"
 
-[node name="ProfileExit" type="Button" parent="ProfileMenu"]
+[node name="ProfileExit" type="Button" parent="ProfileMenu" unique_id=149370489]
 custom_minimum_size = Vector2(0, 50)
 layout_mode = 2
 text = "Exit"
 
-[node name="DebugModeToggle" type="CheckButton" parent="."]
+[node name="DebugModeToggle" type="CheckButton" parent="." unique_id=1329955616]
 unique_name_in_owner = true
 visible = false
 layout_mode = 1
-anchors_preset = 1
-anchor_right = 0.0
-anchor_bottom = 0.0
 offset_left = 24.0
 offset_top = 24.0
 offset_right = 166.0
@@ -167,10 +164,10 @@ text = "Debug Mode"
 [connection signal="pressed" from="ProfileHubMenu/CreateProfile" to="." method="_on_create_profile_pressed"]
 [connection signal="pressed" from="ProfileHubMenu/Settings" to="." method="_on_hub_settings_pressed"]
 [connection signal="pressed" from="ProfileHubMenu/Exit" to="." method="_on_exit_pressed"]
-[connection signal="toggled" from="DebugModeToggle" to="." method="_on_debug_mode_toggled"]
 [connection signal="pressed" from="ProfileMenu/Continue" to="." method="_on_continue_pressed"]
 [connection signal="pressed" from="ProfileMenu/LoadGame" to="." method="_on_load_game_pressed"]
 [connection signal="pressed" from="ProfileMenu/NewRun" to="." method="_on_new_run_pressed"]
 [connection signal="pressed" from="ProfileMenu/Back" to="." method="_on_back_pressed"]
 [connection signal="pressed" from="ProfileMenu/ProfileSettings" to="." method="_on_profile_settings_pressed"]
 [connection signal="pressed" from="ProfileMenu/ProfileExit" to="." method="_on_exit_pressed"]
+[connection signal="toggled" from="DebugModeToggle" to="." method="_on_debug_mode_toggled"]

@@ -7,7 +7,4 @@ script = ExtResource("1_cfeqk")
 flat_amount = null
 of_total = null
 of_missing = 1.0
-action_type = 6
-requires_enemy = null
-requires_target = null
 metadata/_custom_type_script = "uid://bhrr2hl5y314o"

@@ -1,4 +1,4 @@
-[gd_resource type="Resource" format=3 uid="uid://c5qjmc4akover"]
+[gd_resource type="Resource" script_class="SummonAction" format=3 uid="uid://c5qjmc4akover"]
 
 [ext_resource type="Script" uid="uid://buhtw3540mbls" path="res://cards/_generic_actions/summon_action.gd" id="1_uj6cq"]
 [ext_resource type="Resource" uid="uid://dwy6ym7cfiix7" path="res://combatants/BasicClone/basic_clone_data.tres" id="2_brs4w"]
@@ -8,6 +8,4 @@
 script = ExtResource("1_uj6cq")
 summon_data = ExtResource("2_brs4w")
 sound = ExtResource("2_gj3hl")
-action_type = 5
-requires_summon_slot = true
 metadata/_custom_type_script = "uid://wtk5v77fcqvn"

@@ -3,7 +3,7 @@
 class_name CardCatalog extends Resource
 
 @export var templates: Array[CardData] = []
-var by_id: Dictionary = {} # int -> CardData
+var by_uid: Dictionary = {} # String -> CardData
 
 func make_instance(template: CardData) -> CardData:
 	if template == null:
@@ -14,11 +14,11 @@ func make_instance(template: CardData) -> CardData:
 	return c
 
 #func build_index() -> void:
-	#by_id.clear()
+	#by_uid.clear()
 	#for c in cards:
 		#if c == null: continue
-		#assert(!by_id.has(c.id), "duplicate card id %s" % c.id)
-		#by_id[c.id] = c
+		#assert(!by_uid.has(c.uid), "duplicate card uid %s" % c.uid)
+		#by_uid[c.uid] = c
 
-func get_card(id: int) -> CardData:
-	return by_id.get(id, null)
+func get_card(uid: String) -> CardData:
+	return by_uid.get(uid, null)

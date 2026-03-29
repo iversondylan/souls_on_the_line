@@ -1,10 +1,8 @@
-[gd_resource type="Resource" format=3]
+[gd_resource type="Resource" format=3 uid="uid://cnn6manny0p16"]
 
-[ext_resource type="Script" path="res://cards/ResonanceSpikeCard/resonance_spike_action.gd" id="1_action"]
-[ext_resource type="Resource" path="res://audio/haunting_gloom.tres" id="2_sound"]
+[ext_resource type="Script" uid="uid://bjx5g7byjbtxo" path="res://cards/ResonanceSpikeCard/resonance_spike_action.gd" id="1_action"]
+[ext_resource type="Resource" uid="uid://bpcpnxremq4xv" path="res://audio/haunting_gloom.tres" id="2_sound"]
 
 [resource]
 script = ExtResource("1_action")
-action_type = 4
-requires_target = false
 metadata/_custom_type_script = "uid://wtk5v77fcqvn"

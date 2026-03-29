@@ -5,5 +5,4 @@
 [resource]
 script = ExtResource("1_8vcoo")
 base_draw = 2
-action_type = 7
 metadata/_custom_type_script = "uid://df5ktjqgtlp6o"

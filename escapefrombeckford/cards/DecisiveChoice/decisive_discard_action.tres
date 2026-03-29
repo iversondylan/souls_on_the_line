@@ -5,5 +5,4 @@
 [resource]
 script = ExtResource("1_hb60t")
 base_discard = 2
-action_type = 7
 metadata/_custom_type_script = "uid://b0ncdfetl25nu"
