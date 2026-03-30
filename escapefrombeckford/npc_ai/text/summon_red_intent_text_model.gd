@@ -15,25 +15,6 @@ func _fallback_summon_data(ctx: NPCAIContext) -> CombatantData:
 	return data if data is CombatantData else null
 
 func get_text(ctx: NPCAIContext) -> String:
-	if !ctx:
-		return "error"
-	
-	# NOTE: requires Keys.SUMMON_DATA to be set by a ParamModel, but defaults safely.
-	var fallback := _fallback_summon_data(ctx)
-	var data: CombatantData = ctx.params.get(Keys.SUMMON_DATA, fallback)
-	
-	if !data:
-		return "error"
-	
-	var red := int(data.apr)
-	var hp := int(data.max_health)
-	
-	if red < 0 or hp <= 0:
-		return "error"
-	
-	return "%s/%s" % [red, hp]
-
-func get_text_sim(ctx: NPCAIContext) -> String:
 	if ctx == null:
 		return "error"
 

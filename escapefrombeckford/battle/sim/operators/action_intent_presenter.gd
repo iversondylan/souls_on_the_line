@@ -30,16 +30,10 @@ static func emit_set_intent(api: SimBattleAPI, profile: NPCAIProfile, ctx: NPCAI
 	var tooltip_text := ""
 
 	if action.intent_text_model:
-		if action.intent_text_model.has_method("get_text_sim"):
-			intent_text = String(action.intent_text_model.get_text_sim(ctx))
-		else:
-			intent_text = String(action.intent_text_model.get_text(ctx))
+		intent_text = String(action.intent_text_model.get_text(ctx))
 
 	if action.tooltip_model:
-		if action.tooltip_model.has_method("get_text_sim"):
-			tooltip_text = String(action.tooltip_model.get_text_sim(ctx))
-		else:
-			tooltip_text = String(action.tooltip_model.get_text(ctx))
+		tooltip_text = String(action.tooltip_model.get_text(ctx))
 
 	api.writer.emit_set_intent(actor_id, new_idx, uid, uid_ranged, intent_text, tooltip_text, is_ranged)
 
@@ -94,16 +88,10 @@ static func emit_current_intent(api: SimBattleAPI, cid: int) -> void:
 	var tooltip_text := ""
 
 	if action.intent_text_model:
-		if action.intent_text_model.has_method("get_text_sim"):
-			intent_text = String(action.intent_text_model.get_text_sim(ctx))
-		else:
-			intent_text = String(action.intent_text_model.get_text(ctx))
+		intent_text = String(action.intent_text_model.get_text(ctx))
 
 	if action.tooltip_model:
-		if action.tooltip_model.has_method("get_text_sim"):
-			tooltip_text = String(action.tooltip_model.get_text_sim(ctx))
-		else:
-			tooltip_text = String(action.tooltip_model.get_text(ctx))
+		tooltip_text = String(action.tooltip_model.get_text(ctx))
 
 	api.writer.emit_set_intent(int(cid), idx, uid, uid_ranged, intent_text, tooltip_text, is_ranged)
 
