@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="BolsteredStatus" format=3]
+
+[ext_resource type="Script" path="res://statuses/bolstered.gd" id="1_bolstered_script"]
+[ext_resource type="Texture2D" path="res://_assets/sprites/assorted/armor-upgrade.png" id="2_bolstered_icon"]
+
+[resource]
+script = ExtResource("1_bolstered_script")
+proc_type = 2
+number_display_type = 1
+reapply_type = 0
+expiration_policy = 1
+icon = ExtResource("2_bolstered_icon")
+tooltip = ""

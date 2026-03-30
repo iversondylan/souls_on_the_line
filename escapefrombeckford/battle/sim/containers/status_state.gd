@@ -43,7 +43,7 @@ func get_all_stacks(include_pending := true) -> Array[StatusStack]:
 				out.append(pending_stack)
 	return out
 
-func realize_pending_ctx(ctx: StatusContext) -> bool:
+func realize_pending_ctx(ctx: StatusContext, max_intensity: int = 0) -> bool:
 	if ctx == null:
 		return false
 	var id := ctx.status_id
@@ -65,11 +65,11 @@ func realize_pending_ctx(ctx: StatusContext) -> bool:
 	if !had_realized:
 		realized_stack = StatusStack.new(id)
 		realized_stack.pending = false
-		realized_stack.intensity = pending_i
+		realized_stack.intensity = _clamp_intensity_total(pending_i, max_intensity)
 		realized_stack.duration = pending_d
 		bucket[false] = realized_stack
 	else:
-		realized_stack.intensity = maxi(realized_before_i + pending_i, 0)
+		realized_stack.intensity = _clamp_intensity_total(realized_before_i + pending_i, max_intensity)
 		if pending_d != 0:
 			realized_stack.duration = max(realized_before_d + pending_d, 0)
 
@@ -89,8 +89,8 @@ func realize_pending_ctx(ctx: StatusContext) -> bool:
 	ctx.after_duration = int(realized_stack.duration)
 	ctx.delta_intensity = int(realized_stack.intensity) - realized_before_i
 	ctx.delta_duration = int(realized_stack.duration) - realized_before_d
-	ctx.intensity = pending_i
-	ctx.duration = pending_d
+	ctx.intensity = ctx.delta_intensity
+	ctx.duration = ctx.delta_duration
 	return true
 
 # Convenience wrapper (keeps old callsites alive)
@@ -102,7 +102,7 @@ func add_or_reapply(id: StringName, intensity: int, duration: int = 0) -> void:
 	add_or_reapply_ctx(ctx)
 
 # New canonical path: determines APPLY vs CHANGE and populates ctx
-func add_or_reapply_ctx(ctx: StatusContext) -> bool:
+func add_or_reapply_ctx(ctx: StatusContext, max_intensity: int = 0) -> bool:
 	if ctx == null:
 		return false
 	var id := ctx.status_id
@@ -135,7 +135,7 @@ func add_or_reapply_ctx(ctx: StatusContext) -> bool:
 	if !existed:
 		# APPLY semantics: create new stack
 		# intensity policy: must be at least 1 on create
-		var new_i := maxi(req_i, 1)
+		var new_i := _clamp_intensity_total(maxi(req_i, 1), max_intensity)
 		var new_d := req_d
 
 		s.intensity = new_i
@@ -150,12 +150,14 @@ func add_or_reapply_ctx(ctx: StatusContext) -> bool:
 
 		ctx.after_intensity = int(s.intensity)
 		ctx.after_duration = int(s.duration)
+		ctx.intensity = int(s.intensity)
+		ctx.duration = int(s.duration)
 
 		return true
 
 	# CHANGE semantics: modify existing stack
 	# intensity policy: additive, clamped at 0
-	var new_intensity := maxi(before_i + req_i, 0)
+	var new_intensity := _clamp_intensity_total(before_i + req_i, max_intensity)
 	s.intensity = new_intensity
 
 	# duration policy: you currently do "if duration>0: add; else unchanged"
@@ -181,6 +183,8 @@ func add_or_reapply_ctx(ctx: StatusContext) -> bool:
 
 	ctx.after_intensity = int(s.intensity)
 	ctx.after_duration = int(s.duration)
+	ctx.intensity = di
+	ctx.duration = dd
 
 	return (di != 0) or (dd != 0)
 
@@ -277,3 +281,9 @@ func _get_bucket(id: StringName, create: bool) -> Dictionary:
 	bucket = {}
 	by_id[id] = bucket
 	return bucket
+
+func _clamp_intensity_total(value: int, max_intensity: int) -> int:
+	var out := maxi(int(value), 0)
+	if int(max_intensity) > 0:
+		out = mini(out, int(max_intensity))
+	return out

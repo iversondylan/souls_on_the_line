@@ -90,6 +90,9 @@ func affects_others() -> bool:
 func get_contributed_modifier_types() -> Array[Modifier.Type]:
 	return []
 
+func get_max_intensity() -> int:
+	return 0
+
 
 # -------------------------------------------------------------------
 # Query helpers

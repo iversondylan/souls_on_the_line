@@ -561,11 +561,16 @@ func apply_status(ctx: StatusContext) -> void:
 	var u := state.get_unit(int(ctx.target_id))
 	if u == null or !u.is_alive():
 		return
+
+	var proto := SimStatusSystem.get_proto(self, ctx.status_id)
 	
 	if int(ctx.intensity) == 0:
 		ctx.intensity = 1
 	
-	var changed := u.statuses.add_or_reapply_ctx(ctx)
+	var changed := u.statuses.add_or_reapply_ctx(
+		ctx,
+		int(proto.get_max_intensity()) if proto != null else 0
+	)
 	ctx.applied = changed or (ctx.op == Status.OP.APPLY)
 	
 	if writer != null and (ctx.op == Status.OP.APPLY or changed):
@@ -600,8 +605,6 @@ func apply_status(ctx: StatusContext) -> void:
 		if status_ctx != null and status_ctx.proto != null:
 			status_ctx.proto.on_apply(status_ctx, ctx)
 	
-	var proto := SimStatusSystem.get_proto(self, ctx.status_id)
-	
 	if SimStatusSystem.is_aura_proto(proto):
 		_request_intent_refresh_targets_for_aura(int(ctx.target_id), proto)
 	else:
@@ -629,6 +632,7 @@ func realize_pending_statuses(target_id: int, source_id: int = 0, reason: String
 
 	for status_id in pending_ids:
 		var had_realized := u.statuses.has(status_id, false)
+		var proto := SimStatusSystem.get_proto(self, status_id)
 		var ctx := StatusContext.new()
 		ctx.actor_id = int(target_id)
 		ctx.source_id = src_id
@@ -637,7 +641,10 @@ func realize_pending_statuses(target_id: int, source_id: int = 0, reason: String
 		ctx.pending = true
 		ctx.reason = reason
 
-		if !u.statuses.realize_pending_ctx(ctx):
+		if !u.statuses.realize_pending_ctx(
+			ctx,
+			int(proto.get_max_intensity()) if proto != null else 0
+		):
 			continue
 
 		any_changed = true
@@ -663,7 +670,6 @@ func realize_pending_statuses(target_id: int, source_id: int = 0, reason: String
 				}
 			)
 
-		var proto := SimStatusSystem.get_proto(self, status_id)
 		if proto != null:
 			any_aura = any_aura or SimStatusSystem.is_aura_proto(proto)
 			if !had_realized:
