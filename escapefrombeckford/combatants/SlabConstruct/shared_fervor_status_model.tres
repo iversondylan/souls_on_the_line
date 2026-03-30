@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="StatusModel" format=3 uid="uid://c08dhnv6omhcv"]
+
+[ext_resource type="Script" uid="uid://cccygrstrra8t" path="res://npc_ai/status/status_model.gd" id="1_0hsvt"]
+[ext_resource type="Resource" uid="uid://c851i8op6ei1" path="res://statuses/shared_fervor.tres" id="2_fr5w2"]
+
+[resource]
+script = ExtResource("1_0hsvt")
+status = ExtResource("2_fr5w2")
+duration = 0
+metadata/_custom_type_script = "uid://cccygrstrra8t"

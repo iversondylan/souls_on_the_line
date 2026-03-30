@@ -1,7 +1,11 @@
 [gd_resource type="Resource" script_class="SharedFervorStatus" format=3 uid="uid://c851i8op6ei1"]
 
-[ext_resource type="Script" path="res://statuses/shared_fervor.gd" id="1_nvv4x"]
+[ext_resource type="Texture2D" uid="uid://qm3iabq2byhw" path="res://_assets/sprites/assorted/burning-passion.png" id="1_icqsi"]
+[ext_resource type="Script" path="res://statuses/shared_fervor.gd" id="2_shared_fervor"]
 
 [resource]
-script = ExtResource("1_nvv4x")
+script = ExtResource("2_shared_fervor")
+proc_type = 2
+number_display_type = 1
+icon = ExtResource("1_icqsi")
 metadata/_custom_type_script = "uid://0oai3oy81n86"
