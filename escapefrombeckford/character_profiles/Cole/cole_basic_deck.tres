@@ -3,11 +3,11 @@
 [ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://cards/_core/card_data.gd" id="1_rilno"]
 [ext_resource type="Script" uid="uid://dnybrgm0o6gjj" path="res://cards/_core/card_pile.gd" id="2_nkp8v"]
 [ext_resource type="Resource" uid="uid://b7txf6d8vmjkk" path="res://cards/SpectralCloneCard/spectral_clone.tres" id="3_miprr"]
+[ext_resource type="Resource" path="res://cards/InterferenceMission/interference_mission.tres" id="5_4lmpi"]
 [ext_resource type="Resource" uid="uid://sdnvejwfmf81" path="res://cards/ConvokedAssault/convoked_assault.tres" id="7_j0bpe"]
-[ext_resource type="Resource" uid="uid://ccevotl6l5gil" path="res://cards/PinpointCard/pinpoint_data.tres" id="8_j0bpe"]
 [ext_resource type="Resource" uid="uid://bhqq2dr8db5pn" path="res://cards/ResonanceSpikeCard/resonance_spike_card.tres" id="8_uvm40"]
 
 [resource]
 script = ExtResource("2_nkp8v")
-cards = Array[ExtResource("1_rilno")]([ExtResource("3_miprr"), ExtResource("3_miprr"), ExtResource("3_miprr"), ExtResource("3_miprr"), ExtResource("3_miprr"), ExtResource("3_miprr"), ExtResource("7_j0bpe"), ExtResource("7_j0bpe"), ExtResource("8_uvm40"), ExtResource("8_uvm40"), ExtResource("8_uvm40"), ExtResource("8_j0bpe")])
+cards = Array[ExtResource("1_rilno")]([ExtResource("3_miprr"), ExtResource("3_miprr"), ExtResource("3_miprr"), ExtResource("3_miprr"), ExtResource("3_miprr"), ExtResource("3_miprr"), ExtResource("7_j0bpe"), ExtResource("7_j0bpe"), ExtResource("8_uvm40"), ExtResource("8_uvm40"), ExtResource("5_4lmpi"), ExtResource("5_4lmpi")])
 metadata/_custom_type_script = "uid://dnybrgm0o6gjj"

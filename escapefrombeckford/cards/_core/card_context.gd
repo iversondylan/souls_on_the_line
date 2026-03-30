@@ -24,6 +24,7 @@ var next_action_index: int = 0
 # outputs accumulated over time
 var affected_ids: PackedInt32Array = PackedInt32Array()
 var summoned_ids: PackedInt32Array = PackedInt32Array()
+var affected_target_player_pos_delta: int = 0
 
 # card lifecycle
 var activation_committed_to_view: bool = false

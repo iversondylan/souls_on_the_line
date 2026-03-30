@@ -1,0 +1,7 @@
+[gd_resource type="Resource" format=3]
+
+[ext_resource type="Script" path="res://cards/InterferenceMission/interference_action.gd" id="1_interference"]
+
+[resource]
+script = ExtResource("1_interference")
+metadata/_custom_type_script = "uid://wtk5v77fcqvn"

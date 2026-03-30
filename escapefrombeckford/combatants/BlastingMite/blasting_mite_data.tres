@@ -10,5 +10,7 @@ character_art_uid = "uid://s71ei3q4f3da"
 facing_right = false
 height = 120
 max_health = 8
+apr = 1
+apm = 1
 ai = ExtResource("1_cfx54")
 metadata/_custom_type_script = "uid://cfatj0ryn8uv3"
