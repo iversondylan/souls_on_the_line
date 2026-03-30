@@ -24,6 +24,7 @@ func init_from_seeds(battle_seed: int, run_seed: int) -> void:
 		state.arcana_catalog = arcana_catalog
 
 	api = SimBattleAPI.new(state)
+	api.is_main = !is_preview
 
 	_init_services()
 
@@ -37,6 +38,7 @@ func init_from_cloned_state(cloned_state: BattleState) -> void:
 		state.arcana_catalog = arcana_catalog
 
 	api = SimBattleAPI.new(state)
+	api.is_main = !is_preview
 
 	_init_services()
 

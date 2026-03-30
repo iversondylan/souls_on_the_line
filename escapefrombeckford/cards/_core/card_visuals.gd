@@ -21,6 +21,10 @@ class_name CardVisuals extends Control
 @export var max_card_spread_angle_flt: float = 38
 
 const OVERLOAD_PIP := preload("uid://pe4lgl2dwu32")
+const OVERLOAD_1_COLOR := Color(1.0, 0.88, 0.22, 1.0)
+const OVERLOAD_2_COLOR := Color(1.0, 0.56, 0.12, 1.0)
+const OVERLOAD_3_COLOR := Color(0.9, 0.18, 0.18, 1.0)
+const OVERLOAD_4_PLUS_COLOR := Color(0.45, 0.06, 0.06, 1.0)
 
 @export var card_data: CardData : set = _set_card_data
 var cost_red: int = 0 : set = set_cost_red
@@ -29,19 +33,21 @@ var cost_blue: int = 0 : set = set_cost_blue
 var overload: int = 0
 var _card_data_internal: CardData
 var mana_panel_radius: float
+var _default_cost_label_modulate: Color = Color.WHITE
 
 func _ready() -> void:
 	mana_panel_radius = cost_container.texture.get_size().y * cost_container.scale.y * 0.5-0.75
-	#var demo_overload := randi() % 4
-	#set_overload(demo_overload)
+	_default_cost_label_modulate = cost_label.modulate
+	refresh_from_card_data()
 
 func set_overload(amount: int) -> void:
-	overload = amount
+	overload = maxi(int(amount), 0)
 	for pip in _get_overload_pips():
 		pip.queue_free()
-	for i in overload:
+	for _i in range(overload):
 		cost_display.add_child(OVERLOAD_PIP.instantiate())
 	reposition_overload_pips()
+	_refresh_cost_label_color()
 
 func _set_card_data(value: CardData) -> void:
 	assert(value != null, "CardVisuals received null CardData")
@@ -52,15 +58,30 @@ func _set_card_data(value: CardData) -> void:
 	#cost_red = value.cost_red
 	#cost_green = value.cost_green
 	#cost_blue = value.cost_blue
-	set_total_cost()
+	refresh_from_card_data()
 	card_art_rect.texture = value.texture
 	rarity.modulate = CardData.RARITY_COLORS[value.rarity]
+
+func refresh_from_card_data() -> void:
+	if !is_node_ready():
+		await ready
+	if _card_data_internal == null:
+		set_overload(0)
+		cost_label.text = "0"
+		cost_label.modulate = _default_cost_label_modulate
+		return
+
+	set_overload(int(_card_data_internal.overload))
+	set_total_cost()
 
 func set_description(new_description: String) -> void:
 	description.set_text(new_description)
 
 func set_total_cost() -> void:
+	if _card_data_internal == null:
+		return
 	cost_label.text = str(_card_data_internal.get_total_cost())
+	_refresh_cost_label_color()
 	
 
 func set_cost_red(cost: int) -> void:
@@ -118,3 +139,19 @@ func get_pip_position(angle_deg_flt: float) -> Vector2:
 func _update_pip_transform(pip: OverloadPip, angle_in_drag: float) -> void:
 	var pos: Vector2 = get_pip_position(angle_in_drag)
 	pip.position = pos
+
+func _refresh_cost_label_color() -> void:
+	if cost_label == null:
+		return
+
+	match overload:
+		0:
+			cost_label.modulate = _default_cost_label_modulate
+		1:
+			cost_label.modulate = OVERLOAD_1_COLOR
+		2:
+			cost_label.modulate = OVERLOAD_2_COLOR
+		3:
+			cost_label.modulate = OVERLOAD_3_COLOR
+		_:
+			cost_label.modulate = OVERLOAD_4_PLUS_COLOR

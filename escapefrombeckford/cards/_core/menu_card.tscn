@@ -4,17 +4,30 @@
 [ext_resource type="PackedScene" uid="uid://dlpbxdm81neil" path="res://cards/_core/card_visuals.tscn" id="2_atmdt"]
 [ext_resource type="Resource" uid="uid://dfgkvy2yw1a3e" path="res://cards/AttackCard/attack_card.tres" id="2_fdvp4"]
 
-[node name="MenuCard" type="CenterContainer"]
+[node name="MenuCard" type="CenterContainer" unique_id=718095327]
 offset_right = 126.0
 offset_bottom = 178.0
 size_flags_horizontal = 6
 size_flags_vertical = 4
 script = ExtResource("1_f806l")
 
-[node name="Visuals" parent="." instance=ExtResource("2_atmdt")]
+[node name="OuterControl" type="Control" parent="." unique_id=702465157]
+custom_minimum_size = Vector2(243, 340)
 layout_mode = 2
+
+[node name="Visuals" parent="OuterControl" unique_id=2041211627 instance=ExtResource("2_atmdt")]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -225.0
+offset_top = -315.0
+grow_horizontal = 0
+grow_vertical = 0
 card_data = ExtResource("2_fdvp4")
 
-[connection signal="gui_input" from="Visuals" to="." method="_on_visuals_gui_input"]
-[connection signal="mouse_entered" from="Visuals" to="." method="_on_visuals_mouse_entered"]
-[connection signal="mouse_exited" from="Visuals" to="." method="_on_visuals_mouse_exited"]
+[connection signal="gui_input" from="OuterControl/Visuals" to="." method="_on_visuals_gui_input"]
+[connection signal="mouse_entered" from="OuterControl/Visuals" to="." method="_on_visuals_mouse_entered"]
+[connection signal="mouse_exited" from="OuterControl/Visuals" to="." method="_on_visuals_mouse_exited"]

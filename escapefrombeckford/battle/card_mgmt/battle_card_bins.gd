@@ -73,6 +73,9 @@ func request_draw(ctx: DrawContext) -> void:
 		return
 
 	prepare_draw(ctx)
+	ctx.drawn_cards = []
+	ctx.drawn_card_uids = []
+	ctx.actually_drawn = 0
 	ctx.drawn_cards = _draw_cards_into_hand(ctx)
 	ctx.drawn_card_uids = _uids_for_cards(ctx.drawn_cards)
 	ctx.actually_drawn = ctx.drawn_cards.size()
@@ -110,6 +113,7 @@ func request_discard(ctx: DiscardContext) -> void:
 	move_ctx.phase = ctx.phase
 	move_ctx.tags = ctx.tags.duplicate()
 	move_cards(move_ctx)
+	_clear_overload_on_cards(move_ctx.moved_cards)
 
 	var removed := hand.get_hand_cards_by_uids(move_ctx.card_uids)
 	ctx.discarded_card_uids = move_ctx.card_uids.duplicate()
@@ -127,6 +131,8 @@ func request_hand_cleanup(ctx: HandCleanupContext) -> void:
 
 	prepare_hand_cleanup(ctx)
 	Events.player_end_cleanup_started.emit(ctx)
+	_reduce_overload_for_cards(state.hand_pile.cards, 1)
+	_refresh_hand_cards()
 
 	var keep_set := {}
 	for uid in ctx.cards_to_keep:
@@ -258,6 +264,7 @@ func discard_reserved_summon_card(card_uid: String) -> void:
 	move_ctx.card_uids = [card_uid]
 	move_ctx.reason = "summon_reserve_release"
 	move_cards(move_ctx)
+	_set_summon_release_overload(move_ctx.moved_cards)
 
 func build_bin_snapshot() -> CardBinSnapshot:
 	var snapshot := CardBinSnapshot.new()
@@ -319,6 +326,8 @@ func _draw_cards_into_hand(ctx: DrawContext) -> Array[CardData]:
 	var count := maxi(ctx.amount, 0)
 	if count <= 0:
 		return drawn
+	if !_has_any_cards_available_to_draw():
+		return drawn
 
 	if !state.first_hand_drawn and ctx.use_first_hand_summon_guarantee:
 		state.first_hand_drawn = true
@@ -335,10 +344,14 @@ func _draw_cards_into_hand(ctx: DrawContext) -> Array[CardData]:
 
 func _draw_first_hand_with_summon_guarantee(count: int) -> Array[CardData]:
 	var drawn: Array[CardData] = []
+	if count <= 0 or !_has_any_cards_available_to_draw():
+		return drawn
+
 	for _i in range(count):
 		var card := _draw_one_from_draw_pile()
-		if card != null:
-			drawn.append(card)
+		if card == null:
+			break
+		drawn.append(card)
 
 	var has_summon := false
 	for card in drawn:
@@ -367,12 +380,22 @@ func _draw_first_hand_with_summon_guarantee(count: int) -> Array[CardData]:
 
 
 func _draw_one_from_draw_pile() -> CardData:
+	if !_has_any_cards_available_to_draw():
+		return null
 	if state.draw_pile.is_empty():
 		_take_discards_into_draw()
-		_shuffle_draw_pile()
+		if !state.draw_pile.is_empty():
+			_shuffle_draw_pile()
 	if state.draw_pile.is_empty():
 		return null
 	return state.draw_pile.draw_back()
+
+
+func _has_any_cards_available_to_draw() -> bool:
+	return state != null \
+		and state.draw_pile != null \
+		and state.discard_pile != null \
+		and (!state.draw_pile.is_empty() or !state.discard_pile.is_empty())
 
 
 func _take_discards_into_draw() -> void:
@@ -447,3 +470,38 @@ func _uids_for_cards(cards: Array) -> Array[String]:
 		card.ensure_uid()
 		out.append(String(card.uid))
 	return out
+
+func _clear_overload_on_cards(cards: Array[CardData]) -> void:
+	for card in cards:
+		if card == null:
+			continue
+		card.overload = 0
+
+func _reduce_overload_for_cards(cards: Array[CardData], amount: int) -> void:
+	var delta := maxi(int(amount), 0)
+	if delta <= 0:
+		return
+	for card in cards:
+		if card == null:
+			continue
+		card.overload = maxi(int(card.overload) - delta, 0)
+
+func _set_summon_release_overload(cards: Array[CardData]) -> void:
+	for card in cards:
+		if card == null:
+			continue
+		if _has_summon_effect(card):
+			card.overload = 2
+
+func _has_summon_effect(card: CardData) -> bool:
+	if card == null:
+		return false
+	for action in card.actions:
+		if action is SummonAction:
+			return true
+	return false
+
+func _refresh_hand_cards() -> void:
+	if hand == null:
+		return
+	hand.refresh_hand_cards()

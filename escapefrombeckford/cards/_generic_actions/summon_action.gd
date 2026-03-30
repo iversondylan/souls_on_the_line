@@ -6,25 +6,25 @@ class_name SummonAction extends CardAction
 
 func get_interaction_mode(ctx: CardContext) -> int:
 	if ctx == null or ctx.api == null:
-		print("summon_action.gd get_interaction_mode() returning NONE")
+		#print("summon_action.gd get_interaction_mode() returning NONE")
 		return InteractionMode.NONE
 	
 	var player_id := int(ctx.api.get_player_id())
 	if player_id <= 0:
-		print("summon_action.gd get_interaction_mode() returning NONE")
+		#print("summon_action.gd get_interaction_mode() returning NONE")
 		return InteractionMode.NONE
 	
 	var soulbound_ids: Array[int] = ctx.api.get_soulbound_ids_for_owner(player_id)
 	if soulbound_ids.size() >= UsableCard.MAX_SOULBOUND:
-		print("summon_action.gd get_interaction_mode() returning ESCROW")
+		#print("summon_action.gd get_interaction_mode() returning ESCROW")
 		return InteractionMode.ESCROW
 	
-	print("summon_action.gd get_interaction_mode() returning NONE")
+	#print("summon_action.gd get_interaction_mode() returning NONE")
 	return InteractionMode.NONE
 
 
 func activate_interaction(ctx: CardContext) -> bool:
-	print("summon_action.gd activate_interaction()")
+	#print("summon_action.gd activate_interaction()")
 	if ctx == null or ctx.runtime == null or ctx.source_card == null:
 		return false
 
@@ -44,7 +44,7 @@ func activate_interaction(ctx: CardContext) -> bool:
 
 
 func activate_sim(ctx: CardContext) -> bool:
-	print("summon_action.gd activate_sim()")
+	#print("summon_action.gd activate_sim()")
 	if ctx == null or ctx.api == null or ctx.runtime == null:
 		return false
 

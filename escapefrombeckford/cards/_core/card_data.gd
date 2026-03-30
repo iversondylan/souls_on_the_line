@@ -49,6 +49,7 @@ const RARITY_COLORS := {
 @export var deplete: bool
 @export_multiline var description: String
 @export var cost: int
+@export var overload: int = 0
 @export var texture: Texture2D
 @export var actions: Array[CardAction] = []
 
@@ -97,6 +98,7 @@ static func _copy_runtime_overrides(from: CardData, to: CardData) -> void:
 	if !from.description.is_empty():
 		to.description = from.description
 	to.cost = from.cost
+	to.overload = from.overload
 	if from.texture != null:
 		to.texture = from.texture
 	if !from.actions.is_empty():
@@ -114,4 +116,4 @@ func is_single_targeted() -> bool:
 	return target_type == TargetType.SINGLE_ENEMY or target_type == TargetType.ALLY_OR_SELF or target_type == TargetType.ALLY or target_type == TargetType.BATTLEFIELD
 
 func get_total_cost() -> int:
-	return cost
+	return maxi(int(cost) + int(overload), 0)

@@ -204,7 +204,7 @@ func _on_battle_entered_with_seed(room: Room, existing_battle_seed: int = -1) ->
 		# simplest: battle_seed is first randi from this room stream
 		battle_seed = int(rng.randi())
 		run_rng.commit(rng)
-	print("[Run] battle_seed for (%d,%d) = %d" % [room.row, room.column, battle_seed])
+	#print("[Run] battle_seed for (%d,%d) = %d" % [room.row, room.column, battle_seed])
 	map.set_active_room(room)
 	_set_location_for_room(room)
 	run_state.pending_battle_seed = battle_seed
@@ -288,7 +288,7 @@ func _start_new_run_from_profile(profile: RunProfile) -> void:
 		var rng := RandomNumberGenerator.new()
 		rng.randomize()
 		run_seed = int(rng.randi())
-	print("run.gd new run startup seed: ", run_seed)
+	#print("run.gd new run startup seed: ", run_seed)
 	run_rng = RunRNG.new(run_seed)
 
 	player_data = _resolve_player_profile(profile.player_profile_id)
@@ -327,7 +327,7 @@ func _start_new_run_from_profile(profile: RunProfile) -> void:
 		#if arcanum != null:
 			#run_state.owned_arcanum_ids.append(String(arcanum.get_id()))
 	# TEMPORARY ^
-	print("run.gd STARTING RUN WITH NEW CHARACTER")
+	#print("run.gd STARTING RUN WITH NEW CHARACTER")
 	SaveService.save_profile(profile_data)
 	_start_run()
 

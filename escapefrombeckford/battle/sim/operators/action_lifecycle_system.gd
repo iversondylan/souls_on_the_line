@@ -20,9 +20,12 @@ static func on_group_turn_begin(api: SimBattleAPI, group_index: int) -> void:
 			continue
 
 		ActionPlanner.ensure_ai_state_initialized(u)
+		if !bool(u.ai_state.get(Keys.FIRST_INTENTS_READY, false)):
+			continue
+		if bool(u.ai_state.get(Keys.IS_ACTING, false)):
+			continue
 
 		var ctx := _make_ai_ctx(api, u)
-		ActionPlanner.ensure_valid_plan_sim(u.combatant_data.ai, ctx, true)
 
 		if bool(u.ai_state.get(&"telegraph_committed", false)):
 			continue

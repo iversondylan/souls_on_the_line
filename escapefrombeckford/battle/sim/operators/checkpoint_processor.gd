@@ -120,7 +120,7 @@ func flush_planning(kind: int, sim: Sim, allow_hooks := true) -> void:
 		clear_planning()
 		dirty_outcome = false
 
-		var groups_to_publish := _collect_groups_to_publish(
+		var cids_to_publish := _collect_cids_to_publish(
 			api,
 			replan_all_now,
 			replan_ids_now,
@@ -134,7 +134,7 @@ func flush_planning(kind: int, sim: Sim, allow_hooks := true) -> void:
 			for cid in replan_ids_now.keys():
 				_replan_if_valid(api, int(cid), allow_hooks)
 
-		_publish_group_intents(api, groups_to_publish)
+		_publish_actor_intents(api, cids_to_publish)
 
 		if outcome_now:
 			_flush_outcome(api)
@@ -201,7 +201,7 @@ func _refresh_intent_if_valid(api: SimBattleAPI, cid: int) -> void:
 
 	ActionIntentPresenter.emit_current_intent(api, cid)
 
-func _collect_groups_to_publish(
+func _collect_cids_to_publish(
 	api: SimBattleAPI,
 	replan_all_now: bool,
 	replan_ids_now: Dictionary,
@@ -215,29 +215,28 @@ func _collect_groups_to_publish(
 	if replan_all_now or intent_refresh_all_now:
 		for unit in api.state.units.values():
 			if unit is CombatantState and unit.is_alive() and unit.combatant_data != null and unit.combatant_data.ai != null:
-				out[int(unit.team)] = true
+				out[int(unit.id)] = true
 		return out
 
 	for cid in replan_ids_now.keys():
-		_add_group_for_cid(api, int(cid), out)
+		_add_cid_if_valid(api, int(cid), out)
 	for cid in intent_refresh_ids_now.keys():
-		_add_group_for_cid(api, int(cid), out)
+		_add_cid_if_valid(api, int(cid), out)
 	return out
 
-func _add_group_for_cid(api: SimBattleAPI, cid: int, out: Dictionary) -> void:
+func _add_cid_if_valid(api: SimBattleAPI, cid: int, out: Dictionary) -> void:
 	if api == null or api.state == null or cid <= 0:
 		return
 	var u: CombatantState = api.state.get_unit(cid)
 	if u == null or !u.is_alive() or u.combatant_data == null or u.combatant_data.ai == null:
 		return
-	out[int(u.team)] = true
+	out[int(cid)] = true
 
-func _publish_group_intents(api: SimBattleAPI, groups_to_publish: Dictionary) -> void:
+func _publish_actor_intents(api: SimBattleAPI, cids_to_publish: Dictionary) -> void:
 	if api == null or api.state == null:
 		return
-	for group_index in groups_to_publish.keys():
-		for cid in api.get_combatants_in_group(int(group_index), false):
-			_refresh_intent_if_valid(api, int(cid))
+	for cid in cids_to_publish.keys():
+		_refresh_intent_if_valid(api, int(cid))
 
 
 func _flush_outcome(api: SimBattleAPI) -> void:

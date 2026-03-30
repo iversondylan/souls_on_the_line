@@ -1,9 +1,9 @@
-[gd_scene load_steps=3 format=3 uid="uid://c634qgskmd0a"]
+[gd_scene format=3 uid="uid://c634qgskmd0a"]
 
 [ext_resource type="Script" uid="uid://b7tf0vacewlm2" path="res://ui/card_pile_view.gd" id="1_5fd14"]
 [ext_resource type="PackedScene" uid="uid://c4ioesrs574d7" path="res://ui/card_tooltip_popup.tscn" id="3_vf8oq"]
 
-[node name="CardPileView" type="Control"]
+[node name="CardPileView" type="Control" unique_id=1232221798]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -12,7 +12,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_5fd14")
 
-[node name="Background" type="ColorRect" parent="."]
+[node name="Background" type="ColorRect" parent="." unique_id=1914376169]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -21,7 +21,7 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.100467, 0.0385, 0.11, 0.694118)
 
-[node name="MarginContainer" type="MarginContainer" parent="."]
+[node name="MarginContainer" type="MarginContainer" parent="." unique_id=141557258]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -33,23 +33,23 @@ theme_override_constants/margin_top = 24
 theme_override_constants/margin_right = 24
 theme_override_constants/margin_bottom = 24
 
-[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer" unique_id=1929547841]
 layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="Title" type="Label" parent="MarginContainer/VBoxContainer"]
+[node name="Title" type="Label" parent="MarginContainer/VBoxContainer" unique_id=1375020980]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Discard Pile"
 horizontal_alignment = 1
 
-[node name="ScrollContainer" type="ScrollContainer" parent="MarginContainer/VBoxContainer"]
+[node name="ScrollContainer" type="ScrollContainer" parent="MarginContainer/VBoxContainer" unique_id=1736664321]
 layout_mode = 2
 size_flags_vertical = 3
 horizontal_scroll_mode = 3
 vertical_scroll_mode = 2
 
-[node name="CardGrid" type="GridContainer" parent="MarginContainer/VBoxContainer/ScrollContainer"]
+[node name="CardGrid" type="GridContainer" parent="MarginContainer/VBoxContainer/ScrollContainer" unique_id=499691958]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
@@ -57,7 +57,7 @@ size_flags_vertical = 3
 theme_override_constants/v_separation = 16
 columns = 6
 
-[node name="BackButton" type="Button" parent="."]
+[node name="BackButton" type="Button" parent="." unique_id=2072081999]
 unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 1
@@ -70,6 +70,6 @@ offset_bottom = 71.0
 grow_horizontal = 0
 text = "Back"
 
-[node name="CardTooltipPopup" parent="." instance=ExtResource("3_vf8oq")]
+[node name="CardTooltipPopup" parent="." unique_id=1051449989 instance=ExtResource("3_vf8oq")]
 unique_name_in_owner = true
 layout_mode = 1

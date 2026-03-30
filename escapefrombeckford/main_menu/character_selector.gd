@@ -39,7 +39,7 @@ func _set_current_profile(profile_id: String) -> void:
 func _on_start_button_pressed() -> void:
 	if current_character == null:
 		return
-	print("Start new escape attempt with %s" % current_character.name)
+	#print("Start new escape attempt with %s" % current_character.name)
 	var profile := RunProfile.new()
 	profile.start_mode = RunProfile.StartMode.NEW_RUN
 	profile.seed = 0

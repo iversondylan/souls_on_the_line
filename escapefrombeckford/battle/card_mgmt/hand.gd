@@ -104,6 +104,12 @@ func get_hand_cards() -> Array[UsableCard]:
 	# public alias (kept name for compatibility)
 	return _get_hand_cards()
 
+func refresh_hand_cards() -> void:
+	for usable_card in _get_hand_cards():
+		if usable_card == null or !is_instance_valid(usable_card):
+			continue
+		usable_card.refresh_from_card_data()
+
 func add_card(card: CardData) -> void:
 	if card == null:
 		push_error("Hand.add_card(): tried to add null CardData")

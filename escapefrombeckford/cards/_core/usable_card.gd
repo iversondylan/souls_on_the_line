@@ -106,6 +106,15 @@ func _set_card_data(_card_data: CardData) -> void:
 	update_description()
 	playable = is_playable()
 
+func refresh_from_card_data() -> void:
+	if !is_node_ready():
+		await ready
+	if card_data == null:
+		return
+	cost = int(card_data.get_total_cost())
+	card_visuals.refresh_from_card_data()
+	playable = is_playable()
+
 func highlight():
 	if disabled == false and card_state_machine.is_in_state(CardState.State.BASE):
 		card_visuals.glow.show()
@@ -247,7 +256,7 @@ func resolve_targets(new_targets: Array[Node]) -> CardResolvedTargetView:
 			for t in new_targets:
 				if t is CombatantAreaLeft or t is BattleSceneAreaLeft:
 					result.areas.append(t)
-			print("BATTLEFIELD result.insert_index = ", new_targets.size() - 1)
+			#print("BATTLEFIELD result.insert_index = ", new_targets.size() - 1)
 			result.insert_index = new_targets.size() - 1
 
 		CardData.TargetType.ALLY_OR_SELF, CardData.TargetType.ALLY, CardData.TargetType.SINGLE_ENEMY:

@@ -3,7 +3,7 @@ class_name MenuCard extends CenterContainer
 signal tooltip_requested(card_data: CardData)
 
 @export var card_data: CardData : set = set_card_data
-@onready var visuals: CardVisuals = $Visuals
+@onready var visuals: CardVisuals = $OuterControl/Visuals
 
 # Must be set by parent (Run / Shop / Collection)
 var player_data: PlayerData

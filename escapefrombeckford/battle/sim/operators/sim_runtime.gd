@@ -312,7 +312,6 @@ func _publish_turn_status() -> void:
 		int(api.get_player_id())
 	)
 
-
 func _service_actor_turn(cid: int) -> void:
 	var api := _api()
 	var engine := _engine()
@@ -402,6 +401,8 @@ func _complete_actor_turn(cid: int) -> void:
 
 	SimStatusSystem.on_actor_turn_end(api, cid)
 	_apply_checkpoint_boundary(CheckpointProcessor.Kind.AFTER_ACTOR_TURN, true)
+
+	_replan_actor_intent_after_turn_cleanup(cid)
 
 	engine.complete_actor(cid)
 
@@ -511,14 +512,7 @@ func run_npc_turn(cid: int) -> void:
 			pkg.effect.execute(ctx)
 
 	_update_action_spree_state(profile, ctx.state, idx)
-	ctx.state[ActionPlanner.KEY_PLANNED_IDX] = -1
-	ctx.state[Keys.IS_ACTING] = false
 	ctx.state[ActionPlanner.ACTIONS_TAKEN] = int(ctx.state.get(ActionPlanner.ACTIONS_TAKEN, 0)) + 1
-
-	if _should_immediately_replan_intent(api, u):
-		ActionPlanner.plan_next_intent_sim(profile, ctx, true)
-	else:
-		ActionIntentPresenter.emit_set_intent(api, profile, ctx, -1)
 
 
 func run_attack(ctx: AttackContext) -> bool:
@@ -905,6 +899,33 @@ func _finish_npc_turn(ctx: NPCAIContext) -> void:
 	ctx.state[Keys.IS_ACTING] = false
 
 
+func _replan_actor_intent_after_turn_cleanup(cid: int) -> void:
+	var api := _api()
+	if api == null or api.state == null or api.state.has_terminal_outcome():
+		return
+	if cid <= 0:
+		return
+
+	var u: CombatantState = api.state.get_unit(int(cid))
+	if u == null or !u.is_alive():
+		return
+	if u.combatant_data == null or u.combatant_data.ai == null:
+		return
+
+	ActionPlanner.ensure_ai_state_initialized(u)
+
+	var profile: NPCAIProfile = u.combatant_data.ai
+	var ctx := ActionPlanner.make_context(api, u)
+	ctx.runtime = self
+
+	ctx.state[ActionPlanner.KEY_PLANNED_IDX] = -1
+	ctx.state[Keys.IS_ACTING] = false
+	ctx.state[Keys.FIRST_INTENTS_READY] = true
+
+	ActionPlanner.plan_next_intent_sim(profile, ctx, true)
+	ActionIntentPresenter.emit_current_intent(api, int(cid))
+
+
 func _update_action_spree_state(profile: NPCAIProfile, state: Dictionary, executed_idx: int) -> void:
 	if profile == null or state == null:
 		return
@@ -915,14 +936,6 @@ func _update_action_spree_state(profile: NPCAIProfile, state: Dictionary, execut
 			action_state[Keys.SPREE] = int(action_state.get(Keys.SPREE, 0)) + 1
 		else:
 			action_state[Keys.SPREE] = 0
-
-
-func _should_immediately_replan_intent(api: SimBattleAPI, u: CombatantState) -> bool:
-	if api == null or u == null or u.combatant_data == null:
-		return false
-	if int(u.team) != int(SimBattleAPI.FRIENDLY):
-		return false
-	return int(u.id) != int(api.get_player_id())
 
 
 func _resolve_attack_damage(ctx: AttackContext) -> int:

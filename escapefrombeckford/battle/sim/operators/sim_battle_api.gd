@@ -28,6 +28,7 @@ const ENEMY := 1
 var state: BattleState
 var checkpoint_processor: CheckpointProcessor
 var runtime: SimRuntime
+var is_main: bool = true
 
 # Runtime callbacks assigned externally.
 var on_summoned: Callable = Callable()		# (summoned_id: int, group_index: int) -> void
@@ -1004,7 +1005,7 @@ func gain_mana(ctx: ManaContext) -> void:
 func can_pay_card_cost(_source_id: int, card: CardData) -> bool:
 	if state == null or state.resource == null or card == null:
 		return false
-	return int(state.resource.mana) >= int(card.cost)
+	return int(state.resource.mana) >= int(card.get_total_cost())
 
 func spend_mana_for_card(ctx: ManaContext, card: CardData) -> bool:
 	if state == null or state.resource == null or card == null or ctx == null:
