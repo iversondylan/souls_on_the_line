@@ -9,6 +9,9 @@ func get_interaction_mode(ctx: CardContext) -> int:
 	if ctx == null or ctx.api == null:
 		#print("summon_action.gd get_interaction_mode() returning NONE")
 		return InteractionMode.NONE
+
+	if int(mortality) != int(CombatantState.Mortality.SOULBOUND):
+		return InteractionMode.NONE
 	
 	var player_id := int(ctx.api.get_player_id())
 	if player_id <= 0:
@@ -16,7 +19,7 @@ func get_interaction_mode(ctx: CardContext) -> int:
 		return InteractionMode.NONE
 	
 	var soulbound_ids: Array[int] = ctx.api.get_soulbound_ids_for_owner(player_id)
-	if soulbound_ids.size() >= UsableCard.MAX_SOULBOUND:
+	if soulbound_ids.size() >= CombatantState.get_mortality_cap(CombatantState.Mortality.SOULBOUND):
 		#print("summon_action.gd get_interaction_mode() returning ESCROW")
 		return InteractionMode.ESCROW
 	

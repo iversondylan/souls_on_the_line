@@ -3,6 +3,7 @@
 class_name UsableCard extends Node2D
 
 const MAX_SOULBOUND := 3
+const MAX_DEPLETE := 2
 
 signal card_fan_requested(which_usable_card: UsableCard)
 signal mouse_entered(usablecard: UsableCard)

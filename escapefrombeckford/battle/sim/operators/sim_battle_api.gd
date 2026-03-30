@@ -140,15 +140,36 @@ func get_player_pos_delta(combat_id: int) -> int:
 	return my_rank - player_rank
 
 func get_soulbound_ids_for_owner(_owner_id: int) -> Array[int]:
+	return get_combatants_in_group_by_mortality(
+		FRIENDLY,
+		CombatantState.Mortality.SOULBOUND,
+		false
+	)
+
+
+func get_combatants_in_group_by_mortality(
+	group_index: int,
+	mortality: CombatantState.Mortality,
+	allow_dead := false
+) -> Array[int]:
 	var out: Array[int] = []
-	var ids := get_combatants_in_group(0, false)
-	for id in ids:
-		var combatant := state.get_unit(int(id))
-		if combatant == null:
+	if state == null:
+		return out
+
+	var gi := clampi(int(group_index), 0, 1)
+	for id in state.groups[gi].order:
+		var u: CombatantState = state.get_unit(int(id))
+		if u == null:
 			continue
-		if int(combatant.mortality) == int(CombatantState.Mortality.SOULBOUND):
+		if !allow_dead and !u.is_alive():
+			continue
+		if int(u.mortality) == int(mortality):
 			out.append(int(id))
 	return out
+
+
+func count_mortality_in_group(group_index: int, mortality: CombatantState.Mortality) -> int:
+	return get_combatants_in_group_by_mortality(group_index, mortality, false).size()
 
 func has_status(combat_id: int, status_id: StringName) -> bool:
 	if state == null:
@@ -866,6 +887,8 @@ func summon(ctx: SummonContext) -> void:
 	ctx.summoned_id = id
 	if ctx.after_order_ids.is_empty():
 		ctx.after_order_ids = PackedInt32Array(state.groups[g].order)
+
+	_enforce_player_group_mortality_cap(int(id), int(g))
 	
 	if on_summoned.is_valid():
 		on_summoned.call(int(id), int(g))
@@ -895,20 +918,7 @@ func count_summons_in_group(group_index: int) -> int:
 
 
 func count_soulbound_in_group(group_index: int) -> int:
-	if state == null:
-		return 0
-	
-	var gi := clampi(int(group_index), 0, 1)
-	var n := 0
-	
-	for id in state.groups[gi].order:
-		var u: CombatantState = state.get_unit(int(id))
-		if u == null or !u.is_alive():
-			continue
-		if int(u.mortality) == int(CombatantState.Mortality.SOULBOUND):
-			n += 1
-	
-	return n
+	return count_mortality_in_group(group_index, CombatantState.Mortality.SOULBOUND)
 
 
 # ============================================================================
@@ -1250,6 +1260,49 @@ func _maybe_release_soulbound_reserve(u: CombatantState, reason: String) -> void
 		writer.emit_summon_reserve_released(int(u.id), uid, String(reason))
 	
 	u.bound_card_uid = ""
+
+
+func _enforce_player_group_mortality_cap(summoned_id: int, group_index: int) -> void:
+	if state == null:
+		return
+	if int(group_index) != int(FRIENDLY):
+		return
+
+	var summoned: CombatantState = state.get_unit(int(summoned_id))
+	if summoned == null or !summoned.is_alive():
+		return
+
+	var mortality: CombatantState.Mortality = summoned.mortality
+	var cap := int(CombatantState.get_mortality_cap(int(mortality)))
+	if cap <= 0:
+		return
+
+	var matching_ids := get_combatants_in_group_by_mortality(int(group_index), mortality, false)
+	if matching_ids.size() <= cap:
+		return
+
+	matching_ids.sort()
+	var to_fade := matching_ids.size() - cap
+	var fade_reason := _get_mortality_cap_fade_reason(int(mortality))
+	for i in range(to_fade):
+		var faded_id := int(matching_ids[i])
+		if faded_id <= 0 or !is_alive(faded_id):
+			continue
+
+		var fade_ctx := FadeContext.new()
+		fade_ctx.actor_id = faded_id
+		fade_ctx.reason = fade_reason
+		fade_unit(fade_ctx)
+
+
+func _get_mortality_cap_fade_reason(mortality: int) -> String:
+	match int(mortality):
+		int(CombatantState.Mortality.SOULBOUND):
+			return "summon_over_cap_soulbound"
+		int(CombatantState.Mortality.DEPLETE):
+			return "summon_over_cap_deplete"
+		_:
+			return "summon_over_cap"
 
 
 func _move_id_to_index(group_index: int, id: int, new_index: int) -> void:

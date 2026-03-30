@@ -4,6 +4,15 @@ class_name CombatantState extends RefCounted
 
 enum Mortality { MORTAL, SOULBOUND, DEPLETE }
 
+static func get_mortality_cap(mortality: int) -> int:
+	match int(mortality):
+		int(Mortality.SOULBOUND):
+			return 3
+		int(Mortality.DEPLETE):
+			return 2
+		_:
+			return 0
+
 var id: int
 var combatant_data: CombatantData
 var team: int  # 0 friendly, 1 enemy
