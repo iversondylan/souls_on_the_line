@@ -28,6 +28,8 @@ static func emit_set_intent(api: SimBattleAPI, profile: NPCAIProfile, ctx: NPCAI
 
 	var intent_text := ""
 	var tooltip_text := ""
+	var preview_package_index := _find_attack_preview_package_index(action)
+	ctx.preview_package_index = preview_package_index
 
 	if action.intent_text_model:
 		intent_text = String(action.intent_text_model.get_text(ctx))
@@ -37,6 +39,7 @@ static func emit_set_intent(api: SimBattleAPI, profile: NPCAIProfile, ctx: NPCAI
 
 	api.writer.emit_set_intent(actor_id, new_idx, uid, uid_ranged, intent_text, tooltip_text, is_ranged)
 
+	ctx.preview_package_index = -1
 	if ctx.params != null:
 		ctx.params.clear()
 
@@ -86,6 +89,8 @@ static func emit_current_intent(api: SimBattleAPI, cid: int) -> void:
 
 	var intent_text := ""
 	var tooltip_text := ""
+	var preview_package_index := _find_attack_preview_package_index(action)
+	ctx.preview_package_index = preview_package_index
 
 	if action.intent_text_model:
 		intent_text = String(action.intent_text_model.get_text(ctx))
@@ -95,6 +100,7 @@ static func emit_current_intent(api: SimBattleAPI, cid: int) -> void:
 
 	api.writer.emit_set_intent(int(cid), idx, uid, uid_ranged, intent_text, tooltip_text, is_ranged)
 
+	ctx.preview_package_index = -1
 	if ctx.params != null:
 		ctx.params.clear()
 
@@ -115,3 +121,16 @@ static func _change_params_only(action: NPCAction, ctx: NPCAIContext) -> void:
 			if model == null:
 				continue
 			model.change_params_sim(ctx)
+
+static func _find_attack_preview_package_index(action: NPCAction) -> int:
+	if action == null:
+		return -1
+
+	for i in range(action.effect_packages.size()):
+		var pkg: NPCEffectPackage = action.effect_packages[i]
+		if pkg == null or pkg.effect == null:
+			continue
+		if pkg.effect is NPCAttackSequence:
+			return i
+
+	return -1

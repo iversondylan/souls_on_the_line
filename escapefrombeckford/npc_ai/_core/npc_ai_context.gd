@@ -15,3 +15,4 @@ var state: Dictionary      # persistent AI state
 # per-effect
 var params: Dictionary = {}
 var forecast: bool = false
+var preview_package_index: int = -1
