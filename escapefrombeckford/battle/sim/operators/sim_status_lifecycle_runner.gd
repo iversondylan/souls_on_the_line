@@ -35,7 +35,7 @@ static func _expire_unit_by_policy(api: SimBattleAPI, cid: int, policy: int) -> 
 
 	var to_remove: Array[StringName] = []
 
-	for sid in u.statuses.by_id.keys():
+	for sid in u.statuses.get_status_ids(false):
 		var proto := _get_proto(api, sid)
 		if proto == null:
 			continue
@@ -59,11 +59,11 @@ static func _tick_duration_for_proc(api: SimBattleAPI, actor_id: int, proc_type:
 	var changed: Array[Dictionary] = []
 	var expired: Array[StringName] = []
 
-	for sid in u.statuses.by_id.keys():
-		var stack: StatusStack = u.statuses.by_id.get(sid, null)
+	for stack: StatusStack in u.statuses.get_all_stacks(false):
 		if stack == null:
 			continue
 
+		var sid := StringName(stack.id)
 		var proto := _get_proto(api, sid)
 		if proto == null:
 			continue

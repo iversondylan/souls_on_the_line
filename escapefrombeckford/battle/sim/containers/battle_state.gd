@@ -118,7 +118,7 @@ func get_front_id(group_index: int) -> int:
 
 # battle_state.gd (additions)
 
-func get_modifier_tokens_for_cid(target_id: int, mod_type: Modifier.Type) -> Array[ModifierToken]:
+func get_modifier_tokens_for_cid(target_id: int, mod_type: Modifier.Type, include_pending_sources := {}) -> Array[ModifierToken]:
 	#print("battle_state.gd get_modifier_tokens_for_cid() cid: ", target_id)
 	var tokens: Array[ModifierToken] = []
 
@@ -135,7 +135,10 @@ func get_modifier_tokens_for_cid(target_id: int, mod_type: Modifier.Type) -> Arr
 		var same_team := _same_team(int(source_id), target_id)
 		
 		# 1a) Status tokens (produced by status protos via StatusCatalog)
-		var source_tokens := _get_status_tokens_for_source(int(source_id), mod_type)
+		var include_pending := false
+		if include_pending_sources is Dictionary:
+			include_pending = bool(include_pending_sources.get(int(source_id), false))
+		var source_tokens := _get_status_tokens_for_source(int(source_id), mod_type, include_pending)
 		for token in source_tokens:
 			#print("looking at a token: ", token.owner_id)
 			if !token:
@@ -173,16 +176,19 @@ func get_modifier_tokens_for_cid(target_id: int, mod_type: Modifier.Type) -> Arr
 
 	return tokens
 
-func _get_status_tokens_for_source(source_id: int, mod_type: Modifier.Type) -> Array[ModifierToken]:
+func _get_status_tokens_for_source(source_id: int, mod_type: Modifier.Type, include_pending := false) -> Array[ModifierToken]:
 	#print("battle_state.gd _get_status_tokens_for_source()")
 	var out: Array[ModifierToken] = []
 	var u: CombatantState = units.get(source_id, null)
 	if !u or !status_catalog:
 		return out
 
-	for id_key in u.statuses.by_id.keys():
-		var stack: StatusStack = u.statuses.by_id[id_key]
-		var id_strn := StringName(id_key)
+	for stack: StatusStack in u.statuses.get_all_stacks(include_pending):
+		if stack == null:
+			continue
+		if bool(stack.pending) and !include_pending:
+			continue
+		var id_strn := StringName(stack.id)
 		var proto: Status = status_catalog.get_proto(id_strn)
 		if !proto:
 			push_warning("there's no proto")
@@ -190,6 +196,8 @@ func _get_status_tokens_for_source(source_id: int, mod_type: Modifier.Type) -> A
 		if mod_type not in proto.get_contributed_modifier_types():
 			continue
 		var ctx := StatusTokenContext.new()#proto.make_token_ctx_state({}, source_id)
+		ctx.id = id_strn
+		ctx.pending = bool(stack.pending)
 		ctx.duration = stack.duration
 		ctx.intensity = stack.intensity
 		ctx.owner_id = source_id
@@ -401,12 +409,11 @@ func _debug_status_summary(unit: CombatantState) -> String:
 		return ""
 
 	var parts: Array[String] = []
-	for status_id in unit.statuses.by_id.keys():
-		var stack: StatusStack = unit.statuses.by_id[status_id]
+	for stack: StatusStack in unit.statuses.get_all_stacks(true):
 		if stack == null:
 			continue
 		parts.append("%s(i=%d,d=%d)" % [
-			String(status_id),
+			("%s[p]" % String(stack.id)) if bool(stack.pending) else String(stack.id),
 			int(stack.intensity),
 			int(stack.duration),
 		])

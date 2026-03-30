@@ -11,6 +11,13 @@ static func get_modified_value(
 		return base
 	
 	var tokens := b.get_modifier_tokens_for_cid(cid, mod_type)
+	return apply_tokens(base, mod_type, tokens)
+
+static func apply_tokens(
+	base: int,
+	mod_type: Modifier.Type,
+	tokens: Array[ModifierToken]
+) -> int:
 	
 	var flat := 0
 	var mult := 1.0

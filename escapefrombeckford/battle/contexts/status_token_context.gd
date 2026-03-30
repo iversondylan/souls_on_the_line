@@ -3,6 +3,7 @@
 class_name StatusTokenContext extends RefCounted
 
 var id: StringName = &""
+var pending: bool = false
 
 var intensity : int = -1
 var duration: int = -1

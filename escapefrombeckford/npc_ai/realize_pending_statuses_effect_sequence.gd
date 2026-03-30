@@ -1,0 +1,14 @@
+# realize_pending_statuses_effect_sequence.gd
+
+class_name RealizePendingStatusesEffectSequence extends NPCEffectSequence
+
+func execute(ctx: NPCAIContext) -> void:
+	if ctx == null or bool(ctx.forecast):
+		return
+
+	var runtime := ctx.runtime if ctx.runtime != null else (ctx.api.runtime if ctx.api != null else null)
+	if runtime == null:
+		push_warning("realize_pending_statuses_effect_sequence.gd execute(): missing runtime")
+		return
+
+	runtime.run_realize_pending_statuses(int(ctx.cid), int(ctx.cid), "npc_realize_pending_statuses")

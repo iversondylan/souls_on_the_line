@@ -19,7 +19,7 @@ const SAVE_NAME_DIALOG_SCN := preload("res://ui/save_name_dialog.tscn")
 @export var arcanum_catalog: ArcanaCatalog
 
 # TEMPORARY v
-@export var extra_arcana: Array[Arcanum]
+#@export var extra_arcana: Array[Arcanum]
 # TEMPORARY ^
 
 @onready var map: Map = $Map
@@ -181,9 +181,9 @@ func _init_top_bar() -> void:
 		arcana_system_container.add_arcanum(player_data.starting_arcanum)
 	
 # TEMPORARY v
-	if run_state != null and run_state.owned_arcanum_ids.is_empty():
-		for arcanum: Arcanum in extra_arcana:
-			arcana_system_container.add_arcana([arcanum])
+	#if run_state != null and run_state.owned_arcanum_ids.is_empty():
+		#for arcanum: Arcanum in extra_arcana:
+			#arcana_system_container.add_arcana([arcanum])
 # TEMPORARY ^
 
 	
@@ -322,9 +322,11 @@ func _start_new_run_from_profile(profile: RunProfile) -> void:
 	run_deck = RunDeck.new()
 	run_deck.card_collection = starting_deck
 	run_state.run_deck = run_deck
-	for arcanum in extra_arcana:
-		if arcanum != null:
-			run_state.owned_arcanum_ids.append(String(arcanum.get_id()))
+	# TEMPORARY v
+	#for arcanum in extra_arcana:
+		#if arcanum != null:
+			#run_state.owned_arcanum_ids.append(String(arcanum.get_id()))
+	# TEMPORARY ^
 	print("run.gd STARTING RUN WITH NEW CHARACTER")
 	SaveService.save_profile(profile_data)
 	_start_run()

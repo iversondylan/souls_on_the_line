@@ -6,9 +6,12 @@ extends IntentLifecycleModel
 @export var status_id: StringName
 @export var intensity := 0
 @export var duration := 0
+@export var pending: bool = false
 
 func _status_id() -> StringName:
-	return StringName(status.get_id())
+	if status_id != &"":
+		return StringName(status_id)
+	return StringName(status.get_id()) if status != null else &""
 
 func on_opposing_group_start(ctx: NPCAIContext) -> void:
 	if !_can_run_sim(ctx):
@@ -30,7 +33,7 @@ func _can_run_sim(ctx: NPCAIContext) -> bool:
 		return false
 	if !ctx.api:
 		return false
-	if !status:
+	if _status_id() == &"":
 		return false
 	return ParamModel._actor_id(ctx) > 0
 
@@ -41,9 +44,10 @@ func _apply_to_self_sim(ctx: NPCAIContext) -> void:
 	var sc := StatusContext.new()
 	sc.source_id = ctx.cid
 	sc.target_id = ctx.cid
-	sc.status_id = status_id
+	sc.status_id = _status_id()
 	sc.duration = duration
 	sc.intensity = intensity
+	sc.pending = bool(pending)
 	#print("status_from_opp_turn_until_my_action_model.gd _apply_to_self_sim() id: %s, intensity: %s" % [sc.status_id, sc.intensity])
 	ctx.api.apply_status(sc)
 
@@ -55,4 +59,5 @@ func _remove_from_self_sim(ctx: NPCAIContext) -> void:
 	rc.source_id = id
 	rc.target_id = id
 	rc.status_id = _status_id()
+	rc.pending = bool(pending)
 	ctx.api.remove_status(rc)

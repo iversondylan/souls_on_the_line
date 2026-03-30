@@ -493,7 +493,6 @@ func run_npc_turn(cid: int) -> void:
 
 	for pkg: NPCEffectPackage in action.effect_packages:
 		if pkg == null:
-			print("sim_runtime.gd run_npc_turn(): pkg is null cid=%d action_idx=%d" % [int(cid), idx])
 			continue
 
 		ctx.params.clear()
@@ -506,25 +505,10 @@ func run_npc_turn(cid: int) -> void:
 			if pm != null:
 				pm.change_params_sim(ctx)
 
-		var effect_class := pkg.effect.get_class() if pkg.effect != null else "null"
-		var effect_path := String(pkg.effect.resource_path) if pkg.effect != null else ""
 		var effect_has_execute := pkg.effect != null and pkg.effect.has_method("execute")
-		print("sim_runtime.gd run_npc_turn(): cid=%d action_idx=%d effect_class=%s effect_path=%s has_execute=%s params=%s" % [
-			int(cid),
-			idx,
-			String(effect_class),
-			effect_path,
-			str(effect_has_execute),
-			str(ctx.params)
-		])
 
 		if effect_has_execute:
 			pkg.effect.execute(ctx)
-		else:
-			print("sim_runtime.gd run_npc_turn(): skipping effect execution cid=%d action_idx=%d because effect is missing execute" % [
-				int(cid),
-				idx
-			])
 
 	_update_action_spree_state(profile, ctx.state, idx)
 	ctx.state[ActionPlanner.KEY_PLANNED_IDX] = -1
@@ -540,12 +524,10 @@ func run_npc_turn(cid: int) -> void:
 func run_attack(ctx: AttackContext) -> bool:
 	var api := _api()
 	if api == null or ctx == null:
-		print("sim_runtime.gd run_attack(): missing api or ctx")
 		return false
 	if ctx.api != null:
 		api = ctx.api
 	if int(ctx.attacker_id) <= 0 or !api.is_alive(int(ctx.attacker_id)):
-		print("sim_runtime.gd run_attack(): attacker invalid attacker_id=%d" % int(ctx.attacker_id))
 		return false
 
 	var params: Dictionary = ctx.params if ctx.params else {}
@@ -572,17 +554,7 @@ func run_attack(ctx: AttackContext) -> bool:
 		Keys.TARGET_TYPE: targeting,
 	})
 	if attack_scope == null:
-		print("sim_runtime.gd run_attack(): failed to open attack scope attacker_id=%d" % attacker_id)
 		return false
-
-	print("sim_runtime.gd run_attack(): attacker_id=%d source_id=%d strikes=%d attack_mode=%d targeting=%d params=%s" % [
-		attacker_id,
-		source_id,
-		strikes,
-		mode,
-		targeting,
-		str(params)
-	])
 
 	for s in range(strikes):
 		if !api.is_alive(attacker_id):
@@ -601,10 +573,8 @@ func run_attack(ctx: AttackContext) -> bool:
 		target_ids = target_ids.filter(func(id):
 			return int(id) > 0 and api.is_alive(int(id))
 		)
-		print("sim_runtime.gd run_attack(): strike=%d target_ids=%s" % [s, str(target_ids)])
 
 		if target_ids.is_empty():
-			print("sim_runtime.gd run_attack(): strike=%d had no targets" % s)
 			_end_scope(strike_scope)
 			continue
 
@@ -623,7 +593,6 @@ func run_attack(ctx: AttackContext) -> bool:
 		var dmg := _resolve_attack_damage(ctx)
 		var deal_mod := int(ctx.deal_modifier_type)
 		var take_mod := int(ctx.take_modifier_type)
-		print("sim_runtime.gd run_attack(): strike=%d dmg=%d deal_mod=%d take_mod=%d" % [s, dmg, deal_mod, take_mod])
 
 		for tid: int in target_ids:
 			var hit_scope := _begin_scope(Scope.Kind.HIT, "t=%d" % int(tid), attacker_id, {
@@ -648,11 +617,6 @@ func run_attack(ctx: AttackContext) -> bool:
 			d.origin_card_uid = ctx.origin_card_uid
 			d.origin_arcanum_id = ctx.origin_arcanum_id
 			api.resolve_damage_immediate(d)
-			print("sim_runtime.gd run_attack(): applied hit attacker_id=%d target_id=%d base_amount=%d" % [
-				attacker_id,
-				int(tid),
-				dmg
-			])
 			any = true
 			if !_packed_has_int(ctx.affected_target_ids, int(tid)):
 				ctx.affected_target_ids.append(int(tid))
@@ -663,11 +627,6 @@ func run_attack(ctx: AttackContext) -> bool:
 
 	_end_scope(attack_scope)
 	ctx.any_hit = any
-	print("sim_runtime.gd run_attack(): attacker_id=%d any_hit=%s affected_target_ids=%s" % [
-		attacker_id,
-		str(any),
-		str(ctx.affected_target_ids)
-	])
 	return any
 
 
@@ -690,6 +649,7 @@ func run_status_action(ctx: StatusContext) -> void:
 			Keys.SOURCE_ID: int(source_id),
 			Keys.TARGET_ID: int(ctx.target_id),
 			Keys.STATUS_ID: ctx.status_id,
+			Keys.STATUS_PENDING: bool(ctx.pending),
 			Keys.INTENSITY: int(ctx.intensity),
 			Keys.DURATION: int(ctx.duration),
 		}
@@ -701,6 +661,29 @@ func run_status_action(ctx: StatusContext) -> void:
 	ctx.source_id = source_id
 	api.apply_status(ctx)
 
+	_end_scope(status_scope)
+
+func run_realize_pending_statuses(actor_id: int, source_id: int = 0, reason: String = "") -> void:
+	var api := _api()
+	if api == null or api.state == null or actor_id <= 0 or !api.is_alive(actor_id):
+		return
+
+	var src_id := int(source_id if source_id > 0 else actor_id)
+	var status_scope := _begin_scope(
+		Scope.Kind.STATUS_ACTION,
+		"realize_pending tgt=%d" % int(actor_id),
+		actor_id,
+		{
+			Keys.ACTOR_ID: int(actor_id),
+			Keys.SOURCE_ID: int(src_id),
+			Keys.TARGET_ID: int(actor_id),
+			Keys.REASON: String(reason),
+		}
+	)
+	if status_scope == null:
+		return
+
+	api.realize_pending_statuses(int(actor_id), int(src_id), reason)
 	_end_scope(status_scope)
 
 

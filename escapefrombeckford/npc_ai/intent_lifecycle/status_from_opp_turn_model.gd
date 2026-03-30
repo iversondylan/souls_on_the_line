@@ -7,6 +7,7 @@ extends IntentLifecycleModel
 @export var status: Status
 @export var intensity := 0
 @export var duration := 0
+@export var pending: bool = false
 
 func _status_id() -> StringName:
 	return StringName(status.get_id())
@@ -42,6 +43,7 @@ func _apply_to_self_sim(ctx: NPCAIContext) -> void:
 	sc.status_id = _status_id()
 	sc.duration = duration
 	sc.intensity = intensity
+	sc.pending = bool(pending)
 	ctx.api.apply_status(sc)
 
 func _remove_from_self_sim(ctx: NPCAIContext) -> void:
@@ -53,5 +55,6 @@ func _remove_from_self_sim(ctx: NPCAIContext) -> void:
 	rc.source_id = id
 	rc.target_id = id
 	rc.status_id = _status_id()
+	rc.pending = bool(pending)
 	# rc.intensity_delta default handled in API
 	ctx.api.remove_status(rc)

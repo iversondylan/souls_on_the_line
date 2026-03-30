@@ -6,10 +6,8 @@
 [ext_resource type="Resource" uid="uid://cd45rlmihsfvb" path="res://arcana/_core/arcanum_catalog.tres" id="4_fo0ly"]
 [ext_resource type="Theme" uid="uid://d2wc7fposrlqs" path="res://themes/wizard_theme.tres" id="4_o4jfg"]
 [ext_resource type="PackedScene" uid="uid://bxtf6la07t0t5" path="res://ui/card_pile_opener.tscn" id="5_0tt4g"]
-[ext_resource type="Script" uid="uid://cnmucv1qsei4i" path="res://arcana/_core/arcanum.gd" id="5_l6p45"]
 [ext_resource type="PackedScene" uid="uid://b5kimimy0ccq0" path="res://ui/health_bar.tscn" id="5_ux63y"]
 [ext_resource type="PackedScene" uid="uid://yab08gtx7087" path="res://ui/gold_display.tscn" id="5_wo0nw"]
-[ext_resource type="Resource" uid="uid://dohwwwoux6ubx" path="res://arcana/unruly_pyric_wraps.tres" id="6_kdgoc"]
 [ext_resource type="Theme" uid="uid://1dr1eewpv0jd" path="res://themes/ui_theme.tres" id="6_wo0nw"]
 [ext_resource type="PackedScene" uid="uid://c634qgskmd0a" path="res://ui/card_pile_view.tscn" id="7_0tt4g"]
 [ext_resource type="Script" uid="uid://5lbmyp40fhgy" path="res://arcana/_core/arcana_system_container.gd" id="7_y5iaq"]
@@ -26,7 +24,6 @@
 script = ExtResource("1_l7o68")
 status_catalog = ExtResource("3_7yo0l")
 arcanum_catalog = ExtResource("4_fo0ly")
-extra_arcana = Array[ExtResource("5_l6p45")]([ExtResource("6_kdgoc")])
 
 [node name="Map" parent="." unique_id=1135074360 instance=ExtResource("2_wdonh")]
 

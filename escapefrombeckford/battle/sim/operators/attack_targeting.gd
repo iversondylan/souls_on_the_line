@@ -140,12 +140,7 @@ static func _append_status_participants(
 	if status_owner == null or status_owner.statuses == null or status_owner.statuses.by_id == null:
 		return discovery_index
 
-	var status_ids: Array[StringName] = []
-	for sid in status_owner.statuses.by_id.keys():
-		status_ids.append(StringName(sid))
-
-	for sid in status_ids:
-		var stack: StatusStack = status_owner.statuses.by_id.get(sid, null)
+	for stack: StatusStack in status_owner.statuses.get_all_stacks(false):
 		if stack == null:
 			continue
 		var status_ctx := SimStatusSystem.make_context(ctx.api, int(owner_id), stack)

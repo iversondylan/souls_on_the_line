@@ -20,12 +20,6 @@ func execute(ctx: NPCAIContext) -> void:
 	var params: Dictionary = ctx.params if ctx.params else {}
 	var armor_amount := int(params.get(Keys.ARMOR_AMOUNT, 0))
 	if armor_amount <= 0:
-		print("npc_block_sequence.gd execute(): actor_id=%d armor_amount=%d" % [actor_id, armor_amount])
 		return
 
 	u.armor = maxi(int(u.armor) + armor_amount, 0)
-	print("npc_block_sequence.gd execute(): actor_id=%d armor_amount=%d new_armor=%d" % [
-		actor_id,
-		armor_amount,
-		int(u.armor)
-	])

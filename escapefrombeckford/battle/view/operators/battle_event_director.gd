@@ -634,6 +634,9 @@ func _make_status_applied_order(e: EventPackage) -> StatusAppliedOrder:
 	o.source_id = int(d.get(Keys.SOURCE_ID, 0))
 	o.target_id = int(d.get(Keys.TARGET_ID, 0))
 	o.status_id = d.get(Keys.STATUS_ID, &"")
+	o.pending = bool(d.get(Keys.AFTER_PENDING, d.get(Keys.STATUS_PENDING, false)))
+	o.before_pending = bool(d.get(Keys.BEFORE_PENDING, o.pending))
+	o.after_pending = bool(d.get(Keys.AFTER_PENDING, o.pending))
 	o.intensity = int(d.get(Keys.AFTER_INTENSITY, d.get(Keys.INTENSITY, 1)))
 	o.turns_duration = int(d.get(Keys.AFTER_DURATION, d.get(Keys.DURATION, 0)))
 
@@ -648,6 +651,7 @@ func _make_status_removed_order(e: EventPackage) -> StatusRemovedOrder:
 	o.source_id = int(d.get(Keys.SOURCE_ID, 0))
 	o.target_id = int(d.get(Keys.TARGET_ID, 0))
 	o.status_id = d.get(Keys.STATUS_ID, &"")
+	o.pending = bool(d.get(Keys.STATUS_PENDING, false))
 	o.intensity = int(d.get(Keys.INTENSITY, 1))
 	o.removed_all = true
 

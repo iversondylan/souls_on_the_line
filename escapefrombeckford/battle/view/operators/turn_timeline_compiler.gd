@@ -854,6 +854,7 @@ func _make_status_pop_beat(beat_q: float, actor_id: int, status_events: Array[Ba
 		o.source_id = int(e.data.get(Keys.SOURCE_ID, 0))
 		o.target_id = int(e.data.get(Keys.TARGET_ID, 0))
 		o.status_id = e.data.get(Keys.STATUS_ID, &"")
+		o.pending = bool(e.data.get(Keys.AFTER_PENDING, e.data.get(Keys.STATUS_PENDING, false)))
 		o.op = int(e.data.get(Keys.OP, 0))
 		o.intensity = int(e.data.get(Keys.AFTER_INTENSITY, e.data.get(Keys.INTENSITY, 0)))
 		o.turns_duration = int(e.data.get(Keys.AFTER_DURATION, e.data.get(Keys.DURATION, 0)))

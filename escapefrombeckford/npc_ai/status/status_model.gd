@@ -5,6 +5,7 @@ extends ParamModel
 @export var status: Status
 @export var intensity: int = 1
 @export var duration: int = 1
+@export var pending: bool = false
 
 func change_params(ctx: NPCAIContext) -> NPCAIContext:
 	if !ctx or !status:
@@ -13,6 +14,7 @@ func change_params(ctx: NPCAIContext) -> NPCAIContext:
 	ctx.params[Keys.STATUS_ID] = StringName(status.get_id())
 	ctx.params[Keys.STATUS_INTENSITY] = intensity
 	ctx.params[Keys.STATUS_DURATION] = duration
+	ctx.params[Keys.STATUS_PENDING] = bool(pending)
 	return ctx
 
 func change_params_sim(ctx: NPCAIContext) -> NPCAIContext:
@@ -21,4 +23,5 @@ func change_params_sim(ctx: NPCAIContext) -> NPCAIContext:
 	ctx.params[Keys.STATUS_ID] = StringName(status.get_id())
 	ctx.params[Keys.STATUS_INTENSITY] = int(intensity)
 	ctx.params[Keys.STATUS_DURATION] = int(duration)
+	ctx.params[Keys.STATUS_PENDING] = bool(pending)
 	return ctx

@@ -10,7 +10,9 @@ class_name StatusDisplay extends Control
 
 var intensity: int = 0
 var turns_duration: int = 0
+var pending: bool = false
 var status_parent: CombatantView : set = _set_status_parent
+var _pending_tween: Tween = null
 
 func _ready() -> void:
 	_refresh_display()
@@ -22,13 +24,14 @@ func _set_status(new_status: Status) -> void:
 	status = new_status
 	_refresh_display()
 
-func set_status_state(new_status: Status, new_intensity: int, new_duration: int) -> void:
+func set_status_state(new_status: Status, new_intensity: int, new_duration: int, new_pending := false) -> void:
 	if !is_node_ready():
 		await ready
 
 	status = new_status
 	intensity = maxi(int(new_intensity), 0)
 	turns_duration = maxi(int(new_duration), 0)
+	pending = bool(new_pending)
 	_refresh_display()
 
 func _refresh_display() -> void:
@@ -47,6 +50,23 @@ func _refresh_display() -> void:
 		custom_minimum_size = duration.size + duration.position
 	elif stacks.visible:
 		custom_minimum_size = stacks.size + stacks.position
+
+	_refresh_pending_pulse()
+
+func _refresh_pending_pulse() -> void:
+	if _pending_tween != null and is_instance_valid(_pending_tween):
+		_pending_tween.kill()
+	_pending_tween = null
+
+	if !pending:
+		modulate.a = 1.0
+		return
+
+	modulate.a = 1.0
+	_pending_tween = create_tween()
+	_pending_tween.set_loops()
+	_pending_tween.tween_property(self, "modulate:a", 0.45, 0.45)
+	_pending_tween.tween_property(self, "modulate:a", 1.0, 0.45)
 
 func _set_status_parent(new_status_parent: CombatantView) -> void:
 	status_parent = new_status_parent

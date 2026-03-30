@@ -41,6 +41,9 @@ func get_intensity() -> int:
 func get_duration() -> int:
 	return int(stack.duration) if stack != null else 0
 
+func is_pending() -> bool:
+	return bool(stack.pending) if stack != null else false
+
 
 func get_group_index() -> int:
 	return int(owner.team) if owner != null else -1
@@ -53,6 +56,7 @@ func is_alive() -> bool:
 func make_token_ctx() -> StatusTokenContext:
 	var ctx := StatusTokenContext.new()
 	ctx.id = get_status_id()
+	ctx.pending = is_pending()
 	ctx.intensity = get_intensity()
 	ctx.duration = get_duration()
 	ctx.owner = null
@@ -91,6 +95,9 @@ func change_intensity(delta: int, reason: String = "") -> void:
 				Keys.BEFORE_DURATION: before_d,
 				Keys.AFTER_INTENSITY: int(stack.intensity),
 				Keys.AFTER_DURATION: int(stack.duration),
+				Keys.STATUS_PENDING: bool(is_pending()),
+				Keys.BEFORE_PENDING: bool(is_pending()),
+				Keys.AFTER_PENDING: bool(is_pending()),
 				Keys.REASON: String(reason),
 			}
 		)
@@ -123,6 +130,9 @@ func change_duration(delta: int, reason: String = "") -> void:
 				Keys.BEFORE_DURATION: before_d,
 				Keys.AFTER_INTENSITY: int(stack.intensity),
 				Keys.AFTER_DURATION: int(stack.duration),
+				Keys.STATUS_PENDING: bool(is_pending()),
+				Keys.BEFORE_PENDING: bool(is_pending()),
+				Keys.AFTER_PENDING: bool(is_pending()),
 				Keys.REASON: String(reason),
 			}
 		)
@@ -136,6 +146,7 @@ func remove_self(_reason: String = "") -> void:
 	rc.source_id = owner_id
 	rc.target_id = owner_id
 	rc.status_id = get_status_id()
+	rc.pending = is_pending()
 	api.remove_status(rc)
 
 

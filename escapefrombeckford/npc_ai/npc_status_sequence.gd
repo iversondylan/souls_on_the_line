@@ -39,5 +39,6 @@ func execute(ctx: NPCAIContext) -> void:
 	status_ctx.status_id = status_id
 	status_ctx.intensity = int(params.get(Keys.STATUS_INTENSITY, 0))
 	status_ctx.duration = int(params.get(Keys.STATUS_DURATION, 0))
+	status_ctx.pending = bool(params.get(Keys.STATUS_PENDING, false))
 	status_ctx.reason = "npc_status_action"
 	runtime.run_status_action(status_ctx)

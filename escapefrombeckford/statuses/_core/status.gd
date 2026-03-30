@@ -116,10 +116,13 @@ func make_token_ctx_state(state_like, _owner_id: int) -> StatusTokenContext:
 		ctx.id = StringName(state_like.get("id", ""))
 		ctx.duration = int(state_like.get("duration", 0))
 		ctx.intensity = int(state_like.get("intensity", 0))
+		ctx.pending = bool(state_like.get("pending", false))
 	else:
 		ctx.id = state_like.id
 		ctx.duration = state_like.duration
 		ctx.intensity = state_like.intensity
+		if "pending" in state_like:
+			ctx.pending = bool(state_like.pending)
 	ctx.owner = null
 	ctx.owner_id = _owner_id
 	return ctx

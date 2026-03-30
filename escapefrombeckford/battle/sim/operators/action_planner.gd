@@ -86,7 +86,6 @@ static func plan_next_intent_sim(profile: NPCAIProfile, ctx: NPCAIContext, allow
 		if allow_hooks:
 			_on_planned_intent_changed_sim(profile, prev_idx, cond_idx, ctx)
 		state[KEY_PLANNED_IDX] = cond_idx
-		ActionIntentPresenter.emit_set_intent(ctx.api, profile, ctx, cond_idx)
 		return
 
 	if prev_idx != -1 and !_can_cancel_intent_sim(state):
@@ -101,13 +100,11 @@ static func plan_next_intent_sim(profile: NPCAIProfile, ctx: NPCAIContext, allow
 	var new_idx := _roll_chance_idx_sim(profile, ctx)
 	if new_idx == -1:
 		if prev_idx == -1:
-			ActionIntentPresenter.emit_set_intent(ctx.api, profile, ctx, -1)
 			return
 
 		if allow_hooks:
 			_on_planned_intent_changed_sim(profile, prev_idx, -1, ctx)
 		state[KEY_PLANNED_IDX] = -1
-		ActionIntentPresenter.emit_set_intent(ctx.api, profile, ctx, -1)
 		return
 
 	if prev_idx == new_idx:
@@ -117,7 +114,6 @@ static func plan_next_intent_sim(profile: NPCAIProfile, ctx: NPCAIContext, allow
 		_on_planned_intent_changed_sim(profile, prev_idx, new_idx, ctx)
 
 	state[KEY_PLANNED_IDX] = new_idx
-	ActionIntentPresenter.emit_set_intent(ctx.api, profile, ctx, new_idx)
 
 
 static func get_action_by_idx(profile: NPCAIProfile, idx: int) -> NPCAction:

@@ -136,12 +136,7 @@ static func _for_each_status_on_unit(api: SimBattleAPI, owner_id: int, fn: Calla
 	if u.statuses.by_id.is_empty():
 		return
 
-	var status_ids: Array[StringName] = []
-	for sid in u.statuses.by_id.keys():
-		status_ids.append(StringName(sid))
-
-	for sid in status_ids:
-		var stack: StatusStack = u.statuses.by_id.get(sid, null)
+	for stack: StatusStack in u.statuses.get_all_stacks(false):
 		if stack == null:
 			continue
 
@@ -170,8 +165,8 @@ static func _expire_unit_by_policy(api: SimBattleAPI, cid: int, policy: int) -> 
 
 	var to_remove: Array[StringName] = []
 
-	for sid in u.statuses.by_id.keys():
-		var proto := get_proto(api, StringName(sid))
+	for sid in u.statuses.get_status_ids(false):
+		var proto := get_proto(api, sid)
 		if proto == null:
 			continue
 		if int(proto.expiration_policy) == policy:
@@ -194,12 +189,12 @@ static func _tick_duration_for_proc(api: SimBattleAPI, actor_id: int, proc_type:
 	var changed: Array[Dictionary] = []
 	var expired: Array[StringName] = []
 
-	for sid in u.statuses.by_id.keys():
-		var stack: StatusStack = u.statuses.by_id.get(sid, null)
+	for stack: StatusStack in u.statuses.get_all_stacks(false):
 		if stack == null:
 			continue
 
-		var proto := get_proto(api, StringName(sid))
+		var sid := StringName(stack.id)
+		var proto := get_proto(api, sid)
 		if proto == null:
 			continue
 

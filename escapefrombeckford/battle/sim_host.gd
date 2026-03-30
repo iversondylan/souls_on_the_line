@@ -378,26 +378,30 @@ func _format_sim_statuses(u: CombatantState) -> String:
 		return ""
 
 	var parts: Array[String] = []
-	for k in by_id.keys():
-		var sid := String(k)
-		var stack = by_id[k]
+	for stack in u.statuses.get_all_stacks(true):
 		if stack == null:
 			continue
 
+		var sid := String(stack.id)
 		var intensity := 0
 		var dur := 0
+		var pending := false
 
 		if "intensity" in stack:
 			intensity = int(stack.intensity)
 
 		if "duration" in stack:
 			dur = int(stack.duration)
+		if "pending" in stack:
+			pending = bool(stack.pending)
 
 		var show_bits: Array[String] = []
 		if dur > 0:
 			show_bits.append("dur=%d" % dur)
 		if intensity != 1 and intensity != 0:
 			show_bits.append("stk=%d" % intensity)
+		if pending:
+			show_bits.append("pending")
 
 		if show_bits.is_empty():
 			parts.append("%s" % sid)

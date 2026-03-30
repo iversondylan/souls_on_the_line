@@ -5,6 +5,7 @@ class_name StatusPopPresentationOrder extends PresentationOrder
 var source_id: int = 0
 var target_id: int = 0
 var status_id: StringName = &""
+var pending: bool = false
 var op: int = 0
 var intensity: int = 0
 var turns_duration: int = 0

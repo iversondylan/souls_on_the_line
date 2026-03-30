@@ -122,6 +122,7 @@ const DELTA := &"delta"
 
 # Status
 const STATUS_ID := &"status_id"
+const STATUS_PENDING := &"status_pending"
 const INTENSITY := &"intensity"
 const DURATION := &"duration"
 const OP := &"op"
@@ -132,6 +133,8 @@ const BEFORE_INTENSITY := &"before_intensity"
 const AFTER_INTENSITY := &"after_intensity"
 const BEFORE_DURATION := &"before_duration"
 const AFTER_DURATION := &"after_duration"
+const BEFORE_PENDING := &"before_pending"
+const AFTER_PENDING := &"after_pending"
 
 # Move (formation)
 const MOVE_TYPE := &"move_type"

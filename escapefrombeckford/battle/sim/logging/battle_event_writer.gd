@@ -391,6 +391,7 @@ func emit_status(
 		Keys.OP: status_op,
 		Keys.INTENSITY: int(intensity),
 		Keys.DURATION: int(duration),
+		Keys.STATUS_PENDING: bool(extra.get(Keys.STATUS_PENDING, false)),
 	}
 	
 	for k in extra.keys():

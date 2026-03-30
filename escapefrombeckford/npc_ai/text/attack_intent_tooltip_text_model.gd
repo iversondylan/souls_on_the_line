@@ -69,7 +69,7 @@ func get_text_sim(ctx: NPCAIContext) -> String:
 
 	# ---- Damage ----
 	var damage := _param_i(ctx, Keys.DAMAGE, 0)
-	damage = _modified_sim(ctx, damage, Modifier.Type.DMG_DEALT, int(ctx.cid))
+	damage = _modified_intent_sim(ctx, damage, Modifier.Type.DMG_DEALT, int(ctx.cid))
 	result = result.replace("{damage}", "%d" % damage)
 
 	return result

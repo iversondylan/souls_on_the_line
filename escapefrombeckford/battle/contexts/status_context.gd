@@ -14,6 +14,7 @@ var target_id: int = 0
 var status_id: StringName = &""
 var duration: int = 0
 var intensity: int = 0
+var pending: bool = false
 
 
 
@@ -26,6 +27,8 @@ var before_intensity := 0
 var before_duration := 0
 var after_intensity := 0
 var after_duration := 0
+var before_pending: bool = false
+var after_pending: bool = false
 
 # optional tags
 var tags: Array[StringName] = []

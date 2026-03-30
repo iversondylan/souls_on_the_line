@@ -1,13 +1,97 @@
 # status_state.gd
 class_name StatusState extends RefCounted
 
-var by_id: Dictionary = {}  # StringName -> StatusStack
+var by_id: Dictionary = {}  # StringName -> { false: StatusStack, true: StatusStack }
 
-func has(id: StringName) -> bool:
-	return by_id.has(id)
+func has(id: StringName, pending := false) -> bool:
+	var bucket := _get_bucket(id, false)
+	return bucket.has(bool(pending))
 
-func get_status_stack(id: StringName) -> StatusStack:
-	return by_id.get(id, null)
+func has_any(id: StringName) -> bool:
+	var bucket := _get_bucket(id, false)
+	return !bucket.is_empty()
+
+func get_status_stack(id: StringName, pending := false) -> StatusStack:
+	var bucket := _get_bucket(id, false)
+	var stack = bucket.get(bool(pending), null)
+	return stack if stack is StatusStack else null
+
+func get_status_ids(include_pending := true, pending_only := false) -> Array[StringName]:
+	var out: Array[StringName] = []
+	for id_key in by_id.keys():
+		var id := StringName(id_key)
+		var bucket := _get_bucket(id, false)
+		if pending_only:
+			if bucket.has(true):
+				out.append(id)
+			continue
+		if bucket.has(false) or (include_pending and bucket.has(true)):
+			out.append(id)
+	return out
+
+func get_all_stacks(include_pending := true) -> Array[StatusStack]:
+	var out: Array[StatusStack] = []
+	for id_key in by_id.keys():
+		var id := StringName(id_key)
+		var bucket := _get_bucket(id, false)
+		var realized = bucket.get(false, null)
+		if realized is StatusStack:
+			out.append(realized)
+		if include_pending:
+			var pending_stack = bucket.get(true, null)
+			if pending_stack is StatusStack:
+				out.append(pending_stack)
+	return out
+
+func realize_pending_ctx(ctx: StatusContext) -> bool:
+	if ctx == null:
+		return false
+	var id := ctx.status_id
+	if id == &"":
+		return false
+
+	var bucket := _get_bucket(id, false)
+	var pending_stack = bucket.get(true, null)
+	if !(pending_stack is StatusStack):
+		return false
+
+	var realized_stack = bucket.get(false, null)
+	var had_realized := realized_stack is StatusStack
+	var pending_i := int(pending_stack.intensity)
+	var pending_d := int(pending_stack.duration)
+	var realized_before_i := int(realized_stack.intensity) if had_realized else 0
+	var realized_before_d := int(realized_stack.duration) if had_realized else 0
+
+	if !had_realized:
+		realized_stack = StatusStack.new(id)
+		realized_stack.pending = false
+		realized_stack.intensity = pending_i
+		realized_stack.duration = pending_d
+		bucket[false] = realized_stack
+	else:
+		realized_stack.intensity = maxi(realized_before_i + pending_i, 0)
+		if pending_d != 0:
+			realized_stack.duration = max(realized_before_d + pending_d, 0)
+
+	bucket.erase(true)
+	if bucket.is_empty():
+		by_id.erase(id)
+	else:
+		by_id[id] = bucket
+
+	ctx.pending = false
+	ctx.op = Status.OP.CHANGE
+	ctx.before_pending = true
+	ctx.after_pending = false
+	ctx.before_intensity = pending_i
+	ctx.before_duration = pending_d
+	ctx.after_intensity = int(realized_stack.intensity)
+	ctx.after_duration = int(realized_stack.duration)
+	ctx.delta_intensity = int(realized_stack.intensity) - realized_before_i
+	ctx.delta_duration = int(realized_stack.duration) - realized_before_d
+	ctx.intensity = pending_i
+	ctx.duration = pending_d
+	return true
 
 # Convenience wrapper (keeps old callsites alive)
 func add_or_reapply(id: StringName, intensity: int, duration: int = 0) -> void:
@@ -25,21 +109,26 @@ func add_or_reapply_ctx(ctx: StatusContext) -> bool:
 	if id == &"":
 		return false
 
+	var lane_pending := bool(ctx.pending)
 	var req_i := int(ctx.intensity)
 	var req_d := int(ctx.duration)
 
-	var existed := by_id.has(id)
-	var s: StatusStack = by_id.get(id, null)
+	var bucket := _get_bucket(id, true)
+	var existed := bucket.has(lane_pending)
+	var s: StatusStack = bucket.get(lane_pending, null)
 
 	var before_i := 0
 	var before_d := 0
 
 	if s == null:
 		s = StatusStack.new(id)
+		s.pending = lane_pending
 	else:
 		before_i = int(s.intensity)
 		before_d = int(s.duration)
 
+	ctx.before_pending = lane_pending
+	ctx.after_pending = lane_pending
 	ctx.before_intensity = before_i
 	ctx.before_duration = before_d
 
@@ -51,7 +140,9 @@ func add_or_reapply_ctx(ctx: StatusContext) -> bool:
 
 		s.intensity = new_i
 		s.duration = new_d
-		by_id[id] = s
+		s.pending = lane_pending
+		bucket[lane_pending] = s
+		by_id[id] = bucket
 
 		ctx.op = Status.OP.APPLY
 		ctx.delta_intensity = new_i - before_i
@@ -128,10 +219,25 @@ func add_or_reapply_ctx(ctx: StatusContext) -> bool:
 	##print("status_state.gd add_or_reapply() stack intensity: %s, duration: %s" % [by_id[id].intensity, by_id[id].duration])
 
 func remove_ctx(ctx: StatusContext) -> void:
-	if ctx == null or !by_id.has(ctx.status_id):
+	if ctx == null:
 		return
+	var bucket := _get_bucket(ctx.status_id, false)
+	var lane_pending := bool(ctx.pending)
+	var stack = bucket.get(lane_pending, null)
+	if !(stack is StatusStack):
+		return
+	ctx.before_pending = lane_pending
+	ctx.after_pending = lane_pending
+	ctx.before_intensity = int(stack.intensity)
+	ctx.before_duration = int(stack.duration)
+	ctx.after_intensity = 0
+	ctx.after_duration = 0
 	ctx.op = Status.OP.REMOVE
-	by_id.erase(ctx.status_id)
+	bucket.erase(lane_pending)
+	if bucket.is_empty():
+		by_id.erase(ctx.status_id)
+	else:
+		by_id[ctx.status_id] = bucket
 
 func remove(id: StringName) -> void:
 	var ctx := StatusContext.new()
@@ -141,17 +247,33 @@ func remove(id: StringName) -> void:
 
 func clone() -> StatusState:
 	var st := StatusState.new()
-	for k in by_id.keys():
-		var s: StatusStack = by_id[k]
-		if s:
-			st.by_id[k] = s.clone()
+	for id_key in by_id.keys():
+		var id := StringName(id_key)
+		var bucket := _get_bucket(id, false)
+		var cloned_bucket := {}
+		for lane_key in bucket.keys():
+			var stack = bucket[lane_key]
+			if stack is StatusStack:
+				cloned_bucket[lane_key] = stack.clone()
+		if !cloned_bucket.is_empty():
+			st.by_id[id] = cloned_bucket
 	return st
 
-func set_stack(id: StringName, intensity: int, duration: int) -> bool:
-	var s: StatusStack = by_id.get(id, null)
+func set_stack(id: StringName, intensity: int, duration: int, pending := false) -> bool:
+	var s := get_status_stack(id, pending)
 	if s == null:
 		return false
 	var changed := (s.intensity != intensity) or (s.duration != duration)
 	s.intensity = intensity
 	s.duration = duration
 	return changed
+
+func _get_bucket(id: StringName, create: bool) -> Dictionary:
+	var bucket = by_id.get(id, null)
+	if bucket is Dictionary:
+		return bucket
+	if !create:
+		return {}
+	bucket = {}
+	by_id[id] = bucket
+	return bucket

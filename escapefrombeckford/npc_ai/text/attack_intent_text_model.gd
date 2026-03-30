@@ -27,7 +27,7 @@ func get_text_sim(ctx: NPCAIContext) -> String:
 
 	# modifier: damage dealt by the actor
 	var actor_id := int(ctx.cid)
-	damage = _modified_sim(ctx, damage, Modifier.Type.DMG_DEALT, actor_id)
+	damage = _modified_intent_sim(ctx, damage, Modifier.Type.DMG_DEALT, actor_id)
 
 	if damage < 0 or strikes < 0:
 		return "error"

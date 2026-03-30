@@ -30,19 +30,27 @@ var _needs_another_flush: bool = false
 func request_replan(cid: int) -> void:
 	if cid > 0:
 		dirty_replan_ids[int(cid)] = true
+		if _is_flushing:
+			_needs_another_flush = true
 
 
 func request_replan_all() -> void:
 	dirty_replan_all = true
+	if _is_flushing:
+		_needs_another_flush = true
 
 
 func request_intent_refresh(cid: int) -> void:
 	if cid > 0:
 		dirty_intent_refresh_ids[int(cid)] = true
+		if _is_flushing:
+			_needs_another_flush = true
 
 
 func request_intent_refresh_all() -> void:
 	dirty_intent_refresh_all = true
+	if _is_flushing:
+		_needs_another_flush = true
 
 
 func request_turn_order_rebuild() -> void:
@@ -51,6 +59,8 @@ func request_turn_order_rebuild() -> void:
 
 func request_outcome_check() -> void:
 	dirty_outcome = true
+	if _is_flushing:
+		_needs_another_flush = true
 
 func request_followup_flush() -> void:
 	_needs_another_flush = true
@@ -101,24 +111,33 @@ func flush_planning(kind: int, sim: Sim, allow_hooks := true) -> void:
 			break
 
 		var api := sim.api
-
-		if dirty_replan_all:
-			_replan_all(api, allow_hooks)
-		else:
-			for cid in dirty_replan_ids.keys():
-				_replan_if_valid(api, int(cid), allow_hooks)
-
-		if dirty_intent_refresh_all:
-			_refresh_all_intents(api)
-		else:
-			for cid in dirty_intent_refresh_ids.keys():
-				_refresh_intent_if_valid(api, int(cid))
-
-		if dirty_outcome:
-			_flush_outcome(api)
+		var replan_all_now := bool(dirty_replan_all)
+		var replan_ids_now := dirty_replan_ids.duplicate()
+		var intent_refresh_all_now := bool(dirty_intent_refresh_all)
+		var intent_refresh_ids_now := dirty_intent_refresh_ids.duplicate()
+		var outcome_now := bool(dirty_outcome)
 
 		clear_planning()
 		dirty_outcome = false
+
+		var groups_to_publish := _collect_groups_to_publish(
+			api,
+			replan_all_now,
+			replan_ids_now,
+			intent_refresh_all_now,
+			intent_refresh_ids_now
+		)
+
+		if replan_all_now:
+			_replan_all(api, allow_hooks)
+		else:
+			for cid in replan_ids_now.keys():
+				_replan_if_valid(api, int(cid), allow_hooks)
+
+		_publish_group_intents(api, groups_to_publish)
+
+		if outcome_now:
+			_flush_outcome(api)
 
 		if !_needs_another_flush:
 			break
@@ -181,6 +200,44 @@ func _refresh_intent_if_valid(api: SimBattleAPI, cid: int) -> void:
 		return
 
 	ActionIntentPresenter.emit_current_intent(api, cid)
+
+func _collect_groups_to_publish(
+	api: SimBattleAPI,
+	replan_all_now: bool,
+	replan_ids_now: Dictionary,
+	intent_refresh_all_now: bool,
+	intent_refresh_ids_now: Dictionary
+) -> Dictionary:
+	var out := {}
+	if api == null or api.state == null:
+		return out
+
+	if replan_all_now or intent_refresh_all_now:
+		for unit in api.state.units.values():
+			if unit is CombatantState and unit.is_alive() and unit.combatant_data != null and unit.combatant_data.ai != null:
+				out[int(unit.team)] = true
+		return out
+
+	for cid in replan_ids_now.keys():
+		_add_group_for_cid(api, int(cid), out)
+	for cid in intent_refresh_ids_now.keys():
+		_add_group_for_cid(api, int(cid), out)
+	return out
+
+func _add_group_for_cid(api: SimBattleAPI, cid: int, out: Dictionary) -> void:
+	if api == null or api.state == null or cid <= 0:
+		return
+	var u: CombatantState = api.state.get_unit(cid)
+	if u == null or !u.is_alive() or u.combatant_data == null or u.combatant_data.ai == null:
+		return
+	out[int(u.team)] = true
+
+func _publish_group_intents(api: SimBattleAPI, groups_to_publish: Dictionary) -> void:
+	if api == null or api.state == null:
+		return
+	for group_index in groups_to_publish.keys():
+		for cid in api.get_combatants_in_group(int(group_index), false):
+			_refresh_intent_if_valid(api, int(cid))
 
 
 func _flush_outcome(api: SimBattleAPI) -> void:
