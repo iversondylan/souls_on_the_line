@@ -146,7 +146,7 @@ func get_soulbound_ids_for_owner(_owner_id: int) -> Array[int]:
 		var combatant := state.get_unit(int(id))
 		if combatant == null:
 			continue
-		if int(combatant.mortality) == int(CombatantView.Mortality.SOULBOUND):
+		if int(combatant.mortality) == int(CombatantState.Mortality.SOULBOUND):
 			out.append(int(id))
 	return out
 
@@ -358,6 +358,10 @@ func resolve_damage_immediate(ctx: DamageContext) -> int:
 	
 	ctx.amount = maxi(int(ctx.amount), 0)
 	ctx.phase = DamageContext.Phase.POST_MODIFIERS
+
+	ctx.phase = DamageContext.Phase.PRE_APPLICATION
+	SimStatusSystem.on_damage_will_be_taken(self, ctx)
+	ctx.amount = maxi(int(ctx.amount), 0)
 	
 	var tgt: CombatantState = state.get_unit(int(ctx.target_id))
 	if tgt == null:
@@ -901,7 +905,7 @@ func count_soulbound_in_group(group_index: int) -> int:
 		var u: CombatantState = state.get_unit(int(id))
 		if u == null or !u.is_alive():
 			continue
-		if int(u.mortality) == int(CombatantView.Mortality.SOULBOUND):
+		if int(u.mortality) == int(CombatantState.Mortality.SOULBOUND):
 			n += 1
 	
 	return n
@@ -1207,7 +1211,7 @@ func _make_unit_from_combatant_data(
 		else CombatantView.Type.ENEMY
 	)
 	
-	u.mortality = CombatantView.Mortality.MORTAL
+	u.mortality = CombatantState.Mortality.MORTAL
 	
 	if combatant_data.resource_path != "":
 		u.data_proto_path = String(combatant_data.resource_path)
@@ -1235,7 +1239,7 @@ func _make_spawn_spec_from_data(combatant_data: CombatantData, u: CombatantState
 func _maybe_release_soulbound_reserve(u: CombatantState, reason: String) -> void:
 	if u == null:
 		return
-	if int(u.mortality) != int(CombatantView.Mortality.SOULBOUND):
+	if int(u.mortality) != int(CombatantState.Mortality.SOULBOUND):
 		return
 	
 	var uid := String(u.bound_card_uid) if ("bound_card_uid" in u) else ""

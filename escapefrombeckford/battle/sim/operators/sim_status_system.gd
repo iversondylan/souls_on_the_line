@@ -18,6 +18,8 @@ static func on_group_turn_begin(api: SimBattleAPI, group_index: int) -> void:
 
 	# 2) generic expiration policy
 	_expire_by_policy(api, group_index, Status.ExpirationPolicy.GROUP_TURN_START)
+	if int(group_index) == int(SimBattleAPI.FRIENDLY):
+		_expire_all_by_policy(api, Status.ExpirationPolicy.PLAYER_TURN_START)
 
 static func on_group_turn_end(api: SimBattleAPI, group_index: int) -> void:
 	if api == null or api.state == null or api.state.has_terminal_outcome():
@@ -65,6 +67,19 @@ static func on_damage_taken(api: SimBattleAPI, damage_ctx: DamageContext) -> voi
 	_for_each_status_on_unit(api, target_id, func(ctx: SimStatusContext) -> void:
 		if ctx.proto != null:
 			ctx.proto.on_damage_taken(ctx, damage_ctx)
+	)
+
+static func on_damage_will_be_taken(api: SimBattleAPI, damage_ctx: DamageContext) -> void:
+	if api == null or api.state == null or damage_ctx == null or api.state.has_terminal_outcome():
+		return
+
+	var target_id := int(damage_ctx.target_id)
+	if target_id <= 0:
+		return
+
+	_for_each_status_on_unit(api, target_id, func(ctx: SimStatusContext) -> void:
+		if ctx.proto != null:
+			ctx.proto.on_damage_will_be_taken(ctx, damage_ctx)
 	)
 
 static func on_death(api: SimBattleAPI, dead_id: int, killer_id: int, reason: String) -> void:
@@ -155,6 +170,13 @@ static func _expire_by_policy(api: SimBattleAPI, group_index: int, policy: int) 
 	var ids := api.get_combatants_in_group(group_index, true)
 	for cid in ids:
 		_expire_unit_by_policy(api, int(cid), policy)
+
+static func _expire_all_by_policy(api: SimBattleAPI, policy: int) -> void:
+	if api == null or api.state == null:
+		return
+
+	for group_index in [SimBattleAPI.FRIENDLY, SimBattleAPI.ENEMY]:
+		_expire_by_policy(api, int(group_index), policy)
 
 static func _expire_unit_by_policy(api: SimBattleAPI, cid: int, policy: int) -> void:
 	var u: CombatantState = api.state.get_unit(cid)

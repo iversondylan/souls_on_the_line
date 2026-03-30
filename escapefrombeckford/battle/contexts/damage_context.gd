@@ -5,6 +5,7 @@ extends RefCounted
 enum Phase {
 	PRE_MODIFIERS,
 	POST_MODIFIERS,
+	PRE_APPLICATION,
 	APPLIED
 }
 var api: SimBattleAPI

@@ -13,6 +13,7 @@ enum ExpirationPolicy {
 	GROUP_TURN_START,
 	GROUP_TURN_END,
 	EVENT_OR_NEVER,
+	PLAYER_TURN_START,
 }
 enum OP { APPLY, REMOVE, CHANGE }
 
@@ -59,6 +60,9 @@ func on_group_turn_end(_ctx: SimStatusContext, _ending_group_index: int) -> void
 	pass
 
 func on_damage_taken(_ctx: SimStatusContext, _damage_ctx: DamageContext) -> void:
+	pass
+
+func on_damage_will_be_taken(_ctx: SimStatusContext, _damage_ctx: DamageContext) -> void:
 	pass
 
 func on_death(_ctx: SimStatusContext, _dead_id: int, _killer_id: int, _reason: String) -> void:

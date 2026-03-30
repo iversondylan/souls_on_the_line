@@ -2,6 +2,7 @@
 class_name SummonAction extends CardAction
 
 @export var summon_data: CombatantData
+@export var mortality: CombatantState.Mortality = CombatantState.Mortality.SOULBOUND
 @export var sound: Sound = load("uid://c0cllss7w30rn")
 
 func get_interaction_mode(ctx: CardContext) -> int:
@@ -74,7 +75,7 @@ func activate_sim(ctx: CardContext) -> bool:
 	sctx.insert_index = insert_index
 	sctx.source_id = int(ctx.source_id)
 	sctx.summon_data = _build_clone_data_sim()
-	sctx.mortality = CombatantView.Mortality.SOULBOUND
+	sctx.mortality = mortality
 	sctx.reason = "card_summon"
 
 	if ctx.card_data != null and !ctx.card_data.deplete:

@@ -400,8 +400,8 @@ func _debug_combatant_type_name(value: int) -> String:
 	return str(value)
 
 func _debug_mortality_name(value: int) -> String:
-	if value >= 0 and value < CombatantView.Mortality.keys().size():
-		return CombatantView.Mortality.keys()[value]
+	if value >= 0 and value < CombatantState.Mortality.keys().size():
+		return CombatantState.Mortality.keys()[value]
 	return str(value)
 
 func _debug_status_summary(unit: CombatantState) -> String:

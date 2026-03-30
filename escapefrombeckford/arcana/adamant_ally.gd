@@ -24,7 +24,7 @@ func on_battle_started(api: SimBattleAPI) -> void:
 	summon_ctx.insert_index = maxi(int(api.get_rank_in_group(player_id)), 0)
 	summon_ctx.source_id = player_id
 	summon_ctx.summon_data = _build_summon_data()
-	summon_ctx.mortality = CombatantView.Mortality.SOULBOUND
+	summon_ctx.mortality = CombatantState.Mortality.SOULBOUND
 	summon_ctx.reason = "arcanum_battle_start"
 	summon_ctx.origin_arcanum_id = get_id()
 

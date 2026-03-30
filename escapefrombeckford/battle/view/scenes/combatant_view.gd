@@ -58,11 +58,10 @@ const DEFAULT_STATUS_SOUND := preload("uid://doh4nvpl4srwy")
 # ------------------------------------------------------------------------------
 
 enum Type { ALLY, ENEMY, PLAYER }
-enum Mortality { MORTAL, SOULBOUND, DEPLETE }
 enum TurnStatus { NONE, TURN_PENDING, TURN_ACTIVE }
 
 var type: Type : set = _set_type
-var mortality: Mortality = Mortality.MORTAL
+var mortality: CombatantState.Mortality = CombatantState.Mortality.MORTAL
 var display_name: String = ""
 var cid: int = -1 : set = _set_cid
 var group_index: int = -1 # 0 friendly, 1 enemy
@@ -107,7 +106,7 @@ var _base_cached: bool = false
 
 
 func is_soulbound() -> bool:
-	return int(mortality) == int(Mortality.SOULBOUND)
+	return int(mortality) == int(CombatantState.Mortality.SOULBOUND)
 
 
 # ------------------------------------------------------------------------------
@@ -180,7 +179,7 @@ func _apply_visuals_from_spec() -> void:
 
 
 func _apply_stats_from_spec() -> void:
-	mortality = int(_spec.get(Keys.MORTALITY, CombatantView.Mortality.MORTAL))
+	mortality = int(_spec.get(Keys.MORTALITY, CombatantState.Mortality.MORTAL))
 	max_health = int(_spec.get(Keys.MAX_HEALTH, 0))
 	health = int(_spec.get(Keys.HEALTH, 0))
 	focus_sound = _resolve_sound_from_spec(FOCUS_SOUND_KEY, DEFAULT_FOCUS_SOUND)

@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="AbsorbStatus" format=3]
+
+[ext_resource type="Script" path="res://statuses/absorb.gd" id="1_absorb_script"]
+[ext_resource type="Texture2D" path="res://_assets/sprites/assorted/bolt-shield.png" id="2_absorb_icon"]
+
+[resource]
+script = ExtResource("1_absorb_script")
+proc_type = 2
+number_display_type = 1
+reapply_type = 0
+expiration_policy = 4
+icon = ExtResource("2_absorb_icon")
+tooltip = ""
