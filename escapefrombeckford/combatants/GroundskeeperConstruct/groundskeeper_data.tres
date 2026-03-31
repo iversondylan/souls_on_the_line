@@ -4,4 +4,10 @@
 
 [resource]
 script = ExtResource("1_r4b68")
+name = "Groundskeeper Construct"
+character_art_uid = "uid://cdacow6h5xebq"
+portrait_art_uid = "uid://cdacow6h5xebq"
+facing_right = false
+height = 230
+max_health = 20
 metadata/_custom_type_script = "uid://cfatj0ryn8uv3"
