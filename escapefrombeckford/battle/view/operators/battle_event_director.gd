@@ -927,11 +927,21 @@ func _on_died(e: EventPackage) -> void:
 	if dead_id <= 0:
 		return
 
+	var g := _group_index(e)
+	var after_order := _after_order(e)
+	var group: GroupView = battle_view.friendly_group if g == 0 else battle_view.enemy_group
+	if group != null:
+		group.unregister_cid(dead_id)
+
 	var v := battle_view.get_combatant(dead_id)
 	if v != null:
+		v.is_alive = false
 		v.queue_free()
 
 	battle_view.combatants_by_cid.erase(dead_id)
+
+	if g >= 0 and !after_order.is_empty():
+		_apply_group_order(g, after_order, true)
 
 
 func _on_death_windup(e: EventPackage) -> void:
@@ -1046,12 +1056,22 @@ func _on_fade_followthrough(e: EventPackage) -> void:
 
 func _on_faded(e: EventPackage) -> void:
 	var dead_id := _target_id(e)
+	var g := _group_index(e)
+	var after_order := _after_order(e)
+
+	var group: GroupView = battle_view.friendly_group if g == 0 else battle_view.enemy_group
+	if group != null:
+		group.unregister_cid(dead_id)
 
 	var v := battle_view.get_combatant(dead_id)
 	if v != null:
+		v.is_alive = false
 		v.queue_free()
 
 	battle_view.combatants_by_cid.erase(dead_id)
+
+	if g >= 0 and !after_order.is_empty():
+		_apply_group_order(g, after_order, true)
 
 
 func _on_summon_windup(e: EventPackage) -> void:

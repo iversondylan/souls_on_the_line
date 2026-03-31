@@ -396,6 +396,51 @@ func _make_clear_focus_beat(
 	return beat
 
 
+func _make_generic_removal_beat(beat_q: float, actor_id: int, removal_events: Array[BattleEvent]) -> TurnBeat:
+	var beat := TurnBeat.new()
+	beat.beat_q = beat_q
+	beat.label = "generic_removals"
+
+	for order in _make_generic_removal_orders(actor_id, removal_events):
+		beat.orders.append(order)
+
+	for e in removal_events:
+		beat.events.append(e)
+
+	return beat
+
+
+func _make_generic_removal_orders(actor_id: int, removal_events: Array[BattleEvent]) -> Array[PresentationOrder]:
+	var out: Array[PresentationOrder] = []
+
+	for e in removal_events:
+		if e == null or e.data == null:
+			continue
+
+		match int(e.type):
+			BattleEvent.Type.DIED:
+				var d := DeathPresentationOrder.new()
+				d.kind = PresentationOrder.Kind.DEATH
+				d.actor_id = actor_id
+				d.target_id = int(e.data.get(Keys.TARGET_ID, 0))
+				d.group_index = int(e.data.get(Keys.GROUP_INDEX, e.group_index))
+				d.after_order_ids = e.data.get(Keys.AFTER_ORDER_IDS, PackedInt32Array())
+				d.visual_sec = 0.24
+				out.append(d)
+
+			BattleEvent.Type.FADED:
+				var f := FadePresentationOrder.new()
+				f.kind = PresentationOrder.Kind.FADE
+				f.actor_id = actor_id
+				f.target_id = int(e.data.get(Keys.TARGET_ID, 0))
+				f.group_index = int(e.data.get(Keys.GROUP_INDEX, e.group_index))
+				f.after_order_ids = e.data.get(Keys.AFTER_ORDER_IDS, PackedInt32Array())
+				f.visual_sec = 0.20
+				out.append(f)
+
+	return out
+
+
 
 func _make_melee_windup_beat(beat_q: float, analysis: AttackAnalysis) -> TurnBeat:
 	var beat := TurnBeat.new()
@@ -612,12 +657,60 @@ func _build_generic_beats(events: Array[BattleEvent]) -> Array[TurnBeat]:
 	var beats: Array[TurnBeat] = []
 	var actor_id := _find_actor_id(events)
 	var group_index := _find_group_index(events)
+	var split := _split_generic_events(events)
+	var removal_events: Array[BattleEvent] = split["removal_events"]
+	var trailing: Array[BattleEvent] = split["trailing"]
 
+	var layout_order := _find_post_action_group_layout(events, group_index)
+
+	if actor_id > 0:
+		beats.append(_make_basic_focus_beat(0.0, actor_id, _collect_targets_from_events(events)))
+		if !removal_events.is_empty():
+			beats.append(_make_generic_removal_beat(1.0, actor_id, removal_events))
+			beats.append(_make_clear_focus_beat(2.0, actor_id, trailing, layout_order))
+		else:
+			beats.append(_make_clear_focus_beat(1.0, actor_id, trailing, layout_order))
+	else:
+		var b := TurnBeat.new()
+		b.beat_q = 0.0
+		b.label = "generic_removals" if !removal_events.is_empty() else "generic"
+
+		for order in _make_generic_removal_orders(actor_id, removal_events):
+			b.orders.append(order)
+
+		for e in removal_events:
+			b.events.append(e)
+
+		beats.append(b)
+
+		if layout_order != null or !trailing.is_empty():
+			var trailing_beat := TurnBeat.new()
+			trailing_beat.beat_q = 1.0 if !removal_events.is_empty() else 0.0
+			trailing_beat.label = "generic"
+
+			if layout_order != null:
+				trailing_beat.orders.append(layout_order)
+
+			for e in trailing:
+				trailing_beat.events.append(e)
+			beats.append(trailing_beat)
+
+	return beats
+
+
+func _split_generic_events(events: Array[BattleEvent]) -> Dictionary:
+	var removal_events: Array[BattleEvent] = []
 	var trailing: Array[BattleEvent] = []
+
 	for e in events:
 		if e == null:
 			continue
+
 		match int(e.type):
+			BattleEvent.Type.DIED, \
+			BattleEvent.Type.FADED:
+				removal_events.append(e)
+
 			BattleEvent.Type.SET_INTENT, \
 			BattleEvent.Type.TURN_STATUS, \
 			BattleEvent.Type.MOVED, \
@@ -625,24 +718,10 @@ func _build_generic_beats(events: Array[BattleEvent]) -> Array[TurnBeat]:
 			BattleEvent.Type.SUMMONED:
 				trailing.append(e)
 
-	var layout_order := _find_post_action_group_layout(events, group_index)
-
-	if actor_id > 0:
-		beats.append(_make_basic_focus_beat(0.0, actor_id, _collect_targets_from_events(events)))
-		beats.append(_make_clear_focus_beat(1.0, actor_id, trailing, layout_order))
-	else:
-		var b := TurnBeat.new()
-		b.beat_q = 0.0
-		b.label = "generic"
-
-		if layout_order != null:
-			b.orders.append(layout_order)
-
-		for e in trailing:
-			b.events.append(e)
-		beats.append(b)
-
-	return beats
+	return {
+		"removal_events": removal_events,
+		"trailing": trailing,
+	}
 
 
 func _split_summon_events(events: Array[BattleEvent]) -> Dictionary:
@@ -670,6 +749,7 @@ func _split_summon_events(events: Array[BattleEvent]) -> Dictionary:
 
 func _split_status_events(events: Array[BattleEvent]) -> Dictionary:
 	var status_events: Array[BattleEvent] = []
+	var removal_events: Array[BattleEvent] = []
 	var trailing: Array[BattleEvent] = []
 
 	for e in events:
@@ -680,6 +760,10 @@ func _split_status_events(events: Array[BattleEvent]) -> Dictionary:
 			BattleEvent.Type.STATUS:
 				status_events.append(e)
 
+			BattleEvent.Type.DIED, \
+			BattleEvent.Type.FADED:
+				removal_events.append(e)
+
 			BattleEvent.Type.SET_INTENT, \
 			BattleEvent.Type.TURN_STATUS, \
 			BattleEvent.Type.MOVED:
@@ -687,6 +771,7 @@ func _split_status_events(events: Array[BattleEvent]) -> Dictionary:
 
 	return {
 		"status_events": status_events,
+		"removal_events": removal_events,
 		"trailing": trailing,
 	}
 
@@ -717,6 +802,7 @@ func _build_status_beats(turn_events: Array[BattleEvent]) -> Array[TurnBeat]:
 	var beats: Array[TurnBeat] = []
 	var split := _split_status_events(turn_events)
 	var status_events: Array[BattleEvent] = split["status_events"]
+	var removal_events: Array[BattleEvent] = split["removal_events"]
 	var trailing: Array[BattleEvent] = split["trailing"]
 	var actor_id := _find_actor_id(turn_events)
 	var group_index := _find_group_index(turn_events)
@@ -730,7 +816,11 @@ func _build_status_beats(turn_events: Array[BattleEvent]) -> Array[TurnBeat]:
 	beats.append(_make_basic_focus_beat(0.0, actor_id, targets))
 	beats.append(_make_status_windup_beat(1.0, actor_id, targets))
 	beats.append(_make_status_pop_beat(2.0, actor_id, status_events))
-	beats.append(_make_clear_focus_beat(3.0, actor_id, trailing, layout_order))
+	if !removal_events.is_empty():
+		beats.append(_make_generic_removal_beat(3.0, actor_id, removal_events))
+		beats.append(_make_clear_focus_beat(4.0, actor_id, trailing, layout_order))
+	else:
+		beats.append(_make_clear_focus_beat(3.0, actor_id, trailing, layout_order))
 
 	return beats
 
