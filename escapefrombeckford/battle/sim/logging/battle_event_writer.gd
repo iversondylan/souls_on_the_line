@@ -239,12 +239,30 @@ func emit_mana(
 		data[k] = extra[k]
 	return _append(BattleEvent.Type.MANA, data)
 
-func emit_damage_applied(source_id: int, target_id: int, base: int, final_amount: int, armor_dmg: int, hp_dmg: int, lethal: bool, before_health: int, after_health: int) -> int:
+func emit_damage_applied(
+	source_id: int,
+	target_id: int,
+	base: int,
+	base_banish: int,
+	final_amount: int,
+	display_amount: int,
+	banish_amount: int,
+	applied_banish_amount: int,
+	armor_dmg: int,
+	hp_dmg: int,
+	lethal: bool,
+	before_health: int,
+	after_health: int
+) -> int:
 	return _append(BattleEvent.Type.DAMAGE_APPLIED, {
 		Keys.SOURCE_ID: int(source_id),
 		Keys.TARGET_ID: int(target_id),
 		Keys.BASE_AMOUNT: int(base),
+		Keys.BASE_BANISH_AMOUNT: int(base_banish),
 		Keys.FINAL_AMOUNT: int(final_amount),
+		Keys.DISPLAY_AMOUNT: int(display_amount),
+		Keys.BANISH_AMOUNT: int(banish_amount),
+		Keys.APPLIED_BANISH_AMOUNT: int(applied_banish_amount),
 		Keys.ARMOR_DAMAGE: int(armor_dmg),
 		Keys.HEALTH_DAMAGE: int(hp_dmg),
 		Keys.WAS_LETHAL: bool(lethal),
@@ -507,7 +525,8 @@ func emit_set_intent(
 	icon_ranged_uid: String = "",
 	intent_text: String = "",
 	tooltip_text: String = "",
-	is_ranged: bool = false
+	is_ranged: bool = false,
+	intent_text_color: Color = Color.WHITE
 ) -> int:
 	return _append(BattleEvent.Type.SET_INTENT, {
 		Keys.ACTOR_ID: int(actor_id),
@@ -517,6 +536,7 @@ func emit_set_intent(
 		Keys.INTENT_TEXT: String(intent_text),
 		Keys.TOOLTIP_TEXT: String(tooltip_text),
 		Keys.IS_RANGED: bool(is_ranged),
+		Keys.INTENT_TEXT_COLOR: intent_text_color,
 	})
 
 func emit_card_mutated(card: CardData, reason: String = "", delta: Dictionary = {}) -> int:

@@ -353,41 +353,57 @@ func resolve_damage_immediate(ctx: DamageContext) -> int:
 	if ctx == null or state == null:
 		return 0
 	
-	if int(ctx.base_amount) <= 0:
-		ctx.amount = 0
-		return 0
-	
 	if !state.is_alive(int(ctx.target_id)):
 		ctx.amount = 0
+		ctx.display_amount = 0
+		ctx.banish_amount = 0
+		ctx.applied_banish_amount = 0
 		return 0
 	
 	ctx.phase = DamageContext.Phase.PRE_MODIFIERS
-	ctx.amount = int(ctx.base_amount)
-	
-	ctx.amount = SimModifierResolver.get_modified_value(
+	var normal_amount := SimModifierResolver.get_modified_value(
 		state,
-		int(ctx.amount),
+		int(ctx.base_amount),
 		ctx.deal_modifier_type,
 		int(ctx.source_id)
 	)
-	ctx.amount = SimModifierResolver.get_modified_value(
+	normal_amount = SimModifierResolver.get_modified_value(
 		state,
-		int(ctx.amount),
+		int(normal_amount),
 		ctx.take_modifier_type,
 		int(ctx.target_id)
 	)
-	
-	ctx.amount = maxi(int(ctx.amount), 0)
+	var banish_amount := SimModifierResolver.get_modified_value(
+		state,
+		int(ctx.base_banish_amount),
+		Modifier.Type.BANISH_DMG_DEALT,
+		int(ctx.source_id)
+	)
+	normal_amount = maxi(int(normal_amount), 0)
+	banish_amount = maxi(int(banish_amount), 0)
+	ctx.banish_amount = banish_amount
+	ctx.applied_banish_amount = 0
+	ctx.display_amount = normal_amount + banish_amount
+	ctx.amount = normal_amount
 	ctx.phase = DamageContext.Phase.POST_MODIFIERS
+
+	var tgt: CombatantState = state.get_unit(int(ctx.target_id))
+	if tgt == null:
+		ctx.amount = 0
+		ctx.display_amount = 0
+		ctx.banish_amount = 0
+		ctx.applied_banish_amount = 0
+		return 0
+
+	if tgt.mortality == CombatantState.Mortality.SOULBOUND or tgt.mortality == CombatantState.Mortality.DEPLETE:
+		ctx.applied_banish_amount = banish_amount
+		ctx.amount += banish_amount
 
 	ctx.phase = DamageContext.Phase.PRE_APPLICATION
 	SimStatusSystem.on_damage_will_be_taken(self, ctx)
 	ctx.amount = maxi(int(ctx.amount), 0)
-	
-	var tgt: CombatantState = state.get_unit(int(ctx.target_id))
-	if tgt == null:
-		ctx.amount = 0
-		return 0
+	var post_hook_banish := maxi(int(ctx.amount) - normal_amount, 0)
+	ctx.applied_banish_amount = mini(int(ctx.applied_banish_amount), post_hook_banish)
 	
 	var remaining := int(ctx.amount)
 	var before_health := int(tgt.health)
@@ -412,7 +428,11 @@ func resolve_damage_immediate(ctx: DamageContext) -> int:
 			int(ctx.source_id),
 			int(ctx.target_id),
 			int(ctx.base_amount),
+			int(ctx.base_banish_amount),
 			int(ctx.amount),
+			int(ctx.display_amount),
+			int(ctx.banish_amount),
+			int(ctx.applied_banish_amount),
 			int(ctx.armor_damage),
 			int(ctx.health_damage),
 			bool(ctx.was_lethal),
@@ -1158,17 +1178,20 @@ func modify_damage_amount(ctx: DamageContext, base: int) -> int:
 	var amount := int(base)
 	if state == null or ctx == null:
 		return amount
-	
-	var src := state.get_unit(int(ctx.source_id))
-	var tgt := state.get_unit(int(ctx.target_id))
-	
-	if src != null and src.modifiers:
-		amount = src.modifiers.apply(ctx.deal_modifier_type, amount)
-	
-	if tgt != null and tgt.modifiers:
-		amount = tgt.modifiers.apply(ctx.take_modifier_type, amount)
-	
-	return amount
+
+	amount = SimModifierResolver.get_modified_value(
+		state,
+		amount,
+		int(ctx.deal_modifier_type),
+		int(ctx.source_id)
+	)
+	amount = SimModifierResolver.get_modified_value(
+		state,
+		amount,
+		int(ctx.take_modifier_type),
+		int(ctx.target_id)
+	)
+	return maxi(int(amount), 0)
 
 
 func on_damage_applied(ctx: DamageContext) -> void:

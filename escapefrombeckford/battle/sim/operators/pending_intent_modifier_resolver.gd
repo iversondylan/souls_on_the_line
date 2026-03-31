@@ -19,6 +19,20 @@ static func get_modified_value(
 	var tokens := api.state.get_modifier_tokens_for_cid(source_id, mod_type, pending_sources)
 	return SimModifierResolver.apply_tokens(base, mod_type, tokens)
 
+static func get_attack_display_components(
+	ctx: NPCAIContext,
+	base_damage: int,
+	base_banish_damage: int,
+	source_id: int
+) -> Dictionary:
+	var normal_amount := get_modified_value(ctx, int(base_damage), Modifier.Type.DMG_DEALT, source_id)
+	var banish_amount := get_modified_value(ctx, int(base_banish_damage), Modifier.Type.BANISH_DMG_DEALT, source_id)
+	return {
+		"damage": maxi(int(normal_amount), 0),
+		"banish_damage": maxi(int(banish_amount), 0),
+		"total": maxi(int(normal_amount), 0) + maxi(int(banish_amount), 0),
+	}
+
 static func _collect_realizing_sources(ctx: NPCAIContext, source_id: int) -> Dictionary:
 	var out := {}
 	if ctx == null or ctx.api == null or !(ctx.api is SimBattleAPI):

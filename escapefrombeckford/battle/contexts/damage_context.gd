@@ -17,9 +17,13 @@ var target_id: int = 0
 
 # What we *intend* to do
 var base_amount: int = 0
+var base_banish_amount: int = 0
 
 # What we're *currently* going to do (statuses/mods can change this)
 var amount: int = 0
+var display_amount: int = 0
+var banish_amount: int = 0
+var applied_banish_amount: int = 0
 
 # Type tags for modifier lookups, logging, conditional statuses, etc.
 var deal_modifier_type: int = Modifier.Type.DMG_DEALT

@@ -2,8 +2,9 @@
 
 [ext_resource type="Script" uid="uid://bcih413oy6v73" path="res://npc_ai/_core/npc_action.gd" id="1_plsdi"]
 [ext_resource type="Script" uid="uid://bdsvca1cpka5s" path="res://npc_ai/_core/npc_ai_profile.gd" id="2_frbqq"]
+[ext_resource type="Resource" uid="uid://daro2dujgs168" path="res://combatants/ScrapmenTruncheoner/banish_action.tres" id="2_l4tss"]
 
 [resource]
 script = ExtResource("2_frbqq")
-actions = Array[ExtResource("1_plsdi")]([null, null])
+actions = Array[ExtResource("1_plsdi")]([ExtResource("2_l4tss")])
 metadata/_custom_type_script = "uid://bdsvca1cpka5s"

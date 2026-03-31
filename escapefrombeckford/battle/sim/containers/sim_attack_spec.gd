@@ -9,6 +9,7 @@ var strikes: int = 1
 
 # Raw base damage; modifiers are applied inside damage resolver (via DamageContext types)
 var base_damage: int = 0
+var base_banish_amount: int = 0
 var deal_modifier_type: int = Modifier.Type.DMG_DEALT
 var take_modifier_type: int = Modifier.Type.DMG_TAKEN
 

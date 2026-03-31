@@ -2,19 +2,22 @@
 
 class_name ActionIntentPresenter extends RefCounted
 
+const BANISH_INTENT_TEXT_COLOR := Color(0.45, 0.75, 1.0, 1.0)
+
 static func emit_set_intent(api: SimBattleAPI, profile: NPCAIProfile, ctx: NPCAIContext, new_idx: int) -> void:
 	if api == null or api.writer == null or profile == null or ctx == null:
 		return
 
 	var actor_id := int(ctx.cid)
+	var intent_text_color := Color.WHITE
 
 	if new_idx < 0:
-		api.writer.emit_set_intent(actor_id, -1, "", "", "", "", false)
+		api.writer.emit_set_intent(actor_id, -1, "", "", "", "", false, intent_text_color)
 		return
 
 	var action := ActionPlanner.get_action_by_idx(profile, new_idx)
 	if action == null:
-		api.writer.emit_set_intent(actor_id, -1, "", "", "", "", false)
+		api.writer.emit_set_intent(actor_id, -1, "", "", "", "", false, intent_text_color)
 		return
 
 	_change_params_only(action, ctx)
@@ -30,6 +33,7 @@ static func emit_set_intent(api: SimBattleAPI, profile: NPCAIProfile, ctx: NPCAI
 	var tooltip_text := ""
 	var preview_package_index := _find_attack_preview_package_index(action)
 	ctx.preview_package_index = preview_package_index
+	intent_text_color = _resolve_intent_text_color(ctx, actor_id)
 
 	if action.intent_text_model:
 		intent_text = String(action.intent_text_model.get_text(ctx))
@@ -37,7 +41,7 @@ static func emit_set_intent(api: SimBattleAPI, profile: NPCAIProfile, ctx: NPCAI
 	if action.tooltip_model:
 		tooltip_text = String(action.tooltip_model.get_text(ctx))
 
-	api.writer.emit_set_intent(actor_id, new_idx, uid, uid_ranged, intent_text, tooltip_text, is_ranged)
+	api.writer.emit_set_intent(actor_id, new_idx, uid, uid_ranged, intent_text, tooltip_text, is_ranged, intent_text_color)
 
 	ctx.preview_package_index = -1
 	if ctx.params != null:
@@ -54,7 +58,7 @@ static func emit_current_intent(api: SimBattleAPI, cid: int) -> void:
 
 	var profile: NPCAIProfile = u.combatant_data.ai
 	if profile == null:
-		api.writer.emit_set_intent(int(cid), -1, "", "", "", "", false)
+		api.writer.emit_set_intent(int(cid), -1, "", "", "", "", false, Color.WHITE)
 		return
 
 	ActionPlanner.ensure_ai_state_initialized(u)
@@ -63,12 +67,12 @@ static func emit_current_intent(api: SimBattleAPI, cid: int) -> void:
 	var ctx := ActionPlanner.make_context(api, u)
 
 	if idx < 0:
-		api.writer.emit_set_intent(int(cid), -1, "", "", "", "", false)
+		api.writer.emit_set_intent(int(cid), -1, "", "", "", "", false, Color.WHITE)
 		return
 
 	var action := ActionPlanner.get_action_by_idx(profile, idx)
 	if action == null:
-		api.writer.emit_set_intent(int(cid), -1, "", "", "", "", false)
+		api.writer.emit_set_intent(int(cid), -1, "", "", "", "", false, Color.WHITE)
 		return
 
 	if ctx.params == null:
@@ -91,6 +95,7 @@ static func emit_current_intent(api: SimBattleAPI, cid: int) -> void:
 	var tooltip_text := ""
 	var preview_package_index := _find_attack_preview_package_index(action)
 	ctx.preview_package_index = preview_package_index
+	var intent_text_color := _resolve_intent_text_color(ctx, int(cid))
 
 	if action.intent_text_model:
 		intent_text = String(action.intent_text_model.get_text(ctx))
@@ -98,7 +103,7 @@ static func emit_current_intent(api: SimBattleAPI, cid: int) -> void:
 	if action.tooltip_model:
 		tooltip_text = String(action.tooltip_model.get_text(ctx))
 
-	api.writer.emit_set_intent(int(cid), idx, uid, uid_ranged, intent_text, tooltip_text, is_ranged)
+	api.writer.emit_set_intent(int(cid), idx, uid, uid_ranged, intent_text, tooltip_text, is_ranged, intent_text_color)
 
 	ctx.preview_package_index = -1
 	if ctx.params != null:
@@ -121,6 +126,25 @@ static func _change_params_only(action: NPCAction, ctx: NPCAIContext) -> void:
 			if model == null:
 				continue
 			model.change_params_sim(ctx)
+
+static func _resolve_intent_text_color(ctx: NPCAIContext, actor_id: int) -> Color:
+	if ctx == null or int(ctx.preview_package_index) < 0:
+		return Color.WHITE
+	var base_damage := 0
+	if ctx.params != null:
+		base_damage = int(ctx.params.get(Keys.DAMAGE, 0))
+	var base_banish_damage := 0
+	if ctx.params != null:
+		base_banish_damage = int(ctx.params.get(Keys.BANISH_DAMAGE, 0))
+	var components := PendingIntentModifierResolver.get_attack_display_components(
+		ctx,
+		base_damage,
+		base_banish_damage,
+		actor_id
+	)
+	if int(components.get("banish_damage", 0)) > 0:
+		return BANISH_INTENT_TEXT_COLOR
+	return Color.WHITE
 
 static func _find_attack_preview_package_index(action: NPCAction) -> int:
 	if action == null:

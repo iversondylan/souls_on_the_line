@@ -13,9 +13,11 @@ func load_icon_data(_intent_data: IntentData):
 func set_icon_values():
 	if intent_data == null:
 		text.text = ""
+		text.modulate = Color.WHITE
 		icon.texture = null
 		return
 	text.text = intent_data.base_text
+	text.modulate = intent_data.text_color
 	if intent_data.icon_uid != "":
 		icon.texture = load(intent_data.icon_uid)
 	else:

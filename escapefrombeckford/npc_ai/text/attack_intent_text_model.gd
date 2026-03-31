@@ -7,10 +7,17 @@ func get_text(ctx: NPCAIContext) -> String:
 		return "error"
 
 	var damage := _param_i(ctx, Keys.DAMAGE, 0)
+	var banish_damage := _param_i(ctx, Keys.BANISH_DAMAGE, 0)
 	var strikes := _param_i(ctx, Keys.STRIKES, 1)
 
 	var actor_id := int(ctx.cid)
-	damage = _modified_intent_sim(ctx, damage, Modifier.Type.DMG_DEALT, actor_id)
+	var components := PendingIntentModifierResolver.get_attack_display_components(
+		ctx,
+		damage,
+		banish_damage,
+		actor_id
+	)
+	damage = int(components.get("total", 0))
 
 	if damage < 0 or strikes < 0:
 		return "error"

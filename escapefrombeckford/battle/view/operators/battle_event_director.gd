@@ -913,13 +913,14 @@ func _on_set_intent(e: EventPackage) -> void:
 	var intent_text := String(d.get(Keys.INTENT_TEXT, ""))
 	var tooltip_text := String(d.get(Keys.TOOLTIP_TEXT, ""))
 	var is_ranged := bool(d.get(Keys.IS_RANGED, false))
+	var intent_text_color: Color = d.get(Keys.INTENT_TEXT_COLOR, Color.WHITE)
 
 	var cv := battle_view.get_combatant(cid)
 	if cv == null:
 		return
 
 	if cv.intent_container != null:
-		cv.intent_container.apply_intent(planned_idx, icon_uid, icon_ranged_uid, is_ranged, intent_text, tooltip_text)
+		cv.intent_container.apply_intent(planned_idx, icon_uid, icon_ranged_uid, is_ranged, intent_text, tooltip_text, intent_text_color)
 
 
 func _on_died(e: EventPackage) -> void:

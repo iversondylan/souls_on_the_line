@@ -31,7 +31,13 @@ func get_text(ctx: NPCAIContext) -> String:
 
 	# ---- Damage ----
 	var damage := _param_i(ctx, Keys.DAMAGE, 0)
-	damage = _modified_intent_sim(ctx, damage, Modifier.Type.DMG_DEALT, int(ctx.cid))
-	result = result.replace("{damage}", "%d" % damage)
+	var banish_damage := _param_i(ctx, Keys.BANISH_DAMAGE, 0)
+	var components := PendingIntentModifierResolver.get_attack_display_components(
+		ctx,
+		damage,
+		banish_damage,
+		int(ctx.cid)
+	)
+	result = result.replace("{damage}", "%d" % int(components.get("total", 0)))
 
 	return result

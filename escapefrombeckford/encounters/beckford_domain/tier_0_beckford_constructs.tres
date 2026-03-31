@@ -8,6 +8,7 @@
 [resource]
 script = ExtResource("2_5knbl")
 encounter_name = "Beckford Security Constructs"
+battle_tier = 1
 weight = 0.309
 gold_reward_min = 40
 gold_reward_max = 50

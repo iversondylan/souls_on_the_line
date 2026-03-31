@@ -1,17 +1,9 @@
 class_name Modifier
 
-# NOTE:
-# This class exists ONLY to define Modifier.Type.
-# All modifier logic lives in:
-# - ModifierToken
-# - ModifierSystem
-# - BattleScene / Run routing
-#
-# This class is intentionally non-functional.
-
 enum Type {
-	DMG_DEALT, 
-	DMG_TAKEN, 
-	CARD_COST, 
-	NO_MODIFIER
+	DMG_DEALT = 0,
+	DMG_TAKEN = 1,
+	CARD_COST = 2,
+	NO_MODIFIER = 3,
+	BANISH_DMG_DEALT = 4,
 	}

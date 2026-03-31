@@ -585,6 +585,7 @@ func run_attack(ctx: AttackContext) -> bool:
 			)
 
 		var dmg := _resolve_attack_damage(ctx)
+		var banish_dmg := _resolve_attack_banish_damage(ctx)
 		var deal_mod := int(ctx.deal_modifier_type)
 		var take_mod := int(ctx.take_modifier_type)
 
@@ -603,6 +604,7 @@ func run_attack(ctx: AttackContext) -> bool:
 			d.source_id = source_id
 			d.target_id = int(tid)
 			d.base_amount = dmg
+			d.base_banish_amount = banish_dmg
 			d.deal_modifier_type = deal_mod
 			d.take_modifier_type = take_mod
 			d.params = params
@@ -845,6 +847,8 @@ func apply_attack_now(spec: SimAttackSpec) -> bool:
 		ai_ctx.params[Keys.DAMAGE] = int(spec.base_damage)
 		ai_ctx.params[Keys.DAMAGE_MELEE] = int(spec.base_damage)
 		ai_ctx.params[Keys.DAMAGE_RANGED] = int(spec.base_damage)
+	if int(spec.base_banish_amount) > 0:
+		ai_ctx.params[Keys.BANISH_DAMAGE] = int(spec.base_banish_amount)
 
 	for m in spec.param_models:
 		if m != null:
@@ -874,6 +878,7 @@ func apply_attack_now(spec: SimAttackSpec) -> bool:
 		attack_ctx.base_damage = int(spec.base_damage)
 		attack_ctx.base_damage_melee = int(spec.base_damage)
 		attack_ctx.base_damage_ranged = int(spec.base_damage)
+	attack_ctx.base_banish_amount = maxi(int(spec.base_banish_amount), 0)
 
 	return run_attack(attack_ctx)
 
@@ -956,6 +961,15 @@ func _resolve_attack_damage(ctx: AttackContext) -> int:
 	else:
 		dmg = int(params.get(Keys.DAMAGE, 0))
 	return maxi(dmg, 0)
+
+
+func _resolve_attack_banish_damage(ctx: AttackContext) -> int:
+	if ctx == null:
+		return 0
+	var params: Dictionary = ctx.params if ctx.params else {}
+	if int(ctx.base_banish_amount) > 0:
+		return int(ctx.base_banish_amount)
+	return maxi(int(params.get(Keys.BANISH_DAMAGE, 0)), 0)
 
 
 func _resolve_summon_data(value) -> CombatantData:

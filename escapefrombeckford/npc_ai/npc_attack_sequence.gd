@@ -24,6 +24,7 @@ func execute(ctx: NPCAIContext) -> void:
 	attack_ctx.base_damage = int(attack_ctx.params.get(Keys.DAMAGE, 0))
 	attack_ctx.base_damage_melee = int(attack_ctx.params.get(Keys.DAMAGE_MELEE, attack_ctx.base_damage))
 	attack_ctx.base_damage_ranged = int(attack_ctx.params.get(Keys.DAMAGE_RANGED, attack_ctx.base_damage))
+	attack_ctx.base_banish_amount = int(attack_ctx.params.get(Keys.BANISH_DAMAGE, 0))
 	attack_ctx.deal_modifier_type = int(attack_ctx.params.get(Keys.DEAL_MOD_TYPE, Modifier.Type.DMG_DEALT))
 	attack_ctx.take_modifier_type = int(attack_ctx.params.get(Keys.TAKE_MOD_TYPE, Modifier.Type.DMG_TAKEN))
 	attack_ctx.reason = "npc_attack"

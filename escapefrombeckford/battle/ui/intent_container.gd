@@ -18,7 +18,7 @@ func display_icons(intent_dataz: Array[IntentData]):
 		h_box_container.add_child(intent_display)
 		intent_display.load_icon_data(intent_data)
 
-func apply_intent(planned_idx, icon_uid, icon_ranged_uid, is_ranged, intent_text, tooltip_text) -> void:
+func apply_intent(planned_idx, icon_uid, icon_ranged_uid, is_ranged, intent_text, tooltip_text, text_color: Color = Color.WHITE) -> void:
 	clear_display()
 	if planned_idx < 0:
 		return
@@ -39,6 +39,7 @@ func apply_intent(planned_idx, icon_uid, icon_ranged_uid, is_ranged, intent_text
 		intent_data.icon_uid = icon_uid
 	intent_data.base_text = intent_text
 	intent_data.tooltip = tooltip_text
+	intent_data.text_color = text_color
 	var intent_display : IntentDisplay = intent_display_scn.instantiate()
 	h_box_container.add_child(intent_display)
 	intent_display.load_icon_data(intent_data)

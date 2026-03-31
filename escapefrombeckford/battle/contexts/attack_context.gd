@@ -16,6 +16,7 @@ var targeting_ctx: TargetingContext
 var base_damage: int = 0
 var base_damage_melee: int = 0
 var base_damage_ranged: int = 0
+var base_banish_amount: int = 0
 var deal_modifier_type: int = Modifier.Type.DMG_DEALT
 var take_modifier_type: int = Modifier.Type.DMG_TAKEN
 
