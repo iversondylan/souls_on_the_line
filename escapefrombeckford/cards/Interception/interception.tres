@@ -3,7 +3,8 @@
 [ext_resource type="Script" uid="uid://wtk5v77fcqvn" path="res://cards/_core/card_action.gd" id="1_action"]
 [ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://cards/_core/card_data.gd" id="2_card"]
 [ext_resource type="Resource" path="res://cards/_generic_actions/sacrifice_action.tres" id="3_sacrifice"]
-[ext_resource type="Resource" path="res://cards/Interception/absorb_on_frontmost_ally_action.tres" id="4_absorb_frontmost"]
+[ext_resource type="Resource" uid="uid://dcsacn6ycr1yp" path="res://cards/Interception/pressure_barrier_on_frontmost_ally_action.tres" id="4_5xl5h"]
+[ext_resource type="Resource" uid="uid://ds1puc6yesfie" path="res://cards/Interception/absorb_on_frontmost_ally_action.tres" id="4_absorb_frontmost"]
 [ext_resource type="Texture2D" uid="uid://c2l2ccbal0fiq" path="res://_assets/sprites/assorted/bolt-shield.png" id="5_texture"]
 
 [resource]
@@ -14,5 +15,5 @@ name = "Interception"
 description = "Sacrifice an ally. Apply 1 Absorb to the frontmost ally remaining."
 cost = 1
 texture = ExtResource("5_texture")
-actions = Array[ExtResource("1_action")]([ExtResource("3_sacrifice"), ExtResource("4_absorb_frontmost")])
+actions = Array[ExtResource("1_action")]([ExtResource("3_sacrifice"), ExtResource("4_absorb_frontmost"), ExtResource("4_5xl5h")])
 metadata/_custom_type_script = "uid://d2f0qepe047dc"

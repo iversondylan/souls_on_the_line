@@ -166,49 +166,49 @@ static func _roll_chance_idx_sim(profile: NPCAIProfile, ctx: NPCAIContext) -> in
 		push_warning("SIM AI: ctx.rng missing (cid=%d)" % int(ctx.cid))
 		return pool[0]
 
-	var should_debug := ctx != null and ctx.api != null and bool(ctx.api.is_main)
-	if should_debug:
-		print("action_planner.gd _roll_chance_idx_sim(): cid=%d pool=%s weights=%s total=%s" % [
-			int(ctx.cid),
-			str(pool),
-			str(weights_by_idx),
-			str(total),
-		])
+	#var should_debug := ctx != null and ctx.api != null and bool(ctx.api.is_main)
+	#if should_debug:
+		#print("action_planner.gd _roll_chance_idx_sim(): cid=%d pool=%s weights=%s total=%s" % [
+			#int(ctx.cid),
+			#str(pool),
+			#str(weights_by_idx),
+			#str(total),
+		#])
 
 	var roll := ctx.rng.randf() * total
-	if should_debug:
-		print("action_planner.gd _roll_chance_idx_sim(): cid=%d roll=%f total=%f rolls=%d" % [
-			int(ctx.cid),
-			roll,
-			total,
-			int(ctx.rng.rolls)
-		])
+	#if should_debug:
+		#print("action_planner.gd _roll_chance_idx_sim(): cid=%d roll=%f total=%f rolls=%d" % [
+			#int(ctx.cid),
+			#roll,
+			#total,
+			#int(ctx.rng.rolls)
+		#])
 
 	var acc := 0.0
 	for i in pool:
 		var weight := float(weights_by_idx.get(i, 0.0))
 		acc += weight
-		if should_debug:
-			print("action_planner.gd _roll_chance_idx_sim(): cid=%d checking_idx=%d weight=%f acc=%f roll=%f" % [
-				int(ctx.cid),
-				int(i),
-				weight,
-				acc,
-				roll,
-			])
+		#if should_debug:
+			#print("action_planner.gd _roll_chance_idx_sim(): cid=%d checking_idx=%d weight=%f acc=%f roll=%f" % [
+				#int(ctx.cid),
+				#int(i),
+				#weight,
+				#acc,
+				#roll,
+			#])
 		if roll <= acc:
-			if should_debug:
-				print("action_planner.gd _roll_chance_idx_sim(): cid=%d selected_idx=%d" % [
-					int(ctx.cid),
-					int(i),
-				])
+			#if should_debug:
+				#print("action_planner.gd _roll_chance_idx_sim(): cid=%d selected_idx=%d" % [
+					#int(ctx.cid),
+					#int(i),
+				#])
 			return i
 
-	if should_debug:
-		print("action_planner.gd _roll_chance_idx_sim(): cid=%d fallback_idx=%d" % [
-			int(ctx.cid),
-			int(pool[-1]),
-		])
+	#if should_debug:
+		#print("action_planner.gd _roll_chance_idx_sim(): cid=%d fallback_idx=%d" % [
+			#int(ctx.cid),
+			#int(pool[-1]),
+		#])
 	return pool[-1]
 
 
@@ -264,17 +264,17 @@ static func _get_action_chance_weight_sim(action: NPCAction, action_idx: int, ct
 	weight *= float(state.get(Keys.CHANCE_MULT, 1.0))
 	weight *= float(action_state.get(Keys.CHANCE_MULT, 1.0))
 	var final_weight := maxf(weight, 0.0)
-	if ctx != null and ctx.api != null and bool(ctx.api.is_main):
-		print("action_planner.gd _get_action_chance_weight_sim(): cid=%d action_idx=%d base=%s state_add=%s action_add=%s state_mult=%s action_mult=%s final=%s" % [
-			int(ctx.cid if ctx != null else -1),
-			int(action_idx),
-			str(action.chance_weight if action != null else 0.0),
-			str(state.get(Keys.CHANCE_ADD, 0.0)),
-			str(action_state.get(Keys.CHANCE_ADD, 0.0)),
-			str(state.get(Keys.CHANCE_MULT, 1.0)),
-			str(action_state.get(Keys.CHANCE_MULT, 1.0)),
-			str(final_weight),
-		])
+	#if ctx != null and ctx.api != null and bool(ctx.api.is_main):
+		#print("action_planner.gd _get_action_chance_weight_sim(): cid=%d action_idx=%d base=%s state_add=%s action_add=%s state_mult=%s action_mult=%s final=%s" % [
+			#int(ctx.cid if ctx != null else -1),
+			#int(action_idx),
+			#str(action.chance_weight if action != null else 0.0),
+			#str(state.get(Keys.CHANCE_ADD, 0.0)),
+			#str(action_state.get(Keys.CHANCE_ADD, 0.0)),
+			#str(state.get(Keys.CHANCE_MULT, 1.0)),
+			#str(action_state.get(Keys.CHANCE_MULT, 1.0)),
+			#str(final_weight),
+		#])
 	return final_weight
 
 

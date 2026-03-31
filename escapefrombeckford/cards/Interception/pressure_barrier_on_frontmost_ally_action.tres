@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="ApplyStatusToFrontmostAllyAction" format=3 uid="uid://dcsacn6ycr1yp"]
+
+[ext_resource type="Script" uid="uid://c4w8mhbfaxho5" path="res://cards/_generic_actions/apply_status_to_frontmost_ally_action.gd" id="1_xvcxt"]
+[ext_resource type="Resource" uid="uid://dsl60qwx3ugb" path="res://statuses/pressure_barrier.tres" id="2_xvcxt"]
+
+[resource]
+script = ExtResource("1_xvcxt")
+status = ExtResource("2_xvcxt")
+intensity = 1
