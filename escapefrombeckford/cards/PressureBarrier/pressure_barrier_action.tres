@@ -1,7 +1,10 @@
 [gd_resource type="Resource" format=3 uid="uid://c71a7e78wqfvy"]
 
-[ext_resource type="Script" uid="uid://du2x4kr4jby85" path="res://cards/PressureBarrier/pressure_barrier_action.gd" id="1_cpls2"]
+[ext_resource type="Script" path="res://cards/_generic_actions/apply_status_to_targets_action.gd" id="1_cpls2"]
+[ext_resource type="Resource" path="res://statuses/pressure_barrier.tres" id="2_status"]
 
 [resource]
 script = ExtResource("1_cpls2")
+status = ExtResource("2_status")
+intensity = 2
 metadata/_custom_type_script = "uid://wtk5v77fcqvn"

@@ -1,8 +1,13 @@
-[gd_resource type="Resource" format=3 uid="uid://pogo8alg2nkw"]
+[gd_resource type="Resource" script_class="ApplyStatusToTargetsAction" format=3 uid="uid://pogo8alg2nkw"]
 
 [ext_resource type="Resource" uid="uid://bwbxpiia8trvh" path="res://audio/supercharge_application.tres" id="1_8n2h5"]
-[ext_resource type="Script" uid="uid://7oq0cdc437jn" path="res://cards/SuperchargeCard/amplify_action.gd" id="1_htngn"]
+[ext_resource type="Script" uid="uid://bw3gskunin2ql" path="res://cards/_generic_actions/apply_status_to_targets_action.gd" id="1_htngn"]
+[ext_resource type="Resource" uid="uid://bd1ti361ucok5" path="res://statuses/amplify.tres" id="2_status"]
 
 [resource]
 script = ExtResource("1_htngn")
+status = ExtResource("2_status")
+intensity = 1
+duration = 2
+sound = ExtResource("1_8n2h5")
 metadata/_custom_type_script = "uid://wtk5v77fcqvn"

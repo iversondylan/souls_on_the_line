@@ -1,6 +1,6 @@
-# swap_with_target_action.gd
+extends CardAction
 
-class_name SwapWithTargetAction extends CardAction
+class_name SwapWithTargetAction
 
 @export var sound: Sound = preload("uid://duvojjmcskogd")
 
@@ -18,6 +18,7 @@ func activate_interaction(ctx: CardContext) -> bool:
 
 	return false
 
+
 func activate_sim(ctx: CardContext) -> bool:
 	if ctx == null or ctx.api == null or ctx.runtime == null:
 		return false
@@ -27,10 +28,9 @@ func activate_sim(ctx: CardContext) -> bool:
 	if actor_id <= 0:
 		return false
 	var target_id := int(payload.get(Keys.SWAP_B, ctx.source_id))
-	if actor_id <= 0:
+	if target_id <= 0:
 		return false
-	
-	
+
 	if ctx.params == null:
 		ctx.params = {}
 
@@ -58,8 +58,10 @@ func activate_sim(ctx: CardContext) -> bool:
 
 	return true
 
-func get_interaction_mode(ctx: CardContext) -> int:
+
+func get_interaction_mode(_ctx: CardContext) -> int:
 	return InteractionMode.ESCROW
+
 
 func description_arity() -> int:
 	return 0

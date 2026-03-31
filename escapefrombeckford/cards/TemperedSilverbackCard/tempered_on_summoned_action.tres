@@ -1,9 +1,9 @@
-[gd_resource type="Resource" format=3 uid="uid://cf1ebos2aikvf"]
+[gd_resource type="Resource" script_class="ApplyStatusToSummonedAction" format=3 uid="uid://cf1ebos2aikvf"]
 
-[ext_resource type="Script" uid="uid://b587bwwi2y5br" path="res://cards/TemperedSilverbackCard/tempered_on_summoned_action.gd" id="1_we4pk"]
+[ext_resource type="Script" uid="uid://jie78uegvh3j" path="res://cards/_generic_actions/apply_status_to_summoned_action.gd" id="1_we4pk"]
 [ext_resource type="Resource" uid="uid://tioo1cbmio6m" path="res://statuses/tempered.tres" id="2_we4pk"]
 
 [resource]
 script = ExtResource("1_we4pk")
 status = ExtResource("2_we4pk")
-metadata/_custom_type_script = "uid://cpalremmeq4o"
+metadata/_custom_type_script = "uid://wtk5v77fcqvn"

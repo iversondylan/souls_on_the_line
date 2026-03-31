@@ -1,8 +1,13 @@
-[gd_resource type="Resource" format=3 uid="uid://casfotob5kfol"]
+[gd_resource type="Resource" script_class="ApplyStatusToTargetsAction" format=3 uid="uid://casfotob5kfol"]
 
-[ext_resource type="Script" uid="uid://4a6gwsonpnp3" path="res://cards/MarkCard/mark_action.gd" id="1_a1jy5"]
+[ext_resource type="Script" uid="uid://bw3gskunin2ql" path="res://cards/_generic_actions/apply_status_to_targets_action.gd" id="1_a1jy5"]
 [ext_resource type="Resource" uid="uid://bo75oc63x12b6" path="res://audio/mark_zap.tres" id="2_mrb3s"]
+[ext_resource type="Resource" uid="uid://blu8qhnwmlstx" path="res://statuses/marked.tres" id="3_status"]
 
 [resource]
 script = ExtResource("1_a1jy5")
+status = ExtResource("3_status")
+intensity = 1
+duration = 2
+sound = ExtResource("2_mrb3s")
 metadata/_custom_type_script = "uid://wtk5v77fcqvn"

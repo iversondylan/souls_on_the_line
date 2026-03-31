@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="SwapWithTargetAction" format=3 uid="uid://bmf46tn8op4xy"]
 
-[ext_resource type="Script" uid="uid://dxmpc2u7um4gm" path="res://cards/SpacetimeWarp/swap_with_target_action.gd" id="1_gut53"]
+[ext_resource type="Script" uid="uid://bglbr7yy3l15o" path="res://cards/_generic_actions/swap_with_target_action.gd" id="1_gut53"]
 [ext_resource type="Resource" uid="uid://duvojjmcskogd" path="res://audio/warp_zap.tres" id="2_14fwl"]
 
 [resource]
