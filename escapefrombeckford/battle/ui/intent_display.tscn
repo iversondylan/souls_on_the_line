@@ -25,11 +25,12 @@ expand_mode = 4
 
 [node name="Text" type="Label" parent="." unique_id=1387098852]
 layout_mode = 0
-offset_left = -60.0
+offset_left = -100.0
 offset_top = -25.0
-offset_right = -2.0
-offset_bottom = 20.0
+offset_right = -9.0
+offset_bottom = 38.0
 theme = ExtResource("3_mp7f7")
+theme_override_font_sizes/font_size = 59
 text = "1"
 label_settings = SubResource("LabelSettings_np844")
 horizontal_alignment = 2
