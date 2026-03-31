@@ -5,8 +5,9 @@
 [ext_resource type="Script" uid="uid://b203gsihy5ttn" path="res://encounters/battle_pool.gd" id="2_coyo0"]
 [ext_resource type="Resource" uid="uid://dhsripdllldnw" path="res://encounters/beckford_domain/tier_0_beckford_constructs.tres" id="3_gu42u"]
 [ext_resource type="Resource" uid="uid://ds01iuqxyqf0g" path="res://encounters/beckford_domain/tier_1_truncheoner.tres" id="4_wgva7"]
+[ext_resource type="Resource" uid="uid://cjopm7vq3b5x6" path="res://encounters/beckford_domain/tier_0_cursed_ledger.tres" id="5_r3cy5"]
 
 [resource]
 script = ExtResource("2_coyo0")
-pool = Array[ExtResource("1_c5yi3")]([ExtResource("3_gu42u"), ExtResource("2_5mnow"), ExtResource("4_wgva7")])
+pool = Array[ExtResource("1_c5yi3")]([ExtResource("3_gu42u"), ExtResource("2_5mnow"), ExtResource("4_wgva7"), ExtResource("5_r3cy5")])
 metadata/_custom_type_script = "uid://b203gsihy5ttn"

@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="CombatantData" format=3 uid="uid://d0biiyu4fmutq"]
+
+[ext_resource type="Script" uid="uid://cfatj0ryn8uv3" path="res://combatants/combatant_data.gd" id="1_la62v"]
+[ext_resource type="Resource" uid="uid://b53wf8p0d46ty" path="res://combatants/CursedDocument/cursed_document_ai.tres" id="1_owdd2"]
+
+[resource]
+script = ExtResource("1_la62v")
+name = "Cursed Document"
+character_art_uid = "uid://bssysr701lpr1"
+portrait_art_uid = "uid://bssysr701lpr1"
+facing_right = false
+height = 160
+max_health = 3
+ai = ExtResource("1_owdd2")
+metadata/_custom_type_script = "uid://cfatj0ryn8uv3"

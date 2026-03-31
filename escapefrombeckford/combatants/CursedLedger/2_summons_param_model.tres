@@ -1,0 +1,7 @@
+[gd_resource type="Resource" script_class="ConstantSummonCountParamModel" format=3 uid="uid://dlhjveyrokgve"]
+
+[ext_resource type="Script" uid="uid://dhb30quk8bjgl" path="res://npc_ai/summon_count/constant_summon_count_param_model.gd" id="1_di5my"]
+
+[resource]
+script = ExtResource("1_di5my")
+summon_count = 2

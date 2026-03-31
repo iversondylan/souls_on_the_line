@@ -26,8 +26,13 @@ func get_text(ctx: NPCAIContext) -> String:
 
 	var red := int(data.apr)
 	var hp := int(data.max_health)
+	var count := maxi(_param_i(ctx, Keys.SUMMON_COUNT, 1), 0)
 
 	if red < 0 or hp <= 0:
 		return "error"
+	if count <= 0:
+		return "error"
+	if count == 1:
+		return "%s/%s" % [red, hp]
 
-	return "%s/%s" % [red, hp]
+	return "%s×%s/%s" % [count, red, hp]

@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="NPCAction" format=3 uid="uid://ubt6jj1tft87"]
+
+[ext_resource type="Script" uid="uid://3jde7uhq2yho" path="res://npc_ai/_core/npc_effect_package.gd" id="1_olvb8"]
+[ext_resource type="Script" uid="uid://dtwuyctovqk5r" path="res://npc_ai/_core/intent_lifecycle_model.gd" id="2_pviaa"]
+[ext_resource type="Script" uid="uid://q408gy2b4q6a" path="res://npc_ai/_core/performable_model.gd" id="3_rrtas"]
+[ext_resource type="Script" uid="uid://bcih413oy6v73" path="res://npc_ai/_core/npc_action.gd" id="4_wg80j"]
+[ext_resource type="Script" uid="uid://cuj4qvyx6dedj" path="res://npc_ai/_core/state_model.gd" id="5_347fd"]
+
+[resource]
+script = ExtResource("4_wg80j")
+metadata/_custom_type_script = "uid://bcih413oy6v73"

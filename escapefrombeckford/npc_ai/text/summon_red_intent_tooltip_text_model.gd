@@ -29,9 +29,14 @@ func get_text(ctx: NPCAIContext) -> String:
 
 	var red := int(data.apr)
 	var hp := int(data.max_health)
+	var count := maxi(_param_i(ctx, Keys.SUMMON_COUNT, 1), 0)
 	if red < 0 or hp <= 0:
+		return "error"
+	if count <= 0:
 		return "error"
 
 	var result := text_template
 	result = result.replace("{summon_name}", String(data.name))
-	return result % [red, hp]
+	if count == 1:
+		return result % [red, hp]
+	return "[b]Summon Intent[/b] [%s]: %s units of %s/%s." % [String(data.name), count, red, hp]
