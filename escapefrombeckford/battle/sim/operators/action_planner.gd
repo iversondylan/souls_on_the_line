@@ -67,8 +67,9 @@ static func ensure_valid_plan_sim(profile: NPCAIProfile, ctx: NPCAIContext, allo
 	var action := get_action_by_idx(profile, idx)
 	if action == null or !_is_action_performable_sim(action, ctx):
 		if allow_hooks:
-			_on_planned_intent_changed_sim(profile, idx, -1, ctx)
-		ctx.state[KEY_PLANNED_IDX] = -1
+			_transition_planned_intent_sim(profile, idx, -1, ctx)
+		else:
+			ctx.state[KEY_PLANNED_IDX] = -1
 		plan_next_intent_sim(profile, ctx, allow_hooks)
 
 
@@ -84,8 +85,9 @@ static func plan_next_intent_sim(profile: NPCAIProfile, ctx: NPCAIContext, allow
 		if prev_idx == cond_idx:
 			return
 		if allow_hooks:
-			_on_planned_intent_changed_sim(profile, prev_idx, cond_idx, ctx)
-		state[KEY_PLANNED_IDX] = cond_idx
+			_transition_planned_intent_sim(profile, prev_idx, cond_idx, ctx)
+		else:
+			state[KEY_PLANNED_IDX] = cond_idx
 		return
 
 	if prev_idx != -1 and !_can_cancel_intent_sim(state):
@@ -103,17 +105,18 @@ static func plan_next_intent_sim(profile: NPCAIProfile, ctx: NPCAIContext, allow
 			return
 
 		if allow_hooks:
-			_on_planned_intent_changed_sim(profile, prev_idx, -1, ctx)
-		state[KEY_PLANNED_IDX] = -1
+			_transition_planned_intent_sim(profile, prev_idx, -1, ctx)
+		else:
+			state[KEY_PLANNED_IDX] = -1
 		return
 
 	if prev_idx == new_idx:
 		return
 
 	if allow_hooks:
-		_on_planned_intent_changed_sim(profile, prev_idx, new_idx, ctx)
-
-	state[KEY_PLANNED_IDX] = new_idx
+		_transition_planned_intent_sim(profile, prev_idx, new_idx, ctx)
+	else:
+		state[KEY_PLANNED_IDX] = new_idx
 
 
 static func get_action_by_idx(profile: NPCAIProfile, idx: int) -> NPCAction:
@@ -290,7 +293,26 @@ static func _on_planned_intent_changed_sim(profile: NPCAIProfile, prev_idx: int,
 	if prev_action != null:
 		for m in prev_action.intent_lifecycle_models:
 			if m != null:
-				m.on_intent_canceled(ctx)
+				m.on_plan_canceled(ctx)
+
+static func _transition_planned_intent_sim(profile: NPCAIProfile, prev_idx: int, new_idx: int, ctx: NPCAIContext) -> void:
+	if ctx == null or ctx.state == null:
+		return
+
+	if prev_idx == new_idx:
+		ctx.state[KEY_PLANNED_IDX] = new_idx
+		return
+
+	_on_planned_intent_changed_sim(profile, prev_idx, new_idx, ctx)
+	ctx.state[KEY_PLANNED_IDX] = new_idx
+
+	var new_action := get_action_by_idx(profile, new_idx)
+	if new_action == null:
+		return
+
+	for m in new_action.intent_lifecycle_models:
+		if m != null:
+			m.on_plan_chosen(ctx)
 
 
 static func _dbg(msg: String) -> void:

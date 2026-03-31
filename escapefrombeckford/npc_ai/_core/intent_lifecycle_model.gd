@@ -37,3 +37,6 @@ func on_owner_group_turn_ended(ctx: NPCAIContext) -> void:
 
 func on_action_execution_started(ctx: NPCAIContext) -> void:
 	on_ability_started(ctx)
+
+func on_action_execution_completed(_ctx: NPCAIContext) -> void:
+	pass

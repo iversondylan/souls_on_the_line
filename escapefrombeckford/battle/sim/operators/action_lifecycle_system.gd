@@ -82,6 +82,21 @@ static func on_action_execution_started(ctx: NPCAIContext) -> void:
 		if m != null:
 			m.on_action_execution_started(ctx)
 
+static func on_action_execution_completed(ctx: NPCAIContext) -> void:
+	if ctx == null or ctx.api == null or ctx.combatant_data == null or ctx.combatant_data.ai == null:
+		return
+	if ctx.api.state == null or ctx.api.state.has_terminal_outcome():
+		return
+	var profile: NPCAIProfile = ctx.combatant_data.ai
+	var idx := int(ctx.state.get(ActionPlanner.KEY_PLANNED_IDX, -1))
+	var action := ActionPlanner.get_action_by_idx(profile, idx)
+	if action == null:
+		return
+
+	for m: IntentLifecycleModel in action.intent_lifecycle_models:
+		if m != null:
+			m.on_action_execution_completed(ctx)
+
 static func _make_ai_ctx(api: SimBattleAPI, u: CombatantState) -> NPCAIContext:
 	var ctx := NPCAIContext.new()
 	ctx.api = api

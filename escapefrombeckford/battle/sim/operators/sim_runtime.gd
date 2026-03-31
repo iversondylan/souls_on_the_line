@@ -392,6 +392,12 @@ func _complete_actor_turn(cid: int) -> void:
 	if api == null or engine == null:
 		return
 
+	var u: CombatantState = api.state.get_unit(int(cid)) if api.state != null else null
+	if u != null and u.combatant_data != null and u.combatant_data.ai != null and u.ai_state != null:
+		var ctx := ActionPlanner.make_context(api, u)
+		ctx.runtime = self
+		ActionLifecycleSystem.on_action_execution_completed(ctx)
+
 	var writer := api.writer
 	if writer != null:
 		writer.emit_actor_end(cid)
