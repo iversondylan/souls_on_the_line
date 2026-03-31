@@ -4,9 +4,6 @@
 [ext_resource type="Texture2D" uid="uid://c54dbo8n7r3g" path="res://_assets/sprites/assorted/attack.PNG" id="2_ofwrp"]
 [ext_resource type="Theme" uid="uid://1dr1eewpv0jd" path="res://themes/ui_theme.tres" id="3_mp7f7"]
 
-[sub_resource type="LabelSettings" id="LabelSettings_np844"]
-font_size = 26
-
 [node name="IntentDisplay" type="Control" unique_id=1489849078]
 layout_mode = 3
 anchors_preset = 0
@@ -30,9 +27,7 @@ offset_top = -25.0
 offset_right = -9.0
 offset_bottom = 38.0
 theme = ExtResource("3_mp7f7")
-theme_override_font_sizes/font_size = 59
 text = "1"
-label_settings = SubResource("LabelSettings_np844")
 horizontal_alignment = 2
 vertical_alignment = 1
 
