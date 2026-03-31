@@ -1,0 +1,9 @@
+[gd_resource type="Resource" format=3]
+
+[ext_resource type="Script" path="res://cards/_generic_actions/status_on_frontmost_ally_action.gd" id="1_action"]
+[ext_resource type="Resource" path="res://statuses/absorb.tres" id="2_absorb"]
+
+[resource]
+script = ExtResource("1_action")
+status = ExtResource("2_absorb")
+
