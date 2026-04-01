@@ -124,6 +124,7 @@ func _build_attack_analysis(events: Array[BattleEvent]) -> AttackAnalysis:
 	var first_strike: BattleEvent = blocks[0][0]
 	analysis.attacker_id = int(first_strike.data.get(Keys.SOURCE_ID, 0)) if first_strike.data != null else 0
 	analysis.attack_mode = int(first_strike.data.get(Keys.ATTACK_MODE, Attack.Mode.MELEE)) if first_strike.data != null else int(Attack.Mode.MELEE)
+	analysis.projectile_scene_path = String(first_strike.data.get(Keys.PROJECTILE_SCENE, "uid://bxmhi3urqmpfh")) if first_strike.data != null else "uid://bxmhi3urqmpfh"
 	analysis.strike_count = blocks.size()
 
 	for i in range(blocks.size()):
@@ -521,7 +522,7 @@ func _make_ranged_fire_order(analysis: AttackAnalysis, strike_index: int) -> Ran
 	o.strikes_total = analysis.strike_count
 	o.total_hit_count = strike.hit_count
 	o.has_lethal = strike.has_lethal_hit
-	o.projectile_scene_path = "uid://bxmhi3urqmpfh"
+	o.projectile_scene_path = analysis.projectile_scene_path
 
 	return o
 

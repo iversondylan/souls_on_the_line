@@ -7,4 +7,5 @@
 script = ExtResource("1_cutlery_script")
 
 [node name="Sprite" type="Sprite2D" parent="." unique_id=755639253]
+scale = Vector2(0.35, 0.35)
 texture = ExtResource("2_cutlery_texture")

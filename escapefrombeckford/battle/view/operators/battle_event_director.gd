@@ -165,6 +165,7 @@ func _start_ranged_windup_order(order: RangedWindupPresentationOrder) -> void:
 func _start_ranged_fire_order(order: RangedFirePresentationOrder) -> void:
 	if order == null:
 		return
+	print("VIEW ranged fire projectile uid/path: ", order.projectile_scene_path)
 	var attacker := battle_view.get_combatant(int(order.actor_id))
 	if attacker != null:
 		attacker.play_presentation_order(order, battle_view)
@@ -783,6 +784,9 @@ func _on_strike_windup(e: EventPackage) -> void:
 	o.projectile_scene_path = String(d.get(Keys.PROJECTILE_SCENE, "uid://bxmhi3urqmpfh"))
 	o.strike_count = int(d.get(Keys.STRIKE_COUNT, 1))
 
+	if o.attack_mode == Attack.Mode.RANGED:
+		print("VIEW ranged strike windup projectile uid/path: ", o.projectile_scene_path)
+
 	attacker.play_strike_windup(o, battle_view)
 
 
@@ -1246,6 +1250,9 @@ func _on_strike_windup_from_info(info: AttackPresentationInfo, duration: float) 
 	o.total_hit_count = maxi(1, info.total_hit_count)
 	o.attack_info = info
 
+	if o.attack_mode == Attack.Mode.RANGED:
+		print("VIEW ranged strike windup projectile uid/path: ", o.projectile_scene_path)
+
 	attacker.play_strike_windup(o, battle_view)
 
 
@@ -1294,6 +1301,9 @@ func _on_strike_windup_from_slice(slice: StrikeFollowthroughSlice, duration: flo
 
 	# target selection for THIS strike
 	o.target_ids = _coerce_int_array(slice.get_target_ids())
+
+	if o.attack_mode == Attack.Mode.RANGED:
+		print("VIEW ranged strike windup projectile uid/path: ", o.projectile_scene_path)
 
 	attacker.play_strike_windup(o, battle_view)
 
