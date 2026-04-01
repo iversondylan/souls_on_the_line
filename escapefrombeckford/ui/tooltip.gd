@@ -1,4 +1,4 @@
-class_name Tooltip extends Node2D
+class_name Tooltip extends Control
 
 @export var fade_seconds: float = 0.2
 
@@ -10,35 +10,49 @@ var tween: Tween
 var is_visible: bool = false
 
 func _ready() -> void:
-	Events.intent_tooltip_show_requested.connect(show_intent_tooltip)
-	Events.arcanum_tooltip_show_requested.connect(show_arcanum_tooltip)
+	Events.tooltip_show_requested.connect(show_tooltip)
 	Events.tooltip_hide_requested.connect(hide_tooltip)
 	modulate = Color.TRANSPARENT
 	hide()
 
-func show_arcanum_tooltip(arcanum_display: ArcanumDisplay) -> void:
+func show_tooltip(request: TooltipRequest) -> void:
+	if request == null:
+		return
+
 	is_visible = true
-	if tween: 
+	if tween:
 		tween.kill()
-	tooltip_icon.texture = arcanum_display.arcanum.icon
-	position = arcanum_display.global_position + Vector2(0.0, 1.8*panel_container.size.y)
-	
-	tooltip_description.text = arcanum_display.arcanum.get_tooltip()
+
+	tooltip_icon.visible = !request.icon_uid.is_empty()
+	tooltip_icon.texture = load(request.icon_uid) if tooltip_icon.visible else null
+	tooltip_description.clear()
+	tooltip_description.append_text(request.text_bbcode)
+	_position_panel(request)
+
 	tween = create_tween().set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_CUBIC)
 	tween.tween_callback(show)
 	tween.tween_property(self, "modulate", Color.WHITE, fade_seconds)
 
-func show_intent_tooltip(intent_display: IntentDisplay) -> void:
-	is_visible = true
-	if tween:
-		tween.kill()
-	position = intent_display.global_position
-	tooltip_icon.texture = load(intent_display.intent_data.icon_uid) if intent_display.intent_data != null and intent_display.intent_data.icon_uid != "" else null
-	tooltip_description.clear()
-	tooltip_description.append_text(intent_display.intent_data.tooltip if intent_display.intent_data != null else "")
-	tween = create_tween().set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_CUBIC)
-	tween.tween_callback(show)
-	tween.tween_property(self, "modulate", Color.WHITE, fade_seconds)
+func _position_panel(request: TooltipRequest) -> void:
+	var viewport_rect := get_viewport_rect()
+	var panel_size := panel_container.size
+	var anchor_rect := request.anchor_rect
+	var margin := 12.0
+	var x := anchor_rect.position.x + (anchor_rect.size.x - panel_size.x) * 0.5 + request.offset.x
+	var below_y := anchor_rect.end.y + margin + request.offset.y
+	var above_y := anchor_rect.position.y - panel_size.y - margin + request.offset.y
+	var y := below_y
+
+	if request.preferred_side == TooltipRequest.PreferredSide.ABOVE:
+		y = above_y
+		if y < viewport_rect.position.y:
+			y = below_y
+	elif below_y + panel_size.y > viewport_rect.end.y:
+		y = above_y
+
+	x = clampf(x, viewport_rect.position.x, viewport_rect.end.x - panel_size.x)
+	y = clampf(y, viewport_rect.position.y, viewport_rect.end.y - panel_size.y)
+	panel_container.position = Vector2(x, y)
 
 func hide_tooltip() -> void:
 	is_visible = false

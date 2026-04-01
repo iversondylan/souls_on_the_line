@@ -20,7 +20,7 @@ func _resolve_status_proto(ctx: NPCAIContext) -> Status:
 	if ctx == null or ctx.params == null or ctx.api == null or ctx.api.state == null:
 		return null
 
-	var status_id := _param_v(ctx, Keys.STATUS_ID, &"")
+	var status_id = _param_v(ctx, Keys.STATUS_ID, &"")
 	if status_id is String:
 		status_id = StringName(status_id)
 	elif !(status_id is StringName):

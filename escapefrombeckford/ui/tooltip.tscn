@@ -5,18 +5,24 @@
 [ext_resource type="Texture2D" uid="uid://c54dbo8n7r3g" path="res://_assets/sprites/assorted/attack.PNG" id="3_acp5l"]
 [ext_resource type="Theme" uid="uid://1dr1eewpv0jd" path="res://themes/ui_theme.tres" id="4_o3msy"]
 
-[node name="Tooltip" type="Node2D"]
+[node name="Tooltip" type="Control" unique_id=1562769590]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
 script = ExtResource("2_o3msy")
 
-[node name="PanelContainer" type="PanelContainer" parent="."]
-offset_left = -160.0
-offset_top = -240.0
-offset_right = 160.0
-offset_bottom = -40.0
+[node name="PanelContainer" type="PanelContainer" parent="." unique_id=2127930944]
+layout_mode = 0
+offset_right = 320.0
+offset_bottom = 200.0
 mouse_filter = 2
 theme = ExtResource("1_kv0sd")
 
-[node name="MarginContainer" type="MarginContainer" parent="PanelContainer"]
+[node name="MarginContainer" type="MarginContainer" parent="PanelContainer" unique_id=1782294919]
 layout_mode = 2
 mouse_filter = 2
 theme_override_constants/margin_left = 5
@@ -24,11 +30,11 @@ theme_override_constants/margin_top = 5
 theme_override_constants/margin_right = 5
 theme_override_constants/margin_bottom = 5
 
-[node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer/MarginContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer/MarginContainer" unique_id=52478634]
 layout_mode = 2
 mouse_filter = 2
 
-[node name="TooltipIcon" type="TextureRect" parent="PanelContainer/MarginContainer/VBoxContainer"]
+[node name="TooltipIcon" type="TextureRect" parent="PanelContainer/MarginContainer/VBoxContainer" unique_id=557438917]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(64, 64)
 layout_mode = 2
@@ -37,7 +43,7 @@ texture = ExtResource("3_acp5l")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="TooltipDescription" type="RichTextLabel" parent="PanelContainer/MarginContainer/VBoxContainer"]
+[node name="TooltipDescription" type="RichTextLabel" parent="PanelContainer/MarginContainer/VBoxContainer" unique_id=2026069850]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3

@@ -24,7 +24,11 @@ func set_icon_values():
 		icon.texture = null
 
 func _on_mouse_entered() -> void:
-	Events.intent_tooltip_show_requested.emit(self as IntentDisplay)
+	var request := TooltipRequest.new()
+	request.anchor_rect = get_global_rect()
+	request.icon_uid = intent_data.icon_uid if intent_data != null else ""
+	request.text_bbcode = intent_data.tooltip if intent_data != null else ""
+	Events.tooltip_show_requested.emit(request)
 
 func _on_mouse_exited() -> void:
 	Events.tooltip_hide_requested.emit()
