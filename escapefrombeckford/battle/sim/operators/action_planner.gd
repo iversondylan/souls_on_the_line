@@ -6,7 +6,6 @@ const KEY_PLANNED_IDX := &"key_planned_index"
 const HP_AT_TURN_START := &"hp_at_turn_start"
 const DMG_SINCE_LAST_TURN := &"dmg_since_last_turn"
 const STABILITY_BROKEN := &"stability_broken"
-const ACTIONS_TAKEN := &"actions_taken"
 
 static var debug := false
 
@@ -47,8 +46,8 @@ static func ensure_ai_state_initialized(u: CombatantState) -> void:
 		s[Keys.FIRST_INTENTS_READY] = false
 	if !s.has(STABILITY_BROKEN):
 		s[STABILITY_BROKEN] = false
-	if !s.has(ACTIONS_TAKEN):
-		s[ACTIONS_TAKEN] = 0
+	if !s.has(Keys.ACTIONS_PERFORMED_COUNT):
+		s[Keys.ACTIONS_PERFORMED_COUNT] = 0
 	if !(s.get(Keys.ACTION_STATE, null) is Dictionary):
 		s[Keys.ACTION_STATE] = {}
 

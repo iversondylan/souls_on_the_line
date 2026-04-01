@@ -493,6 +493,9 @@ func run_npc_turn(cid: int) -> void:
 
 	ctx.state[Keys.IS_ACTING] = true
 	ActionLifecycleSystem.on_action_execution_started(ctx)
+	ctx.state[Keys.ACTIONS_PERFORMED_COUNT] = int(
+		ctx.state.get(Keys.ACTIONS_PERFORMED_COUNT, 0)
+	) + 1
 
 	for sm: StateModel in action.state_models:
 		if sm != null:
@@ -518,7 +521,6 @@ func run_npc_turn(cid: int) -> void:
 			pkg.effect.execute(ctx)
 
 	_update_action_spree_state(profile, ctx.state, idx)
-	ctx.state[ActionPlanner.ACTIONS_TAKEN] = int(ctx.state.get(ActionPlanner.ACTIONS_TAKEN, 0)) + 1
 
 
 func run_attack(ctx: AttackContext) -> bool:
