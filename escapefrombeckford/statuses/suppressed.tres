@@ -1,13 +1,12 @@
-[gd_resource type="Resource" script_class="SuppressedStatus" format=3]
+[gd_resource type="Resource" script_class="SuppressedStatus" format=3 uid="uid://bi6mt7v1xat1e"]
 
-[ext_resource type="Script" path="res://statuses/suppressed.gd" id="1_suppressed_script"]
-[ext_resource type="Texture2D" path="res://_assets/sprites/assorted/knockout.png" id="2_suppressed_icon"]
+[ext_resource type="Script" uid="uid://djrgcv40f5acv" path="res://statuses/suppressed.gd" id="1_suppressed_script"]
+[ext_resource type="Texture2D" uid="uid://c7y3hqcrrogir" path="res://_assets/sprites/assorted/knockout.png" id="2_suppressed_icon"]
 
 [resource]
 script = ExtResource("1_suppressed_script")
+status_name = "Suppressed"
 proc_type = 2
 number_display_type = 1
-reapply_type = 0
 expiration_policy = 2
 icon = ExtResource("2_suppressed_icon")
-tooltip = ""

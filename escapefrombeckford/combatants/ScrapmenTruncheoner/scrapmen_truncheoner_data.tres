@@ -6,8 +6,8 @@
 [resource]
 script = ExtResource("2_bjjlu")
 name = "Scrapmen Truncheoner"
-character_art_uid = "uid://bnxywmo8vcrr3"
-portrait_art_uid = "uid://bnxywmo8vcrr3"
+character_art_uid = "uid://b01mcynua2mnu"
+portrait_art_uid = "uid://b01mcynua2mnu"
 facing_right = false
 max_health = 30
 ai = ExtResource("1_anr0h")

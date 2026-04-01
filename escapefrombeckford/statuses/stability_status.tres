@@ -6,7 +6,7 @@
 [resource]
 script = ExtResource("1_lontd")
 max_stability = 5
-id = "stability"
+status_name = "Stability"
 proc_type = 2
 number_display_type = 1
 reapply_type = 2

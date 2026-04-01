@@ -1,13 +1,12 @@
-[gd_resource type="Resource" script_class="SunderedStatus" format=3]
+[gd_resource type="Resource" script_class="SunderedStatus" format=3 uid="uid://bkmw72tr8qa33"]
 
-[ext_resource type="Script" path="res://statuses/sundered.gd" id="1_sundered_script"]
-[ext_resource type="Texture2D" path="res://_assets/sprites/assorted/broken-shield.png" id="2_sundered_icon"]
+[ext_resource type="Script" uid="uid://bt10dfq1fw2t" path="res://statuses/sundered.gd" id="1_sundered_script"]
+[ext_resource type="Texture2D" uid="uid://c8ase1dvr32mj" path="res://_assets/sprites/assorted/broken-shield.png" id="2_sundered_icon"]
 
 [resource]
 script = ExtResource("1_sundered_script")
+status_name = "Sundered"
 proc_type = 2
 number_display_type = 1
-reapply_type = 0
 expiration_policy = 2
 icon = ExtResource("2_sundered_icon")
-tooltip = ""

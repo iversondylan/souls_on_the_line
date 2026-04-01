@@ -5,7 +5,7 @@
 
 [resource]
 script = ExtResource("2_adcuq")
-id = "tempered"
+status_name = "Tempered"
 proc_type = 2
 number_display_type = 1
 reapply_type = 3

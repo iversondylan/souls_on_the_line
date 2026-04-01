@@ -1,14 +1,13 @@
-[gd_resource type="Resource" script_class="BanishingStrikes" format=3]
+[gd_resource type="Resource" script_class="BanishingStrikes" format=3 uid="uid://bfofdm4v1vn4v"]
 
-[ext_resource type="Script" path="res://statuses/banishing_strikes.gd" id="1_script"]
+[ext_resource type="Script" uid="uid://dcmq71arcshny" path="res://statuses/banishing_strikes.gd" id="1_script"]
 [ext_resource type="Texture2D" uid="uid://dhtbmqc74eaby" path="res://_assets/sprites/assorted/lightning-bolt-set-neon-signs-600nw-2303216923.webp" id="2_icon"]
 
 [resource]
 script = ExtResource("1_script")
+status_name = "Banishing Strikes"
 proc_type = 1
 number_display_type = 1
-reapply_type = 0
-expiration_policy = 3
 icon = ExtResource("2_icon")
 tooltip = "error"
 metadata/_custom_type_script = "uid://cueedkb1u8vxy"

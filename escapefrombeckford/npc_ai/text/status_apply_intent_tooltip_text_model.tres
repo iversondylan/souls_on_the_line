@@ -1,0 +1,7 @@
+[gd_resource type="Resource" script_class="StatusApplyIntentTooltipTextModel" load_steps=2 format=3]
+
+[ext_resource type="Script" uid="uid://ccndybgl6j6i7" path="res://npc_ai/text/status_apply_intent_tooltip_text_model.gd" id="1_status_apply_tooltip"]
+
+[resource]
+script = ExtResource("1_status_apply_tooltip")
+metadata/_custom_type_script = "uid://ccndybgl6j6i7"

@@ -6,11 +6,11 @@
 [resource]
 script = ExtResource("1_d6qqx")
 aura_type = null
+status_name = "Resonance Spike"
 proc_type = 2
 number_display_type = 1
 reapply_type = 2
 expiration_policy = 2
 icon = ExtResource("1_g4yb5")
 tooltip = null
-intensity = 3
 metadata/_custom_type_script = "uid://byl8kucecx6c0"

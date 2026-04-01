@@ -5,11 +5,11 @@
 
 [resource]
 script = ExtResource("1_7ubsa")
+status_name = "Amplify"
 proc_type = 1
 number_display_type = 2
 reapply_type = 1
 expiration_policy = 0
-duration = 1
 icon = ExtResource("1_pto7b")
 tooltip = "error"
 metadata/_custom_type_script = "uid://cueedkb1u8vxy"

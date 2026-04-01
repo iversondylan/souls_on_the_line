@@ -5,6 +5,7 @@
 
 [resource]
 script = ExtResource("2_6hpfl")
+status_name = "Pinpoint"
 number_display_type = 2
 reapply_type = 1
 expiration_policy = 0

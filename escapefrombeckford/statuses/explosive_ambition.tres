@@ -5,6 +5,7 @@
 
 [resource]
 script = ExtResource("2_hvh50")
+status_name = "Explosive Ambition"
 proc_type = 2
 icon = ExtResource("1_hvh50")
 tooltip = "TO DO

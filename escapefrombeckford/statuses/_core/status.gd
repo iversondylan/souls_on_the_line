@@ -18,6 +18,7 @@ enum ExpirationPolicy {
 enum OP { APPLY, REMOVE, CHANGE }
 
 @export_group("Status Data")
+@export var status_name: String = ""
 @export var proc_type: ProcType
 @export var number_display_type: NumberDisplayType
 @export var reapply_type: ReapplyType
