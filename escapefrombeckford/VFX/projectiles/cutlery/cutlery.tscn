@@ -1,10 +1,10 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene format=3 uid="uid://b88mfp6wnsbs7"]
 
-[ext_resource type="Script" path="res://VFX/projectiles/cutlery/cutlery.gd" id="1_cutlery_script"]
-[ext_resource type="Texture2D" path="res://_assets/sprites/effects/projectiles/vintagefork.PNG" id="2_cutlery_texture"]
+[ext_resource type="Script" uid="uid://crenx2d6ue31y" path="res://VFX/projectiles/cutlery/cutlery.gd" id="1_cutlery_script"]
+[ext_resource type="Texture2D" uid="uid://bl2qv5v24xbb1" path="res://_assets/sprites/effects/projectiles/vintagefork.PNG" id="2_cutlery_texture"]
 
-[node name="Cutlery" type="Node2D"]
+[node name="Cutlery" type="Node2D" unique_id=2056133671]
 script = ExtResource("1_cutlery_script")
 
-[node name="Sprite" type="Sprite2D" parent="."]
+[node name="Sprite" type="Sprite2D" parent="." unique_id=755639253]
 texture = ExtResource("2_cutlery_texture")

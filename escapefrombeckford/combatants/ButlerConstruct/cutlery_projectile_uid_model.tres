@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="ProjectileUidModel" format=3 uid="uid://5djv32dpfukn"]
+
+[ext_resource type="Script" uid="uid://br37i2t87gjmy" path="res://npc_ai/projectile/projectile_uid_model.gd" id="1_ma5s3"]
+
+[resource]
+script = ExtResource("1_ma5s3")
+projectile_uid = "uid://b88mfp6wnsbs7"
+metadata/_custom_type_script = "uid://br37i2t87gjmy"
