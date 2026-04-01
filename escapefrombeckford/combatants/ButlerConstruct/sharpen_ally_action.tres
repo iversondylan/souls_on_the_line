@@ -13,8 +13,8 @@
 [resource]
 script = ExtResource("4_yq1pa")
 effect_packages = Array[ExtResource("1_uhi1n")]([ExtResource("2_pkotl")])
-action_name = "Sharpen Ally"
 state_models = Array[ExtResource("5_c6qn7")]([ExtResource("7_yq1pa")])
+action_name = "Sharpen Ally"
 intent_icon = ExtResource("3_yq1pa")
 intent_icon_uid = "uid://brdfq5loj4rsy"
 tooltip_model = ExtResource("9_c6qn7")

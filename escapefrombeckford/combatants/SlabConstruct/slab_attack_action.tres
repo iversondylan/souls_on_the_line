@@ -16,9 +16,9 @@
 [resource]
 script = ExtResource("4_u8onn")
 effect_packages = Array[ExtResource("1_d0vgo")]([ExtResource("2_44bx1"), ExtResource("3_2j3jw")])
-action_name = "Slam"
 intent_lifecycle_models = Array[ExtResource("2_64b5x")]([ExtResource("2_lifecycle")])
 state_models = Array[ExtResource("5_cerd5")]([ExtResource("9_ge5ix")])
+action_name = "Slam"
 intent_icon = ExtResource("4_2j3jw")
 intent_icon_uid = "uid://1b6tx5tj6ucv"
 intent_text_model = ExtResource("5_h5mot")

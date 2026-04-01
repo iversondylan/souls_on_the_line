@@ -14,9 +14,9 @@
 [resource]
 script = ExtResource("4_l4lvh")
 effect_packages = Array[ExtResource("1_1hlb8")]([ExtResource("2_wv8p8")])
-action_name = "Resonant Strike"
 intent_lifecycle_models = Array[ExtResource("2_6yf2y")]([ExtResource("4_qj872")])
 state_models = Array[ExtResource("5_4n47e")]([ExtResource("6_6yf2y")])
+action_name = "Resonant Strike"
 intent_icon_uid = "uid://1b6tx5tj6ucv"
 intent_icon_ranged_uid = "uid://1b6tx5tj6ucv"
 intent_text_model = ExtResource("4_4n47e")

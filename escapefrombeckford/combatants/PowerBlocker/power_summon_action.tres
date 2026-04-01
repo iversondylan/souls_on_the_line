@@ -24,10 +24,10 @@ metadata/_custom_type_script = "uid://dg05abl3ms1xi"
 [resource]
 script = ExtResource("11_owhfw")
 effect_packages = Array[ExtResource("1_m4ebu")]([ExtResource("2_2qtp0")])
-action_name = "Power Up"
 intent_lifecycle_models = Array[ExtResource("4_4pvic")]([ExtResource("5_m4ebu"), ExtResource("7_2qtp0")])
 choice_type = 0
 performable_models = Array[ExtResource("9_fr0ta")]([SubResource("Resource_1t84l")])
+action_name = "Power Up"
 intent_icon = ExtResource("3_rcqqn")
 intent_icon_uid = "uid://dnor2pbb0nhu"
 intent_text_model = ExtResource("9_2qtp0")
