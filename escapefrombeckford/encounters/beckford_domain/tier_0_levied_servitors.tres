@@ -8,6 +8,5 @@
 [resource]
 script = ExtResource("4_m57eo")
 encounter_name = "Levied Servitors"
-battle_tier = 1
 enemies = Array[ExtResource("1_q6ke6")]([ExtResource("2_opi0o"), ExtResource("3_oacqa")])
 metadata/_custom_type_script = "uid://be1v8qevmc2xw"

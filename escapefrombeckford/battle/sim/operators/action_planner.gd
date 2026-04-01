@@ -6,6 +6,9 @@ const KEY_PLANNED_IDX := &"key_planned_index"
 const HP_AT_TURN_START := &"hp_at_turn_start"
 const DMG_SINCE_LAST_TURN := &"dmg_since_last_turn"
 const STABILITY_BROKEN := &"stability_broken"
+const SELECTION_SOURCE_NONE := 0
+const SELECTION_SOURCE_OVERRIDE := 1
+const SELECTION_SOURCE_CHANCE := 2
 
 static var debug := false
 
@@ -48,6 +51,8 @@ static func ensure_ai_state_initialized(u: CombatantState) -> void:
 		s[STABILITY_BROKEN] = false
 	if !s.has(Keys.ACTIONS_PERFORMED_COUNT):
 		s[Keys.ACTIONS_PERFORMED_COUNT] = 0
+	if !s.has(Keys.PLANNED_SELECTION_SOURCE):
+		s[Keys.PLANNED_SELECTION_SOURCE] = SELECTION_SOURCE_NONE
 	if !(s.get(Keys.ACTION_STATE, null) is Dictionary):
 		s[Keys.ACTION_STATE] = {}
 
@@ -64,11 +69,23 @@ static func ensure_valid_plan_sim(profile: NPCAIProfile, ctx: NPCAIContext, allo
 
 	var idx := int(ctx.state.get(KEY_PLANNED_IDX, -1))
 	var action := get_action_by_idx(profile, idx)
-	if action == null or !_is_action_performable_sim(action, ctx):
+	var selection_source := int(ctx.state.get(Keys.PLANNED_SELECTION_SOURCE, SELECTION_SOURCE_NONE))
+	var is_still_valid := false
+
+	match selection_source:
+		SELECTION_SOURCE_OVERRIDE:
+			is_still_valid = int(_get_first_override_idx_sim(profile, ctx)) == idx
+		SELECTION_SOURCE_CHANCE:
+			is_still_valid = action != null
+		_:
+			is_still_valid = false
+
+	if !is_still_valid:
 		if allow_hooks:
 			_transition_planned_intent_sim(profile, idx, -1, ctx)
 		else:
 			ctx.state[KEY_PLANNED_IDX] = -1
+			ctx.state[Keys.PLANNED_SELECTION_SOURCE] = SELECTION_SOURCE_NONE
 		plan_next_intent_sim(profile, ctx, allow_hooks)
 
 
@@ -78,44 +95,48 @@ static func plan_next_intent_sim(profile: NPCAIProfile, ctx: NPCAIContext, allow
 
 	var state := ctx.state if ctx.state else {}
 	var prev_idx := int(state.get(KEY_PLANNED_IDX, -1))
+	var prev_source := int(state.get(Keys.PLANNED_SELECTION_SOURCE, SELECTION_SOURCE_NONE))
 
-	var cond_idx := _get_first_conditional_idx_sim(profile, ctx)
-	if cond_idx != -1:
-		if prev_idx == cond_idx:
+	var override_idx := _get_first_override_idx_sim(profile, ctx)
+	if override_idx != -1:
+		if prev_idx == override_idx and prev_source == SELECTION_SOURCE_OVERRIDE:
 			return
 		if allow_hooks:
-			_transition_planned_intent_sim(profile, prev_idx, cond_idx, ctx)
+			_transition_planned_intent_sim(profile, prev_idx, override_idx, ctx)
 		else:
-			state[KEY_PLANNED_IDX] = cond_idx
+			state[KEY_PLANNED_IDX] = override_idx
+			state[Keys.PLANNED_SELECTION_SOURCE] = SELECTION_SOURCE_OVERRIDE
 		return
 
 	if prev_idx != -1 and !_can_cancel_intent_sim(state):
 		return
 
-	if allow_hooks and prev_idx != -1:
+	if prev_idx != -1 and prev_source == SELECTION_SOURCE_CHANCE:
 		var prev_action := get_action_by_idx(profile, prev_idx)
-		if prev_action != null and prev_action.choice_type == NPCAction.ChoiceType.CHANCE:
-			if _is_action_performable_sim(prev_action, ctx):
-				return
-
-	var new_idx := _roll_chance_idx_sim(profile, ctx)
-	if new_idx == -1:
-		if prev_idx == -1:
+		if prev_action != null:
 			return
 
-		if allow_hooks:
-			_transition_planned_intent_sim(profile, prev_idx, -1, ctx)
-		else:
-			state[KEY_PLANNED_IDX] = -1
-		return
+	var new_idx := _roll_chance_idx_sim(profile, ctx)
+	if new_idx < 0:
+		if profile == null or profile.actions.is_empty():
+			if prev_idx == -1:
+				return
+			if allow_hooks:
+				_transition_planned_intent_sim(profile, prev_idx, -1, ctx)
+			else:
+				state[KEY_PLANNED_IDX] = -1
+				state[Keys.PLANNED_SELECTION_SOURCE] = SELECTION_SOURCE_NONE
+			return
+		new_idx = 0
 
-	if prev_idx == new_idx:
+	if prev_idx == new_idx and prev_source == SELECTION_SOURCE_CHANCE:
 		return
 
 	if allow_hooks:
 		_transition_planned_intent_sim(profile, prev_idx, new_idx, ctx)
 	else:
 		state[KEY_PLANNED_IDX] = new_idx
+		state[Keys.PLANNED_SELECTION_SOURCE] = SELECTION_SOURCE_CHANCE
 
 
 static func get_action_by_idx(profile: NPCAIProfile, idx: int) -> NPCAction:
@@ -134,10 +155,10 @@ static func _can_cancel_intent_sim(state: Dictionary) -> bool:
 	return true
 
 
-static func _get_first_conditional_idx_sim(profile: NPCAIProfile, ctx: NPCAIContext) -> int:
+static func _get_first_override_idx_sim(profile: NPCAIProfile, ctx: NPCAIContext) -> int:
 	for i in range(profile.actions.size()):
 		var action := profile.actions[i]
-		if action != null and action.choice_type == NPCAction.ChoiceType.CONDITIONAL and _is_action_performable_sim(action, ctx):
+		if action != null and _is_action_override_hit_sim(action, ctx):
 			return i
 	return -1
 
@@ -149,24 +170,19 @@ static func _roll_chance_idx_sim(profile: NPCAIProfile, ctx: NPCAIContext) -> in
 
 	for i in range(profile.actions.size()):
 		var action := profile.actions[i]
-		if action != null and action.choice_type == NPCAction.ChoiceType.CHANCE and _is_action_performable_sim(action, ctx):
+		if action != null:
 			var w := _get_action_chance_weight_sim(action, i, ctx)
 			weights_by_idx[i] = w
 			if w > 0.0:
 				total += w
 				pool.append(i)
 
-	if pool.is_empty() or total <= 0.0:
-		push_warning("SIM AI: no valid chance action (cid=%d, total=%f, chance_actions=%d)" % [
-			int(ctx.cid if ctx != null else -1),
-			total,
-			pool.size()
-		])
+	if total <= 0.0:
 		return -1
 
 	if ctx.rng == null:
 		push_warning("SIM AI: ctx.rng missing (cid=%d)" % int(ctx.cid))
-		return pool[0]
+		return pool[0] if !pool.is_empty() else -1
 
 	#var should_debug := ctx != null and ctx.api != null and bool(ctx.api.is_main)
 	#if should_debug:
@@ -280,11 +296,13 @@ static func _get_action_chance_weight_sim(action: NPCAction, action_idx: int, ct
 	return final_weight
 
 
-static func _is_action_performable_sim(action: NPCAction, ctx: NPCAIContext) -> bool:
+static func _is_action_override_hit_sim(action: NPCAction, ctx: NPCAIContext) -> bool:
+	if action == null or action.performable_models == null or action.performable_models.is_empty():
+		return false
 	for m in action.performable_models:
-		if m != null and !m.is_performable_sim(ctx):
-			return false
-	return true
+		if m != null and m.is_performable_sim(ctx):
+			return true
+	return false
 
 
 static func _on_planned_intent_changed_sim(profile: NPCAIProfile, prev_idx: int, _new_idx: int, ctx: NPCAIContext) -> void:
@@ -302,10 +320,20 @@ static func _transition_planned_intent_sim(profile: NPCAIProfile, prev_idx: int,
 
 	if prev_idx == new_idx:
 		ctx.state[KEY_PLANNED_IDX] = new_idx
+		ctx.state[Keys.PLANNED_SELECTION_SOURCE] = SELECTION_SOURCE_NONE if new_idx < 0 else int(
+			ctx.state.get(Keys.PLANNED_SELECTION_SOURCE, SELECTION_SOURCE_NONE)
+		)
 		return
 
 	_on_planned_intent_changed_sim(profile, prev_idx, new_idx, ctx)
 	ctx.state[KEY_PLANNED_IDX] = new_idx
+	if new_idx < 0:
+		ctx.state[Keys.PLANNED_SELECTION_SOURCE] = SELECTION_SOURCE_NONE
+	else:
+		var override_idx := _get_first_override_idx_sim(profile, ctx)
+		ctx.state[Keys.PLANNED_SELECTION_SOURCE] = (
+			SELECTION_SOURCE_OVERRIDE if new_idx == override_idx else SELECTION_SOURCE_CHANCE
+		)
 
 	var new_action := get_action_by_idx(profile, new_idx)
 	if new_action == null:

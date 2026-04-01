@@ -7,7 +7,7 @@ enum ChoiceType { CONDITIONAL, CHANCE }
 @export var intent_lifecycle_models: Array[IntentLifecycleModel] = []
 
 @export_group("Selection")
-@export var choice_type: ChoiceType = ChoiceType.CHANCE
+#@export var choice_type: ChoiceType = ChoiceType.CHANCE
 @export var chance_weight: float = 1.0
 @export var performable_models: Array[PerformableModel] = []
 @export var state_models: Array[StateModel] = []

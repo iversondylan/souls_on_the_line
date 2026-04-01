@@ -197,6 +197,7 @@ const INTENT_DIRTY := &"intent_dirty"
 const IS_ACTING := &"is_acting"
 const FIRST_INTENTS_READY := &"first_intent_ready"
 const ACTIONS_PERFORMED_COUNT := &"actions_performed_count"
+const PLANNED_SELECTION_SOURCE := &"planned_selection_source"
 const ACTION_STATE := &"action_state"
 const SPREE := &"spree"
 
