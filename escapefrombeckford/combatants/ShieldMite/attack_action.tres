@@ -12,6 +12,7 @@
 [resource]
 script = ExtResource("4_62iip")
 effect_packages = Array[ExtResource("1_0jkaa")]([ExtResource("2_7tcd8")])
+action_name = "Shield Bash"
 intent_icon = ExtResource("3_62iip")
 intent_icon_uid = "uid://c54dbo8n7r3g"
 intent_text_model = ExtResource("5_kwb65")

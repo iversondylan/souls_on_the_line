@@ -17,6 +17,7 @@ metadata/_custom_type_script = "uid://bqd5160umo0sl"
 [resource]
 script = ExtResource("5_53ca3")
 effect_packages = Array[ExtResource("1_37f7b")]([ExtResource("2_pu00f")])
+action_name = "Brace"
 intent_icon = ExtResource("1_ubf13")
 intent_text_model = SubResource("Resource_53ca3")
 tooltip_model = ExtResource("8_53ca3")

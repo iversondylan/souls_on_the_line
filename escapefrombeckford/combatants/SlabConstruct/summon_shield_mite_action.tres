@@ -14,6 +14,7 @@
 [resource]
 script = ExtResource("4_vlhit")
 effect_packages = Array[ExtResource("1_t7gtc")]([ExtResource("2_ghfs1")])
+action_name = "Call Shield Mite"
 state_models = Array[ExtResource("5_bpa23")]([ExtResource("9_2pqbx")])
 intent_icon = ExtResource("3_bpa23")
 intent_icon_uid = "uid://dnor2pbb0nhu"

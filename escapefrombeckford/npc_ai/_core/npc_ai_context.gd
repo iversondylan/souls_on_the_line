@@ -16,3 +16,4 @@ var state: Dictionary      # persistent AI state
 var params: Dictionary = {}
 var forecast: bool = false
 var preview_package_index: int = -1
+var action_name: String = ""

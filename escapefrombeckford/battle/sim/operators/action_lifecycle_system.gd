@@ -78,9 +78,11 @@ static func on_action_execution_started(ctx: NPCAIContext) -> void:
 	if action == null:
 		return
 
+	ctx.action_name = action.resolve_display_name(ctx.params)
 	for m: IntentLifecycleModel in action.intent_lifecycle_models:
 		if m != null:
 			m.on_action_execution_started(ctx)
+	ctx.action_name = ""
 
 static func on_action_execution_completed(ctx: NPCAIContext) -> void:
 	if ctx == null or ctx.api == null or ctx.combatant_data == null or ctx.combatant_data.ai == null:
@@ -93,9 +95,11 @@ static func on_action_execution_completed(ctx: NPCAIContext) -> void:
 	if action == null:
 		return
 
+	ctx.action_name = action.resolve_display_name(ctx.params)
 	for m: IntentLifecycleModel in action.intent_lifecycle_models:
 		if m != null:
 			m.on_action_execution_completed(ctx)
+	ctx.action_name = ""
 
 static func _make_ai_ctx(api: SimBattleAPI, u: CombatantState) -> NPCAIContext:
 	var ctx := NPCAIContext.new()

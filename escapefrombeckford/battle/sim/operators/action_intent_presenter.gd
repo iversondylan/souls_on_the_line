@@ -34,6 +34,7 @@ static func emit_set_intent(api: SimBattleAPI, profile: NPCAIProfile, ctx: NPCAI
 	var preview_package_index := _find_attack_preview_package_index(action)
 	ctx.preview_package_index = preview_package_index
 	intent_text_color = _resolve_intent_text_color(ctx, actor_id)
+	ctx.action_name = action.resolve_display_name(ctx.params)
 
 	if action.intent_text_model:
 		intent_text = String(action.intent_text_model.get_text(ctx))
@@ -44,6 +45,7 @@ static func emit_set_intent(api: SimBattleAPI, profile: NPCAIProfile, ctx: NPCAI
 	api.writer.emit_set_intent(actor_id, new_idx, uid, uid_ranged, intent_text, tooltip_text, is_ranged, intent_text_color)
 
 	ctx.preview_package_index = -1
+	ctx.action_name = ""
 	if ctx.params != null:
 		ctx.params.clear()
 
@@ -96,6 +98,7 @@ static func emit_current_intent(api: SimBattleAPI, cid: int) -> void:
 	var preview_package_index := _find_attack_preview_package_index(action)
 	ctx.preview_package_index = preview_package_index
 	var intent_text_color := _resolve_intent_text_color(ctx, int(cid))
+	ctx.action_name = action.resolve_display_name(ctx.params)
 
 	if action.intent_text_model:
 		intent_text = String(action.intent_text_model.get_text(ctx))
@@ -106,6 +109,7 @@ static func emit_current_intent(api: SimBattleAPI, cid: int) -> void:
 	api.writer.emit_set_intent(int(cid), idx, uid, uid_ranged, intent_text, tooltip_text, is_ranged, intent_text_color)
 
 	ctx.preview_package_index = -1
+	ctx.action_name = ""
 	if ctx.params != null:
 		ctx.params.clear()
 
@@ -118,6 +122,7 @@ static func _change_params_only(action: NPCAction, ctx: NPCAIContext) -> void:
 		ctx.params = {}
 	else:
 		ctx.params.clear()
+	ctx.action_name = ""
 
 	for pkg: NPCEffectPackage in action.effect_packages:
 		if pkg == null:

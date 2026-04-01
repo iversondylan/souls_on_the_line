@@ -17,6 +17,7 @@ metadata/_custom_type_script = "uid://cgyx5yvchgfsk"
 [resource]
 script = ExtResource("5_7u81r")
 effect_packages = Array[ExtResource("1_nk5qe")]([ExtResource("2_k1bcu")])
+action_name = "Crush"
 intent_icon = ExtResource("1_kcv8e")
 intent_text_model = SubResource("Resource_atgwl")
 tooltip_model = ExtResource("8_atgwl")

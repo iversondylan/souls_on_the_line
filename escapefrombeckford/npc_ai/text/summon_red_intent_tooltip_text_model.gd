@@ -7,7 +7,7 @@
 class_name SummonRedIntentTooltipTextModel
 extends TextModel
 
-@export_multiline var text_template: String = "[b]Summon Intent[/b] [{summon_name}]: %s/%s unit."
+@export_multiline var text_template: String = "[b]{action_name}[/b] [{summon_name}]: %s/%s unit."
 
 func _fallback_summon_data(ctx: NPCAIContext) -> CombatantData:
 	var path := String(_param_v(ctx, Keys.DEFAULT_SUMMON_DATA_PATH, ""))
@@ -36,7 +36,8 @@ func get_text(ctx: NPCAIContext) -> String:
 		return "error"
 
 	var result := text_template
+	result = result.replace("{action_name}", String(ctx.action_name))
 	result = result.replace("{summon_name}", String(data.name))
 	if count == 1:
 		return result % [red, hp]
-	return "[b]Summon Intent[/b] [%s]: %s units of %s/%s." % [String(data.name), count, red, hp]
+	return "[b]%s[/b] [%s]: %s units of %s/%s." % [String(ctx.action_name), String(data.name), count, red, hp]

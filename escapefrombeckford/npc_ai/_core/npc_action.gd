@@ -13,6 +13,8 @@ enum ChoiceType { CONDITIONAL, CHANCE }
 @export var state_models: Array[StateModel] = []
 
 @export_group("Intent")
+@export var action_name: String = ""
+@export var action_name_ranged: String = ""
 @export var intent_icon: Texture2D
 @export var intent_icon_uid: String
 @export var intent_icon_ranged: Texture2D
@@ -23,3 +25,10 @@ enum ChoiceType { CONDITIONAL, CHANCE }
 @export_group("Resolution Impact")
 #@export var sound: AudioStream
 @export var resolve_delay: float = 0.6
+
+func resolve_display_name(params: Dictionary = {}) -> String:
+	if params != null and !String(action_name_ranged).is_empty():
+		var attack_mode := int(params.get(Keys.ATTACK_MODE, Attack.Mode.MELEE))
+		if attack_mode == Attack.Mode.RANGED:
+			return String(action_name_ranged)
+	return String(action_name)

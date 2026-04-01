@@ -23,6 +23,7 @@ metadata/_custom_type_script = "uid://dn2f2q20b4rcx"
 script = ExtResource("3_so6ii")
 effect_packages = Array[ExtResource("1_d445l")]([ExtResource("2_6e1wr")])
 choice_type = 0
+action_name = "Shoot"
 performable_models = Array[ExtResource("2_7f0vk")]([SubResource("Resource_4vc2i")])
 intent_icon = ExtResource("3_0ngfj")
 intent_icon_uid = "uid://dp3uhdoaut1lx"

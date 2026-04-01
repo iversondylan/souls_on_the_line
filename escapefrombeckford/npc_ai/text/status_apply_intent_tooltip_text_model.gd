@@ -1,6 +1,6 @@
 class_name StatusApplyIntentTooltipTextModel extends TextModel
 
-@export_multiline var text_template: String = "[b]Apply Status Intent[/b] [{target}]: apply {stacks}{status}."
+@export_multiline var text_template: String = "[b]{action_name}[/b] [{target}]: apply {stacks}{status}."
 
 func get_text(ctx: NPCAIContext) -> String:
 	if ctx == null:
@@ -10,6 +10,7 @@ func get_text(ctx: NPCAIContext) -> String:
 	var actor_id := int(ctx.cid)
 	var status_proto := _resolve_status_proto(ctx)
 
+	result = result.replace("{action_name}", String(ctx.action_name))
 	result = result.replace("{target}", _build_target_text(ctx, actor_id))
 	result = result.replace("{stacks}", _build_stacks_text(ctx, status_proto))
 	result = result.replace("{status}", _build_status_text(status_proto))

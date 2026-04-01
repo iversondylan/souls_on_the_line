@@ -13,6 +13,7 @@
 [resource]
 script = ExtResource("4_epylr")
 effect_packages = Array[ExtResource("1_bk4gw")]([ExtResource("2_cjeym")])
+action_name = "Draft Documents"
 state_models = Array[ExtResource("5_jh5lw")]([ExtResource("7_cjeym")])
 intent_icon_uid = "uid://dnor2pbb0nhu"
 intent_text_model = ExtResource("4_jh5lw")

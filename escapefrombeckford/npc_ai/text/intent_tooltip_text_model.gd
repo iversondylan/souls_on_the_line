@@ -17,8 +17,10 @@ func get_text(ctx: NPCAIContext) -> String:
 		var key_str := m.get_string(1)
 		var replacement := "[key not found]"
 
+		if key_str == "action_name":
+			replacement = String(ctx.action_name)
 		# Try string key
-		if ctx.params.has(key_str):
+		elif ctx.params.has(key_str):
 			replacement = str(ctx.params.get(key_str))
 		else:
 			# Try StringName key

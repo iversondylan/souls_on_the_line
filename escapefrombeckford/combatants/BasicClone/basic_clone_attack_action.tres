@@ -18,6 +18,7 @@ metadata/_custom_type_script = "uid://cgyx5yvchgfsk"
 [resource]
 script = ExtResource("8_f2wpp")
 effect_packages = Array[ExtResource("1_ymu04")]([ExtResource("2_276rr")])
+action_name = "Strike"
 intent_icon = ExtResource("3_7vilb")
 intent_icon_uid = "uid://c54dbo8n7r3g"
 intent_icon_ranged = ExtResource("4_li2ag")

@@ -14,6 +14,7 @@
 [resource]
 script = ExtResource("6_action")
 effect_packages = Array[ExtResource("1_pkg")]([ExtResource("2_attack_pkg")])
+action_name = "Cutlery Volley"
 state_models = Array[ExtResource("7_state")]([ExtResource("9_cwkby")])
 intent_icon = ExtResource("3_attack_icon")
 intent_icon_uid = "uid://c54dbo8n7r3g"

@@ -291,9 +291,11 @@ static func _is_action_performable_sim(action: NPCAction, ctx: NPCAIContext) -> 
 static func _on_planned_intent_changed_sim(profile: NPCAIProfile, prev_idx: int, _new_idx: int, ctx: NPCAIContext) -> void:
 	var prev_action := get_action_by_idx(profile, prev_idx)
 	if prev_action != null:
+		ctx.action_name = prev_action.resolve_display_name()
 		for m in prev_action.intent_lifecycle_models:
 			if m != null:
 				m.on_plan_canceled(ctx)
+	ctx.action_name = ""
 
 static func _transition_planned_intent_sim(profile: NPCAIProfile, prev_idx: int, new_idx: int, ctx: NPCAIContext) -> void:
 	if ctx == null or ctx.state == null:
@@ -310,9 +312,11 @@ static func _transition_planned_intent_sim(profile: NPCAIProfile, prev_idx: int,
 	if new_action == null:
 		return
 
+	ctx.action_name = new_action.resolve_display_name()
 	for m in new_action.intent_lifecycle_models:
 		if m != null:
 			m.on_plan_chosen(ctx)
+	ctx.action_name = ""
 
 
 static func _dbg(msg: String) -> void:

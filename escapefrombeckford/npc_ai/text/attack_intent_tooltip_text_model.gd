@@ -2,7 +2,7 @@
 
 class_name AttackIntentTooltipTextModel extends TextModel
 
-@export_multiline var text_template: String = "[b]Attack Intent[/b] [{attack_mode} attack]: {strikes}{damage} damage."
+@export_multiline var text_template: String = "[b]{action_name}[/b]: {strikes}{damage} damage."
 
 func get_text(ctx: NPCAIContext) -> String:
 	if ctx == null or ctx.params == null:
@@ -10,17 +10,7 @@ func get_text(ctx: NPCAIContext) -> String:
 
 	var result := text_template
 
-	# ---- Attack mode ----
-	var mode_raw := _param_i(ctx, Keys.ATTACK_MODE, -1)
-	var mode_text := ""
-	match mode_raw:
-		Attack.Mode.MELEE:
-			mode_text = "Melee"
-		Attack.Mode.RANGED:
-			mode_text = "Ranged"
-		-1:
-			mode_text = "Standard"
-	result = result.replace("{attack_mode}", mode_text)
+	result = result.replace("{action_name}", String(ctx.action_name))
 
 	# ---- Strikes ----
 	var strikes := _param_i(ctx, Keys.STRIKES, 1)

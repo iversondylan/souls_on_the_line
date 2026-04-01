@@ -4,5 +4,5 @@
 
 [resource]
 script = ExtResource("1_j84mh")
-text_template = "[b]Block Intent:[/b] gain {armor_amount} armor."
+text_template = "[b]{action_name}[/b]: gain {armor_amount} armor."
 metadata/_custom_type_script = "uid://cxh1c3vqgquc5"
