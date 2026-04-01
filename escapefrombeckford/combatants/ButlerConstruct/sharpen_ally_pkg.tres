@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="NPCEffectPackage" format=3 uid="uid://bpx36dobm3jr5"]
+
+[ext_resource type="Script" uid="uid://b8d5j6ne4mt88" path="res://npc_ai/_core/param_model.gd" id="1_8kd5r"]
+[ext_resource type="Resource" path="res://npc_ai/npc_status_sequence.tres" id="1_twp3t"]
+[ext_resource type="Script" uid="uid://3jde7uhq2yho" path="res://npc_ai/_core/npc_effect_package.gd" id="2_mx7tr"]
+[ext_resource type="Resource" uid="uid://h12mtobugkmp" path="res://npc_ai/status/frontmost_ally_status_target_model.tres" id="3_f77ke"]
+[ext_resource type="Script" uid="uid://cuj4qvyx6dedj" path="res://npc_ai/_core/state_model.gd" id="3_to0ne"]
+[ext_resource type="Resource" uid="uid://b7r2kudtsh2q4" path="res://combatants/ButlerConstruct/sharpen_might_model.tres" id="4_slwdt"]
+
+[resource]
+script = ExtResource("2_mx7tr")
+effect = ExtResource("1_twp3t")
+param_models = Array[ExtResource("1_8kd5r")]([ExtResource("3_f77ke"), ExtResource("4_slwdt")])
+metadata/_custom_type_script = "uid://3jde7uhq2yho"
