@@ -931,7 +931,10 @@ func _replan_actor_intent_after_turn_cleanup(cid: int) -> void:
 	var ctx := ActionPlanner.make_context(api, u)
 	ctx.runtime = self
 
+	# Finishing an action starts a fresh intent cycle for the actor.
 	ctx.state[ActionPlanner.KEY_PLANNED_IDX] = -1
+	ctx.state[Keys.PLANNED_SELECTION_SOURCE] = ActionPlanner.SELECTION_SOURCE_NONE
+	ctx.state[ActionPlanner.STABILITY_BROKEN] = false
 	ctx.state[Keys.IS_ACTING] = false
 	ctx.state[Keys.FIRST_INTENTS_READY] = true
 

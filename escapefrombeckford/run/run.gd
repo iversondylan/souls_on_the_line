@@ -197,6 +197,7 @@ func _on_battle_entered(room: Room) -> void:
 
 
 func _on_battle_entered_with_seed(room: Room, existing_battle_seed: int = -1) -> void:
+	_assign_battle_to_room_if_needed(room)
 	var label := "room:%d:%d:battle_seed" % [room.row, room.column]
 	var battle_seed := int(existing_battle_seed)
 	if battle_seed < 0:
@@ -378,6 +379,7 @@ func _generate_or_restore_map() -> void:
 			run_state.map_seed = map_seed
 	var rng := RNG.new(map_seed)
 	map.generate_new_map(rng)
+	_rehydrate_battle_assignments()
 	if run_state != null and !run_state.cleared_room_coords.is_empty():
 		map.restore_progress(run_state.cleared_room_coords)
 	else:
@@ -394,6 +396,84 @@ func _derive_reward_seed(room: Room, kind: String) -> int:
 	if room == null:
 		return 0
 	return RNGUtil.seed_from_label(run_seed, "room:%d:%d:%s_rewards" % [room.row, room.column, kind])
+
+
+func _battle_assignment_room_key(room: Room) -> String:
+	if room == null:
+		return ""
+	return "%d:%d" % [room.column, room.row]
+
+
+func _resolve_battle_from_path(path: String) -> BattleData:
+	if path.is_empty():
+		return null
+	return load(path) as BattleData
+
+
+func _get_battle_pool() -> BattlePool:
+	if map == null or map.map_generator == null:
+		return null
+	return map.map_generator.battle_pool
+
+
+func _get_battle_tier_for_room(room: Room) -> int:
+	if room == null:
+		return 0
+	if int(room.type) == int(Room.RoomType.BOSS):
+		return 2
+	return 1 if int(room.column) > 2 else 0
+
+
+func _apply_saved_battle_assignment(room: Room) -> bool:
+	if run_state == null or room == null:
+		return false
+	var room_key := _battle_assignment_room_key(room)
+	if room_key.is_empty() or !run_state.battle_assignments_by_room_key.has(room_key):
+		return false
+	var battle_path := str(run_state.battle_assignments_by_room_key.get(room_key, ""))
+	room.battle_data = _resolve_battle_from_path(battle_path)
+	if !battle_path.is_empty() and !run_state.consumed_battle_paths.has(battle_path):
+		run_state.consumed_battle_paths.append(battle_path)
+	return true
+
+
+func _assign_battle_to_room_if_needed(room: Room) -> BattleData:
+	if room == null:
+		return null
+	if _apply_saved_battle_assignment(room):
+		return room.battle_data
+	if run_state == null:
+		room.battle_data = null
+		return null
+
+	var battle_data: BattleData = null
+	var pool := _get_battle_pool()
+	if pool != null:
+		var tier := _get_battle_tier_for_room(room)
+		var selection_seed := _derive_room_seed(room, "battle_assignment")
+		var rng := RNG.new(selection_seed)
+		battle_data = pool.get_random_battle_for_tier(rng, tier, run_state.consumed_battle_paths)
+
+	var battle_path := ""
+	if battle_data != null:
+		battle_path = String(battle_data.resource_path)
+		if !battle_path.is_empty() and !run_state.consumed_battle_paths.has(battle_path):
+			run_state.consumed_battle_paths.append(battle_path)
+
+	run_state.battle_assignments_by_room_key[_battle_assignment_room_key(room)] = battle_path
+	room.battle_data = battle_data
+	return battle_data
+
+
+func _rehydrate_battle_assignments() -> void:
+	if run_state == null or map == null or map.map_data == null:
+		return
+	for column_rooms: Array in map.map_data:
+		for room_variant in column_rooms:
+			var room := room_variant as Room
+			if room == null:
+				continue
+			_apply_saved_battle_assignment(room)
 
 
 func _card_proto_path(card_data: CardData) -> String:

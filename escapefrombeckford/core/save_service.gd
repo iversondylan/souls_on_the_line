@@ -523,6 +523,8 @@ func _decode_run_state(envelope: Dictionary) -> RunState:
 	run_state.pending_reward_claimed_gold_indices = _decode_int_array(data.get("pending_reward_claimed_gold_indices", []))
 	run_state.pending_reward_card_claimed = bool(data.get("pending_reward_card_claimed", false))
 	run_state.pending_reward_claimed_arcanum_indices = _decode_int_array(data.get("pending_reward_claimed_arcanum_indices", []))
+	run_state.battle_assignments_by_room_key = _decode_string_dictionary(data.get("battle_assignments_by_room_key", {}))
+	run_state.consumed_battle_paths = _decode_packed_string_array(data.get("consumed_battle_paths", []))
 	run_state.owned_arcanum_ids = _decode_packed_string_array(data.get("owned_arcanum_ids", []))
 	run_state.draftable_cards = _decode_card_pile_from_refs(data.get("draftable_card_refs", []))
 	run_state.run_deck = _decode_run_deck(data.get("run_deck", {}))
@@ -565,6 +567,8 @@ func _encode_run_state(run_state: RunState, save_name: String = "") -> Dictionar
 			"pending_reward_claimed_gold_indices": _encode_int_array(run_state.pending_reward_claimed_gold_indices),
 			"pending_reward_card_claimed": bool(run_state.pending_reward_card_claimed),
 			"pending_reward_claimed_arcanum_indices": _encode_int_array(run_state.pending_reward_claimed_arcanum_indices),
+			"battle_assignments_by_room_key": _encode_string_dictionary(run_state.battle_assignments_by_room_key),
+			"consumed_battle_paths": _encode_packed_string_array(run_state.consumed_battle_paths),
 			"owned_arcanum_ids": _encode_packed_string_array(run_state.owned_arcanum_ids),
 			"draftable_card_refs": _encode_card_pile_refs(run_state.draftable_cards),
 			"run_deck": _encode_run_deck(run_state.run_deck),
@@ -1227,6 +1231,23 @@ func _encode_packed_string_array(values: PackedStringArray) -> Array[String]:
 	return strings
 
 
+func _decode_string_dictionary(value: Variant) -> Dictionary:
+	var decoded := {}
+	if typeof(value) != TYPE_DICTIONARY:
+		return decoded
+	var raw := value as Dictionary
+	for key in raw.keys():
+		decoded[str(key)] = str(raw[key])
+	return decoded
+
+
+func _encode_string_dictionary(values: Dictionary) -> Dictionary:
+	var encoded := {}
+	for key in values.keys():
+		encoded[str(key)] = str(values[key])
+	return encoded
+
+
 func _as_dictionary(value: Variant) -> Dictionary:
 	return value if typeof(value) == TYPE_DICTIONARY else {}
 
@@ -1260,12 +1281,16 @@ func _normalize_active_run(run_state: RunState) -> void:
 		run_state.pending_reward_claimed_gold_indices = []
 	if run_state.pending_reward_claimed_arcanum_indices == null:
 		run_state.pending_reward_claimed_arcanum_indices = []
+	if run_state.battle_assignments_by_room_key == null:
+		run_state.battle_assignments_by_room_key = {}
 	if int(run_state.map_seed) == 0:
 		run_state.map_seed = RNGUtil.seed_from_label(int(run_state.run_seed), "map")
 	if run_state.run_rng_snapshot == null:
 		run_state.run_rng_snapshot = {}
 	if run_state.owned_arcanum_ids == null:
 		run_state.owned_arcanum_ids = PackedStringArray()
+	if run_state.consumed_battle_paths == null:
+		run_state.consumed_battle_paths = PackedStringArray()
 	_remove_pending_room_from_cleared(run_state)
 
 

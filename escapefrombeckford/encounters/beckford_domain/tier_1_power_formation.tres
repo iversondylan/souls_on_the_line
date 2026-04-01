@@ -8,7 +8,6 @@
 [resource]
 script = ExtResource("4_gjwee")
 encounter_name = "Beckford Basic Triplex"
-battle_tier = 1
 weight = 3.733
 gold_reward_min = 50
 gold_reward_max = 60

@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="BattleData" load_steps=4 format=3 uid="uid://mdppqf4p4ssa"]
+[gd_resource type="Resource" script_class="BattleData" format=3 uid="uid://mdppqf4p4ssa"]
 
 [ext_resource type="Script" uid="uid://cfatj0ryn8uv3" path="res://combatants/combatant_data.gd" id="1_57eb1"]
 [ext_resource type="Script" uid="uid://be1v8qevmc2xw" path="res://encounters/battle_data.gd" id="1_w8b2a"]
@@ -6,8 +6,7 @@
 
 [resource]
 script = ExtResource("1_w8b2a")
-battle_tier = 0
-weight = 1.0
+battle_tier = 1
 gold_reward_min = 47
 gold_reward_max = 67
 enemies = Array[ExtResource("1_57eb1")]([ExtResource("2_7y3kv"), ExtResource("2_7y3kv"), ExtResource("2_7y3kv")])

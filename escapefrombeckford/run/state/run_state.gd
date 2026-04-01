@@ -50,6 +50,8 @@ const BASE_RARE_WEIGHT := 0.3
 @export var pending_reward_claimed_gold_indices: Array[int] = []
 @export var pending_reward_card_claimed: bool = false
 @export var pending_reward_claimed_arcanum_indices: Array[int] = []
+@export var battle_assignments_by_room_key: Dictionary = {}
+@export var consumed_battle_paths: PackedStringArray = []
 @export var owned_arcanum_ids: PackedStringArray = []
 @export var draftable_cards: CardPile
 @export var run_deck: RunDeck

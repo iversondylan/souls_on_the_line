@@ -20,10 +20,9 @@ metadata/_custom_type_script = "uid://bqd5160umo0sl"
 [resource]
 script = ExtResource("7_rsak8")
 effect_packages = Array[ExtResource("1_dwbsa")]([ExtResource("2_3o1dh")])
-action_name = "Emergency Brace"
-choice_type = 0
 performable_models = Array[ExtResource("4_um3j2")]([ExtResource("5_wh4cq"), ExtResource("6_oftyv")])
 state_models = Array[ExtResource("6_wh4cq")]([ExtResource("9_lacm8")])
+action_name = "Emergency Brace"
 intent_icon = ExtResource("1_2t3ut")
 intent_text_model = SubResource("Resource_rsak8")
 tooltip_model = ExtResource("11_rsak8")

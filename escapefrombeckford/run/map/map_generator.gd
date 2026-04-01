@@ -40,8 +40,6 @@ func make_map(rng: RNG) -> Array[Array]:
 		for i in ENCOUNTERS - 1:
 			current_j = _make_connection(rng, i, current_j)
 
-	battle_pool.init_weights(rng)
-
 	_make_boss_room(rng)
 	_make_random_room_weights()
 	_make_room_types(rng)
@@ -145,7 +143,7 @@ func _would_cross_existing_path(i: int, j: int, room: Room) -> bool:
 	
 	return false
 	
-func _make_boss_room(rng: RNG) -> void:
+func _make_boss_room(_rng: RNG) -> void:
 	var middle_index := floori(MAP_HEIGHT * 0.5)
 	var boss_room := map_data[ENCOUNTERS - 1][middle_index] as Room
 	
@@ -154,9 +152,9 @@ func _make_boss_room(rng: RNG) -> void:
 		if current_room.next_rooms:
 			current_room.next_rooms = [] as Array[Room]
 			current_room.next_rooms.push_back(boss_room)
-	
+
 	boss_room.type = Room.RoomType.BOSS
-	boss_room.battle_data = battle_pool.get_random_battle_for_tier(rng, 2)
+	boss_room.battle_data = null
 	
 func _make_random_room_weights() -> void:
 	random_room_type_weights[Room.RoomType.BATTLE] = BATTLE_ROOM_WEIGHT
@@ -171,7 +169,7 @@ func _make_room_types(rng: RNG) -> void:
 		#print("map_generator() _make_room_types() MAKING A COLUMN 0 BATTLE")
 		if room.next_rooms.size() > 0:
 			room.type = Room.RoomType.BATTLE
-			room.battle_data = battle_pool.get_random_battle_for_tier(rng, 0)
+			room.battle_data = null
 	#9th floor is always a treasure
 	for room: Room in map_data[8]:
 		if room.next_rooms.size() > 0:
@@ -213,13 +211,7 @@ func _set_weighted_room_type(rng: RNG, room_to_set: Room) -> void:
 	room_to_set.type = type_candidate
 	
 	if type_candidate == Room.RoomType.BATTLE:
-		var tier_for_battle_rooms := 0
-		
-		if room_to_set.column > 2:
-			tier_for_battle_rooms = 1
-		#print("map_generator() _make_room_types() MAKING A GENERIC BATTLE")
-		room_to_set.battle_data = battle_pool.get_random_battle_for_tier(rng, tier_for_battle_rooms)
-		#room_to_set.battle_data = battle_pool.get_random_battle_for_tier(tier_for_battle_rooms)
+		room_to_set.battle_data = null
 
 func _room_has_parent_of_type(room: Room, type: Room.RoomType) -> bool:
 	var parents: Array[Room] = []

@@ -12,8 +12,6 @@ const SELECTION_SOURCE_CHANCE := 2
 
 static var debug := false
 
-
-
 static func make_context(api: SimBattleAPI, u: CombatantState) -> NPCAIContext:
 	var ctx := NPCAIContext.new()
 	ctx.api = api
@@ -76,7 +74,11 @@ static func ensure_valid_plan_sim(profile: NPCAIProfile, ctx: NPCAIContext, allo
 		SELECTION_SOURCE_OVERRIDE:
 			is_still_valid = int(_get_first_override_idx_sim(profile, ctx)) == idx
 		SELECTION_SOURCE_CHANCE:
-			is_still_valid = action != null
+			if action != null:
+				var override_idx := int(_get_first_override_idx_sim(profile, ctx))
+				is_still_valid = override_idx == -1
+			else:
+				is_still_valid = false
 		_:
 			is_still_valid = false
 
@@ -158,7 +160,9 @@ static func _can_cancel_intent_sim(state: Dictionary) -> bool:
 static func _get_first_override_idx_sim(profile: NPCAIProfile, ctx: NPCAIContext) -> int:
 	for i in range(profile.actions.size()):
 		var action := profile.actions[i]
-		if action != null and _is_action_override_hit_sim(action, ctx):
+		if action == null:
+			continue
+		if _is_action_override_hit_sim(action, ctx):
 			return i
 	return -1
 
@@ -299,10 +303,14 @@ static func _get_action_chance_weight_sim(action: NPCAction, action_idx: int, ct
 static func _is_action_override_hit_sim(action: NPCAction, ctx: NPCAIContext) -> bool:
 	if action == null or action.performable_models == null or action.performable_models.is_empty():
 		return false
+	var has_performable := false
 	for m in action.performable_models:
-		if m != null and m.is_performable_sim(ctx):
-			return true
-	return false
+		if m == null:
+			continue
+		has_performable = true
+		if !m.is_performable_sim(ctx):
+			return false
+	return has_performable
 
 
 static func _on_planned_intent_changed_sim(profile: NPCAIProfile, prev_idx: int, _new_idx: int, ctx: NPCAIContext) -> void:

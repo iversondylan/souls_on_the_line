@@ -26,12 +26,10 @@ static func on_group_turn_begin(api: SimBattleAPI, group_index: int) -> void:
 			continue
 
 		var ctx := _make_ai_ctx(api, u)
-
 		if bool(u.ai_state.get(&"telegraph_committed", false)):
 			continue
 
-		var idx := int(u.ai_state.get(ActionPlanner.KEY_PLANNED_IDX, -1))
-		var action := ActionPlanner.get_action_by_idx(u.combatant_data.ai, idx)
+		var action := _get_planned_action_for_unit(u)
 		if action == null:
 			continue
 
@@ -55,8 +53,7 @@ static func on_group_turn_end(api: SimBattleAPI, group_index: int) -> void:
 		ActionPlanner.ensure_ai_state_initialized(u)
 
 		var ctx := _make_ai_ctx(api, u)
-		var idx := int(u.ai_state.get(ActionPlanner.KEY_PLANNED_IDX, -1))
-		var action := ActionPlanner.get_action_by_idx(u.combatant_data.ai, idx)
+		var action := _get_planned_action_for_unit(u)
 		if action != null:
 			for m: IntentLifecycleModel in action.intent_lifecycle_models:
 				if m != null:
@@ -72,9 +69,7 @@ static func on_action_execution_started(ctx: NPCAIContext) -> void:
 		return
 	if ctx.api.state == null or ctx.api.state.has_terminal_outcome():
 		return
-	var profile: NPCAIProfile = ctx.combatant_data.ai
-	var idx := int(ctx.state.get(ActionPlanner.KEY_PLANNED_IDX, -1))
-	var action := ActionPlanner.get_action_by_idx(profile, idx)
+	var action := _get_planned_action_for_ctx(ctx)
 	if action == null:
 		return
 
@@ -89,9 +84,7 @@ static func on_action_execution_completed(ctx: NPCAIContext) -> void:
 		return
 	if ctx.api.state == null or ctx.api.state.has_terminal_outcome():
 		return
-	var profile: NPCAIProfile = ctx.combatant_data.ai
-	var idx := int(ctx.state.get(ActionPlanner.KEY_PLANNED_IDX, -1))
-	var action := ActionPlanner.get_action_by_idx(profile, idx)
+	var action := _get_planned_action_for_ctx(ctx)
 	if action == null:
 		return
 
@@ -100,6 +93,18 @@ static func on_action_execution_completed(ctx: NPCAIContext) -> void:
 		if m != null:
 			m.on_action_execution_completed(ctx)
 	ctx.action_name = ""
+
+static func _get_planned_action_for_unit(u: CombatantState) -> NPCAction:
+	if u == null or u.combatant_data == null or u.combatant_data.ai == null or u.ai_state == null:
+		return null
+	var idx := int(u.ai_state.get(ActionPlanner.KEY_PLANNED_IDX, -1))
+	return ActionPlanner.get_action_by_idx(u.combatant_data.ai, idx)
+
+static func _get_planned_action_for_ctx(ctx: NPCAIContext) -> NPCAction:
+	if ctx == null or ctx.combatant_data == null or ctx.combatant_data.ai == null or ctx.state == null:
+		return null
+	var idx := int(ctx.state.get(ActionPlanner.KEY_PLANNED_IDX, -1))
+	return ActionPlanner.get_action_by_idx(ctx.combatant_data.ai, idx)
 
 static func _make_ai_ctx(api: SimBattleAPI, u: CombatantState) -> NPCAIContext:
 	var ctx := NPCAIContext.new()

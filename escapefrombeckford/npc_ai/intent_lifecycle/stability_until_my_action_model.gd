@@ -13,8 +13,6 @@ func _status_id() -> StringName:
 func on_opposing_group_start(ctx: NPCAIContext) -> void:
 	if !_can_run_sim(ctx):
 		return
-	if ctx.state != null:
-		ctx.state[ActionPlanner.STABILITY_BROKEN] = false
 	_apply_to_self_sim(ctx)
 
 func on_ability_started(ctx: NPCAIContext) -> void:

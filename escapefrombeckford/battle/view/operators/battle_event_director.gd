@@ -165,7 +165,7 @@ func _start_ranged_windup_order(order: RangedWindupPresentationOrder) -> void:
 func _start_ranged_fire_order(order: RangedFirePresentationOrder) -> void:
 	if order == null:
 		return
-	print("VIEW ranged fire projectile uid/path: ", order.projectile_scene_path)
+	#print("VIEW ranged fire projectile uid/path: ", order.projectile_scene_path)
 	var attacker := battle_view.get_combatant(int(order.actor_id))
 	if attacker != null:
 		attacker.play_presentation_order(order, battle_view)
