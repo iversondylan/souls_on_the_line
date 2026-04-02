@@ -93,6 +93,11 @@ func get_front_combatant_id(group_index: int) -> int:
 	return int(ids[0]) if ids.size() > 0 else 0
 
 
+func get_rearmost_combatant_id(group_index: int) -> int:
+	var ids := get_combatants_in_group(group_index, false)
+	return int(ids[-1]) if ids.size() > 0 else 0
+
+
 func get_enemies_of(combat_id: int) -> Array[int]:
 	var g := get_group(combat_id)
 	if g == -1:

@@ -52,6 +52,17 @@ static func _get_base_target_ids(ctx: TargetingContext) -> Array[int]:
 				out.append(int(front))
 			return out
 
+		Attack.Targeting.REVERSE:
+			var my_group := ctx.api.get_group(int(ctx.source_id))
+			if my_group < 0:
+				return out
+
+			var opp := ctx.api.get_opposing_group(my_group)
+			var rear := ctx.api.get_rearmost_combatant_id(opp)
+			if rear > 0:
+				out.append(int(rear))
+			return out
+
 		Attack.Targeting.ENEMIES:
 			return ctx.api.get_enemies_of(int(ctx.source_id))
 
@@ -69,7 +80,7 @@ static func _is_single(ctx: TargetingContext) -> bool:
 	if !ctx.explicit_target_ids.is_empty():
 		return ctx.explicit_target_ids.size() == 1
 	var target_type := int(ctx.target_type)
-	return target_type == Attack.Targeting.STANDARD
+	return target_type == Attack.Targeting.STANDARD or target_type == Attack.Targeting.REVERSE
 
 
 static func _run_stage(ctx: TargetingContext, stage: int) -> void:
