@@ -26,6 +26,7 @@ var _actor_turn_scope_handle: ScopeHandle = null
 var _delayed_reactions_by_timing: Dictionary = {}
 var _strike_resolution_depth: int = 0
 var _active_delayed_reaction_drains: Dictionary = {}
+var _active_delayed_reaction: DelayedReaction = null
 
 
 # ============================================================================
@@ -50,6 +51,7 @@ func reset_runtime_state() -> void:
 	_delayed_reactions_by_timing.clear()
 	_strike_resolution_depth = 0
 	_active_delayed_reaction_drains.clear()
+	_active_delayed_reaction = null
 
 func _ensure_turn_flow_query_host_initialized() -> void:
 	if host == null:
@@ -121,6 +123,10 @@ func is_in_strike_resolution() -> bool:
 	return _strike_resolution_depth > 0
 
 
+func get_active_delayed_reaction() -> DelayedReaction:
+	return _active_delayed_reaction
+
+
 func enqueue_delayed_reaction(reaction: DelayedReaction) -> void:
 	if reaction == null:
 		return
@@ -148,7 +154,9 @@ func drain_delayed_reactions(timing: int) -> void:
 		for reaction_value in bucket:
 			var reaction: DelayedReaction = reaction_value as DelayedReaction
 			if reaction != null:
+				_active_delayed_reaction = reaction
 				reaction.execute(self)
+				_active_delayed_reaction = null
 
 	_active_delayed_reaction_drains.erase(timing_key)
 

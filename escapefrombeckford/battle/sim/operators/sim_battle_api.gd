@@ -531,6 +531,7 @@ func resolve_death(ctx: DeathContext) -> void:
 	var g := int(u.team)
 	ctx.group_index = g
 	ctx.before_order_ids = PackedInt32Array(state.groups[g].order) if g != -1 else PackedInt32Array()
+	var insert_index := ctx.before_order_ids.find(int(ctx.dead_id))
 
 	u.alive = false
 	if g != -1:
@@ -558,7 +559,10 @@ func resolve_death(ctx: DeathContext) -> void:
 		reaction.dead_id = int(ctx.dead_id)
 		reaction.killer_id = int(ctx.killer_id)
 		reaction.group_index = int(ctx.group_index)
+		reaction.insert_index = int(insert_index)
 		reaction.reason = String(ctx.reason)
+		reaction.before_order_ids = PackedInt32Array(ctx.before_order_ids)
+		reaction.after_order_ids = PackedInt32Array(ctx.after_order_ids)
 		reaction.source_reason = String(ctx.reason)
 		reaction.origin_card_uid = String(ctx.origin_card_uid)
 		reaction.origin_arcanum_id = ctx.origin_arcanum_id

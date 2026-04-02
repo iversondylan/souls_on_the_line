@@ -162,6 +162,17 @@ func kill_self(reason: String = "", killer_id: int = 0) -> void:
 	api.resolve_death(death_ctx)
 
 
+func get_active_delayed_reaction() -> DelayedReaction:
+	if api == null or api.runtime == null:
+		return null
+	return api.runtime.get_active_delayed_reaction()
+
+
+func get_active_on_death_reaction() -> OnDeathDelayedReaction:
+	var reaction := get_active_delayed_reaction()
+	return reaction as OnDeathDelayedReaction
+
+
 func request_replan() -> void:
 	if api == null:
 		return

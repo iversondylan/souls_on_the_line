@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="CombatantData" format=3 uid="uid://d1i2mgso62sjn"]
+
+[ext_resource type="Script" path="res://combatants/combatant_data.gd" id="1_data_script"]
+[ext_resource type="Resource" path="res://combatants/critters/FormicDrone/formic_drone_ai.tres" id="2_formic_ai"]
+
+[resource]
+script = ExtResource("1_data_script")
+name = "Formic Drone"
+character_art_uid = "res://_assets/character_visuals/placeholder_shapes/ant_silhouette.PNG"
+portrait_art_uid = "res://_assets/character_visuals/placeholder_shapes/ant_silhouette.PNG"
+height = 140
+max_health = 2
+apr = 2
+apm = 2
+ai = ExtResource("2_formic_ai")
+metadata/_custom_type_script = "uid://cfatj0ryn8uv3"

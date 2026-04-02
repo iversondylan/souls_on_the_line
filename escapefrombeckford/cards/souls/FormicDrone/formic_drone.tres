@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="CardData" format=3 uid="uid://btdar0q5ek8di"]
+
+[ext_resource type="Script" path="res://cards/_core/card_action.gd" id="1_card_action"]
+[ext_resource type="Script" path="res://cards/_core/card_data.gd" id="2_card_data"]
+[ext_resource type="Resource" path="res://cards/souls/FormicDrone/formic_drone_summon_action.tres" id="3_formic_drone_summon"]
+[ext_resource type="Resource" path="res://cards/_reusable_action_treses/apply_protected_drone_to_summoned_action.tres" id="4_apply_protected_drone"]
+[ext_resource type="Texture2D" path="res://_assets/sprites/assorted/ant_icon.png" id="5_formic_card_texture"]
+
+[resource]
+script = ExtResource("2_card_data")
+card_type = 1
+target_type = 1
+rarity = 1
+name = "Formic Drone"
+description = "Summon a 2/2 Formic Drone with Protected Drone."
+cost = 1
+texture = ExtResource("5_formic_card_texture")
+actions = Array[ExtResource("1_card_action")]([ExtResource("3_formic_drone_summon"), ExtResource("4_apply_protected_drone")])
+metadata/_custom_type_script = "uid://d2f0qepe047dc"
