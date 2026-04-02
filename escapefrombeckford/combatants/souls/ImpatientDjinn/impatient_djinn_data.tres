@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="CombatantData" format=3 uid="uid://cjxk1x8uo1qyl"]
+
+[ext_resource type="Script" uid="uid://cfatj0ryn8uv3" path="res://combatants/combatant_data.gd" id="1_af4ov"]
+[ext_resource type="Resource" uid="uid://rrwog7udt3jx" path="res://combatants/souls/ImpatientDjinn/impatient_djinn_ai.tres" id="2_djinn_ai"]
+
+[resource]
+script = ExtResource("1_af4ov")
+name = "Impatient Djinn"
+character_art_uid = "uid://blrkcosxpriad"
+portrait_art_uid = "uid://blrkcosxpriad"
+height = 300
+max_health = 9
+apr = 9
+apm = 9
+ai = ExtResource("2_djinn_ai")
+metadata/_custom_type_script = "uid://cfatj0ryn8uv3"

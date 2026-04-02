@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="CombatantData" format=3 uid="uid://c2yo7152wx0l7"]
+
+[ext_resource type="Script" uid="uid://cfatj0ryn8uv3" path="res://combatants/combatant_data.gd" id="1_g2rpw"]
+[ext_resource type="Resource" uid="uid://c0i4tfa6to82w" path="res://combatants/enemies/CursedLedger/cursed_ledger_ai.tres" id="1_yxdd8"]
+
+[resource]
+script = ExtResource("1_g2rpw")
+name = "Cursed Ledger"
+character_art_uid = "uid://dl7lv3pq1jkot"
+portrait_art_uid = "uid://dl7lv3pq1jkot"
+facing_right = false
+height = 200
+max_health = 42
+apr = 5
+apm = 5
+ai = ExtResource("1_yxdd8")
+metadata/_custom_type_script = "uid://cfatj0ryn8uv3"

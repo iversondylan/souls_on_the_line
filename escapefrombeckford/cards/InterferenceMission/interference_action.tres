@@ -1,8 +1,8 @@
-[gd_resource type="Resource" format=3]
+[gd_resource type="Resource" format=3 uid="uid://c57kowfynyp63"]
 
-[ext_resource type="Script" path="res://cards/_generic_actions/apply_status_to_all_enemies_by_sacrificed_position_action.gd" id="1_interference"]
-[ext_resource type="Resource" path="res://statuses/sundered.tres" id="2_sundered"]
-[ext_resource type="Resource" path="res://statuses/suppressed.tres" id="3_suppressed"]
+[ext_resource type="Script" uid="uid://b82pm4ymbnp2n" path="res://cards/_generic_actions/apply_status_to_all_enemies_by_sacrificed_position_action.gd" id="1_interference"]
+[ext_resource type="Resource" uid="uid://bkmw72tr8qa33" path="res://statuses/sundered.tres" id="2_sundered"]
+[ext_resource type="Resource" uid="uid://bi6mt7v1xat1e" path="res://statuses/suppressed.tres" id="3_suppressed"]
 
 [resource]
 script = ExtResource("1_interference")
@@ -10,4 +10,4 @@ status_if_in_front = ExtResource("2_sundered")
 intensity_if_in_front = 30
 status_if_behind = ExtResource("3_suppressed")
 intensity_if_behind = 30
-metadata/_custom_type_script = "uid://wtk5v77fcqvn"
+metadata/_custom_type_script = "uid://b82pm4ymbnp2n"

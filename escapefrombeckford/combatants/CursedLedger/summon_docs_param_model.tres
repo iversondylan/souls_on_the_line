@@ -1,9 +1,0 @@
-[gd_resource type="Resource" script_class="ExportCombatantDataSummonModel" format=3 uid="uid://cdudxy338vdub"]
-
-[ext_resource type="Script" uid="uid://d2aej6kx1gp63" path="res://npc_ai/summon_data/export_combatant_data_summon_model.gd" id="1_6bgk3"]
-[ext_resource type="Resource" uid="uid://d0biiyu4fmutq" path="res://combatants/CursedDocument/cursed_document_data.tres" id="1_reuks"]
-
-[resource]
-script = ExtResource("1_6bgk3")
-combatant_data = ExtResource("1_reuks")
-metadata/_custom_type_script = "uid://d2aej6kx1gp63"

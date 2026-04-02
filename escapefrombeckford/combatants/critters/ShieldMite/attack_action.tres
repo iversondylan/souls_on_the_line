@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="NPCAction" format=3 uid="uid://bkmf1p3jsl12y"]
+
+[ext_resource type="Script" uid="uid://3jde7uhq2yho" path="res://npc_ai/_core/npc_effect_package.gd" id="1_0jkaa"]
+[ext_resource type="Resource" uid="uid://b0ok4okpaa5c4" path="res://combatants/critters/ShieldMite/attack_pkg.tres" id="2_7tcd8"]
+[ext_resource type="Script" uid="uid://dtwuyctovqk5r" path="res://npc_ai/_core/intent_lifecycle_model.gd" id="2_i5g2x"]
+[ext_resource type="Script" uid="uid://q408gy2b4q6a" path="res://npc_ai/_core/performable_model.gd" id="3_7tcd8"]
+[ext_resource type="Texture2D" uid="uid://c54dbo8n7r3g" path="res://_assets/sprites/assorted/attack.PNG" id="3_62iip"]
+[ext_resource type="Script" uid="uid://bcih413oy6v73" path="res://npc_ai/_core/npc_action.gd" id="4_62iip"]
+[ext_resource type="Script" uid="uid://cuj4qvyx6dedj" path="res://npc_ai/_core/state_model.gd" id="5_25lh7"]
+[ext_resource type="Resource" uid="uid://7gggk4mmejsq" path="res://npc_ai/text/attack_intent_text_model.tres" id="5_kwb65"]
+
+[resource]
+script = ExtResource("4_62iip")
+effect_packages = Array[ExtResource("1_0jkaa")]([ExtResource("2_7tcd8")])
+action_name = "Shield Bash"
+intent_icon = ExtResource("3_62iip")
+intent_icon_uid = "uid://c54dbo8n7r3g"
+intent_text_model = ExtResource("5_kwb65")
+metadata/_custom_type_script = "uid://bcih413oy6v73"

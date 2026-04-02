@@ -1,9 +1,9 @@
 [gd_resource type="Resource" script_class="BattleData" format=3 uid="uid://db0if7277h7kw"]
 
 [ext_resource type="Script" uid="uid://cfatj0ryn8uv3" path="res://combatants/combatant_data.gd" id="1_rh6y4"]
-[ext_resource type="Resource" uid="uid://mt02xj2dgfe7" path="res://combatants/WeberPatrolSwordsman/weber_patrol_swordsman_data.tres" id="2_6dy8f"]
+[ext_resource type="Resource" uid="uid://mt02xj2dgfe7" path="res://combatants/enemies/WeberPatrolSwordsman/weber_patrol_swordsman_data.tres" id="2_6dy8f"]
 [ext_resource type="Script" uid="uid://be1v8qevmc2xw" path="res://encounters/battle_data.gd" id="2_inonl"]
-[ext_resource type="Resource" uid="uid://n8vpyfyge4dm" path="res://combatants/WeberPatrolArbalest/weber_patrol_arbalest_data.tres" id="3_3l0u0"]
+[ext_resource type="Resource" uid="uid://n8vpyfyge4dm" path="res://combatants/enemies/WeberPatrolArbalest/weber_patrol_arbalest_data.tres" id="3_3l0u0"]
 
 [resource]
 script = ExtResource("2_inonl")

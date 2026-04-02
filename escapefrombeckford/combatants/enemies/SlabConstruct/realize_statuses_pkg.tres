@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="NPCEffectPackage" format=3 uid="uid://bq1vv5xxp551s"]
+
+[ext_resource type="Script" uid="uid://b8d5j6ne4mt88" path="res://npc_ai/_core/param_model.gd" id="1_0tlh0"]
+[ext_resource type="Resource" uid="uid://chy21ffn3i5xl" path="res://npc_ai/realize_pending_statuses_effect_sequence.tres" id="1_lclms"]
+[ext_resource type="Script" uid="uid://3jde7uhq2yho" path="res://npc_ai/_core/npc_effect_package.gd" id="2_lclms"]
+[ext_resource type="Script" uid="uid://cuj4qvyx6dedj" path="res://npc_ai/_core/state_model.gd" id="3_jrl4b"]
+
+[resource]
+script = ExtResource("2_lclms")
+effect = ExtResource("1_lclms")
+metadata/_custom_type_script = "uid://3jde7uhq2yho"

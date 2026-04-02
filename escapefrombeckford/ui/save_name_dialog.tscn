@@ -1,6 +1,6 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://d4nc07r3vld0y"]
 
-[ext_resource type="Script" path="res://ui/save_name_dialog.gd" id="1_jb4be"]
+[ext_resource type="Script" uid="uid://bim43ske8t2yy" path="res://ui/save_name_dialog.gd" id="1_jb4be"]
 [ext_resource type="Theme" uid="uid://d2wc7fposrlqs" path="res://themes/wizard_theme.tres" id="2_lf0ve"]
 
 [node name="SaveNameDialog" type="Control"]

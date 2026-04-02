@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://buhtw3540mbls" path="res://cards/_generic_actions/summon_action.gd" id="1_summon_action"]
 [ext_resource type="Resource" uid="uid://c0cllss7w30rn" path="res://audio/summon_zap.tres" id="2_summon_sound"]
-[ext_resource type="Resource" uid="uid://jtnxxy8mq8s4" path="res://combatants/ShieldMite/shield_mite_data.tres" id="3_shield_mite"]
+[ext_resource type="Resource" uid="uid://jtnxxy8mq8s4" path="res://combatants/critters/ShieldMite/shield_mite_data.tres" id="3_shield_mite"]
 
 [resource]
 script = ExtResource("1_summon_action")

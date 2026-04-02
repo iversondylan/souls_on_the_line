@@ -1,6 +1,6 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://doon1ou4cnepy"]
 
-[ext_resource type="Script" path="res://ui/run_save_picker.gd" id="1_hn4w0"]
+[ext_resource type="Script" uid="uid://d1k3m68nrr3a2" path="res://ui/run_save_picker.gd" id="1_hn4w0"]
 [ext_resource type="Theme" uid="uid://d2wc7fposrlqs" path="res://themes/wizard_theme.tres" id="2_9q0ok"]
 
 [node name="RunSavePicker" type="Control"]

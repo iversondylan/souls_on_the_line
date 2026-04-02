@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="NPCAIProfile" format=3 uid="uid://6mwct24ustuh"]
+
+[ext_resource type="Script" uid="uid://bcih413oy6v73" path="res://npc_ai/_core/npc_action.gd" id="1_fy21h"]
+[ext_resource type="Script" uid="uid://bdsvca1cpka5s" path="res://npc_ai/_core/npc_ai_profile.gd" id="2_bhjml"]
+[ext_resource type="Resource" uid="uid://v3vj3p02g7i2" path="res://combatants/enemies/SlabConstruct/slab_attack_action.tres" id="2_nx4of"]
+[ext_resource type="Resource" uid="uid://dynx25vq28x8k" path="res://combatants/enemies/SlabConstruct/summon_shield_mite_action.tres" id="3_15n54"]
+
+[resource]
+script = ExtResource("2_bhjml")
+actions = Array[ExtResource("1_fy21h")]([ExtResource("2_nx4of"), ExtResource("3_15n54")])
+metadata/_custom_type_script = "uid://bdsvca1cpka5s"

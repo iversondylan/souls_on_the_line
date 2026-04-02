@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="NPCStatusSequence" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="NPCStatusSequence" load_steps=2 format=3 uid="uid://br5dox5m0ph6v"]
 
 [ext_resource type="Script" uid="uid://oygxxtaqev43" path="res://npc_ai/npc_status_sequence.gd" id="1_status"]
 

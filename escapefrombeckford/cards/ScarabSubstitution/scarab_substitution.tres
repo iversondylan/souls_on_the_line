@@ -1,10 +1,10 @@
-[gd_resource type="Resource" script_class="CardData" format=3]
+[gd_resource type="Resource" script_class="CardData" format=3 uid="uid://bpc3a010u4wux"]
 
 [ext_resource type="Script" uid="uid://wtk5v77fcqvn" path="res://cards/_core/card_action.gd" id="1_card_action"]
 [ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://cards/_core/card_data.gd" id="2_card_data"]
-[ext_resource type="Resource" path="res://cards/_generic_actions/sacrifice_action.tres" id="3_sacrifice"]
-[ext_resource type="Resource" path="res://cards/ScarabSubstitution/summon_shield_mite_action.tres" id="4_summon"]
-[ext_resource type="Resource" path="res://cards/ScarabSubstitution/absorb_on_summoned_action.tres" id="5_absorb_on_summoned"]
+[ext_resource type="Resource" uid="uid://4a3dreaffu56" path="res://cards/_generic_actions/sacrifice_action.tres" id="3_sacrifice"]
+[ext_resource type="Resource" uid="uid://cg726tcemybhn" path="res://cards/ScarabSubstitution/summon_shield_mite_action.tres" id="4_summon"]
+[ext_resource type="Resource" uid="uid://rjxi66qttbij" path="res://cards/ScarabSubstitution/absorb_on_summoned_action.tres" id="5_absorb_on_summoned"]
 [ext_resource type="Texture2D" path="res://_assets/sprites/assorted/beetle-shell.png" id="6_texture"]
 
 [resource]

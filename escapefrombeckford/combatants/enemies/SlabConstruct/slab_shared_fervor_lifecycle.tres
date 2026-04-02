@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="StatusFromOppTurnModel" format=3 uid="uid://dvgwf1eviwqve"]
+
+[ext_resource type="Script" uid="uid://dbd3fjfn7d3ah" path="res://npc_ai/intent_lifecycle/status_from_opp_turn_model.gd" id="1_lifecycle"]
+[ext_resource type="Resource" uid="uid://c851i8op6ei1" path="res://statuses/shared_fervor.tres" id="2_status"]
+
+[resource]
+script = ExtResource("1_lifecycle")
+status = ExtResource("2_status")
+intensity = 1
+pending = true
+metadata/_custom_type_script = "uid://dbd3fjfn7d3ah"

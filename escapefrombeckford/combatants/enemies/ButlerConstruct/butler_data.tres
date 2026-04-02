@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="CombatantData" format=3 uid="uid://bseko2jnj35gi"]
+
+[ext_resource type="Script" uid="uid://cfatj0ryn8uv3" path="res://combatants/combatant_data.gd" id="1_e1ogf"]
+[ext_resource type="Resource" uid="uid://do0tsosl0s3us" path="res://combatants/enemies/ButlerConstruct/butler_ai.tres" id="2_butler_ai"]
+
+[resource]
+script = ExtResource("1_e1ogf")
+name = "Butler Construct"
+character_art_uid = "uid://crrbyuefv1poh"
+portrait_art_uid = "uid://crrbyuefv1poh"
+facing_right = false
+max_health = 12
+apr = 2
+apm = 2
+ai = ExtResource("2_butler_ai")
+metadata/_custom_type_script = "uid://cfatj0ryn8uv3"

@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://cmc2ypry076mq"]
 
-[ext_resource type="Script" uid="uid://hkx3ix4sj6fv" path="res://ui/status_overlay.gd" id="1_msrfa"]
+[ext_resource type="Script" uid="uid://ce0pkl3x7ciiq" path="res://ui/status_overlay.gd" id="1_msrfa"]
 [ext_resource type="Theme" uid="uid://1dr1eewpv0jd" path="res://themes/ui_theme.tres" id="2_xdcbm"]
 
 [node name="StatusOverlay" type="Control"]

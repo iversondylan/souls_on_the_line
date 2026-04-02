@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="NPCAIProfile" format=3 uid="uid://c0i4tfa6to82w"]
+
+[ext_resource type="Script" uid="uid://bcih413oy6v73" path="res://npc_ai/_core/npc_action.gd" id="1_05jgw"]
+[ext_resource type="Resource" uid="uid://dkh0iq768qk2g" path="res://combatants/enemies/CursedLedger/summon_docs_action.tres" id="2_8p08s"]
+[ext_resource type="Script" uid="uid://bdsvca1cpka5s" path="res://npc_ai/_core/npc_ai_profile.gd" id="2_hed2m"]
+[ext_resource type="Resource" uid="uid://bejpmcc2fjaxu" path="res://combatants/enemies/CursedLedger/resonant_attack_action.tres" id="3_8p08s"]
+
+[resource]
+script = ExtResource("2_hed2m")
+actions = Array[ExtResource("1_05jgw")]([ExtResource("2_8p08s"), ExtResource("3_8p08s")])
+metadata/_custom_type_script = "uid://bdsvca1cpka5s"

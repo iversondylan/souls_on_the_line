@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="ApplyStatusToSummonedAction" format=3 uid="uid://rjxi66qttbij"]
 
 [ext_resource type="Script" uid="uid://jie78uegvh3j" path="res://cards/_generic_actions/apply_status_to_summoned_action.gd" id="1_status_on_summoned"]
-[ext_resource type="Resource" path="res://statuses/absorb.tres" id="2_absorb"]
+[ext_resource type="Resource" uid="uid://bgyyborj1j54" path="res://statuses/absorb.tres" id="2_absorb"]
 
 [resource]
 script = ExtResource("1_status_on_summoned")

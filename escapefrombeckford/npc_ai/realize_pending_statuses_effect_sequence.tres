@@ -1,6 +1,6 @@
-[gd_resource type="Resource" script_class="RealizePendingStatusesEffectSequence" format=3]
+[gd_resource type="Resource" script_class="RealizePendingStatusesEffectSequence" format=3 uid="uid://chy21ffn3i5xl"]
 
-[ext_resource type="Script" path="res://npc_ai/realize_pending_statuses_effect_sequence.gd" id="1_realize"]
+[ext_resource type="Script" uid="uid://bus8bjiwktg4s" path="res://npc_ai/realize_pending_statuses_effect_sequence.gd" id="1_realize"]
 
 [resource]
 script = ExtResource("1_realize")

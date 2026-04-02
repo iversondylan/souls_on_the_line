@@ -1,8 +1,8 @@
-[gd_resource type="Resource" script_class="BattleData" load_steps=4 format=3 uid="uid://bro14nbxe02ih"]
+[gd_resource type="Resource" script_class="BattleData" format=3 uid="uid://bro14nbxe02ih"]
 
 [ext_resource type="Script" uid="uid://cfatj0ryn8uv3" path="res://combatants/combatant_data.gd" id="1_aew35"]
 [ext_resource type="Script" uid="uid://be1v8qevmc2xw" path="res://encounters/battle_data.gd" id="1_rqov5"]
-[ext_resource type="Resource" uid="uid://bsws0q8so6vua" path="res://combatants/Calabash/calabash_data.tres" id="2_cjal5"]
+[ext_resource type="Resource" uid="uid://bsws0q8so6vua" path="res://combatants/enemies/Calabash/calabash_data.tres" id="2_cjal5"]
 
 [resource]
 script = ExtResource("1_rqov5")

@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="NPCAction" format=3 uid="uid://dynx25vq28x8k"]
+
+[ext_resource type="Script" uid="uid://3jde7uhq2yho" path="res://npc_ai/_core/npc_effect_package.gd" id="1_t7gtc"]
+[ext_resource type="Resource" uid="uid://g1bnalr85y22" path="res://combatants/enemies/SlabConstruct/summon_shield_mite_pkg.tres" id="2_ghfs1"]
+[ext_resource type="Script" uid="uid://dtwuyctovqk5r" path="res://npc_ai/_core/intent_lifecycle_model.gd" id="2_imrj4"]
+[ext_resource type="Texture2D" uid="uid://dnor2pbb0nhu" path="res://_assets/sprites/assorted/egg-eye.png" id="3_bpa23"]
+[ext_resource type="Script" uid="uid://q408gy2b4q6a" path="res://npc_ai/_core/performable_model.gd" id="3_ghfs1"]
+[ext_resource type="Script" uid="uid://bcih413oy6v73" path="res://npc_ai/_core/npc_action.gd" id="4_vlhit"]
+[ext_resource type="Script" uid="uid://cuj4qvyx6dedj" path="res://npc_ai/_core/state_model.gd" id="5_bpa23"]
+[ext_resource type="Resource" uid="uid://ctwocrhb1x5bv" path="res://npc_ai/text/summon_red_intent_text_model.tres" id="5_t4713"]
+[ext_resource type="Resource" uid="uid://btgtvs6ab0nsg" path="res://npc_ai/chance/half_exponential_spree_chance_state_model.tres" id="9_2pqbx"]
+[ext_resource type="Resource" uid="uid://bv4vmq637qs77" path="res://npc_ai/text/summon_red_intent_tooltip_text_model.tres" id="9_ao534"]
+
+[resource]
+script = ExtResource("4_vlhit")
+effect_packages = Array[ExtResource("1_t7gtc")]([ExtResource("2_ghfs1")])
+state_models = Array[ExtResource("5_bpa23")]([ExtResource("9_2pqbx")])
+action_name = "Call Shield Mite"
+intent_icon = ExtResource("3_bpa23")
+intent_icon_uid = "uid://dnor2pbb0nhu"
+intent_text_model = ExtResource("5_t4713")
+tooltip_model = ExtResource("9_ao534")
+metadata/_custom_type_script = "uid://bcih413oy6v73"

@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="CombatantData" format=3 uid="uid://1rdbn0xail7n"]
+
+[ext_resource type="Script" uid="uid://cfatj0ryn8uv3" path="res://combatants/combatant_data.gd" id="1_r4b68"]
+[ext_resource type="Resource" uid="uid://pajg0xxb4ok3" path="res://combatants/enemies/GroundskeeperConstruct/groundskeeper_ai.tres" id="2_groundskeeper_ai"]
+
+[resource]
+script = ExtResource("1_r4b68")
+name = "Groundskeeper Construct"
+character_art_uid = "uid://cdacow6h5xebq"
+portrait_art_uid = "uid://cdacow6h5xebq"
+facing_right = false
+height = 300
+max_health = 24
+apr = 1
+apm = 1
+ai = ExtResource("2_groundskeeper_ai")
+metadata/_custom_type_script = "uid://cfatj0ryn8uv3"

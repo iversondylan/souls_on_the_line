@@ -13,7 +13,7 @@
 [ext_resource type="Resource" uid="uid://eet5htwsey50" path="res://cards/SuperchargeCard/supercharge.tres" id="10_ph4sk"]
 [ext_resource type="Resource" uid="uid://dqmjfqr0ijgwh" path="res://cards/TemperedSilverbackCard/tempered_silverback_card.tres" id="11_os4ej"]
 [ext_resource type="Resource" uid="uid://bhqq2dr8db5pn" path="res://cards/ResonanceSpikeCard/resonance_spike_card.tres" id="12_resonance"]
-[ext_resource type="Resource" path="res://cards/ScarabSubstitution/scarab_substitution.tres" id="13_scarab"]
+[ext_resource type="Resource" uid="uid://bpc3a010u4wux" path="res://cards/ScarabSubstitution/scarab_substitution.tres" id="13_scarab"]
 
 [resource]
 script = ExtResource("2_a8mjb")

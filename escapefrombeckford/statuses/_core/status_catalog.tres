@@ -19,7 +19,7 @@
 [ext_resource type="Resource" uid="uid://bkmw72tr8qa33" path="res://statuses/sundered.tres" id="17_sundered"]
 [ext_resource type="Resource" uid="uid://bgyyborj1j54" path="res://statuses/absorb.tres" id="18_absorb"]
 [ext_resource type="Resource" uid="uid://bfofdm4v1vn4v" path="res://statuses/banishing_strikes.tres" id="19_banishing_strikes"]
-[ext_resource type="Resource" path="res://statuses/fleeting.tres" id="20_fleeting"]
+[ext_resource type="Resource" uid="uid://dx5u1ohri7h0t" path="res://statuses/fleeting.tres" id="20_fleeting"]
 
 [resource]
 script = ExtResource("1_2sbnh")

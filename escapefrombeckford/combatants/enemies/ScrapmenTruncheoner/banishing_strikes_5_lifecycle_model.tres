@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="StatusIntentLifecycleModel" format=3 uid="uid://byj65hb3j8tfg"]
+
+[ext_resource type="Script" uid="uid://cfb2i6jlj03vl" path="res://npc_ai/intent_lifecycle/status_intent_lifecycle_model.gd" id="1_script"]
+[ext_resource type="Resource" uid="uid://bfofdm4v1vn4v" path="res://statuses/banishing_strikes.tres" id="2_status"]
+
+[resource]
+script = ExtResource("1_script")
+status = ExtResource("2_status")
+intensity = 5
+duration = 0
+pending = false
