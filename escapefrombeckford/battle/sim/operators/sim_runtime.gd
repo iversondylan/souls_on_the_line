@@ -325,13 +325,13 @@ func _service_actor_turn(cid: int) -> void:
 		_actor_turn_scope_handle = writer.scope_begin(Scope.Kind.ACTOR_TURN, "actor=%d" % cid, cid)
 		writer.emit_actor_begin(cid)
 
-	SimStatusSystem.on_actor_turn_begin(api, cid)
-	_apply_checkpoint_boundary(CheckpointProcessor.Kind.AFTER_ACTOR_TURN, true)
-
 	if is_player(cid):
 		if writer != null:
 			writer.emit_player_input_reached(int(cid))
 		return
+
+	SimStatusSystem.on_actor_turn_begin(api, cid)
+	_apply_checkpoint_boundary(CheckpointProcessor.Kind.AFTER_ACTOR_TURN, true)
 
 	run_npc_turn(cid)
 	_complete_actor_turn(cid)
@@ -345,6 +345,9 @@ func _service_player_begin() -> void:
 
 	var player_id := _player_id()
 	if player_id > 0:
+		SimStatusSystem.on_player_turn_begin(api, player_id)
+		_apply_checkpoint_boundary(CheckpointProcessor.Kind.AFTER_ACTOR_TURN, true)
+
 		SimStatusSystem.on_actor_turn_begin(api, player_id)
 		_apply_checkpoint_boundary(CheckpointProcessor.Kind.AFTER_ACTOR_TURN, true)
 

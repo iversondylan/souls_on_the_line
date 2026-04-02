@@ -18,8 +18,6 @@ static func on_group_turn_begin(api: SimBattleAPI, group_index: int) -> void:
 
 	# 2) generic expiration policy
 	_expire_by_policy(api, group_index, Status.ExpirationPolicy.GROUP_TURN_START)
-	if int(group_index) == int(SimBattleAPI.FRIENDLY):
-		_expire_all_by_policy(api, Status.ExpirationPolicy.PLAYER_TURN_START)
 
 static func on_group_turn_end(api: SimBattleAPI, group_index: int) -> void:
 	if api == null or api.state == null or api.state.has_terminal_outcome():
@@ -44,6 +42,21 @@ static func on_actor_turn_begin(api: SimBattleAPI, actor_id: int) -> void:
 	)
 
 	_tick_duration_for_proc(api, actor_id, Status.ProcType.START_OF_TURN)
+
+static func on_player_turn_begin(api: SimBattleAPI, player_id: int) -> void:
+	if api == null or api.state == null or api.state.has_terminal_outcome():
+		return
+	if int(player_id) <= 0:
+		return
+
+	_for_each_status_in_battle(api, func(ctx: SimStatusContext) -> void:
+		if ctx == null or !ctx.is_valid() or !ctx.is_alive():
+			return
+		if ctx.proto != null:
+			ctx.proto.on_player_turn_begin(ctx, player_id)
+	)
+
+	_expire_all_by_policy(api, Status.ExpirationPolicy.PLAYER_TURN_START)
 
 static func on_actor_turn_end(api: SimBattleAPI, actor_id: int) -> void:
 	if api == null or api.state == null or api.state.has_terminal_outcome():
@@ -140,6 +153,13 @@ static func _for_each_status_on_group(api: SimBattleAPI, group_index: int, fn: C
 	var ids := api.get_combatants_in_group(group_index, true)
 	for cid in ids:
 		_for_each_status_on_unit(api, int(cid), fn)
+
+static func _for_each_status_in_battle(api: SimBattleAPI, fn: Callable) -> void:
+	if api == null or api.state == null or !fn.is_valid():
+		return
+
+	for group_index in [SimBattleAPI.FRIENDLY, SimBattleAPI.ENEMY]:
+		_for_each_status_on_group(api, int(group_index), fn)
 
 static func _for_each_status_on_unit(api: SimBattleAPI, owner_id: int, fn: Callable) -> void:
 	if api == null or api.state == null or owner_id <= 0 or !fn.is_valid():

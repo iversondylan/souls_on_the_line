@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://dgq1lfjmf2yfl" path="res://statuses/_core/status_catalog.gd" id="1_2sbnh"]
 [ext_resource type="Script" uid="uid://cueedkb1u8vxy" path="res://statuses/_core/status.gd" id="2_mko5r"]
 [ext_resource type="Resource" uid="uid://bd1ti361ucok5" path="res://statuses/amplify.tres" id="3_uxogt"]
-[ext_resource type="Resource" path="res://statuses/growing_fervor.tres" id="5_2sbnh"]
+[ext_resource type="Resource" uid="uid://nnor45w1kk5c" path="res://statuses/growing_fervor.tres" id="5_2sbnh"]
 [ext_resource type="Resource" uid="uid://v08f4neq881h" path="res://statuses/explosive_ambition.tres" id="6_00ab0"]
 [ext_resource type="Resource" uid="uid://blu8qhnwmlstx" path="res://statuses/marked.tres" id="7_fjt00"]
 [ext_resource type="Resource" uid="uid://7x55fawjrwf4" path="res://statuses/might.tres" id="8_ho33y"]
@@ -14,13 +14,14 @@
 [ext_resource type="Resource" uid="uid://cyf7n0vefm434" path="res://statuses/stability_status.tres" id="12_kw06w"]
 [ext_resource type="Resource" uid="uid://tioo1cbmio6m" path="res://statuses/tempered.tres" id="13_djvpr"]
 [ext_resource type="Resource" uid="uid://wi2vw1fnar8g" path="res://statuses/terminal_glory.tres" id="14_gyvsg"]
-[ext_resource type="Resource" path="res://statuses/suppressed.tres" id="15_suppressed"]
-[ext_resource type="Resource" path="res://statuses/bolstered.tres" id="16_bolstered"]
-[ext_resource type="Resource" path="res://statuses/sundered.tres" id="17_sundered"]
-[ext_resource type="Resource" path="res://statuses/absorb.tres" id="18_absorb"]
-[ext_resource type="Resource" path="res://statuses/banishing_strikes.tres" id="19_banishing_strikes"]
+[ext_resource type="Resource" uid="uid://bi6mt7v1xat1e" path="res://statuses/suppressed.tres" id="15_suppressed"]
+[ext_resource type="Resource" uid="uid://bewvqdy1by7hc" path="res://statuses/bolstered.tres" id="16_bolstered"]
+[ext_resource type="Resource" uid="uid://bkmw72tr8qa33" path="res://statuses/sundered.tres" id="17_sundered"]
+[ext_resource type="Resource" uid="uid://bgyyborj1j54" path="res://statuses/absorb.tres" id="18_absorb"]
+[ext_resource type="Resource" uid="uid://bfofdm4v1vn4v" path="res://statuses/banishing_strikes.tres" id="19_banishing_strikes"]
+[ext_resource type="Resource" path="res://statuses/fleeting.tres" id="20_fleeting"]
 
 [resource]
 script = ExtResource("1_2sbnh")
-statuses = Array[ExtResource("2_mko5r")]([ExtResource("3_uxogt"), ExtResource("6_00ab0"), ExtResource("5_2sbnh"), ExtResource("7_fjt00"), ExtResource("8_ho33y"), ExtResource("9_6ckqc"), ExtResource("10_cbbgy"), ExtResource("11_6ocio"), ExtResource("11_mko5r"), ExtResource("12_kw06w"), ExtResource("13_djvpr"), ExtResource("14_gyvsg"), ExtResource("15_suppressed"), ExtResource("16_bolstered"), ExtResource("17_sundered"), ExtResource("18_absorb"), ExtResource("19_banishing_strikes")])
+statuses = Array[ExtResource("2_mko5r")]([ExtResource("3_uxogt"), ExtResource("6_00ab0"), ExtResource("5_2sbnh"), ExtResource("7_fjt00"), ExtResource("8_ho33y"), ExtResource("9_6ckqc"), ExtResource("10_cbbgy"), ExtResource("11_6ocio"), ExtResource("11_mko5r"), ExtResource("12_kw06w"), ExtResource("13_djvpr"), ExtResource("14_gyvsg"), ExtResource("15_suppressed"), ExtResource("16_bolstered"), ExtResource("17_sundered"), ExtResource("18_absorb"), ExtResource("19_banishing_strikes"), ExtResource("20_fleeting")])
 metadata/_custom_type_script = "uid://dgq1lfjmf2yfl"

@@ -150,6 +150,18 @@ func remove_self(_reason: String = "") -> void:
 	api.remove_status(rc)
 
 
+func kill_self(reason: String = "", killer_id: int = 0) -> void:
+	if !is_valid() or api == null or owner == null or !owner.is_alive():
+		return
+
+	var death_ctx := DeathContext.new()
+	death_ctx.dead_id = owner_id
+	death_ctx.killer_id = int(killer_id)
+	death_ctx.group_index = int(owner.team)
+	death_ctx.reason = String(reason)
+	api.resolve_death(death_ctx)
+
+
 func request_replan() -> void:
 	if api == null:
 		return

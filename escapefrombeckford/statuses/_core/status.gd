@@ -57,6 +57,9 @@ func on_actor_turn_end(_ctx: SimStatusContext) -> void:
 func on_group_turn_begin(_ctx: SimStatusContext, _acting_group_index: int) -> void:
 	pass
 
+func on_player_turn_begin(_ctx: SimStatusContext, _player_id: int) -> void:
+	pass
+
 func on_group_turn_end(_ctx: SimStatusContext, _ending_group_index: int) -> void:
 	pass
 
