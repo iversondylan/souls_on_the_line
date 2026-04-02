@@ -29,6 +29,7 @@ var combatants_by_cid: Dictionary = {}
 var tempo: float = 135
 
 var tween_bg: Tween
+var _active_focus_order: FocusOrder = null
 
 @export var metronome_sound: Sound
 @export var offset_s: float = 0.38
@@ -375,6 +376,18 @@ func get_or_create_combatant_view(cid: int, group_index: int, insert_index: int,
 	ctx.animate_to_position = animate
 	group.register_combatant(ctx)
 
+	if _active_focus_order != null:
+		var inherited_focus := _duplicate_focus_order(_active_focus_order)
+		if inherited_focus != null:
+			if int(cid) != int(inherited_focus.attacker_id) and !inherited_focus.target_ids.has(int(cid)):
+				inherited_focus.target_ids.append(int(cid))
+			print("[VIEW REACTION] focus_inherit cid=%d attacker=%d targets=%s" % [
+				int(cid),
+				int(inherited_focus.attacker_id),
+				str(inherited_focus.target_ids),
+			])
+			combatant.on_focus(inherited_focus)
+
 	return combatant
 
 
@@ -396,12 +409,14 @@ func get_combatants() -> Array[CombatantView]:
 
 func apply_focus(order: FocusOrder) -> void:
 	#print("battle_view.gd apply_focus() time: ", clock.now_sec(), " duration: ", order.duration)
+	_active_focus_order = _duplicate_focus_order(order)
 	_apply_focus_background(order)
 	_apply_focus_combatants(order)
 
 
 func clear_focus(duration: float) -> void:
 	#print("battle_view.gd clear_focus() time: ", clock.now_sec(), " duration: ", duration)
+	_active_focus_order = null
 	for combatant: CombatantView in get_combatants():
 		combatant.clear_focus(duration)
 
@@ -431,6 +446,23 @@ func _apply_focus_background(order: FocusOrder) -> void:
 func _apply_focus_combatants(order: FocusOrder) -> void:
 	for combatant: CombatantView in get_combatants():
 		combatant.on_focus(order)
+
+
+func _duplicate_focus_order(order: FocusOrder) -> FocusOrder:
+	if order == null:
+		return null
+
+	var copy := FocusOrder.new()
+	copy.duration = float(order.duration)
+	copy.attacker_id = int(order.attacker_id)
+	copy.target_ids = order.target_ids.duplicate()
+	copy.dim_uninvolved = float(order.dim_uninvolved)
+	copy.dim_bg = float(order.dim_bg)
+	copy.scale_involved = float(order.scale_involved)
+	copy.scale_uninvolved = float(order.scale_uninvolved)
+	copy.drift_involved = float(order.drift_involved)
+	copy.drift_uninvolved = float(order.drift_uninvolved)
+	return copy
 
 func put_projectile(key: int, projectile: Node2D) -> void:
 	_projectiles_by_attacker[int(key)] = projectile

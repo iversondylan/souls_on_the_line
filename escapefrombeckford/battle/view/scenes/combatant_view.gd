@@ -318,7 +318,7 @@ func clear_focus(duration: float) -> void:
 		_play_sound(clear_focus_sound)
 	_owns_focus_audio = false
 
-	if _root_motion_locked or !is_alive:
+	if _root_motion_locked:
 		_is_focus_active = false
 		if tween_focus:
 			tween_focus.kill()

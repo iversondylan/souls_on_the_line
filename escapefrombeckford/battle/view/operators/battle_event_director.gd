@@ -58,6 +58,14 @@ func on_director_cue(cue: DirectorCue, gen: int) -> void:
 	if !battle_view._playing or gen != battle_view._playback_gen:
 		return
 
+	if String(cue.label).begins_with("reaction_"):
+		print("[VIEW REACTION] cue q=%.2f label=%s %s %s" % [
+			float(cue.beat_q),
+			String(cue.label),
+			battle_view._debug_order_summary(cue.orders),
+			battle_view._debug_event_summary(cue.events),
+		])
+
 	for order in cue.orders:
 		_start_order(order)
 

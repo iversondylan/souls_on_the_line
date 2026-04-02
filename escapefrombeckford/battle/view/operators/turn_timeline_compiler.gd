@@ -13,8 +13,12 @@ func compile_actor_turn(turn_events: Array[BattleEvent]) -> TurnTimeline:
 
 	if _is_attack_turn(turn_events):
 		timeline.action_kind = &"attack"
-		var analysis := _build_attack_analysis(turn_events)
-		beats = _build_attack_beats(analysis, turn_events)
+		var parsed_attack := _parse_attack_turn(turn_events)
+		if !parsed_attack.is_empty():
+			beats = _build_attack_beats_from_parsed(parsed_attack, turn_events)
+		else:
+			var analysis := _build_attack_analysis(turn_events)
+			beats = _build_attack_beats(analysis, turn_events)
 	elif _is_summon_turn(turn_events):
 		timeline.action_kind = &"summon"
 		beats = _build_summon_beats(turn_events)
@@ -88,6 +92,354 @@ func _is_status_turn(events: Array[BattleEvent]) -> bool:
 			BattleEvent.Type.SUMMONED:
 				has_summon = true
 	return has_status and !has_strike and !has_summon
+
+
+func _parse_attack_turn(events: Array[BattleEvent]) -> Dictionary:
+	var actor_id := _find_actor_id(events)
+	if actor_id <= 0:
+		return {}
+
+	var scope_ranges := _build_scope_ranges(events)
+	if scope_ranges.is_empty():
+		return {}
+
+	var actor_turn_scope_id := _find_actor_turn_scope_id(events, actor_id)
+	if actor_turn_scope_id <= 0:
+		return {}
+
+	var attack_scope_id := _find_primary_attack_scope_id(events, actor_turn_scope_id, actor_id)
+	if attack_scope_id <= 0:
+		return {}
+
+	var parsed := _parse_attack_scope(events, scope_ranges, attack_scope_id)
+	if parsed.is_empty():
+		return {}
+
+	var attack_range: Dictionary = scope_ranges.get(attack_scope_id, {})
+	var attack_begin := int(attack_range.get("begin", -1))
+	var attack_end := int(attack_range.get("end", -1))
+	if attack_begin < 0 or attack_end < 0:
+		return {}
+
+	parsed["scope_ranges"] = scope_ranges
+	parsed["source_events"] = events
+	parsed["attack_scope_id"] = attack_scope_id
+	parsed["leading"] = _collect_pre_attack_events(events, attack_begin)
+	parsed["trailing"] = _collect_post_attack_events(events, attack_end)
+	return parsed
+
+
+func _parse_attack_scope(
+	events: Array[BattleEvent],
+	scope_ranges: Dictionary,
+	attack_scope_id: int
+) -> Dictionary:
+	var strike_scope_ids := _find_direct_child_scope_ids(events, attack_scope_id, Scope.Kind.STRIKE)
+	if strike_scope_ids.is_empty():
+		return {}
+
+	var analysis := AttackAnalysis.new()
+	var direct_events_by_strike: Array = []
+	var reactions_by_strike: Array = []
+
+	for i in range(strike_scope_ids.size()):
+		var strike_scope_id := int(strike_scope_ids[i])
+		var parsed_strike := _parse_attack_strike(events, scope_ranges, strike_scope_id)
+		var marker: BattleEvent = parsed_strike.get("marker", null)
+		var direct_events: Array[BattleEvent] = parsed_strike.get("direct_events", [])
+		var reactions: Array = parsed_strike.get("reactions", [])
+
+		direct_events_by_strike.append(direct_events)
+		reactions_by_strike.append(reactions)
+
+		var strike_info := _build_strike_info_from_events(marker, direct_events, i)
+		analysis.strikes.append(strike_info)
+		if strike_info.has_lethal_hit:
+			analysis.lethal_indices.append(i)
+
+		if analysis.attacker_id <= 0 and marker != null and marker.data != null:
+			analysis.attacker_id = int(marker.data.get(Keys.SOURCE_ID, 0))
+			analysis.attack_mode = int(marker.data.get(Keys.ATTACK_MODE, Attack.Mode.MELEE))
+			analysis.projectile_scene_path = String(marker.data.get(Keys.PROJECTILE_SCENE, "uid://bxmhi3urqmpfh"))
+
+	analysis.strike_count = strike_scope_ids.size()
+
+	return {
+		"analysis": analysis,
+		"direct_events_by_strike": direct_events_by_strike,
+		"reactions_by_strike": reactions_by_strike,
+	}
+
+
+func _parse_attack_strike(
+	events: Array[BattleEvent],
+	scope_ranges: Dictionary,
+	strike_scope_id: int
+) -> Dictionary:
+	var strike_range: Dictionary = scope_ranges.get(strike_scope_id, {})
+	var strike_begin := int(strike_range.get("begin", -1))
+	var strike_end := int(strike_range.get("end", -1))
+	if strike_begin < 0 or strike_end < 0 or strike_end <= strike_begin:
+		return {}
+
+	var reactions := _collect_reaction_groups_for_strike(events, scope_ranges, strike_scope_id)
+	var marker: BattleEvent = null
+	var direct_events: Array[BattleEvent] = []
+
+	for idx in range(strike_begin + 1, strike_end):
+		var event: BattleEvent = events[idx]
+		if event == null:
+			continue
+
+		if int(event.type) == int(BattleEvent.Type.STRIKE) and _index_is_inside_reaction(idx, reactions):
+			continue
+
+		if int(event.type) == int(BattleEvent.Type.STRIKE):
+			if marker == null:
+				marker = event
+			continue
+
+		if _index_is_inside_reaction(idx, reactions):
+			continue
+
+		if _is_attack_direct_event(event):
+			direct_events.append(event)
+
+	for reaction in reactions:
+		var reaction_begin := int(reaction.get("begin", -1))
+		var reaction_end := int(reaction.get("end", -1))
+		if reaction_begin < 0 or reaction_end < 0:
+			continue
+
+		var reaction_events: Array[BattleEvent] = []
+		for idx in range(reaction_begin + 1, reaction_end):
+			var event: BattleEvent = events[idx]
+			if event == null or _is_structural_ignored_event(event):
+				continue
+			reaction_events.append(event)
+		reaction["events"] = reaction_events
+
+	var last_reaction_end := strike_begin
+	for i in range(reactions.size()):
+		var reaction: Dictionary = reactions[i]
+		var next_begin := strike_end
+		if i + 1 < reactions.size():
+			next_begin = int(reactions[i + 1].get("begin", strike_end))
+
+		for idx in range(int(reaction.get("end", -1)) + 1, next_begin):
+			var event: BattleEvent = events[idx]
+			if event == null or _is_structural_ignored_event(event):
+				continue
+			if _is_reaction_followup_event(event):
+				var reaction_events: Array[BattleEvent] = reaction.get("events", [])
+				reaction_events.append(event)
+				reaction["events"] = reaction_events
+				last_reaction_end = idx
+			elif _is_attack_direct_event(event):
+				direct_events.append(event)
+		if int(reaction.get("end", -1)) > last_reaction_end:
+			last_reaction_end = int(reaction.get("end", -1))
+
+	return {
+		"marker": marker,
+		"direct_events": direct_events,
+		"reactions": reactions,
+	}
+
+
+func _collect_reaction_groups_for_strike(
+	events: Array[BattleEvent],
+	scope_ranges: Dictionary,
+	strike_scope_id: int
+) -> Array:
+	var out: Array = []
+	var child_scope_ids: Array[int] = _find_direct_child_scope_ids(events, strike_scope_id)
+	for scope_id in child_scope_ids:
+		var reaction_range: Dictionary = scope_ranges.get(int(scope_id), {})
+		var scope_kind := int(reaction_range.get("kind", -1))
+		if scope_kind != int(Scope.Kind.SUMMON_ACTION) and scope_kind != int(Scope.Kind.ATTACK):
+			continue
+
+		var kind_name := &"summon" if scope_kind == int(Scope.Kind.SUMMON_ACTION) else &"attack"
+		out.append({
+			"kind": kind_name,
+			"scope_id": int(scope_id),
+			"begin": int(reaction_range.get("begin", -1)),
+			"end": int(reaction_range.get("end", -1)),
+			"events": [],
+		})
+	return out
+
+
+func _build_scope_ranges(events: Array[BattleEvent]) -> Dictionary:
+	var ranges := {}
+	for i in range(events.size()):
+		var event: BattleEvent = events[i]
+		if event == null:
+			continue
+
+		if int(event.type) == int(BattleEvent.Type.SCOPE_BEGIN):
+			ranges[int(event.scope_id)] = {
+				"begin": i,
+				"end": -1,
+				"kind": int(event.scope_kind),
+				"parent": int(event.parent_scope_id),
+				"actor_id": int(event.data.get(Keys.ACTOR_ID, 0)) if event.data != null else 0,
+			}
+		elif int(event.type) == int(BattleEvent.Type.SCOPE_END):
+			if ranges.has(int(event.scope_id)):
+				var range: Dictionary = ranges[int(event.scope_id)]
+				range["end"] = i
+				ranges[int(event.scope_id)] = range
+	return ranges
+
+
+func _find_actor_turn_scope_id(events: Array[BattleEvent], actor_id: int) -> int:
+	for event in events:
+		if event == null:
+			continue
+		if int(event.type) != int(BattleEvent.Type.SCOPE_BEGIN):
+			continue
+		if int(event.scope_kind) != int(Scope.Kind.ACTOR_TURN):
+			continue
+		if event.data == null:
+			continue
+		if int(event.data.get(Keys.ACTOR_ID, 0)) == int(actor_id):
+			return int(event.scope_id)
+	return 0
+
+
+func _find_primary_attack_scope_id(events: Array[BattleEvent], actor_turn_scope_id: int, actor_id: int) -> int:
+	for event in events:
+		if event == null:
+			continue
+		if int(event.type) != int(BattleEvent.Type.SCOPE_BEGIN):
+			continue
+		if int(event.scope_kind) != int(Scope.Kind.ATTACK):
+			continue
+		if int(event.parent_scope_id) != int(actor_turn_scope_id):
+			continue
+		if event.data == null:
+			continue
+		if int(event.data.get(Keys.ACTOR_ID, 0)) == int(actor_id):
+			return int(event.scope_id)
+	return 0
+
+
+func _find_direct_child_scope_ids(events: Array[BattleEvent], parent_scope_id: int, kind: int = -1) -> Array[int]:
+	var out: Array[int] = []
+	for event in events:
+		if event == null:
+			continue
+		if int(event.type) != int(BattleEvent.Type.SCOPE_BEGIN):
+			continue
+		if int(event.parent_scope_id) != int(parent_scope_id):
+			continue
+		if kind != -1 and int(event.scope_kind) != int(kind):
+			continue
+		out.append(int(event.scope_id))
+	return out
+
+
+func _collect_pre_attack_events(events: Array[BattleEvent], attack_begin: int) -> Array[BattleEvent]:
+	var leading: Array[BattleEvent] = []
+	for idx in range(maxi(attack_begin, 0)):
+		var event: BattleEvent = events[idx]
+		if event == null:
+			continue
+		match int(event.type):
+			BattleEvent.Type.STATUS, \
+			BattleEvent.Type.STATUS_CHANGED, \
+			BattleEvent.Type.SET_INTENT, \
+			BattleEvent.Type.TURN_STATUS, \
+			BattleEvent.Type.MANA, \
+			BattleEvent.Type.HEAL_APPLIED, \
+			BattleEvent.Type.CHANGE_MAX_HEALTH, \
+			BattleEvent.Type.MOVED:
+				leading.append(event)
+	return leading
+
+
+func _collect_post_attack_events(events: Array[BattleEvent], attack_end: int) -> Array[BattleEvent]:
+	var trailing: Array[BattleEvent] = []
+	for idx in range(attack_end + 1, events.size()):
+		var event: BattleEvent = events[idx]
+		if event == null:
+			continue
+		match int(event.type):
+			BattleEvent.Type.SET_INTENT, \
+			BattleEvent.Type.TURN_STATUS, \
+			BattleEvent.Type.MOVED:
+				trailing.append(event)
+	return trailing
+
+
+func _is_attack_direct_event(event: BattleEvent) -> bool:
+	if event == null:
+		return false
+	match int(event.type):
+		BattleEvent.Type.DAMAGE_APPLIED, \
+		BattleEvent.Type.CHANGE_MAX_HEALTH, \
+		BattleEvent.Type.STATUS, \
+		BattleEvent.Type.DIED, \
+		BattleEvent.Type.FADED:
+			return true
+	return false
+
+
+func _is_reaction_followup_event(event: BattleEvent) -> bool:
+	if event == null:
+		return false
+	match int(event.type):
+		BattleEvent.Type.STATUS, \
+		BattleEvent.Type.STATUS_CHANGED, \
+		BattleEvent.Type.SUMMONED, \
+		BattleEvent.Type.SET_INTENT, \
+		BattleEvent.Type.TURN_STATUS, \
+		BattleEvent.Type.MOVED:
+			return true
+	return false
+
+
+func _index_is_inside_reaction(idx: int, reactions: Array) -> bool:
+	for reaction in reactions:
+		if idx >= int(reaction.get("begin", -1)) and idx <= int(reaction.get("end", -1)):
+			return true
+	return false
+
+
+func _build_strike_info_from_events(marker: BattleEvent, direct_events: Array[BattleEvent], strike_index: int) -> StrikePresentationInfo:
+	var s := StrikePresentationInfo.new()
+	s.strike_index = strike_index
+
+	if marker != null and marker.data != null:
+		if marker.data.has(Keys.TARGET_IDS):
+			for tid in marker.data.get(Keys.TARGET_IDS, []):
+				s.target_ids.append(int(tid))
+		elif marker.data.has(Keys.TARGET_ID):
+			var tid := int(marker.data.get(Keys.TARGET_ID, 0))
+			if tid > 0:
+				s.target_ids.append(tid)
+
+	for event in direct_events:
+		if event == null:
+			continue
+		match int(event.type):
+			BattleEvent.Type.DAMAGE_APPLIED:
+				var h := HitPresentationInfo.new()
+				h.target_id = int(event.data.get(Keys.TARGET_ID, 0)) if event.data != null else 0
+				h.amount = int(event.data.get(Keys.FINAL_AMOUNT, 0)) if event.data != null else 0
+				h.before_health = int(event.data.get(Keys.BEFORE_HEALTH, 0)) if event.data != null else 0
+				h.after_health = int(event.data.get(Keys.AFTER_HEALTH, 0)) if event.data != null else 0
+				h.was_lethal = bool(event.data.get(Keys.WAS_LETHAL, false)) if event.data != null else false
+				s.hits.append(h)
+				s.hit_count += 1
+				if h.was_lethal:
+					s.has_lethal_hit = true
+			BattleEvent.Type.DIED:
+				s.has_lethal_hit = true
+
+	return s
 
 
 func _collect_strike_blocks(events: Array[BattleEvent]) -> Array[Array]:
@@ -185,6 +537,299 @@ func _build_attack_beats(analysis: AttackAnalysis, turn_events: Array[BattleEven
 		return _build_ranged_attack_beats(analysis, turn_events)
 
 	return _build_melee_attack_beats(analysis, turn_events)
+
+
+func _build_attack_beats_from_parsed(parsed: Dictionary, turn_events: Array[BattleEvent]) -> Array[TurnBeat]:
+	var analysis: AttackAnalysis = parsed.get("analysis", null)
+	if analysis == null or int(analysis.strike_count) <= 0:
+		return _build_generic_beats(turn_events)
+
+	if int(analysis.attack_mode) == int(Attack.Mode.RANGED):
+		return _build_ranged_attack_beats_from_parsed(parsed, turn_events)
+
+	return _build_melee_attack_beats_from_parsed(parsed, turn_events)
+
+
+func _build_melee_attack_beats_from_parsed(parsed: Dictionary, turn_events: Array[BattleEvent]) -> Array[TurnBeat]:
+	var beats: Array[TurnBeat] = []
+	var analysis: AttackAnalysis = parsed.get("analysis", null)
+	var leading: Array[BattleEvent] = parsed.get("leading", [])
+	var trailing: Array[BattleEvent] = parsed.get("trailing", [])
+	var direct_events_by_strike: Array = parsed.get("direct_events_by_strike", [])
+	var reactions_by_strike: Array = parsed.get("reactions_by_strike", [])
+	var group_index := _find_group_index(turn_events)
+
+	var focus_beat := _make_focus_beat(0.0, analysis)
+	for event in leading:
+		focus_beat.events.append(event)
+	beats.append(focus_beat)
+	beats.append(_make_melee_windup_beat(1.0, analysis))
+
+	var n := int(analysis.strike_count)
+	var start_q := 2.0
+	if n >= 3:
+		start_q = 2.5
+
+	var reaction_shift_q := 0.0
+	var final_q := 0.0
+
+	for i in range(n):
+		var beat_q := start_q + 0.5 * float(i) + reaction_shift_q
+		var strike_events: Array[BattleEvent] = direct_events_by_strike[i] if i < direct_events_by_strike.size() else []
+		beats.append(_make_melee_strike_beat(beat_q, analysis, i, strike_events))
+		final_q = maxf(final_q, beat_q)
+
+		var reaction_q := beat_q
+		var reactions: Array = reactions_by_strike[i] if i < reactions_by_strike.size() else []
+		for reaction in reactions:
+			reaction_q += 1.0
+			var built := _build_reaction_beats_from_group(parsed, reaction, reaction_q)
+			var reaction_beats: Array = built.get("beats", [])
+			for reaction_beat in reaction_beats:
+				beats.append(reaction_beat)
+			reaction_q = float(built.get("last_q", reaction_q))
+			final_q = maxf(final_q, reaction_q)
+			_debug_log_reaction("inserted melee reaction beat strike=%d q=%.2f kind=%s" % [
+				i,
+				reaction_q,
+				String(reaction.get("kind", &"unknown")),
+			])
+
+		reaction_shift_q += reaction_q - beat_q
+
+	var clear_q := final_q + _tail_gap_q_for_attack(analysis)
+	var layout_order := _find_post_action_group_layout(turn_events, group_index)
+	beats.append(_make_clear_focus_beat(clear_q, analysis.attacker_id, trailing, layout_order))
+	return _sort_beats(beats)
+
+
+func _build_ranged_attack_beats_from_parsed(parsed: Dictionary, turn_events: Array[BattleEvent]) -> Array[TurnBeat]:
+	var beats: Array[TurnBeat] = []
+	var analysis: AttackAnalysis = parsed.get("analysis", null)
+	var leading: Array[BattleEvent] = parsed.get("leading", [])
+	var trailing: Array[BattleEvent] = parsed.get("trailing", [])
+	var direct_events_by_strike: Array = parsed.get("direct_events_by_strike", [])
+	var reactions_by_strike: Array = parsed.get("reactions_by_strike", [])
+	var group_index := _find_group_index(turn_events)
+
+	var focus_beat := _make_focus_beat(0.0, analysis)
+	for event in leading:
+		focus_beat.events.append(event)
+	beats.append(focus_beat)
+	beats.append(_make_ranged_windup_beat(1.0, analysis))
+
+	var n := int(analysis.strike_count)
+	var fire_start_q := 1.5
+	if n >= 3:
+		fire_start_q = 2.0
+
+	var reaction_shift_q := 0.0
+	var final_q := 0.0
+
+	for i in range(n):
+		var fire_q := fire_start_q + 0.5 * float(i) + reaction_shift_q
+		var impact_q := fire_q + 0.5
+		var strike_events: Array[BattleEvent] = direct_events_by_strike[i] if i < direct_events_by_strike.size() else []
+
+		_add_order_to_beat_array(beats, fire_q, _make_ranged_fire_order(analysis, i), "ranged_fire_%d" % i)
+		_add_orders_to_beat_array(beats, impact_q, _make_impact_orders_for_strike(analysis, i, strike_events), "ranged_impact_%d" % i)
+		_add_events_to_beat_array(beats, impact_q, strike_events, "ranged_impact_%d" % i)
+		final_q = maxf(final_q, impact_q)
+
+		var reaction_q := impact_q
+		var reactions: Array = reactions_by_strike[i] if i < reactions_by_strike.size() else []
+		for reaction in reactions:
+			reaction_q += 1.0
+			var built := _build_reaction_beats_from_group(parsed, reaction, reaction_q)
+			var reaction_beats: Array[TurnBeat] = built.get("beats", [])
+			for reaction_beat in reaction_beats:
+				beats.append(reaction_beat)
+			reaction_q = float(built.get("last_q", reaction_q))
+			final_q = maxf(final_q, reaction_q)
+			_debug_log_reaction("inserted ranged reaction beat strike=%d q=%.2f kind=%s" % [
+				i,
+				reaction_q,
+				String(reaction.get("kind", &"unknown")),
+			])
+
+		if !reactions.is_empty():
+			# Ranged attacks normally let the next fire cue start on the previous impact beat.
+			# After-strike reactions need their own beat plus a clean next-fire beat afterward.
+			reaction_shift_q += (reaction_q - impact_q) + 0.5
+
+	var clear_q := final_q + _tail_gap_q_for_attack(analysis)
+	var layout_order := _find_post_action_group_layout(turn_events, group_index)
+	_add_beat_array_clear_focus(beats, clear_q, analysis.attacker_id, trailing, layout_order)
+	return _sort_beats(beats)
+
+
+func _build_reaction_beats_from_group(parsed_parent: Dictionary, reaction: Dictionary, beat_q: float) -> Dictionary:
+	var kind: StringName = reaction.get("kind", &"")
+	if kind == &"summon":
+		var beat := _make_reaction_summon_beat(beat_q, reaction.get("events", []))
+		return {
+			"beats": [beat],
+			"last_q": beat_q,
+		}
+
+	if kind == &"attack":
+		var events: Array[BattleEvent] = parsed_parent.get("source_events", [])
+		var scope_ranges: Dictionary = parsed_parent.get("scope_ranges", {})
+		var nested_scope_id := int(reaction.get("scope_id", 0))
+		var nested := _parse_attack_scope(events, scope_ranges, nested_scope_id)
+		if nested.is_empty():
+			var fallback_beat := TurnBeat.new()
+			fallback_beat.beat_q = beat_q
+			fallback_beat.label = "reaction_attack_fallback"
+			for event in reaction.get("events", []):
+				fallback_beat.events.append(event)
+			_debug_log_reaction("fallback nested attack q=%.2f events=%s" % [
+				beat_q,
+				_debug_event_list_summary(reaction.get("events", [])),
+			])
+			return {
+				"beats": [fallback_beat],
+				"last_q": beat_q,
+			}
+
+		nested["scope_ranges"] = scope_ranges
+		nested["source_events"] = events
+		return _build_compact_reaction_attack_beats(nested, beat_q)
+
+	if kind == &"status":
+		var beat := _make_reaction_status_beat(beat_q, reaction.get("events", []))
+		return {
+			"beats": [beat],
+			"last_q": beat_q,
+		}
+
+	var generic_beat := TurnBeat.new()
+	generic_beat.beat_q = beat_q
+	generic_beat.label = "reaction_generic"
+	for event in reaction.get("events", []):
+		generic_beat.events.append(event)
+	return {
+		"beats": [generic_beat],
+		"last_q": beat_q,
+	}
+
+
+func _build_compact_reaction_attack_beats(parsed: Dictionary, beat_q: float) -> Dictionary:
+	var beats: Array[TurnBeat] = []
+	var analysis: AttackAnalysis = parsed.get("analysis", null)
+	if analysis == null:
+		return {
+			"beats": beats,
+			"last_q": beat_q,
+		}
+
+	var beat := TurnBeat.new()
+	beat.beat_q = beat_q
+	beat.label = "reaction_attack"
+
+	var focus_beat := _make_basic_focus_beat(beat_q, analysis.attacker_id, _collect_all_attack_targets(analysis))
+	for order in focus_beat.orders:
+		beat.orders.append(order)
+
+	if int(analysis.attack_mode) == int(Attack.Mode.RANGED):
+		beat.orders.append(_make_ranged_fire_order(analysis, 0))
+	else:
+		var strike_order := MeleeStrikePresentationOrder.new()
+		strike_order.kind = PresentationOrder.Kind.MELEE_STRIKE
+		strike_order.actor_id = analysis.attacker_id
+		strike_order.target_ids = _collect_all_attack_targets(analysis)
+		strike_order.visual_sec = 0.22
+		strike_order.strike_index = 0
+		strike_order.strikes_total = maxi(int(analysis.strike_count), 1)
+		strike_order.total_hit_count = maxi(_count_total_hits(analysis), 1)
+		strike_order.has_lethal = !analysis.lethal_indices.is_empty()
+		beat.orders.append(strike_order)
+
+	var direct_events_by_strike: Array = parsed.get("direct_events_by_strike", [])
+	for i in range(mini(direct_events_by_strike.size(), analysis.strikes.size())):
+		var strike_events: Array[BattleEvent] = direct_events_by_strike[i]
+		for order in _make_impact_orders_for_strike(analysis, i, strike_events):
+			beat.orders.append(order)
+		for event in strike_events:
+			beat.events.append(event)
+
+	beats.append(beat)
+	var final_q := beat_q
+
+	var reactions_by_strike: Array = parsed.get("reactions_by_strike", [])
+	for i in range(reactions_by_strike.size()):
+		var reactions: Array = reactions_by_strike[i]
+		for reaction in reactions:
+			final_q += 1.0
+			var built := _build_reaction_beats_from_group(parsed, reaction, final_q)
+			var reaction_beats: Array[TurnBeat] = built.get("beats", [])
+			for reaction_beat in reaction_beats:
+				beats.append(reaction_beat)
+			final_q = float(built.get("last_q", final_q))
+			_debug_log_reaction("inserted nested reaction beat q=%.2f kind=%s" % [
+				final_q,
+				String(reaction.get("kind", &"unknown")),
+			])
+
+	return {
+		"beats": beats,
+		"last_q": final_q,
+	}
+
+
+func _make_reaction_summon_beat(beat_q: float, summon_events: Array[BattleEvent]) -> TurnBeat:
+	var beat := TurnBeat.new()
+	beat.beat_q = beat_q
+	beat.label = "reaction_summon"
+	var summoned_events: Array[BattleEvent] = []
+	var status_events: Array[BattleEvent] = []
+	for event in summon_events:
+		if event == null:
+			continue
+		match int(event.type):
+			BattleEvent.Type.SUMMONED:
+				summoned_events.append(event)
+			BattleEvent.Type.STATUS:
+				status_events.append(event)
+
+	var actor_id := _find_source_actor_id(summoned_events, _find_source_actor_id(status_events))
+
+	var windup := _make_summon_windup_beat(beat_q, actor_id, summoned_events)
+	for order in windup.orders:
+		beat.orders.append(order)
+
+	var pop := _make_summon_pop_beat(beat_q, actor_id, summoned_events)
+	for order in pop.orders:
+		beat.orders.append(order)
+	for event in pop.events:
+		beat.events.append(event)
+
+	var status_pop := _make_status_pop_beat(beat_q, actor_id, status_events)
+	for order in status_pop.orders:
+		beat.orders.append(order)
+	for event in status_pop.events:
+		if !beat.events.has(event):
+			beat.events.append(event)
+
+	for event in summon_events:
+		if event == null:
+			continue
+		if !beat.events.has(event):
+			beat.events.append(event)
+
+	return beat
+
+
+func _make_reaction_status_beat(beat_q: float, reaction_events: Array[BattleEvent]) -> TurnBeat:
+	var status_events: Array[BattleEvent] = []
+	for event in reaction_events:
+		if event != null and int(event.type) == int(BattleEvent.Type.STATUS):
+			status_events.append(event)
+
+	var actor_id := _find_source_actor_id(status_events)
+	var beat := _make_status_pop_beat(beat_q, actor_id, status_events)
+	beat.label = "reaction_status"
+	return beat
 
 
 func _split_attack_events(events: Array[BattleEvent]) -> Dictionary:
@@ -972,6 +1617,21 @@ func _targets_for_single_event(e: BattleEvent) -> Array[int]:
 	return out
 
 
+func _find_source_actor_id(events: Array[BattleEvent], fallback := 0) -> int:
+	for event in events:
+		if event == null or event.data == null:
+			continue
+		if event.data.has(Keys.SOURCE_ID):
+			var source_id := int(event.data.get(Keys.SOURCE_ID, 0))
+			if source_id > 0:
+				return source_id
+		if event.data.has(Keys.ACTOR_ID):
+			var actor_id := int(event.data.get(Keys.ACTOR_ID, 0))
+			if actor_id > 0:
+				return actor_id
+	return int(fallback)
+
+
 func _find_post_action_group_layout(events: Array[BattleEvent], fallback_group_index: int) -> GroupLayoutPresentationOrder:
 	var latest_group := -1
 	var latest_order := PackedInt32Array()
@@ -1047,6 +1707,13 @@ func _ensure_lossless_beats(action_kind: StringName, turn_events: Array[BattleEv
 
 		fallback_beat.events.append(be)
 		assigned_counts[int(be.seq)] = 1
+		if _is_known_reaction_event_type(be):
+			_debug_log_reaction("fallback placement type=%s seq=%d action_kind=%s beat=%s" % [
+				_event_type_name(int(be.type)),
+				int(be.seq),
+				String(action_kind),
+				String(fallback_beat.label),
+			])
 		push_warning(
 			"TurnTimelineCompiler: fallback placement for event type=%s seq=%d action_kind=%s beat=%s" % [
 				_event_type_name(int(be.type)),
@@ -1057,6 +1724,41 @@ func _ensure_lossless_beats(action_kind: StringName, turn_events: Array[BattleEv
 		)
 
 	return _sort_beats(out)
+
+
+func _debug_log_reaction(message: String) -> void:
+	print("[VIEW REACTION] %s" % message)
+
+
+func _debug_event_list_summary(events: Array) -> String:
+	if events == null or events.is_empty():
+		return "[]"
+
+	var parts: Array[String] = []
+	var max_n := mini(events.size(), 6)
+	for i in range(max_n):
+		var event := events[i] as BattleEvent
+		if event == null:
+			parts.append("<null>")
+			continue
+		parts.append("%s#%d" % [_event_type_name(int(event.type)), int(event.seq)])
+	if events.size() > max_n:
+		parts.append("... +%d more" % int(events.size() - max_n))
+	return "[" + ", ".join(parts) + "]"
+
+
+func _is_known_reaction_event_type(event: BattleEvent) -> bool:
+	if event == null:
+		return false
+	match int(event.type):
+		BattleEvent.Type.SUMMONED, \
+		BattleEvent.Type.STATUS, \
+		BattleEvent.Type.DAMAGE_APPLIED, \
+		BattleEvent.Type.DIED, \
+		BattleEvent.Type.FADED, \
+		BattleEvent.Type.STRIKE:
+			return true
+	return false
 
 
 func _choose_fallback_beat_for_event(beats: Array[TurnBeat], event: BattleEvent) -> TurnBeat:
