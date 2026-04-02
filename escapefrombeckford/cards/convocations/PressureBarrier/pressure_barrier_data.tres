@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="CardData" format=3 uid="uid://btlvkb0pdixka"]
+
+[ext_resource type="Script" uid="uid://wtk5v77fcqvn" path="res://cards/_core/card_action.gd" id="1_ji37n"]
+[ext_resource type="Resource" uid="uid://c71a7e78wqfvy" path="res://cards/convocations/PressureBarrier/pressure_barrier_action.tres" id="2_823uo"]
+[ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://cards/_core/card_data.gd" id="2_qke15"]
+[ext_resource type="Texture2D" uid="uid://jblyb3q37s5g" path="res://_assets/sprites/assorted/bell-shield.png" id="4_37wan"]
+
+[resource]
+script = ExtResource("2_qke15")
+target_type = 3
+name = "Pressure Barrier"
+description = "Until your next turn, ally takes %s reduced damage from each strike."
+cost = 1
+texture = ExtResource("4_37wan")
+actions = Array[ExtResource("1_ji37n")]([ExtResource("2_823uo")])
+metadata/_custom_type_script = "uid://d2f0qepe047dc"

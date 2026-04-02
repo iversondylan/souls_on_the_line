@@ -1,8 +1,0 @@
-[gd_resource type="Resource" format=3 uid="uid://c3c4c48khrwxu"]
-
-[ext_resource type="Script" uid="uid://b43di6hrx5dk5" path="res://cards/BerserkersFury/berserkers_fury_action.gd" id="1_4t8kt"]
-[ext_resource type="Resource" uid="uid://c73sgxbquj1ks" path="res://audio/aoe_explosion.tres" id="1_ofcf4"]
-
-[resource]
-script = ExtResource("1_4t8kt")
-metadata/_custom_type_script = "uid://wtk5v77fcqvn"

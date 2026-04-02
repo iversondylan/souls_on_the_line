@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="CardData" format=3 uid="uid://iv5lrhm4b60n"]
+
+[ext_resource type="Script" uid="uid://wtk5v77fcqvn" path="res://cards/_core/card_action.gd" id="1_a1nap"]
+[ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://cards/_core/card_data.gd" id="2_uiy48"]
+[ext_resource type="Resource" uid="uid://bmf46tn8op4xy" path="res://cards/convocations/SpacetimeWarp/spacetime_warp_action.tres" id="2_xbmjm"]
+[ext_resource type="Resource" uid="uid://cwsantdi8vmes" path="res://cards/_generic_actions/draw_1_action.tres" id="3_uiy48"]
+[ext_resource type="Texture2D" uid="uid://cvvxggb32iq5y" path="res://_assets/sprites/assorted/warp_weasel.png" id="4_ymuve"]
+
+[resource]
+script = ExtResource("2_uiy48")
+target_type = 3
+name = "Spacetime Warp"
+description = "Select a friendly. Select a swap partner. They swap positions. [i]This may grant an extra action.[/i]"
+cost = 1
+texture = ExtResource("4_ymuve")
+actions = Array[ExtResource("1_a1nap")]([ExtResource("2_xbmjm"), ExtResource("3_uiy48")])
+metadata/_custom_type_script = "uid://d2f0qepe047dc"

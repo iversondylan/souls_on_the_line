@@ -2,7 +2,7 @@
 
 [ext_resource type="PackedScene" uid="uid://d4g7iin5x7648" path="res://cards/_core/menu_card.tscn" id="1_q5376"]
 [ext_resource type="Script" uid="uid://bqo2pqdv1i2f3" path="res://run/shop/shop_card.gd" id="1_w7nxn"]
-[ext_resource type="Resource" uid="uid://qoedpmaije5m" path="res://cards/GrowingFervor/growing_fervor.tres" id="2_ve2vk"]
+[ext_resource type="Resource" uid="uid://qoedpmaije5m" path="res://cards/enchantments/GrowingFervor/growing_fervor.tres" id="2_ve2vk"]
 [ext_resource type="Theme" uid="uid://d2wc7fposrlqs" path="res://themes/wizard_theme.tres" id="2_w7nxn"]
 [ext_resource type="Texture2D" uid="uid://cbbohhy0ybxvy" path="res://_assets/sprites/assorted/coin.PNG" id="3_ve2vk"]
 

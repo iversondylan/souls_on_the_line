@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://ds2ql77j3pbxq" path="res://cards/_core/card_visuals.gd" id="1_2ndsp"]
 [ext_resource type="Texture2D" uid="uid://7wqf7vhvv0ae" path="res://_assets/sprites/assorted/card_glow.PNG" id="1_w227c"]
-[ext_resource type="Resource" uid="uid://b7txf6d8vmjkk" path="res://cards/SpectralCloneCard/spectral_clone.tres" id="2_e5rkb"]
+[ext_resource type="Resource" uid="uid://b7txf6d8vmjkk" path="res://cards/souls/SpectralCloneCard/spectral_clone.tres" id="2_e5rkb"]
 [ext_resource type="Theme" uid="uid://1dr1eewpv0jd" path="res://themes/ui_theme.tres" id="3_2ndsp"]
 [ext_resource type="Texture2D" uid="uid://cvvxggb32iq5y" path="res://_assets/sprites/assorted/warp_weasel.png" id="4_e5rkb"]
 [ext_resource type="Texture2D" uid="uid://b7vtyi61om1lo" path="res://_assets/sprites/card_elements/brass_instrument_card_front_vectors_main.png" id="5_d6xg4"]

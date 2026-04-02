@@ -5,9 +5,9 @@
 [ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://cards/_core/card_data.gd" id="2_4yi5y"]
 [ext_resource type="Theme" uid="uid://d2wc7fposrlqs" path="res://themes/wizard_theme.tres" id="2_jfd2g"]
 [ext_resource type="PackedScene" uid="uid://c4ioesrs574d7" path="res://ui/card_tooltip_popup.tscn" id="3_uwpog"]
-[ext_resource type="Resource" uid="uid://ds3np5rpek8ot" path="res://cards/BerserkersFury/berserkers_fury.tres" id="3_vthmm"]
-[ext_resource type="Resource" uid="uid://iv5lrhm4b60n" path="res://cards/SpacetimeWarp/spacetime_warp_data.tres" id="4_dry12"]
-[ext_resource type="Resource" uid="uid://daxsngijhqe3k" path="res://cards/FocusFireCard/focus_fire.tres" id="5_pnegv"]
+[ext_resource type="Resource" uid="uid://ds3np5rpek8ot" path="res://cards/convocations/BerserkersFury/berserkers_fury.tres" id="3_vthmm"]
+[ext_resource type="Resource" uid="uid://iv5lrhm4b60n" path="res://cards/convocations/SpacetimeWarp/spacetime_warp_data.tres" id="4_dry12"]
+[ext_resource type="Resource" uid="uid://daxsngijhqe3k" path="res://cards/convocations/FocusFireCard/focus_fire.tres" id="5_pnegv"]
 
 [node name="CardReward" type="ColorRect" unique_id=315655578]
 anchors_preset = 15

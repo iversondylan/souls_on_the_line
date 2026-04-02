@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="SummonAction" format=3 uid="uid://lg58i6605xop"]
+
+[ext_resource type="Script" uid="uid://buhtw3540mbls" path="res://cards/_generic_actions/summon_action.gd" id="1_3jnh6"]
+[ext_resource type="Resource" uid="uid://cjxk1x8uo1qyl" path="res://combatants/souls/ImpatientDjinn/impatient_djinn_data.tres" id="2_5ghmy"]
+
+[resource]
+script = ExtResource("1_3jnh6")
+summon_data = ExtResource("2_5ghmy")
+metadata/_custom_type_script = "uid://buhtw3540mbls"

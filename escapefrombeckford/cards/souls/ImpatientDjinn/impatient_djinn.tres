@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="CardData" format=3 uid="uid://d0oumqc77h2hc"]
+
+[ext_resource type="Script" uid="uid://wtk5v77fcqvn" path="res://cards/_core/card_action.gd" id="1_pn1bx"]
+[ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://cards/_core/card_data.gd" id="2_0viu4"]
+[ext_resource type="Resource" uid="uid://lg58i6605xop" path="res://cards/souls/ImpatientDjinn/impatient_djinn_summon_action.tres" id="2_xcutu"]
+[ext_resource type="Resource" uid="uid://oj1l0mnjfnbc" path="res://cards/_reusable_action_treses/apply_fleeting_to_summoned_action.tres" id="3_vgsdk"]
+[ext_resource type="Texture2D" uid="uid://blrkcosxpriad" path="res://_assets/character_visuals/placeholder_shapes/IMG_0243.PNG" id="5_qjxo6"]
+
+[resource]
+script = ExtResource("2_0viu4")
+card_type = 1
+target_type = 1
+rarity = 1
+name = "Impatient Djinn"
+cost = 1
+texture = ExtResource("5_qjxo6")
+actions = Array[ExtResource("1_pn1bx")]([ExtResource("2_xcutu"), ExtResource("3_vgsdk")])
+metadata/_custom_type_script = "uid://d2f0qepe047dc"

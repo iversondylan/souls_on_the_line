@@ -1,13 +1,14 @@
 [gd_resource type="Resource" script_class="CardPile" format=3 uid="uid://gsb7q5fcn68v"]
 
 [ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://cards/_core/card_data.gd" id="1_rilno"]
+[ext_resource type="Resource" uid="uid://b7txf6d8vmjkk" path="res://cards/souls/SpectralCloneCard/spectral_clone.tres" id="2_fugq6"]
 [ext_resource type="Script" uid="uid://dnybrgm0o6gjj" path="res://cards/_core/card_pile.gd" id="2_nkp8v"]
-[ext_resource type="Resource" uid="uid://b7txf6d8vmjkk" path="res://cards/SpectralCloneCard/spectral_clone.tres" id="3_miprr"]
-[ext_resource type="Resource" uid="uid://c66n0b7ujjpvo" path="res://cards/Interception/interception.tres" id="5_4lmpi"]
-[ext_resource type="Resource" uid="uid://sdnvejwfmf81" path="res://cards/ConvokedAssault/convoked_assault.tres" id="7_j0bpe"]
-[ext_resource type="Resource" uid="uid://bhqq2dr8db5pn" path="res://cards/ResonanceSpikeCard/resonance_spike_card.tres" id="8_uvm40"]
+[ext_resource type="Resource" uid="uid://d0oumqc77h2hc" path="res://cards/souls/ImpatientDjinn/impatient_djinn.tres" id="3_avm0j"]
+[ext_resource type="Resource" uid="uid://sdnvejwfmf81" path="res://cards/convocations/ConvokedAssault/convoked_assault.tres" id="4_1a5hq"]
+[ext_resource type="Resource" uid="uid://bhqq2dr8db5pn" path="res://cards/convocations/ResonanceSpikeCard/resonance_spike_card.tres" id="5_vqkr3"]
+[ext_resource type="Resource" uid="uid://c66n0b7ujjpvo" path="res://cards/convocations/Interception/interception.tres" id="6_7w3ya"]
 
 [resource]
 script = ExtResource("2_nkp8v")
-cards = Array[ExtResource("1_rilno")]([ExtResource("3_miprr"), ExtResource("3_miprr"), ExtResource("3_miprr"), ExtResource("3_miprr"), ExtResource("3_miprr"), ExtResource("3_miprr"), ExtResource("7_j0bpe"), ExtResource("7_j0bpe"), ExtResource("8_uvm40"), ExtResource("8_uvm40"), ExtResource("5_4lmpi"), ExtResource("5_4lmpi")])
+cards = Array[ExtResource("1_rilno")]([ExtResource("2_fugq6"), ExtResource("2_fugq6"), ExtResource("2_fugq6"), ExtResource("2_fugq6"), ExtResource("3_avm0j"), ExtResource("3_avm0j"), ExtResource("4_1a5hq"), ExtResource("4_1a5hq"), ExtResource("5_vqkr3"), ExtResource("5_vqkr3"), ExtResource("6_7w3ya"), ExtResource("6_7w3ya")])
 metadata/_custom_type_script = "uid://dnybrgm0o6gjj"
