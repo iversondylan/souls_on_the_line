@@ -3,6 +3,7 @@
 class_name SimAttackSpec extends RefCounted
 
 var attacker_id: int = 0
+var allow_dead_source: bool = false
 
 # How many strikes (each strike can hit multiple targets depending on targeting)
 var strikes: int = 1

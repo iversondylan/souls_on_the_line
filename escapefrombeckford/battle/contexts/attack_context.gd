@@ -6,6 +6,7 @@ var runtime: SimRuntime
 
 var attacker_id: int = 0
 var source_id: int = 0
+var allow_dead_source: bool = false
 
 var strikes: int = 1
 var attack_mode: int = Attack.Mode.MELEE

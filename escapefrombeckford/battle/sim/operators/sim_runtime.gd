@@ -23,6 +23,9 @@ var turn_engine: TurnEngineCore
 var turn_flow_query_host: TurnFlowQueryHost
 var _group_turn_scope_handle: ScopeHandle = null
 var _actor_turn_scope_handle: ScopeHandle = null
+var _delayed_reactions_by_timing: Dictionary = {}
+var _strike_resolution_depth: int = 0
+var _active_delayed_reaction_drains: Dictionary = {}
 
 
 # ============================================================================
@@ -44,6 +47,9 @@ func reset_runtime_state() -> void:
 	turn_flow_query_host = null
 	_group_turn_scope_handle = null
 	_actor_turn_scope_handle = null
+	_delayed_reactions_by_timing.clear()
+	_strike_resolution_depth = 0
+	_active_delayed_reaction_drains.clear()
 
 func _ensure_turn_flow_query_host_initialized() -> void:
 	if host == null:
@@ -109,6 +115,42 @@ func is_player(combat_id: int) -> bool:
 	if turn_flow_query_host == null:
 		return false
 	return turn_flow_query_host.is_player(combat_id)
+
+
+func is_in_strike_resolution() -> bool:
+	return _strike_resolution_depth > 0
+
+
+func enqueue_delayed_reaction(reaction: DelayedReaction) -> void:
+	if reaction == null:
+		return
+
+	var timing := int(reaction.timing)
+	var bucket: Array = _delayed_reactions_by_timing.get(timing, [])
+	bucket.append(reaction)
+	_delayed_reactions_by_timing[timing] = bucket
+
+
+func drain_delayed_reactions(timing: int) -> void:
+	var timing_key := int(timing)
+	if bool(_active_delayed_reaction_drains.get(timing_key, false)):
+		return
+
+	_active_delayed_reaction_drains[timing_key] = true
+
+	while true:
+		var bucket: Array = _delayed_reactions_by_timing.get(timing_key, [])
+		if bucket.is_empty():
+			_delayed_reactions_by_timing.erase(timing_key)
+			break
+
+		_delayed_reactions_by_timing[timing_key] = []
+		for reaction_value in bucket:
+			var reaction: DelayedReaction = reaction_value as DelayedReaction
+			if reaction != null:
+				reaction.execute(self)
+
+	_active_delayed_reaction_drains.erase(timing_key)
 
 
 # ============================================================================
@@ -532,7 +574,10 @@ func run_attack(ctx: AttackContext) -> bool:
 		return false
 	if ctx.api != null:
 		api = ctx.api
-	if int(ctx.attacker_id) <= 0 or !api.is_alive(int(ctx.attacker_id)):
+	var allow_dead_source := bool(ctx.allow_dead_source)
+	if int(ctx.attacker_id) <= 0:
+		return false
+	if !allow_dead_source and !api.is_alive(int(ctx.attacker_id)):
 		return false
 
 	var params: Dictionary = ctx.params if ctx.params else {}
@@ -546,7 +591,8 @@ func run_attack(ctx: AttackContext) -> bool:
 		targeting_ctx = TargetingContext.new()
 		ctx.targeting_ctx = targeting_ctx
 	targeting_ctx.api = api
-	targeting_ctx.source_id = attacker_id
+	targeting_ctx.source_id = source_id
+	targeting_ctx.allow_dead_source = allow_dead_source
 	targeting_ctx.target_type = targeting
 	targeting_ctx.attack_mode = mode
 	targeting_ctx.params = params
@@ -562,7 +608,7 @@ func run_attack(ctx: AttackContext) -> bool:
 		return false
 
 	for s in range(strikes):
-		if !api.is_alive(attacker_id):
+		if !allow_dead_source and !api.is_alive(attacker_id):
 			break
 
 		var strike_scope := _begin_scope(Scope.Kind.STRIKE, "i=%d" % s, attacker_id, {
@@ -599,6 +645,7 @@ func run_attack(ctx: AttackContext) -> bool:
 		var banish_dmg := _resolve_attack_banish_damage(ctx)
 		var deal_mod := int(ctx.deal_modifier_type)
 		var take_mod := int(ctx.take_modifier_type)
+		_strike_resolution_depth += 1
 
 		for tid: int in target_ids:
 			var hit_scope := _begin_scope(Scope.Kind.HIT, "t=%d" % int(tid), attacker_id, {
@@ -607,6 +654,8 @@ func run_attack(ctx: AttackContext) -> bool:
 				Keys.ATTACK_MODE: mode,
 			})
 			if hit_scope == null:
+				_strike_resolution_depth = maxi(_strike_resolution_depth - 1, 0)
+				drain_delayed_reactions(DelayedReaction.Timing.AFTER_STRIKE)
 				_end_scope(strike_scope)
 				_end_scope(attack_scope)
 				return false
@@ -630,6 +679,8 @@ func run_attack(ctx: AttackContext) -> bool:
 
 			_end_scope(hit_scope)
 
+		_strike_resolution_depth = maxi(_strike_resolution_depth - 1, 0)
+		drain_delayed_reactions(DelayedReaction.Timing.AFTER_STRIKE)
 		_end_scope(strike_scope)
 
 	_end_scope(attack_scope)
@@ -837,7 +888,9 @@ func apply_attack_now(spec: SimAttackSpec) -> bool:
 	var api := _api()
 	if api == null or api.state == null or spec == null:
 		return false
-	if int(spec.attacker_id) <= 0 or !api.is_alive(int(spec.attacker_id)):
+	if int(spec.attacker_id) <= 0:
+		return false
+	if !bool(spec.allow_dead_source) and !api.is_alive(int(spec.attacker_id)):
 		return false
 
 	var ai_ctx := NPCAIContext.new()
@@ -870,6 +923,7 @@ func apply_attack_now(spec: SimAttackSpec) -> bool:
 	attack_ctx.runtime = self
 	attack_ctx.attacker_id = int(spec.attacker_id)
 	attack_ctx.source_id = int(spec.attacker_id)
+	attack_ctx.allow_dead_source = bool(spec.allow_dead_source)
 	attack_ctx.strikes = maxi(int(spec.strikes), 1)
 	attack_ctx.deal_modifier_type = int(spec.deal_modifier_type)
 	attack_ctx.take_modifier_type = int(spec.take_modifier_type)
@@ -878,9 +932,11 @@ func apply_attack_now(spec: SimAttackSpec) -> bool:
 	attack_ctx.targeting = int(attack_ctx.params.get(Keys.TARGET_TYPE, Attack.Targeting.STANDARD))
 	attack_ctx.projectile_scene = String(attack_ctx.params.get(Keys.PROJECTILE_SCENE, ""))
 	attack_ctx.reason = "attack_now"
+	attack_ctx.tags = spec.tags.duplicate()
 	attack_ctx.targeting_ctx = TargetingContext.new()
 	attack_ctx.targeting_ctx.api = api
 	attack_ctx.targeting_ctx.source_id = int(spec.attacker_id)
+	attack_ctx.targeting_ctx.allow_dead_source = bool(spec.allow_dead_source)
 	attack_ctx.targeting_ctx.target_type = int(attack_ctx.targeting)
 	attack_ctx.targeting_ctx.attack_mode = int(attack_ctx.attack_mode)
 	attack_ctx.targeting_ctx.params = attack_ctx.params

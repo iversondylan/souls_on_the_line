@@ -12,7 +12,9 @@ class TargetingParticipant extends RefCounted:
 static func get_target_ids(ctx: TargetingContext) -> Array[int]:
 	if ctx == null or ctx.api == null:
 		return []
-	if int(ctx.source_id) <= 0 or !ctx.api.is_alive(int(ctx.source_id)):
+	if int(ctx.source_id) <= 0:
+		return []
+	if !bool(ctx.allow_dead_source) and !ctx.api.is_alive(int(ctx.source_id)):
 		return []
 
 	ctx.source_group_index = int(ctx.api.get_group(int(ctx.source_id)))

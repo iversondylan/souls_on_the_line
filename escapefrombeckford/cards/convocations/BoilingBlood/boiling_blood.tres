@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="CardData" format=3 uid="uid://c5dtic064buhl"]
+
+[ext_resource type="Script" uid="uid://wtk5v77fcqvn" path="res://cards/_core/card_action.gd" id="1_7vqwg"]
+[ext_resource type="Resource" uid="uid://dnd10bwwqi4pk" path="res://cards/convocations/BoilingBlood/apply_bblood_to_target_action.tres" id="2_1a508"]
+[ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://cards/_core/card_data.gd" id="2_s8x2x"]
+[ext_resource type="Resource" uid="uid://cwsantdi8vmes" path="res://cards/_generic_actions/draw_1_action.tres" id="3_g0a6e"]
+[ext_resource type="Texture2D" uid="uid://30ob5x2luu26" path="res://_assets/sprites/assorted/enrage.png" id="5_sotcf"]
+
+[resource]
+script = ExtResource("2_s8x2x")
+target_type = 3
+rarity = 1
+name = "Boiling Blood"
+cost = 1
+texture = ExtResource("5_sotcf")
+actions = Array[ExtResource("1_7vqwg")]([ExtResource("2_1a508"), ExtResource("3_g0a6e")])
+metadata/_custom_type_script = "uid://d2f0qepe047dc"

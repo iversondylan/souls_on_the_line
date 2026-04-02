@@ -10,6 +10,7 @@ enum Stage {
 
 var api: SimBattleAPI
 var source_id: int = 0
+var allow_dead_source: bool = false
 var source_group_index: int = -1
 var defending_group_index: int = -1
 

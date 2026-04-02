@@ -553,6 +553,21 @@ func resolve_death(ctx: DeathContext) -> void:
 	ctx.died = true
 	_request_outcome_check()
 
+	if runtime != null:
+		var reaction := OnDeathDelayedReaction.new()
+		reaction.dead_id = int(ctx.dead_id)
+		reaction.killer_id = int(ctx.killer_id)
+		reaction.group_index = int(ctx.group_index)
+		reaction.reason = String(ctx.reason)
+		reaction.source_reason = String(ctx.reason)
+		reaction.origin_card_uid = String(ctx.origin_card_uid)
+		reaction.origin_arcanum_id = ctx.origin_arcanum_id
+		runtime.enqueue_delayed_reaction(reaction)
+		if !runtime.is_in_strike_resolution():
+			runtime.drain_delayed_reactions(DelayedReaction.Timing.AFTER_STRIKE)
+	else:
+		SimStatusSystem.on_death(self, int(ctx.dead_id), int(ctx.killer_id), String(ctx.reason))
+
 
 func resolve_move(ctx: MoveContext) -> void:
 	if ctx == null or state == null:
