@@ -365,6 +365,8 @@ func on_event(e: EventPackage) -> void:
 			_on_heal_applied(e)
 		BattleEvent.Type.CHANGE_MAX_HEALTH:
 			_on_change_max_health(e)
+		BattleEvent.Type.MODIFY_BATTLE_CARD:
+			_on_modify_battle_card(e)
 		_:
 			if !_is_silent_noop_event_type(int(e.event.type)):
 				push_warning("BattleEventDirector: unhandled event type in playback: %s planned=%s" % [_event_type_name(int(e.event.type)), str(bool(e.is_planned))])
@@ -919,6 +921,22 @@ func _on_change_max_health(e: EventPackage) -> void:
 	var delta_health := after_health - before_health
 	if !e.is_planned and delta_health > 0:
 		v.pop_damage_number(delta_health) # replace later with heal/max-hp popup if desired
+
+
+func _on_modify_battle_card(e: EventPackage) -> void:
+	if e == null or e.event == null or e.is_planned:
+		return
+
+	var d := _data(e)
+	var card_uid := String(d.get(Keys.CARD_UID, ""))
+	if card_uid.is_empty():
+		return
+
+	var modified_fields = d.get(Keys.MODIFIED_FIELDS, {})
+	if !(modified_fields is Dictionary):
+		modified_fields = {}
+
+	Events.modify_battle_card.emit(card_uid, modified_fields, String(d.get(Keys.REASON, "")))
 
 func _on_status_changed(e: EventPackage) -> void:
 	if e == null or e.event == null:

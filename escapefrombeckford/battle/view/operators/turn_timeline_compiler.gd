@@ -909,6 +909,7 @@ func _collect_pre_attack_events(events: Array[BattleEvent], attack_begin: int) -
 			BattleEvent.Type.MANA, \
 			BattleEvent.Type.HEAL_APPLIED, \
 			BattleEvent.Type.CHANGE_MAX_HEALTH, \
+			BattleEvent.Type.MODIFY_BATTLE_CARD, \
 			BattleEvent.Type.MOVED:
 				leading.append(event)
 	return leading
@@ -934,6 +935,7 @@ func _is_attack_direct_event(event: BattleEvent) -> bool:
 	match int(event.type):
 		BattleEvent.Type.DAMAGE_APPLIED, \
 		BattleEvent.Type.CHANGE_MAX_HEALTH, \
+		BattleEvent.Type.MODIFY_BATTLE_CARD, \
 		BattleEvent.Type.STATUS, \
 		BattleEvent.Type.DIED, \
 		BattleEvent.Type.FADED:
@@ -1459,6 +1461,7 @@ func _split_attack_events(events: Array[BattleEvent]) -> Dictionary:
 			match int(e.type):
 				BattleEvent.Type.DAMAGE_APPLIED, \
 				BattleEvent.Type.CHANGE_MAX_HEALTH, \
+				BattleEvent.Type.MODIFY_BATTLE_CARD, \
 				BattleEvent.Type.STATUS, \
 				BattleEvent.Type.DIED, \
 				BattleEvent.Type.FADED:
@@ -1482,6 +1485,7 @@ func _split_attack_events(events: Array[BattleEvent]) -> Dictionary:
 				BattleEvent.Type.MANA, \
 				BattleEvent.Type.HEAL_APPLIED, \
 				BattleEvent.Type.CHANGE_MAX_HEALTH, \
+				BattleEvent.Type.MODIFY_BATTLE_CARD, \
 				BattleEvent.Type.MOVED:
 					leading.append(e)
 			continue

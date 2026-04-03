@@ -3,6 +3,7 @@ class_name CardPileView extends Control
 const MENU_CARD_SCENE := preload("uid://d4g7iin5x7648")
 
 @export var card_pile: CardPile
+@export var show_battle_modifications := false
 
 @onready var title: Label = %Title
 @onready var card_grid: GridContainer = %CardGrid
@@ -14,6 +15,8 @@ var api: SimBattleAPI
 
 func _ready() -> void:
 	back_button.pressed.connect(hide)
+	if show_battle_modifications:
+		Events.modify_battle_card.connect(_on_modify_battle_card)
 	
 	for card: Node in card_grid.get_children():
 		card.queue_free()
@@ -49,9 +52,23 @@ func _update_view(randomized: bool) -> void:
 	for card: CardData in all_cards:
 		var new_card := MENU_CARD_SCENE.instantiate() as MenuCard
 		new_card.player_data = player_data
+		new_card.api = api
+		new_card.show_battle_modifications = show_battle_modifications
 		card_grid.add_child(new_card)
 		new_card.set_card_data(card)
 		
 		new_card.tooltip_requested.connect(card_tooltip_popup.show_tooltip)
 	
 	show()
+
+
+func _on_modify_battle_card(card_uid: String, _modified_fields: Dictionary, _reason: String) -> void:
+	if !show_battle_modifications:
+		return
+	for child in card_grid.get_children():
+		var card := child as MenuCard
+		if card == null or card.card_data == null:
+			continue
+		if String(card.card_data.uid) != String(card_uid):
+			continue
+		card.refresh_description()

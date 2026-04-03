@@ -330,6 +330,24 @@ func emit_change_max_health(
 
 	return _append(BattleEvent.Type.CHANGE_MAX_HEALTH, data)
 
+
+func emit_modify_battle_card(
+	card_uid: String,
+	modified_fields: Dictionary,
+	reason: String = "",
+	extra := {}
+) -> int:
+	var data := {
+		Keys.CARD_UID: String(card_uid),
+		Keys.MODIFIED_FIELDS: modified_fields.duplicate(true) if modified_fields != null else {},
+		Keys.REASON: String(reason),
+	}
+
+	for k in extra.keys():
+		data[k] = extra[k]
+
+	return _append(BattleEvent.Type.MODIFY_BATTLE_CARD, data)
+
 func emit_strike(
 	attacker_id: int,
 	target_ids: Array[int],

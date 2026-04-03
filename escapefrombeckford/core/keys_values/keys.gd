@@ -113,6 +113,7 @@ const SUMMON_SPEC := &"spec"
 const COMBATANT_NAME := &"combatant_name"
 const MAX_HEALTH := &"max_health"
 const HEALTH := &"health"
+const SUMMON_MAX_HEALTH := &"summon_max_health"
 const ARMOR := &"armor"
 const MAX_MANA := &"max_mana"
 const APR := &"apr"
@@ -129,6 +130,7 @@ const REPLACED_INSERT_INDEX := &"replaced_insert_index"
 
 # Card mutated
 const REASON := &"reason"
+const MODIFIED_FIELDS := &"modified_fields"
 const DELTA := &"delta"
 
 # Status

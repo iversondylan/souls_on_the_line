@@ -154,26 +154,31 @@ func get_summon_card_max_health_bonus(card_uid: String) -> int:
 	return int(state.summon_card_max_health_bonus.get(uid, 0))
 
 
-func add_summon_card_max_health_bonus(card_uid: String, amount: int) -> void:
+func add_summon_card_max_health_bonus(card_uid: String, amount: int) -> int:
 	if state == null:
+		return 0
+	var uid := String(card_uid)
+	if uid.is_empty():
+		return 0
+	if int(amount) == 0:
+		return get_summon_card_max_health_bonus(uid)
+	var next_amount := maxi(0, get_summon_card_max_health_bonus(uid) + int(amount))
+	if next_amount <= 0:
+		state.summon_card_max_health_bonus.erase(uid)
+		return 0
+	state.summon_card_max_health_bonus[uid] = next_amount
+	return next_amount
+
+
+func emit_modify_battle_card(card_uid: String, modified_fields: Dictionary, reason: String = "") -> void:
+	if writer == null:
 		return
 	var uid := String(card_uid)
 	if uid.is_empty():
 		return
-	if int(amount) == 0:
+	if modified_fields == null or modified_fields.is_empty():
 		return
-	var next_amount := maxi(0, get_summon_card_max_health_bonus(uid) + int(amount))
-	if next_amount <= 0:
-		state.summon_card_max_health_bonus.erase(uid)
-		return
-	state.summon_card_max_health_bonus[uid] = next_amount
-	print(
-		"[TEMPERED] store bonus card_uid=%s delta=%d total=%d" % [
-			uid,
-			int(amount),
-			next_amount,
-		]
-	)
+	writer.emit_modify_battle_card(uid, modified_fields, reason)
 
 func get_soulbound_ids_for_owner(_owner_id: int) -> Array[int]:
 	return get_combatants_in_group_by_mortality(
@@ -942,27 +947,9 @@ func summon(ctx: SummonContext) -> void:
 	var u := _make_unit_from_combatant_data(ctx.summon_data, id, g, false)
 	u.bound_card_uid = String(ctx.bound_card_uid)
 	var summon_bonus := get_summon_card_max_health_bonus(u.bound_card_uid)
-	print(
-		"[TEMPERED] summon actor=%d summoned_id=%d card_uid=%s base_hp=%d base_max=%d bonus=%d" % [
-			int(source_id),
-			int(id),
-			String(u.bound_card_uid),
-			int(u.health),
-			int(u.max_health),
-			int(summon_bonus),
-		]
-	)
 	if summon_bonus > 0:
 		u.max_health += summon_bonus
 		u.health += summon_bonus
-		print(
-			"[TEMPERED] summon applied summoned_id=%d card_uid=%s health=%d max_health=%d" % [
-				int(id),
-				String(u.bound_card_uid),
-				int(u.health),
-				int(u.max_health),
-			]
-		)
 	u.mortality = int(ctx.mortality)
 	u.type = CombatantView.Type.ALLY if g == 0 else CombatantView.Type.ENEMY
 	
@@ -1360,14 +1347,6 @@ func _maybe_release_soulbound_reserve(u: CombatantState, reason: String) -> void
 	var uid := String(u.bound_card_uid) if ("bound_card_uid" in u) else ""
 	if uid == "":
 		return
-	print(
-		"[TEMPERED] release summoned_id=%d card_uid=%s reason=%s stored_bonus=%d" % [
-			int(u.id),
-			uid,
-			String(reason),
-			get_summon_card_max_health_bonus(uid),
-		]
-	)
 	
 	if writer != null:
 		writer.emit_summon_reserve_released(int(u.id), uid, String(reason))

@@ -16,6 +16,12 @@ static func end_with_period(text: String) -> String:
 	return text
 
 static func build_card_description(card_data: CardData) -> String:
+	return _build_card_description_internal(card_data, null)
+
+static func build_battle_card_description(card_data: CardData, api: SimBattleAPI) -> String:
+	return _build_card_description_internal(card_data, api)
+
+static func _build_card_description_internal(card_data: CardData, api: SimBattleAPI) -> String:
 	if card_data == null:
 		return ""
 
@@ -31,7 +37,7 @@ static func build_card_description(card_data: CardData) -> String:
 		if total_slots <= 0:
 			break
 
-		var values := _description_values_for_action(action)
+		var values := _description_values_for_action(action, card_data, api)
 		if values.is_empty():
 			continue
 
@@ -49,7 +55,11 @@ static func build_card_description(card_data: CardData) -> String:
 	text = percent_to_symbol(text)
 	return end_with_period(text)
 
-static func _description_values_for_action(action: CardAction) -> Array:
+static func _description_values_for_action(
+	action: CardAction,
+	card_data: CardData = null,
+	api: SimBattleAPI = null
+) -> Array:
 	if action == null:
 		return []
 
@@ -61,7 +71,12 @@ static func _description_values_for_action(action: CardAction) -> Array:
 	if action is SummonAction:
 		var summon_data := (action as SummonAction).get_preview_summon_data()
 		if summon_data != null:
-			return [int(summon_data.apr), int(summon_data.max_health), String(summon_data.name)]
+			var summon_max_health := int(summon_data.max_health)
+			if api != null and card_data != null:
+				var card_uid := String(card_data.uid)
+				if !card_uid.is_empty():
+					summon_max_health += int(api.get_summon_card_max_health_bonus(card_uid))
+			return [int(summon_data.apr), summon_max_health, String(summon_data.name)]
 
 	if action is HealAction:
 		var heal_action := action as HealAction

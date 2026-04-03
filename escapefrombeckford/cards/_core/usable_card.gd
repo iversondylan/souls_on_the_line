@@ -62,6 +62,7 @@ func _ready() -> void:
 	Events.card_aim_ended.connect(_on_card_drag_or_aiming_ended)
 	Events.card_drag_ended.connect(_on_card_drag_or_aiming_ended)
 	Events.mana_view_update.connect(_mana_changed)
+	Events.modify_battle_card.connect(_on_modify_battle_card)
 	card_state_machine.init(self)
 
 func _input(event: InputEvent) -> void:
@@ -130,6 +131,8 @@ func update_description() -> void:
 	card_visuals.description.set_text(get_description())
 
 func get_description() -> String:
+	if api != null:
+		return TextUtils.build_battle_card_description(card_data, api)
 	return TextUtils.build_card_description(card_data)
 
 
@@ -224,6 +227,14 @@ func _on_card_drag_or_aiming_ended(_usable_card: UsableCard) -> void:
 
 func _mana_changed(_order: ManaViewOrder) -> void:
 	playable = is_playable()
+
+
+func _on_modify_battle_card(card_uid: String, _modified_fields: Dictionary, _reason: String) -> void:
+	if card_data == null:
+		return
+	if String(card_data.uid) != String(card_uid):
+		return
+	update_description()
 
 func is_mouse_over() -> bool:
 	# Get the global mouse position

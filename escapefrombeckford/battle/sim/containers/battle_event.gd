@@ -44,6 +44,7 @@ enum Type {
 	DEFEAT,
 	DRAW_CARDS,
 	CHANGE_MAX_HEALTH,
+	MODIFY_BATTLE_CARD,
 }
 
 var defines_beat: bool = false

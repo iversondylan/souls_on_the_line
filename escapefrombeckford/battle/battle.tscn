@@ -227,10 +227,12 @@ layer = 4
 [node name="DrawPileView" parent="CardPileViews" unique_id=2085647040 instance=ExtResource("22_wyn7e")]
 unique_name_in_owner = true
 visible = false
+show_battle_modifications = true
 
 [node name="DiscardPileView" parent="CardPileViews" unique_id=506262802 instance=ExtResource("22_wyn7e")]
 unique_name_in_owner = true
 visible = false
+show_battle_modifications = true
 
 [node name="StatusOverlay" type="CanvasLayer" parent="." unique_id=2094819986]
 
