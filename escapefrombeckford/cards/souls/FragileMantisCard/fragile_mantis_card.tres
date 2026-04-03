@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="CardData" format=3]
+
+[ext_resource type="Script" uid="uid://wtk5v77fcqvn" path="res://cards/_core/card_action.gd" id="1_card_action"]
+[ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://cards/_core/card_data.gd" id="2_card_data"]
+[ext_resource type="Resource" path="res://cards/souls/FragileMantisCard/fragile_mantis_summon_action.tres" id="3_fragile_mantis_summon"]
+[ext_resource type="Resource" path="res://cards/souls/FragileMantisCard/double_edge_on_summoned_action.tres" id="4_double_edge_on_summoned"]
+[ext_resource type="Texture2D" path="res://_assets/character_visuals/fragile_mantis/mantis.png" id="5_fragile_mantis_texture"]
+
+[resource]
+script = ExtResource("2_card_data")
+card_type = 1
+target_type = 1
+rarity = 1
+name = "Fragile Mantis"
+description = "Summon a 4/6 Fragile Mantis with 4 Double Edge."
+cost = 1
+texture = ExtResource("5_fragile_mantis_texture")
+actions = Array[ExtResource("1_card_action")]([ExtResource("3_fragile_mantis_summon"), ExtResource("4_double_edge_on_summoned")])
+metadata/_custom_type_script = "uid://d2f0qepe047dc"

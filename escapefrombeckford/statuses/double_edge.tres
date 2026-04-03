@@ -1,12 +1,12 @@
-[gd_resource type="Resource" script_class="DoubleEdgeStatus" format=3]
+[gd_resource type="Resource" script_class="DoubleEdgeStatus" format=3 uid="uid://b3n0tmwd2wftw"]
 
-[ext_resource type="Texture2D" path="res://_assets/sprites/assorted/crossed-swords_48_w.png" id="1_double_edge_icon"]
-[ext_resource type="Script" path="res://statuses/double_edge.gd" id="1_double_edge_script"]
+[ext_resource type="Script" uid="uid://b4k0f1ckge4ru" path="res://statuses/double_edge.gd" id="1_double_edge_script"]
+[ext_resource type="Texture2D" uid="uid://baf2savv3v8gb" path="res://_assets/sprites/assorted/pirate-flag.png" id="1_wcttt"]
 
 [resource]
 script = ExtResource("1_double_edge_script")
 status_name = "Double Edge"
 proc_type = 2
-reapply_type = 3
-icon = ExtResource("1_double_edge_icon")
+number_display_type = 1
+icon = ExtResource("1_wcttt")
 tooltip = "Double Edge: each damaging strike deals damage back to this unit equal to this status's intensity."

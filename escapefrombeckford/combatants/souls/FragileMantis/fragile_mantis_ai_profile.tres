@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="NPCAIProfile" format=3]
+
+[ext_resource type="Script" uid="uid://bcih413oy6v73" path="res://npc_ai/_core/npc_action.gd" id="1_action"]
+[ext_resource type="Script" uid="uid://bdsvca1cpka5s" path="res://npc_ai/_core/npc_ai_profile.gd" id="2_profile"]
+[ext_resource type="Resource" path="res://combatants/souls/FragileMantis/fragile_mantis_attack_action.tres" id="3_attack_action"]
+
+[resource]
+script = ExtResource("2_profile")
+actions = Array[ExtResource("1_action")]([ExtResource("3_attack_action")])
+metadata/_custom_type_script = "uid://bdsvca1cpka5s"

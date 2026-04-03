@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="ApplyStatusToSummonedAction" format=3]
+
+[ext_resource type="Script" uid="uid://jie78uegvh3j" path="res://cards/_generic_actions/apply_status_to_summoned_action.gd" id="1_apply_status_to_summoned"]
+[ext_resource type="Resource" path="res://statuses/double_edge.tres" id="2_double_edge_status"]
+
+[resource]
+script = ExtResource("1_apply_status_to_summoned")
+status = ExtResource("2_double_edge_status")
+intensity = 4
+metadata/_custom_type_script = "uid://wtk5v77fcqvn"
