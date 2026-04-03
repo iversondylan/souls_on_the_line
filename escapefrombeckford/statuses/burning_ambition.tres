@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="BurningAmbitionStatus" format=3 uid="uid://brcqbk316gbmr"]
+
+[ext_resource type="Texture2D" path="res://_assets/sprites/arcana_placeholders/fire-silhouette.png" id="1_hn6ng"]
+[ext_resource type="Script" path="res://statuses/burning_ambition.gd" id="2_hvh50"]
+[ext_resource type="Script" path="res://statuses/_core/status.gd" id="2_status"]
+[ext_resource type="Resource" path="res://statuses/explosive_departure.tres" id="3_departure"]
+
+[resource]
+script = ExtResource("2_hvh50")
+aura_type = 0
+projected_statuses = Array[ExtResource("2_status")]([ExtResource("3_departure")])
+status_name = "Burning Ambition"
+proc_type = 2
+number_display_type = 1
+reapply_type = 0
+expiration_policy = 3
+icon = ExtResource("1_hn6ng")
+tooltip = "Burning Ambition [Aura]: other allies gain Explosive Departure equal to intensity."
+metadata/_custom_type_script = "uid://cueedkb1u8vxy"
