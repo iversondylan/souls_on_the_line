@@ -1,13 +1,16 @@
-[gd_resource type="Resource" script_class="ExplosiveAmbition" format=3 uid="uid://v08f4neq881h"]
+[gd_resource type="Resource" script_class="BurningAmbitionStatus" format=3 uid="uid://v08f4neq881h"]
 
-[ext_resource type="Texture2D" uid="uid://dfm4wyrok3dku" path="res://_assets/sprites/assorted/explosion_icon.png" id="1_hvh50"]
+[ext_resource type="Texture2D" uid="uid://qm3iabq2byhw" path="res://_assets/sprites/assorted/burning-passion.png" id="1_hvh50"]
 [ext_resource type="Script" uid="uid://mmyd2krhkale" path="res://statuses/explosive_ambition.gd" id="2_hvh50"]
+[ext_resource type="Script" uid="uid://cueedkb1u8vxy" path="res://statuses/_core/status.gd" id="2_status"]
+[ext_resource type="Resource" uid="uid://be6cqdi7drqt2" path="res://statuses/explosive_departure.tres" id="3_departure"]
 
 [resource]
 script = ExtResource("2_hvh50")
-status_name = "Explosive Ambition"
+projected_statuses = Array[ExtResource("2_status")]([ExtResource("3_departure")])
+status_name = "Burning Ambition"
 proc_type = 2
+number_display_type = 1
 icon = ExtResource("1_hvh50")
-tooltip = "TO DO
-this is a 'power' status that adds aoe damage for summons on death."
+tooltip = "Burning Ambition [Aura]: other allies gain Explosive Departure equal to intensity."
 metadata/_custom_type_script = "uid://cueedkb1u8vxy"

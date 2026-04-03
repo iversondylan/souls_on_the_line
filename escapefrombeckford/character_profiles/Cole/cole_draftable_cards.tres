@@ -15,8 +15,9 @@
 [ext_resource type="Resource" uid="uid://bpc3a010u4wux" path="res://cards/convocations/ScarabSubstitution/scarab_substitution.tres" id="12_3bcm6"]
 [ext_resource type="Resource" uid="uid://wgpfged0xtw3" path="res://cards/souls/ShrapnelOysterCard/shrapnel_oyster_card.tres" id="13_h6k4i"]
 [ext_resource type="Resource" uid="uid://bayn0pa8nkx10" path="res://cards/souls/GlassPeccaryCard/glass_peccary_card.tres" id="14_sbe0n"]
+[ext_resource type="Resource" uid="uid://buses1nhfoe7d" path="res://cards/enchantments/BurningAmbition/burning_ambition.tres" id="15_burning_ambition"]
 
 [resource]
 script = ExtResource("2_a8mjb")
-cards = Array[ExtResource("1_fen0u")]([ExtResource("2_hweav"), ExtResource("3_8eqlo"), ExtResource("4_h6k4i"), ExtResource("5_sbe0n"), ExtResource("6_ytsqa"), ExtResource("7_h10r8"), ExtResource("8_6whrq"), ExtResource("9_0myu0"), ExtResource("10_tqeyv"), ExtResource("11_8ihx4"), ExtResource("12_3bcm6"), ExtResource("13_h6k4i"), ExtResource("14_sbe0n")])
+cards = Array[ExtResource("1_fen0u")]([ExtResource("2_hweav"), ExtResource("3_8eqlo"), ExtResource("4_h6k4i"), ExtResource("5_sbe0n"), ExtResource("6_ytsqa"), ExtResource("7_h10r8"), ExtResource("8_6whrq"), ExtResource("9_0myu0"), ExtResource("10_tqeyv"), ExtResource("11_8ihx4"), ExtResource("12_3bcm6"), ExtResource("13_h6k4i"), ExtResource("14_sbe0n"), ExtResource("15_burning_ambition")])
 metadata/_custom_type_script = "uid://dnybrgm0o6gjj"
