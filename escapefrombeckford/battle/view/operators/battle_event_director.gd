@@ -116,6 +116,9 @@ func _start_order(order: PresentationOrder) -> void:
 		PresentationOrder.Kind.RANGED_FIRE:
 			_start_ranged_fire_order(order as RangedFirePresentationOrder)
 
+		PresentationOrder.Kind.RANGED_CLEAVE:
+			_start_ranged_cleave_order(order as RangedFirePresentationOrder)
+
 		PresentationOrder.Kind.IMPACT:
 			_start_impact_order(order as ImpactPresentationOrder)
 
@@ -187,6 +190,13 @@ func _start_ranged_fire_order(order: RangedFirePresentationOrder) -> void:
 	if order == null:
 		return
 	#print("VIEW ranged fire projectile uid/path: ", order.projectile_scene_path)
+	var attacker := battle_view.get_combatant(int(order.actor_id))
+	if attacker != null:
+		attacker.play_presentation_order(order, battle_view)
+
+func _start_ranged_cleave_order(order: RangedFirePresentationOrder) -> void:
+	if order == null:
+		return
 	var attacker := battle_view.get_combatant(int(order.actor_id))
 	if attacker != null:
 		attacker.play_presentation_order(order, battle_view)
@@ -636,6 +646,7 @@ func _is_silent_noop_event_type(event_type: int) -> bool:
 		BattleEvent.Type.ACTOR_BEGIN, \
 		BattleEvent.Type.ACTOR_END, \
 		BattleEvent.Type.STRIKE, \
+		BattleEvent.Type.CLEAVE, \
 		BattleEvent.Type.CARD_PLAYED, \
 		BattleEvent.Type.CARD_MUTATED, \
 		BattleEvent.Type.DEBUG, \
@@ -1545,6 +1556,16 @@ func _debug_order_payload(order: PresentationOrder) -> String:
 				bits.append("lethal=%s" % str(bool(o4.has_lethal)))
 				if o4.projectile_scene_path != "":
 					bits.append("proj=%s" % o4.projectile_scene_path.get_file())
+
+		PresentationOrder.Kind.RANGED_CLEAVE:
+			var o4c := order as RangedFirePresentationOrder
+			if o4c != null:
+				bits.append("i=%d" % int(o4c.strike_index))
+				bits.append("n=%d" % int(o4c.strikes_total))
+				bits.append("hits=%d" % int(o4c.total_hit_count))
+				bits.append("lethal=%s" % str(bool(o4c.has_lethal)))
+				if o4c.projectile_scene_path != "":
+					bits.append("proj=%s" % o4c.projectile_scene_path.get_file())
 
 		PresentationOrder.Kind.IMPACT:
 			var o5 := order as ImpactPresentationOrder

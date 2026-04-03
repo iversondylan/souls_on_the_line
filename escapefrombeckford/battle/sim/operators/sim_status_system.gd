@@ -103,11 +103,11 @@ static func on_death(api: SimBattleAPI, dead_id: int, killer_id: int, reason: St
 
 	_for_each_effective_status_on_unit(api, dead_id, fn, true)
 
-static func unit_grants_attack_spillthrough(api: SimBattleAPI, owner_id: int) -> bool:
-	return _unit_grants_spillthrough_internal(api, owner_id, true)
+static func unit_grants_attack_cleave(api: SimBattleAPI, owner_id: int) -> bool:
+	return _unit_grants_cleave_internal(api, owner_id, true)
 
-static func unit_grants_received_spillthrough(api: SimBattleAPI, owner_id: int) -> bool:
-	return _unit_grants_spillthrough_internal(api, owner_id, false)
+static func unit_grants_received_cleave(api: SimBattleAPI, owner_id: int) -> bool:
+	return _unit_grants_cleave_internal(api, owner_id, false)
 
 static func unit_get_attack_self_damage_on_strike(
 	api: SimBattleAPI,
@@ -255,7 +255,7 @@ static func _for_each_effective_status_on_unit(
 		fn.call(ctx)
 
 
-static func _unit_grants_spillthrough_internal(
+static func _unit_grants_cleave_internal(
 	api: SimBattleAPI,
 	owner_id: int,
 	attack_side: bool
@@ -274,9 +274,9 @@ static func _unit_grants_spillthrough_internal(
 		var grants := false
 		if proto != null:
 			grants = bool(
-				proto.grants_attack_spillthrough(ctx)
+				proto.grants_attack_cleave(ctx)
 				if attack_side
-				else proto.grants_received_spillthrough(ctx)
+				else proto.grants_received_cleave(ctx)
 			)
 
 			stack_notes.append(

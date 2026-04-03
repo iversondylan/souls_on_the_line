@@ -1,6 +1,12 @@
 # attack_context.gd
 class_name AttackContext extends RefCounted
 
+enum ResolutionKind {
+	NONE,
+	PRIMARY_STRIKE,
+	CLEAVE,
+}
+
 var api: SimBattleAPI
 var runtime: SimRuntime
 
@@ -31,5 +37,6 @@ var affected_target_ids: PackedInt32Array = PackedInt32Array()
 var any_hit: bool = false
 var current_strike_index: int = -1
 var current_primary_target_ids: Array[int] = []
-var current_spillthrough_target_id: int = 0
-var current_spillthrough_damage: int = 0
+var current_cleave_target_id: int = 0
+var current_cleave_damage: int = 0
+var current_resolution_kind: int = ResolutionKind.NONE

@@ -81,10 +81,10 @@ func on_targeting_retarget(_ctx: SimStatusContext, _targeting_ctx: TargetingCont
 func on_targeting_interpose(_ctx: SimStatusContext, _targeting_ctx: TargetingContext) -> void:
 	pass
 
-func grants_attack_spillthrough(_ctx: SimStatusContext) -> bool:
+func grants_attack_cleave(_ctx: SimStatusContext) -> bool:
 	return false
 
-func grants_received_spillthrough(_ctx: SimStatusContext) -> bool:
+func grants_received_cleave(_ctx: SimStatusContext) -> bool:
 	return false
 
 func get_attack_self_damage_on_strike(_ctx: SimStatusContext, _attack_ctx: AttackContext) -> int:

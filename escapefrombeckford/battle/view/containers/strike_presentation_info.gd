@@ -16,9 +16,10 @@ var recoil_hits: Array[HitPresentationInfo] = []
 
 var hit_count: int = 0
 var has_lethal_hit: bool = false
+var has_cleave: bool = false
 var has_self_recoil: bool = false
-var is_spillthrough: bool = false
+var is_cleave: bool = false
 var chained_from_previous: bool = false
 var origin_strike_index: int = -1
 var chain_source_target_id: int = 0
-var spillthrough_damage: int = 0
+var cleave_damage: int = 0

@@ -417,6 +417,9 @@ func play_presentation_order(order: PresentationOrder, battle_view: BattleView) 
 		PresentationOrder.Kind.RANGED_FIRE:
 			_play_ranged_fire_from_order(order as RangedFirePresentationOrder, battle_view)
 
+		PresentationOrder.Kind.RANGED_CLEAVE:
+			_play_ranged_cleave_from_order(order as RangedFirePresentationOrder, battle_view)
+
 		PresentationOrder.Kind.IMPACT:
 			_play_impact_from_order(order as ImpactPresentationOrder)
 
@@ -561,6 +564,28 @@ func _play_ranged_fire_from_order(order: RangedFirePresentationOrder, battle_vie
 
 	#_play_ranged_fire_pulse(o, gen)
 	_spawn_projectile_for_ranged_strike(o, battle_view, gen)
+
+
+func _play_ranged_cleave_from_order(order: RangedFirePresentationOrder, battle_view: BattleView) -> void:
+	if order == null or battle_view == null:
+		return
+
+	var o := StrikeWindupOrder.new()
+	var clock := battle_view.clock if battle_view != null else _get_battle_clock()
+	var continuation_duration := 0.5 * clock.seconds_per_quarter() if clock != null else 0.18
+	o.duration = continuation_duration
+	o.attacker_id = int(order.actor_id)
+	o.target_ids = order.target_ids
+	o.attack_mode = Attack.Mode.RANGED
+	o.strike_count = 1
+	o.strike_index = int(order.strike_index)
+	o.projectile_scene_path = order.projectile_scene_path
+	o.chained_from_previous = true
+	o.origin_strike_index = int(order.origin_strike_index)
+	o.chain_source_target_id = int(order.chain_source_target_id)
+	o.has_chain_continuation = false
+
+	_spawn_projectile_for_ranged_strike(o, battle_view, _strike_gen)
 
 
 func _play_impact_from_order(order: ImpactPresentationOrder) -> void:

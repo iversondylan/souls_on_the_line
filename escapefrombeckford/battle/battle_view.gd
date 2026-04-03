@@ -740,6 +740,15 @@ func _debug_order_short(order: PresentationOrder) -> String:
 				if o4.projectile_scene_path != "":
 					bits.append("proj=%s" % o4.projectile_scene_path.get_file())
 
+		PresentationOrder.Kind.RANGED_CLEAVE:
+			var o4c := order as RangedFirePresentationOrder
+			if o4c != null:
+				bits.append("i=%d/%d" % [int(o4c.strike_index), int(o4c.strikes_total)])
+				bits.append("hits=%d" % int(o4c.total_hit_count))
+				bits.append("lethal=%s" % str(bool(o4c.has_lethal)))
+				if o4c.projectile_scene_path != "":
+					bits.append("proj=%s" % o4c.projectile_scene_path.get_file())
+
 		PresentationOrder.Kind.IMPACT:
 			var o5 := order as ImpactPresentationOrder
 			if o5 != null:

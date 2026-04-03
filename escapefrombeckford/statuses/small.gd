@@ -9,9 +9,9 @@ func get_id() -> StringName:
 	return ID
 
 
-func grants_received_spillthrough(_ctx: SimStatusContext) -> bool:
+func grants_received_cleave(_ctx: SimStatusContext) -> bool:
 	return true
 
 
 func get_tooltip(_intensity: int = 0, _duration: int = 0) -> String:
-	return "Small: excess damage dealt to this unit is applied to the next target."
+	return "Small: excess damage dealt to this unit cleaves into the next target."

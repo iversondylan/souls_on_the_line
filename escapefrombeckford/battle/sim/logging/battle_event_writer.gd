@@ -14,6 +14,7 @@ var allow_unscoped_events: bool = false
 var _beat_marker_types := {
 	BattleEvent.Type.ARCANUM_PROC: true,
 	BattleEvent.Type.STRIKE: true,
+	BattleEvent.Type.CLEAVE: true,
 	BattleEvent.Type.SUMMONED: true,
 	BattleEvent.Type.DIED: true,
 	BattleEvent.Type.FADED: true,
@@ -371,6 +372,30 @@ func emit_strike(
 	for k in extra.keys():
 		data[k] = extra[k]
 	return _append(BattleEvent.Type.STRIKE, data)
+
+func emit_cleave(
+	attacker_id: int,
+	target_ids: Array[int],
+	attack_mode: int,
+	target_type: int,
+	strike_index: int,
+	strikes_total: int = 1,
+	projectile_scene: String = "",
+	extra := {}
+) -> int:
+	var data := {
+		Keys.SOURCE_ID: int(attacker_id),
+		Keys.TARGET_IDS: target_ids,
+		Keys.ATTACK_MODE: int(attack_mode),
+		Keys.TARGET_TYPE: int(target_type),
+		Keys.STRIKE_INDEX: int(strike_index),
+		Keys.STRIKES: int(strikes_total),
+	}
+	if projectile_scene != "":
+		data[Keys.PROJECTILE_SCENE] = String(projectile_scene)
+	for k in extra.keys():
+		data[k] = extra[k]
+	return _append(BattleEvent.Type.CLEAVE, data)
 
 func emit_summoned(
 	source_id: int,
