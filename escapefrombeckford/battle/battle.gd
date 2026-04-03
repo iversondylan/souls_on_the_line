@@ -335,6 +335,9 @@ func _on_player_input_view_reached(player_id: int) -> void:
 		return
 
 	wait_for_anims = true
+	card_bins.unlock_hand_cards_for_player_turn()
+	if hand != null:
+		hand.refresh_locked_card_states()
 	var draw_ctx := card_bin_rule_host.build_player_turn_refill_context(int(player_id))
 	await card_bins.request_draw(draw_ctx)
 	Events.hand_drawn.emit()

@@ -67,6 +67,7 @@ const SUMMONED_IDS := &"summon_ids"
 const AMOUNT := &"amount"
 const REQUEST_ID := &"request_id"
 const CHOSEN_UIDS := &"chosen_uids"
+const DISABLE_UNTIL_NEXT_PLAYER_TURN := &"disable_until_next_player_turn"
 
 # Arcana
 const ARCANUM_ID := &"arcanum_id"

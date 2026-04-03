@@ -14,4 +14,4 @@ func grants_attack_spillthrough(_ctx: SimStatusContext) -> bool:
 
 
 func get_tooltip(_intensity: int = 0, _duration: int = 0) -> String:
-	return "Heavy Attack: overkill damage spills through to the next target in lane order."
+	return "Heavy Attack: excess damage dealt by this unit is applied to the next target."

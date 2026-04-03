@@ -393,6 +393,7 @@ func _build_delayed_reaction_nodes(
 		var has_summon := false
 		var has_status := false
 		var has_attack := false
+		var has_draw := false
 		for event in reaction.events:
 			if event == null:
 				continue
@@ -403,6 +404,8 @@ func _build_delayed_reaction_nodes(
 					has_status = true
 				BattleEvent.Type.DAMAGE_APPLIED, BattleEvent.Type.DIED, BattleEvent.Type.FADED:
 					has_attack = true
+				BattleEvent.Type.DRAW_CARDS:
+					has_draw = true
 
 		match StringName(reaction_group.get("kind", &"")):
 			&"summon":
@@ -416,6 +419,8 @@ func _build_delayed_reaction_nodes(
 					reaction.kind = &"compact_attack_reaction"
 				elif has_status:
 					reaction.kind = &"status_followup_reaction"
+				elif has_draw:
+					reaction.kind = &"draw_followup_reaction"
 				else:
 					reaction.kind = &"reaction"
 
@@ -685,6 +690,8 @@ func _make_delayed_reaction_beat(beat_q: float, reaction: DelayedReactionNode) -
 			return _make_compact_reaction_attack_beat(beat_q, reaction)
 		&"status_followup_reaction":
 			return _make_reaction_status_beat(beat_q, reaction.events)
+		&"draw_followup_reaction":
+			return _make_reaction_draw_beat(beat_q, reaction.events)
 		_:
 			var generic_beat := TurnBeat.new()
 			generic_beat.beat_q = beat_q
@@ -960,7 +967,7 @@ func _collect_attack_level_reaction_groups(
 
 		var reaction_range: Dictionary = scope_ranges.get(child_scope_id, {})
 		var scope_kind := int(reaction_range.get("kind", -1))
-		if scope_kind != int(Scope.Kind.SUMMON_ACTION) and scope_kind != int(Scope.Kind.ATTACK):
+		if scope_kind != int(Scope.Kind.SUMMON_ACTION) and scope_kind != int(Scope.Kind.ATTACK) and scope_kind != int(Scope.Kind.STATUS_ACTION):
 			continue
 
 		var next_begin := attack_end
@@ -968,7 +975,11 @@ func _collect_attack_level_reaction_groups(
 			var next_scope_range: Dictionary = scope_ranges.get(int(child_scope_ids[child_index + 1]), {})
 			next_begin = int(next_scope_range.get("begin", attack_end))
 
-		var kind_name := &"summon" if scope_kind == int(Scope.Kind.SUMMON_ACTION) else &"attack"
+		var kind_name := &"attack"
+		if scope_kind == int(Scope.Kind.SUMMON_ACTION):
+			kind_name = &"summon"
+		elif scope_kind == int(Scope.Kind.STATUS_ACTION):
+			kind_name = &"status"
 		var reaction := {
 			"kind": kind_name,
 			"scope_id": int(child_scope_id),
@@ -1024,10 +1035,14 @@ func _collect_reaction_groups_for_strike(
 	for scope_id in child_scope_ids:
 		var reaction_range: Dictionary = scope_ranges.get(int(scope_id), {})
 		var scope_kind := int(reaction_range.get("kind", -1))
-		if scope_kind != int(Scope.Kind.SUMMON_ACTION) and scope_kind != int(Scope.Kind.ATTACK):
+		if scope_kind != int(Scope.Kind.SUMMON_ACTION) and scope_kind != int(Scope.Kind.ATTACK) and scope_kind != int(Scope.Kind.STATUS_ACTION):
 			continue
 
-		var kind_name := &"summon" if scope_kind == int(Scope.Kind.SUMMON_ACTION) else &"attack"
+		var kind_name := &"attack"
+		if scope_kind == int(Scope.Kind.SUMMON_ACTION):
+			kind_name = &"summon"
+		elif scope_kind == int(Scope.Kind.STATUS_ACTION):
+			kind_name = &"status"
 		out.append({
 			"kind": kind_name,
 			"scope_id": int(scope_id),
@@ -1163,6 +1178,7 @@ func _is_reaction_followup_event(event: BattleEvent) -> bool:
 		BattleEvent.Type.STATUS, \
 		BattleEvent.Type.STATUS_CHANGED, \
 		BattleEvent.Type.SUMMONED, \
+		BattleEvent.Type.DRAW_CARDS, \
 		BattleEvent.Type.SET_INTENT, \
 		BattleEvent.Type.TURN_STATUS, \
 		BattleEvent.Type.MOVED:
@@ -1520,7 +1536,16 @@ func _build_reaction_beats_from_group(parsed_parent: Dictionary, reaction: Dicti
 		return _build_compact_reaction_attack_beats(nested, beat_q)
 
 	if kind == &"status":
-		var beat := _make_reaction_status_beat(beat_q, reaction.get("events", []))
+		var reaction_events: Array[BattleEvent] = reaction.get("events", [])
+		var has_status := false
+		for event in reaction_events:
+			if event != null and (
+				int(event.type) == int(BattleEvent.Type.STATUS)
+				or int(event.type) == int(BattleEvent.Type.STATUS_CHANGED)
+			):
+				has_status = true
+				break
+		var beat := _make_reaction_status_beat(beat_q, reaction_events) if has_status else _make_reaction_draw_beat(beat_q, reaction_events)
 		return {
 			"beats": [beat],
 			"last_q": beat_q,
@@ -1650,6 +1675,20 @@ func _make_reaction_status_beat(beat_q: float, reaction_events: Array[BattleEven
 	var beat := _make_compact_status_beat(beat_q, actor_id, status_events)
 	beat.label = "reaction_status"
 	_tag_beat(beat, [&"reaction", &"status_followup_reaction"])
+	return beat
+
+
+func _make_reaction_draw_beat(beat_q: float, reaction_events: Array[BattleEvent]) -> TurnBeat:
+	var beat := TurnBeat.new()
+	beat.beat_q = beat_q
+	beat.label = "reaction_draw"
+	_tag_beat(beat, [&"reaction", &"draw_followup_reaction"])
+
+	for event in reaction_events:
+		if event == null or int(event.type) != int(BattleEvent.Type.DRAW_CARDS):
+			continue
+		beat.events.append(event)
+
 	return beat
 
 
@@ -2828,6 +2867,7 @@ func _is_known_reaction_event_type(event: BattleEvent) -> bool:
 	match int(event.type):
 		BattleEvent.Type.SUMMONED, \
 		BattleEvent.Type.STATUS, \
+		BattleEvent.Type.DRAW_CARDS, \
 		BattleEvent.Type.DAMAGE_APPLIED, \
 		BattleEvent.Type.DIED, \
 		BattleEvent.Type.FADED, \

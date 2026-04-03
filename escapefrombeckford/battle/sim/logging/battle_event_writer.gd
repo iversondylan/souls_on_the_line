@@ -605,6 +605,24 @@ func emit_discard_resolved(req: DiscardRequest, chosen_uids: Array[String]) -> i
 	})
 
 
+func emit_draw_cards(
+	source_id: int,
+	amount: int,
+	reason: String = "",
+	disable_until_next_player_turn: bool = false,
+	extra := {}
+) -> int:
+	var data := {
+		Keys.SOURCE_ID: int(source_id),
+		Keys.AMOUNT: int(amount),
+		Keys.REASON: String(reason),
+		Keys.DISABLE_UNTIL_NEXT_PLAYER_TURN: bool(disable_until_next_player_turn),
+	}
+	for k in extra.keys():
+		data[k] = extra[k]
+	return _append(BattleEvent.Type.DRAW_CARDS, data)
+
+
 
 func _append_manual(type: int, scope_id: int, parent_scope_id: int, scope_kind: int, data: Dictionary = {}) -> int:
 	if sink == null:

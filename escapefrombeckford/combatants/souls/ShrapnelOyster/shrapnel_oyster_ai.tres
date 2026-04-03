@@ -1,0 +1,7 @@
+[gd_resource type="Resource" script_class="NPCAIProfile" format=3 uid="uid://b60c5t1huy5lq"]
+
+[ext_resource type="Script" path="res://npc_ai/_core/npc_action.gd" id="1_4uvoq"]
+[ext_resource type="Script" path="res://npc_ai/_core/npc_ai_profile.gd" id="2_xecxc"]
+
+[resource]
+script = ExtResource("2_xecxc")

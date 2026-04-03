@@ -222,7 +222,10 @@ func _set_playable(value: bool) -> void:
 		card_visuals.cost_container.set_modulate(Color(1, 1, 1, 1))
 
 func _on_card_drag_or_aiming_ended(_usable_card: UsableCard) -> void:
-	disabled = false
+	if hand != null:
+		hand.apply_disabled_state_to_card(self)
+	else:
+		disabled = false
 	playable = is_playable()
 
 func _mana_changed(_order: ManaViewOrder) -> void:

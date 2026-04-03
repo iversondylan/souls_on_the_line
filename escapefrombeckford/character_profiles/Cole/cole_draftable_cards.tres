@@ -1,20 +1,21 @@
 [gd_resource type="Resource" script_class="CardPile" format=3 uid="uid://bb2svevqwn2v7"]
 
-[ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://cards/_core/card_data.gd" id="1_fen0u"]
-[ext_resource type="Script" uid="uid://dnybrgm0o6gjj" path="res://cards/_core/card_pile.gd" id="2_a8mjb"]
-[ext_resource type="Resource" uid="uid://dfgkvy2yw1a3e" path="res://cards/effusions/AttackCard/attack_card.tres" id="2_hweav"]
-[ext_resource type="Resource" uid="uid://ds3np5rpek8ot" path="res://cards/convocations/BerserkersFury/berserkers_fury.tres" id="3_8eqlo"]
-[ext_resource type="Resource" uid="uid://qoedpmaije5m" path="res://cards/enchantments/GrowingFervor/growing_fervor.tres" id="4_h6k4i"]
-[ext_resource type="Resource" uid="uid://daxsngijhqe3k" path="res://cards/convocations/FocusFireCard/focus_fire.tres" id="5_sbe0n"]
-[ext_resource type="Resource" uid="uid://cblwy6nabti7c" path="res://cards/convocations/HealingSurge/healing_surge.tres" id="6_ytsqa"]
-[ext_resource type="Resource" uid="uid://iv5lrhm4b60n" path="res://cards/convocations/SpacetimeWarp/spacetime_warp_data.tres" id="7_h10r8"]
-[ext_resource type="Resource" uid="uid://b7txf6d8vmjkk" path="res://cards/souls/SpectralCloneCard/spectral_clone.tres" id="8_6whrq"]
-[ext_resource type="Resource" uid="uid://eet5htwsey50" path="res://cards/convocations/SuperchargeCard/supercharge.tres" id="9_0myu0"]
-[ext_resource type="Resource" uid="uid://dqmjfqr0ijgwh" path="res://cards/souls/TemperedSilverbackCard/tempered_silverback_card.tres" id="10_tqeyv"]
-[ext_resource type="Resource" uid="uid://bhqq2dr8db5pn" path="res://cards/convocations/ResonanceSpikeCard/resonance_spike_card.tres" id="11_8ihx4"]
-[ext_resource type="Resource" uid="uid://bpc3a010u4wux" path="res://cards/convocations/ScarabSubstitution/scarab_substitution.tres" id="12_3bcm6"]
+[ext_resource type="Script" path="res://cards/_core/card_data.gd" id="1_fen0u"]
+[ext_resource type="Script" path="res://cards/_core/card_pile.gd" id="2_a8mjb"]
+[ext_resource type="Resource" path="res://cards/effusions/AttackCard/attack_card.tres" id="2_hweav"]
+[ext_resource type="Resource" path="res://cards/convocations/BerserkersFury/berserkers_fury.tres" id="3_8eqlo"]
+[ext_resource type="Resource" path="res://cards/enchantments/GrowingFervor/growing_fervor.tres" id="4_h6k4i"]
+[ext_resource type="Resource" path="res://cards/convocations/FocusFireCard/focus_fire.tres" id="5_sbe0n"]
+[ext_resource type="Resource" path="res://cards/convocations/HealingSurge/healing_surge.tres" id="6_ytsqa"]
+[ext_resource type="Resource" path="res://cards/convocations/SpacetimeWarp/spacetime_warp_data.tres" id="7_h10r8"]
+[ext_resource type="Resource" path="res://cards/souls/SpectralCloneCard/spectral_clone.tres" id="8_6whrq"]
+[ext_resource type="Resource" path="res://cards/convocations/SuperchargeCard/supercharge.tres" id="9_0myu0"]
+[ext_resource type="Resource" path="res://cards/souls/TemperedSilverbackCard/tempered_silverback_card.tres" id="10_tqeyv"]
+[ext_resource type="Resource" path="res://cards/convocations/ResonanceSpikeCard/resonance_spike_card.tres" id="11_8ihx4"]
+[ext_resource type="Resource" path="res://cards/convocations/ScarabSubstitution/scarab_substitution.tres" id="12_3bcm6"]
+[ext_resource type="Resource" path="res://cards/souls/ShrapnelOysterCard/shrapnel_oyster_card.tres" id="13_h6k4i"]
 
 [resource]
 script = ExtResource("2_a8mjb")
-cards = Array[ExtResource("1_fen0u")]([ExtResource("2_hweav"), ExtResource("3_8eqlo"), ExtResource("4_h6k4i"), ExtResource("5_sbe0n"), ExtResource("6_ytsqa"), ExtResource("7_h10r8"), ExtResource("8_6whrq"), ExtResource("9_0myu0"), ExtResource("10_tqeyv"), ExtResource("11_8ihx4"), ExtResource("12_3bcm6")])
+cards = Array[ExtResource("1_fen0u")]([ExtResource("2_hweav"), ExtResource("3_8eqlo"), ExtResource("4_h6k4i"), ExtResource("5_sbe0n"), ExtResource("6_ytsqa"), ExtResource("7_h10r8"), ExtResource("8_6whrq"), ExtResource("9_0myu0"), ExtResource("10_tqeyv"), ExtResource("11_8ihx4"), ExtResource("12_3bcm6"), ExtResource("13_h6k4i")])
 metadata/_custom_type_script = "uid://dnybrgm0o6gjj"

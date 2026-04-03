@@ -367,6 +367,8 @@ func on_event(e: EventPackage) -> void:
 			_on_change_max_health(e)
 		BattleEvent.Type.MODIFY_BATTLE_CARD:
 			_on_modify_battle_card(e)
+		BattleEvent.Type.DRAW_CARDS:
+			_on_draw_cards(e)
 		_:
 			if !_is_silent_noop_event_type(int(e.event.type)):
 				push_warning("BattleEventDirector: unhandled event type in playback: %s planned=%s" % [_event_type_name(int(e.event.type)), str(bool(e.is_planned))])
@@ -638,8 +640,7 @@ func _is_silent_noop_event_type(event_type: int) -> bool:
 		BattleEvent.Type.CARD_MUTATED, \
 		BattleEvent.Type.DEBUG, \
 		BattleEvent.Type.ARCANA_PROC, \
-		BattleEvent.Type.DISCARD_RESOLVED, \
-		BattleEvent.Type.DRAW_CARDS:
+		BattleEvent.Type.DISCARD_RESOLVED:
 			return true
 	return false
 
@@ -1080,6 +1081,22 @@ func _on_discard_requested(e: EventPackage) -> void:
 		})
 
 	Events.request_discard_cards.emit(ctx)
+
+
+func _on_draw_cards(e: EventPackage) -> void:
+	if e == null or e.event == null:
+		return
+
+	var d := _data(e)
+	var ctx := DrawContext.new()
+	ctx.source_id = int(d.get(Keys.SOURCE_ID, 0))
+	ctx.amount = int(d.get(Keys.AMOUNT, 0))
+	ctx.reason = String(d.get(Keys.REASON, ""))
+	ctx.disable_until_next_player_turn = bool(d.get(Keys.DISABLE_UNTIL_NEXT_PLAYER_TURN, false))
+	if ctx.amount <= 0:
+		return
+
+	Events.request_draw_cards.emit(ctx)
 
 
 func _on_fade_windup(e: EventPackage) -> void:

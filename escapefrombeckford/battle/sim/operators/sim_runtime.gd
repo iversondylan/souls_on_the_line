@@ -931,6 +931,36 @@ func run_status_action(ctx: StatusContext) -> void:
 
 	_end_scope(status_scope)
 
+
+func run_draw_action(ctx: DrawContext) -> void:
+	var api := _api()
+	if api == null or api.state == null or ctx == null:
+		return
+	if int(ctx.amount) <= 0:
+		return
+
+	var actor_id := int(ctx.source_id if ctx.source_id > 0 else api.get_player_id())
+	if actor_id <= 0:
+		return
+
+	var draw_scope := _begin_scope(
+		Scope.Kind.STATUS_ACTION,
+		"draw_cards amount=%d" % int(ctx.amount),
+		actor_id,
+		{
+			Keys.ACTOR_ID: int(actor_id),
+			Keys.SOURCE_ID: int(ctx.source_id),
+			Keys.AMOUNT: int(ctx.amount),
+			Keys.REASON: String(ctx.reason),
+			Keys.DISABLE_UNTIL_NEXT_PLAYER_TURN: bool(ctx.disable_until_next_player_turn),
+		}
+	)
+	if draw_scope == null:
+		return
+
+	api.emit_draw_cards(ctx)
+	_end_scope(draw_scope)
+
 func run_realize_pending_statuses(actor_id: int, source_id: int = 0, reason: String = "") -> void:
 	var api := _api()
 	if api == null or api.state == null or actor_id <= 0 or !api.is_alive(actor_id):

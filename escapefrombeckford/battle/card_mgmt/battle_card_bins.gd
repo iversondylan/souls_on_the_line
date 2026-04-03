@@ -38,6 +38,7 @@ func reset_bins() -> void:
 	state.summon_reserve_pile.clear()
 	state.exhausted_pile.clear()
 	state.summon_reserve_by_uid.clear()
+	state.hand_locked_until_next_player_turn.clear()
 	state.first_shuffle = true
 	state.first_hand_drawn = false
 
@@ -79,6 +80,11 @@ func request_draw(ctx: DrawContext) -> void:
 	ctx.drawn_cards = _draw_cards_into_hand(ctx)
 	ctx.drawn_card_uids = _uids_for_cards(ctx.drawn_cards)
 	ctx.actually_drawn = ctx.drawn_cards.size()
+	if bool(ctx.disable_until_next_player_turn):
+		for uid in ctx.drawn_card_uids:
+			if String(uid).is_empty():
+				continue
+			state.hand_locked_until_next_player_turn[String(uid)] = true
 
 	if hand != null and !ctx.drawn_cards.is_empty():
 		await hand.present_draw_cards(ctx.drawn_cards)
@@ -208,6 +214,7 @@ func move_cards(ctx: CardMoveContext) -> void:
 		var card := _remove_card_by_uid(from_pile, String(uid))
 		if card == null:
 			continue
+		state.hand_locked_until_next_player_turn.erase(String(uid))
 		to_pile.add_back(card)
 		ctx.moved_cards.append(card)
 		if ctx.to_bin == CardMoveContext.BinKind.SUMMON_RESERVE:
@@ -319,6 +326,16 @@ func after_hand_cleanup(ctx: HandCleanupContext) -> void:
 
 func _on_request_draw_cards(ctx: DrawContext) -> void:
 	await request_draw(ctx)
+
+
+func is_hand_card_locked_until_next_player_turn(card_uid: String) -> bool:
+	return bool(state.hand_locked_until_next_player_turn.get(String(card_uid), false))
+
+
+func unlock_hand_cards_for_player_turn() -> void:
+	if state.hand_locked_until_next_player_turn.is_empty():
+		return
+	state.hand_locked_until_next_player_turn.clear()
 
 
 func _draw_cards_into_hand(ctx: DrawContext) -> Array[CardData]:

@@ -180,6 +180,19 @@ func emit_modify_battle_card(card_uid: String, modified_fields: Dictionary, reas
 		return
 	writer.emit_modify_battle_card(uid, modified_fields, reason)
 
+
+func emit_draw_cards(ctx: DrawContext) -> void:
+	if writer == null or ctx == null:
+		return
+	if int(ctx.amount) <= 0:
+		return
+	writer.emit_draw_cards(
+		int(ctx.source_id),
+		int(ctx.amount),
+		String(ctx.reason),
+		bool(ctx.disable_until_next_player_turn)
+	)
+
 func get_soulbound_ids_for_owner(_owner_id: int) -> Array[int]:
 	return get_combatants_in_group_by_mortality(
 		FRIENDLY,

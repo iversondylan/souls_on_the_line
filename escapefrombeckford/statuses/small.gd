@@ -14,4 +14,4 @@ func grants_received_spillthrough(_ctx: SimStatusContext) -> bool:
 
 
 func get_tooltip(_intensity: int = 0, _duration: int = 0) -> String:
-	return "Small: lethal overkill on this unit spills through to the next target in lane order."
+	return "Small: excess damage dealt to this unit is applied to the next target."

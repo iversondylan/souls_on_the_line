@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="ApplyStatusToSummonedAction" format=3 uid="uid://cd6lolwgfdfly"]
+
+[ext_resource type="Script" path="res://cards/_generic_actions/apply_status_to_summoned_action.gd" id="1_k443v"]
+[ext_resource type="Resource" path="res://statuses/bequeath.tres" id="2_qsfty"]
+
+[resource]
+script = ExtResource("1_k443v")
+status = ExtResource("2_qsfty")
+intensity = 1

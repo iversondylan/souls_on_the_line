@@ -109,6 +109,7 @@ func refresh_hand_cards() -> void:
 		if usable_card == null or !is_instance_valid(usable_card):
 			continue
 		usable_card.refresh_from_card_data()
+		apply_disabled_state_to_card(usable_card)
 
 func add_card(card: CardData) -> void:
 	if card == null:
@@ -129,6 +130,7 @@ func add_card(card: CardData) -> void:
 	usable_card.global_position = target_global
 	usable_card.scale = MINI_CARD_SCALE
 	usable_card.card_fan_requested.connect(_on_usable_card_card_fan_requested)
+	apply_disabled_state_to_card(usable_card)
 	reposition_hand_cards()
 	Events.hand_card_added.emit(usable_card)
 
@@ -371,17 +373,36 @@ func empty_hand() -> void:
 		card.queue_free()
 
 func disable_hand_cards() -> void:
+	_hand_globally_disabled = true
 	for usable_card in _get_hand_cards():
 		usable_card.unhighlight()
-		usable_card.disabled = true
+		apply_disabled_state_to_card(usable_card)
 
 func lock_cards_for_selection() -> void:
 	for usable_card in _get_hand_cards():
 		usable_card.unhighlight()
 
 func enable_hand_cards() -> void:
+	_hand_globally_disabled = false
 	for usable_card in _get_hand_cards():
-		usable_card.disabled = false
+		apply_disabled_state_to_card(usable_card)
+
+
+func refresh_locked_card_states() -> void:
+	for usable_card in _get_hand_cards():
+		apply_disabled_state_to_card(usable_card)
+
+
+func apply_disabled_state_to_card(usable_card: UsableCard) -> void:
+	if usable_card == null or !is_instance_valid(usable_card):
+		return
+
+	var should_disable := _hand_globally_disabled
+	if !should_disable and bins != null and usable_card.card_data != null:
+		usable_card.card_data.ensure_uid()
+		should_disable = bins.is_hand_card_locked_until_next_player_turn(String(usable_card.card_data.uid))
+
+	usable_card.disabled = should_disable
 
 func reposition_hand_cards() -> void:
 	var cards := _get_hand_cards()
