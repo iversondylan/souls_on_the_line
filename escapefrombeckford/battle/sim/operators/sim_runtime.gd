@@ -187,22 +187,6 @@ func _should_apply_spillthrough(
 		attack_enabled = SimStatusSystem.unit_grants_attack_spillthrough(api, int(ctx.attacker_id))
 		target_enabled = SimStatusSystem.unit_grants_received_spillthrough(api, int(primary_target_id))
 	var allowed := supports and ids_ok and lethal and overflow > 0 and next_alive and (attack_enabled or target_enabled)
-	if lethal or overflow > 0 or int(next_target_id) > 0:
-		print(
-			"[SPILLTHROUGH] gate attacker=%d primary=%d next=%d targeting=%d targets=%s lethal=%s overflow=%d next_alive=%s attack_enabled=%s target_enabled=%s allowed=%s" % [
-				int(ctx.attacker_id),
-				int(primary_target_id),
-				int(next_target_id),
-				int(targeting),
-				target_ids,
-				str(lethal),
-				int(overflow),
-				str(next_alive),
-				str(attack_enabled),
-				str(target_enabled),
-				str(allowed),
-			]
-		)
 	return allowed
 
 
@@ -804,15 +788,6 @@ func run_attack(ctx: AttackContext) -> bool:
 				"overflow_amount": int(d.overflow_amount),
 				"overflow_banish_amount": int(d.overflow_banish_amount),
 			}
-			print(
-				"[SPILLTHROUGH] queued strike=%d attacker=%d primary=%d spill=%d overflow=%d" % [
-					int(s),
-					int(attacker_id),
-					int(tid),
-					int(spill_target_id),
-					int(d.overflow_amount),
-				]
-			)
 
 		if direct_strike_dealt_damage:
 			_apply_inline_self_recoil_for_strike(api, ctx, attacker_id, s)

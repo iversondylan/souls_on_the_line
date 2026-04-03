@@ -254,22 +254,7 @@ static func _unit_grants_spillthrough_internal(
 				]
 			)
 		if grants:
-			print(
-				"[SPILLTHROUGH] %s_cap owner=%d granted_by=%s" % [
-					"attack" if attack_side else "received",
-					int(owner_id),
-					String(sid),
-				]
-			)
 			return true
-
-	print(
-		"[SPILLTHROUGH] %s_cap owner=%d granted=false stacks=%s" % [
-			"attack" if attack_side else "received",
-			int(owner_id),
-			stack_notes,
-		]
-	)
 	return false
 
 

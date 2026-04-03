@@ -58,62 +58,19 @@ static func get_next_target_id_after(ctx: TargetingContext, current_target_id: i
 	var ordered_ids := ctx.api.get_combatants_in_group(defending_group_index, false)
 	var current_index := ordered_ids.find(int(current_target_id))
 	if current_index < 0:
-		print(
-			"[SPILLTHROUGH] next_target source=%d group=%d current=%d order=%s next=0 reason=missing_current" % [
-				int(ctx.source_id),
-				int(defending_group_index),
-				int(current_target_id),
-				ordered_ids,
-			]
-		)
 		return 0
 
 	if target_type == int(Attack.Targeting.STANDARD):
 		for i in range(current_index + 1, ordered_ids.size()):
 			var next_id := int(ordered_ids[i])
 			if next_id > 0 and ctx.api.is_alive(next_id):
-				print(
-					"[SPILLTHROUGH] next_target source=%d group=%d current=%d order=%s next=%d" % [
-						int(ctx.source_id),
-						int(defending_group_index),
-						int(current_target_id),
-						ordered_ids,
-						int(next_id),
-					]
-				)
 				return next_id
-		print(
-			"[SPILLTHROUGH] next_target source=%d group=%d current=%d order=%s next=0 reason=none_after" % [
-				int(ctx.source_id),
-				int(defending_group_index),
-				int(current_target_id),
-				ordered_ids,
-			]
-		)
 		return 0
 
 	for i in range(current_index - 1, -1, -1):
 		var next_id := int(ordered_ids[i])
 		if next_id > 0 and ctx.api.is_alive(next_id):
-			print(
-				"[SPILLTHROUGH] next_target source=%d group=%d current=%d order=%s next=%d" % [
-					int(ctx.source_id),
-					int(defending_group_index),
-					int(current_target_id),
-					ordered_ids,
-					int(next_id),
-				]
-			)
 			return next_id
-
-	print(
-		"[SPILLTHROUGH] next_target source=%d group=%d current=%d order=%s next=0 reason=none_before" % [
-			int(ctx.source_id),
-			int(defending_group_index),
-			int(current_target_id),
-			ordered_ids,
-		]
-	)
 	return 0
 
 

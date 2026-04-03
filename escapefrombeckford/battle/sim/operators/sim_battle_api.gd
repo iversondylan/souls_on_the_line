@@ -144,6 +144,37 @@ func get_player_pos_delta(combat_id: int) -> int:
 	
 	return my_rank - player_rank
 
+
+func get_summon_card_max_health_bonus(card_uid: String) -> int:
+	if state == null:
+		return 0
+	var uid := String(card_uid)
+	if uid.is_empty():
+		return 0
+	return int(state.summon_card_max_health_bonus.get(uid, 0))
+
+
+func add_summon_card_max_health_bonus(card_uid: String, amount: int) -> void:
+	if state == null:
+		return
+	var uid := String(card_uid)
+	if uid.is_empty():
+		return
+	if int(amount) == 0:
+		return
+	var next_amount := maxi(0, get_summon_card_max_health_bonus(uid) + int(amount))
+	if next_amount <= 0:
+		state.summon_card_max_health_bonus.erase(uid)
+		return
+	state.summon_card_max_health_bonus[uid] = next_amount
+	print(
+		"[TEMPERED] store bonus card_uid=%s delta=%d total=%d" % [
+			uid,
+			int(amount),
+			next_amount,
+		]
+	)
+
 func get_soulbound_ids_for_owner(_owner_id: int) -> Array[int]:
 	return get_combatants_in_group_by_mortality(
 		FRIENDLY,
@@ -429,20 +460,6 @@ func resolve_damage_immediate(ctx: DamageContext) -> int:
 	ctx.before_health = before_health
 	ctx.after_health = int(tgt.health)
 	ctx.phase = DamageContext.Phase.APPLIED
-	if bool(ctx.was_lethal) or int(ctx.overflow_amount) > 0:
-		print(
-			"[SPILLTHROUGH] damage src=%d tgt=%d amount=%d before_hp=%d after_hp=%d armor=%d health=%d overflow=%d lethal=%s" % [
-				int(ctx.source_id),
-				int(ctx.target_id),
-				int(ctx.amount),
-				int(ctx.before_health),
-				int(ctx.after_health),
-				int(ctx.armor_damage),
-				int(ctx.health_damage),
-				int(ctx.overflow_amount),
-				str(bool(ctx.was_lethal)),
-			]
-		)
 	
 	if writer != null:
 		writer.emit_damage_applied(
@@ -651,17 +668,6 @@ func apply_status(ctx: StatusContext) -> void:
 		return
 
 	var proto := SimStatusSystem.get_proto(self, ctx.status_id)
-	if ctx.status_id == Keys.STATUS_HEAVY_ATTACK or ctx.status_id == Keys.STATUS_SMALL:
-		print(
-			"[SPILLTHROUGH] apply_status sid=%s target=%d proto=%s pending=%s intensity=%d duration=%d" % [
-				String(ctx.status_id),
-				int(ctx.target_id),
-				str(proto != null),
-				str(bool(ctx.pending)),
-				int(ctx.intensity),
-				int(ctx.duration),
-			]
-		)
 	
 	if int(ctx.intensity) == 0:
 		ctx.intensity = 1
@@ -809,15 +815,6 @@ func remove_status(ctx: StatusContext) -> void:
 		return
 	
 	var proto := SimStatusSystem.get_proto(self, ctx.status_id)
-	if ctx.status_id == Keys.STATUS_HEAVY_ATTACK or ctx.status_id == Keys.STATUS_SMALL:
-		print(
-			"[SPILLTHROUGH] remove_status sid=%s target=%d proto=%s pending=%s" % [
-				String(ctx.status_id),
-				int(ctx.target_id),
-				str(proto != null),
-				str(bool(ctx.pending)),
-			]
-		)
 	
 	var before_i := int(old_stack.intensity)
 	var before_d := int(old_stack.duration)
@@ -944,6 +941,28 @@ func summon(ctx: SummonContext) -> void:
 	var id := state.alloc_id()
 	var u := _make_unit_from_combatant_data(ctx.summon_data, id, g, false)
 	u.bound_card_uid = String(ctx.bound_card_uid)
+	var summon_bonus := get_summon_card_max_health_bonus(u.bound_card_uid)
+	print(
+		"[TEMPERED] summon actor=%d summoned_id=%d card_uid=%s base_hp=%d base_max=%d bonus=%d" % [
+			int(source_id),
+			int(id),
+			String(u.bound_card_uid),
+			int(u.health),
+			int(u.max_health),
+			int(summon_bonus),
+		]
+	)
+	if summon_bonus > 0:
+		u.max_health += summon_bonus
+		u.health += summon_bonus
+		print(
+			"[TEMPERED] summon applied summoned_id=%d card_uid=%s health=%d max_health=%d" % [
+				int(id),
+				String(u.bound_card_uid),
+				int(u.health),
+				int(u.max_health),
+			]
+		)
 	u.mortality = int(ctx.mortality)
 	u.type = CombatantView.Type.ALLY if g == 0 else CombatantView.Type.ENEMY
 	
@@ -1318,7 +1337,7 @@ func _make_unit_from_combatant_data(
 func _make_spawn_spec_from_data(combatant_data: CombatantData, u: CombatantState) -> Dictionary:
 	return {
 		Keys.COMBATANT_NAME: String(combatant_data.name),
-		Keys.MAX_HEALTH: int(combatant_data.max_health),
+		Keys.MAX_HEALTH: int(u.max_health),
 		Keys.HEALTH: int(u.health),
 		Keys.MAX_MANA: int(combatant_data.max_mana),
 		Keys.APM: int(combatant_data.apm),
@@ -1341,6 +1360,14 @@ func _maybe_release_soulbound_reserve(u: CombatantState, reason: String) -> void
 	var uid := String(u.bound_card_uid) if ("bound_card_uid" in u) else ""
 	if uid == "":
 		return
+	print(
+		"[TEMPERED] release summoned_id=%d card_uid=%s reason=%s stored_bonus=%d" % [
+			int(u.id),
+			uid,
+			String(reason),
+			get_summon_card_max_health_bonus(uid),
+		]
+	)
 	
 	if writer != null:
 		writer.emit_summon_reserve_released(int(u.id), uid, String(reason))
