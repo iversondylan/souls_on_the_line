@@ -3,6 +3,7 @@ class_name ProtectedDroneStatus extends Status
 const ID := &"protected_drone"
 const FIRE_ANT_DATA := preload("res://combatants/critters/FireAnt/fire_ant_data.tres")
 const EXPLOSIVE_DEPARTURE := preload("res://statuses/explosive_departure.tres")
+const SMALL := preload("res://statuses/small.tres")
 
 
 func get_id() -> StringName:
@@ -45,4 +46,10 @@ func on_death(ctx: SimStatusContext, dead_id: int, _killer_id: int, _reason: Str
 	status_ctx.target_id = int(summon_ctx.summoned_id)
 	status_ctx.status_id = EXPLOSIVE_DEPARTURE.get_id()
 	status_ctx.intensity = 3
+	ctx.api.apply_status(status_ctx)
+	
+	status_ctx = StatusContext.new()
+	status_ctx.source_id = int(ctx.owner_id)
+	status_ctx.target_id = int(summon_ctx.summoned_id)
+	status_ctx.status_id = SMALL.get_id()
 	ctx.api.apply_status(status_ctx)

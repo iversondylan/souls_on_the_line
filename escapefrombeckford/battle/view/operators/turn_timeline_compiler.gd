@@ -38,6 +38,17 @@ class ParsedNpcAttackTurn extends RefCounted:
 	var trailing_events: Array[BattleEvent] = []
 	var analysis: AttackAnalysis = null
 
+
+class TopLevelTurnSegment extends RefCounted:
+	var kind: StringName = &""
+	var scope_id: int = 0
+	var actor_id: int = 0
+	var events: Array[BattleEvent] = []
+	var status_events: Array[BattleEvent] = []
+	var summon_events: Array[BattleEvent] = []
+	var target_ids: Array[int] = []
+	var summoned_ids: Array[int] = []
+
 func compile_actor_turn(turn_events: Array[BattleEvent]) -> TurnTimeline:
 	var timeline := TurnTimeline.new()
 	if turn_events.is_empty():
@@ -60,18 +71,220 @@ func compile_actor_turn(turn_events: Array[BattleEvent]) -> TurnTimeline:
 			else:
 				var analysis := _build_attack_analysis(turn_events)
 				beats = _build_attack_beats(analysis, turn_events)
-	elif _is_summon_turn(turn_events):
-		timeline.action_kind = &"summon"
-		beats = _build_summon_beats(turn_events)
-	elif _is_status_turn(turn_events):
-		timeline.action_kind = &"status"
-		beats = _build_status_beats(turn_events)
 	else:
-		timeline.action_kind = &"generic"
-		beats = _build_generic_beats(turn_events)
+		var mixed_scope_turn := _build_scope_mixed_nonattack_turn(turn_events)
+		if !mixed_scope_turn.is_empty():
+			timeline.action_kind = mixed_scope_turn.get("action_kind", &"generic")
+			beats = mixed_scope_turn.get("beats", [])
+		elif _is_summon_turn(turn_events):
+			timeline.action_kind = &"summon"
+			beats = _build_summon_beats(turn_events)
+		elif _is_status_turn(turn_events):
+			timeline.action_kind = &"status"
+			beats = _build_status_beats(turn_events)
+		else:
+			timeline.action_kind = &"generic"
+			beats = _build_generic_beats(turn_events)
 
 	timeline.beats = _ensure_lossless_beats(timeline.action_kind, turn_events, beats)
 	return timeline
+
+
+func _build_scope_mixed_nonattack_turn(turn_events: Array[BattleEvent]) -> Dictionary:
+	var actor_id := _find_actor_id(turn_events)
+	if actor_id <= 0:
+		return {}
+
+	var segments := _parse_top_level_nonattack_segments(turn_events, actor_id)
+	if segments.is_empty():
+		return {}
+
+	var has_summon := false
+	for segment in segments:
+		if segment != null and StringName(segment.kind) == &"summon":
+			has_summon = true
+			break
+
+	if !has_summon:
+		return {
+			"action_kind": &"status",
+			"beats": _build_status_beats(turn_events),
+		}
+
+	if StringName(segments[0].kind) != &"summon":
+		return {}
+
+	var beats: Array[TurnBeat] = []
+	var group_index := _find_group_index(turn_events)
+	var layout_order := _find_post_action_group_layout(turn_events, group_index)
+	var trailing := _collect_nonattack_trailing_events(turn_events)
+
+	var current_q := 0.0
+	var i := 0
+	var is_first_cluster := true
+
+	while i < segments.size():
+		var segment: TopLevelTurnSegment = segments[i]
+		if segment == null:
+			i += 1
+			continue
+
+		if StringName(segment.kind) == &"summon":
+			var cluster := _consume_top_level_summon_cluster(segments, i)
+			var summon_events: Array[BattleEvent] = cluster.get("summon_events", [])
+			var embedded_status_events: Array[BattleEvent] = cluster.get("embedded_status_events", [])
+			var focus_targets: Array[int] = cluster.get("focus_targets", [])
+
+			if is_first_cluster:
+				beats.append(_make_basic_focus_beat(0.0, actor_id, focus_targets))
+				beats.append(_make_summon_windup_beat(1.0, actor_id, summon_events))
+				beats.append(_make_summon_pop_beat(2.0, actor_id, summon_events, embedded_status_events))
+				current_q = 3.0
+				is_first_cluster = false
+			else:
+				beats.append(_make_summon_windup_beat(current_q, actor_id, summon_events))
+				beats.append(_make_summon_pop_beat(current_q + 1.0, actor_id, summon_events, embedded_status_events))
+				current_q += 2.0
+
+			i = int(cluster.get("next_index", i + 1))
+			continue
+
+		if StringName(segment.kind) == &"status":
+			beats.append(_make_compact_status_beat(current_q, actor_id, segment.status_events))
+			current_q += 1.0
+
+		i += 1
+
+	var clear_q := _enforce_min_clear_focus_q_for_self_death(current_q, actor_id, turn_events)
+	beats.append(_make_clear_focus_beat(clear_q, actor_id, trailing, layout_order))
+	return {
+		"action_kind": &"summon",
+		"beats": _sort_beats(beats),
+	}
+
+
+func _parse_top_level_nonattack_segments(events: Array[BattleEvent], actor_id: int) -> Array[TopLevelTurnSegment]:
+	var out: Array[TopLevelTurnSegment] = []
+	var scope_ranges := _build_scope_ranges(events)
+	if scope_ranges.is_empty():
+		return out
+
+	var actor_turn_scope_id := _find_actor_turn_scope_id(events, actor_id)
+	if actor_turn_scope_id <= 0:
+		return out
+
+	var child_scope_ids := _find_direct_child_scope_ids(events, actor_turn_scope_id)
+	for scope_id in child_scope_ids:
+		var segment := _build_top_level_nonattack_segment(events, scope_ranges, int(scope_id))
+		if segment != null:
+			out.append(segment)
+
+	return out
+
+
+func _build_top_level_nonattack_segment(
+	events: Array[BattleEvent],
+	scope_ranges: Dictionary,
+	scope_id: int
+) -> TopLevelTurnSegment:
+	var scope_range: Dictionary = scope_ranges.get(scope_id, {})
+	var scope_kind := int(scope_range.get("kind", -1))
+	if scope_kind != int(Scope.Kind.SUMMON_ACTION) and scope_kind != int(Scope.Kind.STATUS_ACTION):
+		return null
+
+	var begin_idx := int(scope_range.get("begin", -1))
+	var end_idx := int(scope_range.get("end", -1))
+	if begin_idx < 0 or end_idx < 0:
+		return null
+
+	var segment := TopLevelTurnSegment.new()
+	segment.kind = &"summon" if scope_kind == int(Scope.Kind.SUMMON_ACTION) else &"status"
+	segment.scope_id = scope_id
+	segment.actor_id = int(scope_range.get("actor_id", 0))
+
+	for idx in range(begin_idx + 1, end_idx):
+		var event: BattleEvent = events[idx]
+		if event == null or _is_structural_ignored_event(event):
+			continue
+		segment.events.append(event)
+
+		match int(event.type):
+			BattleEvent.Type.SUMMONED:
+				segment.summon_events.append(event)
+				var summoned_id := int(event.data.get(Keys.SUMMONED_ID, 0)) if event.data != null else 0
+				if summoned_id > 0 and !segment.summoned_ids.has(summoned_id):
+					segment.summoned_ids.append(summoned_id)
+			BattleEvent.Type.STATUS, BattleEvent.Type.STATUS_CHANGED:
+				segment.status_events.append(event)
+	segment.target_ids = _collect_targets_from_events(segment.events)
+	return segment
+
+
+func _consume_top_level_summon_cluster(segments: Array[TopLevelTurnSegment], start_index: int) -> Dictionary:
+	var summon_events: Array[BattleEvent] = []
+	var embedded_status_events: Array[BattleEvent] = []
+	var focus_targets: Array[int] = []
+	var summoned_ids: Array[int] = []
+	var next_index := start_index
+
+	while next_index < segments.size():
+		var segment: TopLevelTurnSegment = segments[next_index]
+		if segment == null:
+			next_index += 1
+			continue
+
+		if StringName(segment.kind) == &"summon":
+			for event in segment.summon_events:
+				summon_events.append(event)
+			for target_id in _collect_targets_from_summon_events(segment.summon_events):
+				if !focus_targets.has(target_id):
+					focus_targets.append(target_id)
+			for summoned_id in segment.summoned_ids:
+				if !summoned_ids.has(summoned_id):
+					summoned_ids.append(summoned_id)
+			next_index += 1
+			continue
+
+		if StringName(segment.kind) == &"status" and _segment_embeds_into_summon(segment, summoned_ids):
+			for event in segment.status_events:
+				embedded_status_events.append(event)
+			next_index += 1
+			continue
+
+		break
+
+	return {
+		"summon_events": summon_events,
+		"embedded_status_events": embedded_status_events,
+		"focus_targets": focus_targets,
+		"summoned_ids": summoned_ids,
+		"next_index": next_index,
+	}
+
+
+func _segment_embeds_into_summon(segment: TopLevelTurnSegment, summoned_ids: Array[int]) -> bool:
+	if segment == null or StringName(segment.kind) != &"status":
+		return false
+	if segment.target_ids.is_empty() or summoned_ids.is_empty():
+		return false
+
+	for target_id in segment.target_ids:
+		if !summoned_ids.has(int(target_id)):
+			return false
+	return true
+
+
+func _collect_nonattack_trailing_events(events: Array[BattleEvent]) -> Array[BattleEvent]:
+	var trailing: Array[BattleEvent] = []
+	for event in events:
+		if event == null:
+			continue
+		match int(event.type):
+			BattleEvent.Type.SET_INTENT, \
+			BattleEvent.Type.TURN_STATUS, \
+			BattleEvent.Type.MOVED:
+				trailing.append(event)
+	return trailing
 
 
 func _parse_scope_driven_attack_turn(events: Array[BattleEvent]) -> ParsedNpcAttackTurn:
@@ -1415,13 +1628,6 @@ func _make_reaction_summon_beat(beat_q: float, summon_events: Array[BattleEvent]
 	for event in pop.events:
 		beat.events.append(event)
 
-	var status_pop := _make_status_pop_beat(beat_q, actor_id, status_events)
-	for order in status_pop.orders:
-		beat.orders.append(order)
-	for event in status_pop.events:
-		if !beat.events.has(event):
-			beat.events.append(event)
-
 	for event in summon_events:
 		if event == null:
 			continue
@@ -1434,11 +1640,14 @@ func _make_reaction_summon_beat(beat_q: float, summon_events: Array[BattleEvent]
 func _make_reaction_status_beat(beat_q: float, reaction_events: Array[BattleEvent]) -> TurnBeat:
 	var status_events: Array[BattleEvent] = []
 	for event in reaction_events:
-		if event != null and int(event.type) == int(BattleEvent.Type.STATUS):
+		if event != null and (
+			int(event.type) == int(BattleEvent.Type.STATUS)
+			or int(event.type) == int(BattleEvent.Type.STATUS_CHANGED)
+		):
 			status_events.append(event)
 
 	var actor_id := _find_source_actor_id(status_events)
-	var beat := _make_status_pop_beat(beat_q, actor_id, status_events)
+	var beat := _make_compact_status_beat(beat_q, actor_id, status_events)
 	beat.label = "reaction_status"
 	_tag_beat(beat, [&"reaction", &"status_followup_reaction"])
 	return beat
@@ -2125,7 +2334,7 @@ func _build_summon_beats(turn_events: Array[BattleEvent]) -> Array[TurnBeat]:
 	if summon_events.is_empty():
 		return _build_generic_beats(turn_events)
 
-	beats.append(_make_basic_focus_beat(0.0, actor_id, _collect_targets_from_events(summon_events)))
+	beats.append(_make_basic_focus_beat(0.0, actor_id, _collect_targets_from_summon_events(summon_events)))
 	beats.append(_make_summon_windup_beat(1.0, actor_id, summon_events))
 	beats.append(_make_summon_pop_beat(2.0, actor_id, summon_events))
 	var clear_q := _enforce_min_clear_focus_q_for_self_death(3.0, actor_id, turn_events)
@@ -2152,8 +2361,8 @@ func _build_status_beats(turn_events: Array[BattleEvent]) -> Array[TurnBeat]:
 	var targets := _collect_targets_from_events(status_events)
 
 	beats.append(_make_basic_focus_beat(0.0, actor_id, targets))
-	beats.append(_make_status_windup_beat(1.0, actor_id, targets))
-	beats.append(_make_status_pop_beat(2.0, actor_id, status_events))
+	beats.append(_make_status_windup_beat(1.0, actor_id, targets, &"full_status", false, 0.16))
+	beats.append(_make_status_pop_beat(2.0, actor_id, status_events, &"full_status", false, 0.18))
 	var clear_q := 4.0 if !removal_events.is_empty() else 3.0
 	clear_q = _enforce_min_clear_focus_q_for_self_death(clear_q, actor_id, turn_events)
 	if !removal_events.is_empty():
@@ -2173,6 +2382,23 @@ func _make_basic_focus_beat(beat_q: float, actor_id: int, target_ids: Array[int]
 
 	beat.orders.append(_make_focus_order(actor_id, target_ids, 0.35))
 	return beat
+
+
+func _collect_targets_from_summon_events(events: Array[BattleEvent]) -> Array[int]:
+	var out := _collect_targets_from_events(events)
+	if !out.is_empty():
+		return out
+
+	var seen := {}
+	for e in events:
+		if e == null or e.data == null:
+			continue
+		var summoned_id := int(e.data.get(Keys.SUMMONED_ID, 0))
+		if summoned_id <= 0 or seen.has(summoned_id):
+			continue
+		seen[summoned_id] = true
+		out.append(summoned_id)
+	return out
 
 
 func _collect_targets_from_events(events: Array[BattleEvent]) -> Array[int]:
@@ -2222,7 +2448,12 @@ func _make_summon_windup_beat(beat_q: float, actor_id: int, summon_events: Array
 	return beat
 
 
-func _make_summon_pop_beat(beat_q: float, actor_id: int, summon_events: Array[BattleEvent]) -> TurnBeat:
+func _make_summon_pop_beat(
+	beat_q: float,
+	actor_id: int,
+	summon_events: Array[BattleEvent],
+	embedded_status_events: Array[BattleEvent] = []
+) -> TurnBeat:
 	var beat := TurnBeat.new()
 	beat.beat_q = beat_q
 	beat.label = "summon_pop"
@@ -2244,10 +2475,22 @@ func _make_summon_pop_beat(beat_q: float, actor_id: int, summon_events: Array[Ba
 		beat.orders.append(o)
 		beat.events.append(e)
 
+	for e in embedded_status_events:
+		if e == null or beat.events.has(e):
+			continue
+		beat.events.append(e)
+
 	return beat
 
 
-func _make_status_windup_beat(beat_q: float, actor_id: int, target_ids: Array[int]) -> TurnBeat:
+func _make_status_windup_beat(
+	beat_q: float,
+	actor_id: int,
+	target_ids: Array[int],
+	presentation_mode: StringName = &"full_status",
+	embedded_in_summon: bool = false,
+	visual_sec: float = 0.16
+) -> TurnBeat:
 	var beat := TurnBeat.new()
 	beat.beat_q = beat_q
 	beat.label = "status_windup"
@@ -2256,13 +2499,22 @@ func _make_status_windup_beat(beat_q: float, actor_id: int, target_ids: Array[in
 	o.kind = PresentationOrder.Kind.STATUS_WINDUP
 	o.actor_id = actor_id
 	o.target_ids = target_ids
-	o.visual_sec = 0.16
+	o.visual_sec = visual_sec
+	o.presentation_mode = presentation_mode
+	o.embedded_in_summon = embedded_in_summon
 
 	beat.orders.append(o)
 	return beat
 
 
-func _make_status_pop_beat(beat_q: float, actor_id: int, status_events: Array[BattleEvent]) -> TurnBeat:
+func _make_status_pop_beat(
+	beat_q: float,
+	actor_id: int,
+	status_events: Array[BattleEvent],
+	presentation_mode: StringName = &"full_status",
+	embedded_in_summon: bool = false,
+	visual_sec: float = 0.18
+) -> TurnBeat:
 	var beat := TurnBeat.new()
 	beat.beat_q = beat_q
 	beat.label = "status_pop"
@@ -2275,7 +2527,7 @@ func _make_status_pop_beat(beat_q: float, actor_id: int, status_events: Array[Ba
 		o.kind = PresentationOrder.Kind.STATUS_POP
 		o.actor_id = actor_id
 		o.target_ids = _targets_for_single_event(e)
-		o.visual_sec = 0.18
+		o.visual_sec = visual_sec
 		o.source_id = int(e.data.get(Keys.SOURCE_ID, 0))
 		o.target_id = int(e.data.get(Keys.TARGET_ID, 0))
 		o.status_id = e.data.get(Keys.STATUS_ID, &"")
@@ -2283,9 +2535,31 @@ func _make_status_pop_beat(beat_q: float, actor_id: int, status_events: Array[Ba
 		o.op = int(e.data.get(Keys.OP, 0))
 		o.intensity = int(e.data.get(Keys.AFTER_INTENSITY, e.data.get(Keys.INTENSITY, 0)))
 		o.turns_duration = int(e.data.get(Keys.AFTER_DURATION, e.data.get(Keys.DURATION, 0)))
+		o.presentation_mode = presentation_mode
+		o.embedded_in_summon = embedded_in_summon
 
 		beat.orders.append(o)
 		beat.events.append(e)
+
+	return beat
+
+
+func _make_compact_status_beat(beat_q: float, actor_id: int, status_events: Array[BattleEvent]) -> TurnBeat:
+	var beat := TurnBeat.new()
+	beat.beat_q = beat_q
+	beat.label = "status_followup"
+	_tag_beat(beat, [&"status_followup"])
+
+	var targets := _collect_targets_from_events(status_events)
+	var windup := _make_status_windup_beat(beat_q, actor_id, targets, &"compact_followup", false, 0.10)
+	for order in windup.orders:
+		beat.orders.append(order)
+
+	var pop := _make_status_pop_beat(beat_q, actor_id, status_events, &"compact_followup", false, 0.12)
+	for order in pop.orders:
+		beat.orders.append(order)
+	for event in pop.events:
+		beat.events.append(event)
 
 	return beat
 

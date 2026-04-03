@@ -1,0 +1,6 @@
+[gd_resource type="Resource" script_class="SummonedStatusTargetModel" format=3 uid="uid://bsvdd8jvaco0n"]
+
+[ext_resource type="Script" uid="uid://duwnjsrkce70a" path="res://npc_ai/status/summoned_status_target_model.gd" id="1_kl5jd"]
+
+[resource]
+script = ExtResource("1_kl5jd")

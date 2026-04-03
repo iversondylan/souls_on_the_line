@@ -769,6 +769,7 @@ func _debug_order_short(order: PresentationOrder) -> String:
 				bits.append("src=%d" % int(o8.source_id))
 				bits.append("t=%d" % int(o8.target_id))
 				bits.append("status=%s" % String(o8.status_id))
+				bits.append("mode=%s" % String(o8.presentation_mode))
 				bits.append("op=%d" % int(o8.op))
 				bits.append("int=%d" % int(o8.intensity))
 				bits.append("dur=%d" % int(o8.turns_duration))

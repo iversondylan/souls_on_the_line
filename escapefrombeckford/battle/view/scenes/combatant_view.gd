@@ -601,10 +601,12 @@ func _play_status_windup_from_order(order: StatusWindupPresentationOrder) -> voi
 
 	if cid == int(order.actor_id):
 		_play_sound(windup_sound)
+		_play_status_source_windup(order)
 
 	for tid in order.target_ids:
 		if cid == int(tid):
 			show_targeted(true)
+			_play_status_target_windup(order)
 			break
 
 
@@ -614,10 +616,94 @@ func _play_status_pop_from_order(order: StatusPopPresentationOrder) -> void:
 
 	if cid == int(order.source_id):
 		_play_sound(status_sound)
+		_play_status_source_pop(order)
 
 	if cid == int(order.target_id):
 		show_targeted(false)
-		play_hit()
+		_play_status_target_pop(order)
+
+
+func _play_status_source_windup(order: StatusWindupPresentationOrder) -> void:
+	if order == null:
+		return
+
+	if tween_strike:
+		tween_strike.kill()
+
+	_cache_base_art_transform_if_needed()
+	var base_scale := _get_base_art_scale()
+	var base_pos := _get_base_art_pos()
+	var compact := StringName(order.presentation_mode) == &"compact_followup"
+	var scale_mult := 1.03 if compact else 1.06
+	var lift := -1.5 if compact else -3.0
+	var dur := maxf(order.visual_sec, 0.01)
+
+	tween_strike = create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	tween_strike.tween_property(art_parent, "scale", base_scale * scale_mult, dur)
+	tween_strike.parallel().tween_property(art_parent, "position", base_pos + Vector2(0, lift), dur)
+
+
+func _play_status_target_windup(order: StatusWindupPresentationOrder) -> void:
+	if order == null:
+		return
+
+	if tween_misc:
+		tween_misc.kill()
+
+	_cache_base_art_transform_if_needed()
+	var base_scale := _get_base_art_scale()
+	var compact := StringName(order.presentation_mode) == &"compact_followup"
+	var scale_mult := 1.02 if compact else 1.04
+	var dur := maxf(order.visual_sec, 0.01)
+
+	tween_misc = create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	tween_misc.tween_property(art_parent, "scale", base_scale * scale_mult, dur)
+
+
+func _play_status_source_pop(order: StatusPopPresentationOrder) -> void:
+	if order == null:
+		return
+
+	if tween_strike:
+		tween_strike.kill()
+
+	_cache_base_art_transform_if_needed()
+	var base_scale := _get_base_art_scale()
+	var base_pos := _get_base_art_pos()
+	var compact := StringName(order.presentation_mode) == &"compact_followup"
+	var peak_scale := base_scale * (1.04 if compact else 1.08)
+	var peak_pos := base_pos + Vector2(0, -2.0 if compact else -4.0)
+	var dur := maxf(order.visual_sec, 0.01)
+	var up_t := maxf(dur * 0.45, 0.02)
+	var down_t := maxf(dur * 0.55, 0.02)
+
+	tween_strike = create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	tween_strike.tween_property(art_parent, "scale", peak_scale, up_t)
+	tween_strike.parallel().tween_property(art_parent, "position", peak_pos, up_t)
+	tween_strike.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+	tween_strike.tween_property(art_parent, "scale", base_scale, down_t)
+	tween_strike.parallel().tween_property(art_parent, "position", base_pos, down_t)
+
+
+func _play_status_target_pop(order: StatusPopPresentationOrder) -> void:
+	if order == null:
+		return
+
+	if tween_misc:
+		tween_misc.kill()
+
+	_cache_base_art_transform_if_needed()
+	var base_scale := _get_base_art_scale()
+	var compact := StringName(order.presentation_mode) == &"compact_followup"
+	var pulse_scale := base_scale * (1.05 if compact else 1.08)
+	var dur := maxf(order.visual_sec, 0.01)
+	var up_t := maxf(dur * 0.40, 0.02)
+	var down_t := maxf(dur * 0.60, 0.02)
+
+	tween_misc = create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	tween_misc.tween_property(art_parent, "scale", pulse_scale, up_t)
+	tween_misc.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+	tween_misc.tween_property(art_parent, "scale", base_scale, down_t)
 
 func _play_ranged_windup_pose_async(duration: float, gen: int) -> void:
 	if !is_instance_valid(self) or gen != _strike_gen:

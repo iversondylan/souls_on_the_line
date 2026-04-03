@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="NPCEffectPackage" format=3 uid="uid://cncdob32fkgpq"]
+
+[ext_resource type="Script" uid="uid://b8d5j6ne4mt88" path="res://npc_ai/_core/param_model.gd" id="1_ocwaa"]
+[ext_resource type="Resource" uid="uid://br5dox5m0ph6v" path="res://npc_ai/npc_status_sequence.tres" id="1_xis7m"]
+[ext_resource type="Script" uid="uid://3jde7uhq2yho" path="res://npc_ai/_core/npc_effect_package.gd" id="2_euqp3"]
+[ext_resource type="Resource" uid="uid://b5hfyyoa0hmlf" path="res://combatants/enemies/CursedLedger/small_status_model.tres" id="3_edobf"]
+[ext_resource type="Script" uid="uid://cuj4qvyx6dedj" path="res://npc_ai/_core/state_model.gd" id="3_shfxa"]
+[ext_resource type="Resource" uid="uid://bsvdd8jvaco0n" path="res://npc_ai/status/summoned_status_target_model.tres" id="4_80b2e"]
+
+[resource]
+script = ExtResource("2_euqp3")
+effect = ExtResource("1_xis7m")
+param_models = Array[ExtResource("1_ocwaa")]([ExtResource("3_edobf"), ExtResource("4_80b2e")])
+metadata/_custom_type_script = "uid://3jde7uhq2yho"

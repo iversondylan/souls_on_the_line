@@ -51,6 +51,8 @@ func execute(ctx: NPCAIContext) -> void:
 		summon_ctx.summon_data = summon_data_orig.duplicate(true) as CombatantData
 		summon_ctx.reason = "npc_summon_action"
 		runtime.run_summon_action(summon_ctx)
+		_append_unit_id(ctx.summoned_ids, int(summon_ctx.summoned_id))
+		_append_unit_id(ctx.affected_ids, int(summon_ctx.summoned_id))
 
 func _resolve_summon_data(value) -> CombatantData:
 	if value == null:
@@ -64,3 +66,11 @@ func _resolve_summon_data(value) -> CombatantData:
 		var res := load(path)
 		return res if res is CombatantData else null
 	return null
+
+func _append_unit_id(arr: PackedInt32Array, unit_id: int) -> void:
+	if unit_id <= 0:
+		return
+	for existing_id in arr:
+		if int(existing_id) == unit_id:
+			return
+	arr.append(unit_id)

@@ -33,6 +33,7 @@ var after_pending: bool = false
 # optional tags
 var tags: Array[StringName] = []
 var reason: String = ""
+var presentation_hint: StringName = &"standalone"
 var origin_card_uid: String = ""
 var origin_arcanum_id: StringName = &""
 

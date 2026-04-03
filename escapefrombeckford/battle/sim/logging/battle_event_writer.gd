@@ -427,11 +427,14 @@ func emit_status(
 	var data := {
 		Keys.SOURCE_ID: int(source_id),
 		Keys.TARGET_ID: int(target_id),
+		Keys.TARGET_IDS: PackedInt32Array([int(target_id)]),
 		Keys.STATUS_ID: status_id,
 		Keys.OP: status_op,
 		Keys.INTENSITY: int(intensity),
 		Keys.DURATION: int(duration),
 		Keys.STATUS_PENDING: bool(extra.get(Keys.STATUS_PENDING, false)),
+		Keys.REASON: String(extra.get(Keys.REASON, "")),
+		Keys.STATUS_PRESENTATION_HINT: StringName(extra.get(Keys.STATUS_PRESENTATION_HINT, &"standalone")),
 	}
 	
 	for k in extra.keys():

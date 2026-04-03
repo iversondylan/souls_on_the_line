@@ -14,6 +14,8 @@ var state: Dictionary      # persistent AI state
 
 # per-effect
 var params: Dictionary = {}
+var summoned_ids: PackedInt32Array = PackedInt32Array()
+var affected_ids: PackedInt32Array = PackedInt32Array()
 var forecast: bool = false
 var preview_package_index: int = -1
 var action_name: String = ""

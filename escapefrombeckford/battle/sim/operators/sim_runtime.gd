@@ -630,6 +630,8 @@ func run_npc_turn(cid: int) -> void:
 	ctx.state[Keys.ACTIONS_PERFORMED_COUNT] = int(
 		ctx.state.get(Keys.ACTIONS_PERFORMED_COUNT, 0)
 	) + 1
+	ctx.summoned_ids = PackedInt32Array()
+	ctx.affected_ids = PackedInt32Array()
 
 	for sm: StateModel in action.state_models:
 		if sm != null:

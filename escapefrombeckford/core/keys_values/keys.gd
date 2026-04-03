@@ -136,6 +136,7 @@ const DELTA := &"delta"
 # Status
 const STATUS_ID := &"status_id"
 const STATUS_PENDING := &"status_pending"
+const STATUS_PRESENTATION_HINT := &"status_presentation_hint"
 const INTENSITY := &"intensity"
 const DURATION := &"duration"
 const OP := &"op"

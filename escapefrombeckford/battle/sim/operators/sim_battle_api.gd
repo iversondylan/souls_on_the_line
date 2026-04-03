@@ -693,6 +693,9 @@ func apply_status(ctx: StatusContext) -> void:
 			int(ctx.duration),
 			{
 				Keys.STATUS_PENDING: bool(ctx.pending),
+				Keys.REASON: String(ctx.reason),
+				Keys.TARGET_IDS: PackedInt32Array([int(ctx.target_id)]),
+				Keys.STATUS_PRESENTATION_HINT: ctx.presentation_hint,
 				Keys.DELTA_INTENSITY: int(ctx.delta_intensity),
 				Keys.DELTA_DURATION: int(ctx.delta_duration),
 				Keys.BEFORE_PENDING: bool(ctx.before_pending),

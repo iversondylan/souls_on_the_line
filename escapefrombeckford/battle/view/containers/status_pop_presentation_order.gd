@@ -9,3 +9,5 @@ var pending: bool = false
 var op: int = 0
 var intensity: int = 0
 var turns_duration: int = 0
+var presentation_mode: StringName = &"full_status"
+var embedded_in_summon: bool = false

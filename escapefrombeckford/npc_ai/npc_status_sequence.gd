@@ -74,4 +74,26 @@ func execute(ctx: NPCAIContext) -> void:
 		status_ctx.duration = duration
 		status_ctx.pending = pending
 		status_ctx.reason = "npc_status_action"
+		status_ctx.presentation_hint = (
+			&"embedded_summon_candidate"
+			if _has_unit_id(ctx.summoned_ids, int(target_id))
+			else &"standalone"
+		)
 		runtime.run_status_action(status_ctx)
+		_append_unit_id(ctx.affected_ids, int(target_id))
+
+func _append_unit_id(arr: PackedInt32Array, unit_id: int) -> void:
+	if unit_id <= 0:
+		return
+	for existing_id in arr:
+		if int(existing_id) == unit_id:
+			return
+	arr.append(unit_id)
+
+func _has_unit_id(arr: PackedInt32Array, unit_id: int) -> bool:
+	if unit_id <= 0:
+		return false
+	for existing_id in arr:
+		if int(existing_id) == unit_id:
+			return true
+	return false
