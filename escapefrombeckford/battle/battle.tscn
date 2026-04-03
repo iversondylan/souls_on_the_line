@@ -44,11 +44,11 @@ metronome_sound = ExtResource("4_kl6ie")
 click_sound = ExtResource("5_f0g0v")
 
 [node name="Background" type="TextureRect" parent="BattleView" unique_id=1487696658 groups=["background"]]
-offset_left = -92.0
-offset_top = -94.0
-offset_right = 1828.0
-offset_bottom = 986.0
-scale = Vector2(1.1, 1.1)
+offset_left = -159.0
+offset_top = -214.0
+offset_right = 1761.0
+offset_bottom = 866.0
+scale = Vector2(1.2, 1.2)
 mouse_filter = 2
 texture = ExtResource("4_yhk5m")
 

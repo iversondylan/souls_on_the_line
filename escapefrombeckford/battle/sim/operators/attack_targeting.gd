@@ -185,14 +185,10 @@ static func _append_status_participants(
 	stage: int,
 	discovery_index: int
 ) -> int:
-	var status_owner := ctx.api.state.get_unit(int(owner_id)) if ctx.api != null and ctx.api.state != null else null
-	if status_owner == null or status_owner.statuses == null or status_owner.statuses.by_id == null:
+	if ctx.api == null or ctx.api.state == null:
 		return discovery_index
 
-	for stack: StatusStack in status_owner.statuses.get_all_stacks(false):
-		if stack == null:
-			continue
-		var status_ctx := SimStatusSystem.make_context(ctx.api, int(owner_id), stack)
+	for status_ctx: SimStatusContext in SimStatusSystem.get_effective_status_contexts_for_unit(ctx.api, int(owner_id)):
 		if status_ctx == null or !status_ctx.is_valid():
 			continue
 		var proto := status_ctx.proto

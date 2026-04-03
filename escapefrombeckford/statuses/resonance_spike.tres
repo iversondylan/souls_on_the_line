@@ -2,10 +2,12 @@
 
 [ext_resource type="Script" uid="uid://byl8kucecx6c0" path="res://statuses/resonance_spike.gd" id="1_d6qqx"]
 [ext_resource type="Texture2D" uid="uid://cnj435rpb1haa" path="res://_assets/sprites/statuses/resonance_spike.png" id="1_g4yb5"]
+[ext_resource type="Resource" uid="uid://7x55fawjrwf4" path="res://statuses/might.tres" id="2_might"]
+[ext_resource type="Script" uid="uid://cueedkb1u8vxy" path="res://statuses/_core/status.gd" id="2_xdcdr"]
 
 [resource]
 script = ExtResource("1_d6qqx")
-aura_type = null
+projected_statuses = Array[ExtResource("2_xdcdr")]([ExtResource("2_might")])
 status_name = "Resonance Spike"
 proc_type = 2
 number_display_type = 1

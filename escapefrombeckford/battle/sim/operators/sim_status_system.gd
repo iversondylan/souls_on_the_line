@@ -2,6 +2,8 @@
 
 class_name SimStatusSystem extends RefCounted
 
+const SimAuraStatusContextScript = preload("res://battle/sim/containers/sim_aura_status_context.gd")
+
 # Owns status lifecycle and event dispatch.
 # Turn progression belongs to SimRuntime.
 # Atomistic mutations belong to SimBattleAPI.
@@ -10,33 +12,29 @@ static func on_group_turn_begin(api: SimBattleAPI, group_index: int) -> void:
 	if api == null or api.state == null or api.state.has_terminal_outcome():
 		return
 
-	# 1) proto lifecycle hooks
-	_for_each_status_on_group(api, group_index, func(ctx: SimStatusContext) -> void:
+	_for_each_effective_status_on_group(api, group_index, func(ctx: SimStatusContext) -> void:
 		if ctx.proto != null:
 			ctx.proto.on_group_turn_begin(ctx, group_index)
 	)
 
-	# 2) generic expiration policy
 	_expire_by_policy(api, group_index, Status.ExpirationPolicy.GROUP_TURN_START)
 
 static func on_group_turn_end(api: SimBattleAPI, group_index: int) -> void:
 	if api == null or api.state == null or api.state.has_terminal_outcome():
 		return
 
-	# 1) proto lifecycle hooks
-	_for_each_status_on_group(api, group_index, func(ctx: SimStatusContext) -> void:
+	_for_each_effective_status_on_group(api, group_index, func(ctx: SimStatusContext) -> void:
 		if ctx.proto != null:
 			ctx.proto.on_group_turn_end(ctx, group_index)
 	)
 
-	# 2) generic expiration policy
 	_expire_by_policy(api, group_index, Status.ExpirationPolicy.GROUP_TURN_END)
 
 static func on_actor_turn_begin(api: SimBattleAPI, actor_id: int) -> void:
 	if api == null or api.state == null or api.state.has_terminal_outcome():
 		return
 
-	_for_each_status_on_unit(api, actor_id, func(ctx: SimStatusContext) -> void:
+	_for_each_effective_status_on_unit(api, actor_id, func(ctx: SimStatusContext) -> void:
 		if ctx.proto != null:
 			ctx.proto.on_actor_turn_begin(ctx)
 	)
@@ -49,7 +47,7 @@ static func on_player_turn_begin(api: SimBattleAPI, player_id: int) -> void:
 	if int(player_id) <= 0:
 		return
 
-	_for_each_status_in_battle(api, func(ctx: SimStatusContext) -> void:
+	_for_each_effective_status_in_battle(api, func(ctx: SimStatusContext) -> void:
 		if ctx == null or !ctx.is_valid() or !ctx.is_alive():
 			return
 		if ctx.proto != null:
@@ -62,7 +60,7 @@ static func on_actor_turn_end(api: SimBattleAPI, actor_id: int) -> void:
 	if api == null or api.state == null or api.state.has_terminal_outcome():
 		return
 
-	_for_each_status_on_unit(api, actor_id, func(ctx: SimStatusContext) -> void:
+	_for_each_effective_status_on_unit(api, actor_id, func(ctx: SimStatusContext) -> void:
 		if ctx.proto != null:
 			ctx.proto.on_actor_turn_end(ctx)
 	)
@@ -77,7 +75,7 @@ static func on_damage_taken(api: SimBattleAPI, damage_ctx: DamageContext) -> voi
 	if target_id <= 0:
 		return
 
-	_for_each_status_on_unit(api, target_id, func(ctx: SimStatusContext) -> void:
+	_for_each_effective_status_on_unit(api, target_id, func(ctx: SimStatusContext) -> void:
 		if ctx.proto != null:
 			ctx.proto.on_damage_taken(ctx, damage_ctx)
 	)
@@ -90,7 +88,7 @@ static func on_damage_will_be_taken(api: SimBattleAPI, damage_ctx: DamageContext
 	if target_id <= 0:
 		return
 
-	_for_each_status_on_unit(api, target_id, func(ctx: SimStatusContext) -> void:
+	_for_each_effective_status_on_unit(api, target_id, func(ctx: SimStatusContext) -> void:
 		if ctx.proto != null:
 			ctx.proto.on_damage_will_be_taken(ctx, damage_ctx)
 	)
@@ -99,10 +97,11 @@ static func on_death(api: SimBattleAPI, dead_id: int, killer_id: int, reason: St
 	if api == null or api.state == null or dead_id <= 0 or api.state.has_terminal_outcome():
 		return
 
-	_for_each_status_on_unit(api, dead_id, func(ctx: SimStatusContext) -> void:
+	var fn := func(ctx: SimStatusContext) -> void:
 		if ctx.proto != null:
 			ctx.proto.on_death(ctx, dead_id, killer_id, reason)
-	)
+
+	_for_each_effective_status_on_unit(api, dead_id, fn, true)
 
 static func unit_grants_attack_spillthrough(api: SimBattleAPI, owner_id: int) -> bool:
 	return _unit_grants_spillthrough_internal(api, owner_id, true)
@@ -118,18 +117,8 @@ static func unit_get_attack_self_damage_on_strike(
 	if api == null or api.state == null or owner_id <= 0 or attack_ctx == null:
 		return 0
 
-	var u: CombatantState = api.state.get_unit(owner_id)
-	if u == null or u.statuses == null or u.statuses.by_id == null:
-		return 0
-	if u.statuses.by_id.is_empty():
-		return 0
-
 	var total := 0
-	for stack: StatusStack in u.statuses.get_all_stacks(false):
-		if stack == null:
-			continue
-
-		var ctx := make_context(api, owner_id, stack)
+	for ctx: SimStatusContext in get_effective_status_contexts_for_unit(api, owner_id):
 		var proto := ctx.proto if ctx != null else null
 		if proto == null:
 			continue
@@ -153,13 +142,7 @@ static func get_proto(api: SimBattleAPI, status_id: StringName) -> Status:
 	return null
 
 static func is_aura_proto(proto: Status) -> bool:
-	if proto == null:
-		return false
-	if proto is Aura:
-		return true
-	if proto.affects_others():
-		return true
-	return false
+	return proto is Aura
 
 static func make_context(api: SimBattleAPI, owner_id: int, stack: StatusStack) -> SimStatusContext:
 	if api == null or api.state == null or owner_id <= 0 or stack == null:
@@ -174,6 +157,27 @@ static func make_context(api: SimBattleAPI, owner_id: int, stack: StatusStack) -
 		return null
 
 	return SimStatusContext.new(api, owner_id, owner, stack, proto)
+
+
+static func get_effective_status_contexts_for_unit(
+	api: SimBattleAPI,
+	target_id: int,
+	include_pending_sources := {},
+	allow_dead_self_aura_source := false
+) -> Array[SimStatusContext]:
+	var out: Array[SimStatusContext] = []
+	if api == null or api.state == null or target_id <= 0:
+		return out
+
+	_append_owned_status_contexts(out, api, target_id, include_pending_sources)
+	_append_projected_aura_status_contexts(
+		out,
+		api,
+		target_id,
+		include_pending_sources,
+		allow_dead_self_aura_source
+	)
+	return out
 
 
 # -------------------------------------------------------------------
@@ -195,6 +199,21 @@ static func _for_each_status_in_battle(api: SimBattleAPI, fn: Callable) -> void:
 	for group_index in [SimBattleAPI.FRIENDLY, SimBattleAPI.ENEMY]:
 		_for_each_status_on_group(api, int(group_index), fn)
 
+static func _for_each_effective_status_on_group(api: SimBattleAPI, group_index: int, fn: Callable) -> void:
+	if api == null or api.state == null or !fn.is_valid():
+		return
+
+	var ids := api.get_combatants_in_group(group_index, true)
+	for cid in ids:
+		_for_each_effective_status_on_unit(api, int(cid), fn)
+
+static func _for_each_effective_status_in_battle(api: SimBattleAPI, fn: Callable) -> void:
+	if api == null or api.state == null or !fn.is_valid():
+		return
+
+	for group_index in [SimBattleAPI.FRIENDLY, SimBattleAPI.ENEMY]:
+		_for_each_effective_status_on_group(api, int(group_index), fn)
+
 static func _for_each_status_on_unit(api: SimBattleAPI, owner_id: int, fn: Callable) -> void:
 	if api == null or api.state == null or owner_id <= 0 or !fn.is_valid():
 		return
@@ -215,6 +234,26 @@ static func _for_each_status_on_unit(api: SimBattleAPI, owner_id: int, fn: Calla
 
 		fn.call(ctx)
 
+static func _for_each_effective_status_on_unit(
+	api: SimBattleAPI,
+	owner_id: int,
+	fn: Callable,
+	allow_dead_self_aura_source := false,
+	include_pending_sources := {}
+) -> void:
+	if api == null or api.state == null or owner_id <= 0 or !fn.is_valid():
+		return
+
+	for ctx: SimStatusContext in get_effective_status_contexts_for_unit(
+		api,
+		owner_id,
+		include_pending_sources,
+		allow_dead_self_aura_source
+	):
+		if ctx == null or !ctx.is_valid():
+			continue
+		fn.call(ctx)
+
 
 static func _unit_grants_spillthrough_internal(
 	api: SimBattleAPI,
@@ -225,18 +264,12 @@ static func _unit_grants_spillthrough_internal(
 		return false
 
 	var u: CombatantState = api.state.get_unit(owner_id)
-	if u == null or u.statuses == null or u.statuses.by_id == null:
-		return false
-	if u.statuses.by_id.is_empty():
+	if u == null:
 		return false
 
 	var stack_notes: Array[String] = []
-	for stack: StatusStack in u.statuses.get_all_stacks(false):
-		if stack == null:
-			continue
-
-		var sid := StringName(stack.id)
-		var ctx := make_context(api, owner_id, stack)
+	for ctx: SimStatusContext in get_effective_status_contexts_for_unit(api, owner_id):
+		var sid := ctx.get_status_id() if ctx != null else &""
 		var proto := ctx.proto if ctx != null else null
 		var grants := false
 		if proto != null:
@@ -256,6 +289,103 @@ static func _unit_grants_spillthrough_internal(
 		if grants:
 			return true
 	return false
+
+
+static func _append_owned_status_contexts(
+	out: Array[SimStatusContext],
+	api: SimBattleAPI,
+	target_id: int,
+	include_pending_sources := {}
+) -> void:
+	if api == null or api.state == null:
+		return
+
+	var u: CombatantState = api.state.get_unit(target_id)
+	if u == null or u.statuses == null or u.statuses.by_id == null:
+		return
+	if u.statuses.by_id.is_empty():
+		return
+
+	var include_pending_owned := false
+	if include_pending_sources is Dictionary:
+		include_pending_owned = bool(include_pending_sources.get(int(target_id), false))
+
+	for stack: StatusStack in u.statuses.get_all_stacks(include_pending_owned):
+		if stack == null:
+			continue
+		if bool(stack.pending) and !include_pending_owned:
+			continue
+
+		var ctx := make_context(api, target_id, stack)
+		if ctx == null or !ctx.is_valid():
+			continue
+		out.append(ctx)
+
+
+static func _append_projected_aura_status_contexts(
+	out: Array[SimStatusContext],
+	api: SimBattleAPI,
+	target_id: int,
+	include_pending_sources := {},
+	allow_dead_self_aura_source := false
+) -> void:
+	if api == null or api.state == null or api.state.aura_bank == null:
+		return
+
+	var target: CombatantState = api.state.get_unit(target_id)
+	if target == null:
+		return
+
+	for entry: Dictionary in api.state.aura_bank.get_entries():
+		var source_id := int(entry.get("source_id", 0))
+		if source_id <= 0:
+			continue
+
+		var pending := bool(entry.get("pending", false))
+		var include_pending_source := false
+		if include_pending_sources is Dictionary:
+			include_pending_source = bool(include_pending_sources.get(source_id, false))
+		if pending and !include_pending_source:
+			continue
+
+		var source: CombatantState = api.state.get_unit(source_id)
+		if source == null:
+			continue
+		if !source.is_alive() and !(allow_dead_self_aura_source and int(source_id) == int(target_id)):
+			continue
+
+		var aura_status_id := StringName(entry.get("status_id", &""))
+		var aura_proto := get_proto(api, aura_status_id) as Aura
+		if aura_proto == null:
+			continue
+
+		var aura_stack := source.statuses.get_status_stack(aura_status_id, pending) if source.statuses != null else null
+		if aura_stack == null:
+			continue
+		if int(aura_proto.expiration_policy) == int(Status.ExpirationPolicy.DURATION) and int(aura_stack.duration) <= 0:
+			continue
+		if !aura_proto.affects_target(api.state, source_id, target_id):
+			continue
+
+		for projected_proto: Status in aura_proto.get_projected_statuses():
+			if projected_proto == null:
+				continue
+
+			var projected_ctx: SimStatusContext = SimAuraStatusContextScript.new(
+				api,
+				target_id,
+				target,
+				source_id,
+				source,
+				aura_status_id,
+				pending,
+				aura_proto,
+				projected_proto
+			)
+			if projected_ctx == null or !projected_ctx.is_valid():
+				continue
+
+			out.append(projected_ctx)
 
 
 # -------------------------------------------------------------------

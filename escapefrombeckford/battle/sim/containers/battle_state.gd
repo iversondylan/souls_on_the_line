@@ -2,6 +2,8 @@
 
 class_name BattleState extends RefCounted
 
+const AuraBankScript = preload("res://battle/sim/containers/aura_bank.gd")
+
 enum Outcome {
 	NONE,
 	VICTORY,
@@ -15,6 +17,7 @@ const ENEMY := 1
 
 var status_catalog: StatusCatalog
 var arcana_catalog: ArcanaCatalog
+var aura_bank = AuraBankScript.new()
 
 var events: BattleEventLog = BattleEventLog.new()
 
@@ -121,93 +124,112 @@ func get_front_id(group_index: int) -> int:
 # battle_state.gd (additions)
 
 func get_modifier_tokens_for_cid(target_id: int, mod_type: Modifier.Type, include_pending_sources := {}) -> Array[ModifierToken]:
-	#print("battle_state.gd get_modifier_tokens_for_cid() cid: ", target_id)
 	var tokens: Array[ModifierToken] = []
 
 	# 0) Battle-level globals (arcana, relic-like systems, etc.)
-	# Keep this centralized so nothing else needs to know “where tokens live”.
 	tokens.append_array(_get_arcana_tokens_for(target_id))
 
-	# 1) Per-unit sources (statuses, auras, secondaries, etc.)
-	for source_id in units.keys():
-		var source: CombatantState = units[source_id]
-		if !source or !source.is_alive():
-			continue
-		
-		var same_team := _same_team(int(source_id), target_id)
-		
-		# 1a) Status tokens (produced by status protos via StatusCatalog)
-		var include_pending := false
-		if include_pending_sources is Dictionary:
-			include_pending = bool(include_pending_sources.get(int(source_id), false))
-		var source_tokens := _get_status_tokens_for_source(int(source_id), mod_type, include_pending)
-		for token in source_tokens:
-			#print("looking at a token: ", token.owner_id)
-			if !token:
-				continue
-			
-			# Safety: aura secondaries must not be GLOBAL (same check as LIVE)
-			if token.scope == ModifierToken.ModScope.GLOBAL and token.tags.has(Aura.AURA_SECONDARY_FLAG):
-				push_error("SIM: Aura token must not be GLOBAL: %s" % token.source_id)
-			
-			match token.scope:
-				ModifierToken.ModScope.GLOBAL:
-					# Always applies to everyone
-					tokens.append(token)
-				
-				ModifierToken.ModScope.SELF:
-					# Applies only to the source itself
-					if int(source_id) == target_id:
-						#print("battle_state.gd get_modifier_tokens_for_cid() appending token source: %s, owner: %s" % [token.source_id, token.owner_id])
-						tokens.append(token)
-				
-				ModifierToken.ModScope.TARGET:
-					# Two cases (same as LIVE):
-					# 1) Aura-style routing via tags
-					# 2) Explicit owner_id match
-					if token.tags.has(Aura.AURA_SECONDARY_FLAG):
-						if token.tags.has(Aura.AURA_ALLIES):
-							if same_team:
-								tokens.append(token)
-						elif token.tags.has(Aura.AURA_ENEMIES):
-							if !same_team:
-								tokens.append(token)
-					else:
-						if int(token.owner_id) == target_id:
-							tokens.append(token)
+	var target: CombatantState = units.get(target_id, null)
+	if target == null or !target.is_alive():
+		return tokens
 
+	tokens.append_array(_get_effective_status_modifier_tokens_for_target(target_id, mod_type, include_pending_sources))
 	return tokens
 
-func _get_status_tokens_for_source(source_id: int, mod_type: Modifier.Type, include_pending := false) -> Array[ModifierToken]:
-	#print("battle_state.gd _get_status_tokens_for_source()")
+func _get_effective_status_modifier_tokens_for_target(
+	target_id: int,
+	mod_type: Modifier.Type,
+	include_pending_sources := {}
+) -> Array[ModifierToken]:
 	var out: Array[ModifierToken] = []
-	var u: CombatantState = units.get(source_id, null)
-	if !u or !status_catalog:
+	var target: CombatantState = units.get(target_id, null)
+	if target == null or target.statuses == null or status_catalog == null:
 		return out
 
-	for stack: StatusStack in u.statuses.get_all_stacks(include_pending):
+	var include_pending_owned := false
+	if include_pending_sources is Dictionary:
+		include_pending_owned = bool(include_pending_sources.get(int(target_id), false))
+
+	for stack: StatusStack in target.statuses.get_all_stacks(include_pending_owned):
 		if stack == null:
 			continue
-		if bool(stack.pending) and !include_pending:
+		if bool(stack.pending) and !include_pending_owned:
 			continue
-		var id_strn := StringName(stack.id)
-		var proto: Status = status_catalog.get_proto(id_strn)
+		var proto: Status = status_catalog.get_proto(StringName(stack.id))
 		if !proto:
-			push_warning("there's no proto")
 			continue
 		if mod_type not in proto.get_contributed_modifier_types():
 			continue
-		var ctx := StatusTokenContext.new()#proto.make_token_ctx_state({}, source_id)
-		ctx.id = id_strn
+		if int(proto.expiration_policy) == int(Status.ExpirationPolicy.DURATION) and int(stack.duration) <= 0:
+			continue
+
+		var ctx := StatusTokenContext.new()
+		ctx.id = StringName(stack.id)
 		ctx.pending = bool(stack.pending)
 		ctx.duration = stack.duration
 		ctx.intensity = stack.intensity
-		ctx.owner_id = source_id
-		if proto.expiration_policy == Status.ExpirationPolicy.DURATION and stack.duration <= 0:
-			continue
+		ctx.owner_id = target_id
 		if proto.contributes_modifier():
 			var tokens: Array[ModifierToken] = proto.get_modifier_tokens(ctx)
-			out.append_array(tokens)
+			for token in tokens:
+				if _modifier_token_applies_to_target(token, target_id):
+					out.append(token)
+
+	if aura_bank == null:
+		return out
+
+	for entry: Dictionary in aura_bank.get_entries():
+		var source_id := int(entry.get("source_id", 0))
+		if source_id <= 0:
+			continue
+
+		var pending := bool(entry.get("pending", false))
+		var include_pending_source := false
+		if include_pending_sources is Dictionary:
+			include_pending_source = bool(include_pending_sources.get(source_id, false))
+		if pending and !include_pending_source:
+			continue
+
+		var source: CombatantState = units.get(source_id, null)
+		if source == null or !source.is_alive() or source.statuses == null:
+			continue
+
+		var aura_status_id := StringName(entry.get("status_id", &""))
+		if aura_status_id == &"":
+			continue
+
+		var aura_proto := status_catalog.get_proto(aura_status_id) as Aura
+		if aura_proto == null:
+			continue
+
+		var aura_stack := source.statuses.get_status_stack(aura_status_id, pending)
+		if aura_stack == null:
+			continue
+		if int(aura_proto.expiration_policy) == int(Status.ExpirationPolicy.DURATION) and int(aura_stack.duration) <= 0:
+			continue
+		if !aura_proto.affects_target(self, source_id, target_id):
+			continue
+
+		for projected_proto: Status in aura_proto.get_projected_statuses():
+			if projected_proto == null:
+				continue
+			if mod_type not in projected_proto.get_contributed_modifier_types():
+				continue
+			if !projected_proto.contributes_modifier():
+				continue
+
+			var projected_ctx := StatusTokenContext.new()
+			projected_ctx.id = StringName(projected_proto.get_id())
+			projected_ctx.pending = pending
+			projected_ctx.duration = int(aura_stack.duration)
+			projected_ctx.intensity = int(aura_stack.intensity)
+			projected_ctx.owner_id = target_id
+
+			var projected_tokens := projected_proto.get_modifier_tokens(projected_ctx)
+			for token in projected_tokens:
+				if _modifier_token_applies_to_target(token, target_id):
+					out.append(token)
+
 	return out
 
 func _get_arcana_tokens_for(target_id: int) -> Array[ModifierToken]:
@@ -217,12 +239,19 @@ func _get_arcana_tokens_for(target_id: int) -> Array[ModifierToken]:
 		return arcana.get_modifier_tokens_for_target(self, target_id)
 	return []
 
-func _same_team(a: int, b: int) -> bool:
-	var ua: CombatantState = units.get(a, null)
-	var ub: CombatantState = units.get(b, null)
-	if !ua or !ub:
+func _modifier_token_applies_to_target(token: ModifierToken, target_id: int) -> bool:
+	if token == null:
 		return false
-	return ua.team == ub.team
+
+	match int(token.scope):
+		ModifierToken.ModScope.GLOBAL:
+			return true
+		ModifierToken.ModScope.SELF:
+			return int(token.owner_id) == int(target_id)
+		ModifierToken.ModScope.TARGET:
+			return int(token.owner_id) == int(target_id)
+		_:
+			return false
 
 # Minimal clone (good enough for early previews; deepen as needed)
 func clone() -> BattleState:
@@ -243,6 +272,7 @@ func clone() -> BattleState:
 	b.groups = [groups[0].clone(), groups[1].clone()]
 	b.turn = turn.clone()
 	b.arcana = arcana.clone() if arcana != null else ArcanaState.new()
+	b.aura_bank = aura_bank.clone() if aura_bank != null else AuraBankScript.new()
 	b.resource = resource.clone()
 
 	# Policy: preview clones start with a fresh empty event log.

@@ -415,24 +415,34 @@ func resolve_damage_immediate(ctx: DamageContext) -> int:
 		return 0
 	
 	ctx.phase = DamageContext.Phase.PRE_MODIFIERS
-	var normal_amount := SimModifierResolver.get_modified_value(
-		state,
-		int(ctx.base_amount),
-		ctx.deal_modifier_type,
-		int(ctx.source_id)
-	)
-	normal_amount = SimModifierResolver.get_modified_value(
-		state,
-		int(normal_amount),
-		ctx.take_modifier_type,
-		int(ctx.target_id)
-	)
-	var banish_amount := SimModifierResolver.get_modified_value(
-		state,
-		int(ctx.base_banish_amount),
-		Modifier.Type.BANISH_DMG_DEALT,
-		int(ctx.source_id)
-	)
+	var policy := int(ctx.modifier_policy)
+	var apply_deal_modifiers := (policy & int(DamageContext.ModifierPolicy.SKIP_DEAL_MODIFIERS)) == 0
+	var apply_take_modifiers := (policy & int(DamageContext.ModifierPolicy.SKIP_TAKE_MODIFIERS)) == 0
+
+	var normal_amount := int(ctx.base_amount)
+	if apply_deal_modifiers and int(ctx.deal_modifier_type) != int(Modifier.Type.NO_MODIFIER):
+		normal_amount = SimModifierResolver.get_modified_value(
+			state,
+			int(normal_amount),
+			ctx.deal_modifier_type,
+			int(ctx.source_id)
+		)
+	if apply_take_modifiers and int(ctx.take_modifier_type) != int(Modifier.Type.NO_MODIFIER):
+		normal_amount = SimModifierResolver.get_modified_value(
+			state,
+			int(normal_amount),
+			ctx.take_modifier_type,
+			int(ctx.target_id)
+		)
+
+	var banish_amount := int(ctx.base_banish_amount)
+	if apply_deal_modifiers:
+		banish_amount = SimModifierResolver.get_modified_value(
+			state,
+			int(banish_amount),
+			Modifier.Type.BANISH_DMG_DEALT,
+			int(ctx.source_id)
+		)
 	normal_amount = maxi(int(normal_amount), 0)
 	banish_amount = maxi(int(banish_amount), 0)
 	ctx.banish_amount = banish_amount
@@ -739,6 +749,9 @@ func apply_status(ctx: StatusContext) -> void:
 		)
 	
 	_rebuild_modifier_cache_for(int(ctx.target_id))
+
+	if SimStatusSystem.is_aura_proto(proto) and state.aura_bank != null:
+		state.aura_bank.track(int(ctx.target_id), ctx.status_id, bool(ctx.pending))
 	
 	if !bool(ctx.pending):
 		var status_ctx := SimStatusSystem.make_context(
@@ -816,6 +829,9 @@ func realize_pending_statuses(target_id: int, source_id: int = 0, reason: String
 
 		if proto != null:
 			any_aura = any_aura or SimStatusSystem.is_aura_proto(proto)
+			if SimStatusSystem.is_aura_proto(proto) and state.aura_bank != null:
+				state.aura_bank.untrack(int(target_id), status_id, true)
+				state.aura_bank.track(int(target_id), status_id, false)
 			if !had_realized:
 				var status_ctx := SimStatusSystem.make_context(
 					self,
@@ -883,6 +899,9 @@ func remove_status(ctx: StatusContext) -> void:
 		)
 	
 	_rebuild_modifier_cache_for(int(ctx.target_id))
+
+	if SimStatusSystem.is_aura_proto(proto) and state.aura_bank != null:
+		state.aura_bank.untrack(int(ctx.target_id), ctx.status_id, bool(ctx.pending))
 	
 	if !bool(ctx.pending) and status_ctx != null and status_ctx.proto != null:
 		status_ctx.proto.on_remove(status_ctx, ctx)

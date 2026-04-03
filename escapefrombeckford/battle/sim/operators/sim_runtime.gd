@@ -863,6 +863,7 @@ func run_attack(ctx: AttackContext) -> bool:
 			spill_damage.base_banish_amount = int(overflow_banish_amount)
 			spill_damage.deal_modifier_type = deal_mod
 			spill_damage.take_modifier_type = take_mod
+			spill_damage.modifier_policy = int(DamageContext.ModifierPolicy.SKIP_DEAL_MODIFIERS)
 			spill_damage.params = params
 			spill_damage.tags = ctx.tags.duplicate()
 			spill_damage.reason = ctx.reason

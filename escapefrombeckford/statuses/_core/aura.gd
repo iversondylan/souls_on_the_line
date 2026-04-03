@@ -1,33 +1,33 @@
 # aura.gd
 class_name Aura extends Status
 
-const AURA_SECONDARY_FLAG = "aura_secondary"
-
-const AURA_ALLIES := "aura_allies"
-const AURA_ENEMIES := "aura_enemies"
-
 enum AuraType {ALLIES, ENEMIES}
 @export var aura_type: AuraType
-
-# In modifier tokens...
-# Scope answers “who is eligible at all.”
-# Tags answer “how eligibility is routed.”
-# Effect intent		scope				tags		
-# Type				ModifierToken.Scope	ModifierToken.tags
-# Everyone			GLOBAL				none
-# Only self			SELF				none
-# Aura (allies)		TARGET				AURA_SECONDARY_FLAG, AURA_ALLIES
-# Aura (enemies)	TARGET				AURA_SECONDARY_FLAG, AURA_ENEMIES
-# Explicit target	TARGET				none
-
-func get_modifier_tokens(_ctx: StatusTokenContext) -> Array[ModifierToken]:
-	return []
-
-func contributes_modifier() -> bool:
-	return false
-
-func get_contributed_modifier_types() -> Array[Modifier.Type]:
-	return []
+@export var projected_statuses: Array[Status] = []
 
 func affects_others() -> bool:
 	return true
+
+func get_projected_statuses() -> Array[Status]:
+	var out: Array[Status] = []
+	for projected: Status in projected_statuses:
+		if projected != null:
+			out.append(projected)
+	return out
+
+func affects_target(state: BattleState, source_id: int, target_id: int) -> bool:
+	if state == null or source_id <= 0 or target_id <= 0:
+		return false
+
+	var source := state.get_unit(source_id)
+	var target := state.get_unit(target_id)
+	if source == null or target == null:
+		return false
+
+	match int(aura_type):
+		AuraType.ALLIES:
+			return int(source.team) == int(target.team)
+		AuraType.ENEMIES:
+			return int(source.team) != int(target.team)
+		_:
+			return false
