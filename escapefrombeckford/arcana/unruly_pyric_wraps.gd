@@ -9,7 +9,8 @@ const ID := &"unruly_pyric_wraps"
 func get_id() -> StringName:
 	return ID
 
-func on_turn_started(api: SimBattleAPI) -> void:
+func on_player_turn_begin(ctx) -> void:
+	var api: SimBattleAPI = ctx.api if ctx != null else null
 	if api == null:
 		return
 
@@ -34,7 +35,7 @@ func _apply_damage(api: SimBattleAPI, source_id: int, target_id: int, amount: in
 	d.deal_modifier_type = int(Modifier.Type.NO_MODIFIER)
 	d.take_modifier_type = int(Modifier.Type.NO_MODIFIER)
 	d.origin_arcanum_id = get_id()
-	d.reason = "arcanum_turn_start"
+	d.reason = "arcanum_player_turn_begin"
 	api.resolve_damage_immediate(d)
 
 func get_beats() -> int:

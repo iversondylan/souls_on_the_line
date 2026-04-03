@@ -3,6 +3,7 @@
 class_name SimStatusSystem extends RefCounted
 
 const SimAuraStatusContextScript = preload("res://battle/sim/containers/sim_aura_status_context.gd")
+const SimArcanaSystemScript = preload("res://battle/sim/operators/sim_arcana_system.gd")
 
 # Owns status lifecycle and event dispatch.
 # Turn progression belongs to SimRuntime.
@@ -177,6 +178,7 @@ static func get_effective_status_contexts_for_unit(
 		include_pending_sources,
 		allow_dead_self_aura_source
 	)
+	SimArcanaSystemScript.append_projected_status_contexts(out, api, target_id)
 	return out
 
 

@@ -1,5 +1,7 @@
 class_name OnDeathDelayedReaction extends DelayedReaction
 
+const SimArcanaSystemScript = preload("res://battle/sim/operators/sim_arcana_system.gd")
+
 var dead_id: int = 0
 var killer_id: int = 0
 var group_index: int = -1
@@ -18,3 +20,4 @@ func execute(runtime: SimRuntime) -> void:
 		return
 
 	SimStatusSystem.on_death(runtime.sim.api, int(dead_id), int(killer_id), String(reason))
+	SimArcanaSystemScript.on_death(runtime.sim.api, int(dead_id), int(killer_id), String(reason))

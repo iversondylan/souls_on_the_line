@@ -6,7 +6,8 @@ const ID := &"thales_flask"
 
 @export var n_heal := 6
 #
-func on_battle_ended(api: SimBattleAPI) -> void:
+func on_battle_end(ctx) -> void:
+	var api: SimBattleAPI = ctx.api if ctx != null else null
 	if api == null:
 		return
 

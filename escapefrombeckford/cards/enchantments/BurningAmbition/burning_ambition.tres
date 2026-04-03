@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://wtk5v77fcqvn" path="res://cards/_core/card_action.gd" id="1_action"]
 [ext_resource type="Resource" uid="uid://vcp8vd4wn0uh" path="res://cards/enchantments/BurningAmbition/burning_ambition_action.tres" id="2_action_res"]
 [ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://cards/_core/card_data.gd" id="3_card_data"]
-[ext_resource type="Texture2D" uid="uid://qm3iabq2byhw" path="res://_assets/sprites/assorted/burning-passion.png" id="4_wfkrb"]
+[ext_resource type="Texture2D" uid="uid://u6frdsfuktr5" path="res://_assets/sprites/arcana_placeholders/fire-silhouette.png" id="4_wfkrb"]
 
 [resource]
 script = ExtResource("3_card_data")

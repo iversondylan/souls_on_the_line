@@ -2,6 +2,8 @@
 
 class_name SimBattleAPI extends RefCounted
 
+const SimArcanaSystemScript = preload("res://battle/sim/operators/sim_arcana_system.gd")
+
 # ============================================================================
 # SimBattleAPI
 # ----------------------------------------------------------------------------
@@ -465,6 +467,7 @@ func resolve_damage_immediate(ctx: DamageContext) -> int:
 
 	ctx.phase = DamageContext.Phase.PRE_APPLICATION
 	SimStatusSystem.on_damage_will_be_taken(self, ctx)
+	SimArcanaSystemScript.on_damage_will_be_taken(self, ctx)
 	ctx.amount = maxi(int(ctx.amount), 0)
 	var original_applied_banish := maxi(int(ctx.applied_banish_amount), 0)
 	var post_hook_banish := mini(original_applied_banish, maxi(int(ctx.amount) - normal_amount, 0))
@@ -653,6 +656,7 @@ func resolve_death(ctx: DeathContext) -> void:
 			runtime.drain_delayed_reactions(DelayedReaction.Timing.AFTER_STRIKE)
 	else:
 		SimStatusSystem.on_death(self, int(ctx.dead_id), int(ctx.killer_id), String(ctx.reason))
+		SimArcanaSystemScript.on_death(self, int(ctx.dead_id), int(ctx.killer_id), String(ctx.reason))
 
 
 func resolve_move(ctx: MoveContext) -> void:
@@ -1326,6 +1330,7 @@ func on_damage_applied(ctx: DamageContext) -> void:
 		return
 	
 	SimStatusSystem.on_damage_taken(self, ctx)
+	SimArcanaSystemScript.on_damage_taken(self, ctx)
 	
 	if !u.is_alive():
 		return

@@ -2,6 +2,8 @@
 
 class_name SimRuntime extends RefCounted
 
+const SimArcanaSystemScript = preload("res://battle/sim/operators/sim_arcana_system.gd")
+
 # Runtime orchestration for a single Sim.
 #
 # Responsibilities:
@@ -27,6 +29,7 @@ var _delayed_reactions_by_timing: Dictionary = {}
 var _strike_resolution_depth: int = 0
 var _active_delayed_reaction_drains: Dictionary = {}
 var _active_delayed_reaction: DelayedReaction = null
+var _battle_end_arcana_fired: bool = false
 
 
 # ============================================================================
@@ -52,6 +55,7 @@ func reset_runtime_state() -> void:
 	_strike_resolution_depth = 0
 	_active_delayed_reaction_drains.clear()
 	_active_delayed_reaction = null
+	_battle_end_arcana_fired = false
 
 func _ensure_turn_flow_query_host_initialized() -> void:
 	if host == null:
@@ -245,6 +249,7 @@ func _apply_checkpoint_boundary(kind: int, allow_hooks := true) -> void:
 		return
 
 	var cp := sim.checkpoint_processor
+	var had_terminal_outcome := bool(sim.state != null and sim.state.has_terminal_outcome())
 	cp.flush_planning(kind, sim, allow_hooks)
 
 	if cp.consume_dirty_turn_order():
@@ -252,6 +257,9 @@ func _apply_checkpoint_boundary(kind: int, allow_hooks := true) -> void:
 		if engine != null:
 			engine.mark_queue_dirty()
 			_publish_turn_status()
+
+	if allow_hooks and !had_terminal_outcome and sim.state != null and sim.state.has_terminal_outcome():
+		_service_battle_end_arcana()
 
 
 # ============================================================================
@@ -301,7 +309,7 @@ func confirm_player_end_ready() -> void:
 		return
 
 	var player_id := _player_id()
-	_service_arcana(TurnEngineCore.ArcanaProc.END_OF_TURN)
+	_service_arcana(TurnEngineCore.ArcanaProc.PLAYER_TURN_END)
 	engine.complete_player_end()
 	_complete_actor_turn(player_id)
 	_drive_turn_flow_until_blocked()
@@ -456,6 +464,7 @@ func _service_actor_turn(cid: int) -> void:
 		return
 
 	SimStatusSystem.on_actor_turn_begin(api, cid)
+	SimArcanaSystemScript.on_actor_turn_begin(api, cid)
 	_apply_checkpoint_boundary(CheckpointProcessor.Kind.AFTER_ACTOR_TURN, true)
 
 	run_npc_turn(cid)
@@ -471,9 +480,11 @@ func _service_player_begin() -> void:
 	var player_id := _player_id()
 	if player_id > 0:
 		SimStatusSystem.on_player_turn_begin(api, player_id)
+		SimArcanaSystemScript.on_player_turn_begin(api, player_id)
 		_apply_checkpoint_boundary(CheckpointProcessor.Kind.AFTER_ACTOR_TURN, true)
 
 		SimStatusSystem.on_actor_turn_begin(api, player_id)
+		SimArcanaSystemScript.on_actor_turn_begin(api, player_id)
 		_apply_checkpoint_boundary(CheckpointProcessor.Kind.AFTER_ACTOR_TURN, true)
 
 	engine.complete_player_begin()
@@ -534,6 +545,7 @@ func _complete_actor_turn(cid: int) -> void:
 			_actor_turn_scope_handle = null
 
 	SimStatusSystem.on_actor_turn_end(api, cid)
+	SimArcanaSystemScript.on_actor_turn_end(api, cid)
 	_apply_checkpoint_boundary(CheckpointProcessor.Kind.AFTER_ACTOR_TURN, true)
 
 	_replan_actor_intent_after_turn_cleanup(cid)
@@ -1064,54 +1076,46 @@ func run_arcana_proc(proc: int) -> void:
 		push_warning("SimRuntime: no arcana_catalog; cannot run arcana")
 		return
 
-	var arcana_scope := _begin_scope(Scope.Kind.ARCANA, "proc=%d" % int(proc), 0)
+	var proc_label := _arcana_proc_label(proc)
+	var arcana_scope := _begin_scope(Scope.Kind.ARCANA, proc_label, 0)
 	if arcana_scope == null:
 		return
 	var writer := _writer()
 	if writer != null:
-		writer.emit_arcana_proc(proc)
+		writer.emit_arcana_proc(proc, proc_label)
 
-	var arcanum_type := _proc_to_arcanum_type(proc)
-	if arcanum_type >= 0:
-		for entry: ArcanaState.ArcanumEntry in sim.state.arcana.list:
-			if entry == null or int(entry.type) != arcanum_type:
-				continue
+	for ctx in SimArcanaSystemScript.get_contexts(sim.api):
+		if ctx == null or !ctx.is_valid() or !_arcanum_wants_proc(ctx, proc):
+			continue
 
-			var id := entry.id
-			if id == &"":
-				continue
+		var id: StringName = ctx.get_arcanum_id()
+		var arcanum_scope := _begin_scope(Scope.Kind.ARCANUM, "id=%s" % String(id), int(ctx.owner_id))
+		if arcanum_scope == null:
+			_end_scope(arcana_scope)
+			return
 
-			var proto: Arcanum = host.arcana_catalog.get_proto(id)
-			if proto == null:
-				push_warning("SimRuntime: missing proto for id=%s" % String(id))
-				continue
+		if writer != null:
+			writer.emit_arcanum_proc(int(ctx.owner_id), id, proc, proc_label)
+		_dispatch_battle_timed_arcanum(ctx, int(proc))
 
-			var player_id := int(sim.state.groups[0].player_id)
-			var arcanum_scope := _begin_scope(Scope.Kind.ARCANUM, "id=%s" % String(id), player_id)
-			if arcanum_scope == null:
-				_end_scope(arcana_scope)
-				return
-
-			if writer != null:
-				writer.emit_arcanum_proc(player_id, id, proc)
-			_dispatch_battle_timed_arcanum(proto, int(proc), sim.api)
-
-			_end_scope(arcanum_scope)
+		_end_scope(arcanum_scope)
 
 	_apply_checkpoint_boundary(CheckpointProcessor.Kind.AFTER_ARCANA, true)
 	_end_scope(arcana_scope)
 
-func _dispatch_battle_timed_arcanum(proto: Arcanum, proc: int, api: SimBattleAPI) -> void:
-	if proto == null or api == null:
+func _dispatch_battle_timed_arcanum(ctx, proc: int) -> void:
+	if ctx == null or !ctx.is_valid() or ctx.proto == null:
 		return
 
 	match int(proc):
-		TurnEngineCore.ArcanaProc.START_OF_COMBAT:
-			proto.on_battle_started(api)
-		TurnEngineCore.ArcanaProc.START_OF_TURN:
-			proto.on_turn_started(api)
-		TurnEngineCore.ArcanaProc.END_OF_TURN:
-			proto.on_turn_ended(api)
+		TurnEngineCore.ArcanaProc.BATTLE_START:
+			ctx.proto.on_battle_start(ctx)
+		TurnEngineCore.ArcanaProc.PLAYER_TURN_BEGIN:
+			ctx.proto.on_player_turn_begin(ctx)
+		TurnEngineCore.ArcanaProc.PLAYER_TURN_END:
+			ctx.proto.on_player_turn_end(ctx)
+		TurnEngineCore.ArcanaProc.BATTLE_END:
+			ctx.proto.on_battle_end(ctx)
 
 
 func apply_attack_now(spec: SimAttackSpec) -> bool:
@@ -1286,16 +1290,42 @@ func _resolve_summon_data(value) -> CombatantData:
 	return null
 
 
-func _proc_to_arcanum_type(proc: int) -> int:
-	match proc:
-		TurnEngineCore.ArcanaProc.START_OF_COMBAT:
-			return int(Arcanum.Type.START_OF_COMBAT)
-		TurnEngineCore.ArcanaProc.START_OF_TURN:
-			return int(Arcanum.Type.START_OF_TURN)
-		TurnEngineCore.ArcanaProc.END_OF_TURN:
-			return int(Arcanum.Type.END_OF_TURN)
+func _arcanum_wants_proc(ctx, proc: int) -> bool:
+	if ctx == null or !ctx.is_valid() or ctx.proto == null:
+		return false
+
+	match int(proc):
+		TurnEngineCore.ArcanaProc.BATTLE_START:
+			return ctx.proto.procs_on_battle_start()
+		TurnEngineCore.ArcanaProc.PLAYER_TURN_BEGIN:
+			return ctx.proto.procs_on_player_turn_begin()
+		TurnEngineCore.ArcanaProc.PLAYER_TURN_END:
+			return ctx.proto.procs_on_player_turn_end()
+		TurnEngineCore.ArcanaProc.BATTLE_END:
+			return ctx.proto.procs_on_battle_end()
 		_:
-			return -1
+			return false
+
+
+func _arcana_proc_label(proc: int) -> String:
+	match int(proc):
+		TurnEngineCore.ArcanaProc.BATTLE_START:
+			return "battle_start"
+		TurnEngineCore.ArcanaProc.PLAYER_TURN_BEGIN:
+			return "player_turn_begin"
+		TurnEngineCore.ArcanaProc.PLAYER_TURN_END:
+			return "player_turn_end"
+		TurnEngineCore.ArcanaProc.BATTLE_END:
+			return "battle_end"
+		_:
+			return "arcana_proc"
+
+
+func _service_battle_end_arcana() -> void:
+	if _battle_end_arcana_fired:
+		return
+	_battle_end_arcana_fired = true
+	run_arcana_proc(TurnEngineCore.ArcanaProc.BATTLE_END)
 
 
 # ============================================================================

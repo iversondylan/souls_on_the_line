@@ -180,18 +180,20 @@ func emit_actor_end(actor_id: int) -> int:
 		Keys.TURN_ID: int(turn_id),
 	})
 
-func emit_arcana_proc(proc: int) -> int:
+func emit_arcana_proc(proc: int, proc_label: String = "") -> int:
 	return _append(BattleEvent.Type.ARCANA_PROC, { # if you later add ARCANA_PROC type, switch to it
 		Keys.PROC: int(proc),
+		Keys.PROC_LABEL: String(proc_label),
 		Keys.TURN_ID: int(turn_id),
 		Keys.GROUP_INDEX: int(group_index),
 	})
 
-func emit_arcanum_proc(source_id: int, arcanum_id: StringName, proc: int, extra := {}) -> int:
+func emit_arcanum_proc(source_id: int, arcanum_id: StringName, proc: int, proc_label: String = "", extra := {}) -> int:
 	var data := {
 		Keys.SOURCE_ID: int(source_id),
 		Keys.ARCANUM_ID: arcanum_id,
 		Keys.PROC: int(proc),
+		Keys.PROC_LABEL: String(proc_label),
 	}
 	for k in extra.keys():
 		data[k] = extra[k]

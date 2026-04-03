@@ -12,7 +12,7 @@ class_name ArcanaState extends RefCounted
 
 class ArcanumEntry extends RefCounted:
 	var id: StringName
-	var type: int # Arcanum.Type enum int
+	var type: int # compatibility/debug field
 	var charges: int = 0
 	var cooldown: int = 0
 	var data: Dictionary = {} # arbitrary per-arcanum state (intensity, flags, etc.)
@@ -31,15 +31,16 @@ func clear() -> void:
 	list.clear()
 	by_id.clear()
 
-func add_arcanum(id: StringName, type: int) -> void:
+func add_arcanum(id: StringName, type: int = -1) -> ArcanumEntry:
 	#print("[SIM][ARCANA_STATE] add id=%s type=%d" % [String(id), int(type)])
 	if id == &"":
-		return
+		return null
 	if by_id.has(id):
-		return
+		return by_id[id]
 	var e := ArcanumEntry.new(id, type)
 	list.append(e)
 	by_id[id] = e
+	return e
 
 func remove_arcanum(id: StringName) -> void:
 	if !by_id.has(id):

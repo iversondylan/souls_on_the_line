@@ -3,6 +3,7 @@
 class_name BattleState extends RefCounted
 
 const AuraBankScript = preload("res://battle/sim/containers/aura_bank.gd")
+const SimArcanaSystemScript = preload("res://battle/sim/operators/sim_arcana_system.gd")
 
 enum Outcome {
 	NONE,
@@ -127,7 +128,7 @@ func get_modifier_tokens_for_cid(target_id: int, mod_type: Modifier.Type, includ
 	var tokens: Array[ModifierToken] = []
 
 	# 0) Battle-level globals (arcana, relic-like systems, etc.)
-	tokens.append_array(_get_arcana_tokens_for(target_id))
+	tokens.append_array(_get_arcana_tokens_for(target_id, mod_type))
 
 	var target: CombatantState = units.get(target_id, null)
 	if target == null or !target.is_alive():
@@ -143,101 +144,34 @@ func _get_effective_status_modifier_tokens_for_target(
 ) -> Array[ModifierToken]:
 	var out: Array[ModifierToken] = []
 	var target: CombatantState = units.get(target_id, null)
-	if target == null or target.statuses == null or status_catalog == null:
+	if target == null or status_catalog == null:
 		return out
 
-	var include_pending_owned := false
-	if include_pending_sources is Dictionary:
-		include_pending_owned = bool(include_pending_sources.get(int(target_id), false))
-
-	for stack: StatusStack in target.statuses.get_all_stacks(include_pending_owned):
-		if stack == null:
+	for ctx: SimStatusContext in SimStatusSystem.get_effective_status_contexts_for_unit(
+		SimBattleAPI.new(self),
+		target_id,
+		include_pending_sources
+	):
+		if ctx == null or !ctx.is_valid():
 			continue
-		if bool(stack.pending) and !include_pending_owned:
+		var proto := ctx.proto
+		if proto == null:
 			continue
-		var proto: Status = status_catalog.get_proto(StringName(stack.id))
-		if !proto:
+		if !proto.contributes_modifier():
 			continue
 		if mod_type not in proto.get_contributed_modifier_types():
 			continue
-		if int(proto.expiration_policy) == int(Status.ExpirationPolicy.DURATION) and int(stack.duration) <= 0:
-			continue
 
-		var ctx := StatusTokenContext.new()
-		ctx.id = StringName(stack.id)
-		ctx.pending = bool(stack.pending)
-		ctx.duration = stack.duration
-		ctx.intensity = stack.intensity
-		ctx.owner_id = target_id
-		if proto.contributes_modifier():
-			var tokens: Array[ModifierToken] = proto.get_modifier_tokens(ctx)
-			for token in tokens:
-				if _modifier_token_applies_to_target(token, target_id):
-					out.append(token)
-
-	if aura_bank == null:
-		return out
-
-	for entry: Dictionary in aura_bank.get_entries():
-		var source_id := int(entry.get("source_id", 0))
-		if source_id <= 0:
-			continue
-
-		var pending := bool(entry.get("pending", false))
-		var include_pending_source := false
-		if include_pending_sources is Dictionary:
-			include_pending_source = bool(include_pending_sources.get(source_id, false))
-		if pending and !include_pending_source:
-			continue
-
-		var source: CombatantState = units.get(source_id, null)
-		if source == null or !source.is_alive() or source.statuses == null:
-			continue
-
-		var aura_status_id := StringName(entry.get("status_id", &""))
-		if aura_status_id == &"":
-			continue
-
-		var aura_proto := status_catalog.get_proto(aura_status_id) as Aura
-		if aura_proto == null:
-			continue
-
-		var aura_stack := source.statuses.get_status_stack(aura_status_id, pending)
-		if aura_stack == null:
-			continue
-		if int(aura_proto.expiration_policy) == int(Status.ExpirationPolicy.DURATION) and int(aura_stack.duration) <= 0:
-			continue
-		if !aura_proto.affects_target(self, source_id, target_id):
-			continue
-
-		for projected_proto: Status in aura_proto.get_projected_statuses():
-			if projected_proto == null:
-				continue
-			if mod_type not in projected_proto.get_contributed_modifier_types():
-				continue
-			if !projected_proto.contributes_modifier():
-				continue
-
-			var projected_ctx := StatusTokenContext.new()
-			projected_ctx.id = StringName(projected_proto.get_id())
-			projected_ctx.pending = pending
-			projected_ctx.duration = int(aura_stack.duration)
-			projected_ctx.intensity = int(aura_stack.intensity)
-			projected_ctx.owner_id = target_id
-
-			var projected_tokens := projected_proto.get_modifier_tokens(projected_ctx)
-			for token in projected_tokens:
-				if _modifier_token_applies_to_target(token, target_id):
-					out.append(token)
+		var tokens := proto.get_modifier_tokens(ctx.make_token_ctx())
+		for token in tokens:
+			if _modifier_token_applies_to_target(token, target_id):
+				out.append(token)
 
 	return out
 
-func _get_arcana_tokens_for(target_id: int) -> Array[ModifierToken]:
-	# ArcanaState should be the SIM “ArcanaSystem” data equivalent.
-	# If ArcanaState doesn't provide tokens yet, return [] for now.
-	if arcana and arcana.has_method("get_modifier_tokens_for_target"):
-		return arcana.get_modifier_tokens_for_target(self, target_id)
-	return []
+func _get_arcana_tokens_for(target_id: int, mod_type: Modifier.Type) -> Array[ModifierToken]:
+	var api := SimBattleAPI.new(self)
+	return SimArcanaSystemScript.get_modifier_tokens_for_target(api, target_id, mod_type)
 
 func _modifier_token_applies_to_target(token: ModifierToken, target_id: int) -> bool:
 	if token == null:

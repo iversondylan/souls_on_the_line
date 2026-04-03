@@ -2,12 +2,14 @@
 
 class_name AttackTargeting extends RefCounted
 
+const SimArcanaSystemScript = preload("res://battle/sim/operators/sim_arcana_system.gd")
+
 class TargetingParticipant extends RefCounted:
 	var priority: int = 100
 	var discovery_index: int = 0
 	var status_ctx: SimStatusContext = null
 	var status_proto: Status = null
-	var arcanum_proto: Arcanum = null
+	var arcanum_ctx = null
 
 static func get_target_ids(ctx: TargetingContext) -> Array[int]:
 	if ctx == null or ctx.api == null:
@@ -142,12 +144,12 @@ static func _run_stage(ctx: TargetingContext, stage: int) -> void:
 					participant.status_proto.on_targeting_retarget(participant.status_ctx, ctx)
 				TargetingContext.Stage.INTERPOSE:
 					participant.status_proto.on_targeting_interpose(participant.status_ctx, ctx)
-		elif participant.arcanum_proto != null:
+		elif participant.arcanum_ctx != null and participant.arcanum_ctx.proto != null:
 			match int(stage):
 				TargetingContext.Stage.RETARGET:
-					participant.arcanum_proto.on_targeting_retarget(ctx.api, ctx)
+					participant.arcanum_ctx.proto.on_targeting_retarget(participant.arcanum_ctx, ctx)
 				TargetingContext.Stage.INTERPOSE:
-					participant.arcanum_proto.on_targeting_interpose(ctx.api, ctx)
+					participant.arcanum_ctx.proto.on_targeting_interpose(participant.arcanum_ctx, ctx)
 
 
 static func _finalize_targets(ctx: TargetingContext) -> void:
@@ -218,17 +220,13 @@ static func _append_arcana_participants(
 	if int(side_group_index) != int(SimBattleAPI.FRIENDLY):
 		return discovery_index
 
-	for entry: ArcanaState.ArcanumEntry in ctx.api.state.arcana.list:
-		if entry == null or entry.id == &"":
+	for arcanum_ctx in SimArcanaSystemScript.get_contexts(ctx.api):
+		if arcanum_ctx == null or !arcanum_ctx.is_valid() or arcanum_ctx.proto == null:
 			continue
-		var proto: Arcanum = ctx.api.state.arcana_catalog.get_proto(entry.id)
-		if proto == null:
-			continue
-
 		var participant := TargetingParticipant.new()
-		participant.priority = int(proto.get_targeting_priority(stage))
+		participant.priority = int(arcanum_ctx.proto.get_targeting_priority(stage))
 		participant.discovery_index = discovery_index
-		participant.arcanum_proto = proto
+		participant.arcanum_ctx = arcanum_ctx
 		out.append(participant)
 		discovery_index += 1
 

@@ -139,7 +139,7 @@ func activate_arcana_by_type(type: Arcanum.Type, host: Node) -> void:
 
 	var queue: Array[Arcanum] = []
 	for a in _arcana:
-		if a and a.type == type:
+		if a and _arcanum_matches_legacy_type(a, type):
 			queue.push_back(a)
 
 	if queue.is_empty():
@@ -164,11 +164,30 @@ func _activate_arcana_by_type_now(arcanum: Arcanum, type: Arcanum.Type) -> void:
 		return
 
 	match int(type):
-		Arcanum.Type.START_OF_COMBAT:
+		Arcanum.Type.BATTLE_START:
 			arcanum.on_battle_started(api)
-		Arcanum.Type.START_OF_TURN:
+		Arcanum.Type.PLAYER_TURN_BEGIN:
 			arcanum.on_turn_started(api)
-		Arcanum.Type.END_OF_TURN:
+		Arcanum.Type.PLAYER_TURN_END:
 			arcanum.on_turn_ended(api)
-		Arcanum.Type.END_OF_COMBAT:
+		Arcanum.Type.BATTLE_END:
 			arcanum.on_battle_ended(api)
+
+
+func _arcanum_matches_legacy_type(arcanum: Arcanum, type: Arcanum.Type) -> bool:
+	if arcanum == null:
+		return false
+
+	match int(type):
+		Arcanum.Type.BATTLE_START:
+			return arcanum.procs_on_battle_start()
+		Arcanum.Type.PLAYER_TURN_BEGIN:
+			return arcanum.procs_on_player_turn_begin()
+		Arcanum.Type.PLAYER_TURN_END:
+			return arcanum.procs_on_player_turn_end()
+		Arcanum.Type.BATTLE_END:
+			return arcanum.procs_on_battle_end()
+		Arcanum.Type.EVENT_BASED:
+			return false
+		_:
+			return false

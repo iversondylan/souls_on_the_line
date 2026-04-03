@@ -72,6 +72,7 @@ const DISABLE_UNTIL_NEXT_PLAYER_TURN := &"disable_until_next_player_turn"
 # Arcana
 const ARCANUM_ID := &"arcanum_id"
 const PROC := &"proc"
+const PROC_LABEL := &"proc_label"
 
 # Damage applied
 const BASE_AMOUNT := &"base"

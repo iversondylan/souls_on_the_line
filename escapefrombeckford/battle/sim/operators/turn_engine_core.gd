@@ -61,10 +61,16 @@ enum Phase {
 }
 
 enum ArcanaProc {
-	START_OF_COMBAT,
-	START_OF_TURN,
-	END_OF_TURN,
+	BATTLE_START,
+	PLAYER_TURN_BEGIN,
+	PLAYER_TURN_END,
+	BATTLE_END,
 }
+
+const START_OF_COMBAT := ArcanaProc.BATTLE_START
+const START_OF_TURN := ArcanaProc.PLAYER_TURN_BEGIN
+const END_OF_TURN := ArcanaProc.PLAYER_TURN_END
+const END_OF_COMBAT := ArcanaProc.BATTLE_END
 
 
 # -------------------------
@@ -224,7 +230,7 @@ func begin_group_turn_state(group_index: int, start_at_player := false, pre_play
 		# Only once per battle, and only when explicitly starting at player.
 		if _start_at_player and !_start_of_combat_fired:
 			_start_of_combat_fired = true
-			_pending_arcana_proc = ArcanaProc.START_OF_COMBAT
+			_pending_arcana_proc = ArcanaProc.BATTLE_START
 
 
 # Return the next required step in the turn flow, without performing side
@@ -390,7 +396,7 @@ func begin_player_end_transition() -> bool:
 
 
 # Complete the player-begin boundary. SimRuntime calls this after running
-# player-turn-start sim bookkeeping, which unlocks the START_OF_TURN arcana step.
+# player-turn-start sim bookkeeping, which unlocks the player-turn-begin arcana step.
 func complete_player_begin() -> void:
 	if dbg:
 		print("TurnEngineCore.complete_player_begin()")
@@ -399,7 +405,7 @@ func complete_player_begin() -> void:
 		return
 
 	_waiting_for_player_begin = false
-	_pending_arcana_proc = ArcanaProc.START_OF_TURN
+	_pending_arcana_proc = ArcanaProc.PLAYER_TURN_BEGIN
 
 
 # Complete the player-end boundary after SimRuntime has already serviced

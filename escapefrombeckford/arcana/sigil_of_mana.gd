@@ -9,7 +9,8 @@ var member_var := 0
 func get_id() -> StringName:
 	return ID
 
-func on_battle_started(api: SimBattleAPI) -> void:
+func on_battle_start(ctx) -> void:
+	var api: SimBattleAPI = ctx.api if ctx != null else null
 	if api == null:
 		return
 
