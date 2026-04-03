@@ -407,6 +407,7 @@ func _build_scope_driven_attack_beats(parsed: ParsedNpcAttackTurn, turn_events: 
 		next_window_base_q = local_base_q
 
 	var clear_q := _next_on_grid_beat_after(last_work_q)
+	clear_q = _enforce_min_clear_focus_q_for_self_death(clear_q, parsed.actor_id, turn_events)
 	var layout_order := _find_post_action_group_layout(turn_events, parsed.group_index)
 	var clear_focus := _make_clear_focus_beat(clear_q, parsed.actor_id, parsed.trailing_events, layout_order)
 	_tag_beat(clear_focus, [&"clear_focus"])
@@ -1190,6 +1191,7 @@ func _build_melee_attack_beats_from_parsed(parsed: Dictionary, turn_events: Arra
 			reaction_shift_q += (reaction_q - beat_q) + 0.5
 
 	var clear_q := final_q + _tail_gap_q_for_attack(analysis)
+	clear_q = _enforce_min_clear_focus_q_for_self_death(clear_q, analysis.attacker_id, turn_events)
 	var layout_order := _find_post_action_group_layout(turn_events, group_index)
 	beats.append(_make_clear_focus_beat(clear_q, analysis.attacker_id, trailing, layout_order))
 	return _sort_beats(beats)
@@ -1263,6 +1265,7 @@ func _build_ranged_attack_beats_from_parsed(parsed: Dictionary, turn_events: Arr
 			reaction_shift_q += (reaction_q - impact_q) + 0.5
 
 	var clear_q := final_q + _tail_gap_q_for_attack(analysis)
+	clear_q = _enforce_min_clear_focus_q_for_self_death(clear_q, analysis.attacker_id, turn_events)
 	var layout_order := _find_post_action_group_layout(turn_events, group_index)
 	_add_beat_array_clear_focus(beats, clear_q, analysis.attacker_id, trailing, layout_order)
 	return _sort_beats(beats)
@@ -1540,6 +1543,7 @@ func _build_melee_attack_beats(analysis: AttackAnalysis, turn_events: Array[Batt
 
 	var last_hit_q := start_q + 0.5 * float(n - 1) + lethal_shift_q
 	var clear_q := last_hit_q + _tail_gap_q_for_attack(analysis)
+	clear_q = _enforce_min_clear_focus_q_for_self_death(clear_q, analysis.attacker_id, turn_events)
 	var layout_order := _find_post_action_group_layout(turn_events, group_index)
 	beats.append(_make_clear_focus_beat(clear_q, analysis.attacker_id, trailing, layout_order))
 
@@ -1608,6 +1612,7 @@ func _build_ranged_attack_beats(analysis: AttackAnalysis, turn_events: Array[Bat
 
 	var last_impact_q := fire_start_q + 0.5 * float(n - 1) + lethal_shift_q + 0.5
 	var clear_q := last_impact_q + _tail_gap_q_for_attack(analysis)
+	clear_q = _enforce_min_clear_focus_q_for_self_death(clear_q, analysis.attacker_id, turn_events)
 	var layout_order := _find_post_action_group_layout(turn_events, group_index)
 	_add_beat_array_clear_focus(beats, clear_q, analysis.attacker_id, trailing, layout_order)
 
@@ -1957,6 +1962,28 @@ func _count_total_hits(analysis: AttackAnalysis) -> int:
 	return maxi(n, 1)
 
 
+func _actor_dies_on_own_turn(actor_id: int, events: Array[BattleEvent]) -> bool:
+	if actor_id <= 0:
+		return false
+
+	for e in events:
+		if e == null or e.data == null:
+			continue
+
+		match int(e.type):
+			BattleEvent.Type.DIED, BattleEvent.Type.FADED:
+				if int(e.data.get(Keys.TARGET_ID, 0)) == actor_id:
+					return true
+
+	return false
+
+
+func _enforce_min_clear_focus_q_for_self_death(clear_q: float, actor_id: int, events: Array[BattleEvent]) -> float:
+	if !_actor_dies_on_own_turn(actor_id, events):
+		return clear_q
+	return maxf(clear_q, 3.0)
+
+
 func _build_generic_beats(events: Array[BattleEvent]) -> Array[TurnBeat]:
 	var beats: Array[TurnBeat] = []
 	var actor_id := _find_actor_id(events)
@@ -1969,11 +1996,13 @@ func _build_generic_beats(events: Array[BattleEvent]) -> Array[TurnBeat]:
 
 	if actor_id > 0:
 		beats.append(_make_basic_focus_beat(0.0, actor_id, _collect_targets_from_events(events)))
+		var clear_q := 2.0 if !removal_events.is_empty() else 1.0
+		clear_q = _enforce_min_clear_focus_q_for_self_death(clear_q, actor_id, events)
 		if !removal_events.is_empty():
 			beats.append(_make_generic_removal_beat(1.0, actor_id, removal_events))
-			beats.append(_make_clear_focus_beat(2.0, actor_id, trailing, layout_order))
+			beats.append(_make_clear_focus_beat(clear_q, actor_id, trailing, layout_order))
 		else:
-			beats.append(_make_clear_focus_beat(1.0, actor_id, trailing, layout_order))
+			beats.append(_make_clear_focus_beat(clear_q, actor_id, trailing, layout_order))
 	else:
 		var b := TurnBeat.new()
 		b.beat_q = 0.0
@@ -2095,7 +2124,8 @@ func _build_summon_beats(turn_events: Array[BattleEvent]) -> Array[TurnBeat]:
 	beats.append(_make_basic_focus_beat(0.0, actor_id, _collect_targets_from_events(summon_events)))
 	beats.append(_make_summon_windup_beat(1.0, actor_id, summon_events))
 	beats.append(_make_summon_pop_beat(2.0, actor_id, summon_events))
-	beats.append(_make_clear_focus_beat(3.0, actor_id, trailing, layout_order))
+	var clear_q := _enforce_min_clear_focus_q_for_self_death(3.0, actor_id, turn_events)
+	beats.append(_make_clear_focus_beat(clear_q, actor_id, trailing, layout_order))
 
 	return beats
 
@@ -2120,11 +2150,13 @@ func _build_status_beats(turn_events: Array[BattleEvent]) -> Array[TurnBeat]:
 	beats.append(_make_basic_focus_beat(0.0, actor_id, targets))
 	beats.append(_make_status_windup_beat(1.0, actor_id, targets))
 	beats.append(_make_status_pop_beat(2.0, actor_id, status_events))
+	var clear_q := 4.0 if !removal_events.is_empty() else 3.0
+	clear_q = _enforce_min_clear_focus_q_for_self_death(clear_q, actor_id, turn_events)
 	if !removal_events.is_empty():
 		beats.append(_make_generic_removal_beat(3.0, actor_id, removal_events))
-		beats.append(_make_clear_focus_beat(4.0, actor_id, trailing, layout_order))
+		beats.append(_make_clear_focus_beat(clear_q, actor_id, trailing, layout_order))
 	else:
-		beats.append(_make_clear_focus_beat(3.0, actor_id, trailing, layout_order))
+		beats.append(_make_clear_focus_beat(clear_q, actor_id, trailing, layout_order))
 
 	return beats
 
