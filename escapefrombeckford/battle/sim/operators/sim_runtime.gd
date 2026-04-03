@@ -109,6 +109,59 @@ func _can_run() -> bool:
 	return sim != null and sim.api != null and host != null
 
 
+func _supports_single_target_spillthrough(targeting: int, target_ids: Array[int]) -> bool:
+	if target_ids.size() != 1:
+		return false
+	return int(targeting) == int(Attack.Targeting.STANDARD) or int(targeting) == int(Attack.Targeting.REVERSE)
+
+
+func _unit_can_enable_spillthrough(api: SimBattleAPI, attacker_id: int, primary_target_id: int) -> bool:
+	if api == null:
+		return false
+	return SimStatusSystem.unit_grants_attack_spillthrough(api, int(attacker_id)) or SimStatusSystem.unit_grants_received_spillthrough(api, int(primary_target_id))
+
+
+func _should_apply_spillthrough(
+	api: SimBattleAPI,
+	ctx: AttackContext,
+	targeting: int,
+	target_ids: Array[int],
+	primary_target_id: int,
+	next_target_id: int,
+	damage_ctx: DamageContext
+) -> bool:
+	if api == null or ctx == null or damage_ctx == null:
+		return false
+	var supports := _supports_single_target_spillthrough(targeting, target_ids)
+	var ids_ok := int(primary_target_id) > 0 and int(next_target_id) > 0
+	var lethal := bool(damage_ctx.was_lethal)
+	var overflow := int(damage_ctx.overflow_amount)
+	var next_alive := bool(api.is_alive(int(next_target_id))) if int(next_target_id) > 0 else false
+	var attack_enabled := false
+	var target_enabled := false
+	if supports and ids_ok and lethal and overflow > 0 and next_alive:
+		attack_enabled = SimStatusSystem.unit_grants_attack_spillthrough(api, int(ctx.attacker_id))
+		target_enabled = SimStatusSystem.unit_grants_received_spillthrough(api, int(primary_target_id))
+	var allowed := supports and ids_ok and lethal and overflow > 0 and next_alive and (attack_enabled or target_enabled)
+	if lethal or overflow > 0 or int(next_target_id) > 0:
+		print(
+			"[SPILLTHROUGH] gate attacker=%d primary=%d next=%d targeting=%d targets=%s lethal=%s overflow=%d next_alive=%s attack_enabled=%s target_enabled=%s allowed=%s" % [
+				int(ctx.attacker_id),
+				int(primary_target_id),
+				int(next_target_id),
+				int(targeting),
+				target_ids,
+				str(lethal),
+				int(overflow),
+				str(next_alive),
+				str(attack_enabled),
+				str(target_enabled),
+				str(allowed),
+			]
+		)
+	return allowed
+
+
 func has_runtime_initialized() -> bool:
 	return turn_engine != null
 
@@ -632,6 +685,10 @@ func run_attack(ctx: AttackContext) -> bool:
 		target_ids = target_ids.filter(func(id):
 			return int(id) > 0 and api.is_alive(int(id))
 		)
+		ctx.current_strike_index = s
+		ctx.current_primary_target_ids = target_ids.duplicate()
+		ctx.current_spillthrough_target_id = 0
+		ctx.current_spillthrough_damage = 0
 
 		if target_ids.is_empty():
 			_end_scope(strike_scope)
@@ -654,8 +711,13 @@ func run_attack(ctx: AttackContext) -> bool:
 		var deal_mod := int(ctx.deal_modifier_type)
 		var take_mod := int(ctx.take_modifier_type)
 		_strike_resolution_depth += 1
+		var pending_spillthrough := {}
 
 		for tid: int in target_ids:
+			var spill_target_id := 0
+			if _supports_single_target_spillthrough(targeting, target_ids):
+				spill_target_id = int(AttackTargeting.get_next_target_id_after(targeting_ctx, int(tid)))
+
 			var hit_scope := _begin_scope(Scope.Kind.HIT, "t=%d" % int(tid), attacker_id, {
 				Keys.TARGET_ID: int(tid),
 				Keys.STRIKE_INDEX: s,
@@ -687,12 +749,115 @@ func run_attack(ctx: AttackContext) -> bool:
 
 			_end_scope(hit_scope)
 
+			if !_should_apply_spillthrough(api, ctx, targeting, target_ids, int(tid), spill_target_id, d):
+				continue
+			pending_spillthrough = {
+				"primary_target_id": int(tid),
+				"spill_target_id": int(spill_target_id),
+				"overflow_amount": int(d.overflow_amount),
+				"overflow_banish_amount": int(d.overflow_banish_amount),
+			}
+			print(
+				"[SPILLTHROUGH] queued strike=%d attacker=%d primary=%d spill=%d overflow=%d" % [
+					int(s),
+					int(attacker_id),
+					int(tid),
+					int(spill_target_id),
+					int(d.overflow_amount),
+				]
+			)
+
+		_end_scope(strike_scope)
+
+		if !pending_spillthrough.is_empty():
+			var spill_target_id := int(pending_spillthrough.get("spill_target_id", 0))
+			var primary_target_id := int(pending_spillthrough.get("primary_target_id", 0))
+			var overflow_amount := int(pending_spillthrough.get("overflow_amount", 0))
+			var overflow_banish_amount := int(pending_spillthrough.get("overflow_banish_amount", 0))
+			var spill_extra := {
+				Keys.SPILLTHROUGH: true,
+				Keys.CHAINED_FROM_PREVIOUS: true,
+				Keys.ORIGIN_STRIKE_INDEX: int(s),
+				Keys.CHAIN_SOURCE_TARGET_ID: int(primary_target_id),
+				Keys.SPILLTHROUGH_DAMAGE: int(overflow_amount),
+			}
+			var spill_scope := _begin_scope(Scope.Kind.STRIKE, "spill=%d" % int(s), attacker_id, {
+				Keys.STRIKE_INDEX: int(s),
+				Keys.ATTACK_MODE: mode,
+				Keys.TARGET_TYPE: targeting,
+				Keys.SPILLTHROUGH: true,
+				Keys.CHAINED_FROM_PREVIOUS: true,
+				Keys.ORIGIN_STRIKE_INDEX: int(s),
+				Keys.CHAIN_SOURCE_TARGET_ID: int(primary_target_id),
+				Keys.SPILLTHROUGH_DAMAGE: int(overflow_amount),
+			})
+			if spill_scope == null:
+				_strike_resolution_depth = maxi(_strike_resolution_depth - 1, 0)
+				drain_delayed_reactions(DelayedReaction.Timing.AFTER_STRIKE)
+				_end_scope(attack_scope)
+				return false
+
+			if writer != null:
+				writer.emit_strike(
+					attacker_id,
+					[int(spill_target_id)],
+					mode,
+					targeting,
+					s,
+					strikes,
+					String(ctx.projectile_scene if !ctx.projectile_scene.is_empty() else params.get(Keys.PROJECTILE_SCENE, "")),
+					spill_extra
+				)
+
+			var spill_hit_scope := _begin_scope(Scope.Kind.HIT, "t=%d" % int(spill_target_id), attacker_id, {
+				Keys.TARGET_ID: int(spill_target_id),
+				Keys.STRIKE_INDEX: int(s),
+				Keys.ATTACK_MODE: mode,
+				Keys.SPILLTHROUGH: true,
+				Keys.CHAINED_FROM_PREVIOUS: true,
+				Keys.ORIGIN_STRIKE_INDEX: int(s),
+				Keys.CHAIN_SOURCE_TARGET_ID: int(primary_target_id),
+				Keys.SPILLTHROUGH_DAMAGE: int(overflow_amount),
+			})
+			if spill_hit_scope == null:
+				_end_scope(spill_scope)
+				_strike_resolution_depth = maxi(_strike_resolution_depth - 1, 0)
+				drain_delayed_reactions(DelayedReaction.Timing.AFTER_STRIKE)
+				_end_scope(attack_scope)
+				return false
+
+			ctx.current_spillthrough_target_id = int(spill_target_id)
+			ctx.current_spillthrough_damage = int(overflow_amount)
+
+			var spill_damage := DamageContext.new()
+			spill_damage.source_id = source_id
+			spill_damage.target_id = int(spill_target_id)
+			spill_damage.base_amount = maxi(int(overflow_amount) - int(overflow_banish_amount), 0)
+			spill_damage.base_banish_amount = int(overflow_banish_amount)
+			spill_damage.deal_modifier_type = deal_mod
+			spill_damage.take_modifier_type = take_mod
+			spill_damage.params = params
+			spill_damage.tags = ctx.tags.duplicate()
+			spill_damage.reason = ctx.reason
+			spill_damage.origin_card_uid = ctx.origin_card_uid
+			spill_damage.origin_arcanum_id = ctx.origin_arcanum_id
+			api.resolve_damage_immediate(spill_damage)
+			any = true
+			if !_packed_has_int(ctx.affected_target_ids, int(spill_target_id)):
+				ctx.affected_target_ids.append(int(spill_target_id))
+
+			_end_scope(spill_hit_scope)
+			_end_scope(spill_scope)
+
 		_strike_resolution_depth = maxi(_strike_resolution_depth - 1, 0)
 		drain_delayed_reactions(DelayedReaction.Timing.AFTER_STRIKE)
-		_end_scope(strike_scope)
 
 	_end_scope(attack_scope)
 	ctx.any_hit = any
+	ctx.current_strike_index = -1
+	ctx.current_primary_target_ids.clear()
+	ctx.current_spillthrough_target_id = 0
+	ctx.current_spillthrough_damage = 0
 	return any
 
 

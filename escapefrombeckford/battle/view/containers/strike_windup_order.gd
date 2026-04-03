@@ -13,6 +13,10 @@ var projectile_scene_path: String = ""
 var strike_count: int = 1
 var strike_index: int = 0 # <-- add this
 var total_hit_count: int = 1
+var chained_from_previous: bool = false
+var origin_strike_index: int = -1
+var chain_source_target_id: int = 0
+var has_chain_continuation: bool = false
 
 var attack_info: AttackPresentationInfo = null
 

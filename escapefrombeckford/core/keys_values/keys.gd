@@ -95,9 +95,14 @@ const CHANGE_HEALTH_RELATIVE := &"change_health_relative"
 # Attack
 #const TARGETED := &"targeted"
 const STRIKE_INDEX := &"strike_index"
+const ORIGIN_STRIKE_INDEX := &"origin_strike_index"
 const ATTACK_META := &"attack_meta"
 const STRIKE_META := &"strike_meta"
 const HIT_META := &"hit_meta"
+const SPILLTHROUGH := &"spillthrough"
+const CHAINED_FROM_PREVIOUS := &"chained_from_previous"
+const SPILLTHROUGH_DAMAGE := &"spillthrough_damage"
+const CHAIN_SOURCE_TARGET_ID := &"chain_source_target_id"
 
 # Summon
 const SUMMONED_ID := &"summoned_id"
@@ -156,6 +161,8 @@ const DEATH_REASON := &"death_reason"
 # Status ids you’ve used so far
 # -------------------------
 const STATUS_MARKED := &"marked"
+const STATUS_HEAVY_ATTACK := &"heavy_attack"
+const STATUS_SMALL := &"small"
 
 
 # Effect params

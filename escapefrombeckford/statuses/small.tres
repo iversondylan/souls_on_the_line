@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="SmallStatus" format=3]
+
+[ext_resource type="Script" path="res://statuses/small.gd" id="1_small_script"]
+
+[resource]
+script = ExtResource("1_small_script")
+status_name = "Small"
+proc_type = 2
+reapply_type = 3
+tooltip = "Small: lethal overkill on this unit spills through to the next target in lane order."

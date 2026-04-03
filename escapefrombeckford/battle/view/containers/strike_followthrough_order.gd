@@ -14,6 +14,9 @@ var strike_count: int = 1
 var strike_index: int = 0
 var total_hit_count: int = 1
 var has_lethal_hit: bool = false
+var chained_from_previous: bool = false
+var origin_strike_index: int = -1
+var chain_source_target_id: int = 0
 
 # ordered strike data for animators
 var attack_info: AttackPresentationInfo = null

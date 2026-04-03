@@ -253,13 +253,15 @@ func _append_unique_target_ids(out: Array[int], seen: Dictionary, target_ids: Ar
 
 func _build_target_windows_for_strikes(strikes: Array[ParsedDirectStrike]) -> Array[TargetWindow]:
 	var windows: Array[TargetWindow] = []
-	var previous_targets: Array[int] = []
+	var retarget_reference_targets: Array[int] = []
 
 	for strike in strikes:
 		if strike == null:
 			continue
 
-		var starts_new_window := windows.is_empty() or _strike_introduces_new_targets(previous_targets, strike.target_ids)
+		var starts_new_window := windows.is_empty()
+		if !starts_new_window and !bool(strike.info != null and strike.info.chained_from_previous):
+			starts_new_window = _strike_introduces_new_targets(retarget_reference_targets, strike.target_ids)
 		if starts_new_window:
 			var window := TargetWindow.new()
 			window.target_ids = strike.target_ids.duplicate()
@@ -268,7 +270,8 @@ func _build_target_windows_for_strikes(strikes: Array[ParsedDirectStrike]) -> Ar
 
 		var current_window := windows[windows.size() - 1]
 		current_window.strikes.append(strike)
-		previous_targets = strike.target_ids.duplicate()
+		if strike.info == null or !strike.info.chained_from_previous:
+			retarget_reference_targets = strike.target_ids.duplicate()
 
 	for window in windows:
 		window.window_span_beats = _window_span_beats(window.strikes.size())
@@ -621,6 +624,12 @@ func _parse_attack_scope(
 	var analysis := AttackAnalysis.new()
 	var direct_events_by_strike: Array = []
 	var reactions_by_strike: Array = []
+	var top_level_reactions_by_strike := _collect_attack_level_reaction_groups(
+		events,
+		scope_ranges,
+		attack_scope_id,
+		strike_scope_ids
+	)
 
 	for i in range(strike_scope_ids.size()):
 		var strike_scope_id := int(strike_scope_ids[i])
@@ -628,6 +637,8 @@ func _parse_attack_scope(
 		var marker: BattleEvent = parsed_strike.get("marker", null)
 		var direct_events: Array[BattleEvent] = parsed_strike.get("direct_events", [])
 		var reactions: Array = parsed_strike.get("reactions", [])
+		if i < top_level_reactions_by_strike.size():
+			reactions.append_array(top_level_reactions_by_strike[i])
 
 		direct_events_by_strike.append(direct_events)
 		reactions_by_strike.append(reactions)
@@ -685,46 +696,108 @@ func _parse_attack_strike(
 		if _is_attack_direct_event(event):
 			direct_events.append(event)
 
-	for reaction in reactions:
-		var reaction_begin := int(reaction.get("begin", -1))
-		var reaction_end := int(reaction.get("end", -1))
-		if reaction_begin < 0 or reaction_end < 0:
-			continue
-
-		var reaction_events: Array[BattleEvent] = []
-		for idx in range(reaction_begin + 1, reaction_end):
-			var event: BattleEvent = events[idx]
-			if event == null or _is_structural_ignored_event(event):
-				continue
-			reaction_events.append(event)
-		reaction["events"] = reaction_events
-
-	var last_reaction_end := strike_begin
 	for i in range(reactions.size()):
 		var reaction: Dictionary = reactions[i]
 		var next_begin := strike_end
 		if i + 1 < reactions.size():
 			next_begin = int(reactions[i + 1].get("begin", strike_end))
-
-		for idx in range(int(reaction.get("end", -1)) + 1, next_begin):
-			var event: BattleEvent = events[idx]
-			if event == null or _is_structural_ignored_event(event):
-				continue
-			if _is_reaction_followup_event(event):
-				var reaction_events: Array[BattleEvent] = reaction.get("events", [])
-				reaction_events.append(event)
-				reaction["events"] = reaction_events
-				last_reaction_end = idx
-			elif _is_attack_direct_event(event):
-				direct_events.append(event)
-		if int(reaction.get("end", -1)) > last_reaction_end:
-			last_reaction_end = int(reaction.get("end", -1))
+		reaction["events"] = _collect_reaction_group_events(events, reaction, next_begin)
 
 	return {
 		"marker": marker,
 		"direct_events": direct_events,
 		"reactions": reactions,
 	}
+
+
+func _collect_attack_level_reaction_groups(
+	events: Array[BattleEvent],
+	scope_ranges: Dictionary,
+	attack_scope_id: int,
+	strike_scope_ids: Array[int]
+) -> Array:
+	var out: Array = []
+	for _i in range(strike_scope_ids.size()):
+		out.append([])
+
+	if strike_scope_ids.is_empty():
+		return out
+
+	var child_scope_ids := _find_direct_child_scope_ids(events, attack_scope_id)
+	if child_scope_ids.is_empty():
+		return out
+
+	var strike_index_by_scope_id := {}
+	for i in range(strike_scope_ids.size()):
+		strike_index_by_scope_id[int(strike_scope_ids[i])] = i
+
+	var attack_range: Dictionary = scope_ranges.get(attack_scope_id, {})
+	var attack_end := int(attack_range.get("end", events.size()))
+	var active_strike_index := -1
+
+	for child_index in range(child_scope_ids.size()):
+		var child_scope_id := int(child_scope_ids[child_index])
+		if strike_index_by_scope_id.has(child_scope_id):
+			active_strike_index = int(strike_index_by_scope_id[child_scope_id])
+			continue
+
+		if active_strike_index < 0:
+			continue
+
+		var reaction_range: Dictionary = scope_ranges.get(child_scope_id, {})
+		var scope_kind := int(reaction_range.get("kind", -1))
+		if scope_kind != int(Scope.Kind.SUMMON_ACTION) and scope_kind != int(Scope.Kind.ATTACK):
+			continue
+
+		var next_begin := attack_end
+		if child_index + 1 < child_scope_ids.size():
+			var next_scope_range: Dictionary = scope_ranges.get(int(child_scope_ids[child_index + 1]), {})
+			next_begin = int(next_scope_range.get("begin", attack_end))
+
+		var kind_name := &"summon" if scope_kind == int(Scope.Kind.SUMMON_ACTION) else &"attack"
+		var reaction := {
+			"kind": kind_name,
+			"scope_id": int(child_scope_id),
+			"begin": int(reaction_range.get("begin", -1)),
+			"end": int(reaction_range.get("end", -1)),
+			"events": [],
+		}
+		reaction["events"] = _collect_reaction_group_events(events, reaction, next_begin)
+		_debug_log_reaction("attached top-level reaction strike=%d kind=%s scope=%d" % [
+			int(active_strike_index),
+			String(reaction.get("kind", &"unknown")),
+			int(child_scope_id),
+		])
+		out[active_strike_index].append(reaction)
+
+	return out
+
+
+func _collect_reaction_group_events(
+	events: Array[BattleEvent],
+	reaction: Dictionary,
+	next_begin: int
+) -> Array[BattleEvent]:
+	var reaction_events: Array[BattleEvent] = []
+	var reaction_begin := int(reaction.get("begin", -1))
+	var reaction_end := int(reaction.get("end", -1))
+	if reaction_begin < 0 or reaction_end < 0:
+		return reaction_events
+
+	for idx in range(reaction_begin + 1, reaction_end):
+		var event: BattleEvent = events[idx]
+		if event == null or _is_structural_ignored_event(event):
+			continue
+		reaction_events.append(event)
+
+	for idx in range(reaction_end + 1, next_begin):
+		var event: BattleEvent = events[idx]
+		if event == null or _is_structural_ignored_event(event):
+			continue
+		if _is_reaction_followup_event(event):
+			reaction_events.append(event)
+
+	return reaction_events
 
 
 func _collect_reaction_groups_for_strike(
@@ -900,6 +973,13 @@ func _build_strike_info_from_events(marker: BattleEvent, direct_events: Array[Ba
 			var tid := int(marker.data.get(Keys.TARGET_ID, 0))
 			if tid > 0:
 				s.target_ids.append(tid)
+		s.is_spillthrough = bool(marker.data.get(Keys.SPILLTHROUGH, false))
+		s.chained_from_previous = bool(marker.data.get(Keys.CHAINED_FROM_PREVIOUS, false)) or s.is_spillthrough
+		s.origin_strike_index = int(marker.data.get(Keys.ORIGIN_STRIKE_INDEX, -1))
+		s.chain_source_target_id = int(marker.data.get(Keys.CHAIN_SOURCE_TARGET_ID, 0))
+		s.spillthrough_damage = int(marker.data.get(Keys.SPILLTHROUGH_DAMAGE, 0))
+		if s.chained_from_previous and s.origin_strike_index < 0:
+			s.origin_strike_index = strike_index
 
 	for event in direct_events:
 		if event == null:
@@ -984,6 +1064,13 @@ func _build_strike_info_from_block(block: Array, strike_index: int) -> StrikePre
 			var tid := int(marker.data.get(Keys.TARGET_ID, 0))
 			if tid > 0:
 				s.target_ids.append(tid)
+		s.is_spillthrough = bool(marker.data.get(Keys.SPILLTHROUGH, false))
+		s.chained_from_previous = bool(marker.data.get(Keys.CHAINED_FROM_PREVIOUS, false)) or s.is_spillthrough
+		s.origin_strike_index = int(marker.data.get(Keys.ORIGIN_STRIKE_INDEX, -1))
+		s.chain_source_target_id = int(marker.data.get(Keys.CHAIN_SOURCE_TARGET_ID, 0))
+		s.spillthrough_damage = int(marker.data.get(Keys.SPILLTHROUGH_DAMAGE, 0))
+		if s.chained_from_previous and s.origin_strike_index < 0:
+			s.origin_strike_index = strike_index
 
 	for i in range(1, block.size()):
 		var e: BattleEvent = block[i]
@@ -1631,6 +1718,9 @@ func _make_melee_strike_order(
 	o.strikes_total = analysis.strike_count
 	o.total_hit_count = strike.hit_count
 	o.has_lethal = strike.has_lethal_hit
+	o.chained_from_previous = bool(strike.chained_from_previous)
+	o.origin_strike_index = int(strike.origin_strike_index if strike.origin_strike_index >= 0 else strike_index)
+	o.chain_source_target_id = int(strike.chain_source_target_id)
 	return o
 
 
@@ -1695,6 +1785,10 @@ func _make_ranged_fire_order(analysis: AttackAnalysis, strike_index: int) -> Ran
 	o.total_hit_count = strike.hit_count
 	o.has_lethal = strike.has_lethal_hit
 	o.projectile_scene_path = analysis.projectile_scene_path
+	o.chained_from_previous = bool(strike.chained_from_previous)
+	o.origin_strike_index = int(strike.origin_strike_index if strike.origin_strike_index >= 0 else strike_index)
+	o.chain_source_target_id = int(strike.chain_source_target_id)
+	o.has_chain_continuation = _strike_has_chain_continuation(analysis, strike_index)
 
 	return o
 
@@ -1724,6 +1818,7 @@ func _make_impact_orders_for_strike(
 		o.was_lethal = bool(h.was_lethal)
 		o.amount = int(h.amount)
 		o.after_health = int(h.after_health)
+		o.chained_from_previous = bool(strike.chained_from_previous)
 		out.append(o)
 
 	for e in strike_events:
@@ -2182,6 +2277,18 @@ func _targets_for_focus_strike(analysis: AttackAnalysis, strike_index: int) -> A
 		return strike.target_ids.duplicate()
 
 	return _collect_all_attack_targets(analysis)
+
+
+func _strike_has_chain_continuation(analysis: AttackAnalysis, strike_index: int) -> bool:
+	if analysis == null:
+		return false
+	var next_index := int(strike_index) + 1
+	if next_index < 0 or next_index >= analysis.strikes.size():
+		return false
+	var next_strike: StrikePresentationInfo = analysis.strikes[next_index]
+	if next_strike == null or !next_strike.chained_from_previous:
+		return false
+	return int(next_strike.origin_strike_index) == int(strike_index)
 
 
 func _find_post_action_group_layout(events: Array[BattleEvent], fallback_group_index: int) -> GroupLayoutPresentationOrder:

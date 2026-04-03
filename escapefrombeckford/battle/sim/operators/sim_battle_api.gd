@@ -423,10 +423,26 @@ func resolve_damage_immediate(ctx: DamageContext) -> int:
 	
 	ctx.armor_damage = armor_damage
 	ctx.health_damage = health_damage
+	ctx.overflow_amount = maxi(remaining, 0)
+	ctx.overflow_banish_amount = mini(int(ctx.overflow_amount), maxi(int(ctx.applied_banish_amount), 0))
 	ctx.was_lethal = (int(tgt.health) <= 0)
 	ctx.before_health = before_health
 	ctx.after_health = int(tgt.health)
 	ctx.phase = DamageContext.Phase.APPLIED
+	if bool(ctx.was_lethal) or int(ctx.overflow_amount) > 0:
+		print(
+			"[SPILLTHROUGH] damage src=%d tgt=%d amount=%d before_hp=%d after_hp=%d armor=%d health=%d overflow=%d lethal=%s" % [
+				int(ctx.source_id),
+				int(ctx.target_id),
+				int(ctx.amount),
+				int(ctx.before_health),
+				int(ctx.after_health),
+				int(ctx.armor_damage),
+				int(ctx.health_damage),
+				int(ctx.overflow_amount),
+				str(bool(ctx.was_lethal)),
+			]
+		)
 	
 	if writer != null:
 		writer.emit_damage_applied(
@@ -632,6 +648,17 @@ func apply_status(ctx: StatusContext) -> void:
 		return
 
 	var proto := SimStatusSystem.get_proto(self, ctx.status_id)
+	if ctx.status_id == Keys.STATUS_HEAVY_ATTACK or ctx.status_id == Keys.STATUS_SMALL:
+		print(
+			"[SPILLTHROUGH] apply_status sid=%s target=%d proto=%s pending=%s intensity=%d duration=%d" % [
+				String(ctx.status_id),
+				int(ctx.target_id),
+				str(proto != null),
+				str(bool(ctx.pending)),
+				int(ctx.intensity),
+				int(ctx.duration),
+			]
+		)
 	
 	if int(ctx.intensity) == 0:
 		ctx.intensity = 1
@@ -779,6 +806,15 @@ func remove_status(ctx: StatusContext) -> void:
 		return
 	
 	var proto := SimStatusSystem.get_proto(self, ctx.status_id)
+	if ctx.status_id == Keys.STATUS_HEAVY_ATTACK or ctx.status_id == Keys.STATUS_SMALL:
+		print(
+			"[SPILLTHROUGH] remove_status sid=%s target=%d proto=%s pending=%s" % [
+				String(ctx.status_id),
+				int(ctx.target_id),
+				str(proto != null),
+				str(bool(ctx.pending)),
+			]
+		)
 	
 	var before_i := int(old_stack.intensity)
 	var before_d := int(old_stack.duration)

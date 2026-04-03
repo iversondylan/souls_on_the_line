@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="HeavyAttackStatus" format=3 uid="uid://dranrw6gwftwj"]
+
+[ext_resource type="Texture2D" uid="uid://yf2n7caqhb7a" path="res://_assets/sprites/assorted/hammer-drop.png" id="1_c23fj"]
+[ext_resource type="Script" uid="uid://crha42px4yr8d" path="res://statuses/heavy_attack.gd" id="1_heavy_attack_script"]
+
+[resource]
+script = ExtResource("1_heavy_attack_script")
+status_name = "Heavy Attack"
+proc_type = 2
+reapply_type = 3
+icon = ExtResource("1_c23fj")
+tooltip = "Heavy Attack: overkill damage spills through to the next target in lane order."

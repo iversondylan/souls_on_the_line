@@ -35,6 +35,8 @@ var after_health: int = 0
 var armor_damage: int = 0
 var health_damage: int = 0
 var was_lethal: bool = false
+var overflow_amount: int = 0
+var overflow_banish_amount: int = 0
 
 # Optional flags / tags
 var tags: Array[StringName] = []

@@ -1,6 +1,6 @@
-class_name ExplosivePartingStatus extends Status
+class_name ExplosiveDepartureStatus extends Status
 
-const ID := &"explosive_parting"
+const ID := &"explosive_departure"
 
 
 func get_id() -> StringName:
@@ -8,11 +8,11 @@ func get_id() -> StringName:
 
 
 func get_tooltip(intensity: int = 0, _duration: int = 0) -> String:
-	return "Explosive Parting: on death, deal %s damage to all enemies." % intensity
+	return "Explosive Departure: on death, deal %s damage to all enemies." % intensity
 
 
 func on_death(ctx: SimStatusContext, dead_id: int, _killer_id: int, _reason: String) -> void:
-	_trigger_death_burst(ctx, dead_id, "explosive_parting")
+	_trigger_death_burst(ctx, dead_id, "explosive_departure")
 
 
 func _trigger_death_burst(ctx: SimStatusContext, dead_id: int, attack_reason: String) -> void:

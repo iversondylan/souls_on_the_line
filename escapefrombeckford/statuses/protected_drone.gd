@@ -2,7 +2,7 @@ class_name ProtectedDroneStatus extends Status
 
 const ID := &"protected_drone"
 const FIRE_ANT_DATA := preload("res://combatants/critters/FireAnt/fire_ant_data.tres")
-const EXPLOSIVE_PARTING := preload("res://statuses/explosive_parting.tres")
+const EXPLOSIVE_DEPARTURE := preload("res://statuses/explosive_departure.tres")
 
 
 func get_id() -> StringName:
@@ -10,7 +10,7 @@ func get_id() -> StringName:
 
 
 func get_tooltip(_intensity: int = 0, _duration: int = 0) -> String:
-	return "Protected Drone: on death, summon a Fire Ant in this slot and give it 3 Explosive Parting."
+	return "Protected Drone: on death, summon a Fire Ant in this slot and give it 3 Explosive Departure."
 
 
 func on_death(ctx: SimStatusContext, dead_id: int, _killer_id: int, _reason: String) -> void:
@@ -37,12 +37,12 @@ func on_death(ctx: SimStatusContext, dead_id: int, _killer_id: int, _reason: Str
 	summon_ctx.origin_arcanum_id = death_reaction.origin_arcanum_id
 	ctx.api.runtime.run_summon_action(summon_ctx)
 
-	if int(summon_ctx.summoned_id) <= 0 or EXPLOSIVE_PARTING == null:
+	if int(summon_ctx.summoned_id) <= 0 or EXPLOSIVE_DEPARTURE == null:
 		return
 
 	var status_ctx := StatusContext.new()
 	status_ctx.source_id = int(ctx.owner_id)
 	status_ctx.target_id = int(summon_ctx.summoned_id)
-	status_ctx.status_id = EXPLOSIVE_PARTING.get_id()
+	status_ctx.status_id = EXPLOSIVE_DEPARTURE.get_id()
 	status_ctx.intensity = 3
 	ctx.api.apply_status(status_ctx)

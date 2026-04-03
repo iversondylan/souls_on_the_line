@@ -81,6 +81,12 @@ func on_targeting_retarget(_ctx: SimStatusContext, _targeting_ctx: TargetingCont
 func on_targeting_interpose(_ctx: SimStatusContext, _targeting_ctx: TargetingContext) -> void:
 	pass
 
+func grants_attack_spillthrough(_ctx: SimStatusContext) -> bool:
+	return false
+
+func grants_received_spillthrough(_ctx: SimStatusContext) -> bool:
+	return false
+
 
 # -------------------------------------------------------------------
 # Modifier hooks

@@ -804,6 +804,10 @@ func _on_strike_windup(e: EventPackage) -> void:
 	o.attack_mode = int(d.get(Keys.ATTACK_MODE, Attack.Mode.MELEE))
 	o.projectile_scene_path = String(d.get(Keys.PROJECTILE_SCENE, "uid://bxmhi3urqmpfh"))
 	o.strike_count = int(d.get(Keys.STRIKE_COUNT, 1))
+	o.strike_index = int(d.get(Keys.STRIKE_INDEX, 0))
+	o.chained_from_previous = bool(d.get(Keys.CHAINED_FROM_PREVIOUS, false))
+	o.origin_strike_index = int(d.get(Keys.ORIGIN_STRIKE_INDEX, -1))
+	o.chain_source_target_id = int(d.get(Keys.CHAIN_SOURCE_TARGET_ID, 0))
 
 	if o.attack_mode == Attack.Mode.RANGED:
 		print("VIEW ranged strike windup projectile uid/path: ", o.projectile_scene_path)
@@ -823,8 +827,12 @@ func _on_strike_followthrough(e: EventPackage) -> void:
 	o.target_ids = _target_ids(e)
 	o.attack_mode = int(d.get(Keys.ATTACK_MODE, Attack.Mode.MELEE))
 	o.strike_count = int(d.get(Keys.STRIKE_COUNT, 1))
+	o.strike_index = int(d.get(Keys.STRIKE_INDEX, 0))
 	o.total_hit_count = int(d.get(Keys.TOTAL_HIT_COUNT, 1))
 	o.has_lethal_hit = bool(d.get(Keys.HAS_LETHAL_HIT, false))
+	o.chained_from_previous = bool(d.get(Keys.CHAINED_FROM_PREVIOUS, false))
+	o.origin_strike_index = int(d.get(Keys.ORIGIN_STRIKE_INDEX, -1))
+	o.chain_source_target_id = int(d.get(Keys.CHAIN_SOURCE_TARGET_ID, 0))
 
 	attacker.play_strike_followthrough(o, battle_view)
 
@@ -1319,6 +1327,11 @@ func _on_strike_windup_from_slice(slice: StrikeFollowthroughSlice, duration: flo
 	# key: this WINDUP is for ONE strike (one projectile)
 	o.strike_count = 1
 	o.strike_index = int(slice.strike_index)
+	if slice.strike != null:
+		o.chained_from_previous = bool(slice.strike.chained_from_previous)
+		o.origin_strike_index = int(slice.strike.origin_strike_index)
+		o.chain_source_target_id = int(slice.strike.chain_source_target_id)
+		o.has_chain_continuation = _slice_strike_has_chain_continuation(slice)
 
 	# target selection for THIS strike
 	o.target_ids = _coerce_int_array(slice.get_target_ids())
@@ -1361,6 +1374,9 @@ func _on_strike_followthrough_from_slice(slice: StrikeFollowthroughSlice, durati
 		o.strike_index = si
 		o.total_hit_count = slice.strike.hit_count if slice.strike != null else 1
 		o.has_lethal_hit = slice.strike.has_lethal_hit if slice.strike != null else false
+		o.chained_from_previous = slice.strike.chained_from_previous if slice.strike != null else false
+		o.origin_strike_index = slice.strike.origin_strike_index if slice.strike != null else -1
+		o.chain_source_target_id = slice.strike.chain_source_target_id if slice.strike != null else 0
 		o.attack_info = atk
 
 		attacker.play_strike_followthrough(o, battle_view)
@@ -1374,6 +1390,18 @@ func _on_strike_followthrough_from_slice(slice: StrikeFollowthroughSlice, durati
 			var target := battle_view.get_combatant(int(h.target_id))
 			if target != null:
 				target.play_received_hit_from_hitinfo(h, duration)
+
+
+func _slice_strike_has_chain_continuation(slice: StrikeFollowthroughSlice) -> bool:
+	if slice == null or slice.attack == null:
+		return false
+	var next_index := int(slice.strike_index) + 1
+	if next_index < 0 or next_index >= slice.attack.strikes.size():
+		return false
+	var next_strike: StrikePresentationInfo = slice.attack.strikes[next_index]
+	if next_strike == null or !next_strike.chained_from_previous:
+		return false
+	return int(next_strike.origin_strike_index) == int(slice.strike_index)
 
 # ------------------------------------------------------------------------------
 # Timeline presentation playback

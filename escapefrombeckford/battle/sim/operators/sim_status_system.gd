@@ -104,6 +104,12 @@ static func on_death(api: SimBattleAPI, dead_id: int, killer_id: int, reason: St
 			ctx.proto.on_death(ctx, dead_id, killer_id, reason)
 	)
 
+static func unit_grants_attack_spillthrough(api: SimBattleAPI, owner_id: int) -> bool:
+	return _unit_grants_spillthrough_internal(api, owner_id, true)
+
+static func unit_grants_received_spillthrough(api: SimBattleAPI, owner_id: int) -> bool:
+	return _unit_grants_spillthrough_internal(api, owner_id, false)
+
 
 # -------------------------------------------------------------------
 # Proto helpers
@@ -180,6 +186,63 @@ static func _for_each_status_on_unit(api: SimBattleAPI, owner_id: int, fn: Calla
 			continue
 
 		fn.call(ctx)
+
+
+static func _unit_grants_spillthrough_internal(
+	api: SimBattleAPI,
+	owner_id: int,
+	attack_side: bool
+) -> bool:
+	if api == null or api.state == null or owner_id <= 0:
+		return false
+
+	var u: CombatantState = api.state.get_unit(owner_id)
+	if u == null or u.statuses == null or u.statuses.by_id == null:
+		return false
+	if u.statuses.by_id.is_empty():
+		return false
+
+	var stack_notes: Array[String] = []
+	for stack: StatusStack in u.statuses.get_all_stacks(false):
+		if stack == null:
+			continue
+
+		var sid := StringName(stack.id)
+		var ctx := make_context(api, owner_id, stack)
+		var proto := ctx.proto if ctx != null else null
+		var grants := false
+		if proto != null:
+			grants = bool(
+				proto.grants_attack_spillthrough(ctx)
+				if attack_side
+				else proto.grants_received_spillthrough(ctx)
+			)
+
+			stack_notes.append(
+				"%s(proto=%s grants=%s)" % [
+					String(sid),
+					str(proto != null),
+					str(grants),
+				]
+			)
+		if grants:
+			print(
+				"[SPILLTHROUGH] %s_cap owner=%d granted_by=%s" % [
+					"attack" if attack_side else "received",
+					int(owner_id),
+					String(sid),
+				]
+			)
+			return true
+
+	print(
+		"[SPILLTHROUGH] %s_cap owner=%d granted=false stacks=%s" % [
+			"attack" if attack_side else "received",
+			int(owner_id),
+			stack_notes,
+		]
+	)
+	return false
 
 
 # -------------------------------------------------------------------

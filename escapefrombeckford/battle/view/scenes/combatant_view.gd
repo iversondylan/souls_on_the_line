@@ -485,6 +485,9 @@ func _play_melee_strike_from_order(order: MeleeStrikePresentationOrder) -> void:
 	o.strike_index = int(order.strike_index)
 	o.total_hit_count = int(order.total_hit_count)
 	o.has_lethal_hit = bool(order.has_lethal)
+	o.chained_from_previous = bool(order.chained_from_previous)
+	o.origin_strike_index = int(order.origin_strike_index)
+	o.chain_source_target_id = int(order.chain_source_target_id)
 
 	play_strike_followthrough(o, null)
 
@@ -551,6 +554,10 @@ func _play_ranged_fire_from_order(order: RangedFirePresentationOrder, battle_vie
 	o.strike_count = 1
 	o.strike_index = int(order.strike_index)
 	o.projectile_scene_path = order.projectile_scene_path
+	o.chained_from_previous = bool(order.chained_from_previous)
+	o.origin_strike_index = int(order.origin_strike_index)
+	o.chain_source_target_id = int(order.chain_source_target_id)
+	o.has_chain_continuation = bool(order.has_chain_continuation)
 
 	#_play_ranged_fire_pulse(o, gen)
 	_spawn_projectile_for_ranged_strike(o, battle_view, gen)
@@ -680,6 +687,9 @@ func play_strike_followthrough(order: StrikeFollowthroughOrder, _battle_view: Ba
 
 	# ranged followthrough has no attacker body motion
 	if int(order.attack_mode) == int(Attack.Mode.RANGED):
+		return
+
+	if bool(order.chained_from_previous):
 		return
 
 	_play_melee_followthrough_per_strike(order)
@@ -865,24 +875,39 @@ func _spawn_projectile_async(
 	if proj_path == "":
 		proj_path = "uid://bxmhi3urqmpfh"
 
-	var scene: PackedScene = FxLibrary.get_scene(proj_path)
-	if scene == null:
-		push_warning("Missing projectile scene: %s" % proj_path)
-		return
-
-	var projectile := scene.instantiate() as Node2D
-	if projectile == null:
-		return
-
-	battle_view.add_child(projectile)
-	_play_sound(fire_projectile_sound)
-
+	var projectile_key := battle_view.make_projectile_key(
+		int(order.attacker_id),
+		int(order.origin_strike_index if order.origin_strike_index >= 0 else order.strike_index)
+	)
+	var projectile: Node2D = null
 	var start_pos := _get_projectile_origin_global()
+
+	if bool(order.chained_from_previous):
+		projectile = battle_view.take_projectile(projectile_key)
+		if projectile != null and is_instance_valid(projectile):
+			start_pos = projectile.global_position
+		else:
+			projectile = null
+		if projectile == null and int(order.chain_source_target_id) > 0:
+			start_pos = battle_view.get_mean_target_position_global([int(order.chain_source_target_id)], start_pos)
+
+	if projectile == null:
+		var scene: PackedScene = FxLibrary.get_scene(proj_path)
+		if scene == null:
+			push_warning("Missing projectile scene: %s" % proj_path)
+			return
+		projectile = scene.instantiate() as Node2D
+		if projectile == null:
+			return
+		battle_view.add_child(projectile)
+		if !bool(order.chained_from_previous):
+			_play_sound(fire_projectile_sound)
+
 	var end_pos := battle_view.get_mean_target_position_global(target_ids, start_pos)
 	end_pos.y = start_pos.y
 
 	var group := get_parent()
-	if group is GroupView and !(group as GroupView).faces_right:
+	if group is GroupView and !(group as GroupView).faces_right and !bool(order.chained_from_previous):
 		projectile.scale.x *= -1
 
 	projectile.global_position = start_pos
@@ -893,6 +918,9 @@ func _spawn_projectile_async(
 	# Projectile owns its impact + lifetime.
 	t.tween_callback(func():
 		if !is_instance_valid(projectile):
+			return
+		if bool(order.has_chain_continuation):
+			battle_view.put_projectile(projectile_key, projectile)
 			return
 		_play_sound(fireball_impact_sound)
 		if projectile.has_method("play_impact"):
