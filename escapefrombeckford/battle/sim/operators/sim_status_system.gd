@@ -110,6 +110,34 @@ static func unit_grants_attack_spillthrough(api: SimBattleAPI, owner_id: int) ->
 static func unit_grants_received_spillthrough(api: SimBattleAPI, owner_id: int) -> bool:
 	return _unit_grants_spillthrough_internal(api, owner_id, false)
 
+static func unit_get_attack_self_damage_on_strike(
+	api: SimBattleAPI,
+	owner_id: int,
+	attack_ctx: AttackContext
+) -> int:
+	if api == null or api.state == null or owner_id <= 0 or attack_ctx == null:
+		return 0
+
+	var u: CombatantState = api.state.get_unit(owner_id)
+	if u == null or u.statuses == null or u.statuses.by_id == null:
+		return 0
+	if u.statuses.by_id.is_empty():
+		return 0
+
+	var total := 0
+	for stack: StatusStack in u.statuses.get_all_stacks(false):
+		if stack == null:
+			continue
+
+		var ctx := make_context(api, owner_id, stack)
+		var proto := ctx.proto if ctx != null else null
+		if proto == null:
+			continue
+
+		total += maxi(int(proto.get_attack_self_damage_on_strike(ctx, attack_ctx)), 0)
+
+	return maxi(total, 0)
+
 
 # -------------------------------------------------------------------
 # Proto helpers

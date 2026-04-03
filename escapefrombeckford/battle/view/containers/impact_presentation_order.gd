@@ -8,3 +8,4 @@ var was_lethal: bool = false
 var amount: int = 0
 var after_health: int = 0
 var chained_from_previous: bool = false
+var is_self_recoil: bool = false

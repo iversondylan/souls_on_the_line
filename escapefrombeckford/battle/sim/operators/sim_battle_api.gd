@@ -459,6 +459,7 @@ func resolve_damage_immediate(ctx: DamageContext) -> int:
 			bool(ctx.was_lethal),
 			int(ctx.before_health),
 			int(ctx.after_health),
+			ctx.event_extra if ctx.event_extra != null else {},
 		)
 	
 	on_damage_applied(ctx)
@@ -470,6 +471,7 @@ func resolve_damage_immediate(ctx: DamageContext) -> int:
 		death_ctx.reason = "damage"
 		death_ctx.origin_card_uid = String(ctx.origin_card_uid)
 		death_ctx.origin_arcanum_id = ctx.origin_arcanum_id
+		death_ctx.event_extra = ctx.event_extra.duplicate() if ctx.event_extra != null else {}
 		resolve_death(death_ctx)
 	
 	return int(ctx.amount)
@@ -564,7 +566,8 @@ func resolve_death(ctx: DeathContext) -> void:
 			g,
 			ctx.before_order_ids,
 			ctx.after_order_ids,
-			String(ctx.reason)
+			String(ctx.reason),
+			ctx.event_extra if ctx.event_extra != null else {}
 		)
 
 	ctx.died = true

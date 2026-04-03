@@ -7,6 +7,7 @@ var amount: int = 0
 var before_health: int = 0
 var after_health: int = 0
 var was_lethal: bool = false
+var is_self_recoil: bool = false
 
 var status_events: Array[BattleEvent] = []
 var died_event: BattleEvent = null

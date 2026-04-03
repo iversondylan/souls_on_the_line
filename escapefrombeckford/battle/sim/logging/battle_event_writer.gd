@@ -252,9 +252,10 @@ func emit_damage_applied(
 	hp_dmg: int,
 	lethal: bool,
 	before_health: int,
-	after_health: int
+	after_health: int,
+	extra := {}
 ) -> int:
-	return _append(BattleEvent.Type.DAMAGE_APPLIED, {
+	var data := {
 		Keys.SOURCE_ID: int(source_id),
 		Keys.TARGET_ID: int(target_id),
 		Keys.BASE_AMOUNT: int(base),
@@ -268,7 +269,10 @@ func emit_damage_applied(
 		Keys.WAS_LETHAL: bool(lethal),
 		Keys.BEFORE_HEALTH: int(before_health),
 		Keys.AFTER_HEALTH: int(after_health),
-	})
+	}
+	for k in extra.keys():
+		data[k] = extra[k]
+	return _append(BattleEvent.Type.DAMAGE_APPLIED, data)
 
 func emit_heal_applied(
 	source_id: int,

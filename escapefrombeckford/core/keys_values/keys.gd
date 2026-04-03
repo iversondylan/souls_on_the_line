@@ -103,6 +103,8 @@ const SPILLTHROUGH := &"spillthrough"
 const CHAINED_FROM_PREVIOUS := &"chained_from_previous"
 const SPILLTHROUGH_DAMAGE := &"spillthrough_damage"
 const CHAIN_SOURCE_TARGET_ID := &"chain_source_target_id"
+const SELF_RECOIL := &"self_recoil"
+const RECOIL_STATUS_ID := &"recoil_status_id"
 
 # Summon
 const SUMMONED_ID := &"summoned_id"
@@ -163,6 +165,7 @@ const DEATH_REASON := &"death_reason"
 const STATUS_MARKED := &"marked"
 const STATUS_HEAVY_ATTACK := &"heavy_attack"
 const STATUS_SMALL := &"small"
+const STATUS_DOUBLE_EDGE := &"double_edge"
 
 
 # Effect params

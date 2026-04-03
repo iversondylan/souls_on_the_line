@@ -992,12 +992,20 @@ func _build_strike_info_from_events(marker: BattleEvent, direct_events: Array[Ba
 				h.before_health = int(event.data.get(Keys.BEFORE_HEALTH, 0)) if event.data != null else 0
 				h.after_health = int(event.data.get(Keys.AFTER_HEALTH, 0)) if event.data != null else 0
 				h.was_lethal = bool(event.data.get(Keys.WAS_LETHAL, false)) if event.data != null else false
-				s.hits.append(h)
-				s.hit_count += 1
-				if h.was_lethal:
+				h.is_self_recoil = bool(event.data.get(Keys.SELF_RECOIL, false)) if event.data != null else false
+				if h.is_self_recoil:
+					s.recoil_hits.append(h)
+					s.has_self_recoil = true
+				else:
+					s.hits.append(h)
+					s.hit_count += 1
+				if h.was_lethal and !h.is_self_recoil:
 					s.has_lethal_hit = true
 			BattleEvent.Type.DIED:
-				s.has_lethal_hit = true
+				var died_target_id := int(event.data.get(Keys.TARGET_ID, 0)) if event.data != null else 0
+				var is_self_recoil_death := bool(event.data.get(Keys.SELF_RECOIL, false)) if event.data != null else false
+				if !is_self_recoil_death and died_target_id != int(marker.data.get(Keys.SOURCE_ID, 0)):
+					s.has_lethal_hit = true
 
 	return s
 
@@ -1085,13 +1093,21 @@ func _build_strike_info_from_block(block: Array, strike_index: int) -> StrikePre
 				h.before_health = int(e.data.get(Keys.BEFORE_HEALTH, 0)) if e.data != null else 0
 				h.after_health = int(e.data.get(Keys.AFTER_HEALTH, 0)) if e.data != null else 0
 				h.was_lethal = bool(e.data.get(Keys.WAS_LETHAL, false)) if e.data != null else false
-				s.hits.append(h)
-				s.hit_count += 1
-				if h.was_lethal:
+				h.is_self_recoil = bool(e.data.get(Keys.SELF_RECOIL, false)) if e.data != null else false
+				if h.is_self_recoil:
+					s.recoil_hits.append(h)
+					s.has_self_recoil = true
+				else:
+					s.hits.append(h)
+					s.hit_count += 1
+				if h.was_lethal and !h.is_self_recoil:
 					s.has_lethal_hit = true
 
 			BattleEvent.Type.DIED:
-				s.has_lethal_hit = true
+				var died_target_id := int(e.data.get(Keys.TARGET_ID, 0)) if e.data != null else 0
+				var is_self_recoil_death := bool(e.data.get(Keys.SELF_RECOIL, false)) if e.data != null else false
+				if !is_self_recoil_death and died_target_id != int(marker.data.get(Keys.SOURCE_ID, 0)):
+					s.has_lethal_hit = true
 
 	return s
 
@@ -1819,7 +1835,27 @@ func _make_impact_orders_for_strike(
 		o.amount = int(h.amount)
 		o.after_health = int(h.after_health)
 		o.chained_from_previous = bool(strike.chained_from_previous)
+		o.is_self_recoil = false
 		out.append(o)
+
+	for h in strike.recoil_hits:
+		if h == null:
+			continue
+
+		var recoil_order := ImpactPresentationOrder.new()
+		recoil_order.kind = PresentationOrder.Kind.IMPACT
+		recoil_order.actor_id = analysis.attacker_id
+		recoil_order.target_id = int(h.target_id)
+		recoil_order.target_ids = [int(h.target_id)]
+		recoil_order.visual_sec = 0.18
+		recoil_order.strike_index = strike_index
+		recoil_order.was_lethal = bool(h.was_lethal)
+		recoil_order.amount = int(h.amount)
+		recoil_order.after_health = int(h.after_health)
+		recoil_order.chained_from_previous = false
+		recoil_order.is_self_recoil = true
+		recoil_order.meta[Keys.SELF_RECOIL] = true
+		out.append(recoil_order)
 
 	for e in strike_events:
 		if e == null or e.data == null:

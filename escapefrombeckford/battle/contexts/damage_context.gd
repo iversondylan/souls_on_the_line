@@ -45,6 +45,7 @@ var origin_card_uid: String = ""
 var origin_arcanum_id: StringName = &""
 var phase: Phase = Phase.PRE_MODIFIERS
 var params := {}
+var event_extra := {}
 var sound: Sound
 #func _init(_source: Fighter, _target: Fighter, _base: int) -> void:
 	#source = _source

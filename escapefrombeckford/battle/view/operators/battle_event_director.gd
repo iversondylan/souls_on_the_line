@@ -1390,6 +1390,12 @@ func _on_strike_followthrough_from_slice(slice: StrikeFollowthroughSlice, durati
 			var target := battle_view.get_combatant(int(h.target_id))
 			if target != null:
 				target.play_received_hit_from_hitinfo(h, duration)
+		for h in slice.strike.recoil_hits:
+			if h == null:
+				continue
+			var recoil_target := battle_view.get_combatant(int(h.target_id))
+			if recoil_target != null:
+				recoil_target.play_received_hit_from_hitinfo(h, duration)
 
 
 func _slice_strike_has_chain_continuation(slice: StrikeFollowthroughSlice) -> bool:

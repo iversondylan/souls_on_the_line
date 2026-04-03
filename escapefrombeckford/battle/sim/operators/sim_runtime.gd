@@ -121,6 +121,50 @@ func _unit_can_enable_spillthrough(api: SimBattleAPI, attacker_id: int, primary_
 	return SimStatusSystem.unit_grants_attack_spillthrough(api, int(attacker_id)) or SimStatusSystem.unit_grants_received_spillthrough(api, int(primary_target_id))
 
 
+func _apply_inline_self_recoil_for_strike(
+	api: SimBattleAPI,
+	ctx: AttackContext,
+	attacker_id: int,
+	strike_index: int,
+	is_spillthrough: bool = false,
+	chain_source_target_id: int = 0
+) -> bool:
+	if api == null or ctx == null or attacker_id <= 0:
+		return false
+	if !api.is_alive(attacker_id):
+		return false
+
+	var recoil_amount := SimStatusSystem.unit_get_attack_self_damage_on_strike(api, attacker_id, ctx)
+	if recoil_amount <= 0:
+		return false
+
+	var recoil := DamageContext.new()
+	recoil.source_id = int(attacker_id)
+	recoil.target_id = int(attacker_id)
+	recoil.base_amount = int(recoil_amount)
+	recoil.base_banish_amount = 0
+	recoil.deal_modifier_type = Modifier.Type.NO_MODIFIER
+	recoil.take_modifier_type = Modifier.Type.DMG_TAKEN
+	recoil.params = {}
+	recoil.tags = ctx.tags.duplicate()
+	recoil.tags.append(&"self_recoil")
+	recoil.reason = "double_edge"
+	recoil.origin_card_uid = ctx.origin_card_uid
+	recoil.origin_arcanum_id = ctx.origin_arcanum_id
+	recoil.event_extra = {
+		Keys.SELF_RECOIL: true,
+		Keys.RECOIL_STATUS_ID: Keys.STATUS_DOUBLE_EDGE,
+		Keys.ORIGIN_STRIKE_INDEX: int(strike_index),
+	}
+	if is_spillthrough:
+		recoil.event_extra[Keys.SPILLTHROUGH] = true
+		recoil.event_extra[Keys.CHAINED_FROM_PREVIOUS] = true
+		recoil.event_extra[Keys.CHAIN_SOURCE_TARGET_ID] = int(chain_source_target_id)
+
+	api.resolve_damage_immediate(recoil)
+	return int(recoil.armor_damage) > 0 or int(recoil.health_damage) > 0
+
+
 func _should_apply_spillthrough(
 	api: SimBattleAPI,
 	ctx: AttackContext,
@@ -712,6 +756,7 @@ func run_attack(ctx: AttackContext) -> bool:
 		var take_mod := int(ctx.take_modifier_type)
 		_strike_resolution_depth += 1
 		var pending_spillthrough := {}
+		var direct_strike_dealt_damage := false
 
 		for tid: int in target_ids:
 			var spill_target_id := 0
@@ -744,6 +789,8 @@ func run_attack(ctx: AttackContext) -> bool:
 			d.origin_arcanum_id = ctx.origin_arcanum_id
 			api.resolve_damage_immediate(d)
 			any = true
+			if int(d.armor_damage) > 0 or int(d.health_damage) > 0:
+				direct_strike_dealt_damage = true
 			if !_packed_has_int(ctx.affected_target_ids, int(tid)):
 				ctx.affected_target_ids.append(int(tid))
 
@@ -766,6 +813,9 @@ func run_attack(ctx: AttackContext) -> bool:
 					int(d.overflow_amount),
 				]
 			)
+
+		if direct_strike_dealt_damage:
+			_apply_inline_self_recoil_for_strike(api, ctx, attacker_id, s)
 
 		_end_scope(strike_scope)
 
@@ -845,6 +895,16 @@ func run_attack(ctx: AttackContext) -> bool:
 			any = true
 			if !_packed_has_int(ctx.affected_target_ids, int(spill_target_id)):
 				ctx.affected_target_ids.append(int(spill_target_id))
+
+			if int(spill_damage.armor_damage) > 0 or int(spill_damage.health_damage) > 0:
+				_apply_inline_self_recoil_for_strike(
+					api,
+					ctx,
+					attacker_id,
+					s,
+					true,
+					primary_target_id
+				)
 
 			_end_scope(spill_hit_scope)
 			_end_scope(spill_scope)

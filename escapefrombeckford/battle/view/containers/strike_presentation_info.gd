@@ -12,9 +12,11 @@ var target_ids: Array[int] = []
 
 # ordered resolved hits for this strike
 var hits: Array[HitPresentationInfo] = []
+var recoil_hits: Array[HitPresentationInfo] = []
 
 var hit_count: int = 0
 var has_lethal_hit: bool = false
+var has_self_recoil: bool = false
 var is_spillthrough: bool = false
 var chained_from_previous: bool = false
 var origin_strike_index: int = -1

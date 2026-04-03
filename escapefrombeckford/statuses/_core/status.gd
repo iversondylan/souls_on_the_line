@@ -87,6 +87,9 @@ func grants_attack_spillthrough(_ctx: SimStatusContext) -> bool:
 func grants_received_spillthrough(_ctx: SimStatusContext) -> bool:
 	return false
 
+func get_attack_self_damage_on_strike(_ctx: SimStatusContext, _attack_ctx: AttackContext) -> int:
+	return 0
+
 
 # -------------------------------------------------------------------
 # Modifier hooks

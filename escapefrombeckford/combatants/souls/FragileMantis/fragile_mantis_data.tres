@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="CombatantData" format=3 uid="uid://cm8f10j5e2ed2"]
+
+[ext_resource type="Script" uid="uid://cfatj0ryn8uv3" path="res://combatants/combatant_data.gd" id="1_3jphm"]
+
+[resource]
+script = ExtResource("1_3jphm")
+name = "Fragile Mantis"
+character_art_uid = "uid://d2uckm4nb7x0w"
+portrait_art_uid = "uid://d2uckm4nb7x0w"
+max_health = 6
+apr = 4
+apm = 4
+metadata/_custom_type_script = "uid://cfatj0ryn8uv3"
