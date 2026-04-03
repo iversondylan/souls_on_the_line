@@ -2670,6 +2670,74 @@ func _find_post_action_group_layout(events: Array[BattleEvent], fallback_group_i
 	return o
 
 
+func _place_delayed_summon_reserve_release_events(beats: Array[TurnBeat], turn_events: Array[BattleEvent]) -> void:
+	if beats.is_empty() or turn_events.is_empty():
+		return
+
+	var assigned_seqs := {}
+	for beat in beats:
+		if beat == null:
+			continue
+		for event in beat.events:
+			var be := event as BattleEvent
+			if be == null:
+				continue
+			assigned_seqs[int(be.seq)] = true
+
+	for event in turn_events:
+		var reserve_event := event as BattleEvent
+		if reserve_event == null:
+			continue
+		if int(reserve_event.type) != int(BattleEvent.Type.SUMMON_RESERVE_RELEASED):
+			continue
+		if bool(assigned_seqs.get(int(reserve_event.seq), false)):
+			continue
+		if reserve_event.data == null:
+			continue
+
+		var summoned_id := int(reserve_event.data.get(Keys.SUMMONED_ID, 0))
+		if summoned_id <= 0:
+			continue
+
+		var anchor_beat := _find_matching_removal_beat_for_summoned(beats, summoned_id, int(reserve_event.seq))
+		if anchor_beat == null:
+			continue
+
+		var release_beat := _find_or_make_beat(beats, float(anchor_beat.beat_q) + 0.5, "summon_reserve_release")
+		release_beat.events.append(reserve_event)
+		assigned_seqs[int(reserve_event.seq)] = true
+
+
+func _find_matching_removal_beat_for_summoned(beats: Array[TurnBeat], summoned_id: int, release_seq: int) -> TurnBeat:
+	var best_prior_beat: TurnBeat = null
+	var best_prior_seq := -2147483648
+	var fallback_beat: TurnBeat = null
+	var fallback_seq := -2147483648
+
+	for beat in beats:
+		if beat == null:
+			continue
+		for event in beat.events:
+			var be := event as BattleEvent
+			if be == null or be.data == null:
+				continue
+			match int(be.type):
+				BattleEvent.Type.DIED, BattleEvent.Type.FADED:
+					if int(be.data.get(Keys.TARGET_ID, 0)) != int(summoned_id):
+						continue
+					var event_seq := int(be.seq)
+					if event_seq <= int(release_seq) and event_seq > best_prior_seq:
+						best_prior_seq = event_seq
+						best_prior_beat = beat
+					if event_seq > fallback_seq:
+						fallback_seq = event_seq
+						fallback_beat = beat
+
+	if best_prior_beat != null:
+		return best_prior_beat
+	return fallback_beat
+
+
 func _ensure_lossless_beats(action_kind: StringName, turn_events: Array[BattleEvent], beats: Array[TurnBeat]) -> Array[TurnBeat]:
 	var out := beats.duplicate()
 	if out.is_empty():
@@ -2677,6 +2745,8 @@ func _ensure_lossless_beats(action_kind: StringName, turn_events: Array[BattleEv
 		fallback.beat_q = 0.0
 		fallback.label = "fallback_raw"
 		out.append(fallback)
+
+	_place_delayed_summon_reserve_release_events(out, turn_events)
 
 	var assigned_counts: Dictionary = {}
 	for beat in out:

@@ -443,24 +443,42 @@ func resolve_damage_immediate(ctx: DamageContext) -> int:
 	ctx.phase = DamageContext.Phase.PRE_APPLICATION
 	SimStatusSystem.on_damage_will_be_taken(self, ctx)
 	ctx.amount = maxi(int(ctx.amount), 0)
-	var post_hook_banish := maxi(int(ctx.amount) - normal_amount, 0)
-	ctx.applied_banish_amount = mini(int(ctx.applied_banish_amount), post_hook_banish)
-	
-	var remaining := int(ctx.amount)
+	var original_applied_banish := maxi(int(ctx.applied_banish_amount), 0)
+	var post_hook_banish := mini(original_applied_banish, maxi(int(ctx.amount) - normal_amount, 0))
+	var post_hook_normal := maxi(int(ctx.amount) - post_hook_banish, 0)
+	ctx.applied_banish_amount = post_hook_banish
+
+	var remaining_normal := post_hook_normal
+	var remaining_banish := post_hook_banish
 	var before_health := int(tgt.health)
-	
-	var armor_damage := mini(remaining, maxi(int(tgt.armor), 0))
-	tgt.armor = int(tgt.armor) - armor_damage
-	remaining -= armor_damage
-	
-	var health_damage := mini(remaining, maxi(int(tgt.health), 0))
-	tgt.health = int(tgt.health) - health_damage
-	remaining -= health_damage
-	
+
+	var armor_damage := 0
+	var health_damage := 0
+
+	var armor_absorb_normal := mini(remaining_normal, maxi(int(tgt.armor), 0))
+	tgt.armor = int(tgt.armor) - armor_absorb_normal
+	remaining_normal -= armor_absorb_normal
+	armor_damage += armor_absorb_normal
+
+	var health_absorb_normal := mini(remaining_normal, maxi(int(tgt.health), 0))
+	tgt.health = int(tgt.health) - health_absorb_normal
+	remaining_normal -= health_absorb_normal
+	health_damage += health_absorb_normal
+
+	var armor_absorb_banish := mini(remaining_banish, maxi(int(tgt.armor), 0))
+	tgt.armor = int(tgt.armor) - armor_absorb_banish
+	remaining_banish -= armor_absorb_banish
+	armor_damage += armor_absorb_banish
+
+	var health_absorb_banish := mini(remaining_banish, maxi(int(tgt.health), 0))
+	tgt.health = int(tgt.health) - health_absorb_banish
+	remaining_banish -= health_absorb_banish
+	health_damage += health_absorb_banish
+
 	ctx.armor_damage = armor_damage
 	ctx.health_damage = health_damage
-	ctx.overflow_amount = maxi(remaining, 0)
-	ctx.overflow_banish_amount = mini(int(ctx.overflow_amount), maxi(int(ctx.applied_banish_amount), 0))
+	ctx.overflow_amount = maxi(int(remaining_normal) + int(remaining_banish), 0)
+	ctx.overflow_banish_amount = maxi(int(remaining_banish), 0)
 	ctx.was_lethal = (int(tgt.health) <= 0)
 	ctx.before_health = before_health
 	ctx.after_health = int(tgt.health)
