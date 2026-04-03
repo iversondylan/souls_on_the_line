@@ -58,10 +58,11 @@ func on_director_cue(cue: DirectorCue, gen: int) -> void:
 	if !battle_view._playing or gen != battle_view._playback_gen:
 		return
 
-	if String(cue.label).begins_with("reaction_"):
-		print("[VIEW REACTION] cue q=%.2f label=%s %s %s" % [
+	if _cue_has_debug_reaction_tags(cue):
+		print("[VIEW REACTION] cue q=%.2f label=%s tags=%s %s %s" % [
 			float(cue.beat_q),
 			String(cue.label),
+			str(cue.tags),
 			battle_view._debug_order_summary(cue.orders),
 			battle_view._debug_event_summary(cue.events),
 		])
@@ -79,6 +80,18 @@ func on_director_cue(cue: DirectorCue, gen: int) -> void:
 		var ep := _make_epkg_from_event(be, 0.0)
 		ep.is_planned = true
 		on_event(ep)
+
+
+func _cue_has_debug_reaction_tags(cue: DirectorCue) -> bool:
+	if cue == null:
+		return false
+
+	for tag in cue.tags:
+		match StringName(tag):
+			&"reaction", &"strike", &"fire", &"impact", &"focus", &"clear_focus":
+				return true
+
+	return false
 
 func _start_order(order: PresentationOrder) -> void:
 	if order == null or battle_view == null:

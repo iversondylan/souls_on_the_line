@@ -379,14 +379,14 @@ func get_or_create_combatant_view(cid: int, group_index: int, insert_index: int,
 	if _active_focus_order != null:
 		var inherited_focus := _duplicate_focus_order(_active_focus_order)
 		if inherited_focus != null:
-			if int(cid) != int(inherited_focus.attacker_id) and !inherited_focus.target_ids.has(int(cid)):
-				inherited_focus.target_ids.append(int(cid))
-			print("[VIEW REACTION] focus_inherit cid=%d attacker=%d targets=%s" % [
-				int(cid),
-				int(inherited_focus.attacker_id),
-				str(inherited_focus.target_ids),
-			])
-			combatant.on_focus(inherited_focus)
+			var is_involved := int(cid) == int(inherited_focus.attacker_id) or inherited_focus.target_ids.has(int(cid))
+			if is_involved:
+				print("[VIEW REACTION] focus_inherit cid=%d attacker=%d targets=%s" % [
+					int(cid),
+					int(inherited_focus.attacker_id),
+					str(inherited_focus.target_ids),
+				])
+				combatant.on_focus(inherited_focus)
 
 	return combatant
 

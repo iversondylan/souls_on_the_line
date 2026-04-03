@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="CombatantData" format=3 uid="uid://d1i2mgso62sjn"]
 
-[ext_resource type="Script" path="res://combatants/combatant_data.gd" id="1_data_script"]
-[ext_resource type="Resource" path="res://combatants/critters/FormicDrone/formic_drone_ai.tres" id="2_formic_ai"]
+[ext_resource type="Script" uid="uid://cfatj0ryn8uv3" path="res://combatants/combatant_data.gd" id="1_data_script"]
+[ext_resource type="Resource" uid="uid://duxl7kr0iciu4" path="res://combatants/souls/FormicDrone/formic_drone_ai.tres" id="2_formic_ai"]
 
 [resource]
 script = ExtResource("1_data_script")

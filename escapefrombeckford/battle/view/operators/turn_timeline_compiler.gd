@@ -1,6 +1,43 @@
 # turn_timeline_compiler.gd
 class_name TurnTimelineCompiler extends RefCounted
 
+
+class DelayedReactionNode extends RefCounted:
+	var kind: StringName = &""
+	var source_strike_index: int = -1
+	var scope_id: int = 0
+	var events: Array[BattleEvent] = []
+	var nested_attack = null
+
+
+class ParsedDirectStrike extends RefCounted:
+	var strike_index: int = -1
+	var target_ids: Array[int] = []
+	var direct_events: Array[BattleEvent] = []
+	var reactions: Array[DelayedReactionNode] = []
+	var info: StrikePresentationInfo = null
+
+
+class TargetWindow extends RefCounted:
+	var target_ids: Array[int] = []
+	var strikes: Array[ParsedDirectStrike] = []
+	var window_span_beats: int = 1
+	var retarget_from_previous: bool = false
+	var base_q: float = 0.0
+
+
+class ParsedNpcAttackTurn extends RefCounted:
+	var actor_id: int = 0
+	var group_index: int = -1
+	var attack_mode: int = Attack.Mode.MELEE
+	var projectile_scene_path: String = "uid://bxmhi3urqmpfh"
+	var focus_target_ids: Array[int] = []
+	var direct_strikes: Array[ParsedDirectStrike] = []
+	var target_windows: Array[TargetWindow] = []
+	var leading_events: Array[BattleEvent] = []
+	var trailing_events: Array[BattleEvent] = []
+	var analysis: AttackAnalysis = null
+
 func compile_actor_turn(turn_events: Array[BattleEvent]) -> TurnTimeline:
 	var timeline := TurnTimeline.new()
 	if turn_events.is_empty():
@@ -13,12 +50,16 @@ func compile_actor_turn(turn_events: Array[BattleEvent]) -> TurnTimeline:
 
 	if _is_attack_turn(turn_events):
 		timeline.action_kind = &"attack"
-		var parsed_attack := _parse_attack_turn(turn_events)
-		if !parsed_attack.is_empty():
-			beats = _build_attack_beats_from_parsed(parsed_attack, turn_events)
+		var parsed_scope_attack := _parse_scope_driven_attack_turn(turn_events)
+		if parsed_scope_attack != null:
+			beats = _build_scope_driven_attack_beats(parsed_scope_attack, turn_events)
 		else:
-			var analysis := _build_attack_analysis(turn_events)
-			beats = _build_attack_beats(analysis, turn_events)
+			var parsed_attack := _parse_attack_turn(turn_events)
+			if !parsed_attack.is_empty():
+				beats = _build_attack_beats_from_parsed(parsed_attack, turn_events)
+			else:
+				var analysis := _build_attack_analysis(turn_events)
+				beats = _build_attack_beats(analysis, turn_events)
 	elif _is_summon_turn(turn_events):
 		timeline.action_kind = &"summon"
 		beats = _build_summon_beats(turn_events)
@@ -31,6 +72,445 @@ func compile_actor_turn(turn_events: Array[BattleEvent]) -> TurnTimeline:
 
 	timeline.beats = _ensure_lossless_beats(timeline.action_kind, turn_events, beats)
 	return timeline
+
+
+func _parse_scope_driven_attack_turn(events: Array[BattleEvent]) -> ParsedNpcAttackTurn:
+	var actor_id := _find_actor_id(events)
+	if actor_id <= 0:
+		return null
+
+	var scope_ranges := _build_scope_ranges(events)
+	if scope_ranges.is_empty():
+		return null
+
+	var actor_turn_scope_id := _find_actor_turn_scope_id(events, actor_id)
+	if actor_turn_scope_id <= 0:
+		return null
+
+	var attack_scope_id := _find_primary_attack_scope_id(events, actor_turn_scope_id, actor_id)
+	if attack_scope_id <= 0:
+		return null
+
+	var attack_range: Dictionary = scope_ranges.get(attack_scope_id, {})
+	var attack_begin := int(attack_range.get("begin", -1))
+	var attack_end := int(attack_range.get("end", -1))
+	if attack_begin < 0 or attack_end < 0:
+		return null
+
+	var parsed := _parse_scope_driven_attack_scope(
+		events,
+		scope_ranges,
+		attack_scope_id,
+		_find_group_index(events)
+	)
+	if parsed == null:
+		return null
+
+	parsed.leading_events = _collect_pre_attack_events(events, attack_begin)
+	parsed.trailing_events = _collect_post_attack_events(events, attack_end)
+	return parsed
+
+
+func _parse_scope_driven_attack_scope(
+	events: Array[BattleEvent],
+	scope_ranges: Dictionary,
+	attack_scope_id: int,
+	group_index: int
+) -> ParsedNpcAttackTurn:
+	var legacy := _parse_attack_scope(events, scope_ranges, attack_scope_id)
+	if legacy.is_empty():
+		return null
+
+	var analysis: AttackAnalysis = legacy.get("analysis", null)
+	if analysis == null or analysis.strikes.is_empty():
+		return null
+
+	var parsed := ParsedNpcAttackTurn.new()
+	parsed.actor_id = int(analysis.attacker_id)
+	parsed.group_index = group_index
+	parsed.attack_mode = int(analysis.attack_mode)
+	parsed.projectile_scene_path = String(analysis.projectile_scene_path)
+	parsed.analysis = analysis
+
+	var direct_events_by_strike: Array = legacy.get("direct_events_by_strike", [])
+	var reactions_by_strike: Array = legacy.get("reactions_by_strike", [])
+
+	for i in range(analysis.strikes.size()):
+		var strike := ParsedDirectStrike.new()
+		strike.strike_index = i
+		strike.info = analysis.strikes[i]
+		strike.target_ids = strike.info.target_ids.duplicate()
+
+		var direct_events: Array[BattleEvent] = direct_events_by_strike[i] if i < direct_events_by_strike.size() else []
+		strike.direct_events = direct_events.duplicate()
+
+		var reaction_groups: Array = reactions_by_strike[i] if i < reactions_by_strike.size() else []
+		strike.reactions = _build_delayed_reaction_nodes(
+			events,
+			scope_ranges,
+			reaction_groups,
+			i,
+			group_index
+		)
+		parsed.direct_strikes.append(strike)
+
+	parsed.focus_target_ids = _collect_eventual_focus_targets_from_parsed_turn(parsed)
+	if parsed.focus_target_ids.is_empty():
+		parsed.focus_target_ids = _collect_all_attack_targets(analysis)
+	parsed.target_windows = _build_target_windows_for_strikes(parsed.direct_strikes)
+	return parsed
+
+
+func _build_delayed_reaction_nodes(
+	events: Array[BattleEvent],
+	scope_ranges: Dictionary,
+	reaction_groups: Array,
+	source_strike_index: int,
+	group_index: int
+) -> Array[DelayedReactionNode]:
+	var out: Array[DelayedReactionNode] = []
+
+	for reaction_group in reaction_groups:
+		var reaction := DelayedReactionNode.new()
+		reaction.source_strike_index = source_strike_index
+		reaction.scope_id = int(reaction_group.get("scope_id", 0))
+		var reaction_events: Array[BattleEvent] = reaction_group.get("events", [])
+		reaction.events = reaction_events.duplicate()
+
+		var has_summon := false
+		var has_status := false
+		var has_attack := false
+		for event in reaction.events:
+			if event == null:
+				continue
+			match int(event.type):
+				BattleEvent.Type.SUMMONED:
+					has_summon = true
+				BattleEvent.Type.STATUS, BattleEvent.Type.STATUS_CHANGED:
+					has_status = true
+				BattleEvent.Type.DAMAGE_APPLIED, BattleEvent.Type.DIED, BattleEvent.Type.FADED:
+					has_attack = true
+
+		match StringName(reaction_group.get("kind", &"")):
+			&"summon":
+				reaction.kind = &"summon_reaction"
+			&"attack":
+				reaction.kind = &"compact_attack_reaction"
+			_:
+				if has_summon:
+					reaction.kind = &"summon_reaction"
+				elif has_attack:
+					reaction.kind = &"compact_attack_reaction"
+				elif has_status:
+					reaction.kind = &"status_followup_reaction"
+				else:
+					reaction.kind = &"reaction"
+
+		if reaction.kind == &"compact_attack_reaction" and reaction.scope_id > 0:
+			reaction.nested_attack = _parse_scope_driven_attack_scope(
+				events,
+				scope_ranges,
+				reaction.scope_id,
+				group_index
+			)
+
+		out.append(reaction)
+
+	return out
+
+
+func _collect_eventual_focus_targets_from_parsed_turn(parsed: ParsedNpcAttackTurn) -> Array[int]:
+	var out: Array[int] = []
+	var seen := {}
+
+	if parsed == null:
+		return out
+
+	for strike in parsed.direct_strikes:
+		if strike == null:
+			continue
+		_append_unique_target_ids(out, seen, strike.target_ids)
+
+		for reaction in strike.reactions:
+			if reaction == null:
+				continue
+			if reaction.kind != &"compact_attack_reaction":
+				continue
+			var nested: ParsedNpcAttackTurn = reaction.nested_attack as ParsedNpcAttackTurn
+			_append_unique_target_ids(out, seen, _collect_eventual_focus_targets_from_parsed_turn(nested))
+
+	return out
+
+
+func _append_unique_target_ids(out: Array[int], seen: Dictionary, target_ids: Array[int]) -> void:
+	for tid in target_ids:
+		var cid := int(tid)
+		if cid <= 0 or seen.has(cid):
+			continue
+		seen[cid] = true
+		out.append(cid)
+
+
+func _build_target_windows_for_strikes(strikes: Array[ParsedDirectStrike]) -> Array[TargetWindow]:
+	var windows: Array[TargetWindow] = []
+	var previous_targets: Array[int] = []
+
+	for strike in strikes:
+		if strike == null:
+			continue
+
+		var starts_new_window := windows.is_empty() or _strike_introduces_new_targets(previous_targets, strike.target_ids)
+		if starts_new_window:
+			var window := TargetWindow.new()
+			window.target_ids = strike.target_ids.duplicate()
+			window.retarget_from_previous = !windows.is_empty()
+			windows.append(window)
+
+		var current_window := windows[windows.size() - 1]
+		current_window.strikes.append(strike)
+		previous_targets = strike.target_ids.duplicate()
+
+	for window in windows:
+		window.window_span_beats = _window_span_beats(window.strikes.size())
+
+	return windows
+
+
+func _strike_introduces_new_targets(previous_targets: Array[int], next_targets: Array[int]) -> bool:
+	if previous_targets.is_empty():
+		return !next_targets.is_empty()
+
+	var prior := {}
+	for tid in previous_targets:
+		prior[int(tid)] = true
+
+	for tid in next_targets:
+		if !prior.has(int(tid)):
+			return true
+
+	return false
+
+
+func _window_span_beats(strike_count: int) -> int:
+	if strike_count <= 0:
+		return 1
+	return maxi(1, int(ceil(float(strike_count) / 2.0)))
+
+
+func _next_on_grid_beat_after(q: float) -> float:
+	var rounded: float = round(q)
+	if is_equal_approx(q, rounded):
+		return rounded + 1.0
+	return ceil(q)
+
+
+func _find_reaction_segment_end(strikes: Array[ParsedDirectStrike], start_index: int) -> int:
+	for i in range(start_index, strikes.size()):
+		var strike := strikes[i]
+		if strike != null and !strike.reactions.is_empty():
+			return i
+	return strikes.size() - 1
+
+
+func _build_scope_driven_attack_beats(parsed: ParsedNpcAttackTurn, turn_events: Array[BattleEvent]) -> Array[TurnBeat]:
+	var beats: Array[TurnBeat] = []
+	if parsed == null or parsed.analysis == null or parsed.direct_strikes.is_empty():
+		return _build_generic_beats(turn_events)
+
+	var focus_beat := _make_basic_focus_beat(0.0, parsed.actor_id, parsed.focus_target_ids)
+	_tag_beat(focus_beat, [&"focus"])
+	for event in parsed.leading_events:
+		focus_beat.events.append(event)
+	beats.append(focus_beat)
+
+	var windup_beat := _make_ranged_windup_beat(1.0, parsed.analysis) if parsed.attack_mode == int(Attack.Mode.RANGED) else _make_melee_windup_beat(1.0, parsed.analysis)
+	_tag_beat(windup_beat, [&"windup"])
+	beats.append(windup_beat)
+
+	var next_window_base_q := 2.0
+	var last_work_q := 1.0
+
+	for window_index in range(parsed.target_windows.size()):
+		var window := parsed.target_windows[window_index]
+		if window == null or window.strikes.is_empty():
+			continue
+
+		window.base_q = next_window_base_q
+		_debug_log_reaction("window=%d base_q=%.2f span=%d strikes=%d targets=%s" % [
+			window_index,
+			float(window.base_q),
+			int(window.window_span_beats),
+			int(window.strikes.size()),
+			str(window.target_ids),
+		])
+
+		var segment_start := 0
+		var local_base_q := window.base_q
+
+		while segment_start < window.strikes.size():
+			var segment_end := _find_reaction_segment_end(window.strikes, segment_start)
+			var segment_count := segment_end - segment_start + 1
+			var segment_span_beats := _window_span_beats(segment_count)
+			var segment_shift_q := 0.5 * float(segment_span_beats - 1)
+
+			for local_index in range(segment_count):
+				var strike := window.strikes[segment_start + local_index]
+				if strike == null:
+					continue
+
+				var impact_q := local_base_q + segment_shift_q + 0.5 * float(local_index)
+				var is_window_start := segment_start == 0 and local_index == 0
+
+				if parsed.attack_mode == int(Attack.Mode.RANGED):
+					var fire_q := impact_q - 0.5
+					_add_ranged_direct_strike_to_beats(beats, parsed.analysis, strike, fire_q, impact_q, is_window_start)
+					_debug_log_reaction("main ranged strike=%d fire_q=%.2f impact_q=%.2f targets=%s window=%d" % [
+						int(strike.strike_index),
+						float(fire_q),
+						float(impact_q),
+						str(strike.target_ids),
+						window_index,
+					])
+				else:
+					_add_melee_direct_strike_to_beats(beats, parsed.analysis, strike, impact_q, is_window_start)
+					_debug_log_reaction("main melee strike=%d q=%.2f targets=%s window=%d" % [
+						int(strike.strike_index),
+						float(impact_q),
+						str(strike.target_ids),
+						window_index,
+					])
+
+				last_work_q = maxf(last_work_q, impact_q)
+
+			var terminal_strike := window.strikes[segment_end]
+			if terminal_strike != null and !terminal_strike.reactions.is_empty():
+				var reaction_q := _next_on_grid_beat_after(last_work_q)
+				for reaction in terminal_strike.reactions:
+					var reaction_beat := _make_delayed_reaction_beat(reaction_q, reaction)
+					beats.append(reaction_beat)
+					_debug_log_reaction("inserted reaction beat strike=%d q=%.2f kind=%s" % [
+						int(terminal_strike.strike_index),
+						float(reaction_q),
+						String(reaction.kind),
+					])
+					last_work_q = reaction_q
+					reaction_q += 1.0
+				local_base_q = _next_on_grid_beat_after(last_work_q)
+			else:
+				local_base_q = _next_on_grid_beat_after(last_work_q)
+
+			segment_start = segment_end + 1
+
+		next_window_base_q = local_base_q
+
+	var clear_q := _next_on_grid_beat_after(last_work_q)
+	var layout_order := _find_post_action_group_layout(turn_events, parsed.group_index)
+	var clear_focus := _make_clear_focus_beat(clear_q, parsed.actor_id, parsed.trailing_events, layout_order)
+	_tag_beat(clear_focus, [&"clear_focus"])
+	beats.append(clear_focus)
+
+	return _sort_beats(beats)
+
+
+func _add_melee_direct_strike_to_beats(
+	beats: Array[TurnBeat],
+	analysis: AttackAnalysis,
+	strike: ParsedDirectStrike,
+	beat_q: float,
+	is_window_start: bool
+) -> void:
+	var beat := _find_or_make_beat(beats, beat_q, "melee_strike_%d" % int(strike.strike_index))
+	_tag_beat(beat, [&"strike", &"impact"])
+	if is_window_start:
+		_tag_beat(beat, [&"window_start"])
+
+	beat.orders.append(_make_melee_strike_order(analysis, int(strike.strike_index)))
+	for impact_order in _make_impact_orders_for_strike(analysis, int(strike.strike_index), strike.direct_events):
+		beat.orders.append(impact_order)
+	for event in strike.direct_events:
+		beat.events.append(event)
+
+
+func _add_ranged_direct_strike_to_beats(
+	beats: Array[TurnBeat],
+	analysis: AttackAnalysis,
+	strike: ParsedDirectStrike,
+	fire_q: float,
+	impact_q: float,
+	is_window_start: bool
+) -> void:
+	var fire_beat := _find_or_make_beat(beats, fire_q, "ranged_fire_%d" % int(strike.strike_index))
+	_tag_beat(fire_beat, [&"strike", &"fire"])
+	if is_window_start:
+		_tag_beat(fire_beat, [&"window_start"])
+	fire_beat.orders.append(_make_ranged_fire_order(analysis, int(strike.strike_index)))
+
+	var impact_beat := _find_or_make_beat(beats, impact_q, "ranged_impact_%d" % int(strike.strike_index))
+	_tag_beat(impact_beat, [&"impact"])
+	for impact_order in _make_impact_orders_for_strike(analysis, int(strike.strike_index), strike.direct_events):
+		impact_beat.orders.append(impact_order)
+	for event in strike.direct_events:
+		impact_beat.events.append(event)
+
+
+func _make_delayed_reaction_beat(beat_q: float, reaction: DelayedReactionNode) -> TurnBeat:
+	if reaction == null:
+		var beat := TurnBeat.new()
+		beat.beat_q = beat_q
+		beat.label = "reaction"
+		_tag_beat(beat, [&"reaction"])
+		return beat
+
+	match reaction.kind:
+		&"summon_reaction":
+			return _make_reaction_summon_beat(beat_q, reaction.events)
+		&"compact_attack_reaction":
+			return _make_compact_reaction_attack_beat(beat_q, reaction)
+		&"status_followup_reaction":
+			return _make_reaction_status_beat(beat_q, reaction.events)
+		_:
+			var generic_beat := TurnBeat.new()
+			generic_beat.beat_q = beat_q
+			generic_beat.label = "reaction"
+			_tag_beat(generic_beat, [&"reaction"])
+			for event in reaction.events:
+				generic_beat.events.append(event)
+			return generic_beat
+
+
+func _make_compact_reaction_attack_beat(beat_q: float, reaction: DelayedReactionNode) -> TurnBeat:
+	var beat := TurnBeat.new()
+	beat.beat_q = beat_q
+	beat.label = "reaction_attack"
+	_tag_beat(beat, [&"reaction", &"compact_attack_reaction"])
+
+	var nested: ParsedNpcAttackTurn = reaction.nested_attack as ParsedNpcAttackTurn
+	if nested == null or nested.analysis == null:
+		for event in reaction.events:
+			beat.events.append(event)
+		return beat
+
+	if int(nested.attack_mode) == int(Attack.Mode.RANGED):
+		for strike in nested.direct_strikes:
+			if strike == null:
+				continue
+			beat.orders.append(_make_ranged_fire_order(nested.analysis, int(strike.strike_index)))
+	else:
+		beat.orders.append(_make_melee_strike_order(nested.analysis, 0, _collect_eventual_focus_targets_from_parsed_turn(nested)))
+
+	for strike in nested.direct_strikes:
+		if strike == null:
+			continue
+		for impact_order in _make_impact_orders_for_strike(nested.analysis, int(strike.strike_index), strike.direct_events):
+			beat.orders.append(impact_order)
+		for event in strike.direct_events:
+			beat.events.append(event)
+
+	for event in reaction.events:
+		if !beat.events.has(event):
+			beat.events.append(event)
+
+	return beat
 
 
 func _find_actor_id(events: Array[BattleEvent]) -> int:
@@ -577,6 +1057,12 @@ func _build_melee_attack_beats_from_parsed(parsed: Dictionary, turn_events: Arra
 		var beat_q := start_q + 0.5 * float(i) + reaction_shift_q
 		var strike_events: Array[BattleEvent] = direct_events_by_strike[i] if i < direct_events_by_strike.size() else []
 		beats.append(_make_melee_strike_beat(beat_q, analysis, i, strike_events))
+		_debug_log_reaction("main melee strike=%d q=%.2f targets=%s events=%s" % [
+			i,
+			beat_q,
+			str(_targets_for_focus_strike(analysis, i)),
+			_debug_event_list_summary(strike_events),
+		])
 		final_q = maxf(final_q, beat_q)
 
 		var reaction_q := beat_q
@@ -595,7 +1081,10 @@ func _build_melee_attack_beats_from_parsed(parsed: Dictionary, turn_events: Arra
 				String(reaction.get("kind", &"unknown")),
 			])
 
-		reaction_shift_q += reaction_q - beat_q
+		if !reactions.is_empty():
+			# After a settled reaction beat, give the outer melee cadence one clean step
+			# before the next strike starts so it reads as a pause, not a compression.
+			reaction_shift_q += (reaction_q - beat_q) + 0.5
 
 	var clear_q := final_q + _tail_gap_q_for_attack(analysis)
 	var layout_order := _find_post_action_group_layout(turn_events, group_index)
@@ -631,9 +1120,22 @@ func _build_ranged_attack_beats_from_parsed(parsed: Dictionary, turn_events: Arr
 		var impact_q := fire_q + 0.5
 		var strike_events: Array[BattleEvent] = direct_events_by_strike[i] if i < direct_events_by_strike.size() else []
 
+		_add_order_to_beat_array(
+			beats,
+			fire_q,
+			_make_focus_order(analysis.attacker_id, _targets_for_focus_strike(analysis, i), 0.20),
+			"ranged_fire_%d" % i
+		)
 		_add_order_to_beat_array(beats, fire_q, _make_ranged_fire_order(analysis, i), "ranged_fire_%d" % i)
 		_add_orders_to_beat_array(beats, impact_q, _make_impact_orders_for_strike(analysis, i, strike_events), "ranged_impact_%d" % i)
 		_add_events_to_beat_array(beats, impact_q, strike_events, "ranged_impact_%d" % i)
+		_debug_log_reaction("main ranged strike=%d fire_q=%.2f impact_q=%.2f targets=%s events=%s" % [
+			i,
+			fire_q,
+			impact_q,
+			str(_targets_for_focus_strike(analysis, i)),
+			_debug_event_list_summary(strike_events),
+		])
 		final_q = maxf(final_q, impact_q)
 
 		var reaction_q := impact_q
@@ -641,7 +1143,7 @@ func _build_ranged_attack_beats_from_parsed(parsed: Dictionary, turn_events: Arr
 		for reaction in reactions:
 			reaction_q += 1.0
 			var built := _build_reaction_beats_from_group(parsed, reaction, reaction_q)
-			var reaction_beats: Array[TurnBeat] = built.get("beats", [])
+			var reaction_beats: Array = built.get("beats", [])
 			for reaction_beat in reaction_beats:
 				beats.append(reaction_beat)
 			reaction_q = float(built.get("last_q", reaction_q))
@@ -781,6 +1283,7 @@ func _make_reaction_summon_beat(beat_q: float, summon_events: Array[BattleEvent]
 	var beat := TurnBeat.new()
 	beat.beat_q = beat_q
 	beat.label = "reaction_summon"
+	_tag_beat(beat, [&"reaction", &"summon_reaction"])
 	var summoned_events: Array[BattleEvent] = []
 	var status_events: Array[BattleEvent] = []
 	for event in summon_events:
@@ -829,6 +1332,7 @@ func _make_reaction_status_beat(beat_q: float, reaction_events: Array[BattleEven
 	var actor_id := _find_source_actor_id(status_events)
 	var beat := _make_status_pop_beat(beat_q, actor_id, status_events)
 	beat.label = "reaction_status"
+	_tag_beat(beat, [&"reaction", &"status_followup_reaction"])
 	return beat
 
 
@@ -985,6 +1489,11 @@ func _build_ranged_attack_beats(analysis: AttackAnalysis, turn_events: Array[Bat
 		var impact_q := fire_q + 0.5
 		var strike_events: Array[BattleEvent] = by_strike[i] if i < by_strike.size() else []
 
+		_add_order_to_beat_array(
+			beats,
+			fire_q,
+			_make_focus_order(analysis.attacker_id, _targets_for_focus_strike(analysis, i), 0.20)
+		)
 		_add_order_to_beat_array(beats, fire_q, _make_ranged_fire_order(analysis, i))
 
 		var impact_orders := _make_impact_orders_for_strike(analysis, i, strike_events)
@@ -1006,14 +1515,13 @@ func _make_focus_beat(beat_q: float, analysis: AttackAnalysis) -> TurnBeat:
 	var beat := TurnBeat.new()
 	beat.beat_q = beat_q
 	beat.label = "focus"
+	_tag_beat(beat, [&"focus"])
 
-	var o := FocusPresentationOrder.new()
-	o.kind = PresentationOrder.Kind.FOCUS
-	o.actor_id = analysis.attacker_id
-	o.target_ids = _collect_all_attack_targets(analysis)
-	o.visual_sec = 0.35
-
-	beat.orders.append(o)
+	beat.orders.append(_make_focus_order(
+		analysis.attacker_id,
+		_targets_for_focus_strike(analysis, 0),
+		0.35
+	))
 	return beat
 
 
@@ -1026,6 +1534,7 @@ func _make_clear_focus_beat(
 	var beat := TurnBeat.new()
 	beat.beat_q = beat_q
 	beat.label = "clear_focus"
+	_tag_beat(beat, [&"clear_focus"])
 
 	var o := ClearFocusPresentationOrder.new()
 	o.kind = PresentationOrder.Kind.CLEAR_FOCUS
@@ -1092,17 +1601,37 @@ func _make_melee_windup_beat(beat_q: float, analysis: AttackAnalysis) -> TurnBea
 	var beat := TurnBeat.new()
 	beat.beat_q = beat_q
 	beat.label = "melee_windup"
+	_tag_beat(beat, [&"windup"])
 
 	var o := MeleeWindupPresentationOrder.new()
 	o.kind = PresentationOrder.Kind.MELEE_WINDUP
 	o.actor_id = analysis.attacker_id
-	o.target_ids = _collect_all_attack_targets(analysis)
+	o.target_ids = _targets_for_focus_strike(analysis, 0)
 	o.visual_sec = 0.20
 	o.strike_count = analysis.strike_count
 	o.total_hit_count = _count_total_hits(analysis)
 
 	beat.orders.append(o)
 	return beat
+
+
+func _make_melee_strike_order(
+	analysis: AttackAnalysis,
+	strike_index: int,
+	override_targets := []
+) -> MeleeStrikePresentationOrder:
+	var strike := analysis.strikes[strike_index]
+
+	var o := MeleeStrikePresentationOrder.new()
+	o.kind = PresentationOrder.Kind.MELEE_STRIKE
+	o.actor_id = analysis.attacker_id
+	o.target_ids = override_targets.duplicate() if !override_targets.is_empty() else strike.target_ids.duplicate()
+	o.visual_sec = 0.22
+	o.strike_index = strike_index
+	o.strikes_total = analysis.strike_count
+	o.total_hit_count = strike.hit_count
+	o.has_lethal = strike.has_lethal_hit
+	return o
 
 
 func _make_melee_strike_beat(
@@ -1117,16 +1646,13 @@ func _make_melee_strike_beat(
 
 	var strike := analysis.strikes[strike_index]
 
-	var o := MeleeStrikePresentationOrder.new()
-	o.kind = PresentationOrder.Kind.MELEE_STRIKE
-	o.actor_id = analysis.attacker_id
-	o.target_ids = strike.target_ids
-	o.visual_sec = 0.22
-	o.strike_index = strike_index
-	o.strikes_total = analysis.strike_count
-	o.total_hit_count = strike.hit_count
-	o.has_lethal = strike.has_lethal_hit
-	beat.orders.append(o)
+	beat.orders.append(_make_focus_order(
+		analysis.attacker_id,
+		_targets_for_focus_strike(analysis, strike_index),
+		0.20
+	))
+
+	beat.orders.append(_make_melee_strike_order(analysis, strike_index))
 
 	for impact_order in _make_impact_orders_for_strike(analysis, strike_index, strike_events):
 		beat.orders.append(impact_order)
@@ -1142,11 +1668,12 @@ func _make_ranged_windup_beat(beat_q: float, analysis: AttackAnalysis) -> TurnBe
 	var beat := TurnBeat.new()
 	beat.beat_q = beat_q
 	beat.label = "ranged_windup"
+	_tag_beat(beat, [&"windup"])
 
 	var o := RangedWindupPresentationOrder.new()
 	o.kind = PresentationOrder.Kind.RANGED_WINDUP
 	o.actor_id = analysis.attacker_id
-	o.target_ids = _collect_all_attack_targets(analysis)
+	o.target_ids = _targets_for_focus_strike(analysis, 0)
 	o.visual_sec = 0.15
 	o.strike_count = analysis.strike_count
 	o.total_hit_count = _count_total_hits(analysis)
@@ -1475,14 +2002,9 @@ func _make_basic_focus_beat(beat_q: float, actor_id: int, target_ids: Array[int]
 	var beat := TurnBeat.new()
 	beat.beat_q = beat_q
 	beat.label = "focus"
+	_tag_beat(beat, [&"focus"])
 
-	var o := FocusPresentationOrder.new()
-	o.kind = PresentationOrder.Kind.FOCUS
-	o.actor_id = actor_id
-	o.target_ids = target_ids
-	o.visual_sec = 0.35
-
-	beat.orders.append(o)
+	beat.orders.append(_make_focus_order(actor_id, target_ids, 0.35))
 	return beat
 
 
@@ -1630,6 +2152,36 @@ func _find_source_actor_id(events: Array[BattleEvent], fallback := 0) -> int:
 			if actor_id > 0:
 				return actor_id
 	return int(fallback)
+
+
+func _make_focus_order(actor_id: int, target_ids: Array[int], visual_sec: float = 0.35) -> FocusPresentationOrder:
+	var o := FocusPresentationOrder.new()
+	o.kind = PresentationOrder.Kind.FOCUS
+	o.actor_id = actor_id
+	o.target_ids = target_ids.duplicate()
+	o.visual_sec = visual_sec
+	return o
+
+
+func _tag_beat(beat: TurnBeat, tags: Array[StringName]) -> void:
+	if beat == null:
+		return
+
+	for tag in tags:
+		if !beat.tags.has(tag):
+			beat.tags.append(tag)
+
+
+func _targets_for_focus_strike(analysis: AttackAnalysis, strike_index: int) -> Array[int]:
+	if analysis == null or analysis.strikes.is_empty():
+		return []
+
+	var safe_index := clampi(strike_index, 0, analysis.strikes.size() - 1)
+	var strike: StrikePresentationInfo = analysis.strikes[safe_index]
+	if strike != null and !strike.target_ids.is_empty():
+		return strike.target_ids.duplicate()
+
+	return _collect_all_attack_targets(analysis)
 
 
 func _find_post_action_group_layout(events: Array[BattleEvent], fallback_group_index: int) -> GroupLayoutPresentationOrder:

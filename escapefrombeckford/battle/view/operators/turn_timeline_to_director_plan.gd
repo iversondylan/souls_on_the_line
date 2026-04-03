@@ -20,6 +20,7 @@ func build_plan(timeline: TurnTimeline, t_start_sec: float, tempo_bpm: float) ->
 		cue.beat_q = tb.beat_q
 		cue.tempo_bpm = tempo_bpm
 		cue.index = i
+		cue.tags = tb.tags.duplicate()
 		cue.label = tb.label
 		cue.orders = tb.orders
 		cue.events = tb.events
