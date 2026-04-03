@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://cards/_core/card_data.gd" id="1_rilno"]
 [ext_resource type="Resource" uid="uid://b7txf6d8vmjkk" path="res://cards/souls/SpectralCloneCard/spectral_clone.tres" id="2_fugq6"]
 [ext_resource type="Script" uid="uid://dnybrgm0o6gjj" path="res://cards/_core/card_pile.gd" id="2_nkp8v"]
-[ext_resource type="Resource" uid="uid://wgpfged0xtw3" path="res://cards/souls/ShrapnelOysterCard/shrapnel_oyster_card.tres" id="3_7w3ya"]
+[ext_resource type="Resource" uid="uid://bayn0pa8nkx10" path="res://cards/souls/GlassPeccaryCard/glass_peccary_card.tres" id="3_7w3ya"]
 [ext_resource type="Resource" uid="uid://d0oumqc77h2hc" path="res://cards/souls/ImpatientDjinn/impatient_djinn.tres" id="3_avm0j"]
 [ext_resource type="Resource" uid="uid://btdar0q5ek8di" path="res://cards/souls/FormicDrone/formic_drone.tres" id="3_fugq6"]
 [ext_resource type="Resource" uid="uid://sdnvejwfmf81" path="res://cards/convocations/ConvokedAssault/convoked_assault.tres" id="4_1a5hq"]

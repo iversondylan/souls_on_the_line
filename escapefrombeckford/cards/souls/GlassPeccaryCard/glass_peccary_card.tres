@@ -1,0 +1,49 @@
+[gd_resource type="Resource" script_class="CardData" format=3 uid="uid://bayn0pa8nkx10"]
+
+[ext_resource type="Script" uid="uid://wtk5v77fcqvn" path="res://cards/_core/card_action.gd" id="1_w66no"]
+[ext_resource type="Script" uid="uid://buhtw3540mbls" path="res://cards/_generic_actions/summon_action.gd" id="2_gs3h0"]
+[ext_resource type="Resource" uid="uid://c0cllss7w30rn" path="res://audio/summon_zap.tres" id="3_6vd3u"]
+[ext_resource type="Script" uid="uid://bcih413oy6v73" path="res://npc_ai/_core/npc_action.gd" id="4_jpp0u"]
+[ext_resource type="Script" uid="uid://bdsvca1cpka5s" path="res://npc_ai/_core/npc_ai_profile.gd" id="5_6vb3o"]
+[ext_resource type="Script" uid="uid://cfatj0ryn8uv3" path="res://combatants/combatant_data.gd" id="6_xbyp2"]
+[ext_resource type="Script" uid="uid://jie78uegvh3j" path="res://cards/_generic_actions/apply_status_to_summoned_action.gd" id="7_cuwyq"]
+[ext_resource type="Resource" uid="uid://dvxb1b65olpr7" path="res://statuses/bequeath.tres" id="8_4gdoe"]
+[ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://cards/_core/card_data.gd" id="9_y8ha6"]
+[ext_resource type="Texture2D" uid="uid://ce0qts1ygj0xi" path="res://_assets/sprites/assorted/pig.png" id="10_x1gdt"]
+
+[sub_resource type="Resource" id="Resource_kfx2n"]
+script = ExtResource("5_6vb3o")
+
+[sub_resource type="Resource" id="Resource_5y8hh"]
+script = ExtResource("6_xbyp2")
+name = "Glass Peccary"
+description = "A fragile peccary soul that only leaves an inheritance behind."
+character_art_uid = "res://_assets/sprites/assorted/pig.png"
+portrait_art_uid = "res://_assets/sprites/assorted/pig.png"
+height = 120
+max_health = 4
+apr = 0
+apm = 0
+max_mana = 0
+ai = SubResource("Resource_kfx2n")
+
+[sub_resource type="Resource" id="Resource_fbrl2"]
+script = ExtResource("2_gs3h0")
+summon_data = SubResource("Resource_5y8hh")
+mortality = 2
+sound = ExtResource("3_6vd3u")
+
+[sub_resource type="Resource" id="Resource_wgn5w"]
+script = ExtResource("7_cuwyq")
+status = ExtResource("8_4gdoe")
+intensity = 1
+
+[resource]
+script = ExtResource("9_y8ha6")
+card_type = 1
+target_type = 1
+name = "Glass Peccary"
+deplete = true
+description = "Summon a %s/%s %s. Give it %s Bequeath."
+texture = ExtResource("10_x1gdt")
+actions = Array[ExtResource("1_w66no")]([SubResource("Resource_fbrl2"), SubResource("Resource_wgn5w")])

@@ -53,11 +53,11 @@ mouse_filter = 2
 texture = ExtResource("4_yhk5m")
 
 [node name="Group0" type="Node2D" parent="BattleView" unique_id=479709658]
-position = Vector2(480, 748)
+position = Vector2(480, 687)
 script = ExtResource("5_eivww")
 
 [node name="Group1" type="Node2D" parent="BattleView" unique_id=1978793079]
-position = Vector2(1440, 748)
+position = Vector2(1440, 687)
 script = ExtResource("5_eivww")
 faces_right = false
 
@@ -75,7 +75,7 @@ script = ExtResource("10_dd63g")
 [node name="Camera2D" type="Camera2D" parent="BattleView/CameraRig" unique_id=1968275134]
 
 [node name="BattleSceneAreaLeft" type="Area2D" parent="BattleView" unique_id=366013195]
-position = Vector2(969, 698)
+position = Vector2(969, 637)
 collision_layer = 8
 script = ExtResource("7_rgwlw")
 

@@ -1,0 +1,29 @@
+[gd_resource type="Resource" script_class="SummonAction" format=3 uid="uid://ccs50hef6qhl6"]
+
+[ext_resource type="Script" uid="uid://buhtw3540mbls" path="res://cards/_generic_actions/summon_action.gd" id="1_1rnhd"]
+[ext_resource type="Resource" uid="uid://c0cllss7w30rn" path="res://audio/summon_zap.tres" id="2_p173e"]
+[ext_resource type="Script" uid="uid://bcih413oy6v73" path="res://npc_ai/_core/npc_action.gd" id="3_4406b"]
+[ext_resource type="Script" uid="uid://bdsvca1cpka5s" path="res://npc_ai/_core/npc_ai_profile.gd" id="4_pyd3s"]
+[ext_resource type="Script" uid="uid://cfatj0ryn8uv3" path="res://combatants/combatant_data.gd" id="5_oukcf"]
+
+[sub_resource type="Resource" id="Resource_kfx2n"]
+script = ExtResource("4_pyd3s")
+
+[sub_resource type="Resource" id="Resource_5y8hh"]
+script = ExtResource("5_oukcf")
+name = "Glass Peccary"
+description = "A fragile peccary soul that only leaves an inheritance behind."
+character_art_uid = "res://_assets/sprites/assorted/pig.png"
+portrait_art_uid = "res://_assets/sprites/assorted/pig.png"
+height = 120
+max_health = 4
+apr = 0
+apm = 0
+max_mana = 0
+ai = SubResource("Resource_kfx2n")
+
+[resource]
+script = ExtResource("1_1rnhd")
+summon_data = SubResource("Resource_5y8hh")
+mortality = 2
+sound = ExtResource("2_p173e")
