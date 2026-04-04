@@ -2,9 +2,6 @@
 
 class_name BattleState extends RefCounted
 
-const AuraBankScript = preload("res://battle/sim/containers/aura_bank.gd")
-const SimArcanaSystemScript = preload("res://battle/sim/operators/sim_arcana_system.gd")
-
 enum Outcome {
 	NONE,
 	VICTORY,
@@ -18,7 +15,7 @@ const ENEMY := 1
 
 var status_catalog: StatusCatalog
 var arcana_catalog: ArcanaCatalog
-var aura_bank = AuraBankScript.new()
+var aura_bank = AuraBank.new()
 
 var events: BattleEventLog = BattleEventLog.new()
 
@@ -171,7 +168,7 @@ func _get_effective_status_modifier_tokens_for_target(
 
 func _get_arcana_tokens_for(target_id: int, mod_type: Modifier.Type) -> Array[ModifierToken]:
 	var api := SimBattleAPI.new(self)
-	return SimArcanaSystemScript.get_modifier_tokens_for_target(api, target_id, mod_type)
+	return SimArcanaSystem.get_modifier_tokens_for_target(api, target_id, mod_type)
 
 func _modifier_token_applies_to_target(token: ModifierToken, target_id: int) -> bool:
 	if token == null:
@@ -206,7 +203,7 @@ func clone() -> BattleState:
 	b.groups = [groups[0].clone(), groups[1].clone()]
 	b.turn = turn.clone()
 	b.arcana = arcana.clone() if arcana != null else ArcanaState.new()
-	b.aura_bank = aura_bank.clone() if aura_bank != null else AuraBankScript.new()
+	b.aura_bank = aura_bank.clone() if aura_bank != null else AuraBank.new()
 	b.resource = resource.clone()
 
 	# Policy: preview clones start with a fresh empty event log.

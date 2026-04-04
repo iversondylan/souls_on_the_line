@@ -10,6 +10,7 @@
 [ext_resource type="Resource" uid="uid://7x55fawjrwf4" path="res://statuses/might.tres" id="8_ho33y"]
 [ext_resource type="Resource" uid="uid://bh05r8var8mj3" path="res://statuses/pinpoint.tres" id="9_6ckqc"]
 [ext_resource type="Resource" uid="uid://be6cqdi7drqt2" path="res://statuses/explosive_departure.tres" id="9_cbbgy"]
+[ext_resource type="Resource" uid="uid://c5xnlbxw15vh3" path="res://statuses/exit_strike.tres" id="9_exit_strike"]
 [ext_resource type="Resource" uid="uid://b0o8d7ab55o6i" path="res://statuses/protected_drone.tres" id="9_protected_drone"]
 [ext_resource type="Resource" uid="uid://dsl60qwx3ugb" path="res://statuses/pressure_barrier.tres" id="10_cbbgy"]
 [ext_resource type="Resource" uid="uid://bfon8dtpvipfp" path="res://statuses/resonance_spike.tres" id="11_6ocio"]
@@ -30,5 +31,5 @@
 
 [resource]
 script = ExtResource("1_2sbnh")
-statuses = Array[ExtResource("2_mko5r")]([ExtResource("18_absorb"), ExtResource("3_uxogt"), ExtResource("19_banishing_strikes"), ExtResource("6_6ckqc"), ExtResource("16_bolstered"), ExtResource("23_double_edge"), ExtResource("6_00ab0"), ExtResource("9_cbbgy"), ExtResource("20_fleeting"), ExtResource("5_2sbnh"), ExtResource("21_heavy_attack"), ExtResource("7_fjt00"), ExtResource("8_ho33y"), ExtResource("9_6ckqc"), ExtResource("10_cbbgy"), ExtResource("9_protected_drone"), ExtResource("11_6ocio"), ExtResource("11_mko5r"), ExtResource("22_small"), ExtResource("12_kw06w"), ExtResource("17_sundered"), ExtResource("15_suppressed"), ExtResource("13_djvpr"), ExtResource("14_gyvsg"), ExtResource("27_gyvsg")])
+statuses = Array[ExtResource("2_mko5r")]([ExtResource("18_absorb"), ExtResource("3_uxogt"), ExtResource("19_banishing_strikes"), ExtResource("6_6ckqc"), ExtResource("16_bolstered"), ExtResource("23_double_edge"), ExtResource("6_00ab0"), ExtResource("9_cbbgy"), ExtResource("9_exit_strike"), ExtResource("20_fleeting"), ExtResource("5_2sbnh"), ExtResource("21_heavy_attack"), ExtResource("7_fjt00"), ExtResource("8_ho33y"), ExtResource("9_6ckqc"), ExtResource("10_cbbgy"), ExtResource("9_protected_drone"), ExtResource("11_6ocio"), ExtResource("11_mko5r"), ExtResource("22_small"), ExtResource("12_kw06w"), ExtResource("17_sundered"), ExtResource("15_suppressed"), ExtResource("13_djvpr"), ExtResource("14_gyvsg"), ExtResource("27_gyvsg")])
 metadata/_custom_type_script = "uid://dgq1lfjmf2yfl"

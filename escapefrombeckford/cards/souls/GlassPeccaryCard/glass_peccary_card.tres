@@ -8,6 +8,7 @@
 [ext_resource type="Script" uid="uid://cfatj0ryn8uv3" path="res://combatants/combatant_data.gd" id="6_xbyp2"]
 [ext_resource type="Script" uid="uid://jie78uegvh3j" path="res://cards/_generic_actions/apply_status_to_summoned_action.gd" id="7_cuwyq"]
 [ext_resource type="Resource" uid="uid://dvxb1b65olpr7" path="res://statuses/bequeath.tres" id="8_4gdoe"]
+[ext_resource type="Resource" uid="uid://cc0m5wflgelo1" path="res://cards/souls/GlassPeccaryCard/exit_strike_onsummoned_action.tres" id="9_gs3h0"]
 [ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://cards/_core/card_data.gd" id="9_y8ha6"]
 [ext_resource type="Texture2D" uid="uid://ce0qts1ygj0xi" path="res://_assets/sprites/assorted/pig.png" id="10_x1gdt"]
 
@@ -46,4 +47,4 @@ name = "Glass Peccary"
 deplete = true
 description = "Summon a %s/%s %s. Give it %s Bequeath."
 texture = ExtResource("10_x1gdt")
-actions = Array[ExtResource("1_w66no")]([SubResource("Resource_fbrl2"), SubResource("Resource_wgn5w")])
+actions = Array[ExtResource("1_w66no")]([SubResource("Resource_fbrl2"), SubResource("Resource_wgn5w"), ExtResource("9_gs3h0")])

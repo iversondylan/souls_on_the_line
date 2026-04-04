@@ -1,0 +1,15 @@
+[gd_resource type="Resource" format=3 uid="uid://d2cxx7uv2q7ab"]
+
+[ext_resource type="Script" uid="uid://cueedkb1u8vxy" path="res://statuses/_core/status.gd" id="1_status"]
+[ext_resource type="Texture2D" uid="uid://ps5rwh2q6k3r" path="res://_assets/sprites/assorted/light-thorny-triskelion.png" id="1_uu4in"]
+[ext_resource type="Script" uid="uid://c1uryp6rrgodv" path="res://arcana/thorned_vines.gd" id="2_ajmdd"]
+[ext_resource type="Resource" uid="uid://c5xnlbxw15vh3" path="res://statuses/exit_strike.tres" id="3_exit"]
+
+[resource]
+script = ExtResource("2_ajmdd")
+arcanum_name = "Thorned Vines"
+type = 4
+icon = ExtResource("1_uu4in")
+tooltip_description = "Friendly allies deal 2 damage on death."
+projected_statuses = Array[ExtResource("1_status")]([ExtResource("3_exit")])
+metadata/_custom_type_script = "uid://cnmucv1qsei4i"

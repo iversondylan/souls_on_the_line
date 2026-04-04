@@ -2,9 +2,6 @@
 
 class_name SimStatusSystem extends RefCounted
 
-const SimAuraStatusContextScript = preload("res://battle/sim/containers/sim_aura_status_context.gd")
-const SimArcanaSystemScript = preload("res://battle/sim/operators/sim_arcana_system.gd")
-
 # Owns status lifecycle and event dispatch.
 # Turn progression belongs to SimRuntime.
 # Atomistic mutations belong to SimBattleAPI.
@@ -178,8 +175,8 @@ static func get_effective_status_contexts_for_unit(
 		include_pending_sources,
 		allow_dead_self_aura_source
 	)
-	SimArcanaSystemScript.append_projected_status_contexts(out, api, target_id)
-	return out
+	SimArcanaSystem.append_projected_status_contexts(out, api, target_id)
+	return _merge_owned_and_aura_intensity_contexts(out)
 
 
 # -------------------------------------------------------------------
@@ -373,7 +370,7 @@ static func _append_projected_aura_status_contexts(
 			if projected_proto == null:
 				continue
 
-			var projected_ctx: SimStatusContext = SimAuraStatusContextScript.new(
+			var projected_ctx: SimStatusContext = SimAuraStatusContext.new(
 				api,
 				target_id,
 				target,
@@ -388,6 +385,77 @@ static func _append_projected_aura_status_contexts(
 				continue
 
 			out.append(projected_ctx)
+
+
+static func _merge_owned_and_aura_intensity_contexts(
+	contexts: Array[SimStatusContext]
+) -> Array[SimStatusContext]:
+	if contexts.size() < 2:
+		return contexts
+
+	var owned_by_key: Dictionary = {}
+	var aura_totals_by_key: Dictionary = {}
+
+	for i in range(contexts.size()):
+		var ctx := contexts[i]
+		if ctx == null or !ctx.is_valid() or ctx.proto == null:
+			continue
+
+		var key := _make_effective_status_merge_key(ctx.get_status_id(), ctx.is_pending())
+		if ctx is SimAuraStatusContext:
+			aura_totals_by_key[key] = int(aura_totals_by_key.get(key, 0)) + int(ctx.get_intensity())
+			continue
+
+		if ctx is SimProjectedArcanumStatusContext:
+			continue
+
+		if int(ctx.proto.reapply_type) != int(Status.ReapplyType.INTENSITY):
+			continue
+
+		owned_by_key[key] = {
+			"index": i,
+			"ctx": ctx,
+		}
+
+	if owned_by_key.is_empty() or aura_totals_by_key.is_empty():
+		return contexts
+
+	var mergeable_keys: Dictionary = {}
+	for key in owned_by_key.keys():
+		if aura_totals_by_key.has(key):
+			mergeable_keys[key] = true
+
+	if mergeable_keys.is_empty():
+		return contexts
+
+	var out: Array[SimStatusContext] = []
+	for i in range(contexts.size()):
+		var ctx := contexts[i]
+		if ctx == null or !ctx.is_valid():
+			continue
+
+		var key := _make_effective_status_merge_key(ctx.get_status_id(), ctx.is_pending())
+		if ctx is SimAuraStatusContext and mergeable_keys.has(key):
+			continue
+
+		var owned_info: Dictionary = owned_by_key.get(key, {})
+		if !owned_info.is_empty() and int(owned_info.get("index", -1)) == i and mergeable_keys.has(key):
+			var owned_ctx := owned_info.get("ctx", null) as SimStatusContext
+			var merged_ctx := SimMergedIntensityStatusContext.new(
+				owned_ctx,
+				int(aura_totals_by_key.get(key, 0))
+			) as SimStatusContext
+			if merged_ctx != null and merged_ctx.is_valid():
+				out.append(merged_ctx)
+				continue
+
+		out.append(ctx)
+
+	return out
+
+
+static func _make_effective_status_merge_key(status_id: StringName, pending: bool) -> String:
+	return "%s::%s" % [String(status_id), "pending" if pending else "realized"]
 
 
 # -------------------------------------------------------------------

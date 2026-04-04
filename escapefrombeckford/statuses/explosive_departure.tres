@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="ExplosiveDepartureStatus" format=3 uid="uid://be6cqdi7drqt2"]
 
-[ext_resource type="Texture2D" uid="uid://dfm4wyrok3dku" path="res://_assets/sprites/assorted/explosion_icon.png" id="1_c3dv3"]
+[ext_resource type="Texture2D" uid="uid://n7gwuunxrds0" path="res://_assets/sprites/assorted/explosive-departure.png" id="1_c3dv3"]
 [ext_resource type="Script" uid="uid://dlt014xude5oa" path="res://statuses/explosive_departure.gd" id="2_om1ye"]
 
 [resource]

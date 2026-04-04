@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="ExitStrike" format=3 uid="uid://c5xnlbxw15vh3"]
+
+[ext_resource type="Script" uid="uid://iprujvq1hhyt" path="res://statuses/exit_strike.gd" id="1_thmm1"]
+[ext_resource type="Texture2D" uid="uid://bomrxyb4irpv1" path="res://_assets/sprites/assorted/death-zone.png" id="1_tisco"]
+
+[resource]
+script = ExtResource("1_thmm1")
+status_name = "Exit Strike"
+proc_type = 2
+number_display_type = 1
+icon = ExtResource("1_tisco")
+tooltip = "On death, deal damage equal to intensity."
+metadata/_custom_type_script = "uid://iprujvq1hhyt"

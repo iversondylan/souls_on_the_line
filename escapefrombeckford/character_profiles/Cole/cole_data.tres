@@ -4,13 +4,13 @@
 [ext_resource type="Script" uid="uid://bql7t8sctwe10" path="res://character_profiles/player_data.gd" id="1_i82qw"]
 [ext_resource type="Resource" uid="uid://bb2svevqwn2v7" path="res://character_profiles/Cole/cole_draftable_cards.tres" id="2_guhpy"]
 [ext_resource type="Resource" uid="uid://vnoxk6md128x" path="res://character_profiles/Cole/cole_possible_arcana.tres" id="3_mgnya"]
-[ext_resource type="Resource" uid="uid://clmmoar1fhh44" path="res://arcana/adamant_ally.tres" id="5_7r4xs"]
+[ext_resource type="Resource" uid="uid://d2cxx7uv2q7ab" path="res://arcana/thorned_vines.tres" id="5_plufk"]
 [ext_resource type="Resource" uid="uid://gsb7q5fcn68v" path="res://character_profiles/Cole/cole_basic_deck.tres" id="7_fcpfp"]
 
 [resource]
 script = ExtResource("1_i82qw")
 profile_id = "cole"
-starting_arcanum = ExtResource("5_7r4xs")
+starting_arcanum = ExtResource("5_plufk")
 possible_arcana = ExtResource("3_mgnya")
 starting_deck = ExtResource("7_fcpfp")
 draftable_cards = ExtResource("2_guhpy")

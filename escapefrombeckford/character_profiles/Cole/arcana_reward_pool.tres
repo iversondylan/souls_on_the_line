@@ -4,5 +4,5 @@
 
 [resource]
 script = ExtResource("1_taipw")
-allowed_ids = PackedStringArray("favoring_scales", "sigil_of_mana", "thales_flask", "unruly_pyric_wraps", "vennards_vauxite.gd")
+allowed_ids = PackedStringArray("favoring_scales", "sigil_of_mana", "thales_flask", "thorned_vines", "unruly_pyric_wraps", "vennards_vauxite.gd")
 metadata/_custom_type_script = "uid://l5htcqf6312n"
