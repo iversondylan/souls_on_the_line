@@ -2,6 +2,9 @@
 
 class_name SimStatusSystem extends RefCounted
 
+const ProjectionBankScript = preload("res://battle/sim/containers/projection_bank.gd")
+const SimMergedIntensityStatusContextScript = preload("res://battle/sim/containers/sim_merged_intensity_status_context.gd")
+
 # Owns status lifecycle and event dispatch.
 # Turn progression belongs to SimRuntime.
 # Atomistic mutations belong to SimBattleAPI.
@@ -168,15 +171,14 @@ static func get_effective_status_contexts_for_unit(
 		return out
 
 	_append_owned_status_contexts(out, api, target_id, include_pending_sources)
-	_append_projected_aura_status_contexts(
+	_append_projected_status_contexts(
 		out,
 		api,
 		target_id,
 		include_pending_sources,
 		allow_dead_self_aura_source
 	)
-	SimArcanaSystem.append_projected_status_contexts(out, api, target_id)
-	return _merge_owned_and_aura_intensity_contexts(out)
+	return _merge_owned_and_projected_intensity_contexts(out)
 
 
 # -------------------------------------------------------------------
@@ -321,80 +323,164 @@ static func _append_owned_status_contexts(
 		out.append(ctx)
 
 
-static func _append_projected_aura_status_contexts(
+static func _append_projected_status_contexts(
 	out: Array[SimStatusContext],
 	api: SimBattleAPI,
 	target_id: int,
 	include_pending_sources := {},
 	allow_dead_self_aura_source := false
 ) -> void:
-	if api == null or api.state == null or api.state.aura_bank == null:
+	if api == null or api.state == null or api.state.projection_bank == null:
 		return
 
 	var target: CombatantState = api.state.get_unit(target_id)
 	if target == null:
 		return
 
-	for entry: Dictionary in api.state.aura_bank.get_entries():
-		var source_id := int(entry.get("source_id", 0))
-		if source_id <= 0:
-			continue
-
-		var pending := bool(entry.get("pending", false))
-		var include_pending_source := false
-		if include_pending_sources is Dictionary:
-			include_pending_source = bool(include_pending_sources.get(source_id, false))
-		if pending and !include_pending_source:
-			continue
-
-		var source: CombatantState = api.state.get_unit(source_id)
-		if source == null:
-			continue
-		if !source.is_alive() and !(allow_dead_self_aura_source and int(source_id) == int(target_id)):
-			continue
-
-		var aura_status_id := StringName(entry.get("status_id", &""))
-		var aura_proto := get_proto(api, aura_status_id) as Aura
-		if aura_proto == null:
-			continue
-
-		var aura_stack := source.statuses.get_status_stack(aura_status_id, pending) if source.statuses != null else null
-		if aura_stack == null:
-			continue
-		if int(aura_proto.expiration_policy) == int(Status.ExpirationPolicy.DURATION) and int(aura_stack.duration) <= 0:
-			continue
-		if !aura_proto.affects_target(api.state, source_id, target_id):
-			continue
-
-		for projected_proto: Status in aura_proto.get_projected_statuses():
-			if projected_proto == null:
+	for entry: Dictionary in api.state.projection_bank.get_entries():
+		var source_kind := StringName(entry.get("source_kind", &""))
+		match source_kind:
+			ProjectionBankScript.SOURCE_KIND_STATUS_AURA:
+				_append_status_aura_projected_contexts(
+					out,
+					api,
+					target,
+					target_id,
+					entry,
+					include_pending_sources,
+					allow_dead_self_aura_source
+				)
+			ProjectionBankScript.SOURCE_KIND_ARCANUM:
+				_append_arcanum_projected_contexts(out, api, target, target_id, entry)
+			_:
 				continue
 
-			var projected_ctx: SimStatusContext = SimAuraStatusContext.new(
-				api,
-				target_id,
-				target,
-				source_id,
-				source,
-				aura_status_id,
-				pending,
-				aura_proto,
-				projected_proto
-			)
-			if projected_ctx == null or !projected_ctx.is_valid():
-				continue
 
-			out.append(projected_ctx)
+static func _append_status_aura_projected_contexts(
+	out: Array[SimStatusContext],
+	api: SimBattleAPI,
+	target: CombatantState,
+	target_id: int,
+	entry: Dictionary,
+	include_pending_sources := {},
+	allow_dead_self_aura_source := false
+) -> void:
+	var source_id := int(entry.get("source_owner_id", 0))
+	if source_id <= 0:
+		return
+
+	var pending := bool(entry.get("pending", false))
+	var include_pending_source := false
+	if include_pending_sources is Dictionary:
+		include_pending_source = bool(include_pending_sources.get(source_id, false))
+	if pending and !include_pending_source:
+		return
+
+	var source: CombatantState = api.state.get_unit(source_id)
+	if source == null:
+		return
+	if !source.is_alive() and !(allow_dead_self_aura_source and int(source_id) == int(target_id)):
+		return
+
+	var aura_status_id := StringName(entry.get("source_id", &""))
+	var aura_proto := get_proto(api, aura_status_id) as Aura
+	if aura_proto == null:
+		return
+
+	var aura_stack := source.statuses.get_status_stack(aura_status_id, pending) if source.statuses != null else null
+	if aura_stack == null:
+		return
+	if int(aura_proto.expiration_policy) == int(Status.ExpirationPolicy.DURATION) and int(aura_stack.duration) <= 0:
+		return
+	if !aura_proto.affects_target(api.state, source_id, target_id):
+		return
+
+	for projected_proto: Status in aura_proto.get_projected_statuses():
+		if projected_proto == null:
+			continue
+
+		var projected_ctx: SimStatusContext = SimAuraStatusContext.new(
+			api,
+			target_id,
+			target,
+			source_id,
+			source,
+			aura_status_id,
+			pending,
+			aura_proto,
+			projected_proto
+		)
+		if projected_ctx == null or !projected_ctx.is_valid():
+			continue
+
+		out.append(projected_ctx)
 
 
-static func _merge_owned_and_aura_intensity_contexts(
+static func _append_arcanum_projected_contexts(
+	out: Array[SimStatusContext],
+	api: SimBattleAPI,
+	target: CombatantState,
+	target_id: int,
+	entry: Dictionary
+) -> void:
+	if api == null or api.state == null or api.state.arcana == null or api.state.arcana_catalog == null:
+		return
+
+	var arcanum_owner_id := int(entry.get("source_owner_id", 0))
+	var arcanum_id := StringName(entry.get("source_id", &""))
+	if arcanum_owner_id <= 0 or arcanum_id == &"":
+		return
+
+	var arcanum_entry: ArcanaState.ArcanumEntry = api.state.arcana.get_entry(arcanum_id)
+	if arcanum_entry == null:
+		return
+
+	var arcanum_proto: Arcanum = api.state.arcana_catalog.get_proto(arcanum_id)
+	if arcanum_proto == null or !arcanum_proto.affects_others():
+		return
+	if !arcanum_proto.affects_target(api.state, arcanum_owner_id, target_id):
+		return
+
+	for projected_proto: Status in arcanum_proto.get_projected_statuses():
+		if projected_proto == null:
+			continue
+		if (
+			int(projected_proto.expiration_policy) == int(Status.ExpirationPolicy.DURATION)
+			and int(arcanum_proto.get_projection_duration(
+				SimArcanumContext.new(
+					api,
+					arcanum_owner_id,
+					SimBattleAPI.FRIENDLY,
+					arcanum_entry,
+					arcanum_proto
+				)
+			)) <= 0
+		):
+			continue
+
+		var projected_ctx: SimStatusContext = SimProjectedArcanumStatusContext.new(
+			api,
+			target_id,
+			target,
+			arcanum_owner_id,
+			arcanum_entry,
+			arcanum_proto,
+			projected_proto
+		)
+		if projected_ctx == null or !projected_ctx.is_valid():
+			continue
+
+		out.append(projected_ctx)
+
+
+static func _merge_owned_and_projected_intensity_contexts(
 	contexts: Array[SimStatusContext]
 ) -> Array[SimStatusContext]:
 	if contexts.size() < 2:
 		return contexts
 
 	var owned_by_key: Dictionary = {}
-	var aura_totals_by_key: Dictionary = {}
+	var projected_totals_by_key: Dictionary = {}
 
 	for i in range(contexts.size()):
 		var ctx := contexts[i]
@@ -402,11 +488,8 @@ static func _merge_owned_and_aura_intensity_contexts(
 			continue
 
 		var key := _make_effective_status_merge_key(ctx.get_status_id(), ctx.is_pending())
-		if ctx is SimAuraStatusContext:
-			aura_totals_by_key[key] = int(aura_totals_by_key.get(key, 0)) + int(ctx.get_intensity())
-			continue
-
-		if ctx is SimProjectedArcanumStatusContext:
+		if ctx is SimAuraStatusContext or ctx is SimProjectedArcanumStatusContext:
+			projected_totals_by_key[key] = int(projected_totals_by_key.get(key, 0)) + int(ctx.get_intensity())
 			continue
 
 		if int(ctx.proto.reapply_type) != int(Status.ReapplyType.INTENSITY):
@@ -417,12 +500,12 @@ static func _merge_owned_and_aura_intensity_contexts(
 			"ctx": ctx,
 		}
 
-	if owned_by_key.is_empty() or aura_totals_by_key.is_empty():
+	if owned_by_key.is_empty() or projected_totals_by_key.is_empty():
 		return contexts
 
 	var mergeable_keys: Dictionary = {}
 	for key in owned_by_key.keys():
-		if aura_totals_by_key.has(key):
+		if projected_totals_by_key.has(key):
 			mergeable_keys[key] = true
 
 	if mergeable_keys.is_empty():
@@ -435,15 +518,15 @@ static func _merge_owned_and_aura_intensity_contexts(
 			continue
 
 		var key := _make_effective_status_merge_key(ctx.get_status_id(), ctx.is_pending())
-		if ctx is SimAuraStatusContext and mergeable_keys.has(key):
+		if (ctx is SimAuraStatusContext or ctx is SimProjectedArcanumStatusContext) and mergeable_keys.has(key):
 			continue
 
 		var owned_info: Dictionary = owned_by_key.get(key, {})
 		if !owned_info.is_empty() and int(owned_info.get("index", -1)) == i and mergeable_keys.has(key):
 			var owned_ctx := owned_info.get("ctx", null) as SimStatusContext
-			var merged_ctx := SimMergedIntensityStatusContext.new(
+			var merged_ctx := SimMergedIntensityStatusContextScript.new(
 				owned_ctx,
-				int(aura_totals_by_key.get(key, 0))
+				int(projected_totals_by_key.get(key, 0))
 			) as SimStatusContext
 			if merged_ctx != null and merged_ctx.is_valid():
 				out.append(merged_ctx)

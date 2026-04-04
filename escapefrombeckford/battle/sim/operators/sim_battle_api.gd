@@ -754,8 +754,8 @@ func apply_status(ctx: StatusContext) -> void:
 	
 	_rebuild_modifier_cache_for(int(ctx.target_id))
 
-	if SimStatusSystem.is_aura_proto(proto) and state.aura_bank != null:
-		state.aura_bank.track(int(ctx.target_id), ctx.status_id, bool(ctx.pending))
+	if SimStatusSystem.is_aura_proto(proto) and state.projection_bank != null:
+		state.projection_bank.track_status_aura(int(ctx.target_id), ctx.status_id, bool(ctx.pending))
 	
 	if !bool(ctx.pending):
 		var status_ctx := SimStatusSystem.make_context(
@@ -833,9 +833,9 @@ func realize_pending_statuses(target_id: int, source_id: int = 0, reason: String
 
 		if proto != null:
 			any_aura = any_aura or SimStatusSystem.is_aura_proto(proto)
-			if SimStatusSystem.is_aura_proto(proto) and state.aura_bank != null:
-				state.aura_bank.untrack(int(target_id), status_id, true)
-				state.aura_bank.track(int(target_id), status_id, false)
+			if SimStatusSystem.is_aura_proto(proto) and state.projection_bank != null:
+				state.projection_bank.untrack_status_aura(int(target_id), status_id, true)
+				state.projection_bank.track_status_aura(int(target_id), status_id, false)
 			if !had_realized:
 				var status_ctx := SimStatusSystem.make_context(
 					self,
@@ -904,8 +904,8 @@ func remove_status(ctx: StatusContext) -> void:
 	
 	_rebuild_modifier_cache_for(int(ctx.target_id))
 
-	if SimStatusSystem.is_aura_proto(proto) and state.aura_bank != null:
-		state.aura_bank.untrack(int(ctx.target_id), ctx.status_id, bool(ctx.pending))
+	if SimStatusSystem.is_aura_proto(proto) and state.projection_bank != null:
+		state.projection_bank.untrack_status_aura(int(ctx.target_id), ctx.status_id, bool(ctx.pending))
 	
 	if !bool(ctx.pending) and status_ctx != null and status_ctx.proto != null:
 		status_ctx.proto.on_remove(status_ctx, ctx)

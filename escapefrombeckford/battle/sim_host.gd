@@ -48,6 +48,17 @@ func get_main_runtime() -> SimRuntime:
 	return main.runtime
 
 
+func _refresh_main_arcanum_projection_entries() -> void:
+	if !has_main() or main.state.projection_bank == null:
+		return
+
+	var player_id := int(main.api.get_player_id())
+	if player_id <= 0:
+		return
+
+	main.state.projection_bank.rebuild_arcanum_entries(main.state, player_id)
+
+
 # -------------------------
 # Structural wiring
 # -------------------------
@@ -151,18 +162,21 @@ func start_setup() -> void:
 
 
 func end_setup() -> void:
-	var writer := get_main_writer()
-	if !has_main() or writer == null:
+	if !has_main():
 		return
+	var writer := get_main_writer()
 
-	writer.emit_formation_set(
-		main.state.groups[0].order.duplicate(),
-		main.state.groups[1].order.duplicate(),
-		main.state.groups[0].player_id
-	)
-	if _setup_scope_handle != null:
-		writer.scope_end(_setup_scope_handle) # setup
-		_setup_scope_handle = null
+	if writer != null:
+		writer.emit_formation_set(
+			main.state.groups[0].order.duplicate(),
+			main.state.groups[1].order.duplicate(),
+			main.state.groups[0].player_id
+		)
+		if _setup_scope_handle != null:
+			writer.scope_end(_setup_scope_handle) # setup
+			_setup_scope_handle = null
+
+	_refresh_main_arcanum_projection_entries()
 
 	# Initialize NPC plans and intent presentation directly.
 	for cid in main.state.units.keys():
@@ -176,6 +190,8 @@ func seed_arcana_from_ids(ids: Array[StringName]) -> void:
 		return
 
 	main.state.arcana.clear()
+	if main.state.projection_bank != null:
+		main.state.projection_bank.clear_arcanum_entries()
 
 	for id in ids:
 		var proto := arcana_catalog.get_proto(id)

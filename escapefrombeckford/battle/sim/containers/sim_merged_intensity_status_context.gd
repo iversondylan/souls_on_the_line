@@ -3,12 +3,12 @@
 class_name SimMergedIntensityStatusContext extends SimStatusContext
 
 var owned_ctx: SimStatusContext = null
-var aura_intensity_bonus: int = 0
+var projected_intensity_bonus: int = 0
 
 
-func _init(_owned_ctx: SimStatusContext = null, _aura_intensity_bonus: int = 0) -> void:
+func _init(_owned_ctx: SimStatusContext = null, _projected_intensity_bonus: int = 0) -> void:
 	owned_ctx = _owned_ctx
-	aura_intensity_bonus = int(_aura_intensity_bonus)
+	projected_intensity_bonus = int(_projected_intensity_bonus)
 
 	if owned_ctx == null:
 		return
@@ -26,6 +26,5 @@ func is_valid() -> bool:
 
 func get_intensity() -> int:
 	if owned_ctx == null:
-		return aura_intensity_bonus
-	return int(owned_ctx.get_intensity()) + aura_intensity_bonus
-
+		return projected_intensity_bonus
+	return int(owned_ctx.get_intensity()) + projected_intensity_bonus

@@ -3,7 +3,6 @@
 class_name SimArcanaSystem extends RefCounted
 
 const SimArcanumContextScript = preload("res://battle/sim/containers/sim_arcanum_context.gd")
-const SimProjectedArcanumStatusContextScript = preload("res://battle/sim/containers/sim_projected_arcanum_status_context.gd")
 
 
 static func get_contexts(api: SimBattleAPI) -> Array:
@@ -127,44 +126,3 @@ static func get_modifier_tokens_for_target(
 				out.append(token)
 
 	return out
-
-
-static func append_projected_status_contexts(
-	out: Array[SimStatusContext],
-	api: SimBattleAPI,
-	target_id: int
-) -> void:
-	if api == null or api.state == null or target_id <= 0:
-		return
-
-	var target: CombatantState = api.state.get_unit(target_id)
-	if target == null:
-		return
-
-	for arcanum_ctx in get_contexts(api):
-		var proto: Arcanum = arcanum_ctx.proto
-		if proto == null or !proto.affects_others():
-			continue
-		if !proto.affects_target(api.state, arcanum_ctx.owner_id, target_id):
-			continue
-
-		for projected_proto: Status in proto.get_projected_statuses():
-			if projected_proto == null:
-				continue
-			if (
-				int(projected_proto.expiration_policy) == int(Status.ExpirationPolicy.DURATION)
-				and int(proto.get_projection_duration(arcanum_ctx)) <= 0
-			):
-				continue
-
-			var projected_ctx: SimStatusContext = SimProjectedArcanumStatusContextScript.new(
-				api,
-				target_id,
-				target,
-				arcanum_ctx.owner_id,
-				arcanum_ctx.entry,
-				proto,
-				projected_proto
-			)
-			if projected_ctx != null and projected_ctx.is_valid():
-				out.append(projected_ctx)
