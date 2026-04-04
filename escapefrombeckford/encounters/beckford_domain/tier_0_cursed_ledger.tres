@@ -7,5 +7,6 @@
 [resource]
 script = ExtResource("2_8hyge")
 encounter_name = "Cursed Ledger"
+battle_tier = 1
 enemies = Array[ExtResource("1_ochup")]([ExtResource("2_ps20r")])
 metadata/_custom_type_script = "uid://be1v8qevmc2xw"

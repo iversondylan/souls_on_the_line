@@ -2,11 +2,14 @@
 class_name StatusFromOppTurnModel
 extends IntentLifecycleModel
 
+const PendingStatusSystemScript = preload("res://battle/sim/operators/pending_status_system.gd")
+
 ## The status to apply while this intent is active.
 ## NOTE: intent-lifecycle statuses must be unique by id per fighter.
 @export var status: Status
 @export var intensity := 0
 @export var duration := 0
+# Pending means "show/apply the pending telegraph lane" for this lifecycle status.
 @export var pending: bool = false
 
 func _status_id() -> StringName:
@@ -33,28 +36,13 @@ func _can_run_sim(ctx: NPCAIContext) -> bool:
 	return ParamModel._actor_id(ctx) > 0 # <-- infinite recursion stopped here
 
 func _apply_to_self_sim(ctx: NPCAIContext) -> void:
-	var id := ParamModel._actor_id(ctx)
-	if id <= 0:
-		return
-
-	var sc := StatusContext.new()
-	sc.source_id = id
-	sc.target_id = id
-	sc.status_id = _status_id()
-	sc.duration = duration
-	sc.intensity = intensity
-	sc.pending = bool(pending)
-	ctx.api.apply_status(sc)
+	PendingStatusSystemScript.apply_lifecycle_status(
+		ctx,
+		_status_id(),
+		intensity,
+		duration,
+		pending
+	)
 
 func _remove_from_self_sim(ctx: NPCAIContext) -> void:
-	var id := ParamModel._actor_id(ctx)
-	if id <= 0:
-		return
-
-	var rc := StatusContext.new()
-	rc.source_id = id
-	rc.target_id = id
-	rc.status_id = _status_id()
-	rc.pending = bool(pending)
-	# rc.intensity_delta default handled in API
-	ctx.api.remove_status(rc)
+	PendingStatusSystemScript.remove_lifecycle_status(ctx, _status_id(), pending)

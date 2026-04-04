@@ -3,6 +3,7 @@
 class_name SimBattleAPI extends RefCounted
 
 const SimArcanaSystemScript = preload("res://battle/sim/operators/sim_arcana_system.gd")
+const PendingStatusSystemScript = preload("res://battle/sim/operators/pending_status_system.gd")
 
 # ============================================================================
 # SimBattleAPI
@@ -776,85 +777,7 @@ func apply_status(ctx: StatusContext) -> void:
 		_request_immediate_planning_flush_if_needed(int(ctx.target_id), proto)
 
 func realize_pending_statuses(target_id: int, source_id: int = 0, reason: String = "") -> void:
-	if state == null or target_id <= 0:
-		return
-
-	var u: CombatantState = state.get_unit(int(target_id))
-	if u == null or !u.is_alive() or u.statuses == null:
-		return
-
-	var pending_ids := u.statuses.get_status_ids(true, true)
-	if pending_ids.is_empty():
-		return
-
-	var any_aura := false
-	var any_changed := false
-	var src_id := int(source_id if source_id > 0 else target_id)
-
-	for status_id in pending_ids:
-		var had_realized := u.statuses.has(status_id, false)
-		var proto := SimStatusSystem.get_proto(self, status_id)
-		var ctx := StatusContext.new()
-		ctx.actor_id = int(target_id)
-		ctx.source_id = src_id
-		ctx.target_id = int(target_id)
-		ctx.status_id = status_id
-		ctx.pending = true
-		ctx.reason = reason
-
-		if !u.statuses.realize_pending_ctx(
-			ctx,
-			int(proto.get_max_intensity()) if proto != null else 0
-		):
-			continue
-
-		any_changed = true
-		if writer != null:
-			writer.emit_status(
-				int(ctx.source_id),
-				int(ctx.target_id),
-				ctx.status_id,
-				int(ctx.op),
-				int(ctx.intensity),
-				int(ctx.duration),
-				{
-					Keys.STATUS_PENDING: bool(ctx.after_pending),
-					Keys.DELTA_INTENSITY: int(ctx.delta_intensity),
-					Keys.DELTA_DURATION: int(ctx.delta_duration),
-					Keys.BEFORE_PENDING: bool(ctx.before_pending),
-					Keys.AFTER_PENDING: bool(ctx.after_pending),
-					Keys.BEFORE_INTENSITY: int(ctx.before_intensity),
-					Keys.BEFORE_DURATION: int(ctx.before_duration),
-					Keys.AFTER_INTENSITY: int(ctx.after_intensity),
-					Keys.AFTER_DURATION: int(ctx.after_duration),
-					Keys.REASON: String(reason),
-				}
-			)
-
-		if proto != null:
-			any_aura = any_aura or SimStatusSystem.is_aura_proto(proto)
-			if SimStatusSystem.is_aura_proto(proto) and state.projection_bank != null:
-				state.projection_bank.untrack_status_aura(int(target_id), status_id, true)
-				state.projection_bank.track_status_aura(int(target_id), status_id, false)
-			if !had_realized:
-				var status_ctx := SimStatusSystem.make_context(
-					self,
-					int(target_id),
-					u.statuses.get_status_stack(status_id, false)
-				)
-				if status_ctx != null and status_ctx.proto != null:
-					status_ctx.proto.on_apply(status_ctx, ctx)
-			_request_immediate_planning_flush_if_needed(int(target_id), proto)
-
-	if !any_changed:
-		return
-
-	_rebuild_modifier_cache_for(int(target_id))
-	if any_aura:
-		_request_intent_refresh_all()
-	else:
-		_request_intent_refresh(int(target_id))
-	_on_status_changed(int(target_id))
+	PendingStatusSystemScript.realize_pending_statuses(self, target_id, source_id, reason)
 
 
 func remove_status(ctx: StatusContext) -> void:

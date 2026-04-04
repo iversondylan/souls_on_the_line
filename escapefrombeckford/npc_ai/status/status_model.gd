@@ -5,6 +5,7 @@ extends ParamModel
 @export var status: Status
 @export var intensity: int = 1
 @export var duration: int = 1
+# Creates the telegraphed pending lane, not a preview-only or quasi-real status.
 @export var pending: bool = false
 
 func change_params(ctx: NPCAIContext) -> NPCAIContext:

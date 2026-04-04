@@ -2,6 +2,9 @@
 
 class_name RealizePendingStatusesEffectSequence extends NPCEffectSequence
 
+func realizes_pending_statuses() -> bool:
+	return true
+
 func execute(ctx: NPCAIContext) -> void:
 	if ctx == null or bool(ctx.forecast):
 		return
