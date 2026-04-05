@@ -164,9 +164,7 @@ func _after_aura_mutation() -> void:
 	if api == null:
 		return
 
-	api._request_intent_refresh_targets_for_aura(aura_source_id, aura_proto)
-	api._on_status_changed(aura_source_id)
-	api._request_immediate_planning_flush_if_needed(aura_source_id, aura_proto)
+	api._refresh_status_aura_projection(aura_source_id, aura_status_id, is_pending())
 
 
 func _get_aura_stack() -> StatusStack:

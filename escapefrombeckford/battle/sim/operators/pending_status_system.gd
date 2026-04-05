@@ -113,6 +113,7 @@ static func realize_pending_statuses(
 
 	var any_aura := false
 	var any_changed := false
+	var any_non_aura := false
 	var src_id := int(source_id if source_id > 0 else target_id)
 
 	for status_id in pending_ids:
@@ -158,9 +159,9 @@ static func realize_pending_statuses(
 			continue
 
 		any_aura = any_aura or SimStatusSystem.is_aura_proto(proto)
-		if SimStatusSystem.is_aura_proto(proto) and api.state.projection_bank != null:
-			api.state.projection_bank.untrack_status_aura(int(target_id), status_id, true)
-			api.state.projection_bank.track_status_aura(int(target_id), status_id, false)
+		any_non_aura = any_non_aura or !SimStatusSystem.is_aura_proto(proto)
+		if SimStatusSystem.is_aura_proto(proto):
+			api._swap_status_aura_projection_lane(int(target_id), status_id, true, false)
 
 		if !had_realized:
 			var status_ctx := SimStatusSystem.make_context(
@@ -171,17 +172,17 @@ static func realize_pending_statuses(
 			if status_ctx != null and status_ctx.proto != null:
 				status_ctx.proto.on_apply(status_ctx, ctx)
 
-		api._request_immediate_planning_flush_if_needed(int(target_id), proto)
+		if !SimStatusSystem.is_aura_proto(proto):
+			api._request_immediate_planning_flush_if_needed(int(target_id), proto)
 
 	if !any_changed:
 		return
 
 	api._rebuild_modifier_cache_for(int(target_id))
-	if any_aura:
-		api._request_intent_refresh_all()
-	else:
+	if !any_aura:
 		api._request_intent_refresh(int(target_id))
-	api._on_status_changed(int(target_id))
+	if any_non_aura:
+		api._on_status_changed(int(target_id))
 
 
 static func _get_actor_id(ctx: NPCAIContext) -> int:

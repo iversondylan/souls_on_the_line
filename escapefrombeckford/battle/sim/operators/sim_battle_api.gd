@@ -4,6 +4,7 @@ class_name SimBattleAPI extends RefCounted
 
 const SimArcanaSystemScript = preload("res://battle/sim/operators/sim_arcana_system.gd")
 const PendingStatusSystemScript = preload("res://battle/sim/operators/pending_status_system.gd")
+const ProjectionChangeSystemScript = preload("res://battle/sim/operators/projection_change_system.gd")
 
 # ============================================================================
 # SimBattleAPI
@@ -395,10 +396,28 @@ func _request_outcome_check() -> void:
 func _on_status_changed(cid: int) -> void:
 	_request_replan(int(cid))
 
+func _track_status_aura_projection(source_owner_id: int, status_id: StringName, pending := false) -> void:
+	ProjectionChangeSystemScript.track_status_aura(self, source_owner_id, status_id, pending)
 
-func _request_intent_refresh_targets_for_aura(_source_id: int, _proto: Status) -> void:
-	# Conservative and correct for now.
-	_request_intent_refresh_all()
+func _untrack_status_aura_projection(source_owner_id: int, status_id: StringName, pending := false) -> void:
+	ProjectionChangeSystemScript.untrack_status_aura(self, source_owner_id, status_id, pending)
+
+func _swap_status_aura_projection_lane(
+	source_owner_id: int,
+	status_id: StringName,
+	from_pending: bool,
+	to_pending: bool
+) -> void:
+	ProjectionChangeSystemScript.swap_status_aura_lane(
+		self,
+		source_owner_id,
+		status_id,
+		from_pending,
+		to_pending
+	)
+
+func _refresh_status_aura_projection(source_owner_id: int, status_id: StringName, pending := false) -> void:
+	ProjectionChangeSystemScript.refresh_status_aura(self, source_owner_id, status_id, pending)
 
 
 
@@ -755,8 +774,8 @@ func apply_status(ctx: StatusContext) -> void:
 	
 	_rebuild_modifier_cache_for(int(ctx.target_id))
 
-	if SimStatusSystem.is_aura_proto(proto) and state.projection_bank != null:
-		state.projection_bank.track_status_aura(int(ctx.target_id), ctx.status_id, bool(ctx.pending))
+	if SimStatusSystem.is_aura_proto(proto):
+		_track_status_aura_projection(int(ctx.target_id), ctx.status_id, bool(ctx.pending))
 	
 	if !bool(ctx.pending):
 		var status_ctx := SimStatusSystem.make_context(
@@ -767,12 +786,10 @@ func apply_status(ctx: StatusContext) -> void:
 		if status_ctx != null and status_ctx.proto != null:
 			status_ctx.proto.on_apply(status_ctx, ctx)
 	
-	if SimStatusSystem.is_aura_proto(proto):
-		_request_intent_refresh_targets_for_aura(int(ctx.target_id), proto)
-	else:
+	if !SimStatusSystem.is_aura_proto(proto):
 		_request_intent_refresh(int(ctx.target_id))
 	
-	if !bool(ctx.pending):
+	if !bool(ctx.pending) and !SimStatusSystem.is_aura_proto(proto):
 		_on_status_changed(int(ctx.target_id))
 		_request_immediate_planning_flush_if_needed(int(ctx.target_id), proto)
 
@@ -827,18 +844,16 @@ func remove_status(ctx: StatusContext) -> void:
 	
 	_rebuild_modifier_cache_for(int(ctx.target_id))
 
-	if SimStatusSystem.is_aura_proto(proto) and state.projection_bank != null:
-		state.projection_bank.untrack_status_aura(int(ctx.target_id), ctx.status_id, bool(ctx.pending))
+	if SimStatusSystem.is_aura_proto(proto):
+		_untrack_status_aura_projection(int(ctx.target_id), ctx.status_id, bool(ctx.pending))
 	
 	if !bool(ctx.pending) and status_ctx != null and status_ctx.proto != null:
 		status_ctx.proto.on_remove(status_ctx, ctx)
 	
-	if SimStatusSystem.is_aura_proto(proto):
-		_request_intent_refresh_targets_for_aura(int(ctx.target_id), proto)
-	else:
+	if !SimStatusSystem.is_aura_proto(proto):
 		_request_intent_refresh(int(ctx.target_id))
 	
-	if !bool(ctx.pending):
+	if !bool(ctx.pending) and !SimStatusSystem.is_aura_proto(proto):
 		_on_status_changed(int(ctx.target_id))
 		_request_immediate_planning_flush_if_needed(int(ctx.target_id), proto)
 

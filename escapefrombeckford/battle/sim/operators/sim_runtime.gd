@@ -335,6 +335,9 @@ func request_urgent_planning_flush() -> void:
 		return
 	sim.checkpoint_processor.flush_planning(CheckpointProcessor.Kind.URGENT_STATUS_LEGALITY, sim)#request_followup_flush()
 
+func request_projection_cleanup_flush() -> void:
+	_apply_checkpoint_boundary(CheckpointProcessor.Kind.AFTER_PROJECTION_CLEANUP, true)
+
 # ============================================================================
 # API hooks (assigned from host)
 # ============================================================================

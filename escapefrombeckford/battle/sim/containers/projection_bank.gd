@@ -8,14 +8,57 @@ const SOURCE_KIND_ARCANUM := &"arcanum"
 var _entries_by_key: Dictionary = {}
 
 
-func track_status_aura(source_owner_id: int, status_id: StringName, pending := false) -> void:
-	_track(SOURCE_KIND_STATUS_AURA, int(source_owner_id), StringName(status_id), bool(pending))
+func track_status_aura(source_owner_id: int, status_id: StringName, pending := false) -> bool:
+	return _track(SOURCE_KIND_STATUS_AURA, int(source_owner_id), StringName(status_id), bool(pending))
 
 
-func untrack_status_aura(source_owner_id: int, status_id: StringName, pending := false) -> void:
-	_entries_by_key.erase(
+func untrack_status_aura(source_owner_id: int, status_id: StringName, pending := false) -> bool:
+	var key := _make_key(SOURCE_KIND_STATUS_AURA, int(source_owner_id), StringName(status_id), bool(pending))
+	var existed := _entries_by_key.has(key)
+	_entries_by_key.erase(key)
+	return existed
+
+
+func has_status_aura(source_owner_id: int, status_id: StringName, pending := false) -> bool:
+	return _entries_by_key.has(
 		_make_key(SOURCE_KIND_STATUS_AURA, int(source_owner_id), StringName(status_id), bool(pending))
 	)
+
+
+func get_status_aura_impact_info(
+	state: BattleState,
+	source_owner_id: int,
+	status_id: StringName,
+	_pending := false
+) -> Dictionary:
+	var target_ids := PackedInt32Array()
+	if state == null or state.status_catalog == null or source_owner_id <= 0 or status_id == &"":
+		return {"known": false, "target_ids": target_ids}
+
+	var source_unit: CombatantState = state.get_unit(int(source_owner_id))
+	if source_unit == null:
+		return {"known": false, "target_ids": target_ids}
+
+	var aura_proto := state.status_catalog.get_proto(status_id) as Aura
+	if aura_proto == null:
+		return {"known": false, "target_ids": target_ids}
+
+	var seen := {}
+	for unit_value in state.units.values():
+		var unit: CombatantState = unit_value as CombatantState
+		if unit == null or !unit.is_alive():
+			continue
+
+		var target_id := int(unit.id)
+		if target_id <= 0 or seen.has(target_id):
+			continue
+		if !aura_proto.affects_target(state, int(source_owner_id), target_id):
+			continue
+
+		seen[target_id] = true
+		target_ids.append(target_id)
+
+	return {"known": true, "target_ids": target_ids}
 
 
 func rebuild_arcanum_entries(state: BattleState, owner_id: int) -> void:
@@ -87,17 +130,19 @@ func clone():
 	return bank
 
 
-func _track(source_kind: StringName, source_owner_id: int, source_id: StringName, pending: bool) -> void:
+func _track(source_kind: StringName, source_owner_id: int, source_id: StringName, pending: bool) -> bool:
 	if source_kind == &"" or source_owner_id <= 0 or source_id == &"":
-		return
+		return false
 
 	var key := _make_key(source_kind, source_owner_id, source_id, pending)
+	var changed := !_entries_by_key.has(key)
 	_entries_by_key[key] = {
 		"source_kind": StringName(source_kind),
 		"source_owner_id": int(source_owner_id),
 		"source_id": StringName(source_id),
 		"pending": bool(pending),
 	}
+	return changed
 
 
 func _make_key(source_kind: StringName, source_owner_id: int, source_id: StringName, pending: bool) -> String:
