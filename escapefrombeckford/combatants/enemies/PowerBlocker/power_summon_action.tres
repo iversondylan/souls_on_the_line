@@ -4,7 +4,7 @@
 [ext_resource type="Resource" uid="uid://dcxgjl672yljc" path="res://combatants/enemies/PowerBlocker/summon_mite_pkg.tres" id="2_2qtp0"]
 [ext_resource type="Texture2D" uid="uid://dnor2pbb0nhu" path="res://_assets/sprites/assorted/egg-eye.png" id="3_rcqqn"]
 [ext_resource type="Script" uid="uid://dtwuyctovqk5r" path="res://npc_ai/_core/intent_lifecycle_model.gd" id="4_4pvic"]
-[ext_resource type="Resource" uid="uid://b8j3txinne778" path="res://combatants/enemies/CursedLedger/3_resonance_spike_lifecycle.tres" id="5_m4ebu"]
+[ext_resource type="Resource" uid="uid://wbtqwxj3pdou" path="res://combatants/enemies/PowerBlocker/3_resonance_spike_lifecycle.tres" id="5_s81sx"]
 [ext_resource type="Resource" uid="uid://egssyhjkm2wq" path="res://combatants/enemies/PowerBlocker/5_stability_lifecycle.tres" id="7_2qtp0"]
 [ext_resource type="Resource" uid="uid://ctwocrhb1x5bv" path="res://npc_ai/text/summon_red_intent_text_model.tres" id="9_2qtp0"]
 [ext_resource type="Script" uid="uid://q408gy2b4q6a" path="res://npc_ai/_core/performable_model.gd" id="9_fr0ta"]
@@ -24,7 +24,7 @@ metadata/_custom_type_script = "uid://dg05abl3ms1xi"
 [resource]
 script = ExtResource("11_owhfw")
 effect_packages = Array[ExtResource("1_m4ebu")]([ExtResource("2_2qtp0")])
-intent_lifecycle_models = Array[ExtResource("4_4pvic")]([ExtResource("5_m4ebu"), ExtResource("7_2qtp0")])
+intent_lifecycle_models = Array[ExtResource("4_4pvic")]([ExtResource("5_s81sx"), ExtResource("7_2qtp0")])
 chance_weight = 0.0
 performable_models = Array[ExtResource("9_fr0ta")]([SubResource("Resource_1t84l")])
 action_name = "Power Up"

@@ -10,7 +10,7 @@ func get_text(ctx: NPCAIContext) -> String:
 	var banish_damage := _param_i(ctx, Keys.BANISH_DAMAGE, 0)
 	var strikes := _param_i(ctx, Keys.STRIKES, 1)
 
-	var actor_id := int(ctx.cid)
+	var actor_id := ctx.get_actor_id()
 	var components := PendingIntentModifierResolver.get_attack_display_components(
 		ctx,
 		damage,

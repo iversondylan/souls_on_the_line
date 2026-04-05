@@ -8,7 +8,7 @@ func execute(ctx: NPCAIContext) -> void:
 		push_warning("npc_block_sequence.gd execute(): missing ctx/api/state")
 		return
 
-	var actor_id := int(ctx.cid)
+	var actor_id := ctx.get_actor_id()
 	if actor_id <= 0:
 		push_warning("npc_block_sequence.gd execute(): invalid actor_id")
 		return

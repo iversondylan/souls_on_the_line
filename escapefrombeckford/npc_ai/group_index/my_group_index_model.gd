@@ -6,7 +6,7 @@ func change_params(ctx: NPCAIContext) -> NPCAIContext:
 	if !ctx or !ctx.api:
 		return ctx
 
-	var cid := ParamModel._actor_id(ctx)
+	var cid := ctx.get_actor_id()
 	if cid <= 0:
 		return ctx
 
@@ -16,7 +16,7 @@ func change_params(ctx: NPCAIContext) -> NPCAIContext:
 func change_params_sim(ctx: NPCAIContext) -> NPCAIContext:
 	if !ctx or !ctx.api:
 		return ctx
-	var cid := ParamModel._actor_id(ctx)
+	var cid := ctx.get_actor_id()
 	if cid <= 0:
 		return ctx
 	ctx.params[Keys.GROUP_INDEX] = int(ctx.api.get_group(cid))

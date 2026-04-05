@@ -2,8 +2,6 @@
 
 class_name SimRuntime extends RefCounted
 
-const SimArcanaSystemScript = preload("res://battle/sim/operators/sim_arcana_system.gd")
-
 # Runtime orchestration for a single Sim.
 #
 # Responsibilities:
@@ -36,9 +34,12 @@ var _battle_end_arcana_fired: bool = false
 # Binding / lifecycle
 # ============================================================================
 
-func _init(_sim: Sim = null, _host: SimHost = null) -> void:
-	sim = _sim
-	host = _host
+#func _init(_sim: Sim = null, _host: SimHost = null) -> void:
+	#sim = _sim
+	#host = _host
+	#if sim != null:
+		#print("here")
+		
 
 
 func bind(_sim: Sim, _host: SimHost) -> void:
@@ -467,7 +468,7 @@ func _service_actor_turn(cid: int) -> void:
 		return
 
 	SimStatusSystem.on_actor_turn_begin(api, cid)
-	SimArcanaSystemScript.on_actor_turn_begin(api, cid)
+	SimArcanaSystem.on_actor_turn_begin(api, cid)
 	_apply_checkpoint_boundary(CheckpointProcessor.Kind.AFTER_ACTOR_TURN, true)
 
 	run_npc_turn(cid)
@@ -483,11 +484,11 @@ func _service_player_begin() -> void:
 	var player_id := _player_id()
 	if player_id > 0:
 		SimStatusSystem.on_player_turn_begin(api, player_id)
-		SimArcanaSystemScript.on_player_turn_begin(api, player_id)
+		SimArcanaSystem.on_player_turn_begin(api, player_id)
 		_apply_checkpoint_boundary(CheckpointProcessor.Kind.AFTER_ACTOR_TURN, true)
 
 		SimStatusSystem.on_actor_turn_begin(api, player_id)
-		SimArcanaSystemScript.on_actor_turn_begin(api, player_id)
+		SimArcanaSystem.on_actor_turn_begin(api, player_id)
 		_apply_checkpoint_boundary(CheckpointProcessor.Kind.AFTER_ACTOR_TURN, true)
 
 	engine.complete_player_begin()
@@ -548,7 +549,7 @@ func _complete_actor_turn(cid: int) -> void:
 			_actor_turn_scope_handle = null
 
 	SimStatusSystem.on_actor_turn_end(api, cid)
-	SimArcanaSystemScript.on_actor_turn_end(api, cid)
+	SimArcanaSystem.on_actor_turn_end(api, cid)
 	_apply_checkpoint_boundary(CheckpointProcessor.Kind.AFTER_ACTOR_TURN, true)
 
 	_replan_actor_intent_after_turn_cleanup(cid)
@@ -1087,7 +1088,7 @@ func run_arcana_proc(proc: int) -> void:
 	if writer != null:
 		writer.emit_arcana_proc(proc, proc_label)
 
-	for ctx in SimArcanaSystemScript.get_contexts(sim.api):
+	for ctx in SimArcanaSystem.get_contexts(sim.api):
 		if ctx == null or !ctx.is_valid() or !_arcanum_wants_proc(ctx, proc):
 			continue
 

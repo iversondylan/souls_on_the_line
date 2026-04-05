@@ -4,11 +4,6 @@ extends PerformableModel
 
 @export var threshold := 7
 
-func is_performable(ctx: NPCAIContext) -> bool:
-	if !ctx or !ctx.state:
-		return false
-	return int(ctx.state.get("dmg_since_last_turn", 0)) >= threshold
-
 func is_performable_sim(ctx: NPCAIContext) -> bool:
 	if !ctx or !ctx.state:
 		return false

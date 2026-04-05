@@ -17,7 +17,7 @@ func execute(ctx: NPCAIContext) -> void:
 		return
 
 	var params: Dictionary = ctx.params if ctx.params else {}
-	var actor_id := int(ctx.cid)
+	var actor_id := ctx.get_actor_id()
 	var source_id := int(params.get(Keys.SOURCE_ID, actor_id))
 	if source_id <= 0:
 		source_id = actor_id

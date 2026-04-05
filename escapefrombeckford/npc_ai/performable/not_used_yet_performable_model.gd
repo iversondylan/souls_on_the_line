@@ -4,11 +4,6 @@ extends PerformableModel
 
 @export var key: String = Keys.USED_1
 
-func is_performable(ctx: NPCAIContext) -> bool:
-	if !ctx or !ctx.state:
-		return true
-	return !bool(ctx.state.get(key, false))
-
 func is_performable_sim(ctx: NPCAIContext) -> bool:
 	if !ctx or !ctx.state:
 		return true

@@ -11,11 +11,16 @@ func execute(ctx: NPCAIContext) -> void:
 		push_warning("npc_attack_sequence.gd execute(): missing runtime")
 		return
 
+	var actor_id := ctx.get_actor_id()
+	if actor_id <= 0:
+		push_warning("npc_attack_sequence.gd execute(): invalid actor_id")
+		return
+
 	var attack_ctx := AttackContext.new()
 	attack_ctx.api = ctx.api
 	attack_ctx.runtime = runtime
-	attack_ctx.attacker_id = int(ctx.cid)
-	attack_ctx.source_id = int(ctx.cid)
+	attack_ctx.attacker_id = actor_id
+	attack_ctx.source_id = actor_id
 	attack_ctx.params = ctx.params if ctx.params != null else {}
 	attack_ctx.strikes = maxi(int(attack_ctx.params.get(Keys.STRIKES, 1)), 1)
 	attack_ctx.attack_mode = int(attack_ctx.params.get(Keys.ATTACK_MODE, Attack.Mode.MELEE))
@@ -30,7 +35,7 @@ func execute(ctx: NPCAIContext) -> void:
 	attack_ctx.reason = "npc_attack"
 	attack_ctx.targeting_ctx = TargetingContext.new()
 	attack_ctx.targeting_ctx.api = ctx.api
-	attack_ctx.targeting_ctx.source_id = int(ctx.cid)
+	attack_ctx.targeting_ctx.source_id = actor_id
 	attack_ctx.targeting_ctx.target_type = int(attack_ctx.targeting)
 	attack_ctx.targeting_ctx.attack_mode = int(attack_ctx.attack_mode)
 	attack_ctx.targeting_ctx.params = attack_ctx.params

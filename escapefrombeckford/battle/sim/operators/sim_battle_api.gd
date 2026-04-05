@@ -3,7 +3,6 @@
 class_name SimBattleAPI extends RefCounted
 
 const SimArcanaSystemScript = preload("res://battle/sim/operators/sim_arcana_system.gd")
-const PendingStatusSystemScript = preload("res://battle/sim/operators/pending_status_system.gd")
 const ProjectionChangeSystemScript = preload("res://battle/sim/operators/projection_change_system.gd")
 
 # ============================================================================
@@ -35,8 +34,11 @@ var runtime: SimRuntime
 var is_main: bool = true
 
 # Runtime callbacks assigned externally.
+signal summoned(id: int, g: int)
 var on_summoned: Callable = Callable()		# (summoned_id: int, group_index: int) -> void
+signal unit_removed(id: int, g: int)
 var on_unit_removed: Callable = Callable()	# (combat_id: int, group_index: int, reason: String) -> void
+signal urgent_planning_requested()
 var on_urgent_planning_requested: Callable = Callable()
 # Transitional: should ultimately live in dedicated player/input state.
 
@@ -263,7 +265,7 @@ func get_targets_for_attack_sequence(ai_ctx) -> Array:
 	if ai_ctx == null:
 		return []
 
-	var attacker_id := int(ai_ctx.cid) if ai_ctx and ("cid" in ai_ctx) else 0
+	var attacker_id: int = ai_ctx.get_actor_id() if ai_ctx is NPCAIContext else 0
 	if attacker_id <= 0:
 		return []
 
@@ -794,7 +796,7 @@ func apply_status(ctx: StatusContext) -> void:
 		_request_immediate_planning_flush_if_needed(int(ctx.target_id), proto)
 
 func realize_pending_statuses(target_id: int, source_id: int = 0, reason: String = "") -> void:
-	PendingStatusSystemScript.realize_pending_statuses(self, target_id, source_id, reason)
+	SimStatusSystem.realize_pending_statuses(self, target_id, source_id, reason)
 
 
 func remove_status(ctx: StatusContext) -> void:

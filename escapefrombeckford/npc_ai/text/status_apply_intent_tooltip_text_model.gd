@@ -7,7 +7,7 @@ func get_text(ctx: NPCAIContext) -> String:
 		return text_template
 
 	var result := text_template
-	var actor_id := int(ctx.cid)
+	var actor_id := ctx.get_actor_id()
 	var status_proto := _resolve_status_proto(ctx)
 
 	result = result.replace("{action_name}", String(ctx.action_name))

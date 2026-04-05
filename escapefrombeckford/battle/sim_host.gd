@@ -133,6 +133,7 @@ func init_from_seeds(battle_seed: int, run_seed: int) -> void:
 	main = s
 
 	if main.runtime != null:
+		#print("binding runtime")
 		main.runtime.bind(main, self)
 
 	_configure_main_api_logging()

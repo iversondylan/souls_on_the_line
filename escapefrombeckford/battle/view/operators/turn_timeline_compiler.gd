@@ -116,7 +116,7 @@ func _build_scope_mixed_nonattack_turn(turn_events: Array[BattleEvent]) -> Dicti
 
 	var beats: Array[TurnBeat] = []
 	var group_index := _find_group_index(turn_events)
-	var layout_order := _find_post_action_group_layout(turn_events, group_index)
+	var layout_orders := _find_post_action_group_layouts(turn_events, group_index)
 	var trailing := _collect_nonattack_trailing_events(turn_events)
 
 	var current_q := 0.0
@@ -156,7 +156,7 @@ func _build_scope_mixed_nonattack_turn(turn_events: Array[BattleEvent]) -> Dicti
 		i += 1
 
 	var clear_q := _enforce_min_clear_focus_q_for_self_death(current_q, actor_id, turn_events)
-	beats.append(_make_clear_focus_beat(clear_q, actor_id, trailing, layout_order))
+	beats.append(_make_clear_focus_beat(clear_q, actor_id, trailing, layout_orders))
 	return {
 		"action_kind": &"summon",
 		"beats": _sort_beats(beats),
@@ -653,8 +653,8 @@ func _build_scope_driven_attack_beats(parsed: ParsedNpcAttackTurn, turn_events: 
 
 	var clear_q := _next_on_grid_beat_after(last_work_q)
 	clear_q = _enforce_min_clear_focus_q_for_self_death(clear_q, parsed.actor_id, turn_events)
-	var layout_order := _find_post_action_group_layout(turn_events, parsed.group_index)
-	var clear_focus := _make_clear_focus_beat(clear_q, parsed.actor_id, parsed.trailing_events, layout_order)
+	var layout_orders := _find_post_action_group_layouts(turn_events, parsed.group_index)
+	var clear_focus := _make_clear_focus_beat(clear_q, parsed.actor_id, parsed.trailing_events, layout_orders)
 	_tag_beat(clear_focus, [&"clear_focus"])
 	beats.append(clear_focus)
 
@@ -1509,8 +1509,8 @@ func _build_melee_attack_beats_from_parsed(parsed: Dictionary, turn_events: Arra
 
 	var clear_q := final_q + _tail_gap_q_for_attack(analysis)
 	clear_q = _enforce_min_clear_focus_q_for_self_death(clear_q, analysis.attacker_id, turn_events)
-	var layout_order := _find_post_action_group_layout(turn_events, group_index)
-	beats.append(_make_clear_focus_beat(clear_q, analysis.attacker_id, trailing, layout_order))
+	var layout_orders := _find_post_action_group_layouts(turn_events, group_index)
+	beats.append(_make_clear_focus_beat(clear_q, analysis.attacker_id, trailing, layout_orders))
 	return _sort_beats(beats)
 
 
@@ -1583,8 +1583,8 @@ func _build_ranged_attack_beats_from_parsed(parsed: Dictionary, turn_events: Arr
 
 	var clear_q := final_q + _tail_gap_q_for_attack(analysis)
 	clear_q = _enforce_min_clear_focus_q_for_self_death(clear_q, analysis.attacker_id, turn_events)
-	var layout_order := _find_post_action_group_layout(turn_events, group_index)
-	_add_beat_array_clear_focus(beats, clear_q, analysis.attacker_id, trailing, layout_order)
+	var layout_orders := _find_post_action_group_layouts(turn_events, group_index)
+	_add_beat_array_clear_focus(beats, clear_q, analysis.attacker_id, trailing, layout_orders)
 	return _sort_beats(beats)
 
 
@@ -1882,8 +1882,8 @@ func _build_melee_attack_beats(analysis: AttackAnalysis, turn_events: Array[Batt
 	var last_hit_q := start_q + 0.5 * float(n - 1) + lethal_shift_q
 	var clear_q := last_hit_q + _tail_gap_q_for_attack(analysis)
 	clear_q = _enforce_min_clear_focus_q_for_self_death(clear_q, analysis.attacker_id, turn_events)
-	var layout_order := _find_post_action_group_layout(turn_events, group_index)
-	beats.append(_make_clear_focus_beat(clear_q, analysis.attacker_id, trailing, layout_order))
+	var layout_orders := _find_post_action_group_layouts(turn_events, group_index)
+	beats.append(_make_clear_focus_beat(clear_q, analysis.attacker_id, trailing, layout_orders))
 
 	return beats
 
@@ -1951,8 +1951,8 @@ func _build_ranged_attack_beats(analysis: AttackAnalysis, turn_events: Array[Bat
 	var last_impact_q := fire_start_q + 0.5 * float(n - 1) + lethal_shift_q + 0.5
 	var clear_q := last_impact_q + _tail_gap_q_for_attack(analysis)
 	clear_q = _enforce_min_clear_focus_q_for_self_death(clear_q, analysis.attacker_id, turn_events)
-	var layout_order := _find_post_action_group_layout(turn_events, group_index)
-	_add_beat_array_clear_focus(beats, clear_q, analysis.attacker_id, trailing, layout_order)
+	var layout_orders := _find_post_action_group_layouts(turn_events, group_index)
+	_add_beat_array_clear_focus(beats, clear_q, analysis.attacker_id, trailing, layout_orders)
 
 	return _sort_beats(beats)
 
@@ -1975,7 +1975,7 @@ func _make_clear_focus_beat(
 	beat_q: float,
 	actor_id: int,
 	trailing: Array[BattleEvent],
-	layout_order: GroupLayoutPresentationOrder = null
+	layout_orders: Array[GroupLayoutPresentationOrder] = []
 ) -> TurnBeat:
 	var beat := TurnBeat.new()
 	beat.beat_q = beat_q
@@ -1988,8 +1988,9 @@ func _make_clear_focus_beat(
 	o.visual_sec = 0.30
 	beat.orders.append(o)
 
-	if layout_order != null:
-		beat.orders.append(layout_order)
+	for layout_order in layout_orders:
+		if layout_order != null:
+			beat.orders.append(layout_order)
 
 	for e in trailing:
 		beat.events.append(e)
@@ -2308,9 +2309,9 @@ func _add_beat_array_clear_focus(
 	beat_q: float,
 	actor_id: int,
 	trailing: Array[BattleEvent],
-	layout_order: GroupLayoutPresentationOrder = null
+	layout_orders: Array[GroupLayoutPresentationOrder] = []
 ) -> void:
-	var b := _make_clear_focus_beat(beat_q, actor_id, trailing, layout_order)
+	var b := _make_clear_focus_beat(beat_q, actor_id, trailing, layout_orders)
 	beats.append(b)
 
 
@@ -2374,7 +2375,7 @@ func _build_generic_beats(events: Array[BattleEvent]) -> Array[TurnBeat]:
 	var removal_events: Array[BattleEvent] = split["removal_events"]
 	var trailing: Array[BattleEvent] = split["trailing"]
 
-	var layout_order := _find_post_action_group_layout(events, group_index)
+	var layout_orders := _find_post_action_group_layouts(events, group_index)
 
 	if actor_id > 0:
 		beats.append(_make_basic_focus_beat(0.0, actor_id, _collect_targets_from_events(events)))
@@ -2382,9 +2383,9 @@ func _build_generic_beats(events: Array[BattleEvent]) -> Array[TurnBeat]:
 		clear_q = _enforce_min_clear_focus_q_for_self_death(clear_q, actor_id, events)
 		if !removal_events.is_empty():
 			beats.append(_make_generic_removal_beat(1.0, actor_id, removal_events))
-			beats.append(_make_clear_focus_beat(clear_q, actor_id, trailing, layout_order))
+			beats.append(_make_clear_focus_beat(clear_q, actor_id, trailing, layout_orders))
 		else:
-			beats.append(_make_clear_focus_beat(clear_q, actor_id, trailing, layout_order))
+			beats.append(_make_clear_focus_beat(clear_q, actor_id, trailing, layout_orders))
 	else:
 		var b := TurnBeat.new()
 		b.beat_q = 0.0
@@ -2398,13 +2399,14 @@ func _build_generic_beats(events: Array[BattleEvent]) -> Array[TurnBeat]:
 
 		beats.append(b)
 
-		if layout_order != null or !trailing.is_empty():
+		if !layout_orders.is_empty() or !trailing.is_empty():
 			var trailing_beat := TurnBeat.new()
 			trailing_beat.beat_q = 1.0 if !removal_events.is_empty() else 0.0
 			trailing_beat.label = "generic"
 
-			if layout_order != null:
-				trailing_beat.orders.append(layout_order)
+			for layout_order in layout_orders:
+				if layout_order != null:
+					trailing_beat.orders.append(layout_order)
 
 			for e in trailing:
 				trailing_beat.events.append(e)
@@ -2498,7 +2500,7 @@ func _build_summon_beats(turn_events: Array[BattleEvent]) -> Array[TurnBeat]:
 	var trailing: Array[BattleEvent] = split["trailing"]
 	var actor_id := _find_actor_id(turn_events)
 	var group_index := _find_group_index(turn_events)
-	var layout_order := _find_post_action_group_layout(turn_events, group_index)
+	var layout_orders := _find_post_action_group_layouts(turn_events, group_index)
 
 	if summon_events.is_empty():
 		return _build_generic_beats(turn_events)
@@ -2507,7 +2509,7 @@ func _build_summon_beats(turn_events: Array[BattleEvent]) -> Array[TurnBeat]:
 	beats.append(_make_summon_windup_beat(1.0, actor_id, summon_events))
 	beats.append(_make_summon_pop_beat(2.0, actor_id, summon_events))
 	var clear_q := _enforce_min_clear_focus_q_for_self_death(3.0, actor_id, turn_events)
-	beats.append(_make_clear_focus_beat(clear_q, actor_id, trailing, layout_order))
+	beats.append(_make_clear_focus_beat(clear_q, actor_id, trailing, layout_orders))
 
 	return beats
 
@@ -2522,7 +2524,7 @@ func _build_status_beats(turn_events: Array[BattleEvent]) -> Array[TurnBeat]:
 	var trailing: Array[BattleEvent] = split["trailing"]
 	var actor_id := _find_actor_id(turn_events)
 	var group_index := _find_group_index(turn_events)
-	var layout_order := _find_post_action_group_layout(turn_events, group_index)
+	var layout_orders := _find_post_action_group_layouts(turn_events, group_index)
 
 	if status_events.is_empty():
 		return _build_generic_beats(turn_events)
@@ -2536,9 +2538,9 @@ func _build_status_beats(turn_events: Array[BattleEvent]) -> Array[TurnBeat]:
 	clear_q = _enforce_min_clear_focus_q_for_self_death(clear_q, actor_id, turn_events)
 	if !removal_events.is_empty():
 		beats.append(_make_generic_removal_beat(3.0, actor_id, removal_events))
-		beats.append(_make_clear_focus_beat(clear_q, actor_id, trailing, layout_order))
+		beats.append(_make_clear_focus_beat(clear_q, actor_id, trailing, layout_orders))
 	else:
-		beats.append(_make_clear_focus_beat(clear_q, actor_id, trailing, layout_order))
+		beats.append(_make_clear_focus_beat(clear_q, actor_id, trailing, layout_orders))
 
 	return beats
 
@@ -2806,9 +2808,11 @@ func _strike_has_chain_continuation(analysis: AttackAnalysis, strike_index: int)
 	return bool(strike.has_cleave)
 
 
-func _find_post_action_group_layout(events: Array[BattleEvent], fallback_group_index: int) -> GroupLayoutPresentationOrder:
-	var latest_group := -1
-	var latest_order := PackedInt32Array()
+func _find_post_action_group_layouts(
+	events: Array[BattleEvent],
+	fallback_group_index: int
+) -> Array[GroupLayoutPresentationOrder]:
+	var latest_by_group := {}
 
 	for e in events:
 		if e == null or e.data == null:
@@ -2819,24 +2823,41 @@ func _find_post_action_group_layout(events: Array[BattleEvent], fallback_group_i
 			BattleEvent.Type.DIED, \
 			BattleEvent.Type.FADED, \
 			BattleEvent.Type.MOVED:
-				if e.data.has(Keys.AFTER_ORDER_IDS):
-					latest_order = e.data.get(Keys.AFTER_ORDER_IDS, PackedInt32Array())
-					latest_group = int(e.data.get(Keys.GROUP_INDEX, e.group_index))
+				if !e.data.has(Keys.AFTER_ORDER_IDS):
+					continue
+				var latest_order: PackedInt32Array = e.data.get(Keys.AFTER_ORDER_IDS, PackedInt32Array())
+				if latest_order.is_empty():
+					continue
+				var latest_group := int(e.data.get(Keys.GROUP_INDEX, e.group_index))
+				if latest_group == -1:
+					latest_group = fallback_group_index
+				if latest_group == -1:
+					continue
+				latest_by_group[latest_group] = {
+					"seq": int(e.seq),
+					"order_ids": latest_order,
+				}
 
-	if latest_group == -1:
-		latest_group = fallback_group_index
+	if latest_by_group.is_empty():
+		return []
 
-	if latest_group == -1 or latest_order.is_empty():
-		return null
+	var sorted_groups: Array = latest_by_group.keys()
+	sorted_groups.sort_custom(func(a, b):
+		return int(latest_by_group[a].get("seq", -1)) < int(latest_by_group[b].get("seq", -1))
+	)
 
-	var o := GroupLayoutPresentationOrder.new()
-	o.kind = PresentationOrder.Kind.GROUP_LAYOUT
-	o.group_index = latest_group
-	o.order_ids = latest_order
-	o.animate = true
-	o.visual_sec = 0.12
+	var out: Array[GroupLayoutPresentationOrder] = []
+	for group_key in sorted_groups:
+		var info: Dictionary = latest_by_group[group_key]
+		var o := GroupLayoutPresentationOrder.new()
+		o.kind = PresentationOrder.Kind.GROUP_LAYOUT
+		o.group_index = int(group_key)
+		o.order_ids = info.get("order_ids", PackedInt32Array())
+		o.animate = true
+		o.visual_sec = 0.12
+		out.append(o)
 
-	return o
+	return out
 
 
 func _place_delayed_summon_reserve_release_events(beats: Array[TurnBeat], turn_events: Array[BattleEvent]) -> void:
@@ -2971,7 +2992,8 @@ func _ensure_lossless_beats(action_kind: StringName, turn_events: Array[BattleEv
 
 
 func _debug_log_reaction(message: String) -> void:
-	print("[VIEW REACTION] %s" % message)
+	pass
+	#print("[VIEW REACTION] %s" % message)
 
 
 func _debug_event_list_summary(events: Array) -> String:

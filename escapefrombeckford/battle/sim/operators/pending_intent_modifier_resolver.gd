@@ -2,8 +2,6 @@
 
 class_name PendingIntentModifierResolver extends RefCounted
 
-const PendingStatusSystemScript = preload("res://battle/sim/operators/pending_status_system.gd")
-
 static func get_modified_value(
 	ctx: NPCAIContext,
 	base: int,
@@ -17,7 +15,7 @@ static func get_modified_value(
 	if api.state == null:
 		return base
 
-	var pending_sources := PendingStatusSystemScript.collect_realizing_sources(ctx, source_id)
+	var pending_sources := SimStatusSystem.collect_pending_realization_sources(ctx, source_id)
 	var tokens := api.state.get_modifier_tokens_for_cid(source_id, mod_type, pending_sources)
 	return SimModifierResolver.apply_tokens(base, mod_type, tokens)
 

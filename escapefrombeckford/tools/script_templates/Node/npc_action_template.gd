@@ -12,7 +12,7 @@
 #@export_group("Behavior")
 #@export var spree_limit: int = 1
 #
-#func is_performable(ctx: NPCAIContext) -> bool:
+#func is_performable_sim(ctx: NPCAIContext) -> bool:
 	#var spree: int = int(ctx.state.get("spree", 0))
 	#return spree <= spree_limit
 #

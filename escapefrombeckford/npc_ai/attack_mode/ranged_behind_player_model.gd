@@ -6,7 +6,7 @@ func change_params_sim(ctx: NPCAIContext) -> NPCAIContext:
 	if !ctx or !ctx.api:
 		return ctx
 
-	var id := ParamModel._actor_id(ctx)
+	var id := ctx.get_actor_id()
 	if id <= 0:
 		return ctx
 

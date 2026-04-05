@@ -8,7 +8,7 @@ static func emit_set_intent(api: SimBattleAPI, profile: NPCAIProfile, ctx: NPCAI
 	if api == null or api.writer == null or profile == null or ctx == null:
 		return
 
-	var actor_id := int(ctx.cid)
+	var actor_id := ctx.get_actor_id()
 	var intent_text_color := Color.WHITE
 
 	if new_idx < 0:

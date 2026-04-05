@@ -92,7 +92,7 @@ func _ready() -> void:
 
 	hand.battle_view = battle_view
 	hand.sim_host = sim_host
-	hand.api = sim_host.get_main_api()
+	#hand.api = sim_host.get_main_api()
 
 	battle_interaction_handler.setup(self)
 
@@ -142,6 +142,7 @@ func _connect_ui() -> void:
 # External wiring
 # -------------------------
 
+# Called by run.gd before it calls start_battle()
 func _set_run(new_run: Run) -> void:
 	run = new_run
 	if !is_node_ready():
@@ -184,16 +185,16 @@ func start_battle() -> void:
 	var resolved_battle_seed := int(battle_seed)
 	var resolved_run_seed := int(run_seed)
 
-	if resolved_battle_seed == 0 and run != null and "battle_seed" in run:
+	if resolved_battle_seed == 0 and run != null:
 		resolved_battle_seed = int(run.battle_seed)
-	if resolved_run_seed == 0 and run != null and "run_seed" in run:
+	if resolved_run_seed == 0 and run != null:
 		resolved_run_seed = int(run.run_seed)
 
 	sim_host.init_from_seeds(resolved_battle_seed, resolved_run_seed)
 
 	hand.api = sim_host.get_main_api()
-	draw_pile_view.api = sim_host.get_main_api() if "api" in draw_pile_view else null
-	discard_pile_view.api = sim_host.get_main_api() if "api" in discard_pile_view else null
+	draw_pile_view.api = sim_host.get_main_api()
+	discard_pile_view.api = sim_host.get_main_api()
 
 	sim_host.seed_arcana_from_ids(my_arcana)
 

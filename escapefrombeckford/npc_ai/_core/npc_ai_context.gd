@@ -4,7 +4,6 @@ class_name NPCAIContext extends RefCounted
 # stable
 var api: SimBattleAPI
 var runtime: SimRuntime
-#var combatant: Fighter
 var cid: int = -1
 var combatant_state: CombatantState
 var combatant_data: CombatantData
@@ -19,3 +18,10 @@ var affected_ids: PackedInt32Array = PackedInt32Array()
 var forecast: bool = false
 var preview_package_index: int = -1
 var action_name: String = ""
+
+func get_actor_id() -> int:
+	if combatant_state != null:
+		return int(combatant_state.id)
+	if int(cid) > 0:
+		return int(cid)
+	return 0

@@ -26,7 +26,7 @@ func get_text(ctx: NPCAIContext) -> String:
 		ctx,
 		damage,
 		banish_damage,
-		int(ctx.cid)
+		ctx.get_actor_id()
 	)
 	result = result.replace("{damage}", "%d" % int(components.get("total", 0)))
 

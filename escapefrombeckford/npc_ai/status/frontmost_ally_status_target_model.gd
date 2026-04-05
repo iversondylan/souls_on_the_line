@@ -10,9 +10,7 @@ func _write_target_ids(ctx: NPCAIContext) -> NPCAIContext:
 	if !ctx or ctx.api == null:
 		return ctx
 
-	var actor_id := int(ParamModel._actor_id(ctx))
-	if actor_id <= 0:
-		actor_id = int(ctx.cid)
+	var actor_id := ctx.get_actor_id()
 	if actor_id <= 0:
 		return ctx
 
