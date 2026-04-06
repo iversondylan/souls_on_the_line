@@ -75,8 +75,8 @@ func _set_main(new_sim: Sim) -> void:
 		main.state.status_catalog = status_catalog
 		main.state.arcana_catalog = arcana_catalog
 
-	if main.runtime != null:
-		main.runtime.bind(main, self)
+	#if main.runtime != null:
+		#main.runtime.bind(main, self)
 
 
 func _set_status_catalog(catalog: StatusCatalog) -> void:
@@ -141,7 +141,7 @@ func init_from_seeds(battle_seed: int, run_seed: int) -> void:
 	main.api.writer.set_turn_context(0, -1, 0)
 	_battle_scope_handle = main.api.writer.scope_begin(Scope.Kind.BATTLE, "battle_seed=%d run_seed=%d" % [battle_seed, run_seed], 0)
 
-	_bind_runtime_callbacks(main)
+	#_bind_runtime_callbacks(main)
 
 	main_state_initialized.emit()
 
@@ -247,7 +247,7 @@ func clone_preview_from_main() -> void:
 	if preview != null and preview.runtime != null:
 		preview.runtime.bind(preview, self)
 	_configure_preview_api_logging()
-	_bind_runtime_callbacks(preview)
+	#_bind_runtime_callbacks(preview)
 
 	preview_state_cloned.emit()
 
@@ -306,18 +306,18 @@ func _configure_preview_api_logging() -> void:
 	preview.api.writer.allow_unscoped_events = true
 
 
-func _bind_runtime_callbacks(sim: Sim) -> void:
-	if sim == null or sim.api == null:
-		return
-	if sim.runtime == null:
-		sim.api.on_summoned = Callable()
-		sim.api.on_unit_removed = Callable()
-		sim.api.on_urgent_planning_requested = Callable()
-		return
-
-	sim.api.on_summoned = Callable(sim.runtime, "on_summoned")
-	sim.api.on_unit_removed = Callable(sim.runtime, "on_unit_removed")
-	sim.api.on_urgent_planning_requested = Callable(sim.runtime, "request_urgent_planning_flush")
+#func _bind_runtime_callbacks(sim: Sim) -> void:
+	#if sim == null or sim.api == null:
+		#return
+	#if sim.runtime == null:
+		#sim.api.on_summoned = Callable()
+		#sim.api.on_unit_removed = Callable()
+		#sim.api.on_urgent_planning_requested = Callable()
+		#return
+#
+	#sim.api.on_summoned = Callable(sim.runtime, "on_summoned")
+	#sim.api.on_unit_removed = Callable(sim.runtime, "on_unit_removed")
+	#sim.api.on_urgent_planning_requested = Callable(sim.runtime, "request_urgent_planning_flush")
 
 
 # -------------------------

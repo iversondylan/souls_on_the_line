@@ -683,4 +683,4 @@ func _scope_failure(message: String) -> void:
 	var text := String(message)
 	push_error(text)
 	if OS.is_debug_build():
-		assert(false, text) #Assertion failed: BattleEventWriter.scope_begin(): failed to append SCOPE_BEGIN id=1
+		assert(false, text)

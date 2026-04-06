@@ -2,9 +2,6 @@
 
 class_name SimBattleAPI extends RefCounted
 
-const SimArcanaSystemScript = preload("res://battle/sim/operators/sim_arcana_system.gd")
-const ProjectionChangeSystemScript = preload("res://battle/sim/operators/projection_change_system.gd")
-
 # ============================================================================
 # SimBattleAPI
 # ----------------------------------------------------------------------------
@@ -34,12 +31,12 @@ var runtime: SimRuntime
 var is_main: bool = true
 
 # Runtime callbacks assigned externally.
-signal summoned(id: int, g: int)
-var on_summoned: Callable = Callable()		# (summoned_id: int, group_index: int) -> void
-signal unit_removed(id: int, g: int)
-var on_unit_removed: Callable = Callable()	# (combat_id: int, group_index: int, reason: String) -> void
+signal summoned(ctx: SummonContext)
+#var on_summoned: Callable = Callable()		# (summoned_id: int, group_index: int) -> void
+signal unit_removed(id: int, g: int, reason: String)
+#var on_unit_removed: Callable = Callable()	# (combat_id: int, group_index: int, reason: String) -> void
 signal urgent_planning_requested()
-var on_urgent_planning_requested: Callable = Callable()
+#var on_urgent_planning_requested: Callable = Callable()
 # Transitional: should ultimately live in dedicated player/input state.
 
 var scopes: BattleScopeManager
@@ -384,8 +381,9 @@ func _request_immediate_planning_flush_if_needed(target_id: int, proto: Status) 
 	_request_replan(int(target_id))
 	_request_intent_refresh(int(target_id))
 	
-	if on_urgent_planning_requested.is_valid():
-		on_urgent_planning_requested.call()
+	urgent_planning_requested.emit()
+	#if on_urgent_planning_requested.is_valid():
+		#on_urgent_planning_requested.call()
 
 func _request_turn_order_rebuild() -> void:
 	if checkpoint_processor != null:
@@ -399,10 +397,10 @@ func _on_status_changed(cid: int) -> void:
 	_request_replan(int(cid))
 
 func _track_status_aura_projection(source_owner_id: int, status_id: StringName, pending := false) -> void:
-	ProjectionChangeSystemScript.track_status_aura(self, source_owner_id, status_id, pending)
+	ProjectionChangeSystem.track_status_aura(self, source_owner_id, status_id, pending)
 
 func _untrack_status_aura_projection(source_owner_id: int, status_id: StringName, pending := false) -> void:
-	ProjectionChangeSystemScript.untrack_status_aura(self, source_owner_id, status_id, pending)
+	ProjectionChangeSystem.untrack_status_aura(self, source_owner_id, status_id, pending)
 
 func _swap_status_aura_projection_lane(
 	source_owner_id: int,
@@ -410,7 +408,7 @@ func _swap_status_aura_projection_lane(
 	from_pending: bool,
 	to_pending: bool
 ) -> void:
-	ProjectionChangeSystemScript.swap_status_aura_lane(
+	ProjectionChangeSystem.swap_status_aura_lane(
 		self,
 		source_owner_id,
 		status_id,
@@ -419,7 +417,7 @@ func _swap_status_aura_projection_lane(
 	)
 
 func _refresh_status_aura_projection(source_owner_id: int, status_id: StringName, pending := false) -> void:
-	ProjectionChangeSystemScript.refresh_status_aura(self, source_owner_id, status_id, pending)
+	ProjectionChangeSystem.refresh_status_aura(self, source_owner_id, status_id, pending)
 
 
 
@@ -489,7 +487,7 @@ func resolve_damage_immediate(ctx: DamageContext) -> int:
 
 	ctx.phase = DamageContext.Phase.PRE_APPLICATION
 	SimStatusSystem.on_damage_will_be_taken(self, ctx)
-	SimArcanaSystemScript.on_damage_will_be_taken(self, ctx)
+	SimArcanaSystem.on_damage_will_be_taken(self, ctx)
 	ctx.amount = maxi(int(ctx.amount), 0)
 	var original_applied_banish := maxi(int(ctx.applied_banish_amount), 0)
 	var post_hook_banish := mini(original_applied_banish, maxi(int(ctx.amount) - normal_amount, 0))
@@ -644,8 +642,10 @@ func resolve_death(ctx: DeathContext) -> void:
 		state.groups[g].remove(int(ctx.dead_id))
 
 	ctx.after_order_ids = PackedInt32Array(state.groups[g].order) if g != -1 else PackedInt32Array()
-	if on_unit_removed.is_valid():
-		on_unit_removed.call(int(ctx.dead_id), int(g), "death:" + String(ctx.reason))
+	
+	unit_removed.emit(int(ctx.dead_id), int(g), "death:" + String(ctx.reason))
+	#if on_unit_removed.is_valid():
+		#on_unit_removed.call(int(ctx.dead_id), int(g), "death:" + String(ctx.reason))
 
 	if writer != null:
 		writer.emit_died(
@@ -678,7 +678,41 @@ func resolve_death(ctx: DeathContext) -> void:
 			runtime.drain_delayed_reactions(DelayedReaction.Timing.AFTER_STRIKE)
 	else:
 		SimStatusSystem.on_death(self, int(ctx.dead_id), int(ctx.killer_id), String(ctx.reason))
-		SimArcanaSystemScript.on_death(self, int(ctx.dead_id), int(ctx.killer_id), String(ctx.reason))
+		SimArcanaSystem.on_death(self, int(ctx.dead_id), int(ctx.killer_id), String(ctx.reason))
+
+
+func fade_unit(ctx: FadeContext) -> void:
+	if state == null or ctx == null:
+		return
+	
+	var u: CombatantState = state.get_unit(int(ctx.actor_id))
+	if u == null or !u.alive:
+		return
+	
+	_maybe_release_soulbound_reserve(u, "fade:" + String(ctx.reason))
+	
+	var g := int(u.team)
+	ctx.group_index = g
+	ctx.before_order_ids = PackedInt32Array(state.groups[g].order)
+	
+	u.alive = false
+	if g != -1:
+		state.groups[g].remove(int(ctx.actor_id))
+	
+	unit_removed.emit(int(ctx.actor_id), int(g), "fade:" + String(ctx.reason))
+	
+	#if on_unit_removed.is_valid():
+		#on_unit_removed.call(int(ctx.actor_id), int(g), "fade:" + String(ctx.reason))
+	
+	ctx.after_order_ids = PackedInt32Array(state.groups[g].order) if g != -1 else PackedInt32Array()
+	
+	_request_turn_order_rebuild()
+	_request_outcome_check()
+	
+	if writer != null:
+		writer.emit_faded(int(ctx.actor_id), int(g), ctx.before_order_ids, ctx.after_order_ids, String(ctx.reason))
+
+	ctx.faded = true
 
 
 func resolve_move(ctx: MoveContext) -> void:
@@ -859,39 +893,6 @@ func remove_status(ctx: StatusContext) -> void:
 		_on_status_changed(int(ctx.target_id))
 		_request_immediate_planning_flush_if_needed(int(ctx.target_id), proto)
 
-
-func fade_unit(ctx: FadeContext) -> void:
-	if state == null or ctx == null:
-		return
-	
-	var u: CombatantState = state.get_unit(int(ctx.actor_id))
-	if u == null or !u.alive:
-		return
-	
-	_maybe_release_soulbound_reserve(u, "fade:" + String(ctx.reason))
-	
-	var g := int(u.team)
-	ctx.group_index = g
-	ctx.before_order_ids = PackedInt32Array(state.groups[g].order)
-	
-	u.alive = false
-	if g != -1:
-		state.groups[g].remove(int(ctx.actor_id))
-	
-	if on_unit_removed.is_valid():
-		on_unit_removed.call(int(ctx.actor_id), int(g), "fade:" + String(ctx.reason))
-	
-	ctx.after_order_ids = PackedInt32Array(state.groups[g].order) if g != -1 else PackedInt32Array()
-	
-	_request_turn_order_rebuild()
-	_request_outcome_check()
-	
-	if writer != null:
-		writer.emit_faded(int(ctx.actor_id), int(g), ctx.before_order_ids, ctx.after_order_ids, String(ctx.reason))
-
-	ctx.faded = true
-
-
 # ============================================================================
 # Spawn / summon
 # ============================================================================
@@ -947,7 +948,7 @@ func summon(ctx: SummonContext) -> void:
 	if summon_bonus > 0:
 		u.max_health += summon_bonus
 		u.health += summon_bonus
-	u.mortality = int(ctx.mortality)
+	u.mortality = int(ctx.mortality) as CombatantState.Mortality
 	u.type = CombatantView.Type.ALLY if g == 0 else CombatantView.Type.ENEMY
 	
 	state.add_unit(u, g, int(ctx.insert_index))
@@ -976,8 +977,10 @@ func summon(ctx: SummonContext) -> void:
 
 	_enforce_player_group_mortality_cap(int(id), int(g))
 	
-	if on_summoned.is_valid():
-		on_summoned.call(int(id), int(g))
+	summoned.emit(ctx)
+	
+	#if on_summoned.is_valid():
+		#on_summoned.call(int(id), int(g))
 	
 	_request_replan(int(id))
 	_request_intent_refresh(int(id))
@@ -1270,7 +1273,7 @@ func on_damage_applied(ctx: DamageContext) -> void:
 		return
 	
 	SimStatusSystem.on_damage_taken(self, ctx)
-	SimArcanaSystemScript.on_damage_taken(self, ctx)
+	SimArcanaSystem.on_damage_taken(self, ctx)
 	
 	if !u.is_alive():
 		return
@@ -1358,11 +1361,11 @@ func _enforce_player_group_mortality_cap(summoned_id: int, group_index: int) -> 
 	if int(group_index) != int(FRIENDLY):
 		return
 
-	var summoned: CombatantState = state.get_unit(int(summoned_id))
-	if summoned == null or !summoned.is_alive():
+	var summoned_combatant: CombatantState = state.get_unit(int(summoned_id))
+	if summoned_combatant == null or !summoned_combatant.is_alive():
 		return
 
-	var mortality: CombatantState.Mortality = summoned.mortality
+	var mortality: CombatantState.Mortality = summoned_combatant.mortality
 	var cap := int(CombatantState.get_mortality_cap(int(mortality)))
 	if cap <= 0:
 		return

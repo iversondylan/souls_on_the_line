@@ -45,6 +45,10 @@ var _battle_end_arcana_fired: bool = false
 func bind(_sim: Sim, _host: SimHost) -> void:
 	sim = _sim
 	host = _host
+	if sim.api != null:
+		sim.api.summoned.connect(on_summoned)
+		sim.api.unit_removed.connect(on_unit_removed)
+		sim.api.urgent_planning_requested.connect(request_urgent_planning_flush)
 
 
 func reset_runtime_state() -> void:
@@ -343,14 +347,14 @@ func request_projection_cleanup_flush() -> void:
 # API hooks (assigned from host)
 # ============================================================================
 
-func on_summoned(summoned_id: int, group_index: int) -> void:
+func on_summoned(ctx: SummonContext) -> void:
 	_ensure_runtime_initialized()
 
 	var engine := _engine()
 	if engine == null:
 		return
 
-	engine.notify_summon_added(int(summoned_id), int(group_index))
+	engine.notify_summon_added(ctx)
 	_publish_turn_status()
 
 
