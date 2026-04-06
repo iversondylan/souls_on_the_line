@@ -402,6 +402,9 @@ func _track_status_aura_projection(source_owner_id: int, status_id: StringName, 
 func _untrack_status_aura_projection(source_owner_id: int, status_id: StringName, pending := false) -> void:
 	ProjectionChangeSystem.untrack_status_aura(self, source_owner_id, status_id, pending)
 
+func _untrack_auras_for_removed_combatant(removed_id: int) -> void:
+	ProjectionChangeSystem.untrack_auras_from_removed_combatant(self, removed_id)
+
 func _swap_status_aura_projection_lane(
 	source_owner_id: int,
 	status_id: StringName,
@@ -641,6 +644,8 @@ func resolve_death(ctx: DeathContext) -> void:
 	if g != -1:
 		state.groups[g].remove(int(ctx.dead_id))
 
+	_untrack_auras_for_removed_combatant(int(ctx.dead_id))
+
 	ctx.after_order_ids = PackedInt32Array(state.groups[g].order) if g != -1 else PackedInt32Array()
 	
 	unit_removed.emit(int(ctx.dead_id), int(g), "death:" + String(ctx.reason))
@@ -698,7 +703,9 @@ func fade_unit(ctx: FadeContext) -> void:
 	u.alive = false
 	if g != -1:
 		state.groups[g].remove(int(ctx.actor_id))
-	
+
+	_untrack_auras_for_removed_combatant(int(ctx.actor_id))
+
 	unit_removed.emit(int(ctx.actor_id), int(g), "fade:" + String(ctx.reason))
 	
 	#if on_unit_removed.is_valid():
