@@ -41,6 +41,24 @@ static func untrack_status_aura(
 	_handle_status_aura_projection_change(api, source_owner_id, impact_info, true)
 
 
+static func untrack_auras_from_removed_combatant(api: SimBattleAPI, removed_id: int) -> void:
+	if api == null or api.state == null or api.state.projection_bank == null:
+		return
+	if removed_id <= 0:
+		return
+
+	var bank: ProjectionBank = api.state.projection_bank
+	for entry: Dictionary in bank.get_entries():
+		if StringName(entry.get("source_kind", &"")) == ProjectionBank.SOURCE_KIND_STATUS_AURA \
+				and int(entry.get("source_owner_id", 0)) == removed_id:
+			untrack_status_aura(
+				api,
+				int(entry.get("source_owner_id", 0)),
+				StringName(entry.get("source_id", &"")),
+				bool(entry.get("pending", false))
+			)
+
+
 static func swap_status_aura_lane(
 	api: SimBattleAPI,
 	source_owner_id: int,
