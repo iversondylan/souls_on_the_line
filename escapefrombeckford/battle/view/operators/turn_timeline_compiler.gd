@@ -969,7 +969,7 @@ func _parse_attack_strike(
 		if _index_is_inside_reaction(idx, reactions):
 			continue
 
-		if _is_attack_direct_event(event):
+		if _is_attack_direct_event(event) or int(event.type) == int(BattleEvent.Type.SET_INTENT):
 			direct_events.append(event)
 
 	for i in range(reactions.size()):
