@@ -153,6 +153,16 @@ static func _handle_status_aura_projection_change(
 		api._request_replan_all()
 		api._request_intent_refresh_all()
 
+	# Rebuild modifier caches for all units whose effective modifier tokens
+	# may have changed due to the aura projection update.
+	if known:
+		api._rebuild_modifier_cache_for(int(source_owner_id))
+		for raw_id in impacted_ids:
+			api._rebuild_modifier_cache_for(int(raw_id))
+	else:
+		# Impact unknown: conservatively rebuild every unit.
+		api._rebuild_all_modifier_caches()
+
 	_request_immediate_projection_flush_if_needed(api)
 
 
