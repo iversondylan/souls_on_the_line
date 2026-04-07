@@ -122,19 +122,7 @@ static func get_modifier_tokens_for_target(
 
 		var tokens := proto.get_modifier_tokens(ctx, target_id)
 		for token in tokens:
-			if api.state._modifier_token_applies_to_target(token, target_id):
+			if SimBattleAPI._modifier_token_applies_to_target(token, target_id):
 				out.append(token)
 
 	return out
-
-
-# BattleState-accepting overload: avoids SimBattleAPI instantiation
-# in the data layer for read-only modifier-token queries.
-static func get_modifier_tokens_for_target_from_state(
-state: BattleState,
-target_id: int,
-mod_type: Modifier.Type
-) -> Array[ModifierToken]:
-	if state == null:
-		return []
-	return get_modifier_tokens_for_target(SimBattleAPI.new(state), target_id, mod_type)

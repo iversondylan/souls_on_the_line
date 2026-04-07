@@ -16,7 +16,7 @@ static func get_modified_value(
 		return base
 
 	var pending_sources := SimStatusSystem.collect_pending_realization_sources(ctx, source_id)
-	var tokens := api.state.get_modifier_tokens_for_cid(source_id, mod_type, pending_sources)
+	var tokens := api.get_modifier_tokens_for_cid(source_id, mod_type, pending_sources)
 	return SimModifierResolver.apply_tokens(base, mod_type, tokens)
 
 static func get_attack_display_components(

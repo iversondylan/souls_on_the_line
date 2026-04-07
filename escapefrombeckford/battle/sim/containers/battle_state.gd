@@ -4,6 +4,9 @@ class_name BattleState extends RefCounted
 
 const ProjectionBankScript = preload("res://battle/sim/containers/projection_bank.gd")
 
+const FRIENDLY := 0
+const ENEMY := 1
+
 enum Outcome {
 	NONE,
 	VICTORY,
@@ -118,70 +121,6 @@ func get_front_id(group_index: int) -> int:
 	group_index = clampi(group_index, 0, 1)
 	return groups[group_index].front_id(units)
 
-# battle_state.gd (additions)
-
-func get_modifier_tokens_for_cid(target_id: int, mod_type: Modifier.Type, include_pending_sources := {}) -> Array[ModifierToken]:
-	var tokens: Array[ModifierToken] = []
-
-	# 0) Battle-level globals (arcana, relic-like systems, etc.)
-	tokens.append_array(_get_arcana_tokens_for(target_id, mod_type))
-
-	var target: CombatantState = units.get(target_id, null)
-	if target == null or !target.is_alive():
-		return tokens
-
-	tokens.append_array(_get_effective_status_modifier_tokens_for_target(target_id, mod_type, include_pending_sources))
-	return tokens
-
-func _get_effective_status_modifier_tokens_for_target(
-	target_id: int,
-	mod_type: Modifier.Type,
-	include_pending_sources := {}
-) -> Array[ModifierToken]:
-	var out: Array[ModifierToken] = []
-	var target: CombatantState = units.get(target_id, null)
-	if target == null or status_catalog == null:
-		return out
-
-	for ctx: SimStatusContext in SimStatusSystem.get_effective_status_contexts_for_unit_from_state(
-		self,
-		target_id,
-		include_pending_sources
-	):
-		if ctx == null or !ctx.is_valid():
-			continue
-		var proto := ctx.proto
-		if proto == null:
-			continue
-		if !proto.contributes_modifier():
-			continue
-		if mod_type not in proto.get_contributed_modifier_types():
-			continue
-
-		var tokens := proto.get_modifier_tokens(ctx.make_token_ctx())
-		for token in tokens:
-			if _modifier_token_applies_to_target(token, target_id):
-				out.append(token)
-
-	return out
-
-func _get_arcana_tokens_for(target_id: int, mod_type: Modifier.Type) -> Array[ModifierToken]:
-	return SimArcanaSystem.get_modifier_tokens_for_target_from_state(self, target_id, mod_type)
-
-func _modifier_token_applies_to_target(token: ModifierToken, target_id: int) -> bool:
-	if token == null:
-		return false
-
-	match int(token.scope):
-		ModifierToken.ModScope.GLOBAL:
-			return true
-		ModifierToken.ModScope.SELF:
-			return int(token.owner_id) == int(target_id)
-		ModifierToken.ModScope.TARGET:
-			return int(token.owner_id) == int(target_id)
-		_:
-			return false
-
 # Minimal clone (good enough for early previews; deepen as needed)
 func clone() -> BattleState:
 	var b := BattleState.new()
@@ -234,7 +173,7 @@ func debug_dump_state(label: String = "") -> void:
 	])
 	print("  arcana: %s" % _debug_arcana_summary())
 
-	for group_index in [SimBattleAPI.FRIENDLY, SimBattleAPI.ENEMY]:
+	for group_index in [FRIENDLY, ENEMY]:
 		var group := groups[group_index] if group_index < groups.size() else null
 		if group == null:
 			print("  %s: <missing group>" % _debug_group_name(group_index))
@@ -281,9 +220,9 @@ func _debug_outcome_name(value: int) -> String:
 
 func _debug_group_name(group_index: int) -> String:
 	match int(group_index):
-		SimBattleAPI.FRIENDLY:
+		FRIENDLY:
 			return "FRIENDLY"
-		SimBattleAPI.ENEMY:
+		ENEMY:
 			return "ENEMY"
 		_:
 			return "GROUP_%d" % int(group_index)
