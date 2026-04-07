@@ -14,9 +14,8 @@ static func get_modified_value(
 	var u: CombatantState = b.get_unit(cid)
 	if u != null:
 		return u.modifiers.apply(int(mod_type), base)
-	# Fallback for cids not tracked in state (edge case)
-	var tokens := b.get_modifier_tokens_for_cid(cid, mod_type)
-	return apply_tokens(base, mod_type, tokens)
+	# Fallback for cids not tracked in state (edge case): no modifiers available.
+	return base
 
 # Returns the pre-aggregated {flat: int, mult: float} for a token set.
 # Used by both apply_tokens and _rebuild_modifier_cache_for so the

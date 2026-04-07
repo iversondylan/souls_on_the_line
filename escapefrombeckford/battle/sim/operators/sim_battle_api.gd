@@ -233,16 +233,98 @@ func has_status(combat_id: int, status_id: StringName) -> bool:
 func get_status_intensity(combat_id: int, status_id: StringName) -> int:
 	if state == null:
 		return -1
-	
+
 	var u := state.get_unit(int(combat_id))
 	if u == null or !u.is_alive() or u.statuses == null:
 		return -1
-	
+
 	var stack: StatusStack = u.statuses.get_status_stack(status_id, false)
 	if stack == null:
 		return -1
-	
+
 	return int(stack.intensity)
+
+
+# ============================================================================
+# Derived Query Methods (API-owned)
+# ============================================================================
+
+func get_effective_status_contexts_for_unit(
+	target_id: int,
+	include_pending_sources := {},
+	allow_dead_self_aura_source := false
+) -> Array[SimStatusContext]:
+	return SimStatusSystem.get_effective_status_contexts_for_unit(
+		self,
+		target_id,
+		include_pending_sources,
+		allow_dead_self_aura_source
+	)
+
+
+func get_modifier_tokens_for_target(target_id: int, mod_type: Modifier.Type) -> Array[ModifierToken]:
+	return SimArcanaSystem.get_modifier_tokens_for_target(self, target_id, mod_type)
+
+
+func get_modifier_tokens_for_cid(
+	target_id: int,
+	mod_type: Modifier.Type,
+	include_pending_sources := {}
+) -> Array[ModifierToken]:
+	var tokens: Array[ModifierToken] = []
+
+	# Battle-level globals (arcana, relic-like systems, etc.)
+	tokens.append_array(get_modifier_tokens_for_target(target_id, mod_type))
+
+	var target: CombatantState = state.get_unit(target_id) if state != null else null
+	if target == null or !target.is_alive():
+		return tokens
+
+	tokens.append_array(_get_effective_status_modifier_tokens_for_target(target_id, mod_type, include_pending_sources))
+	return tokens
+
+
+func _get_effective_status_modifier_tokens_for_target(
+	target_id: int,
+	mod_type: Modifier.Type,
+	include_pending_sources := {}
+) -> Array[ModifierToken]:
+	var out: Array[ModifierToken] = []
+	if state == null or state.status_catalog == null:
+		return out
+
+	for ctx: SimStatusContext in get_effective_status_contexts_for_unit(target_id, include_pending_sources):
+		if ctx == null or !ctx.is_valid():
+			continue
+		var proto := ctx.proto
+		if proto == null:
+			continue
+		if !proto.contributes_modifier():
+			continue
+		if mod_type not in proto.get_contributed_modifier_types():
+			continue
+
+		var tokens := proto.get_modifier_tokens(ctx.make_token_ctx())
+		for token in tokens:
+			if _modifier_token_applies_to_target(token, target_id):
+				out.append(token)
+
+	return out
+
+
+static func _modifier_token_applies_to_target(token: ModifierToken, target_id: int) -> bool:
+	if token == null:
+		return false
+
+	match int(token.scope):
+		ModifierToken.ModScope.GLOBAL:
+			return true
+		ModifierToken.ModScope.SELF:
+			return int(token.owner_id) == int(target_id)
+		ModifierToken.ModScope.TARGET:
+			return int(token.owner_id) == int(target_id)
+		_:
+			return false
 
 
 # ============================================================================
@@ -1390,7 +1472,7 @@ func _rebuild_modifier_cache_for(id: int) -> void:
 		var mod_type := mod_type_variant as Modifier.Type
 		if int(mod_type) == int(Modifier.Type.NO_MODIFIER):
 			continue
-		var tokens := state.get_modifier_tokens_for_cid(id, mod_type)
+		var tokens := get_modifier_tokens_for_cid(id, mod_type)
 		if tokens.is_empty():
 			continue
 		var d := SimModifierResolver.compute_modifier_deltas(mod_type, tokens)
