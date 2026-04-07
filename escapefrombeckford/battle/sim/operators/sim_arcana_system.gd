@@ -126,3 +126,15 @@ static func get_modifier_tokens_for_target(
 				out.append(token)
 
 	return out
+
+
+# BattleState-accepting overload: avoids SimBattleAPI instantiation
+# in the data layer for read-only modifier-token queries.
+static func get_modifier_tokens_for_target_from_state(
+state: BattleState,
+target_id: int,
+mod_type: Modifier.Type
+) -> Array[ModifierToken]:
+if state == null:
+return []
+return get_modifier_tokens_for_target(SimBattleAPI.new(state), target_id, mod_type)

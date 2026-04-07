@@ -227,6 +227,12 @@ func advance() -> TurnFlowDirective:
 	if _queue_dirty:
 		_rebuild_queue()
 
+	# Drain dead units from the head of the queue (loop-based, avoids recursion)
+	while !_queue.is_empty() and !host.is_alive(int(_queue[0])):
+		_pending_members.erase(int(_queue[0]))
+		_queue.remove_at(0)
+		_queue_dirty = true
+
 	if _queue.is_empty():
 		var ended_group := active_group_index
 		if ended_group == 0:
@@ -237,11 +243,6 @@ func advance() -> TurnFlowDirective:
 		return TurnFlowDirective.group_turn_ended(ended_group)
 
 	var actor_id := int(_queue[0])
-	if !host.is_alive(actor_id):
-		_pending_members.erase(actor_id)
-		_queue.remove_at(0)
-		_queue_dirty = true
-		return advance()
 
 	if active_group_index == 0 and host.is_player(actor_id) and !_player_start_of_turn_fired:
 		_player_start_of_turn_fired = true

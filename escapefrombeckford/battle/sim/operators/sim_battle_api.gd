@@ -62,11 +62,6 @@ func get_group(combat_id: int) -> int:
 	return int(u.team) if u != null else -1
 
 
-func get_team(combat_id: int) -> int:
-	# team == group for now
-	return get_group(combat_id)
-
-
 func get_opposing_group(group_index: int) -> int:
 	return 1 - clampi(int(group_index), 0, 1)
 
@@ -1038,7 +1033,7 @@ func resolve_player_discard(selected_card_uids: Array[String]) -> void:
 # Resource Mutations
 # ============================================================================
 
-func set_mana(ctx: ManaContext) -> void:
+func set_mana(ctx: ManaContext, extra: Dictionary = {}) -> void:
 	if state == null or state.resource == null or ctx == null:
 		return
 	
@@ -1061,7 +1056,8 @@ func set_mana(ctx: ManaContext) -> void:
 			ctx.after_mana,
 			ctx.before_max_mana,
 			ctx.after_max_mana,
-			ctx.reason
+			ctx.reason,
+			extra
 		)
 
 
@@ -1115,44 +1111,25 @@ func spend_mana_for_card(ctx: ManaContext, card: CardData) -> bool:
 	
 	var cost := int(card.get_total_cost())
 	if cost <= 0:
-		ctx.before_mana = int(state.resource.mana)
-		ctx.after_mana = int(state.resource.mana)
-		ctx.before_max_mana = int(state.resource.max_mana)
-		ctx.after_max_mana = int(state.resource.max_mana)
-		ctx.changed = false
+		ctx.new_mana = int(state.resource.mana)
+		set_mana(ctx)
 		return true
 	
 	if int(state.resource.mana) < cost:
 		return false
 	
-	ctx.before_mana = int(state.resource.mana)
-	ctx.before_max_mana = int(state.resource.max_mana)
 	ctx.amount = cost
 	ctx.mode = ManaContext.Mode.SPEND_FOR_CARD
-	
-	state.resource.mana -= cost
-	
-	ctx.after_mana = int(state.resource.mana)
-	ctx.after_max_mana = int(state.resource.max_mana)
-	ctx.changed = true
+	ctx.new_mana = int(state.resource.mana) - cost
 	card.ensure_uid()
 	ctx.card_uid = String(card.uid)
 	ctx.card_name = String(card.name)
 	
-	if writer != null:
-		writer.emit_mana(
-			int(ctx.source_id),
-			ctx.before_mana,
-			ctx.after_mana,
-			ctx.before_max_mana,
-			ctx.after_max_mana,
-			ctx.reason,
-			{
-				Keys.CARD_UID: ctx.card_uid,
-				Keys.CARD_NAME: ctx.card_name,
-				Keys.AMOUNT: int(cost),
-			}
-		)
+	set_mana(ctx, {
+		Keys.CARD_UID: ctx.card_uid,
+		Keys.CARD_NAME: ctx.card_name,
+		Keys.AMOUNT: int(cost),
+	})
 	
 	return true
 
@@ -1179,7 +1156,7 @@ func plan_intent(cid: int, allow_hooks := true, clear_dirty := true) -> void:
 
 	u.ai_state[Keys.PLANNING_NOW] = true
 
-	var ctx_ai := _make_ai_ctx(u)
+	var ctx_ai := ActionPlanner.make_context(self, u)
 	ActionPlanner.ensure_valid_plan_sim(u.combatant_data.ai, ctx_ai, allow_hooks)
 
 	u.ai_state[Keys.PLANNING_NOW] = false
@@ -1218,18 +1195,6 @@ func debug_kill_all_enemies(reason: String = "debug_kill_all_enemies") -> void:
 		checkpoint_processor.request_replan_all()
 		checkpoint_processor.request_intent_refresh_all()
 
-func _make_ai_ctx(u: CombatantState) -> NPCAIContext:
-	var ctx := NPCAIContext.new()
-	ctx.api = self
-	ctx.runtime = runtime
-	ctx.cid = int(u.id)
-	ctx.combatant_state = u
-	ctx.combatant_data = u.combatant_data
-	ctx.state = u.ai_state
-	ctx.rng = u.rng
-	ctx.params = {}
-	ctx.forecast = false
-	return ctx
 
 
 # ============================================================================
@@ -1296,7 +1261,6 @@ func _make_unit_from_combatant_data(
 ) -> CombatantState:
 	var u := CombatantState.new()
 	u.id = int(id)
-	u.rng = RNG.new(RNGUtil.mix_seed(state.battle_seed, u.id))
 	u.combatant_data = combatant_data
 	u.init_from_combatant_data(combatant_data, current_health_override)
 	

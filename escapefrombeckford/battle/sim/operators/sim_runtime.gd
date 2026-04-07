@@ -816,16 +816,13 @@ func run_attack(ctx: AttackContext) -> bool:
 				Keys.CHAIN_SOURCE_TARGET_ID: int(primary_target_id),
 				Keys.CLEAVE_DAMAGE: int(overflow_amount),
 			}
-			var cleave_scope := _begin_scope(Scope.Kind.CLEAVE, "cleave=%d" % int(s), attacker_id, {
+			var cleave_scope_extra := {
 				Keys.STRIKE_INDEX: int(s),
 				Keys.ATTACK_MODE: mode,
 				Keys.TARGET_TYPE: targeting,
-				Keys.CLEAVE: true,
-				Keys.CHAINED_FROM_PREVIOUS: true,
-				Keys.ORIGIN_STRIKE_INDEX: int(s),
-				Keys.CHAIN_SOURCE_TARGET_ID: int(primary_target_id),
-				Keys.CLEAVE_DAMAGE: int(overflow_amount),
-			})
+			}
+			cleave_scope_extra.merge(cleave_extra)
+			var cleave_scope := _begin_scope(Scope.Kind.CLEAVE, "cleave=%d" % int(s), attacker_id, cleave_scope_extra)
 			if cleave_scope == null:
 				_strike_resolution_depth = maxi(_strike_resolution_depth - 1, 0)
 				drain_delayed_reactions(DelayedReaction.Timing.AFTER_STRIKE)
@@ -844,16 +841,13 @@ func run_attack(ctx: AttackContext) -> bool:
 					cleave_extra
 				)
 
-			var cleave_hit_scope := _begin_scope(Scope.Kind.HIT, "t=%d" % int(cleave_target_id), attacker_id, {
+			var cleave_hit_scope_extra := {
 				Keys.TARGET_ID: int(cleave_target_id),
 				Keys.STRIKE_INDEX: int(s),
 				Keys.ATTACK_MODE: mode,
-				Keys.CLEAVE: true,
-				Keys.CHAINED_FROM_PREVIOUS: true,
-				Keys.ORIGIN_STRIKE_INDEX: int(s),
-				Keys.CHAIN_SOURCE_TARGET_ID: int(primary_target_id),
-				Keys.CLEAVE_DAMAGE: int(overflow_amount),
-			})
+			}
+			cleave_hit_scope_extra.merge(cleave_extra)
+			var cleave_hit_scope := _begin_scope(Scope.Kind.HIT, "t=%d" % int(cleave_target_id), attacker_id, cleave_hit_scope_extra)
 			if cleave_hit_scope == null:
 				_end_scope(cleave_scope)
 				_strike_resolution_depth = maxi(_strike_resolution_depth - 1, 0)

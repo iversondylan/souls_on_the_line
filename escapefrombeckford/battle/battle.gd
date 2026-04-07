@@ -2,9 +2,6 @@
 
 class_name Battle extends Node
 
-const FRIENDLY := 0
-const ENEMY := 1
-
 
 # -------------------------
 # Inspector
@@ -222,7 +219,7 @@ func start_battle() -> void:
 
 	var runtime := _runtime()
 	if runtime != null:
-		runtime.begin_group_turn_flow(FRIENDLY, true)
+		runtime.begin_group_turn_flow(SimBattleAPI.FRIENDLY, true)
 
 
 func pause_for_menu() -> void:
@@ -271,7 +268,7 @@ func _spawn_from_battle_data() -> void:
 
 	if player_data != null:
 		var current_health := _get_player_spawn_health()
-		runtime.add_combatant_from_data(_get_player_battle_data(), FRIENDLY, 0, true, current_health)
+		runtime.add_combatant_from_data(_get_player_battle_data(), SimBattleAPI.FRIENDLY, 0, true, current_health)
 
 	if battle_data == null:
 		thank_you_box.show()
@@ -282,7 +279,7 @@ func _spawn_from_battle_data() -> void:
 			continue
 
 		var new_data: CombatantData = enemy_data.duplicate()
-		runtime.add_combatant_from_data(new_data, ENEMY, -1, false)
+		runtime.add_combatant_from_data(new_data, SimBattleAPI.ENEMY, -1, false)
 
 
 func initialize_card_pile_ui() -> void:
@@ -372,9 +369,9 @@ func _on_turn_status_view_changed(group_index: int, active_id: int, _pending_ids
 	var text := ""
 	if active_id > 0 and active_id == player_id:
 		text = "Player Turn"
-	elif int(group_index) == FRIENDLY:
+	elif int(group_index) == SimBattleAPI.FRIENDLY:
 		text = "Friendly Turn"
-	elif int(group_index) == ENEMY:
+	elif int(group_index) == SimBattleAPI.ENEMY:
 		text = "Enemy Turn"
 	else:
 		text = "Turn"

@@ -844,3 +844,24 @@ static func _tick_duration_for_proc(api: SimBattleAPI, actor_id: int, proc_type:
 		rc.target_id = actor_id
 		rc.status_id = sid
 		api.remove_status(rc)
+
+
+# -------------------------------------------------------------------
+# BattleState-accepting helpers (avoids SimBattleAPI instantiation
+# in the data layer for read-only modifier-token queries)
+# -------------------------------------------------------------------
+
+static func get_effective_status_contexts_for_unit_from_state(
+state: BattleState,
+target_id: int,
+include_pending_sources := {},
+allow_dead_self_aura_source := false
+) -> Array[SimStatusContext]:
+if state == null:
+return []
+return get_effective_status_contexts_for_unit(
+SimBattleAPI.new(state),
+target_id,
+include_pending_sources,
+allow_dead_self_aura_source
+)
