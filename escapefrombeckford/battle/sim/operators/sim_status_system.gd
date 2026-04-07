@@ -133,7 +133,7 @@ static func unit_get_attack_self_damage_on_strike(
 # Proto helpers
 # -------------------------------------------------------------------
 
-static func get_proto(api: SimBattleAPI, status_id: StringName) -> Status:
+static func get_proto(api, status_id: StringName) -> Status:
 	if api == null or api.state == null:
 		return null
 
@@ -145,7 +145,7 @@ static func get_proto(api: SimBattleAPI, status_id: StringName) -> Status:
 static func is_aura_proto(proto: Status) -> bool:
 	return proto is Aura
 
-static func make_context(api: SimBattleAPI, owner_id: int, stack: StatusStack) -> SimStatusContext:
+static func make_context(api, owner_id: int, stack: StatusStack) -> SimStatusContext:
 	if api == null or api.state == null or owner_id <= 0 or stack == null:
 		return null
 
@@ -161,7 +161,7 @@ static func make_context(api: SimBattleAPI, owner_id: int, stack: StatusStack) -
 
 
 static func get_effective_status_contexts_for_unit(
-	api: SimBattleAPI,
+	api,
 	target_id: int,
 	include_pending_sources := {},
 	allow_dead_self_aura_source := false
@@ -485,7 +485,7 @@ static func _unit_grants_cleave_internal(
 
 static func _append_owned_status_contexts(
 	out: Array[SimStatusContext],
-	api: SimBattleAPI,
+	api,
 	target_id: int,
 	include_pending_sources := {}
 ) -> void:
@@ -516,7 +516,7 @@ static func _append_owned_status_contexts(
 
 static func _append_projected_status_contexts(
 	out: Array[SimStatusContext],
-	api: SimBattleAPI,
+	api,
 	target_id: int,
 	include_pending_sources := {},
 	allow_dead_self_aura_source := false
@@ -549,7 +549,7 @@ static func _append_projected_status_contexts(
 
 static func _append_status_aura_projected_contexts(
 	out: Array[SimStatusContext],
-	api: SimBattleAPI,
+	api,
 	target: CombatantState,
 	target_id: int,
 	entry: Dictionary,
@@ -609,7 +609,7 @@ static func _append_status_aura_projected_contexts(
 
 static func _append_arcanum_projected_contexts(
 	out: Array[SimStatusContext],
-	api: SimBattleAPI,
+	api,
 	target: CombatantState,
 	target_id: int,
 	entry: Dictionary
@@ -860,7 +860,7 @@ static func get_effective_status_contexts_for_unit_from_state(
 	if state == null:
 		return []
 	return get_effective_status_contexts_for_unit(
-	SimBattleAPI.new(state),
+	BattleQueryCtx.new(state),
 	target_id,
 	include_pending_sources,
 	allow_dead_self_aura_source

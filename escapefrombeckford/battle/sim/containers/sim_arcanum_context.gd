@@ -2,7 +2,7 @@
 
 class_name SimArcanumContext extends RefCounted
 
-var api: SimBattleAPI
+var api  # SimBattleAPI | BattleQueryCtx — untyped to accept either
 var owner_id: int = 0
 var owner_group_index: int = SimBattleAPI.FRIENDLY
 var entry: ArcanaState.ArcanumEntry = null
@@ -10,7 +10,7 @@ var proto: Arcanum = null
 
 
 func _init(
-	_api: SimBattleAPI = null,
+	_api = null,
 	_owner_id: int = 0,
 	_owner_group_index: int = SimBattleAPI.FRIENDLY,
 	_entry: ArcanaState.ArcanumEntry = null,

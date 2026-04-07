@@ -5,7 +5,7 @@ class_name SimArcanaSystem extends RefCounted
 const SimArcanumContextScript = preload("res://battle/sim/containers/sim_arcanum_context.gd")
 
 
-static func get_contexts(api: SimBattleAPI) -> Array:
+static func get_contexts(api) -> Array:
 	var out: Array = []
 	if api == null or api.state == null or api.state.arcana == null or api.state.arcana_catalog == null:
 		return out
@@ -103,7 +103,7 @@ static func on_death(api: SimBattleAPI, dead_id: int, killer_id: int, reason: St
 
 
 static func get_modifier_tokens_for_target(
-	api: SimBattleAPI,
+	api,
 	target_id: int,
 	mod_type: Modifier.Type
 ) -> Array[ModifierToken]:
@@ -137,4 +137,4 @@ mod_type: Modifier.Type
 ) -> Array[ModifierToken]:
 	if state == null:
 		return []
-	return get_modifier_tokens_for_target(SimBattleAPI.new(state), target_id, mod_type)
+	return get_modifier_tokens_for_target(BattleQueryCtx.new(state), target_id, mod_type)

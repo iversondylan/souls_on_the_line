@@ -11,7 +11,7 @@ var projected_status_id: StringName = &""
 
 
 func _init(
-	_api: SimBattleAPI = null,
+	_api = null,
 	_target_id: int = 0,
 	_target_owner: CombatantState = null,
 	_arcanum_owner_id: int = 0,

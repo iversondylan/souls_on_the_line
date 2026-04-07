@@ -5,7 +5,7 @@ class_name SimStatusContext extends RefCounted
 # Runtime wrapper for a specific status stack on a specific owner.
 # This keeps proto Status scripts from reaching all over raw state.
 
-var api: SimBattleAPI
+var api  # SimBattleAPI | BattleQueryCtx — untyped to accept either
 var owner_id: int = 0
 var owner: CombatantState
 var stack: StatusStack
@@ -13,7 +13,7 @@ var proto: Status
 
 
 func _init(
-	_api: SimBattleAPI = null,
+	_api = null,
 	_owner_id: int = 0,
 	_owner: CombatantState = null,
 	_stack: StatusStack = null,
