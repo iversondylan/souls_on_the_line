@@ -906,6 +906,7 @@ func spawn_from_data(
 	
 	var u := _make_unit_from_combatant_data(combatant_data, id, g, is_player, int(current_health_override))
 	state.add_unit(u, g, int(insert_index))
+	_rebuild_modifier_cache_for(id)
 	_request_turn_order_rebuild()
 	
 	if writer != null:
@@ -943,6 +944,7 @@ func summon(ctx: SummonContext) -> void:
 	u.type = CombatantView.Type.ALLY if g == 0 else CombatantView.Type.ENEMY
 	
 	state.add_unit(u, g, int(ctx.insert_index))
+	_rebuild_modifier_cache_for(id)
 	_request_turn_order_rebuild()
 	
 	if writer != null:
@@ -1379,10 +1381,32 @@ func _swap_ids(group_index: int, a: int, b: int) -> void:
 	g.order[bi] = tmp
 
 
-func _rebuild_modifier_cache_for(_id: int) -> void:
-	# Placeholder:
-	# translate StatusState -> ModifierCache here later
-	pass
+func _rebuild_modifier_cache_for(id: int) -> void:
+	var u: CombatantState = state.get_unit(id) if state != null else null
+	if u == null:
+		return
+	u.modifiers.clear()
+	for mod_type_variant in Modifier.Type.values():
+		var mod_type := mod_type_variant as Modifier.Type
+		if int(mod_type) == int(Modifier.Type.NO_MODIFIER):
+			continue
+		var tokens := state.get_modifier_tokens_for_cid(id, mod_type)
+		if tokens.is_empty():
+			continue
+		var d := SimModifierResolver.compute_modifier_deltas(mod_type, tokens)
+		var flat := int(d["flat"])
+		var mult := float(d["mult"])
+		if flat != 0:
+			u.modifiers.set_add(int(mod_type), flat)
+		if mult != 1.0:
+			u.modifiers.set_mul(int(mod_type), mult)
+
+
+func _rebuild_all_modifier_caches() -> void:
+	if state == null:
+		return
+	for cid in state.units.keys():
+		_rebuild_modifier_cache_for(int(cid))
 
 
 # ============================================================================
