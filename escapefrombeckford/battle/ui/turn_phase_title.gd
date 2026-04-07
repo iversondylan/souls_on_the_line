@@ -1,9 +1,9 @@
-class_name TurnPhaseTitle extends Node2D
+class_name TurnPhaseTitle extends Control
 
 signal preview_button_pressed()
 
-@onready var preview_button: Button = $Control/PanelContainer/MarginContainer/VBoxContainer/PreviewTurnFlow
-@onready var turn_text: RichTextLabel = $Control/PanelContainer/MarginContainer/VBoxContainer/TurnText
+@onready var preview_button: Button = $PanelContainer/MarginContainer/VBoxContainer/PreviewTurnFlow
+@onready var turn_text: RichTextLabel = $PanelContainer/MarginContainer/VBoxContainer/TurnText
 
 func enable_button(enabled: bool) -> void:
 	preview_button.disabled = !enabled

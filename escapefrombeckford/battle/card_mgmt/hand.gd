@@ -1,6 +1,6 @@
 # hand.gd
 
-class_name Hand extends Node2D
+class_name Hand extends Control
 
 signal card_activated(card: UsableCard)
 signal done_drawing()
@@ -422,7 +422,7 @@ func reposition_hand_cards() -> void:
 func get_card_position(angle_deg_flt: float) -> Vector2:
 	var x: float = hand_radius_flt * cos(deg_to_rad(angle_deg_flt + 270))
 	var y: float = hand_radius_flt * sin(deg_to_rad(angle_deg_flt + 270))
-	return collision_shape.position + Vector2(x, y)
+	return position + collision_shape.position + Vector2(x, y)
 
 func _update_card_transform(usable_card: UsableCard, angle_in_drag: float) -> void:
 	var pos: Vector2 = get_card_position(angle_in_drag)

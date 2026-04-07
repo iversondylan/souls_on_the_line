@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="CardPile" format=3 uid="uid://b2gq58swp7age"]
+
+[ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://cards/_core/card_data.gd" id="1_1tix1"]
+[ext_resource type="Resource" uid="uid://b7txf6d8vmjkk" path="res://cards/souls/SpectralCloneCard/spectral_clone.tres" id="2_oc100"]
+[ext_resource type="Script" uid="uid://dnybrgm0o6gjj" path="res://cards/_core/card_pile.gd" id="2_uoadt"]
+[ext_resource type="Resource" uid="uid://bhqq2dr8db5pn" path="res://cards/convocations/ResonanceSpikeCard/resonance_spike_card.tres" id="3_2g061"]
+[ext_resource type="Resource" uid="uid://sdnvejwfmf81" path="res://cards/convocations/ConvokedAssault/convoked_assault.tres" id="4_l1rsi"]
+[ext_resource type="Resource" uid="uid://c66n0b7ujjpvo" path="res://cards/convocations/Interception/interception.tres" id="5_1tc2u"]
+
+[resource]
+script = ExtResource("2_uoadt")
+cards = Array[ExtResource("1_1tix1")]([ExtResource("2_oc100"), ExtResource("2_oc100"), ExtResource("2_oc100"), ExtResource("2_oc100"), ExtResource("2_oc100"), ExtResource("2_oc100"), ExtResource("3_2g061"), ExtResource("3_2g061"), ExtResource("4_l1rsi"), ExtResource("4_l1rsi"), ExtResource("5_1tc2u"), ExtResource("5_1tc2u")])
+metadata/_custom_type_script = "uid://dnybrgm0o6gjj"
