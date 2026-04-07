@@ -135,6 +135,6 @@ state: BattleState,
 target_id: int,
 mod_type: Modifier.Type
 ) -> Array[ModifierToken]:
-if state == null:
-return []
-return get_modifier_tokens_for_target(SimBattleAPI.new(state), target_id, mod_type)
+	if state == null:
+		return []
+	return get_modifier_tokens_for_target(SimBattleAPI.new(state), target_id, mod_type)
