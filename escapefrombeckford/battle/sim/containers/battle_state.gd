@@ -12,9 +12,6 @@ enum Outcome {
 
 var outcome: int = Outcome.NONE
 
-const FRIENDLY := 0
-const ENEMY := 1
-
 var status_catalog: StatusCatalog
 var arcana_catalog: ArcanaCatalog
 var projection_bank = ProjectionBankScript.new()
@@ -146,8 +143,8 @@ func _get_effective_status_modifier_tokens_for_target(
 	if target == null or status_catalog == null:
 		return out
 
-	for ctx: SimStatusContext in SimStatusSystem.get_effective_status_contexts_for_unit(
-		SimBattleAPI.new(self),
+	for ctx: SimStatusContext in SimStatusSystem.get_effective_status_contexts_for_unit_from_state(
+		self,
 		target_id,
 		include_pending_sources
 	):
@@ -169,8 +166,7 @@ func _get_effective_status_modifier_tokens_for_target(
 	return out
 
 func _get_arcana_tokens_for(target_id: int, mod_type: Modifier.Type) -> Array[ModifierToken]:
-	var api := SimBattleAPI.new(self)
-	return SimArcanaSystem.get_modifier_tokens_for_target(api, target_id, mod_type)
+	return SimArcanaSystem.get_modifier_tokens_for_target_from_state(self, target_id, mod_type)
 
 func _modifier_token_applies_to_target(token: ModifierToken, target_id: int) -> bool:
 	if token == null:
@@ -238,7 +234,7 @@ func debug_dump_state(label: String = "") -> void:
 	])
 	print("  arcana: %s" % _debug_arcana_summary())
 
-	for group_index in [FRIENDLY, ENEMY]:
+	for group_index in [SimBattleAPI.FRIENDLY, SimBattleAPI.ENEMY]:
 		var group := groups[group_index] if group_index < groups.size() else null
 		if group == null:
 			print("  %s: <missing group>" % _debug_group_name(group_index))
@@ -285,9 +281,9 @@ func _debug_outcome_name(value: int) -> String:
 
 func _debug_group_name(group_index: int) -> String:
 	match int(group_index):
-		FRIENDLY:
+		SimBattleAPI.FRIENDLY:
 			return "FRIENDLY"
-		ENEMY:
+		SimBattleAPI.ENEMY:
 			return "ENEMY"
 		_:
 			return "GROUP_%d" % int(group_index)

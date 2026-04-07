@@ -3,7 +3,6 @@ extends Node
 
 enum State { DISABLED, HOT, DIRTY }
 
-const FRIENDLY := 0
 const PREVIEW_DISPLAY_DELAY_SEC := 1.5
 
 var sim_host: SimHost : set = _set_sim_host
@@ -100,7 +99,7 @@ func recompute_preview_if_needed() -> void:
 		if main_runtime != null and main_runtime.has_runtime_initialized():
 			resumed_from_live_turn = preview_runtime.clone_turn_flow_from(main_runtime)
 		if !resumed_from_live_turn:
-			preview_runtime.begin_group_turn_flow(FRIENDLY, false, false)
+			preview_runtime.begin_group_turn_flow(SimBattleAPI.FRIENDLY, false, false)
 		preview_runtime.confirm_player_end_ready()
 
 	var preview_state := sim_host.get_preview_state()
@@ -190,7 +189,7 @@ func _on_preview_display_delay_elapsed(request_id: int) -> void:
 
 func _on_turn_status_view_changed(group_index: int, active_id: int, _pending_ids: PackedInt32Array, player_id: int) -> void:
 	#print("battle_preview_coordinator.gd _on_turn_status_view_changed()")
-	_view_is_player_turn = active_id > 0 and active_id == player_id and int(group_index) == FRIENDLY
+	_view_is_player_turn = active_id > 0 and active_id == player_id and int(group_index) == SimBattleAPI.FRIENDLY
 	if _view_is_player_turn:
 		if _player_input_ready:
 			if _card_scope_depth == 0:

@@ -16,9 +16,6 @@ signal preview_state_cloned()
 signal combatant_added(combat_id: int, group_index: int, insert_index: int, is_preview: bool)
 signal player_input_reached()
 
-const FRIENDLY := 0
-const ENEMY := 1
-
 var status_catalog: StatusCatalog : set = _set_status_catalog
 var arcana_catalog: ArcanaCatalog : set = _set_arcana_catalog
 
@@ -330,8 +327,8 @@ func debug_dump_units() -> void:
 		return
 
 	print("SimHost units dump:")
-	for group_index in [FRIENDLY, ENEMY]:
-		var gname := "FRIENDLY" if group_index == FRIENDLY else "ENEMY"
+	for group_index in [SimBattleAPI.FRIENDLY, SimBattleAPI.ENEMY]:
+		var gname := "FRIENDLY" if group_index == SimBattleAPI.FRIENDLY else "ENEMY"
 		var order := main.state.groups[group_index].order
 		print("%s order: %s" % [gname, Array(order)])
 
@@ -355,7 +352,7 @@ func debug_dump_units() -> void:
 			])
 
 	var seen := {}
-	for group_index in [FRIENDLY, ENEMY]:
+	for group_index in [SimBattleAPI.FRIENDLY, SimBattleAPI.ENEMY]:
 		for cid in main.state.groups[group_index].order:
 			seen[int(cid)] = true
 

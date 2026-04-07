@@ -25,7 +25,7 @@ static func on_group_turn_begin(api: SimBattleAPI, group_index: int) -> void:
 		if bool(u.ai_state.get(Keys.IS_ACTING, false)):
 			continue
 
-		var ctx := _make_ai_ctx(api, u)
+		var ctx := ActionPlanner.make_context(api, u)
 		if bool(u.ai_state.get(&"telegraph_committed", false)):
 			continue
 
@@ -52,7 +52,7 @@ static func on_group_turn_end(api: SimBattleAPI, group_index: int) -> void:
 
 		ActionPlanner.ensure_ai_state_initialized(u)
 
-		var ctx := _make_ai_ctx(api, u)
+		var ctx := ActionPlanner.make_context(api, u)
 		var action := _get_planned_action_for_unit(u)
 		if action != null:
 			for m: IntentLifecycleModel in action.intent_lifecycle_models:
@@ -105,16 +105,3 @@ static func _get_planned_action_for_ctx(ctx: NPCAIContext) -> NPCAction:
 		return null
 	var idx := int(ctx.state.get(ActionPlanner.KEY_PLANNED_IDX, -1))
 	return ActionPlanner.get_action_by_idx(ctx.combatant_data.ai, idx)
-
-static func _make_ai_ctx(api: SimBattleAPI, u: CombatantState) -> NPCAIContext:
-	var ctx := NPCAIContext.new()
-	ctx.api = api
-	ctx.runtime = api.runtime if api != null else null
-	ctx.cid = int(u.id)
-	ctx.combatant_state = u
-	ctx.combatant_data = u.combatant_data
-	ctx.state = u.ai_state
-	ctx.rng = u.rng
-	ctx.params = {}
-	ctx.forecast = false
-	return ctx
