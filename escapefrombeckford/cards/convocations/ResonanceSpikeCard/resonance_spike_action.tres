@@ -2,12 +2,12 @@
 
 [ext_resource type="Script" uid="uid://bnww04vabnac4" path="res://cards/_generic_actions/apply_status_to_self_action.gd" id="1_action"]
 [ext_resource type="Resource" uid="uid://bpcpnxremq4xv" path="res://audio/haunting_gloom.tres" id="2_sound"]
-[ext_resource type="Resource" uid="uid://bfon8dtpvipfp" path="res://statuses/resonance_spike.tres" id="3_status"]
+[ext_resource type="Resource" uid="uid://bfon8dtpvipfp" path="res://statuses/resonance_spike_3.tres" id="3_xjar6"]
 
 [resource]
 script = ExtResource("1_action")
-status = ExtResource("3_status")
-intensity = 2
+status = ExtResource("3_xjar6")
+intensity = 3
 sound = ExtResource("2_sound")
 play_sound_on_success = true
 metadata/_custom_type_script = "uid://wtk5v77fcqvn"

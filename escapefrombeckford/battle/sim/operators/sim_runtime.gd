@@ -383,7 +383,7 @@ func handle_group_turn_started(group_index: int) -> void:
 
 	var writer := api.writer
 	if writer != null:
-		writer.set_turn_context(engine._turn_token, group_index, 0)
+		writer.set_turn_context(engine.turn_token, group_index, 0)
 		_group_turn_scope_handle = writer.scope_begin(Scope.Kind.GROUP_TURN, "group=%d" % group_index, 0)
 		writer.emit_group_turn_begin(group_index)
 
@@ -442,7 +442,7 @@ func _publish_turn_status() -> void:
 	var pending_ids := snapshot.pending_ids
 
 	writer.set_turn_context(
-		engine._turn_token,
+		engine.turn_token,
 		engine.active_group_index,
 		int(active_id)
 	)
@@ -462,7 +462,7 @@ func _service_actor_turn(cid: int) -> void:
 		return
 	var writer := api.writer
 	if writer != null:
-		writer.set_turn_context(engine._turn_token, engine.active_group_index, cid)
+		writer.set_turn_context(engine.turn_token, engine.active_group_index, cid)
 		_actor_turn_scope_handle = writer.scope_begin(Scope.Kind.ACTOR_TURN, "actor=%d" % cid, cid)
 		writer.emit_actor_begin(cid)
 
