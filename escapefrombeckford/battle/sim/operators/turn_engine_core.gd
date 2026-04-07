@@ -24,12 +24,6 @@ class_name TurnEngineCore extends RefCounted
 # - Units later than the pivot can remain or become pending depending on
 #   can_restore_turn.
 # - Units earlier than the pivot are treated as passed and lose pending status.
-#
-# Legacy note
-# - Earlier iterations used captured phase windows / active-slice boundaries.
-# - That approach has been retired from active logic.
-# - Some compatibility fields remain conceptually documented below, but are not
-#   part of the current execution model.
 # ============================================================================
 
 
@@ -292,10 +286,6 @@ func notify_actor_removed(combat_id: int) -> void:
 	_restores_granted.erase(removed_id)
 	_turns_taken.erase(removed_id)
 
-	# Important:
-	# Do not break the active-actor handshake here.
-	# SimRuntime still owns actor-end cleanup, scope closure, and the eventual
-	# call to complete_actor().
 	_queue_dirty = true
 
 

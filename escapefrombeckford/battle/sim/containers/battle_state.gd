@@ -194,7 +194,7 @@ func clone() -> BattleState:
 	b.summon_card_max_health_bonus = summon_card_max_health_bonus.duplicate(true)
 
 	b.rng = RNG.new()
-	b.rng.seed = rng.seed
+	b.rng.rng_seed = rng.rng_seed
 	b._next_sim_id = _next_sim_id
 
 	for id in units.keys():

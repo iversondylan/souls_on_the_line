@@ -305,21 +305,6 @@ func _configure_preview_api_logging() -> void:
 	# when the preview writer does not inherit the live scope stack.
 	preview.api.writer.allow_unscoped_events = true
 
-
-#func _bind_runtime_callbacks(sim: Sim) -> void:
-	#if sim == null or sim.api == null:
-		#return
-	#if sim.runtime == null:
-		#sim.api.on_summoned = Callable()
-		#sim.api.on_unit_removed = Callable()
-		#sim.api.on_urgent_planning_requested = Callable()
-		#return
-#
-	#sim.api.on_summoned = Callable(sim.runtime, "on_summoned")
-	#sim.api.on_unit_removed = Callable(sim.runtime, "on_unit_removed")
-	#sim.api.on_urgent_planning_requested = Callable(sim.runtime, "request_urgent_planning_flush")
-
-
 # -------------------------
 # Debug
 # -------------------------

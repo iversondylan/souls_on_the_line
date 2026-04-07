@@ -44,16 +44,12 @@ var modifiers: ModifierCache = ModifierCache.new()
 var ai_profile: NPCAIProfile
 var ai_state: Dictionary = {}
 
-# the status_dict is newer and possibly replacing StatusState.
-# id:StringName -> {duration:int, intensity:int}
-#var status_dict: Dictionary = {} # &"amplify" -> {"duration":2,"intensity":1}
-
 # RNG stream (deterministic per unit)
 var rng: RNG
 
-func init_unit_rng(seed: int) -> void:
+func init_unit_rng(rng_seed: int) -> void:
 	rng = RNG.new()
-	rng.seed = seed
+	rng.rng_seed = rng_seed
 
 func is_alive() -> bool:
 	return alive and health > 0
@@ -104,7 +100,7 @@ func clone() -> CombatantState:
 
 	if rng:
 		c.rng = RNG.new()
-		c.rng.seed = rng.seed
+		c.rng.rng_seed = rng.rng_seed
 
 	return c
 

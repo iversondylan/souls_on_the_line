@@ -34,14 +34,6 @@ var _battle_end_arcana_fired: bool = false
 # Binding / lifecycle
 # ============================================================================
 
-#func _init(_sim: Sim = null, _host: SimHost = null) -> void:
-	#sim = _sim
-	#host = _host
-	#if sim != null:
-		#print("here")
-		
-
-
 func bind(_sim: Sim, _host: SimHost) -> void:
 	sim = _sim
 	host = _host
@@ -953,23 +945,23 @@ func run_draw_action(ctx: DrawContext) -> void:
 	if actor_id <= 0:
 		return
 
-	var draw_scope := _begin_scope(
-		Scope.Kind.STATUS_ACTION,
-		"draw_cards amount=%d" % int(ctx.amount),
-		actor_id,
-		{
-			Keys.ACTOR_ID: int(actor_id),
-			Keys.SOURCE_ID: int(ctx.source_id),
-			Keys.AMOUNT: int(ctx.amount),
-			Keys.REASON: String(ctx.reason),
-			Keys.DISABLE_UNTIL_NEXT_PLAYER_TURN: bool(ctx.disable_until_next_player_turn),
-		}
-	)
-	if draw_scope == null:
-		return
+	#var draw_scope := _begin_scope(
+		#Scope.Kind.STATUS_ACTION,
+		#"draw_cards amount=%d" % int(ctx.amount),
+		#actor_id,
+		#{
+			#Keys.ACTOR_ID: int(actor_id),
+			#Keys.SOURCE_ID: int(ctx.source_id),
+			#Keys.AMOUNT: int(ctx.amount),
+			#Keys.REASON: String(ctx.reason),
+			#Keys.DISABLE_UNTIL_NEXT_PLAYER_TURN: bool(ctx.disable_until_next_player_turn),
+		#}
+	#)
+	#if draw_scope == null:
+		#return
 
 	api.emit_draw_cards(ctx)
-	_end_scope(draw_scope)
+	#_end_scope(draw_scope)
 
 func run_realize_pending_statuses(actor_id: int, source_id: int = 0, reason: String = "") -> void:
 	var api := _api()

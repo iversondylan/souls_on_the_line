@@ -30,14 +30,10 @@ var checkpoint_processor: CheckpointProcessor
 var runtime: SimRuntime
 var is_main: bool = true
 
-# Runtime callbacks assigned externally.
+# Runtime signals
 signal summoned(ctx: SummonContext)
-#var on_summoned: Callable = Callable()		# (summoned_id: int, group_index: int) -> void
 signal unit_removed(id: int, g: int, reason: String)
-#var on_unit_removed: Callable = Callable()	# (combat_id: int, group_index: int, reason: String) -> void
 signal urgent_planning_requested()
-#var on_urgent_planning_requested: Callable = Callable()
-# Transitional: should ultimately live in dedicated player/input state.
 
 var scopes: BattleScopeManager
 var writer: BattleEventWriter
@@ -382,8 +378,6 @@ func _request_immediate_planning_flush_if_needed(target_id: int, proto: Status) 
 	_request_intent_refresh(int(target_id))
 	
 	urgent_planning_requested.emit()
-	#if on_urgent_planning_requested.is_valid():
-		#on_urgent_planning_requested.call()
 
 func _request_turn_order_rebuild() -> void:
 	if checkpoint_processor != null:
@@ -649,8 +643,6 @@ func resolve_death(ctx: DeathContext) -> void:
 	ctx.after_order_ids = PackedInt32Array(state.groups[g].order) if g != -1 else PackedInt32Array()
 	
 	unit_removed.emit(int(ctx.dead_id), int(g), "death:" + String(ctx.reason))
-	#if on_unit_removed.is_valid():
-		#on_unit_removed.call(int(ctx.dead_id), int(g), "death:" + String(ctx.reason))
 
 	if writer != null:
 		writer.emit_died(
@@ -707,9 +699,6 @@ func fade_unit(ctx: FadeContext) -> void:
 	_untrack_auras_for_removed_combatant(int(ctx.actor_id))
 
 	unit_removed.emit(int(ctx.actor_id), int(g), "fade:" + String(ctx.reason))
-	
-	#if on_unit_removed.is_valid():
-		#on_unit_removed.call(int(ctx.actor_id), int(g), "fade:" + String(ctx.reason))
 	
 	ctx.after_order_ids = PackedInt32Array(state.groups[g].order) if g != -1 else PackedInt32Array()
 	
@@ -985,9 +974,6 @@ func summon(ctx: SummonContext) -> void:
 	_enforce_player_group_mortality_cap(int(id), int(g))
 	
 	summoned.emit(ctx)
-	
-	#if on_summoned.is_valid():
-		#on_summoned.call(int(id), int(g))
 	
 	_request_replan(int(id))
 	_request_intent_refresh(int(id))
@@ -1436,12 +1422,8 @@ func _rebuild_modifier_cache_for(_id: int) -> void:
 
 
 # ============================================================================
-# Misc / Stubs
+# Misc
 # ============================================================================
-
-func run_status_proc(_target_id: int, _proc_type: Status.ProcType) -> void:
-	pass
-
 
 func heal(ctx: HealContext) -> int:
 	if ctx == null or state == null:
@@ -1517,10 +1499,6 @@ func heal(ctx: HealContext) -> int:
 
 	#_on_health_changed(int(ctx.target_id))
 	return ctx.healed_amount
-
-
-func apply_damage_amount(_ctx: DamageContext, _amount: int) -> void:
-	pass
 
 
 func play_sfx(sound: Sound) -> void:
