@@ -3,7 +3,7 @@
 class_name BattleUI extends CanvasLayer
 
 @onready var end_turn: Button = $EndTurn
-@onready var summon_replace_prompt: Node2D = $SelectionPrompt
+@onready var summon_replace_prompt: Control = $SelectionPrompt
 
 var _requested_enabled: bool = false
 var _discard_modal_active: bool = false

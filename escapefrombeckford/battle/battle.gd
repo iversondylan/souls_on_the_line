@@ -44,7 +44,7 @@ var _debug_mode: bool = true
 @onready var battle_preview_coordinator: BattlePreviewCoordinator = $BattlePreviewCoordinator
 
 
-@onready var hand: Hand = $Battle_UI/Hand
+@onready var hand: Hand = $BattleView/Hand
 @onready var battle_ui: BattleUI = $Battle_UI
 
 @onready var draw_pile_button: CardPileOpener = %DrawPileButton

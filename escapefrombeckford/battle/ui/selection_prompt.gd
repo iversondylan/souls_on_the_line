@@ -1,9 +1,9 @@
 # selection_prompt.gd
 
-class_name SelectionPrompt extends Node2D
+class_name SelectionPrompt extends Control
 
-@onready var label: RichTextLabel = $Control/PanelContainer/MarginContainer/VBoxContainer/DialogueText
-@onready var button: Button = $Control/PanelContainer/MarginContainer/VBoxContainer/Button
+@onready var label: RichTextLabel = $PanelContainer/MarginContainer/VBoxContainer/DialogueText
+@onready var button: Button = $PanelContainer/MarginContainer/VBoxContainer/Button
 
 func _ready() -> void:
 	visible = false

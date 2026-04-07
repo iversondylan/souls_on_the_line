@@ -4,7 +4,9 @@
 [ext_resource type="Texture2D" uid="uid://dfm0pl5uj0mhs" path="res://_assets/sprites/mana_meter/brass_instrument_card_front_vectors_meter.png" id="2_h7u3w"]
 [ext_resource type="Theme" uid="uid://1dr1eewpv0jd" path="res://themes/ui_theme.tres" id="13_ibaeo"]
 
-[node name="ManaPanel" type="Node2D" unique_id=1012957252]
+[node name="ManaPanel" type="Control" unique_id=315946111]
+layout_mode = 3
+anchors_preset = 0
 scale = Vector2(0.35, 0.35)
 script = ExtResource("1_jg8c6")
 
@@ -13,6 +15,7 @@ scale = Vector2(0.6, 0.6)
 texture = ExtResource("2_h7u3w")
 
 [node name="CurrentManaLabel" type="Label" parent="." unique_id=1325748883]
+layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5

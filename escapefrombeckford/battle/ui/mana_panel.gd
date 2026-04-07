@@ -1,6 +1,6 @@
 # mana_panel.gd
 
-class_name ManaPanel extends Node2D
+class_name ManaPanel extends Control
 
 @onready var current_mana_label: Label = $CurrentManaLabel
 
