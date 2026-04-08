@@ -20,6 +20,9 @@ static func make_context(api: SimBattleAPI, u: CombatantState) -> NPCAIContext:
 	ctx.combatant_state = u
 	ctx.combatant_data = u.combatant_data
 	ctx.rng = u.rng
+	if ctx.rng == null and api != null and api.state != null:
+		api.state.init_unit_rng_for(int(u.id))
+		ctx.rng = u.rng
 	ctx.state = u.ai_state
 	ctx.params = {}
 	ctx.summoned_ids = PackedInt32Array()

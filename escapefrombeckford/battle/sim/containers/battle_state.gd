@@ -84,10 +84,10 @@ func add_unit(u: CombatantState, group_index: int, insert_index: int = -1) -> vo
 	if units.has(u.id):
 		push_warning("BattleState.add_unit: duplicate id %s" % u.id)
 		return
-	init_unit_rng_for(u.id)
 	group_index = clampi(group_index, 0, 1)
 	u.team = group_index
 	units[u.id] = u
+	init_unit_rng_for(u.id)
 	groups[group_index].add(u.id, insert_index)
 
 func alloc_id() -> int:
