@@ -2,14 +2,12 @@
 
 [ext_resource type="Script" uid="uid://ds2ql77j3pbxq" path="res://cards/_core/card_visuals.gd" id="1_2ndsp"]
 [ext_resource type="Texture2D" uid="uid://7wqf7vhvv0ae" path="res://_assets/sprites/assorted/card_glow.PNG" id="1_w227c"]
-[ext_resource type="Resource" uid="uid://b7txf6d8vmjkk" path="res://cards/souls/SpectralCloneCard/spectral_clone.tres" id="2_e5rkb"]
 [ext_resource type="Theme" uid="uid://1dr1eewpv0jd" path="res://themes/ui_theme.tres" id="3_2ndsp"]
 [ext_resource type="Texture2D" uid="uid://cvvxggb32iq5y" path="res://_assets/sprites/assorted/warp_weasel.png" id="4_e5rkb"]
 [ext_resource type="Texture2D" uid="uid://b7vtyi61om1lo" path="res://_assets/sprites/card_elements/brass_instrument_card_front_vectors_main.png" id="5_d6xg4"]
 [ext_resource type="Texture2D" uid="uid://c2cpjnsgjdd1x" path="res://_assets/sprites/assorted/card_back_1.PNG" id="6_spa0x"]
 [ext_resource type="Texture2D" uid="uid://cdap6hv4e5qcw" path="res://_assets/sprites/assorted/tri_white.png" id="7_fq4np"]
 [ext_resource type="Texture2D" uid="uid://bmcmfx1vvvaeg" path="res://_assets/sprites/card_elements/brass_instrument_cost_panel.png" id="8_kvkof"]
-[ext_resource type="Texture2D" uid="uid://bsuuga4ljrlnd" path="res://_assets/sprites/card_elements/card_name_box.png" id="8_q02fp"]
 [ext_resource type="Texture2D" uid="uid://cjb0lvcy0m405" path="res://_assets/sprites/card_elements/cost_circle_T_gray.png" id="9_da2py"]
 [ext_resource type="Texture2D" uid="uid://bfra4egurcd6k" path="res://_assets/sprites/card_elements/brass_instrument_cost_outline.png" id="9_ytu8h"]
 [ext_resource type="Texture2D" uid="uid://b7smcstu031ke" path="res://_assets/sprites/card_elements/cost_circle_T_blue1.png" id="10_ytu8h"]
@@ -68,7 +66,6 @@ custom_minimum_size = Vector2(225, 315)
 layout_mode = 3
 anchors_preset = 0
 script = ExtResource("1_2ndsp")
-card_data = ExtResource("2_e5rkb")
 
 [node name="ClickArea" type="Area2D" parent="." unique_id=522620299]
 position = Vector2(66, 94)
@@ -138,16 +135,9 @@ scroll_active = false
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="CardNameBox" type="Sprite2D" parent="CardStrictlyVisuals/CornerMan" unique_id=1232157855]
-unique_name_in_owner = true
-visible = false
-position = Vector2(112, 159)
-scale = Vector2(0.39, 0.39)
-texture = ExtResource("8_q02fp")
-
 [node name="CostDisplay" type="Node2D" parent="CardStrictlyVisuals/CornerMan" unique_id=764598444]
 unique_name_in_owner = true
-position = Vector2(13, 14)
+position = Vector2(10, 14)
 
 [node name="CostContainer" type="Sprite2D" parent="CardStrictlyVisuals/CornerMan/CostDisplay" unique_id=1730762884]
 unique_name_in_owner = true
@@ -218,19 +208,14 @@ texture = ExtResource("7_fq4np")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="NameLabel" type="RichTextLabel" parent="CardStrictlyVisuals/CornerMan" unique_id=1888106854]
+[node name="NameLabel" type="Label" parent="CardStrictlyVisuals/CornerMan" unique_id=1574973877]
 unique_name_in_owner = true
-offset_left = 40.0
-offset_top = 3.0
-offset_right = 194.0
-offset_bottom = 33.0
-mouse_filter = 2
+offset_left = 38.0
+offset_top = 6.0
+offset_right = 207.0
+offset_bottom = 32.0
 theme = ExtResource("3_2ndsp")
-theme_override_font_sizes/normal_font_size = 18
-theme_override_font_sizes/italics_font_size = 18
-bbcode_enabled = true
-text = "[i]Card Name[/i]"
-scroll_active = false
-autowrap_mode = 0
+theme_override_font_sizes/font_size = 16
+text = "Card Name That Is Too Long"
 horizontal_alignment = 1
 vertical_alignment = 1

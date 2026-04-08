@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="BattleData" format=3 uid="uid://db0if7277h7kw"]
+
+[ext_resource type="Script" uid="uid://cfatj0ryn8uv3" path="res://combatants/combatant_data.gd" id="1_0jpex"]
+[ext_resource type="Resource" uid="uid://mt02xj2dgfe7" path="res://combatants/enemies/WeberPatrolSwordsman/weber_patrol_swordsman_data.tres" id="2_8vqij"]
+[ext_resource type="Resource" uid="uid://n8vpyfyge4dm" path="res://combatants/enemies/WeberPatrolArbalest/weber_patrol_arbalest_data.tres" id="3_vauob"]
+[ext_resource type="Script" uid="uid://be1v8qevmc2xw" path="res://encounters/battle_data.gd" id="4_qoypp"]
+
+[resource]
+script = ExtResource("4_qoypp")
+battle_tier = 1
+enemies = Array[ExtResource("1_0jpex")]([ExtResource("2_8vqij"), ExtResource("3_vauob")])
+metadata/_custom_type_script = "uid://be1v8qevmc2xw"

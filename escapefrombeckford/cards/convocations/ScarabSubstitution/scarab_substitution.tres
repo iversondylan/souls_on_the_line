@@ -4,6 +4,7 @@
 [ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://cards/_core/card_data.gd" id="2_card_data"]
 [ext_resource type="Resource" uid="uid://4a3dreaffu56" path="res://cards/_generic_actions/sacrifice_action.tres" id="3_sacrifice"]
 [ext_resource type="Resource" uid="uid://cg726tcemybhn" path="res://cards/convocations/ScarabSubstitution/summon_shield_mite_action.tres" id="4_summon"]
+[ext_resource type="Resource" uid="uid://cqvd07tbojy11" path="res://cards/convocations/ScarabSubstitution/pressure_barrier_on_summoned_action.tres" id="5_1c6fl"]
 [ext_resource type="Resource" uid="uid://rjxi66qttbij" path="res://cards/convocations/ScarabSubstitution/absorb_on_summoned_action.tres" id="5_absorb_on_summoned"]
 [ext_resource type="Texture2D" uid="uid://dvrl6geaac3x7" path="res://_assets/sprites/assorted/beetle-shell.png" id="6_texture"]
 
@@ -15,5 +16,5 @@ name = "Scarab Substitution"
 description = "Sacrifice an ally. Summon a 1/3 Shield Mite at the front. Give it 1 Absorb."
 cost = 1
 texture = ExtResource("6_texture")
-actions = Array[ExtResource("1_card_action")]([ExtResource("3_sacrifice"), ExtResource("4_summon"), ExtResource("5_absorb_on_summoned")])
+actions = Array[ExtResource("1_card_action")]([ExtResource("3_sacrifice"), ExtResource("4_summon"), ExtResource("5_absorb_on_summoned"), ExtResource("5_1c6fl")])
 metadata/_custom_type_script = "uid://d2f0qepe047dc"

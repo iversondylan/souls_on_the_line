@@ -10,5 +10,6 @@ character_art_uid = "uid://dvhoe5pr1jtcm"
 portrait_art_uid = "uid://dvhoe5pr1jtcm"
 facing_right = false
 height = 250
+max_health = 20
 ai = ExtResource("2_ai")
 metadata/_custom_type_script = "uid://cfatj0ryn8uv3"
