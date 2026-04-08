@@ -12,3 +12,5 @@ var event_extra := {}
 var before_order_ids: PackedInt32Array = PackedInt32Array()
 var after_order_ids: PackedInt32Array = PackedInt32Array()
 var died: bool = false
+
+var overload_mod: int = 0

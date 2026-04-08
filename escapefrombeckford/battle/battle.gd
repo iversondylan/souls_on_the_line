@@ -383,9 +383,9 @@ func _on_dead_combatant_data(combatant_data: CombatantData) -> void:
 		Events.request_defeat.emit()
 
 
-func _on_summon_reserve_card_released(summoned_id: int, card_uid: String) -> void:
+func _on_summon_reserve_card_released(summoned_id: int, card_uid: String, overload: int) -> void:
 	if card_bins != null:
-		card_bins.discard_reserved_summon_card(card_uid)
+		card_bins.discard_reserved_summon_card(card_uid, overload)
 
 	var combatant_view := battle_view.get_combatant(summoned_id) if battle_view != null else null
 	if combatant_view == null or discard_pile_button == null:

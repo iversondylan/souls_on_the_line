@@ -6,7 +6,7 @@ signal player_targeted_arrow_visible(show: bool)
 signal combatant_view_clicked(combatant: CombatantView)
 signal combatant_view_hovered(combatant: CombatantView)
 signal combatant_view_unhovered(combatant: CombatantView)
-signal summon_reserve_card_released(summoned_id: int, card_uid: String)
+signal summon_reserve_card_released(summoned_id: int, card_uid: String, overload: int)
 signal modify_battle_card(card_uid: String, modified_fields: Dictionary, reason: String)
 signal mana_view_update(mana_view_order: ManaViewOrder)
 

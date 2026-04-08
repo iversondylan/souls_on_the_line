@@ -703,8 +703,8 @@ func resolve_death(ctx: DeathContext) -> void:
 	var u: CombatantState = state.get_unit(int(ctx.dead_id))
 	if u == null or !u.alive:
 		return
-	
-	_maybe_release_soulbound_reserve(u, "fade:" + String(ctx.reason))
+	var overload: int = clampi(2 + ctx.overload_mod, 0, 5)
+	_maybe_release_soulbound_reserve(u, overload, "fade:" + String(ctx.reason))
 
 	var g := int(u.team)
 	ctx.group_index = g
@@ -762,8 +762,8 @@ func fade_unit(ctx: FadeContext) -> void:
 	var u: CombatantState = state.get_unit(int(ctx.actor_id))
 	if u == null or !u.alive:
 		return
-	
-	_maybe_release_soulbound_reserve(u, "fade:" + String(ctx.reason))
+	var overload: int = clampi(2 + ctx.overload_mod, 0, 5)
+	_maybe_release_soulbound_reserve(u, overload, "fade:" + String(ctx.reason))
 	
 	var g := int(u.team)
 	ctx.group_index = g
@@ -1380,7 +1380,7 @@ func _make_spawn_spec_from_data(combatant_data: CombatantData, u: CombatantState
 	}
 
 
-func _maybe_release_soulbound_reserve(u: CombatantState, reason: String) -> void:
+func _maybe_release_soulbound_reserve(u: CombatantState, overload: int, reason: String) -> void:
 	if u == null:
 		return
 	if int(u.mortality) != int(CombatantState.Mortality.SOULBOUND):
@@ -1391,7 +1391,7 @@ func _maybe_release_soulbound_reserve(u: CombatantState, reason: String) -> void
 		return
 	
 	if writer != null:
-		writer.emit_summon_reserve_released(int(u.id), uid, String(reason))
+		writer.emit_summon_reserve_released(int(u.id), uid, overload, String(reason))
 	
 	u.bound_card_uid = ""
 

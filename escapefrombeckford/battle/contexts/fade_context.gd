@@ -10,3 +10,5 @@ var origin_arcanum_id: StringName = &""
 var before_order_ids: PackedInt32Array = PackedInt32Array()
 var after_order_ids: PackedInt32Array = PackedInt32Array()
 var faded: bool = false
+
+var overload_mod: int = 0

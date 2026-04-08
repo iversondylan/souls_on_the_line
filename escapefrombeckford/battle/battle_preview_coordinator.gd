@@ -246,7 +246,7 @@ func _on_card_played(_usable_card: UsableCard) -> void:
 	return
 
 
-func _on_summon_reserve_card_released(_summoned_id: int, _card_uid: String) -> void:
+func _on_summon_reserve_card_released(_summoned_id: int, _card_uid: String, _overload: int) -> void:
 	#print("battle_preview_coordinator.gd _on_summon_reserve_card_released()")
 	_refresh_preview("summon_reserve_card_released")
 

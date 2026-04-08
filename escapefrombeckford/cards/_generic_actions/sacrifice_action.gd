@@ -18,6 +18,7 @@ func activate_sim(ctx: CardContext) -> bool:
 	death_ctx.dead_id = target_id
 	death_ctx.killer_id = int(ctx.source_id)
 	death_ctx.reason = "card_sacrifice"
+	death_ctx.overload_mod = -2
 	if ctx.card_data != null:
 		ctx.card_data.ensure_uid()
 		death_ctx.origin_card_uid = String(ctx.card_data.uid)
