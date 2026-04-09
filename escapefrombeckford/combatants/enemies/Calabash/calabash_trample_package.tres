@@ -3,7 +3,7 @@
 [ext_resource type="Resource" uid="uid://bnqqhpu1itcb3" path="res://npc_ai/npc_attack_sequence.tres" id="1_attack"]
 [ext_resource type="Script" uid="uid://b8d5j6ne4mt88" path="res://npc_ai/_core/param_model.gd" id="1_param"]
 [ext_resource type="Script" uid="uid://3jde7uhq2yho" path="res://npc_ai/_core/npc_effect_package.gd" id="2_pkg"]
-[ext_resource type="Resource" path="res://combatants/enemies/Calabash/calabash_trample_damage_model.tres" id="3_damage"]
+[ext_resource type="Resource" uid="uid://jta8n54v10b" path="res://combatants/enemies/Calabash/calabash_trample_damage_model.tres" id="3_damage"]
 [ext_resource type="Script" uid="uid://d78bolfg1532" path="res://npc_ai/attack_mode/melee_model.gd" id="4_mode"]
 [ext_resource type="Script" uid="uid://c0ihk6f0wbrv3" path="res://npc_ai/strikes/constant_strikes_model.gd" id="5_strikes"]
 [ext_resource type="Script" uid="uid://cuj4qvyx6dedj" path="res://npc_ai/_core/state_model.gd" id="7_ucpfq"]
