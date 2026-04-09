@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="NPCAction" format=3 uid="uid://jar8piuoh2yq"]
+
+[ext_resource type="Script" uid="uid://3jde7uhq2yho" path="res://npc_ai/_core/npc_effect_package.gd" id="1_pkg"]
+[ext_resource type="Resource" uid="uid://bsljt7wgtcnot" path="res://combatants/enemies/WeberPatrolArbalest/weber_patrol_arbalest_quarrel_spray_pkg.tres" id="2_attack_pkg"]
+[ext_resource type="Texture2D" uid="uid://d172x32jh00p0" path="res://_assets/sprites/assorted/danger_zone_attack.PNG" id="3_icon"]
+[ext_resource type="Script" uid="uid://dtwuyctovqk5r" path="res://npc_ai/_core/intent_lifecycle_model.gd" id="4_lifecycle"]
+[ext_resource type="Resource" path="res://combatants/enemies/WeberPatrolArbalest/weber_patrol_arbalest_quarrel_spray_lifecycle.tres" id="5_danger_lifecycle"]
+[ext_resource type="Resource" uid="uid://7gggk4mmejsq" path="res://npc_ai/text/attack_intent_text_model.tres" id="6_text_model"]
+[ext_resource type="Script" uid="uid://bcih413oy6v73" path="res://npc_ai/_core/npc_action.gd" id="7_action"]
+[ext_resource type="Script" uid="uid://q408gy2b4q6a" path="res://npc_ai/_core/performable_model.gd" id="7_imor0"]
+[ext_resource type="Script" uid="uid://cuj4qvyx6dedj" path="res://npc_ai/_core/state_model.gd" id="8_state"]
+[ext_resource type="Resource" path="res://combatants/enemies/WeberPatrolArbalest/weber_patrol_arbalest_quarrel_spray_tooltip_model.tres" id="9_tooltip_model"]
+[ext_resource type="Resource" uid="uid://btgtvs6ab0nsg" path="res://npc_ai/chance/half_exponential_spree_chance_state_model.tres" id="10_half_exp"]
+
+[resource]
+script = ExtResource("7_action")
+effect_packages = Array[ExtResource("1_pkg")]([ExtResource("2_attack_pkg")])
+intent_lifecycle_models = Array[ExtResource("4_lifecycle")]([ExtResource("5_danger_lifecycle")])
+state_models = Array[ExtResource("8_state")]([ExtResource("10_half_exp")])
+action_name = "Quarrel Spray"
+intent_icon = ExtResource("3_icon")
+intent_icon_uid = "uid://d172x32jh00p0"
+intent_text_model = ExtResource("6_text_model")
+tooltip_model = ExtResource("9_tooltip_model")
+metadata/_custom_type_script = "uid://bcih413oy6v73"

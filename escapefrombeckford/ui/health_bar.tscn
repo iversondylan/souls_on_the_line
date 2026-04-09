@@ -1,8 +1,10 @@
-[gd_scene load_steps=8 format=3 uid="uid://b5kimimy0ccq0"]
+[gd_scene format=3 uid="uid://b5kimimy0ccq0"]
 
 [ext_resource type="Script" uid="uid://dt1x8ukdg7b33" path="res://ui/health_bar.gd" id="1_1vcc2"]
 [ext_resource type="Theme" uid="uid://d2wc7fposrlqs" path="res://themes/wizard_theme.tres" id="1_4rf34"]
 [ext_resource type="Theme" uid="uid://1dr1eewpv0jd" path="res://themes/ui_theme.tres" id="2_qi2ti"]
+[ext_resource type="Texture2D" uid="uid://bkxkseqjc0dl0" path="res://_assets/sprites/assorted/soul.png" id="4_eo044"]
+[ext_resource type="Texture2D" uid="uid://c2cpjnsgjdd1x" path="res://_assets/sprites/assorted/card_back_1.PNG" id="5_dtgp1"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_qi2ti"]
 
@@ -29,33 +31,33 @@ corner_radius_top_right = 2
 corner_radius_bottom_right = 2
 corner_radius_bottom_left = 2
 
-[node name="HealthPanel" type="PanelContainer"]
+[node name="HealthPanel" type="PanelContainer" unique_id=608968058]
 offset_right = 142.0
 offset_bottom = 31.0
 size_flags_horizontal = 0
 theme = ExtResource("1_4rf34")
 script = ExtResource("1_1vcc2")
 
-[node name="HBoxContainer" type="HBoxContainer" parent="."]
+[node name="HBoxContainer" type="HBoxContainer" parent="." unique_id=159523378]
 layout_mode = 2
 size_flags_horizontal = 0
 size_flags_vertical = 4
 theme_override_constants/separation = 0
 
-[node name="Spacer1" type="Control" parent="HBoxContainer"]
+[node name="Spacer1" type="Control" parent="HBoxContainer" unique_id=740264339]
 custom_minimum_size = Vector2(4, 0)
 layout_mode = 2
 size_flags_horizontal = 4
 
-[node name="VBoxContainer" type="VBoxContainer" parent="HBoxContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="HBoxContainer" unique_id=1457270270]
 layout_mode = 2
 theme_override_constants/separation = 0
 
-[node name="Control2" type="Control" parent="HBoxContainer/VBoxContainer"]
+[node name="Control2" type="Control" parent="HBoxContainer/VBoxContainer" unique_id=1226161153]
 custom_minimum_size = Vector2(0, 4)
 layout_mode = 2
 
-[node name="HealthBar" type="ProgressBar" parent="HBoxContainer/VBoxContainer"]
+[node name="HealthBar" type="ProgressBar" parent="HBoxContainer/VBoxContainer" unique_id=186254310]
 unique_name_in_owner = true
 z_index = 1
 custom_minimum_size = Vector2(56, 17)
@@ -67,7 +69,7 @@ step = 1.0
 value = 50.0
 show_percentage = false
 
-[node name="DamageBar" type="ProgressBar" parent="HBoxContainer/VBoxContainer/HealthBar"]
+[node name="DamageBar" type="ProgressBar" parent="HBoxContainer/VBoxContainer/HealthBar" unique_id=1418047796]
 unique_name_in_owner = true
 z_index = -1
 layout_mode = 1
@@ -82,16 +84,16 @@ step = 1.0
 value = 75.0
 show_percentage = false
 
-[node name="Control" type="Control" parent="HBoxContainer/VBoxContainer"]
+[node name="Control" type="Control" parent="HBoxContainer/VBoxContainer" unique_id=926488559]
 custom_minimum_size = Vector2(0, 4)
 layout_mode = 2
 
-[node name="Spacer2" type="Control" parent="HBoxContainer"]
+[node name="Spacer2" type="Control" parent="HBoxContainer" unique_id=1449378515]
 custom_minimum_size = Vector2(4, 0)
 layout_mode = 2
 size_flags_horizontal = 4
 
-[node name="HealthNumber" type="Label" parent="HBoxContainer"]
+[node name="HealthNumber" type="Label" parent="HBoxContainer" unique_id=1855095715]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 4
@@ -101,7 +103,7 @@ text = "999"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="MaxHealthNumber" type="Label" parent="HBoxContainer"]
+[node name="MaxHealthNumber" type="Label" parent="HBoxContainer" unique_id=919146511]
 unique_name_in_owner = true
 layout_mode = 2
 theme = ExtResource("2_qi2ti")
@@ -110,7 +112,17 @@ text = "/999"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="Spacer3" type="Control" parent="HBoxContainer"]
+[node name="Spacer3" type="Control" parent="HBoxContainer" unique_id=1164855531]
 custom_minimum_size = Vector2(4, 0)
 layout_mode = 2
 size_flags_horizontal = 4
+
+[node name="TextureRect" type="TextureRect" parent="HBoxContainer" unique_id=1464680930]
+layout_mode = 2
+texture = ExtResource("4_eo044")
+expand_mode = 2
+
+[node name="TextureRect2" type="TextureRect" parent="HBoxContainer" unique_id=1718017617]
+layout_mode = 2
+texture = ExtResource("5_dtgp1")
+expand_mode = 3

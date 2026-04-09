@@ -8,11 +8,13 @@
 [ext_resource type="Script" uid="uid://q408gy2b4q6a" path="res://npc_ai/_core/performable_model.gd" id="6_reejl"]
 [ext_resource type="Script" uid="uid://bcih413oy6v73" path="res://npc_ai/_core/npc_action.gd" id="7_5osi0"]
 [ext_resource type="Script" uid="uid://cuj4qvyx6dedj" path="res://npc_ai/_core/state_model.gd" id="8_328v6"]
+[ext_resource type="Resource" uid="uid://btgtvs6ab0nsg" path="res://npc_ai/chance/half_exponential_spree_chance_state_model.tres" id="9_uuno4"]
 [ext_resource type="Resource" uid="uid://cclcovva30tmy" path="res://npc_ai/text/reverse_attack_intent_tooltip_text_model.tres" id="9_yu6js"]
 
 [resource]
 script = ExtResource("7_5osi0")
 effect_packages = Array[ExtResource("1_ydsxe")]([ExtResource("2_uuno4")])
+state_models = Array[ExtResource("8_328v6")]([ExtResource("9_uuno4")])
 action_name = "Snipe"
 intent_icon = ExtResource("3_bf7gq")
 intent_icon_uid = "uid://dvvktfxix1a4c"

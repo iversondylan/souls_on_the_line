@@ -1,0 +1,29 @@
+[gd_resource type="Resource" script_class="NPCEffectPackage" format=3 uid="uid://bsljt7wgtcnot"]
+
+[ext_resource type="Resource" uid="uid://bnqqhpu1itcb3" path="res://npc_ai/npc_attack_sequence.tres" id="1_attack"]
+[ext_resource type="Script" uid="uid://b8d5j6ne4mt88" path="res://npc_ai/_core/param_model.gd" id="2_param"]
+[ext_resource type="Script" uid="uid://db3rq0sfeqpw1" path="res://npc_ai/damage/flat_damage_model.gd" id="3_damage"]
+[ext_resource type="Script" uid="uid://c2r27w5ki2tiw" path="res://npc_ai/attack_mode/ranged_model.gd" id="4_ranged"]
+[ext_resource type="Script" uid="uid://c0ihk6f0wbrv3" path="res://npc_ai/strikes/constant_strikes_model.gd" id="5_strikes"]
+[ext_resource type="Script" uid="uid://3jde7uhq2yho" path="res://npc_ai/_core/npc_effect_package.gd" id="6_pkg"]
+[ext_resource type="Script" uid="uid://cuj4qvyx6dedj" path="res://npc_ai/_core/state_model.gd" id="7_gpuh7"]
+
+[sub_resource type="Resource" id="Resource_weber_quarrel_spray_damage"]
+script = ExtResource("3_damage")
+damage = 6
+metadata/_custom_type_script = "uid://db3rq0sfeqpw1"
+
+[sub_resource type="Resource" id="Resource_weber_quarrel_spray_ranged"]
+script = ExtResource("4_ranged")
+metadata/_custom_type_script = "uid://c2r27w5ki2tiw"
+
+[sub_resource type="Resource" id="Resource_weber_quarrel_spray_strikes"]
+script = ExtResource("5_strikes")
+strikes = 1
+metadata/_custom_type_script = "uid://c0ihk6f0wbrv3"
+
+[resource]
+script = ExtResource("6_pkg")
+effect = ExtResource("1_attack")
+param_models = Array[ExtResource("2_param")]([SubResource("Resource_weber_quarrel_spray_damage"), SubResource("Resource_weber_quarrel_spray_ranged"), SubResource("Resource_weber_quarrel_spray_strikes")])
+metadata/_custom_type_script = "uid://3jde7uhq2yho"

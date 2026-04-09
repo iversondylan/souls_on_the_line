@@ -1,7 +1,8 @@
-[gd_resource type="Resource" script_class="ZeroChanceOnTurnNumbersStateModel" format=3 uid="uid://1dg4gik25c7q"]
+[gd_resource type="Resource" script_class="MultipliedChanceOnParticularTurnsStateModel" format=3 uid="uid://1dg4gik25c7q"]
 
-[ext_resource type="Script" uid="uid://c3x8xdodep3rq" path="res://npc_ai/chance/zero_chance_state_model.gd" id="1_zero_chance"]
+[ext_resource type="Script" uid="uid://d0rfw25yqrflb" path="res://npc_ai/chance/multiplied_chance_on_particular_turns_state_model.gd" id="1_zero_chance"]
 
 [resource]
 script = ExtResource("1_zero_chance")
+chance_multiplier = 0.0
 turn_numbers = [1]

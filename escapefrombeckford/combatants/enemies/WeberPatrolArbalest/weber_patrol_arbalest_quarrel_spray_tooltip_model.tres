@@ -1,0 +1,7 @@
+[gd_resource type="Resource" script_class="AttackIntentTooltipTextModel" format=3]
+
+[ext_resource type="Script" uid="uid://8lp7x60y132v" path="res://npc_ai/text/attack_intent_tooltip_text_model.gd" id="1_tooltip_model"]
+
+[resource]
+script = ExtResource("1_tooltip_model")
+text_template = "[b]{action_name}[/b]: {strikes}{damage} damage. Targets the frontmost opponent and splashes adjacent units."
