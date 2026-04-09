@@ -1,8 +1,6 @@
 # arcanum_system.gd
 class_name ArcanaSystem extends RefCounted
 
-const ARCANUM_APPLY_INTERVAL := 0.5
-
 var api: SimBattleAPI = null
 
 # Ordered list (for display ordering)
@@ -103,54 +101,6 @@ func get_modifier_tokens_for(target: Node) -> Array[ModifierToken]:
 			tokens.append_array(a.get_modifier_tokens_for(target))
 	return tokens
 
-#func activate_arcana_by_type_async(type: Arcanum.Type, host: Node) -> Signal:
-	## host no longer needed; keep signature for now so callsites don’t explode
-	##print("arcanum_system.gd activate_arcana_by_type_async() type: ", Arcanum.Type.keys()[type])
-	#if type == Arcanum.Type.EVENT_BASED:
-		#return Signal()
-#
-	#if !api or !api.runner:
-		## No runner => just do immediate (or emit nothing). For now, no-op safely.
-		#return Signal()
-#
-	#var queue: Array[Arcanum] = []
-	#for a in _arcana:
-		#if a and a.type == type:
-			#queue.push_back(a)
-#
-	#if queue.is_empty():
-		#return Signal()
-#
-	#for a in queue:
-		#var d := _get_display(a.get_id()) # may be null
-		#api.enqueue_arcanum_activate(a, d)
-		#api.enqueue_wait(ARCANUM_APPLY_INTERVAL)
-#
-	#return Signal()
-
-func activate_arcana_by_type(type: Arcanum.Type, host: Node) -> void:
-	# host is required to create tweens / intervals.
-	if !host or !is_instance_valid(host):
-		push_warning("ArcanaSystem.activate_arcana_by_type called without a valid host Node.")
-		return
-
-	if type == Arcanum.Type.EVENT_BASED:
-		return
-
-	var queue: Array[Arcanum] = []
-	for a in _arcana:
-		if a and _arcanum_matches_legacy_type(a, type):
-			queue.push_back(a)
-
-	if queue.is_empty():
-		return
-
-	var tween := host.get_tree().create_tween()
-
-	for a in queue:
-		tween.tween_callback(_activate_arcana_by_type_now.bind(a, type))
-		tween.tween_interval(ARCANUM_APPLY_INTERVAL)
-
 func get_my_arcana() -> Array[StringName]:
 	#print("arcanum_syste.gd get_my_arcana")
 	var arcana_ids : Array[StringName] = []
@@ -158,36 +108,3 @@ func get_my_arcana() -> Array[StringName]:
 		#print(arcanum.get_id())
 		arcana_ids.push_back(arcanum.get_id())
 	return arcana_ids
-
-func _activate_arcana_by_type_now(arcanum: Arcanum, type: Arcanum.Type) -> void:
-	if arcanum == null or api == null:
-		return
-
-	match int(type):
-		Arcanum.Type.BATTLE_START:
-			arcanum.on_battle_started(api)
-		Arcanum.Type.PLAYER_TURN_BEGIN:
-			arcanum.on_turn_started(api)
-		Arcanum.Type.PLAYER_TURN_END:
-			arcanum.on_turn_ended(api)
-		Arcanum.Type.BATTLE_END:
-			arcanum.on_battle_ended(api)
-
-
-func _arcanum_matches_legacy_type(arcanum: Arcanum, type: Arcanum.Type) -> bool:
-	if arcanum == null:
-		return false
-
-	match int(type):
-		Arcanum.Type.BATTLE_START:
-			return arcanum.procs_on_battle_start()
-		Arcanum.Type.PLAYER_TURN_BEGIN:
-			return arcanum.procs_on_player_turn_begin()
-		Arcanum.Type.PLAYER_TURN_END:
-			return arcanum.procs_on_player_turn_end()
-		Arcanum.Type.BATTLE_END:
-			return arcanum.procs_on_battle_end()
-		Arcanum.Type.EVENT_BASED:
-			return false
-		_:
-			return false

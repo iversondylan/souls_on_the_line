@@ -479,7 +479,7 @@ static func _fmt_value(v, abbrev_arrays_over: int, abbrev_string_over: int) -> S
 		return "{keys:%d [%s]}" % [names.size(), ", ".join(names)]
 
 	if v is String:
-		var s := v as String
+		var s := _escape_control_chars(v as String)
 		if s.length() > abbrev_string_over:
 			return "\"%s…\"(len=%d)" % [s.substr(0, abbrev_string_over), s.length()]
 		return "\"%s\"" % s
@@ -494,6 +494,10 @@ static func _fmt_value(v, abbrev_arrays_over: int, abbrev_string_over: int) -> S
 		return "%.3f" % float(v)
 
 	return str(v)
+
+
+static func _escape_control_chars(value: String) -> String:
+	return value.replace("\\", "\\\\").replace("\r", "\\r").replace("\n", "\\n").replace("\t", "\\t")
 
 
 static func _fmt_array(arr: Array, abbrev_arrays_over: int) -> String:

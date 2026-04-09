@@ -6,7 +6,6 @@
 [resource]
 script = ExtResource("2_6vupx")
 arcanum_name = "Sigil of Mana"
-type = 1
 starter_arcanum = null
 icon = ExtResource("1_jqkyd")
 tooltip_description = "At the start of each battle, gain 1 mana of each color."

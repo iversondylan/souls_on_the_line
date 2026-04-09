@@ -196,7 +196,7 @@ func seed_arcana_from_ids(ids: Array[StringName]) -> void:
 		if proto == null:
 			continue
 
-		var entry := main.state.arcana.add_arcanum(id, int(proto.type))
+		var entry := main.state.arcana.add_arcanum(id)
 		if entry != null:
 			proto.seed_battle_entry(entry)
 

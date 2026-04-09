@@ -481,7 +481,6 @@ func _service_player_begin() -> void:
 	var player_id := _player_id()
 	if player_id > 0:
 		SimStatusSystem.on_player_turn_begin(api, player_id)
-		SimArcanaSystem.on_player_turn_begin(api, player_id)
 		api._rebuild_all_modifier_caches()
 		_apply_checkpoint_boundary(CheckpointProcessor.Kind.AFTER_ACTOR_TURN, true)
 

@@ -248,10 +248,6 @@ func _debug_arcana_summary() -> String:
 		if entry == null:
 			continue
 
-		var type_name := "type=%d" % int(entry.type)
-		if entry.type >= 0 and entry.type < Arcanum.Type.keys().size():
-			type_name = Arcanum.Type.keys()[int(entry.type)]
-
 		var extra: Array[String] = []
 		if int(entry.charges) != 0:
 			extra.append("charges=%d" % int(entry.charges))
@@ -264,7 +260,7 @@ func _debug_arcana_summary() -> String:
 		if !extra.is_empty():
 			suffix = " {%s}" % ", ".join(extra)
 
-		parts.append("%s(%s)%s" % [String(entry.id), type_name, suffix])
+		parts.append("%s%s" % [String(entry.id), suffix])
 
 	return "[" + ", ".join(parts) + "]"
 

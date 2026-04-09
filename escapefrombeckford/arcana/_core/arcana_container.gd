@@ -27,9 +27,6 @@ func _exit_tree() -> void:
 func get_modifier_tokens_for(target: Node) -> Array[ModifierToken]:
 	return system.get_modifier_tokens_for(target)
 
-func activate_arcana_by_type(type: Arcanum.Type) -> void:
-	system.activate_arcana_by_type(type, self)
-
 func add_arcana(arcana: Array[Arcanum]) -> void:
 	for a in arcana:
 		add_arcanum(a)

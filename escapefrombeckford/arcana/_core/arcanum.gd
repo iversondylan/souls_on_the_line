@@ -2,16 +2,9 @@
 
 class_name Arcanum extends Resource
 
-enum Type {PLAYER_TURN_BEGIN, BATTLE_START, PLAYER_TURN_END, BATTLE_END, EVENT_BASED}
 enum Beats {NONE, IN, OUT, IN_OUT}
 
-const START_OF_TURN := Type.PLAYER_TURN_BEGIN
-const START_OF_COMBAT := Type.BATTLE_START
-const END_OF_TURN := Type.PLAYER_TURN_END
-const END_OF_COMBAT := Type.BATTLE_END
-
 @export var arcanum_name: String
-@export var type: Type
 @export var starter_arcanum: bool = false
 @export var icon: Texture
 @export_multiline var tooltip_description: String
@@ -27,16 +20,43 @@ func get_id() -> StringName:
 	return &""
 
 func procs_on_battle_start() -> bool:
-	return int(type) == int(Type.BATTLE_START)
+	return _implements_any_timed_hook([&"on_battle_start", &"on_battle_started"])
 
 func procs_on_player_turn_begin() -> bool:
-	return int(type) == int(Type.PLAYER_TURN_BEGIN)
+	return _implements_any_timed_hook([&"on_player_turn_begin", &"on_turn_started"])
 
 func procs_on_player_turn_end() -> bool:
-	return int(type) == int(Type.PLAYER_TURN_END)
+	return _implements_any_timed_hook([&"on_player_turn_end", &"on_turn_ended"])
 
 func procs_on_battle_end() -> bool:
-	return int(type) == int(Type.BATTLE_END)
+	return _implements_any_timed_hook([&"on_battle_end", &"on_battle_ended"])
+
+func _implements_any_timed_hook(method_names: Array[StringName]) -> bool:
+	for method_name: StringName in method_names:
+		if _implements_timed_hook(method_name):
+			return true
+	return false
+
+func _implements_timed_hook(method_name: StringName) -> bool:
+	var script := get_script() as Script
+	if script == null or method_name == &"":
+		return false
+
+	var base_script := script.get_base_script() as Script
+	if base_script == null:
+		return false
+
+	return _count_script_method(script, method_name) > _count_script_method(base_script, method_name)
+
+static func _count_script_method(script: Script, method_name: StringName) -> int:
+	if script == null or method_name == &"":
+		return 0
+
+	var count := 0
+	for method: Dictionary in script.get_script_method_list():
+		if StringName(method.get("name", &"")) == method_name:
+			count += 1
+	return count
 
 func seed_battle_entry(_entry: ArcanaState.ArcanumEntry) -> void:
 	pass
