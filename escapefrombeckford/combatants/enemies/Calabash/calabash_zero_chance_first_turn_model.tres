@@ -1,0 +1,7 @@
+[gd_resource type="Resource" script_class="ZeroChanceOnTurnNumbersStateModel" format=3]
+
+[ext_resource type="Script" path="res://npc_ai/chance/zero_chance_state_model.gd" id="1_zero_chance"]
+
+[resource]
+script = ExtResource("1_zero_chance")
+turn_numbers = [1]

@@ -536,11 +536,11 @@ func emit_faded(
 		data[k] = extra[k]
 	return _append(BattleEvent.Type.FADED, data)
 
-func emit_summon_reserve_released(summoned_id: int, card_uid: String, overload: int, reason: String = "") -> int:
+func emit_summon_reserve_released(summoned_id: int, card_uid: String, overload_mod: int, reason: String = "") -> int:
 	return _append(BattleEvent.Type.SUMMON_RESERVE_RELEASED, {
 		Keys.SUMMONED_ID: int(summoned_id),
 		Keys.CARD_UID: String(card_uid),
-		Keys.OVERLOAD: int(overload),
+		Keys.OVERLOAD_MOD: int(overload_mod),
 		Keys.REASON: String(reason),
 	})
 

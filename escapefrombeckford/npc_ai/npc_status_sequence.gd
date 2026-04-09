@@ -31,7 +31,8 @@ func execute(ctx: NPCAIContext) -> void:
 		return
 	
 	var raw_target_ids: PackedInt32Array = PackedInt32Array()
-	if params.has(Keys.TARGET_IDS):
+	var has_explicit_targets := params.has(Keys.TARGET_IDS)
+	if has_explicit_targets:
 		var raw_value = params.get(Keys.TARGET_IDS, PackedInt32Array())
 		if raw_value is PackedInt32Array:
 			raw_target_ids = raw_value
@@ -41,7 +42,7 @@ func execute(ctx: NPCAIContext) -> void:
 	var resolved_target_ids := PackedInt32Array()
 	var seen := {}
 	
-	if raw_target_ids.is_empty():
+	if !has_explicit_targets:
 		resolved_target_ids.append(actor_id)
 	else:
 		for tid in raw_target_ids:

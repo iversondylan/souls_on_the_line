@@ -4,5 +4,5 @@
 
 [resource]
 script = ExtResource("1_xp3il")
-damage = 10
+damage = 12
 metadata/_custom_type_script = "uid://db3rq0sfeqpw1"

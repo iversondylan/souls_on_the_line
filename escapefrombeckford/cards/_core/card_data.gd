@@ -47,6 +47,7 @@ const RARITY_COLORS := {
 @export var rarity: Rarity
 @export var name: String
 @export var deplete: bool
+@export var summon_release_overload: int = 2
 @export_multiline var description: String
 @export var cost: int
 @export var overload: int = 0

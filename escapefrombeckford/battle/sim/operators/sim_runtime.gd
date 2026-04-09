@@ -753,11 +753,14 @@ func run_attack(ctx: AttackContext) -> bool:
 		_strike_resolution_depth += 1
 		var pending_cleave := {}
 		var direct_strike_dealt_damage := false
+		var cleave_order_ids: Array = []
+		if _supports_single_target_cleave(targeting, target_ids):
+			cleave_order_ids = api.get_combatants_in_group(int(targeting_ctx.defending_group_index), false)
 
 		for tid: int in target_ids:
 			var cleave_target_id := 0
 			if _supports_single_target_cleave(targeting, target_ids):
-				cleave_target_id = int(AttackTargeting.get_next_target_id_after(targeting_ctx, int(tid)))
+				cleave_target_id = int(AttackTargeting.get_next_target_id_after_in_order(targeting_ctx, int(tid), cleave_order_ids))
 
 			var hit_scope := _begin_scope(Scope.Kind.HIT, "t=%d" % int(tid), attacker_id, {
 				Keys.TARGET_ID: int(tid),
@@ -809,79 +812,89 @@ func run_attack(ctx: AttackContext) -> bool:
 
 		if !pending_cleave.is_empty():
 			var cleave_target_id := int(pending_cleave.get("cleave_target_id", 0))
-			var primary_target_id := int(pending_cleave.get("primary_target_id", 0))
+			var prior_target_id := int(pending_cleave.get("primary_target_id", 0))
 			var overflow_amount := int(pending_cleave.get("overflow_amount", 0))
 			var overflow_banish_amount := int(pending_cleave.get("overflow_banish_amount", 0))
-			var cleave_extra := {
-				Keys.CLEAVE: true,
-				Keys.CHAINED_FROM_PREVIOUS: true,
-				Keys.ORIGIN_STRIKE_INDEX: int(s),
-				Keys.CHAIN_SOURCE_TARGET_ID: int(primary_target_id),
-				Keys.CLEAVE_DAMAGE: int(overflow_amount),
-			}
-			var cleave_scope_extra := {
-				Keys.STRIKE_INDEX: int(s),
-				Keys.ATTACK_MODE: mode,
-				Keys.TARGET_TYPE: targeting,
-			}
-			cleave_scope_extra.merge(cleave_extra)
-			var cleave_scope := _begin_scope(Scope.Kind.CLEAVE, "cleave=%d" % int(s), attacker_id, cleave_scope_extra)
-			if cleave_scope == null:
-				_strike_resolution_depth = maxi(_strike_resolution_depth - 1, 0)
-				drain_delayed_reactions(DelayedReaction.Timing.AFTER_STRIKE)
-				_end_scope(attack_scope)
-				return false
 
-			if writer != null:
-				writer.emit_cleave(
-					attacker_id,
-					[int(cleave_target_id)],
-					mode,
-					targeting,
-					s,
-					strikes,
-					String(ctx.projectile_scene if !ctx.projectile_scene.is_empty() else params.get(Keys.PROJECTILE_SCENE, "")),
-					cleave_extra
-				)
+			while cleave_target_id > 0 and overflow_amount > 0 and api.is_alive(cleave_target_id):
+				var cleave_extra := {
+					Keys.CLEAVE: true,
+					Keys.CHAINED_FROM_PREVIOUS: true,
+					Keys.ORIGIN_STRIKE_INDEX: int(s),
+					Keys.CHAIN_SOURCE_TARGET_ID: int(prior_target_id),
+					Keys.CLEAVE_DAMAGE: int(overflow_amount),
+				}
+				var cleave_scope_extra := {
+					Keys.STRIKE_INDEX: int(s),
+					Keys.ATTACK_MODE: mode,
+					Keys.TARGET_TYPE: targeting,
+				}
+				cleave_scope_extra.merge(cleave_extra)
+				var cleave_scope := _begin_scope(Scope.Kind.CLEAVE, "cleave=%d" % int(s), attacker_id, cleave_scope_extra)
+				if cleave_scope == null:
+					_strike_resolution_depth = maxi(_strike_resolution_depth - 1, 0)
+					drain_delayed_reactions(DelayedReaction.Timing.AFTER_STRIKE)
+					_end_scope(attack_scope)
+					return false
 
-			var cleave_hit_scope_extra := {
-				Keys.TARGET_ID: int(cleave_target_id),
-				Keys.STRIKE_INDEX: int(s),
-				Keys.ATTACK_MODE: mode,
-			}
-			cleave_hit_scope_extra.merge(cleave_extra)
-			var cleave_hit_scope := _begin_scope(Scope.Kind.HIT, "t=%d" % int(cleave_target_id), attacker_id, cleave_hit_scope_extra)
-			if cleave_hit_scope == null:
+				if writer != null:
+					writer.emit_cleave(
+						attacker_id,
+						[int(cleave_target_id)],
+						mode,
+						targeting,
+						s,
+						strikes,
+						String(ctx.projectile_scene if !ctx.projectile_scene.is_empty() else params.get(Keys.PROJECTILE_SCENE, "")),
+						cleave_extra
+					)
+
+				var cleave_hit_scope_extra := {
+					Keys.TARGET_ID: int(cleave_target_id),
+					Keys.STRIKE_INDEX: int(s),
+					Keys.ATTACK_MODE: mode,
+				}
+				cleave_hit_scope_extra.merge(cleave_extra)
+				var cleave_hit_scope := _begin_scope(Scope.Kind.HIT, "t=%d" % int(cleave_target_id), attacker_id, cleave_hit_scope_extra)
+				if cleave_hit_scope == null:
+					_end_scope(cleave_scope)
+					_strike_resolution_depth = maxi(_strike_resolution_depth - 1, 0)
+					drain_delayed_reactions(DelayedReaction.Timing.AFTER_STRIKE)
+					_end_scope(attack_scope)
+					return false
+
+				ctx.current_cleave_target_id = int(cleave_target_id)
+				ctx.current_cleave_damage = int(overflow_amount)
+				ctx.current_resolution_kind = int(AttackContext.ResolutionKind.CLEAVE)
+
+				var cleave_damage := DamageContext.new()
+				cleave_damage.source_id = source_id
+				cleave_damage.target_id = int(cleave_target_id)
+				cleave_damage.base_amount = maxi(int(overflow_amount) - int(overflow_banish_amount), 0)
+				cleave_damage.base_banish_amount = int(overflow_banish_amount)
+				cleave_damage.deal_modifier_type = deal_mod
+				cleave_damage.take_modifier_type = take_mod
+				cleave_damage.modifier_policy = int(DamageContext.ModifierPolicy.SKIP_DEAL_MODIFIERS)
+				cleave_damage.params = params
+				cleave_damage.tags = ctx.tags.duplicate()
+				cleave_damage.reason = ctx.reason
+				cleave_damage.origin_card_uid = ctx.origin_card_uid
+				cleave_damage.origin_arcanum_id = ctx.origin_arcanum_id
+				api.resolve_damage_immediate(cleave_damage)
+				any = true
+				if !_packed_has_int(ctx.affected_target_ids, int(cleave_target_id)):
+					ctx.affected_target_ids.append(int(cleave_target_id))
+
+				_end_scope(cleave_hit_scope)
 				_end_scope(cleave_scope)
-				_strike_resolution_depth = maxi(_strike_resolution_depth - 1, 0)
-				drain_delayed_reactions(DelayedReaction.Timing.AFTER_STRIKE)
-				_end_scope(attack_scope)
-				return false
 
-			ctx.current_cleave_target_id = int(cleave_target_id)
-			ctx.current_cleave_damage = int(overflow_amount)
-			ctx.current_resolution_kind = int(AttackContext.ResolutionKind.CLEAVE)
-
-			var cleave_damage := DamageContext.new()
-			cleave_damage.source_id = source_id
-			cleave_damage.target_id = int(cleave_target_id)
-			cleave_damage.base_amount = maxi(int(overflow_amount) - int(overflow_banish_amount), 0)
-			cleave_damage.base_banish_amount = int(overflow_banish_amount)
-			cleave_damage.deal_modifier_type = deal_mod
-			cleave_damage.take_modifier_type = take_mod
-			cleave_damage.modifier_policy = int(DamageContext.ModifierPolicy.SKIP_DEAL_MODIFIERS)
-			cleave_damage.params = params
-			cleave_damage.tags = ctx.tags.duplicate()
-			cleave_damage.reason = ctx.reason
-			cleave_damage.origin_card_uid = ctx.origin_card_uid
-			cleave_damage.origin_arcanum_id = ctx.origin_arcanum_id
-			api.resolve_damage_immediate(cleave_damage)
-			any = true
-			if !_packed_has_int(ctx.affected_target_ids, int(cleave_target_id)):
-				ctx.affected_target_ids.append(int(cleave_target_id))
-
-			_end_scope(cleave_hit_scope)
-			_end_scope(cleave_scope)
+				var next_target_id := int(AttackTargeting.get_next_target_id_after_in_order(targeting_ctx, int(cleave_target_id), cleave_order_ids))
+				prior_target_id = int(cleave_target_id)
+				cleave_target_id = int(next_target_id)
+				overflow_amount = int(cleave_damage.overflow_amount)
+				overflow_banish_amount = int(cleave_damage.overflow_banish_amount)
+			ctx.current_cleave_target_id = 0
+			ctx.current_cleave_damage = 0
 			ctx.current_resolution_kind = int(AttackContext.ResolutionKind.NONE)
 
 		_strike_resolution_depth = maxi(_strike_resolution_depth - 1, 0)

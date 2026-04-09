@@ -51,6 +51,8 @@ func _build_stacks_text(ctx: NPCAIContext, proto: Status) -> String:
 
 func _build_target_text(ctx: NPCAIContext, actor_id: int) -> String:
 	var names := _resolved_target_names(ctx, actor_id)
+	if ctx != null and ctx.params != null and ctx.params.has(Keys.TARGET_IDS) and names.is_empty():
+		return "targets: none"
 	if names.is_empty():
 		return "target: self"
 	if names.size() == 1:
@@ -62,6 +64,8 @@ func _resolved_target_names(ctx: NPCAIContext, actor_id: int) -> Array[String]:
 	var out: Array[String] = []
 
 	if target_ids.is_empty():
+		if ctx != null and ctx.params != null and ctx.params.has(Keys.TARGET_IDS):
+			return out
 		out.append("self")
 		return out
 
@@ -76,7 +80,7 @@ func _resolved_target_names(ctx: NPCAIContext, actor_id: int) -> Array[String]:
 			continue
 		out.append(name)
 
-	if out.is_empty():
+	if out.is_empty() and !(ctx != null and ctx.params != null and ctx.params.has(Keys.TARGET_IDS)):
 		out.append("self")
 
 	return out

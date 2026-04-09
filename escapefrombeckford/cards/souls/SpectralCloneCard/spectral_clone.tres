@@ -10,6 +10,7 @@ script = ExtResource("3_lnip7")
 card_type = 1
 target_type = 1
 name = "Spectral Clone"
+summon_release_overload = 1
 description = "Summon a %s/%s %s."
 cost = 1
 texture = ExtResource("4_56068")

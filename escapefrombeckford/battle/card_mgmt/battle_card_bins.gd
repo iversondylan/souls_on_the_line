@@ -262,7 +262,7 @@ func exhaust_card_from_hand(card: CardData) -> void:
 	move_cards(move_ctx)
 
 
-func discard_reserved_summon_card(card_uid: String, overload: int) -> void:
+func discard_reserved_summon_card(card_uid: String, overload_mod: int) -> void:
 	if card_uid.is_empty():
 		return
 	var move_ctx := CardMoveContext.new()
@@ -271,7 +271,7 @@ func discard_reserved_summon_card(card_uid: String, overload: int) -> void:
 	move_ctx.card_uids = [card_uid]
 	move_ctx.reason = "summon_reserve_release"
 	move_cards(move_ctx)
-	_set_summon_release_overload(move_ctx.moved_cards, overload)
+	_set_summon_release_overload(move_ctx.moved_cards, overload_mod)
 
 func build_bin_snapshot() -> CardBinSnapshot:
 	var snapshot := CardBinSnapshot.new()
@@ -503,12 +503,12 @@ func _reduce_overload_for_cards(cards: Array[CardData], amount: int) -> void:
 			continue
 		card.overload = maxi(int(card.overload) - delta, 0)
 
-func _set_summon_release_overload(cards: Array[CardData], overload: int) -> void:
+func _set_summon_release_overload(cards: Array[CardData], overload_mod: int) -> void:
 	for card in cards:
-		if card == null:
+		if card == null or !_has_summon_effect(card):
 			continue
-		if _has_summon_effect(card):
-			card.overload = overload
+		var overload: int = clampi(card.summon_release_overload + overload_mod, 0, 5)
+		card.overload = overload
 
 func _has_summon_effect(card: CardData) -> bool:
 	if card == null:

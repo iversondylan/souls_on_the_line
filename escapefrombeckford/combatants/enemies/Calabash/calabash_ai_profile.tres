@@ -2,9 +2,11 @@
 
 [ext_resource type="Script" uid="uid://bcih413oy6v73" path="res://npc_ai/_core/npc_action.gd" id="1_qqgb6"]
 [ext_resource type="Script" uid="uid://bdsvca1cpka5s" path="res://npc_ai/_core/npc_ai_profile.gd" id="2_7cu3h"]
-[ext_resource type="Resource" path="res://combatants/enemies/Calabash/calabash_burst_attack_action.tres" id="3_burst_action"]
+[ext_resource type="Resource" uid="uid://bedo3275ip6st" path="res://combatants/enemies/Calabash/calabash_burst_attack_action.tres" id="3_burst_action"]
+[ext_resource type="Resource" uid="uid://cjvyvsyhj3rha" path="res://combatants/enemies/Calabash/calabash_terrified_scream_action.tres" id="4_scream_action"]
+[ext_resource type="Resource" path="res://combatants/enemies/Calabash/calabash_trample_action.tres" id="5_trample_action"]
 
 [resource]
 script = ExtResource("2_7cu3h")
-actions = Array[ExtResource("1_qqgb6")]([ExtResource("3_burst_action")])
+actions = Array[ExtResource("1_qqgb6")]([ExtResource("3_burst_action"), ExtResource("4_scream_action"), ExtResource("5_trample_action")])
 metadata/_custom_type_script = "uid://bdsvca1cpka5s"

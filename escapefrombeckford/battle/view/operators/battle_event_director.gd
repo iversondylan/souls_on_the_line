@@ -1191,10 +1191,10 @@ func _on_summon_reserve_released(e: EventPackage) -> void:
 	var d := _data(e)
 	var summoned_id := int(d.get(Keys.SUMMONED_ID, 0))
 	var card_uid := String(d.get(Keys.CARD_UID, ""))
-	var overload := int(d.get(Keys.OVERLOAD, 0))
+	var overload_mod := int(d.get(Keys.OVERLOAD_MOD, 0))
 	if summoned_id <= 0 or card_uid == "":
 		return
-	Events.summon_reserve_card_released.emit(summoned_id, card_uid, overload)
+	Events.summon_reserve_card_released.emit(summoned_id, card_uid, overload_mod)
 
 func _on_victory(e: EventPackage) -> void:
 	var d := _data(e)

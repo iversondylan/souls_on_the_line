@@ -41,6 +41,14 @@ static func get_target_ids(ctx: TargetingContext) -> Array[int]:
 
 
 static func get_next_target_id_after(ctx: TargetingContext, current_target_id: int) -> int:
+	return get_next_target_id_after_in_order(ctx, current_target_id)
+
+
+static func get_next_target_id_after_in_order(
+	ctx: TargetingContext,
+	current_target_id: int,
+	ordered_ids: Array = []
+) -> int:
 	if ctx == null or ctx.api == null:
 		return 0
 	if int(current_target_id) <= 0:
@@ -57,20 +65,23 @@ static func get_next_target_id_after(ctx: TargetingContext, current_target_id: i
 			return 0
 		defending_group_index = int(ctx.api.get_opposing_group(source_group_index))
 
-	var ordered_ids := ctx.api.get_combatants_in_group(defending_group_index, false)
-	var current_index := ordered_ids.find(int(current_target_id))
+	var search_ids: Array = ordered_ids
+	if search_ids.is_empty():
+		search_ids = ctx.api.get_combatants_in_group(defending_group_index, false)
+
+	var current_index := search_ids.find(int(current_target_id))
 	if current_index < 0:
 		return 0
 
 	if target_type == int(Attack.Targeting.STANDARD):
-		for i in range(current_index + 1, ordered_ids.size()):
-			var next_id := int(ordered_ids[i])
+		for i in range(current_index + 1, search_ids.size()):
+			var next_id := int(search_ids[i])
 			if next_id > 0 and ctx.api.is_alive(next_id):
 				return next_id
 		return 0
 
 	for i in range(current_index - 1, -1, -1):
-		var next_id := int(ordered_ids[i])
+		var next_id := int(search_ids[i])
 		if next_id > 0 and ctx.api.is_alive(next_id):
 			return next_id
 	return 0

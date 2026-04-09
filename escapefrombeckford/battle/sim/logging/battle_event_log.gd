@@ -508,10 +508,10 @@ static func _fmt_array(arr: Array, abbrev_arrays_over: int) -> String:
 		var head := arr.slice(0, abbrev_arrays_over)
 		var parts: Array[String] = []
 		for x in head:
-			parts.append(str(x))
+			parts.append(_fmt_value(x, abbrev_arrays_over, 80))
 		return "[%s…](n=%d)" % [", ".join(parts), n]
 	else:
 		var parts2: Array[String] = []
 		for x2 in arr:
-			parts2.append(str(x2))
+			parts2.append(_fmt_value(x2, abbrev_arrays_over, 80))
 		return "[%s]" % ", ".join(parts2)

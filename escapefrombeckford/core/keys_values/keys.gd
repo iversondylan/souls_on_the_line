@@ -41,6 +41,7 @@ const AFTER_MANA := &"after_mana"
 const BEFORE_MAX_MANA := &"before_max_mana"
 const AFTER_MAX_MANA := &"after_max_mana"
 const OVERLOAD := &"overload"
+const OVERLOAD_MOD := &"overload_mod"
 
 # -------------------------
 # Scope frame keys
@@ -169,6 +170,7 @@ const DEATH_REASON := &"death_reason"
 # Status ids you’ve used so far
 # -------------------------
 const STATUS_MARKED := &"marked"
+const STATUS_DESPAIR := &"despair"
 const STATUS_DANGER_ZONE := &"danger_zone"
 const STATUS_HEAVY_ATTACK := &"heavy_attack"
 const STATUS_SMALL := &"small"
