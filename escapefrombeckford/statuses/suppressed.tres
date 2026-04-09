@@ -6,7 +6,6 @@
 [resource]
 script = ExtResource("1_suppressed_script")
 status_name = "Suppressed"
-proc_type = 2
 number_display_type = 1
 expiration_policy = 2
 icon = ExtResource("2_suppressed_icon")

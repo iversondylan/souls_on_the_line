@@ -6,7 +6,6 @@
 [resource]
 script = ExtResource("1_7ubsa")
 status_name = "Amplify"
-proc_type = 1
 number_display_type = 2
 reapply_type = 1
 expiration_policy = 0

@@ -6,7 +6,6 @@
 [resource]
 script = ExtResource("1_fleeting_script")
 status_name = "Fleeting"
-proc_type = 2
 reapply_type = 3
 icon = ExtResource("1_gxmth")
 tooltip = "Dies at the start of the player's turn."

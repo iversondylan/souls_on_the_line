@@ -1,12 +1,11 @@
 [gd_resource type="Resource" script_class="BoilingBloodStatus" format=3 uid="uid://dfw7lv0so2crl"]
 
-[ext_resource type="Texture2D" path="res://_assets/sprites/assorted/explosion_icon.png" id="1_cs1el"]
-[ext_resource type="Script" path="res://statuses/boiling_blood.gd" id="2_t35rc"]
+[ext_resource type="Texture2D" uid="uid://dfm4wyrok3dku" path="res://_assets/sprites/assorted/explosion_icon.png" id="1_cs1el"]
+[ext_resource type="Script" uid="uid://bsvxqv6nty16r" path="res://statuses/boiling_blood.gd" id="2_t35rc"]
 
 [resource]
 script = ExtResource("2_t35rc")
 status_name = "Boiling Blood"
-proc_type = 2
 number_display_type = 1
 expiration_policy = 4
 icon = ExtResource("1_cs1el")

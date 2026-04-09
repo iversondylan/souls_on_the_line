@@ -1,12 +1,11 @@
-[gd_resource type="Resource" script_class="VulnerableStatus" format=3]
+[gd_resource type="Resource" script_class="VulnerableStatus" format=3 uid="uid://d62rr0vbgpj4"]
 
-[ext_resource type="Script" path="res://statuses/vulnerable.gd" id="1_vulnerable_script"]
+[ext_resource type="Script" uid="uid://bsdr00152afcj" path="res://statuses/vulnerable.gd" id="1_vulnerable_script"]
 [ext_resource type="Texture2D" uid="uid://c8ase1dvr32mj" path="res://_assets/sprites/assorted/broken-shield.png" id="2_vulnerable_icon"]
 
 [resource]
 script = ExtResource("1_vulnerable_script")
 status_name = "Vulnerable"
-proc_type = 2
 number_display_type = 2
 expiration_policy = 0
 icon = ExtResource("2_vulnerable_icon")

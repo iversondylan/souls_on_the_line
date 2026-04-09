@@ -6,7 +6,6 @@
 [resource]
 script = ExtResource("2_om1ye")
 status_name = "Explosive Departure"
-proc_type = 2
 number_display_type = 1
 icon = ExtResource("1_c3dv3")
 tooltip = "On death, deal damage equal to intensity to all enemies."

@@ -1,12 +1,11 @@
 [gd_resource type="Resource" script_class="ProtectedDroneStatus" format=3 uid="uid://b0o8d7ab55o6i"]
 
-[ext_resource type="Script" path="res://statuses/protected_drone.gd" id="1_protected_drone_script"]
-[ext_resource type="Texture2D" path="res://_assets/sprites/assorted/ant_icon.png" id="2_protected_drone_icon"]
+[ext_resource type="Script" uid="uid://bqco50xwj5ltc" path="res://statuses/protected_drone.gd" id="1_protected_drone_script"]
+[ext_resource type="Texture2D" uid="uid://cr7u6fdj1glhr" path="res://_assets/sprites/assorted/ant_icon.png" id="2_protected_drone_icon"]
 
 [resource]
 script = ExtResource("1_protected_drone_script")
 status_name = "Protected Drone"
-proc_type = 2
 reapply_type = 3
 icon = ExtResource("2_protected_drone_icon")
 tooltip = "On death, summon a Fire Ant in this slot and give it 3 Explosive Parting."

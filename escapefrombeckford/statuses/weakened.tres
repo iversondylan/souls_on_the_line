@@ -1,12 +1,11 @@
-[gd_resource type="Resource" script_class="WeakenedStatus" format=3]
+[gd_resource type="Resource" script_class="WeakenedStatus" format=3 uid="uid://dwgwwjn6p4t5x"]
 
-[ext_resource type="Script" path="res://statuses/weakened.gd" id="1_weakened_script"]
+[ext_resource type="Script" uid="uid://4sg4lovf3nqy" path="res://statuses/weakened.gd" id="1_weakened_script"]
 [ext_resource type="Texture2D" uid="uid://c7y3hqcrrogir" path="res://_assets/sprites/assorted/knockout.png" id="2_weakened_icon"]
 
 [resource]
 script = ExtResource("1_weakened_script")
 status_name = "Weakened"
-proc_type = 2
 number_display_type = 2
 expiration_policy = 0
 icon = ExtResource("2_weakened_icon")

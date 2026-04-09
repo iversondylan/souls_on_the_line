@@ -6,7 +6,6 @@
 [resource]
 script = ExtResource("2_adcuq")
 status_name = "Tempered"
-proc_type = 2
 number_display_type = 1
 reapply_type = 3
 icon = ExtResource("1_3fj7w")

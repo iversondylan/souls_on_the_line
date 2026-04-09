@@ -40,8 +40,6 @@ static func on_actor_turn_begin(api: SimBattleAPI, actor_id: int) -> void:
 			ctx.proto.on_actor_turn_begin(ctx)
 	)
 
-	_tick_duration_for_proc(api, actor_id, Status.ProcType.START_OF_TURN)
-
 static func on_player_turn_begin(api: SimBattleAPI, player_id: int) -> void:
 	if api == null or api.state == null or api.state.has_terminal_outcome():
 		return
@@ -66,7 +64,7 @@ static func on_actor_turn_end(api: SimBattleAPI, actor_id: int) -> void:
 			ctx.proto.on_actor_turn_end(ctx)
 	)
 
-	_tick_duration_for_proc(api, actor_id, Status.ProcType.END_OF_TURN)
+	_tick_duration_statuses_for_owner_turn_end(api, actor_id)
 
 static func on_damage_taken(api: SimBattleAPI, damage_ctx: DamageContext) -> void:
 	if api == null or api.state == null or damage_ctx == null or api.state.has_terminal_outcome():
@@ -775,7 +773,7 @@ static func _expire_unit_by_policy(api: SimBattleAPI, cid: int, policy: int) -> 
 		rc.status_id = sid
 		api.remove_status(rc)
 
-static func _tick_duration_for_proc(api: SimBattleAPI, actor_id: int, proc_type: int) -> void:
+static func _tick_duration_statuses_for_owner_turn_end(api: SimBattleAPI, actor_id: int) -> void:
 	var u: CombatantState = api.state.get_unit(actor_id)
 	if u == null or u.statuses == null:
 		return
@@ -795,8 +793,6 @@ static func _tick_duration_for_proc(api: SimBattleAPI, actor_id: int, proc_type:
 			continue
 
 		if int(proto.expiration_policy) != Status.ExpirationPolicy.DURATION:
-			continue
-		if int(proto.proc_type) != proc_type:
 			continue
 
 		var before_i := int(stack.intensity)

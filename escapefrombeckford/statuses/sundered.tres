@@ -6,7 +6,6 @@
 [resource]
 script = ExtResource("1_sundered_script")
 status_name = "Sundered"
-proc_type = 2
 number_display_type = 1
 expiration_policy = 2
 icon = ExtResource("2_sundered_icon")

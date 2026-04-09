@@ -5,7 +5,6 @@ class_name Status extends Resource
 signal status_applied(status: Status)
 signal status_changed()
 
-enum ProcType { START_OF_TURN, END_OF_TURN, EVENT_BASED }
 enum NumberDisplayType { NONE, INTENSITY, DURATION }
 enum ReapplyType { INTENSITY, DURATION, REPLACE, IGNORE }
 enum ExpirationPolicy {
@@ -19,7 +18,6 @@ enum OP { APPLY, REMOVE, CHANGE }
 
 @export_group("Status Data")
 @export var status_name: String = ""
-@export var proc_type: ProcType
 @export var number_display_type: NumberDisplayType
 @export var reapply_type: ReapplyType
 @export var expiration_policy: ExpirationPolicy = ExpirationPolicy.EVENT_OR_NEVER

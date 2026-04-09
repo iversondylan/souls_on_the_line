@@ -6,7 +6,6 @@
 [resource]
 script = ExtResource("1_heavy_attack_script")
 status_name = "Heavy Attack"
-proc_type = 2
 reapply_type = 3
 icon = ExtResource("1_c23fj")
 tooltip = "Heavy Attack: excess damage dealt by this unit is applied to the next target."

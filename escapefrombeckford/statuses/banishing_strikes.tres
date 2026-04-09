@@ -6,7 +6,6 @@
 [resource]
 script = ExtResource("1_script")
 status_name = "Banishing Strikes"
-proc_type = 1
 number_display_type = 1
 icon = ExtResource("2_icon")
 tooltip = "error"

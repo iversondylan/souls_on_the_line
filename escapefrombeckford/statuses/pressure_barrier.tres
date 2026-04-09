@@ -6,7 +6,6 @@
 [resource]
 script = ExtResource("1_vs2ft")
 status_name = "Pressure Barrier"
-proc_type = 2
 number_display_type = 1
 expiration_policy = 1
 icon = ExtResource("1_vv6tp")

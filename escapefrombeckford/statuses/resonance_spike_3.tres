@@ -9,7 +9,6 @@
 script = ExtResource("1_d6qqx")
 projected_statuses = Array[ExtResource("2_xdcdr")]([ExtResource("2_might")])
 status_name = "Resonance Spike"
-proc_type = 2
 number_display_type = 1
 reapply_type = 2
 expiration_policy = 2

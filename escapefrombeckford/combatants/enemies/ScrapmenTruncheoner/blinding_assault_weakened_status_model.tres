@@ -1,11 +1,9 @@
-[gd_resource type="Resource" script_class="StatusModel" format=3]
+[gd_resource type="Resource" script_class="StatusModel" format=3 uid="uid://dln4o4rvqo7cd"]
 
 [ext_resource type="Script" uid="uid://cccygrstrra8t" path="res://npc_ai/status/status_model.gd" id="1_status_model"]
-[ext_resource type="Resource" path="res://statuses/weakened.tres" id="2_weakened"]
+[ext_resource type="Resource" uid="uid://dwgwwjn6p4t5x" path="res://statuses/weakened.tres" id="2_weakened"]
 
 [resource]
 script = ExtResource("1_status_model")
 status = ExtResource("2_weakened")
-intensity = 50
-duration = 1
 metadata/_custom_type_script = "uid://cccygrstrra8t"
