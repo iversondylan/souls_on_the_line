@@ -62,6 +62,7 @@ enum TurnStatus { NONE, TURN_PENDING, TURN_ACTIVE }
 
 var type: Type : set = _set_type
 var mortality: CombatantState.Mortality = CombatantState.Mortality.MORTAL
+var has_summon_reserve_card: bool = false
 var display_name: String = ""
 var cid: int = -1 : set = _set_cid
 var group_index: int = -1 # 0 friendly, 1 enemy
@@ -107,6 +108,11 @@ var _base_cached: bool = false
 
 func is_soulbound() -> bool:
 	return int(mortality) == int(CombatantState.Mortality.SOULBOUND)
+
+
+func set_has_summon_reserve_card(new_value: bool) -> void:
+	has_summon_reserve_card = new_value
+	_refresh_health_bar_status_icons()
 
 
 # ------------------------------------------------------------------------------
@@ -180,6 +186,7 @@ func _apply_visuals_from_spec() -> void:
 
 func _apply_stats_from_spec() -> void:
 	mortality = int(_spec.get(Keys.MORTALITY, CombatantState.Mortality.MORTAL))
+	has_summon_reserve_card = bool(_spec.get(Keys.HAS_SUMMON_RESERVE_CARD, false))
 	max_health = int(_spec.get(Keys.MAX_HEALTH, 0))
 	health = int(_spec.get(Keys.HEALTH, 0))
 	focus_sound = _resolve_sound_from_spec(FOCUS_SOUND_KEY, DEFAULT_FOCUS_SOUND)
@@ -191,6 +198,12 @@ func _apply_stats_from_spec() -> void:
 	status_sound = _resolve_sound_from_spec(STATUS_SOUND_KEY, DEFAULT_STATUS_SOUND)
 	if health_bar != null:
 		health_bar.update_health_view(max_health, health)
+	_refresh_health_bar_status_icons()
+
+
+func _refresh_health_bar_status_icons() -> void:
+	if health_bar != null:
+		health_bar.update_status_icons(mortality, has_summon_reserve_card)
 
 
 func _resolve_sound_from_spec(key: StringName, fallback: Sound) -> Sound:
@@ -1218,5 +1231,6 @@ func set_health(new_health: int, was_lethal: bool = false) -> void:
 	health = clampi(new_health, 0, max_health)
 	if health_bar != null:
 		health_bar.update_health_view(max_health, health)
+		_refresh_health_bar_status_icons()
 	if was_lethal:
 		pass

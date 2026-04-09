@@ -127,6 +127,7 @@ const ART_FACES_RIGHT := &"art_faces_right"
 const HEIGHT := &"height"
 const COLOR_TINT := &"color_tint"
 const PROTO_PATH := &"proto_path"
+const HAS_SUMMON_RESERVE_CARD := &"has_summon_reserve_card"
 const WINDUP_LAYOUT_COUNT := &"windup_layout_count"
 const WINDUP_ORDER_IDS := &"windup_order_ids"
 const REPLACED_ID := &"replaced_id" # optional, useful for director FX pairing

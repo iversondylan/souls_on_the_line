@@ -1194,6 +1194,9 @@ func _on_summon_reserve_released(e: EventPackage) -> void:
 	var overload_mod := int(d.get(Keys.OVERLOAD_MOD, 0))
 	if summoned_id <= 0 or card_uid == "":
 		return
+	var v := battle_view.get_combatant(summoned_id)
+	if v != null:
+		v.set_has_summon_reserve_card(false)
 	Events.summon_reserve_card_released.emit(summoned_id, card_uid, overload_mod)
 
 func _on_victory(e: EventPackage) -> void:

@@ -4,6 +4,9 @@ class_name HealthBar extends PanelContainer
 @onready var damage_bar: ProgressBar = %DamageBar
 @onready var health_number: Label = %HealthNumber
 @onready var max_health_number: Label = %MaxHealthNumber
+@onready var soulbound_icon: TextureRect = $HBoxContainer/SoulboundIcon
+@onready var deplete_icon: TextureRect = $HBoxContainer/DepleteIcon
+@onready var card_reserved_icon: TextureRect = $HBoxContainer/CardReservedIcon
 
 @export var inside_control: bool = false
 @export var font_size: int = 16 : set = _set_font_size
@@ -14,6 +17,9 @@ var health : int = 0 : set = _set_health
 var max_health: int : set = _set_max_health
 var damage_health: int : set = _set_damage_health
 
+func _ready() -> void:
+	update_status_icons(CombatantState.Mortality.MORTAL, false)
+
 func update_health(combatant_data: CombatantData) -> void:
 	max_health = combatant_data.max_health
 	health = combatant_data.max_health
@@ -21,6 +27,18 @@ func update_health(combatant_data: CombatantData) -> void:
 func update_health_view(_max_health: int, _health: int) -> void:
 	max_health = _max_health
 	health = _health
+
+func update_status_icons(mortality: CombatantState.Mortality, has_summon_reserve_card: bool) -> void:
+	var is_soulbound := int(mortality) == int(CombatantState.Mortality.SOULBOUND)
+	var is_deplete := int(mortality) == int(CombatantState.Mortality.DEPLETE)
+
+	if soulbound_icon != null:
+		soulbound_icon.visible = is_soulbound
+	if deplete_icon != null:
+		deplete_icon.visible = is_deplete
+	if card_reserved_icon != null:
+		card_reserved_icon.visible = has_summon_reserve_card
+	_update_visuals()
 
 func _set_max_health(new_health: int) -> void:
 	max_health = new_health

@@ -1376,6 +1376,7 @@ func _make_spawn_spec_from_data(combatant_data: CombatantData, u: CombatantState
 		Keys.HEIGHT: int(combatant_data.height),
 		Keys.COLOR_TINT: combatant_data.color_tint as Color,
 		Keys.MORTALITY: int(u.mortality),
+		Keys.HAS_SUMMON_RESERVE_CARD: String(u.bound_card_uid) != "",
 	}
 
 

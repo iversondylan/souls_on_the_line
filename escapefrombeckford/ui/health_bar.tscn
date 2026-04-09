@@ -5,6 +5,7 @@
 [ext_resource type="Theme" uid="uid://1dr1eewpv0jd" path="res://themes/ui_theme.tres" id="2_qi2ti"]
 [ext_resource type="Texture2D" uid="uid://bkxkseqjc0dl0" path="res://_assets/sprites/assorted/soul.png" id="4_eo044"]
 [ext_resource type="Texture2D" uid="uid://c2cpjnsgjdd1x" path="res://_assets/sprites/assorted/card_back_1.PNG" id="5_dtgp1"]
+[ext_resource type="Texture2D" uid="uid://b1i3rxto6mwol" path="res://_assets/sprites/assorted/soul-vessel.png" id="5_fbv3k"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_qi2ti"]
 
@@ -117,12 +118,17 @@ custom_minimum_size = Vector2(4, 0)
 layout_mode = 2
 size_flags_horizontal = 4
 
-[node name="TextureRect" type="TextureRect" parent="HBoxContainer" unique_id=1464680930]
+[node name="SoulboundIcon" type="TextureRect" parent="HBoxContainer" unique_id=1464680930]
 layout_mode = 2
 texture = ExtResource("4_eo044")
 expand_mode = 2
 
-[node name="TextureRect2" type="TextureRect" parent="HBoxContainer" unique_id=1718017617]
+[node name="DepleteIcon" type="TextureRect" parent="HBoxContainer" unique_id=1209882937]
+layout_mode = 2
+texture = ExtResource("5_fbv3k")
+expand_mode = 2
+
+[node name="CardReservedIcon" type="TextureRect" parent="HBoxContainer" unique_id=1718017617]
 layout_mode = 2
 texture = ExtResource("5_dtgp1")
 expand_mode = 3
