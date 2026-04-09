@@ -19,6 +19,15 @@ func on_my_group_end(_ctx: NPCAIContext) -> void:
 func on_ability_started(_ctx: NPCAIContext) -> void:
 	pass
 
+func on_group_layout_changed(
+	_ctx: NPCAIContext,
+	_changed_group_index: int,
+	_before_order_ids: PackedInt32Array,
+	_after_order_ids: PackedInt32Array,
+	_reason: String
+) -> void:
+	pass
+
 # -------------------------------------------------------------------
 # Clearer phase hooks
 # -------------------------------------------------------------------

@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="MultipliedChanceOnParticularTurnsStateModel" format=3 uid="uid://4tmtsel61ynn"]
+
+[ext_resource type="Script" uid="uid://d0rfw25yqrflb" path="res://npc_ai/chance/multiplied_chance_on_particular_turns_state_model.gd" id="1_avdho"]
+
+[resource]
+script = ExtResource("1_avdho")
+chance_multiplier = 0.0
+turn_numbers = [1]

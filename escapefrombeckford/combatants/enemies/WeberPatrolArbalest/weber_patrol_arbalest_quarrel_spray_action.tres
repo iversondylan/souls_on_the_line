@@ -11,12 +11,13 @@
 [ext_resource type="Script" uid="uid://cuj4qvyx6dedj" path="res://npc_ai/_core/state_model.gd" id="8_state"]
 [ext_resource type="Resource" path="res://combatants/enemies/WeberPatrolArbalest/weber_patrol_arbalest_quarrel_spray_tooltip_model.tres" id="9_tooltip_model"]
 [ext_resource type="Resource" uid="uid://btgtvs6ab0nsg" path="res://npc_ai/chance/half_exponential_spree_chance_state_model.tres" id="10_half_exp"]
+[ext_resource type="Resource" uid="uid://4tmtsel61ynn" path="res://combatants/enemies/WeberPatrolArbalest/weber_patrol_arbalest_zero_chance_first_turn_model.tres" id="11_ermyb"]
 
 [resource]
 script = ExtResource("7_action")
 effect_packages = Array[ExtResource("1_pkg")]([ExtResource("2_attack_pkg")])
 intent_lifecycle_models = Array[ExtResource("4_lifecycle")]([ExtResource("5_danger_lifecycle")])
-state_models = Array[ExtResource("8_state")]([ExtResource("10_half_exp")])
+state_models = Array[ExtResource("8_state")]([ExtResource("10_half_exp"), ExtResource("11_ermyb")])
 action_name = "Quarrel Spray"
 intent_icon = ExtResource("3_icon")
 intent_icon_uid = "uid://d172x32jh00p0"

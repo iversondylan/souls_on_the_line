@@ -3,9 +3,12 @@
 [ext_resource type="Script" uid="uid://3jde7uhq2yho" path="res://npc_ai/_core/npc_effect_package.gd" id="1_pkg"]
 [ext_resource type="Resource" uid="uid://klyigaji6wsq" path="res://combatants/enemies/WeberPatrolSwordsman/weber_patrol_swordsman_attack_pkg.tres" id="2_attack_pkg"]
 [ext_resource type="Texture2D" uid="uid://c54dbo8n7r3g" path="res://_assets/sprites/assorted/attack.PNG" id="3_attack_icon"]
+[ext_resource type="Script" uid="uid://dtwuyctovqk5r" path="res://npc_ai/_core/intent_lifecycle_model.gd" id="4_12v18"]
 [ext_resource type="Script" uid="uid://bcih413oy6v73" path="res://npc_ai/_core/npc_action.gd" id="4_action"]
 [ext_resource type="Resource" uid="uid://7gggk4mmejsq" path="res://npc_ai/text/attack_intent_text_model.tres" id="5_text_model"]
+[ext_resource type="Script" uid="uid://q408gy2b4q6a" path="res://npc_ai/_core/performable_model.gd" id="6_8d4d0"]
 [ext_resource type="Resource" uid="uid://ivsvxo0vj72x" path="res://npc_ai/text/attack_intent_tooltip_text_model.tres" id="6_tooltip_model"]
+[ext_resource type="Script" uid="uid://cuj4qvyx6dedj" path="res://npc_ai/_core/state_model.gd" id="8_he0bc"]
 
 [resource]
 script = ExtResource("4_action")

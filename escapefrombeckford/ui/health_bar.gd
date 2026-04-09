@@ -20,6 +20,10 @@ var damage_health: int : set = _set_damage_health
 func _ready() -> void:
 	update_status_icons(CombatantState.Mortality.MORTAL, false)
 
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_RESIZED:
+		_recenter_if_needed()
+
 func update_health(combatant_data: CombatantData) -> void:
 	max_health = combatant_data.max_health
 	health = combatant_data.max_health
@@ -74,5 +78,8 @@ func _update_visuals() -> void:
 	reset_size()
 	size.y = static_height
 	#health_bar.reset_size()
-	if !inside_control:
-		position.x = -0.5 * size.x
+
+func _recenter_if_needed() -> void:
+	if inside_control:
+		return
+	position.x = -0.5 * size.x

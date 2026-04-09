@@ -1,6 +1,6 @@
-[gd_resource type="Resource" script_class="TargetedStatusFromOppTurnUntilEndOfMyTurnModel" format=3 uid="uid://4htxsoicptds"]
+[gd_resource type="Resource" script_class="DangerZoneIntentLifecycleModel" format=3 uid="uid://4htxsoicptds"]
 
-[ext_resource type="Script" uid="uid://cu7m8tl43x6jx" path="res://npc_ai/intent_lifecycle/targeted_status_from_opp_turn_until_end_of_my_turn_model.gd" id="1_lifecycle"]
+[ext_resource type="Script" path="res://npc_ai/intent_lifecycle/danger_zone_intent_lifecycle_model.gd" id="1_lifecycle"]
 [ext_resource type="Resource" uid="uid://00aqmemuit10" path="res://statuses/danger_zone.tres" id="2_status"]
 [ext_resource type="Resource" path="res://npc_ai/status/pseudo_random_opp_ally_or_player_status_target_model.tres" id="3_target_model"]
 [ext_resource type="Resource" path="res://npc_ai/status/frontmost_opp_status_target_model.tres" id="4_reapply_target_model"]
@@ -12,3 +12,4 @@ status_id = &"danger_zone"
 target_model = ExtResource("3_target_model")
 reapply_target_model = ExtResource("4_reapply_target_model")
 targeting_flag_key = &"targeting_danger_zone"
+reapply_on_layout_change_only_if_missing = true

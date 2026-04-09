@@ -94,6 +94,44 @@ static func on_action_execution_completed(ctx: NPCAIContext) -> void:
 			m.on_action_execution_completed(ctx)
 	ctx.action_name = ""
 
+static func on_group_layout_changed(
+	api: SimBattleAPI,
+	changed_group_index: int,
+	before_order_ids: PackedInt32Array,
+	after_order_ids: PackedInt32Array,
+	reason: String
+) -> void:
+	if api == null or api.state == null or api.state.has_terminal_outcome():
+		return
+
+	for cid in api.state.units.keys():
+		var u: CombatantState = api.state.get_unit(int(cid))
+		if u == null or !u.is_alive():
+			continue
+		if u.combatant_data == null or u.combatant_data.ai == null:
+			continue
+
+		ActionPlanner.ensure_ai_state_initialized(u)
+		if !bool(u.ai_state.get(Keys.FIRST_INTENTS_READY, false)):
+			continue
+		if bool(u.ai_state.get(Keys.IS_ACTING, false)):
+			continue
+
+		var action := _get_planned_action_for_unit(u)
+		if action == null:
+			continue
+
+		var ctx := ActionPlanner.make_context(api, u)
+		for m: IntentLifecycleModel in action.intent_lifecycle_models:
+			if m != null:
+				m.on_group_layout_changed(
+					ctx,
+					int(changed_group_index),
+					before_order_ids,
+					after_order_ids,
+					String(reason)
+				)
+
 static func _get_planned_action_for_unit(u: CombatantState) -> NPCAction:
 	if u == null or u.combatant_data == null or u.combatant_data.ai == null or u.ai_state == null:
 		return null

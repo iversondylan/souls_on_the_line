@@ -2,6 +2,12 @@
 
 class_name CheckpointProcessor extends RefCounted
 
+class GroupLayoutChangedEvent extends RefCounted:
+	var group_index: int = -1
+	var before_order_ids: PackedInt32Array = PackedInt32Array()
+	var after_order_ids: PackedInt32Array = PackedInt32Array()
+	var reason: String = ""
+
 enum Kind {
 	AFTER_ACTOR_TURN,
 	AFTER_CARD,
@@ -17,6 +23,8 @@ var dirty_replan_all: bool = false
 
 var dirty_intent_refresh_ids: Dictionary = {}
 var dirty_intent_refresh_all: bool = false
+
+var dirty_group_layout_events: Array[GroupLayoutChangedEvent] = []
 
 var dirty_turn_order: bool = false
 var dirty_outcome: bool = false
@@ -53,6 +61,21 @@ func request_intent_refresh_all() -> void:
 	if _is_flushing:
 		_needs_another_flush = true
 
+func request_group_layout_changed(
+	group_index: int,
+	before_order_ids: PackedInt32Array,
+	after_order_ids: PackedInt32Array,
+	reason: String = ""
+) -> void:
+	var event := GroupLayoutChangedEvent.new()
+	event.group_index = int(group_index)
+	event.before_order_ids = PackedInt32Array(before_order_ids)
+	event.after_order_ids = PackedInt32Array(after_order_ids)
+	event.reason = String(reason)
+	dirty_group_layout_events.append(event)
+	if _is_flushing:
+		_needs_another_flush = true
+
 
 func request_turn_order_rebuild() -> void:
 	dirty_turn_order = true
@@ -70,7 +93,8 @@ func has_dirty_planning() -> bool:
 	return dirty_replan_all \
 		or !dirty_replan_ids.is_empty() \
 		or dirty_intent_refresh_all \
-		or !dirty_intent_refresh_ids.is_empty()
+		or !dirty_intent_refresh_ids.is_empty() \
+		or !dirty_group_layout_events.is_empty()
 
 
 func has_dirty_turn_order() -> bool:
@@ -94,6 +118,7 @@ func clear_planning() -> void:
 	dirty_replan_all = false
 	dirty_intent_refresh_ids.clear()
 	dirty_intent_refresh_all = false
+	dirty_group_layout_events.clear()
 
 
 func flush_planning(kind: int, sim: Sim, allow_hooks := true) -> void:
@@ -116,6 +141,7 @@ func flush_planning(kind: int, sim: Sim, allow_hooks := true) -> void:
 		var replan_ids_now := dirty_replan_ids.duplicate()
 		var intent_refresh_all_now := bool(dirty_intent_refresh_all)
 		var intent_refresh_ids_now := dirty_intent_refresh_ids.duplicate()
+		var group_layout_events_now := dirty_group_layout_events.duplicate()
 		var outcome_now := bool(dirty_outcome)
 
 		clear_planning()
@@ -135,6 +161,7 @@ func flush_planning(kind: int, sim: Sim, allow_hooks := true) -> void:
 			for cid in replan_ids_now.keys():
 				_replan_if_valid(api, int(cid), allow_hooks)
 
+		_dispatch_group_layout_events(api, group_layout_events_now)
 		_publish_actor_intents(api, cids_to_publish)
 
 		if outcome_now:
@@ -238,6 +265,23 @@ func _publish_actor_intents(api: SimBattleAPI, cids_to_publish: Dictionary) -> v
 		return
 	for cid in cids_to_publish.keys():
 		_refresh_intent_if_valid(api, int(cid))
+
+func _dispatch_group_layout_events(api: SimBattleAPI, events: Array) -> void:
+	if api == null or api.state == null:
+		return
+
+	for event_value in events:
+		var event: GroupLayoutChangedEvent = event_value as GroupLayoutChangedEvent
+		if event == null:
+			continue
+
+		ActionLifecycleSystem.on_group_layout_changed(
+			api,
+			int(event.group_index),
+			event.before_order_ids,
+			event.after_order_ids,
+			String(event.reason)
+		)
 
 
 func _flush_outcome(api: SimBattleAPI) -> void:

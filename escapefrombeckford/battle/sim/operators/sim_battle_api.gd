@@ -441,6 +441,23 @@ func _request_intent_refresh_all() -> void:
 	for k in state.units.keys():
 		_request_intent_refresh(int(k))
 
+func _request_group_layout_changed(
+	group_index: int,
+	before_order_ids: PackedInt32Array,
+	after_order_ids: PackedInt32Array,
+	reason: String = ""
+) -> void:
+	if checkpoint_processor == null:
+		return
+	if !_did_group_layout_change(before_order_ids, after_order_ids):
+		return
+
+	checkpoint_processor.request_group_layout_changed(
+		int(group_index),
+		before_order_ids,
+		after_order_ids,
+		String(reason)
+	)
 
 func _request_immediate_planning_flush_if_needed(target_id: int, proto: Status) -> void:
 	if proto == null:
@@ -455,6 +472,19 @@ func _request_immediate_planning_flush_if_needed(target_id: int, proto: Status) 
 	_request_intent_refresh(int(target_id))
 	
 	urgent_planning_requested.emit()
+
+func _did_group_layout_change(
+	before_order_ids: PackedInt32Array,
+	after_order_ids: PackedInt32Array
+) -> bool:
+	if before_order_ids.size() != after_order_ids.size():
+		return true
+
+	for i in range(before_order_ids.size()):
+		if int(before_order_ids[i]) != int(after_order_ids[i]):
+			return true
+
+	return false
 
 func _request_turn_order_rebuild() -> void:
 	if checkpoint_processor != null:
@@ -717,6 +747,12 @@ func resolve_death(ctx: DeathContext) -> void:
 	_untrack_auras_for_removed_combatant(int(ctx.dead_id))
 
 	ctx.after_order_ids = PackedInt32Array(state.groups[g].order) if g != -1 else PackedInt32Array()
+	_request_group_layout_changed(
+		int(g),
+		ctx.before_order_ids,
+		ctx.after_order_ids,
+		"death:" + String(ctx.reason)
+	)
 	
 	unit_removed.emit(int(ctx.dead_id), int(g), "death:" + String(ctx.reason))
 
@@ -761,8 +797,7 @@ func fade_unit(ctx: FadeContext) -> void:
 	var u: CombatantState = state.get_unit(int(ctx.actor_id))
 	if u == null or !u.alive:
 		return
-	var overload: int = clampi(2 + ctx.overload_mod, 0, 5)
-	_maybe_release_soulbound_reserve(u, overload, "fade:" + String(ctx.reason))
+	_maybe_release_soulbound_reserve(u, int(ctx.overload_mod), "fade:" + String(ctx.reason))
 	
 	var g := int(u.team)
 	ctx.group_index = g
@@ -777,6 +812,12 @@ func fade_unit(ctx: FadeContext) -> void:
 	unit_removed.emit(int(ctx.actor_id), int(g), "fade:" + String(ctx.reason))
 	
 	ctx.after_order_ids = PackedInt32Array(state.groups[g].order) if g != -1 else PackedInt32Array()
+	_request_group_layout_changed(
+		int(g),
+		ctx.before_order_ids,
+		ctx.after_order_ids,
+		"fade:" + String(ctx.reason)
+	)
 	
 	_request_turn_order_rebuild()
 	_request_outcome_check()
@@ -815,6 +856,12 @@ func resolve_move(ctx: MoveContext) -> void:
 			pass
 	
 	ctx.after_order_ids = PackedInt32Array(state.groups[g].order)
+	_request_group_layout_changed(
+		int(g),
+		ctx.before_order_ids,
+		ctx.after_order_ids,
+		String(ctx.reason if !ctx.reason.is_empty() else "move")
+	)
 	_request_turn_order_rebuild()
 	
 	if writer != null:
@@ -981,6 +1028,7 @@ func spawn_from_data(
 	
 	var g := clampi(int(group_index), 0, 1)
 	var id := state.alloc_id()
+	var before_order_ids := PackedInt32Array(state.groups[g].order)
 	
 	if is_player:
 		state.groups[FRIENDLY].player_id = id
@@ -989,11 +1037,12 @@ func spawn_from_data(
 	state.add_unit(u, g, int(insert_index))
 	_rebuild_modifier_cache_for(id)
 	_request_turn_order_rebuild()
+	var after_order_ids := PackedInt32Array(state.groups[g].order)
+	_request_group_layout_changed(int(g), before_order_ids, after_order_ids, "spawn")
 	
 	if writer != null:
 		var proto := String(u.data_proto_path)
 		var spec := _make_spawn_spec_from_data(combatant_data, u)
-		var after_order_ids := PackedInt32Array(state.groups[g].order)
 		writer.emit_spawned(id, g, int(insert_index), after_order_ids, proto, spec, bool(is_player))
 	
 	return id
@@ -1048,6 +1097,12 @@ func summon(ctx: SummonContext) -> void:
 	ctx.summoned_id = id
 	if ctx.after_order_ids.is_empty():
 		ctx.after_order_ids = PackedInt32Array(state.groups[g].order)
+	_request_group_layout_changed(
+		int(g),
+		ctx.before_order_ids,
+		ctx.after_order_ids,
+		String(ctx.reason if !ctx.reason.is_empty() else "summon")
+	)
 
 	_enforce_player_group_mortality_cap(int(id), int(g))
 	
