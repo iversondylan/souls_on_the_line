@@ -1,0 +1,7 @@
+[gd_resource type="Resource" script_class="ConstantStrikesModel" format=3]
+
+[ext_resource type="Script" uid="uid://c0ihk6f0wbrv3" path="res://npc_ai/strikes/constant_strikes_model.gd" id="1_strikes_model"]
+
+[resource]
+script = ExtResource("1_strikes_model")
+strikes = 2
