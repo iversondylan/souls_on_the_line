@@ -1,8 +1,0 @@
-[gd_resource type="Resource" script_class="StabilityStatus" format=3 uid="uid://w4sf6lmivd8d"]
-
-[ext_resource type="Script" uid="uid://dijsb75uy608c" path="res://statuses/stability_status.gd" id="1_u33ow"]
-
-[resource]
-script = ExtResource("1_u33ow")
-max_stability = 5
-metadata/_custom_type_script = "uid://dijsb75uy608c"

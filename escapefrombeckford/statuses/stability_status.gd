@@ -6,8 +6,6 @@ class_name StabilityStatus extends Status
 
 const ID := &"stability"
 
-@export var max_stability: int = 10
-
 
 func get_id() -> StringName:
 	return ID
