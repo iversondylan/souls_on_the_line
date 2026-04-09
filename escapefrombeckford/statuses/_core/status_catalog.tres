@@ -28,7 +28,7 @@
 [ext_resource type="Resource" uid="uid://bxp0xi26b7gmg" path="res://statuses/small.tres" id="22_small"]
 [ext_resource type="Resource" uid="uid://b3n0tmwd2wftw" path="res://statuses/double_edge.tres" id="23_double_edge"]
 [ext_resource type="Resource" uid="uid://00aqmemuit10" path="res://statuses/danger_zone.tres" id="24_danger_zone"]
-[ext_resource type="Resource" path="res://statuses/despair.tres" id="25_despair"]
+[ext_resource type="Resource" uid="uid://bcmd2im78na0a" path="res://statuses/despair.tres" id="25_despair"]
 [ext_resource type="Resource" uid="uid://dvxb1b65olpr7" path="res://statuses/bequeath.tres" id="27_gyvsg"]
 [ext_resource type="Resource" path="res://statuses/vulnerable.tres" id="28_vulnerable"]
 [ext_resource type="Resource" path="res://statuses/weakened.tres" id="29_weakened"]

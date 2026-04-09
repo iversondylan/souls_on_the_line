@@ -5,6 +5,9 @@ class_name SimStatusContext extends RefCounted
 # Runtime wrapper for a specific status stack on a specific owner.
 # This keeps proto Status scripts from reaching all over raw state.
 
+const Removal = preload("res://core/keys_values/removal_values.gd")
+const RemovalContextScript = preload("res://battle/contexts/removal_context.gd")
+
 var api: SimBattleAPI
 var owner_id: int = 0
 var owner: CombatantState
@@ -150,16 +153,25 @@ func remove_self(_reason: String = "") -> void:
 	api.remove_status(rc)
 
 
-func kill_self(reason: String = "", killer_id: int = 0) -> void:
+func request_removal(
+	removal_type: int,
+	reason: String = "",
+	killer_id: int = 0,
+	origin_card_uid: String = "",
+	origin_arcanum_id: StringName = &""
+) -> void:
 	if !is_valid() or api == null or owner == null or !owner.is_alive():
 		return
 
-	var death_ctx := DeathContext.new()
-	death_ctx.dead_id = owner_id
-	death_ctx.killer_id = int(killer_id)
-	death_ctx.group_index = int(owner.team)
-	death_ctx.reason = String(reason)
-	api.resolve_death(death_ctx)
+	var removal_ctx = RemovalContextScript.new()
+	removal_ctx.target_id = owner_id
+	removal_ctx.removal_type = removal_type
+	removal_ctx.killer_id = int(killer_id)
+	removal_ctx.group_index = int(owner.team)
+	removal_ctx.reason = String(reason)
+	removal_ctx.origin_card_uid = String(origin_card_uid)
+	removal_ctx.origin_arcanum_id = origin_arcanum_id
+	api.resolve_removal(removal_ctx)
 
 
 func get_active_delayed_reaction() -> DelayedReaction:
@@ -168,9 +180,9 @@ func get_active_delayed_reaction() -> DelayedReaction:
 	return api.runtime.get_active_delayed_reaction()
 
 
-func get_active_on_death_reaction() -> OnDeathDelayedReaction:
+func get_active_removal_reaction():
 	var reaction := get_active_delayed_reaction()
-	return reaction as OnDeathDelayedReaction
+	return reaction
 
 
 func request_replan() -> void:

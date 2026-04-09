@@ -1,6 +1,9 @@
 # turn_timeline_compiler.gd
 class_name TurnTimelineCompiler extends RefCounted
 
+const Removal = preload("res://core/keys_values/removal_values.gd")
+const RemovalPresentationOrderScript = preload("res://battle/view/containers/removal_presentation_order.gd")
+
 
 class DelayedReactionNode extends RefCounted:
 	var kind: StringName = &""
@@ -409,7 +412,7 @@ func _build_delayed_reaction_nodes(
 					has_summon = true
 				BattleEvent.Type.STATUS, BattleEvent.Type.STATUS_CHANGED:
 					has_status = true
-				BattleEvent.Type.DAMAGE_APPLIED, BattleEvent.Type.DIED, BattleEvent.Type.FADED:
+				BattleEvent.Type.DAMAGE_APPLIED, BattleEvent.Type.REMOVED:
 					has_attack = true
 				BattleEvent.Type.DRAW_CARDS:
 					has_draw = true
@@ -1239,8 +1242,7 @@ func _is_attack_direct_event(event: BattleEvent) -> bool:
 		BattleEvent.Type.CHANGE_MAX_HEALTH, \
 		BattleEvent.Type.MODIFY_BATTLE_CARD, \
 		BattleEvent.Type.STATUS, \
-		BattleEvent.Type.DIED, \
-		BattleEvent.Type.FADED:
+		BattleEvent.Type.REMOVED:
 			return true
 	return false
 
@@ -1307,10 +1309,10 @@ func _build_strike_info_from_events(marker: BattleEvent, direct_events: Array[Ba
 					s.hit_count += 1
 				if h.was_lethal and !h.is_self_recoil:
 					s.has_lethal_hit = true
-			BattleEvent.Type.DIED:
+			BattleEvent.Type.REMOVED:
 				var died_target_id := int(event.data.get(Keys.TARGET_ID, 0)) if event.data != null else 0
 				var is_self_recoil_death := bool(event.data.get(Keys.SELF_RECOIL, false)) if event.data != null else false
-				if !is_self_recoil_death and died_target_id != int(marker.data.get(Keys.SOURCE_ID, 0)):
+				if _is_death_removal_event(event) and !is_self_recoil_death and died_target_id != int(marker.data.get(Keys.SOURCE_ID, 0)):
 					s.has_lethal_hit = true
 
 	return s
@@ -1421,10 +1423,10 @@ func _build_strike_info_from_block(block: Array, strike_index: int) -> StrikePre
 				if h.was_lethal and !h.is_self_recoil:
 					s.has_lethal_hit = true
 
-			BattleEvent.Type.DIED:
+			BattleEvent.Type.REMOVED:
 				var died_target_id := int(e.data.get(Keys.TARGET_ID, 0)) if e.data != null else 0
 				var is_self_recoil_death := bool(e.data.get(Keys.SELF_RECOIL, false)) if e.data != null else false
-				if !is_self_recoil_death and died_target_id != int(marker.data.get(Keys.SOURCE_ID, 0)):
+				if _is_death_removal_event(e) and !is_self_recoil_death and died_target_id != int(marker.data.get(Keys.SOURCE_ID, 0)):
 					s.has_lethal_hit = true
 
 	return s
@@ -1797,8 +1799,7 @@ func _split_attack_events(events: Array[BattleEvent]) -> Dictionary:
 				BattleEvent.Type.CHANGE_MAX_HEALTH, \
 				BattleEvent.Type.MODIFY_BATTLE_CARD, \
 				BattleEvent.Type.STATUS, \
-				BattleEvent.Type.DIED, \
-				BattleEvent.Type.FADED:
+				BattleEvent.Type.REMOVED:
 					arr.append(e)
 		by_strike.append(arr)
 
@@ -2019,26 +2020,8 @@ func _make_generic_removal_orders(actor_id: int, removal_events: Array[BattleEve
 		if e == null or e.data == null:
 			continue
 
-		match int(e.type):
-			BattleEvent.Type.DIED:
-				var d := DeathPresentationOrder.new()
-				d.kind = PresentationOrder.Kind.DEATH
-				d.actor_id = actor_id
-				d.target_id = int(e.data.get(Keys.TARGET_ID, 0))
-				d.group_index = int(e.data.get(Keys.GROUP_INDEX, e.group_index))
-				d.after_order_ids = e.data.get(Keys.AFTER_ORDER_IDS, PackedInt32Array())
-				d.visual_sec = 0.24
-				out.append(d)
-
-			BattleEvent.Type.FADED:
-				var f := FadePresentationOrder.new()
-				f.kind = PresentationOrder.Kind.FADE
-				f.actor_id = actor_id
-				f.target_id = int(e.data.get(Keys.TARGET_ID, 0))
-				f.group_index = int(e.data.get(Keys.GROUP_INDEX, e.group_index))
-				f.after_order_ids = e.data.get(Keys.AFTER_ORDER_IDS, PackedInt32Array())
-				f.visual_sec = 0.20
-				out.append(f)
+		if int(e.type) == int(BattleEvent.Type.REMOVED):
+			out.append(_make_removal_presentation_order(actor_id, e))
 
 	return out
 
@@ -2250,25 +2233,8 @@ func _make_impact_orders_for_info(
 			continue
 
 		match int(e.type):
-			BattleEvent.Type.DIED:
-				var d := DeathPresentationOrder.new()
-				d.kind = PresentationOrder.Kind.DEATH
-				d.actor_id = analysis.attacker_id
-				d.target_id = int(e.data.get(Keys.TARGET_ID, 0))
-				d.group_index = int(e.data.get(Keys.GROUP_INDEX, e.group_index))
-				d.after_order_ids = e.data.get(Keys.AFTER_ORDER_IDS, PackedInt32Array())
-				d.visual_sec = 0.24
-				out.append(d)
-
-			BattleEvent.Type.FADED:
-				var f := FadePresentationOrder.new()
-				f.kind = PresentationOrder.Kind.FADE
-				f.actor_id = analysis.attacker_id
-				f.target_id = int(e.data.get(Keys.TARGET_ID, 0))
-				f.group_index = int(e.data.get(Keys.GROUP_INDEX, e.group_index))
-				f.after_order_ids = e.data.get(Keys.AFTER_ORDER_IDS, PackedInt32Array())
-				f.visual_sec = 0.20
-				out.append(f)
+			BattleEvent.Type.REMOVED:
+				out.append(_make_removal_presentation_order(analysis.attacker_id, e))
 
 	return out
 
@@ -2354,7 +2320,7 @@ func _actor_dies_on_own_turn(actor_id: int, events: Array[BattleEvent]) -> bool:
 			continue
 
 		match int(e.type):
-			BattleEvent.Type.DIED, BattleEvent.Type.FADED:
+			BattleEvent.Type.REMOVED:
 				if int(e.data.get(Keys.TARGET_ID, 0)) == actor_id:
 					return true
 
@@ -2424,8 +2390,7 @@ func _split_generic_events(events: Array[BattleEvent]) -> Dictionary:
 			continue
 
 		match int(e.type):
-			BattleEvent.Type.DIED, \
-			BattleEvent.Type.FADED:
+			BattleEvent.Type.REMOVED:
 				removal_events.append(e)
 
 			BattleEvent.Type.SET_INTENT, \
@@ -2477,8 +2442,7 @@ func _split_status_events(events: Array[BattleEvent]) -> Dictionary:
 			BattleEvent.Type.STATUS:
 				status_events.append(e)
 
-			BattleEvent.Type.DIED, \
-			BattleEvent.Type.FADED:
+			BattleEvent.Type.REMOVED:
 				removal_events.append(e)
 
 			BattleEvent.Type.SET_INTENT, \
@@ -2820,8 +2784,7 @@ func _find_post_action_group_layouts(
 
 		match int(e.type):
 			BattleEvent.Type.SUMMONED, \
-			BattleEvent.Type.DIED, \
-			BattleEvent.Type.FADED, \
+			BattleEvent.Type.REMOVED, \
 			BattleEvent.Type.MOVED:
 				if !e.data.has(Keys.AFTER_ORDER_IDS):
 					continue
@@ -2912,7 +2875,7 @@ func _find_matching_removal_beat_for_summoned(beats: Array[TurnBeat], summoned_i
 			if be == null or be.data == null:
 				continue
 			match int(be.type):
-				BattleEvent.Type.DIED, BattleEvent.Type.FADED:
+				BattleEvent.Type.REMOVED:
 					if int(be.data.get(Keys.TARGET_ID, 0)) != int(summoned_id):
 						continue
 					var event_seq := int(be.seq)
@@ -3021,12 +2984,31 @@ func _is_known_reaction_event_type(event: BattleEvent) -> bool:
 		BattleEvent.Type.STATUS, \
 		BattleEvent.Type.DRAW_CARDS, \
 		BattleEvent.Type.DAMAGE_APPLIED, \
-		BattleEvent.Type.DIED, \
-		BattleEvent.Type.FADED, \
+		BattleEvent.Type.REMOVED, \
 		BattleEvent.Type.STRIKE, \
 		BattleEvent.Type.CLEAVE:
 			return true
 	return false
+
+
+func _make_removal_presentation_order(actor_id: int, event: BattleEvent):
+	var order = RemovalPresentationOrderScript.new()
+	order.kind = PresentationOrder.Kind.REMOVAL
+	order.actor_id = actor_id
+	order.target_id = int(event.data.get(Keys.TARGET_ID, 0))
+	order.group_index = int(event.data.get(Keys.GROUP_INDEX, event.group_index))
+	order.after_order_ids = event.data.get(Keys.AFTER_ORDER_IDS, PackedInt32Array())
+	order.removal_type = int(event.data.get(Keys.REMOVAL_TYPE, int(Removal.Type.DEATH)))
+	order.visual_sec = 0.20 if int(order.removal_type) == int(Removal.Type.FADE) else 0.24
+	return order
+
+
+func _is_death_removal_event(event: BattleEvent) -> bool:
+	if event == null or int(event.type) != int(BattleEvent.Type.REMOVED):
+		return false
+	if event.data == null:
+		return true
+	return int(event.data.get(Keys.REMOVAL_TYPE, int(Removal.Type.DEATH))) == int(Removal.Type.DEATH)
 
 
 func _choose_fallback_beat_for_event(beats: Array[TurnBeat], event: BattleEvent) -> TurnBeat:

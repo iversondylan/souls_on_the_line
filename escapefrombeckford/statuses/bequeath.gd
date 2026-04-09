@@ -1,6 +1,7 @@
 class_name BequeathStatus extends Status
 
 const ID := &"bequeath"
+const Removal = preload("res://core/keys_values/removal_values.gd")
 
 
 func get_id() -> StringName:
@@ -11,10 +12,12 @@ func get_tooltip(intensity: int = 0, _duration: int = 0) -> String:
 	return "Bequeath: on death, draw %s card%s." % [intensity, "" if int(intensity) == 1 else "s"]
 
 
-func on_death(ctx: SimStatusContext, dead_id: int, _killer_id: int, _reason: String) -> void:
+func on_removal(ctx: SimStatusContext, removal_ctx) -> void:
 	if ctx == null or !ctx.is_valid() or ctx.api == null or ctx.api.runtime == null:
 		return
-	if int(dead_id) != int(ctx.owner_id):
+	if removal_ctx == null or int(removal_ctx.removal_type) != int(Removal.Type.DEATH):
+		return
+	if int(removal_ctx.target_id) != int(ctx.owner_id):
 		return
 
 	var amount := maxi(int(ctx.get_intensity()), 0)

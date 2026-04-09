@@ -2,6 +2,8 @@
 
 class_name BattleView extends Node2D
 
+const Removal = preload("res://core/keys_values/removal_values.gd")
+
 @onready var combatant_view_scene: PackedScene = preload("uid://bxhcb3bs75de6")
 
 @onready var friendly_group: GroupView = $Group0
@@ -783,17 +785,12 @@ func _debug_order_short(order: PresentationOrder) -> String:
 				bits.append("int=%d" % int(o8.intensity))
 				bits.append("dur=%d" % int(o8.turns_duration))
 
-		PresentationOrder.Kind.DEATH:
-			var o9 := order as DeathPresentationOrder
+		PresentationOrder.Kind.REMOVAL:
+			var o9 = order
 			if o9 != null:
 				bits.append("t=%d" % int(o9.target_id))
 				bits.append("g=%d" % int(o9.group_index))
-
-		PresentationOrder.Kind.FADE:
-			var o10 := order as FadePresentationOrder
-			if o10 != null:
-				bits.append("t=%d" % int(o10.target_id))
-				bits.append("g=%d" % int(o10.group_index))
+				bits.append("type=%s" % String(Removal.Type.keys()[int(o9.removal_type)]))
 		PresentationOrder.Kind.GROUP_LAYOUT:
 			var og := order as GroupLayoutPresentationOrder
 			if og != null:

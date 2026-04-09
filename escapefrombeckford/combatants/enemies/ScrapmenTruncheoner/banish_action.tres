@@ -10,11 +10,13 @@
 [ext_resource type="Script" uid="uid://bcih413oy6v73" path="res://npc_ai/_core/npc_action.gd" id="6_w45yi"]
 [ext_resource type="Script" uid="uid://cuj4qvyx6dedj" path="res://npc_ai/_core/state_model.gd" id="7_ahn6f"]
 [ext_resource type="Resource" uid="uid://ivsvxo0vj72x" path="res://npc_ai/text/attack_intent_tooltip_text_model.tres" id="10_attack_tooltip"]
+[ext_resource type="Resource" uid="uid://btgtvs6ab0nsg" path="res://npc_ai/chance/half_exponential_spree_chance_state_model.tres" id="10_pmyag"]
 
 [resource]
 script = ExtResource("6_w45yi")
 effect_packages = Array[ExtResource("1_ly21h")]([ExtResource("2_ogs3o")])
 intent_lifecycle_models = Array[ExtResource("3_gnv41")]([ExtResource("5_tyk65")])
+state_models = Array[ExtResource("7_ahn6f")]([ExtResource("10_pmyag")])
 action_name = "Banish"
 intent_icon = ExtResource("3_ofljt")
 intent_icon_uid = "uid://cxh1dn7rnfpf"

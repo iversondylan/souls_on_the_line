@@ -135,6 +135,7 @@ const REPLACED_INSERT_INDEX := &"replaced_insert_index"
 
 # Card mutated
 const REASON := &"reason"
+const REMOVAL_TYPE := &"removal_type"
 const MODIFIED_FIELDS := &"modified_fields"
 const DELTA := &"delta"
 
@@ -162,10 +163,6 @@ const AFTER_ORDER_IDS := &"after_order_ids"
 const SWAP_A := &"swap_a"
 const SWAP_B := &"swap_b"
 const TO_INDEX := &"to_index"
-
-# Death
-const DEATH_REASON := &"death_reason"
-
 
 # -------------------------
 # Status ids you’ve used so far

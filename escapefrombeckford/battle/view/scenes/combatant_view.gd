@@ -19,6 +19,8 @@
 class_name CombatantView
 extends Node2D
 
+const Removal = preload("res://core/keys_values/removal_values.gd")
+
 # ------------------------------------------------------------------------------
 # Scene refs
 # ------------------------------------------------------------------------------
@@ -436,11 +438,8 @@ func play_presentation_order(order: PresentationOrder, battle_view: BattleView) 
 		PresentationOrder.Kind.IMPACT:
 			_play_impact_from_order(order as ImpactPresentationOrder)
 
-		PresentationOrder.Kind.DEATH:
-			_play_death_from_order(order as DeathPresentationOrder)
-
-		PresentationOrder.Kind.FADE:
-			_play_fade_from_order(order as FadePresentationOrder)
+		PresentationOrder.Kind.REMOVAL:
+			_play_removal_from_order(order)
 
 		PresentationOrder.Kind.STATUS_WINDUP:
 			_play_status_windup_from_order(order as StatusWindupPresentationOrder)
@@ -615,22 +614,13 @@ func _play_impact_from_order(order: ImpactPresentationOrder) -> void:
 	play_received_hit_from_hitinfo(h, dur)
 
 
-func _play_death_from_order(order: DeathPresentationOrder) -> void:
+func _play_removal_from_order(order) -> void:
 	if order == null:
 		return
-	play_death_reaction(order.visual_sec if order.visual_sec > 0.0 else 0.24)
-
-
-func _play_fade_from_order(order: FadePresentationOrder) -> void:
-	if order == null or character_art == null:
-		return
-
-	if tween_misc:
-		tween_misc.kill()
-
-	var dur := order.visual_sec if order.visual_sec > 0.0 else 0.20
-	tween_misc = create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
-	tween_misc.tween_property(character_art, "modulate:a", 0.0, maxf(dur, 0.01))
+	play_removal_followthrough(
+		int(order.removal_type),
+		order.visual_sec if order.visual_sec > 0.0 else 0.24
+	)
 
 
 func _play_status_windup_from_order(order: StatusWindupPresentationOrder) -> void:
@@ -1070,7 +1060,41 @@ func _apply_received_hit(h: HitPresentationInfo, phase_duration: float) -> void:
 	pop_damage_number(h.amount)
 
 
-func play_death_reaction(duration: float) -> void:
+func play_removal_windup(order) -> void:
+	if order == null:
+		return
+
+	var dur := maxf(order.duration, 0.01)
+	if int(order.removal_type) == int(Removal.Type.FADE):
+		if character_art == null:
+			return
+		if tween_misc:
+			tween_misc.kill()
+		tween_misc = create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+		tween_misc.tween_property(character_art, "modulate:a", 0.0, dur)
+		tween_misc.finished.connect(func() -> void:
+			tween_misc = null
+		, CONNECT_ONE_SHOT)
+		return
+
+	play_removal_followthrough(int(order.removal_type), dur)
+
+
+func play_removal_followthrough(removal_type: int, duration: float) -> void:
+	if int(removal_type) == int(Removal.Type.FADE):
+		if character_art == null:
+			return
+		if tween_misc:
+			tween_misc.kill()
+			tween_misc = null
+		var fade_dur := maxf(duration, 0.01)
+		tween_misc = create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+		tween_misc.tween_property(character_art, "modulate:a", 0.0, fade_dur)
+		tween_misc.finished.connect(func() -> void:
+			tween_misc = null
+		, CONNECT_ONE_SHOT)
+		return
+
 	# Prevent duplicate death-start ownership fights.
 	if _root_motion_locked:
 		return

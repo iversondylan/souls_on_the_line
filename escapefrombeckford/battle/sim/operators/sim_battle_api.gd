@@ -24,6 +24,9 @@ class_name SimBattleAPI extends RefCounted
 
 const FRIENDLY := 0
 const ENEMY := 1
+const Removal = preload("res://core/keys_values/removal_values.gd")
+const RemovalContextScript = preload("res://battle/contexts/removal_context.gd")
+const RemovalDelayedReactionScript = preload("res://battle/sim/containers/removal_delayed_reaction.gd")
 
 var state: BattleState
 var checkpoint_processor: CheckpointProcessor
@@ -32,7 +35,7 @@ var is_main: bool = true
 
 # Runtime signals
 signal summoned(ctx: SummonContext)
-signal unit_removed(id: int, g: int, reason: String)
+signal unit_removed(id: int, g: int, removal_type: int, reason: String)
 signal urgent_planning_requested()
 
 var scopes: BattleScopeManager
@@ -655,14 +658,15 @@ func resolve_damage_immediate(ctx: DamageContext) -> int:
 	on_damage_applied(ctx)
 	
 	if bool(ctx.was_lethal):
-		var death_ctx := DeathContext.new()
-		death_ctx.dead_id = int(ctx.target_id)
-		death_ctx.killer_id = int(ctx.source_id)
-		death_ctx.reason = "damage"
-		death_ctx.origin_card_uid = String(ctx.origin_card_uid)
-		death_ctx.origin_arcanum_id = ctx.origin_arcanum_id
-		death_ctx.event_extra = ctx.event_extra.duplicate() if ctx.event_extra != null else {}
-		resolve_death(death_ctx)
+		var removal_ctx = RemovalContextScript.new()
+		removal_ctx.target_id = int(ctx.target_id)
+		removal_ctx.removal_type = Removal.Type.DEATH
+		removal_ctx.killer_id = int(ctx.source_id)
+		removal_ctx.reason = "damage"
+		removal_ctx.origin_card_uid = String(ctx.origin_card_uid)
+		removal_ctx.origin_arcanum_id = ctx.origin_arcanum_id
+		removal_ctx.event_extra = ctx.event_extra.duplicate() if ctx.event_extra != null else {}
+		resolve_removal(removal_ctx)
 	
 	return int(ctx.amount)
 
@@ -719,66 +723,64 @@ func change_max_health(
 	# _request_intent_refresh(int(cid))
 
 	if before_health > 0 and after_health <= 0:
-		var death_ctx := DeathContext.new()
-		death_ctx.dead_id = int(cid)
-		death_ctx.reason = "change_max_health:" + String(reason)
-		resolve_death(death_ctx)
+		var removal_ctx = RemovalContextScript.new()
+		removal_ctx.target_id = int(cid)
+		removal_ctx.removal_type = Removal.Type.DEATH
+		removal_ctx.reason = "change_max_health:" + String(reason)
+		resolve_removal(removal_ctx)
 
-func resolve_death(ctx: DeathContext) -> void:
+func resolve_removal(ctx) -> void:
 	if state == null or ctx == null:
 		return
-	if int(ctx.dead_id) <= 0:
+	if int(ctx.target_id) <= 0:
 		return
 	
-	var u: CombatantState = state.get_unit(int(ctx.dead_id))
+	var u: CombatantState = state.get_unit(int(ctx.target_id))
 	if u == null or !u.alive:
 		return
-	_maybe_release_soulbound_reserve(u, ctx.overload_mod, "fade:" + String(ctx.reason))
+	var removal_reason_label := _make_removal_reason_label(int(ctx.removal_type), String(ctx.reason))
+	_maybe_release_soulbound_reserve(u, int(ctx.overload_mod), removal_reason_label)
 
 	var g := int(u.team)
 	ctx.group_index = g
 	ctx.before_order_ids = PackedInt32Array(state.groups[g].order) if g != -1 else PackedInt32Array()
-	var insert_index := ctx.before_order_ids.find(int(ctx.dead_id))
+	ctx.insert_index = ctx.before_order_ids.find(int(ctx.target_id))
 
 	u.alive = false
 	if g != -1:
-		state.groups[g].remove(int(ctx.dead_id))
+		state.groups[g].remove(int(ctx.target_id))
 
-	_untrack_auras_for_removed_combatant(int(ctx.dead_id))
+	_untrack_auras_for_removed_combatant(int(ctx.target_id))
 
 	ctx.after_order_ids = PackedInt32Array(state.groups[g].order) if g != -1 else PackedInt32Array()
 	_request_group_layout_changed(
 		int(g),
 		ctx.before_order_ids,
 		ctx.after_order_ids,
-		"death:" + String(ctx.reason)
+		removal_reason_label
 	)
 	
-	unit_removed.emit(int(ctx.dead_id), int(g), "death:" + String(ctx.reason))
+	unit_removed.emit(int(ctx.target_id), int(g), int(ctx.removal_type), String(ctx.reason))
 
 	if writer != null:
-		writer.emit_died(
+		writer.emit_removed(
 			int(ctx.killer_id),
-			int(ctx.dead_id),
+			int(ctx.target_id),
 			g,
 			ctx.before_order_ids,
 			ctx.after_order_ids,
+			ctx.removal_type,
 			String(ctx.reason),
 			ctx.event_extra if ctx.event_extra != null else {}
 		)
 
-	ctx.died = true
+	ctx.removed = true
+	_request_turn_order_rebuild()
 	_request_outcome_check()
 
 	if runtime != null:
-		var reaction := OnDeathDelayedReaction.new()
-		reaction.dead_id = int(ctx.dead_id)
-		reaction.killer_id = int(ctx.killer_id)
-		reaction.group_index = int(ctx.group_index)
-		reaction.insert_index = int(insert_index)
-		reaction.reason = String(ctx.reason)
-		reaction.before_order_ids = PackedInt32Array(ctx.before_order_ids)
-		reaction.after_order_ids = PackedInt32Array(ctx.after_order_ids)
+		var reaction = RemovalDelayedReactionScript.new()
+		reaction.removal_ctx = ctx
 		reaction.source_reason = String(ctx.reason)
 		reaction.origin_card_uid = String(ctx.origin_card_uid)
 		reaction.origin_arcanum_id = ctx.origin_arcanum_id
@@ -786,46 +788,8 @@ func resolve_death(ctx: DeathContext) -> void:
 		if !runtime.is_in_strike_resolution():
 			runtime.drain_delayed_reactions(DelayedReaction.Timing.AFTER_STRIKE)
 	else:
-		SimStatusSystem.on_death(self, int(ctx.dead_id), int(ctx.killer_id), String(ctx.reason))
-		SimArcanaSystem.on_death(self, int(ctx.dead_id), int(ctx.killer_id), String(ctx.reason))
-
-
-func fade_unit(ctx: FadeContext) -> void:
-	if state == null or ctx == null:
-		return
-	
-	var u: CombatantState = state.get_unit(int(ctx.actor_id))
-	if u == null or !u.alive:
-		return
-	_maybe_release_soulbound_reserve(u, int(ctx.overload_mod), "fade:" + String(ctx.reason))
-	
-	var g := int(u.team)
-	ctx.group_index = g
-	ctx.before_order_ids = PackedInt32Array(state.groups[g].order)
-	
-	u.alive = false
-	if g != -1:
-		state.groups[g].remove(int(ctx.actor_id))
-
-	_untrack_auras_for_removed_combatant(int(ctx.actor_id))
-
-	unit_removed.emit(int(ctx.actor_id), int(g), "fade:" + String(ctx.reason))
-	
-	ctx.after_order_ids = PackedInt32Array(state.groups[g].order) if g != -1 else PackedInt32Array()
-	_request_group_layout_changed(
-		int(g),
-		ctx.before_order_ids,
-		ctx.after_order_ids,
-		"fade:" + String(ctx.reason)
-	)
-	
-	_request_turn_order_rebuild()
-	_request_outcome_check()
-	
-	if writer != null:
-		writer.emit_faded(int(ctx.actor_id), int(g), ctx.before_order_ids, ctx.after_order_ids, String(ctx.reason))
-
-	ctx.faded = true
+		SimStatusSystem.on_removal(self, ctx)
+		SimArcanaSystem.on_removal(self, ctx)
 
 
 func resolve_move(ctx: MoveContext) -> void:
@@ -1321,10 +1285,11 @@ func debug_kill_all_enemies(reason: String = "debug_kill_all_enemies") -> void:
 		var enemy_id := int(cid)
 		if enemy_id <= 0 or !is_alive(enemy_id):
 			continue
-		var death_ctx := DeathContext.new()
-		death_ctx.dead_id = enemy_id
-		death_ctx.reason = reason
-		resolve_death(death_ctx)
+		var removal_ctx = RemovalContextScript.new()
+		removal_ctx.target_id = enemy_id
+		removal_ctx.removal_type = Removal.Type.DEATH
+		removal_ctx.reason = reason
+		resolve_removal(removal_ctx)
 
 	# Make sure downstream systems settle immediately the same way a card-resolution checkpoint would.
 	if checkpoint_processor != null:
@@ -1478,10 +1443,11 @@ func _enforce_player_group_mortality_cap(summoned_id: int, group_index: int) -> 
 		if faded_id <= 0 or !is_alive(faded_id):
 			continue
 
-		var fade_ctx := FadeContext.new()
-		fade_ctx.actor_id = faded_id
-		fade_ctx.reason = fade_reason
-		fade_unit(fade_ctx)
+		var removal_ctx = RemovalContextScript.new()
+		removal_ctx.target_id = faded_id
+		removal_ctx.removal_type = Removal.Type.FADE
+		removal_ctx.reason = fade_reason
+		resolve_removal(removal_ctx)
 
 
 func _get_mortality_cap_fade_reason(mortality: int) -> String:
@@ -1492,6 +1458,14 @@ func _get_mortality_cap_fade_reason(mortality: int) -> String:
 			return "summon_over_cap_deplete"
 		_:
 			return "summon_over_cap"
+
+
+func _make_removal_reason_label(removal_type: int, reason: String) -> String:
+	var type_label := "death" if int(removal_type) == int(Removal.Type.DEATH) else "fade"
+	var prefix := "removal:%s" % type_label
+	if String(reason).is_empty():
+		return prefix
+	return "%s:%s" % [prefix, String(reason)]
 
 
 func _move_id_to_index(group_index: int, id: int, new_index: int) -> void:

@@ -4,6 +4,9 @@ extends CardAction
 @export var attacks: int = 1
 @export var melee_impact_sound: Sound = preload("uid://c73sgxbquj1ks")
 
+const Removal = preload("res://core/keys_values/removal_values.gd")
+const RemovalContextScript = preload("res://battle/contexts/removal_context.gd")
+
 func activate_sim(ctx: CardContext) -> bool:
 	if ctx == null or ctx.api == null or ctx.runtime == null:
 		return false
@@ -53,14 +56,15 @@ func activate_sim(ctx: CardContext) -> bool:
 	if melee_impact_sound != null:
 		ctx.api.play_sfx(melee_impact_sound)
 
-	var death_ctx := DeathContext.new()
-	death_ctx.dead_id = attacker_id
-	death_ctx.killer_id = attacker_id
-	death_ctx.reason = "berserkers_fury"
+	var removal_ctx = RemovalContextScript.new()
+	removal_ctx.target_id = attacker_id
+	removal_ctx.removal_type = Removal.Type.DEATH
+	removal_ctx.killer_id = attacker_id
+	removal_ctx.reason = "berserkers_fury"
 	if ctx.card_data != null:
 		ctx.card_data.ensure_uid()
-		death_ctx.origin_card_uid = String(ctx.card_data.uid)
-	ctx.api.resolve_death(death_ctx)
+		removal_ctx.origin_card_uid = String(ctx.card_data.uid)
+	ctx.api.resolve_removal(removal_ctx)
 	if !ctx.affected_ids.has(attacker_id):
 		ctx.affected_ids.append(attacker_id)
 

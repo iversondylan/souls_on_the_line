@@ -1,6 +1,7 @@
 class_name ExitStrike extends Status
 
 const ID := &"exit_strike"
+const Removal = preload("res://core/keys_values/removal_values.gd")
 
 
 func get_id() -> StringName:
@@ -11,14 +12,16 @@ func get_tooltip(intensity: int = 0, _duration: int = 0) -> String:
 	return "Exit Strike: on death, deal %s damage with standard targeting." % intensity
 
 
-func on_death(ctx: SimStatusContext, dead_id: int, _killer_id: int, _reason: String) -> void:
-	_trigger_death_burst(ctx, dead_id, "exit_strike")
+func on_removal(ctx: SimStatusContext, removal_ctx) -> void:
+	_trigger_removal_burst(ctx, removal_ctx, "exit_strike")
 
 
-func _trigger_death_burst(ctx: SimStatusContext, dead_id: int, attack_reason: String) -> void:
+func _trigger_removal_burst(ctx: SimStatusContext, removal_ctx, attack_reason: String) -> void:
 	if ctx == null or !ctx.is_valid() or ctx.api == null or ctx.api.runtime == null:
 		return
-	if int(dead_id) != int(ctx.owner_id):
+	if removal_ctx == null or int(removal_ctx.removal_type) != int(Removal.Type.DEATH):
+		return
+	if int(removal_ctx.target_id) != int(ctx.owner_id):
 		return
 
 	var intensity := maxi(int(ctx.get_intensity()), 0)

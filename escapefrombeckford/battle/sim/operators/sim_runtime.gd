@@ -2,6 +2,8 @@
 
 class_name SimRuntime extends RefCounted
 
+const Removal = preload("res://core/keys_values/removal_values.gd")
+
 # Runtime orchestration for a single Sim.
 #
 # Responsibilities:
@@ -350,7 +352,7 @@ func on_summoned(ctx: SummonContext) -> void:
 	_publish_turn_status()
 
 
-func on_unit_removed(cid: int, _group_index: int, _reason: String) -> void:
+func on_unit_removed(cid: int, _group_index: int, _removal_type: int, _reason: String) -> void:
 	_ensure_runtime_initialized()
 
 	var engine := _engine()
@@ -1061,20 +1063,23 @@ func run_move(ctx: MoveContext) -> void:
 	_end_scope(move_scope)
 
 
-func run_fade(ctx: FadeContext) -> void:
+func run_removal(ctx) -> void:
 	var api := _api()
-	if api == null or api.state == null or ctx == null or int(ctx.actor_id) <= 0:
+	if api == null or api.state == null or ctx == null or int(ctx.target_id) <= 0:
 		return
 
-	var u: CombatantState = api.state.get_unit(int(ctx.actor_id))
+	var u: CombatantState = api.state.get_unit(int(ctx.target_id))
 	if u == null or !u.alive:
 		return
 
-	var fade_scope := _begin_scope(Scope.Kind.FADE, "fade_unit", int(ctx.actor_id))
-	if fade_scope == null:
+	var removal_scope := _begin_scope(Scope.Kind.REMOVAL, "removal_unit", int(ctx.target_id), {
+		Keys.REMOVAL_TYPE: int(ctx.removal_type),
+		Keys.REASON: String(ctx.reason),
+	})
+	if removal_scope == null:
 		return
-	api.fade_unit(ctx)
-	_end_scope(fade_scope)
+	api.resolve_removal(ctx)
+	_end_scope(removal_scope)
 
 
 func run_arcana_proc(proc: int) -> void:

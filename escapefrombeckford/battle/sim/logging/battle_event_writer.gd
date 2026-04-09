@@ -2,6 +2,8 @@
 
 class_name BattleEventWriter extends RefCounted
 
+const Removal = preload("res://core/keys_values/removal_values.gd")
+
 var sink: EventSink
 var scopes: BattleScopeManager
 
@@ -16,8 +18,7 @@ var _beat_marker_types := {
 	BattleEvent.Type.STRIKE: true,
 	BattleEvent.Type.CLEAVE: true,
 	BattleEvent.Type.SUMMONED: true,
-	BattleEvent.Type.DIED: true,
-	BattleEvent.Type.FADED: true,
+	BattleEvent.Type.REMOVED: true,
 }
 
 func _init(_sink: EventSink, _scopes: BattleScopeManager) -> void:
@@ -496,45 +497,28 @@ func emit_status_remove(
 ) -> int:
 	return emit_status(source_id, target_id, status_id, int(Status.OP.REMOVE), 0, 0, extra)
 
-func emit_died(
+func emit_removed(
 	killer_id: int,
-	dead_id: int,
+	target_id: int,
 	group_idx: int,
 	before_order: PackedInt32Array,
 	after_order: PackedInt32Array,
+	removal_type: int,
 	reason: String = "",
 	extra := {}
 ) -> int:
 	var data := {
 		Keys.SOURCE_ID: int(killer_id),
-		Keys.TARGET_ID: int(dead_id),
-		Keys.GROUP_INDEX: int(group_idx),
-		Keys.BEFORE_ORDER_IDS: before_order,
-		Keys.AFTER_ORDER_IDS: after_order,
-		Keys.DEATH_REASON: String(reason),
-	}
-	for k in extra.keys():
-		data[k] = extra[k]
-	return _append(BattleEvent.Type.DIED, data)
-
-func emit_faded(
-	target_id: int,
-	group_idx: int,
-	before_order: PackedInt32Array,
-	after_order: PackedInt32Array,
-	reason: String = "",
-	extra := {}
-) -> int:
-	var data := {
 		Keys.TARGET_ID: int(target_id),
 		Keys.GROUP_INDEX: int(group_idx),
 		Keys.BEFORE_ORDER_IDS: before_order,
 		Keys.AFTER_ORDER_IDS: after_order,
+		Keys.REMOVAL_TYPE: int(removal_type),
 		Keys.REASON: String(reason),
 	}
 	for k in extra.keys():
 		data[k] = extra[k]
-	return _append(BattleEvent.Type.FADED, data)
+	return _append(BattleEvent.Type.REMOVED, data)
 
 func emit_summon_reserve_released(summoned_id: int, card_uid: String, overload_mod: int, reason: String = "") -> int:
 	return _append(BattleEvent.Type.SUMMON_RESERVE_RELEASED, {

@@ -95,11 +95,11 @@ static func on_damage_taken(api: SimBattleAPI, damage_ctx: DamageContext) -> voi
 		ctx.proto.on_damage_taken(ctx, damage_ctx)
 
 
-static func on_death(api: SimBattleAPI, dead_id: int, killer_id: int, reason: String) -> void:
+static func on_removal(api: SimBattleAPI, removal_ctx) -> void:
 	for ctx in get_contexts(api):
 		if ctx == null or !ctx.is_valid() or ctx.proto == null:
 			continue
-		ctx.proto.on_death(ctx, dead_id, killer_id, reason)
+		ctx.proto.on_removal(ctx, removal_ctx)
 
 
 static func get_modifier_tokens_for_target(

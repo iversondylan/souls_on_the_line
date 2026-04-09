@@ -9,8 +9,7 @@ var rel_defaults := {
 	BattleEvent.Type.STRIKE: 1.0,
 	BattleEvent.Type.CLEAVE: 1.0,
 	BattleEvent.Type.SUMMONED: 1.0,
-	BattleEvent.Type.DIED: 1.0,
-	BattleEvent.Type.FADED: 1.0,
+	BattleEvent.Type.REMOVED: 1.0,
 	BattleEvent.Type.STATUS: 1.0,
 
 	# NEW
@@ -34,7 +33,7 @@ func mode_for_beat(beat: Array, is_player_turn: bool, is_player_actor: bool) -> 
 	if is_player_turn and is_player_actor:
 		if _contains_type(beat, BattleEvent.Type.CARD_PLAYED) or _contains_type(beat, BattleEvent.Type.END_TURN_PRESSED):
 			return Mode.FREE
-		if _contains_any(beat, [BattleEvent.Type.STRIKE, BattleEvent.Type.CLEAVE, BattleEvent.Type.SUMMONED, BattleEvent.Type.DIED, BattleEvent.Type.FADED, BattleEvent.Type.STATUS, BattleEvent.Type.DAMAGE_APPLIED]):
+		if _contains_any(beat, [BattleEvent.Type.STRIKE, BattleEvent.Type.CLEAVE, BattleEvent.Type.SUMMONED, BattleEvent.Type.REMOVED, BattleEvent.Type.STATUS, BattleEvent.Type.DAMAGE_APPLIED]):
 			return Mode.RELATIVE
 
 	if _contains_type(beat, BattleEvent.Type.ACTOR_BEGIN) and !is_player_actor:

@@ -2,6 +2,9 @@
 
 class_name BattleEventDirector extends RefCounted
 
+const Removal = preload("res://core/keys_values/removal_values.gd")
+const RemovalWindupOrderScript = preload("res://battle/view/containers/removal_windup_order.gd")
+
 var battle_view: BattleView
 var click: Sound
 
@@ -134,11 +137,8 @@ func _start_order(order: PresentationOrder) -> void:
 		PresentationOrder.Kind.STATUS_POP:
 			_start_status_pop_order(order as StatusPopPresentationOrder)
 
-		PresentationOrder.Kind.DEATH:
-			_start_death_order(order as DeathPresentationOrder)
-
-		PresentationOrder.Kind.FADE:
-			_start_fade_order(order as FadePresentationOrder)
+		PresentationOrder.Kind.REMOVAL:
+			_start_removal_order(order)
 			
 		PresentationOrder.Kind.GROUP_LAYOUT:
 			_start_group_layout_order(order as GroupLayoutPresentationOrder)
@@ -278,35 +278,22 @@ func _start_summon_pop_order(order: SummonPopPresentationOrder) -> void:
 	if caster != null:
 		caster.clear_strike_pose(order.visual_sec if order.visual_sec > 0.0 else 0.20)
 
-func _start_death_order(order: DeathPresentationOrder) -> void:
+func _start_removal_order(order) -> void:
 	if order == null:
 		return
 
-	var be := BattleEvent.new(BattleEvent.Type.DIED)
+	var be := BattleEvent.new(BattleEvent.Type.REMOVED)
 	be.group_index = int(order.group_index)
 	be.data = {
 		Keys.TARGET_ID: int(order.target_id),
 		Keys.GROUP_INDEX: int(order.group_index),
 		Keys.AFTER_ORDER_IDS: order.after_order_ids,
+		Keys.REMOVAL_TYPE: int(order.removal_type),
 	}
 
-	var ep := _make_epkg_from_event(be, order.visual_sec if order.visual_sec > 0.0 else 0.24)
-	_on_death_followthrough(ep)
-
-func _start_fade_order(order: FadePresentationOrder) -> void:
-	if order == null:
-		return
-
-	var be := BattleEvent.new(BattleEvent.Type.FADED)
-	be.group_index = int(order.group_index)
-	be.data = {
-		Keys.TARGET_ID: int(order.target_id),
-		Keys.GROUP_INDEX: int(order.group_index),
-		Keys.AFTER_ORDER_IDS: order.after_order_ids,
-	}
-
-	var ep := _make_epkg_from_event(be, order.visual_sec if order.visual_sec > 0.0 else 0.20)
-	_on_fade_followthrough(ep)
+	var default_sec := 0.20 if int(order.removal_type) == int(Removal.Type.FADE) else 0.24
+	var ep := _make_epkg_from_event(be, order.visual_sec if order.visual_sec > 0.0 else default_sec)
+	_on_removal_followthrough(ep)
 
 
 func _start_group_layout_order(order: GroupLayoutPresentationOrder) -> void:
@@ -342,8 +329,8 @@ func on_event(e: EventPackage) -> void:
 			_on_damage_applied(e)
 		BattleEvent.Type.STATUS, BattleEvent.Type.STATUS_CHANGED:
 			_on_status_changed(e)
-		BattleEvent.Type.DIED:
-			_on_died(e)
+		BattleEvent.Type.REMOVED:
+			_on_removed(e)
 		BattleEvent.Type.SET_INTENT:
 			_on_set_intent(e)
 		BattleEvent.Type.SCOPE_BEGIN:
@@ -361,8 +348,6 @@ func on_event(e: EventPackage) -> void:
 			pass
 		BattleEvent.Type.DISCARD_REQUESTED:
 			_on_discard_requested(e)
-		BattleEvent.Type.FADED:
-			_on_faded(e)
 		BattleEvent.Type.SUMMON_RESERVE_RELEASED:
 			_on_summon_reserve_released(e)
 		BattleEvent.Type.MANA:
@@ -559,6 +544,10 @@ func _before_order(e: EventPackage) -> Array[int]:
 	return _packed_to_int_array(_data(e).get(Keys.BEFORE_ORDER_IDS, PackedInt32Array()))
 
 
+func _removal_type(e: EventPackage) -> int:
+	return int(_data(e).get(Keys.REMOVAL_TYPE, int(Removal.Type.DEATH)))
+
+
 func _packed_to_int_array(value) -> Array[int]:
 	var out: Array[int] = []
 
@@ -632,8 +621,7 @@ func _apply_payload_events(payload: Array, duration: float, allowed_types: Dicti
 func _is_presentation_only_planned_event_type(event_type: int) -> bool:
 	match event_type:
 		BattleEvent.Type.SUMMONED, \
-		BattleEvent.Type.DIED, \
-		BattleEvent.Type.FADED, \
+		BattleEvent.Type.REMOVED, \
 		BattleEvent.Type.MOVED:
 			return true
 	return false
@@ -986,7 +974,7 @@ func _on_set_intent(e: EventPackage) -> void:
 		cv.intent_container.apply_intent(planned_idx, icon_uid, icon_ranged_uid, is_ranged, intent_text, tooltip_text, intent_text_color)
 
 
-func _on_died(e: EventPackage) -> void:
+func _on_removed(e: EventPackage) -> void:
 	var dead_id := _target_id(e)
 	if dead_id <= 0:
 		return
@@ -1008,31 +996,50 @@ func _on_died(e: EventPackage) -> void:
 		_apply_group_order(g, after_order, true)
 
 
-func _on_death_windup(e: EventPackage) -> void:
-	var dead_id := _target_id(e)
-	if dead_id <= 0:
+func _on_removal_windup(e: EventPackage) -> void:
+	var removed_id := _target_id(e)
+	if removed_id <= 0:
 		return
 
-	var target := battle_view.get_combatant(dead_id)
+	var target := battle_view.get_combatant(removed_id)
 	if target == null:
 		return
 
-	var o := DeathWindupOrder.new()
+	var o = RemovalWindupOrderScript.new()
 	o.duration = e.duration
-	o.dead_id = dead_id
+	o.target_id = removed_id
+	o.removal_type = int(_removal_type(e))
 	o.to_black = true
 	o.black_amount = 1.0
 	o.shrink = 0.96
 	o.slump_px = 10.0
 
-	target.play_death_windup(o)
+	target.play_removal_windup(o)
 
 
-func _on_death_followthrough(e: EventPackage) -> void:
-	#print("battle_event_director.gd _on_death_followthrough()")
+func _on_removal_followthrough(e: EventPackage) -> void:
+	var removal_type := _removal_type(e)
+	var dur := maxf(e.duration, 0.01)
+	if int(removal_type) == int(Removal.Type.FADE):
+		var faded_id := _target_id(e)
+		var faded_group := _group_index(e)
+		var faded_group_view: GroupView = battle_view.friendly_group if faded_group == 0 else battle_view.enemy_group
+		if faded_group_view != null:
+			faded_group_view.unregister_cid(faded_id)
+
+		var faded_view := battle_view.get_combatant(faded_id)
+		if faded_view != null:
+			faded_view.play_removal_followthrough(removal_type, dur)
+			faded_view.is_alive = false
+			if battle_view.clock != null:
+				await battle_view.clock.wait_seconds(dur)
+			if is_instance_valid(faded_view):
+				faded_view.queue_free()
+		battle_view.combatants_by_cid.erase(faded_id)
+		return
+
 	var dead_id := _target_id(e)
 	var g := _group_index(e)
-	var dur := maxf(e.duration, 0.01)
 
 	var group: GroupView = battle_view.friendly_group if g == 0 else battle_view.enemy_group
 	if group != null:
@@ -1042,13 +1049,13 @@ func _on_death_followthrough(e: EventPackage) -> void:
 	if dead_view == null:
 		return
 
-	dead_view.play_death_reaction(dur)
+	dead_view.play_removal_followthrough(removal_type, dur)
 	dead_view.is_alive = false
 
 	if battle_view.clock != null:
 		await battle_view.clock.wait_seconds(dur)
 	else:
-		push_warning("BattleEventDirector._on_death_followthrough(): missing battle clock; skipping cleanup delay")
+		push_warning("BattleEventDirector._on_removal_followthrough(): missing battle clock; skipping cleanup delay")
 
 	if is_instance_valid(dead_view):
 		dead_view.queue_free()
@@ -1108,50 +1115,6 @@ func _on_draw_cards(e: EventPackage) -> void:
 		return
 
 	Events.request_draw_cards.emit(ctx)
-
-
-func _on_fade_windup(e: EventPackage) -> void:
-	var v := battle_view.get_combatant(_target_id(e))
-	if v == null or v.character_art == null:
-		return
-
-	if v.tween_misc:
-		v.tween_misc.kill()
-	v.tween_misc = v.create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
-	v.tween_misc.tween_property(v.character_art, "modulate:a", 0.0, maxf(e.duration, 0.01))
-
-
-func _on_fade_followthrough(e: EventPackage) -> void:
-	var dead_id := _target_id(e)
-	var g := _group_index(e)
-
-	var group: GroupView = battle_view.friendly_group if g == 0 else battle_view.enemy_group
-	if group != null:
-		group.unregister_cid(dead_id)
-
-	var dv := battle_view.get_combatant(dead_id)
-	if dv != null:
-		dv.is_alive = false
-
-
-func _on_faded(e: EventPackage) -> void:
-	var dead_id := _target_id(e)
-	var g := _group_index(e)
-	var after_order := _after_order(e)
-
-	var group: GroupView = battle_view.friendly_group if g == 0 else battle_view.enemy_group
-	if group != null:
-		group.unregister_cid(dead_id)
-
-	var v := battle_view.get_combatant(dead_id)
-	if v != null:
-		v.is_alive = false
-		v.queue_free()
-
-	battle_view.combatants_by_cid.erase(dead_id)
-
-	if g >= 0 and !after_order.is_empty():
-		_apply_group_order(g, after_order, true)
 
 
 func _on_summon_windup(e: EventPackage) -> void:
@@ -1606,19 +1569,13 @@ func _debug_order_payload(order: PresentationOrder) -> String:
 				bits.append("int=%d" % int(o8.intensity))
 				bits.append("dur=%d" % int(o8.turns_duration))
 
-		PresentationOrder.Kind.DEATH:
-			var o9 := order as DeathPresentationOrder
+		PresentationOrder.Kind.REMOVAL:
+			var o9 = order
 			if o9 != null:
 				bits.append("t=%d" % int(o9.target_id))
 				bits.append("g=%d" % int(o9.group_index))
+				bits.append("type=%s" % String(Removal.Type.keys()[int(o9.removal_type)]))
 				bits.append("after=%s" % str(o9.after_order_ids))
-
-		PresentationOrder.Kind.FADE:
-			var o10 := order as FadePresentationOrder
-			if o10 != null:
-				bits.append("t=%d" % int(o10.target_id))
-				bits.append("g=%d" % int(o10.group_index))
-				bits.append("after=%s" % str(o10.after_order_ids))
 		PresentationOrder.Kind.GROUP_LAYOUT:
 			var og := order as GroupLayoutPresentationOrder
 			if og != null:

@@ -3,6 +3,7 @@
 class_name FleetingStatus extends Status
 
 const ID := &"fleeting"
+const Removal = preload("res://core/keys_values/removal_values.gd")
 
 
 func get_id() -> StringName:
@@ -23,4 +24,4 @@ func on_player_turn_begin(ctx: SimStatusContext, player_id: int) -> void:
 	if int(ctx.owner.mortality) == int(CombatantState.Mortality.MORTAL):
 		return
 
-	ctx.kill_self("fleeting_player_turn_start")
+	ctx.request_removal(Removal.Type.DEATH, "fleeting_player_turn_start")

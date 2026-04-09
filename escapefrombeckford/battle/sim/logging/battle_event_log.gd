@@ -251,7 +251,7 @@ static func print_event_log(
 		Keys.ARCANUM_ID,
 
 		Keys.REASON,
-		Keys.DEATH_REASON,
+		Keys.REMOVAL_TYPE,
 		Keys.PROTO,
 		Keys.SUMMONED_ID,
 		Keys.SPAWNED_ID,

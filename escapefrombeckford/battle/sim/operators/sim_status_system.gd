@@ -94,15 +94,19 @@ static func on_damage_will_be_taken(api: SimBattleAPI, damage_ctx: DamageContext
 			ctx.proto.on_damage_will_be_taken(ctx, damage_ctx)
 	)
 
-static func on_death(api: SimBattleAPI, dead_id: int, killer_id: int, reason: String) -> void:
-	if api == null or api.state == null or dead_id <= 0 or api.state.has_terminal_outcome():
+static func on_removal(api: SimBattleAPI, removal_ctx) -> void:
+	if api == null or api.state == null or removal_ctx == null or api.state.has_terminal_outcome():
+		return
+
+	var removed_id := int(removal_ctx.target_id)
+	if removed_id <= 0:
 		return
 
 	var fn := func(ctx: SimStatusContext) -> void:
 		if ctx.proto != null:
-			ctx.proto.on_death(ctx, dead_id, killer_id, reason)
+			ctx.proto.on_removal(ctx, removal_ctx)
 
-	_for_each_effective_status_on_unit(api, dead_id, fn, true)
+	_for_each_effective_status_on_unit(api, removed_id, fn, true)
 
 static func unit_grants_attack_cleave(api: SimBattleAPI, owner_id: int) -> bool:
 	return _unit_grants_cleave_internal(api, owner_id, true)

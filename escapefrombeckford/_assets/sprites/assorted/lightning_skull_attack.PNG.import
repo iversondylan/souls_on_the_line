@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://1mlp0ugcubmu"
-path="res://.godot/imported/IMG_0255.PNG-375fc1280af935900da66ead5e0c80a0.ctex"
+uid="uid://b5se3y5bpw3yo"
+path="res://.godot/imported/lightning_skull_attack.PNG-0048a70c8e69de5f531ca69b592d1ec1.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://_assets/sprites/assorted/IMG_0255.PNG"
-dest_files=["res://.godot/imported/IMG_0255.PNG-375fc1280af935900da66ead5e0c80a0.ctex"]
+source_file="res://_assets/sprites/assorted/lightning_skull_attack.PNG"
+dest_files=["res://.godot/imported/lightning_skull_attack.PNG-0048a70c8e69de5f531ca69b592d1ec1.ctex"]
 
 [params]
 

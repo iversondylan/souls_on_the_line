@@ -69,7 +69,7 @@ func on_damage_taken(_ctx: SimStatusContext, _damage_ctx: DamageContext) -> void
 func on_damage_will_be_taken(_ctx: SimStatusContext, _damage_ctx: DamageContext) -> void:
 	pass
 
-func on_death(_ctx: SimStatusContext, _dead_id: int, _killer_id: int, _reason: String) -> void:
+func on_removal(_ctx: SimStatusContext, _removal_ctx) -> void:
 	pass
 
 func get_targeting_priority(_stage: int) -> int:
