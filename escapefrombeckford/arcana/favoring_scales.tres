@@ -2,6 +2,7 @@
 
 [ext_resource type="Texture2D" uid="uid://dtasin1f5vfg7" path="res://_assets/sprites/arcana_placeholders/scales.png" id="1_s5oc5"]
 [ext_resource type="Script" uid="uid://cwgfwu6g7fekf" path="res://arcana/favoring_scales.gd" id="2_hn816"]
+[ext_resource type="Script" uid="uid://cueedkb1u8vxy" path="res://statuses/_core/status.gd" id="2_ht81w"]
 
 [resource]
 script = ExtResource("2_hn816")

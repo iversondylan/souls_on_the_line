@@ -169,6 +169,7 @@ const DEATH_REASON := &"death_reason"
 # Status ids you’ve used so far
 # -------------------------
 const STATUS_MARKED := &"marked"
+const STATUS_DANGER_ZONE := &"danger_zone"
 const STATUS_HEAVY_ATTACK := &"heavy_attack"
 const STATUS_SMALL := &"small"
 const STATUS_DOUBLE_EDGE := &"double_edge"
@@ -216,6 +217,7 @@ const ACTIONS_PERFORMED_COUNT := &"actions_performed_count"
 const PLANNED_SELECTION_SOURCE := &"planned_selection_source"
 const ACTION_STATE := &"action_state"
 const SPREE := &"spree"
+const TARGETING_DANGER_ZONE := &"targeting_danger_zone"
 
 # Chance-weight protocol
 const CHANCE_ADD := &"chance_add"        # float, default 0.0

@@ -58,6 +58,8 @@ static func ensure_ai_state_initialized(u: CombatantState) -> void:
 		s[Keys.PLANNED_SELECTION_SOURCE] = SELECTION_SOURCE_NONE
 	if !(s.get(Keys.ACTION_STATE, null) is Dictionary):
 		s[Keys.ACTION_STATE] = {}
+	if !s.has(Keys.TARGETING_DANGER_ZONE):
+		s[Keys.TARGETING_DANGER_ZONE] = false
 
 
 static func ensure_valid_plan_sim(profile: NPCAIProfile, ctx: NPCAIContext, allow_hooks := true) -> void:

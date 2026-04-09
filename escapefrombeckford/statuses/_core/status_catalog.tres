@@ -27,9 +27,10 @@
 [ext_resource type="Resource" uid="uid://dranrw6gwftwj" path="res://statuses/heavy_attack.tres" id="21_heavy_attack"]
 [ext_resource type="Resource" uid="uid://bxp0xi26b7gmg" path="res://statuses/small.tres" id="22_small"]
 [ext_resource type="Resource" uid="uid://b3n0tmwd2wftw" path="res://statuses/double_edge.tres" id="23_double_edge"]
+[ext_resource type="Resource" path="res://statuses/danger_zone.tres" id="24_danger_zone"]
 [ext_resource type="Resource" uid="uid://dvxb1b65olpr7" path="res://statuses/bequeath.tres" id="27_gyvsg"]
 
 [resource]
 script = ExtResource("1_2sbnh")
-statuses = Array[ExtResource("2_mko5r")]([ExtResource("18_absorb"), ExtResource("3_uxogt"), ExtResource("19_banishing_strikes"), ExtResource("6_6ckqc"), ExtResource("16_bolstered"), ExtResource("23_double_edge"), ExtResource("6_00ab0"), ExtResource("9_cbbgy"), ExtResource("9_exit_strike"), ExtResource("20_fleeting"), ExtResource("5_2sbnh"), ExtResource("21_heavy_attack"), ExtResource("7_fjt00"), ExtResource("8_ho33y"), ExtResource("9_6ckqc"), ExtResource("10_cbbgy"), ExtResource("9_protected_drone"), ExtResource("11_6ocio"), ExtResource("11_mko5r"), ExtResource("22_small"), ExtResource("12_kw06w"), ExtResource("17_sundered"), ExtResource("15_suppressed"), ExtResource("13_djvpr"), ExtResource("14_gyvsg"), ExtResource("27_gyvsg")])
+statuses = Array[ExtResource("2_mko5r")]([ExtResource("18_absorb"), ExtResource("3_uxogt"), ExtResource("19_banishing_strikes"), ExtResource("6_6ckqc"), ExtResource("16_bolstered"), ExtResource("24_danger_zone"), ExtResource("23_double_edge"), ExtResource("6_00ab0"), ExtResource("9_cbbgy"), ExtResource("9_exit_strike"), ExtResource("20_fleeting"), ExtResource("5_2sbnh"), ExtResource("21_heavy_attack"), ExtResource("7_fjt00"), ExtResource("8_ho33y"), ExtResource("9_6ckqc"), ExtResource("10_cbbgy"), ExtResource("9_protected_drone"), ExtResource("11_6ocio"), ExtResource("11_mko5r"), ExtResource("22_small"), ExtResource("12_kw06w"), ExtResource("17_sundered"), ExtResource("15_suppressed"), ExtResource("13_djvpr"), ExtResource("14_gyvsg"), ExtResource("27_gyvsg")])
 metadata/_custom_type_script = "uid://dgq1lfjmf2yfl"

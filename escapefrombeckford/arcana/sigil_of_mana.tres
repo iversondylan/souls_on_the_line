@@ -2,6 +2,7 @@
 
 [ext_resource type="Texture2D" uid="uid://bfra3ulw7gf27" path="res://_assets/sprites/arcana_placeholders/rune-stone.png" id="1_jqkyd"]
 [ext_resource type="Script" uid="uid://cd2wn5xk0smof" path="res://arcana/sigil_of_mana.gd" id="2_6vupx"]
+[ext_resource type="Script" uid="uid://cueedkb1u8vxy" path="res://statuses/_core/status.gd" id="2_7tnh2"]
 
 [resource]
 script = ExtResource("2_6vupx")

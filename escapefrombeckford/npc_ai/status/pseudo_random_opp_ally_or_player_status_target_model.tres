@@ -1,0 +1,6 @@
+[gd_resource type="Resource" script_class="PseudoRandomOppAllyOrPlayerStatusTargetModel" format=3]
+
+[ext_resource type="Script" path="res://npc_ai/status/pseudo_random_opp_ally_or_player_status_target_model.gd" id="1_target_model"]
+
+[resource]
+script = ExtResource("1_target_model")

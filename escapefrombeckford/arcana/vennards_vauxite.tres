@@ -2,6 +2,7 @@
 
 [ext_resource type="Texture2D" uid="uid://uabxbq5l78jq" path="res://_assets/sprites/arcana_placeholders/stone-stack.png" id="1_2sw5b"]
 [ext_resource type="Script" uid="uid://boculpcypnt7j" path="res://arcana/vennards_vauxite.gd" id="2_700dm"]
+[ext_resource type="Script" uid="uid://cueedkb1u8vxy" path="res://statuses/_core/status.gd" id="2_v377l"]
 
 [resource]
 script = ExtResource("2_700dm")

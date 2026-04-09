@@ -1,6 +1,7 @@
 [gd_resource type="Resource" format=3 uid="uid://bj2ud7b8ci4bm"]
 
 [ext_resource type="Texture2D" uid="uid://b6crftvi7n5qt" path="res://_assets/sprites/arcana_placeholders/magic-potion.png" id="1_qjv84"]
+[ext_resource type="Script" uid="uid://cueedkb1u8vxy" path="res://statuses/_core/status.gd" id="2_gq0vv"]
 [ext_resource type="Script" uid="uid://bi3k16dd5psac" path="res://arcana/thales_flask.gd" id="2_k7srp"]
 
 [resource]

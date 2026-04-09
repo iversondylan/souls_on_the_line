@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="DangerZoneStatus" format=3 uid="uid://00aqmemuit10"]
+
+[ext_resource type="Texture2D" uid="uid://cq7pt7vi0uuft" path="res://_assets/sprites/assorted/surprised-skull.png" id="1_gl81g"]
+[ext_resource type="Script" uid="uid://bxfm1fgcjvut0" path="res://statuses/danger_zone.gd" id="1_status"]
+
+[resource]
+script = ExtResource("1_status")
+status_name = "Danger Zone"
+reapply_type = 2
+icon = ExtResource("1_gl81g")
+tooltip = "Danger Zone: primed attackers center this target and splash adjacent units."
