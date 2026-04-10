@@ -2,6 +2,7 @@
 
 [ext_resource type="Texture2D" uid="uid://dngnha78cu11v" path="res://_assets/sprites/arcana_placeholders/mittens.png" id="1_oaq64"]
 [ext_resource type="Script" uid="uid://boja5bygddac1" path="res://arcana/unruly_pyric_wraps.gd" id="2_an6gd"]
+[ext_resource type="Script" uid="uid://cueedkb1u8vxy" path="res://statuses/_core/status.gd" id="2_w4red"]
 
 [resource]
 script = ExtResource("2_an6gd")

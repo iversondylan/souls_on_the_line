@@ -11,6 +11,7 @@ script = ExtResource("2_s8x2x")
 target_type = 3
 rarity = 1
 name = "Boiling Blood"
+description = "An ally gains On Death: deal %s damage to all enemies. Draw %s."
 cost = 1
 texture = ExtResource("5_sotcf")
 actions = Array[ExtResource("1_7vqwg")]([ExtResource("2_1a508"), ExtResource("3_g0a6e")])

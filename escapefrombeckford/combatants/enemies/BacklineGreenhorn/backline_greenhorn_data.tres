@@ -6,6 +6,7 @@
 [resource]
 script = ExtResource("3_8cg22")
 name = "Backline Greenhorn"
+description = "Simple ranged attacker."
 character_art_uid = "uid://dtvvequ1w1dlu"
 facing_right = false
 height = 270

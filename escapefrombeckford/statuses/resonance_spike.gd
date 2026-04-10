@@ -8,4 +8,4 @@ func get_id() -> StringName:
 	return ID
 
 func get_tooltip(intensity: int = 0, _duration: int = 0) -> String:
-	return "Resonance Spike [Aura]: allies deal +%s damage." % intensity
+	return "Resonance Spike: allies deal +%s damage." % intensity

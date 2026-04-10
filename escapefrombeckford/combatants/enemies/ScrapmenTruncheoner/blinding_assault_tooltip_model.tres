@@ -1,7 +1,7 @@
-[gd_resource type="Resource" script_class="AttackIntentTooltipTextModel" format=3]
+[gd_resource type="Resource" script_class="AttackIntentTooltipTextModel" format=3 uid="uid://bpffmcbo4svcn"]
 
 [ext_resource type="Script" uid="uid://8lp7x60y132v" path="res://npc_ai/text/attack_intent_tooltip_text_model.gd" id="1_tooltip_model"]
 
 [resource]
 script = ExtResource("1_tooltip_model")
-text_template = "[b]{action_name}[/b]: Apply Vulnerable and Weakened to all opponents, then deal {strikes}{damage} damage."
+text_template = "[b]{action_name}[/b]: all opponents deal 50% less damage and take 50% more damage, then take {strikes}{damage} damage."

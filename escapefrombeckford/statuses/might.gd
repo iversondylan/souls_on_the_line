@@ -29,4 +29,4 @@ func get_modifier_tokens(ctx: StatusTokenContext) -> Array[ModifierToken]:
 	return [token]
 	
 func get_tooltip(intensity: int = 0, _duration: int = 0) -> String:
-	return "Might: deals %s additional damage." % intensity
+	return "Might: deal +%s damage." % intensity

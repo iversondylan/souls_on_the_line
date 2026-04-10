@@ -10,7 +10,7 @@ script = ExtResource("2_ooeml")
 [resource]
 script = ExtResource("3_cdawn")
 name = "Shrapnel Oyster"
-description = "A brittle oyster soul that waits to burst apart."
+description = "0/3 ally with On Death: deal 4 damage to all enemies. Draw 1."
 character_art_uid = "res://_assets/sprites/assorted/oyster-pearl.png"
 portrait_art_uid = "res://_assets/sprites/assorted/oyster-pearl.png"
 height = 120

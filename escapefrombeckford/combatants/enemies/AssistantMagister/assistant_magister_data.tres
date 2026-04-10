@@ -6,6 +6,7 @@
 [resource]
 script = ExtResource("1_data")
 name = "Assistant Magister"
+description = "Sturdy attacker with simple single and multi-strike attacks."
 character_art_uid = "uid://dtvvequ1w1dlu"
 portrait_art_uid = "uid://dtvvequ1w1dlu"
 facing_right = false

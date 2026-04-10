@@ -1,10 +1,8 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://bvdfiogjqleor"]
 
-[node name="StatusViewRow" type="HBoxContainer"]
+[node name="StatusViewRow" type="HBoxContainer" unique_id=793453529]
 custom_minimum_size = Vector2(428, 68)
-layout_mode = 3
-anchors_preset = 0
-mouse_filter = 2
 size_flags_horizontal = 3
+mouse_filter = 2
 theme_override_constants/separation = 4
 alignment = 1

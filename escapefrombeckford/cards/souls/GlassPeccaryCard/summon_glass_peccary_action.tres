@@ -12,7 +12,7 @@ script = ExtResource("4_pyd3s")
 [sub_resource type="Resource" id="Resource_5y8hh"]
 script = ExtResource("5_oukcf")
 name = "Glass Peccary"
-description = "A fragile peccary soul that only leaves an inheritance behind."
+description = "A fragile soul that leaves a parting gift."
 character_art_uid = "res://_assets/sprites/assorted/pig.png"
 portrait_art_uid = "res://_assets/sprites/assorted/pig.png"
 height = 120

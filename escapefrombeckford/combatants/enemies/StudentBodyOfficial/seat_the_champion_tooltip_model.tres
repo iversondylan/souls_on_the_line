@@ -4,4 +4,4 @@
 
 [resource]
 script = ExtResource("1_tooltip_script")
-text_template = "[b]{action_name}[/b]: move the healthiest ally to the front, then heal the lowest-health ally for {flat_amount}."
+text_template = "[b]{action_name}[/b]: move the healthiest ally to the front, then heal the most wounded ally for {flat_amount}."

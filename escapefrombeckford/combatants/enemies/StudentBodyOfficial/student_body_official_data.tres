@@ -6,6 +6,7 @@
 [resource]
 script = ExtResource("1_data")
 name = "Student Body Official"
+description = "Support enemy. Moves allies, heals, shields, and rallies the group."
 character_art_uid = "uid://dtvvequ1w1dlu"
 portrait_art_uid = "uid://dtvvequ1w1dlu"
 facing_right = false

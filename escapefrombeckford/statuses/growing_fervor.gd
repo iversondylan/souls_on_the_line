@@ -22,4 +22,4 @@ func get_id() -> StringName:
 	#status_applied.emit(self)
 
 func get_tooltip(intensity: int = 0, _duration: int = 0) -> String:
-	return "Growing Fervor: grants Shared Fervor, causing allies to deal +%s damage." % intensity
+	return "Growing Fervor: allies deal +%s damage." % intensity

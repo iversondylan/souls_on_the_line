@@ -11,7 +11,7 @@ card_type = 3
 target_type = 4
 rarity = 1
 name = "Attack"
-description = "Deal [color=\"ff0000\"]%s[/color] damage to target enemy."
+description = "Deal [color=\"ff0000\"]%s[/color] damage."
 texture = ExtResource("3_uwveu")
 actions = Array[ExtResource("1_gfena")]([ExtResource("2_bbcwt")])
 metadata/_custom_type_script = "uid://d2f0qepe047dc"

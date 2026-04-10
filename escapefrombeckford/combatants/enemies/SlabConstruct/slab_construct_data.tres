@@ -6,6 +6,7 @@
 [resource]
 script = ExtResource("1_5n7eh")
 name = "Slab Construct"
+description = "Heavy construct. Builds power before slamming."
 character_art_uid = "uid://dkfg0k5h7fab1"
 facing_right = false
 max_health = 35

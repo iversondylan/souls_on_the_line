@@ -6,6 +6,7 @@
 [resource]
 script = ExtResource("1_up1qc")
 name = "Weber Patrol Swordsman"
+description = "Straightforward front-line multi-strike attacker."
 character_art_uid = "uid://bnxywmo8vcrr3"
 portrait_art_uid = "uid://bnxywmo8vcrr3"
 facing_right = false

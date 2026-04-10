@@ -29,4 +29,4 @@ func get_modifier_tokens(ctx: StatusTokenContext) -> Array[ModifierToken]:
 	return [token]
 
 func get_tooltip(intensity: int = 0, _duration: int = 0) -> String:
-	return "Banishing Strikes: deals +%s banish damage. Banish damage only applies to Soulbound and Deplete units." % intensity
+	return "Banishing Strikes: deal +%s damage to Soulbound and Deplete units." % intensity

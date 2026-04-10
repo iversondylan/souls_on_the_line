@@ -4,4 +4,4 @@
 
 [resource]
 script = ExtResource("1_tooltip_script")
-text_template = "[b]{action_name}[/b]: apply Amplify for 2 turns and 1 Absorb to a random teammate."
+text_template = "[b]{action_name}[/b]: a random teammate deals 50% more damage for 2 turns and blocks the next hit."

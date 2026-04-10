@@ -8,5 +8,5 @@ script = ExtResource("1_script")
 status_name = "Banishing Strikes"
 number_display_type = 1
 icon = ExtResource("2_icon")
-tooltip = "error"
+tooltip = "Deal bonus damage to Soulbound and Deplete units."
 metadata/_custom_type_script = "uid://cueedkb1u8vxy"

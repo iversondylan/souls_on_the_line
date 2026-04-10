@@ -13,6 +13,7 @@ target_type = 1
 rarity = 1
 name = "Impatient Djinn"
 summon_release_overload = 1
+description = "Summon a %s/%s %s. It dies at the start of your next turn."
 cost = 1
 texture = ExtResource("5_qjxo6")
 actions = Array[ExtResource("1_pn1bx")]([ExtResource("2_xcutu"), ExtResource("3_vgsdk")])

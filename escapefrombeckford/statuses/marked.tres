@@ -10,5 +10,5 @@ number_display_type = 2
 reapply_type = 1
 expiration_policy = 0
 icon = ExtResource("1_o5s2w")
-tooltip = "TO DO"
+tooltip = "Ranged attacks prioritize this target."
 metadata/_custom_type_script = "uid://cueedkb1u8vxy"

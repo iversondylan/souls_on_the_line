@@ -8,4 +8,4 @@ script = ExtResource("1_small_script")
 status_name = "Small"
 reapply_type = 3
 icon = ExtResource("1_1tv8i")
-tooltip = "Small: excess damage dealt to this unit is applied to the next target."
+tooltip = "Excess damage dealt here spills into the next combatant."

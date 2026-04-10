@@ -14,5 +14,5 @@ func on_attack_will_run(_ctx: SimStatusContext, attack_ctx: AttackContext) -> vo
 
 func get_tooltip(_intensity: int = 0, duration: int = 0) -> String:
 	if duration == 1:
-		return "Alacrity: attacks gain +1 strike for 1 turn."
-	return "Alacrity: attacks gain +1 strike for %s turns." % duration
+		return "Alacrity: attacks get +1 strike for 1 turn."
+	return "Alacrity: attacks get +1 strike for %s turns." % duration

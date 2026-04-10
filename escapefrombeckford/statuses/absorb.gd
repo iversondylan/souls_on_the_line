@@ -26,7 +26,7 @@ func on_damage_will_be_taken(ctx: SimStatusContext, damage_ctx: DamageContext) -
 		ctx.change_intensity(-1, "absorb_consumed")
 
 func get_tooltip(intensity: int = 0, _duration: int = 0) -> String:
-	return "Absorb: nullifies the next %s incoming hit%s. Clears at the start of the player's turn." % [
+	return "Absorb: block the next %s hit%s. Clears at the start of the player's turn." % [
 		intensity,
 		"" if intensity == 1 else "s"
 	]

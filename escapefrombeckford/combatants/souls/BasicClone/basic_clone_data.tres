@@ -6,6 +6,7 @@
 [resource]
 script = ExtResource("1_ago3s")
 name = "Spectral Clone"
+description = "4/5 ally."
 character_art_uid = "uid://boidn5bneb5f0"
 height = 270
 max_health = 5

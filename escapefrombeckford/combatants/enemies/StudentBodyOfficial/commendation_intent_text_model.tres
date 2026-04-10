@@ -4,4 +4,3 @@
 
 [resource]
 script = ExtResource("1_tooltip_script")
-text_template = "Amp+Absorb"

@@ -6,6 +6,7 @@
 [resource]
 script = ExtResource("1_g2rpw")
 name = "Cursed Ledger"
+description = "Summoner enemy. Drafts documents and attacks with stored power."
 character_art_uid = "uid://dl7lv3pq1jkot"
 portrait_art_uid = "uid://dl7lv3pq1jkot"
 facing_right = false

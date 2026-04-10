@@ -6,6 +6,7 @@
 [resource]
 script = ExtResource("1_e6gmt")
 name = "Weber Patrol Arbalest"
+description = "Backline attacker. Marks danger and fires into the formation."
 character_art_uid = "uid://dvhoe5pr1jtcm"
 portrait_art_uid = "uid://dvhoe5pr1jtcm"
 facing_right = false

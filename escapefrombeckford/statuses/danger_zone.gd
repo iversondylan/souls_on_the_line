@@ -73,4 +73,4 @@ func on_targeting_retarget(ctx: SimStatusContext, targeting_ctx: TargetingContex
 	targeting_ctx.working_target_ids = retarget_ids
 
 func get_tooltip(_intensity: int = 0, _duration: int = 0) -> String:
-	return "Danger Zone: primed attackers center this target and splash adjacent allies."
+	return "Danger Zone: the next marked attack centers here and splashes adjacent allies."

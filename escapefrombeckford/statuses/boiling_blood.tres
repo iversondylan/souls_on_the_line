@@ -9,4 +9,4 @@ status_name = "Boiling Blood"
 number_display_type = 1
 expiration_policy = 4
 icon = ExtResource("1_cs1el")
-tooltip = "On death, deal damage equal to intensity to all enemies. Expires at the start of the player's turn."
+tooltip = "On Death, deal damage to all enemies. Expires at the start of the player's turn."

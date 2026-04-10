@@ -10,5 +10,5 @@ number_display_type = 2
 reapply_type = 1
 expiration_policy = 0
 icon = ExtResource("1_6hpfl")
-tooltip = "TO DO"
+tooltip = "Take 50% more damage. Ticks down at end of turn."
 metadata/_custom_type_script = "uid://cueedkb1u8vxy"

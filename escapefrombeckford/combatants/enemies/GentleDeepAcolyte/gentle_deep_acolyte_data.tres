@@ -6,6 +6,7 @@
 [resource]
 script = ExtResource("1_data")
 name = "Gentle Deep Acolyte"
+description = "Light attacker. Can put opposing NPCs to sleep."
 character_art_uid = "uid://cawgplffbt5en"
 portrait_art_uid = "uid://cawgplffbt5en"
 facing_right = false

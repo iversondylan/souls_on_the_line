@@ -6,6 +6,7 @@
 [resource]
 script = ExtResource("3_n5lri")
 name = "Power Blocker"
+description = "Disruptive enemy that pressures power-heavy plans."
 character_art_uid = "uid://dtvvequ1w1dlu"
 facing_right = false
 height = 270

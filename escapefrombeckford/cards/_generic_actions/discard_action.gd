@@ -40,5 +40,5 @@ func waits_for_async_resolution_after_activate_sim(_ctx: CardContext) -> bool:
 func description_arity() -> int:
 	return 1
 
-#func get_description_values(_ctx: CardActionContext) -> Array:
-	#return [base_discard]
+func get_description_values(_ctx: CardActionContext) -> Array:
+	return [int(base_discard)]

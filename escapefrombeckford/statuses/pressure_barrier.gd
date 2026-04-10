@@ -29,4 +29,4 @@ func get_modifier_tokens(ctx: StatusTokenContext) -> Array[ModifierToken]:
 	return [token]
 	
 func get_tooltip(intensity: int = 0, _duration: int = 0) -> String:
-	return "Pressure Barrier: take %s reduced damage from each strike." % intensity
+	return "Pressure Barrier: take %s less damage from each strike." % intensity

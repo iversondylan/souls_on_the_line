@@ -6,6 +6,7 @@
 [resource]
 script = ExtResource("3_23h7w")
 name = "Blasting Mite"
+description = "Small attacker."
 character_art_uid = "uid://s71ei3q4f3da"
 facing_right = false
 height = 120

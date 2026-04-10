@@ -1,6 +1,6 @@
 class_name StatusApplyIntentTooltipTextModel extends TextModel
 
-@export_multiline var text_template: String = "[b]{action_name}[/b] [{target}]: apply {stacks}{status}."
+@export_multiline var text_template: String = "[b]{action_name}[/b] [{target}]: inflict {stacks}{status}."
 
 func get_text(ctx: NPCAIContext) -> String:
 	if ctx == null:

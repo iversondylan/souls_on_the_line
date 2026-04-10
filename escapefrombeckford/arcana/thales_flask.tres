@@ -8,5 +8,5 @@
 script = ExtResource("2_k7srp")
 arcanum_name = "Thale's Flask"
 icon = ExtResource("1_qjv84")
-tooltip_description = "At the end of each battle, restore 5 health."
+tooltip_description = "After each battle, restore 5 health."
 metadata/_custom_type_script = "uid://cnmucv1qsei4i"

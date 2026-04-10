@@ -33,4 +33,4 @@ func get_modifier_tokens(ctx: StatusTokenContext) -> Array[ModifierToken]:
 	return [token]
 
 func get_tooltip(intensity: int = 0, _duration: int = 0) -> String:
-	return "Suppressed: deals %s%% less damage. Clears at the end of this unit's group turn." % intensity
+	return "Suppressed: deal %s%% less damage. Clears at the end of this unit's group turn." % intensity

@@ -6,6 +6,7 @@
 [resource]
 script = ExtResource("1_r4b68")
 name = "Groundskeeper Construct"
+description = "Frontline attacker with heavy cleaving strikes."
 character_art_uid = "uid://cdacow6h5xebq"
 portrait_art_uid = "uid://cdacow6h5xebq"
 facing_right = false

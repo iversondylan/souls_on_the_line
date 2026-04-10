@@ -15,7 +15,7 @@ func get_text(ctx: NPCAIContext) -> String:
 	var matches := regex.search_all(result)
 	for m in matches:
 		var key_str := m.get_string(1)
-		var replacement := "[key not found]"
+		var replacement := "?"
 
 		if key_str == "action_name":
 			replacement = String(ctx.action_name)

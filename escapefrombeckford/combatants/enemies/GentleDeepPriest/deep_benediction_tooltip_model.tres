@@ -4,4 +4,4 @@
 
 [resource]
 script = ExtResource("1_text_script")
-text_template = "[b]{action_name}[/b]: give all allies 2 pending Might, then realize it."
+text_template = "[b]{action_name}[/b]: all allies deal +2 damage after this resolves."

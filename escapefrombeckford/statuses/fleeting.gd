@@ -11,7 +11,7 @@ func get_id() -> StringName:
 
 
 func get_tooltip(_intensity: int = 0, _duration: int = 0) -> String:
-	return "Fleeting: dies at the start of the player's turn."
+	return "Fleeting: dies at the start of your turn."
 
 
 func on_player_turn_begin(ctx: SimStatusContext, player_id: int) -> void:

@@ -6,6 +6,7 @@
 [resource]
 script = ExtResource("1_ihj0n")
 name = "Calabash"
+description = "Large attacker. Marks danger and threatens splash damage."
 character_art_uid = "uid://dk4vomqg8838f"
 portrait_art_uid = "uid://dk4vomqg8838f"
 facing_right = false

@@ -10,7 +10,7 @@ script = ExtResource("2_ot03y")
 [resource]
 script = ExtResource("3_4liyr")
 name = "Glass Peccary"
-description = "A fragile peccary soul that only leaves an inheritance behind."
+description = "0/4 ally with On Death: Draw 1. Deal 3 damage."
 character_art_uid = "res://_assets/sprites/assorted/pig.png"
 portrait_art_uid = "res://_assets/sprites/assorted/pig.png"
 height = 120

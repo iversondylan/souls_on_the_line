@@ -1,7 +1,7 @@
-[gd_resource type="Resource" script_class="IntentTooltipTextModel" format=3]
+[gd_resource type="Resource" script_class="IntentTooltipTextModel" format=3 uid="uid://cbkde6vq22q5o"]
 
-[ext_resource type="Script" path="res://npc_ai/text/intent_tooltip_text_model.gd" id="1_text_script"]
+[ext_resource type="Script" uid="uid://cxh1c3vqgquc5" path="res://npc_ai/text/intent_tooltip_text_model.gd" id="1_text_script"]
 
 [resource]
 script = ExtResource("1_text_script")
-text_template = "[b]{action_name}[/b]: put a random opposing NPC to Sleep for 2 turns."
+text_template = "[b]{action_name}[/b]: a random opposing NPC skips actions for 2 turns."

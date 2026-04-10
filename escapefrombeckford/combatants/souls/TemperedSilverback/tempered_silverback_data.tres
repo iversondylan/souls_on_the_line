@@ -6,6 +6,7 @@
 [resource]
 script = ExtResource("1_h8tpf")
 name = "Tempered Silverback"
+description = "4/7 ally. Gains max health when it survives strike damage."
 character_art_uid = "uid://dfqya1jagaknn"
 portrait_art_uid = "uid://dfqya1jagaknn"
 max_health = 7

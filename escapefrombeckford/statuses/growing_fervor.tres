@@ -8,6 +8,5 @@ script = ExtResource("2_pyaau")
 status_name = "Growing Fervor"
 number_display_type = 1
 icon = ExtResource("1_2s5rg")
-tooltip = "TO DO
-Growing Fervor is the parent effect that grants Shared Fervor."
+tooltip = "Allies deal more damage."
 metadata/_custom_type_script = "uid://cueedkb1u8vxy"

@@ -12,7 +12,7 @@ func get_id() -> StringName:
 
 
 func get_tooltip(_intensity: int = 0, _duration: int = 0) -> String:
-	return "Protected Drone: on death, summon a Fire Ant in this slot and give it 3 Explosive Departure."
+	return "Protected Drone: On Death, summon a Fire Ant here. It has On Death: deal 3 damage to all enemies."
 
 
 func on_removal(ctx: SimStatusContext, removal_ctx) -> void:

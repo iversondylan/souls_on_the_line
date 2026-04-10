@@ -6,6 +6,7 @@
 [resource]
 script = ExtResource("1_data_script")
 name = "Formic Drone"
+description = "2/2 ally with On Death: summon a 3/2 Fire Ant."
 character_art_uid = "res://_assets/character_visuals/placeholder_shapes/ant_silhouette.PNG"
 portrait_art_uid = "res://_assets/character_visuals/placeholder_shapes/ant_silhouette.PNG"
 height = 140

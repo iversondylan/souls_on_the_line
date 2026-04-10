@@ -37,5 +37,5 @@ func get_modifier_tokens(ctx: StatusTokenContext) -> Array[ModifierToken]:
 
 func get_tooltip(_intensity: int = 0, duration: int = 0) -> String:
 	if duration == 1:
-		return "Vulnerable: takes %s%% more damage for 1 turn. Ticks down at the end of this unit's turn." % floori(MULT_VALUE * 100)
-	return "Vulnerable: takes %s%% more damage for %s turns. Ticks down at the end of this unit's turn." % [floori(MULT_VALUE * 100), duration]
+		return "Vulnerable: take %s%% more damage for 1 turn. Ticks down at end of turn." % floori(MULT_VALUE * 100)
+	return "Vulnerable: take %s%% more damage for %s turns. Ticks down at end of turn." % [floori(MULT_VALUE * 100), duration]

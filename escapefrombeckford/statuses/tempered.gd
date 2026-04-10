@@ -38,7 +38,7 @@ func on_damage_taken(ctx: SimStatusContext, damage_ctx: DamageContext) -> void:
 			)
 
 func get_tooltip(intensity: int = 0, _duration: int = 0) -> String:
-	return "Tempered: gains %s maximum health for each strike survived. +%s maximum health." % [
+	return "Tempered: gain %s max health whenever this unit survives strike damage. Current bonus: +%s max health." % [
 		max_health_per_strike,
 		intensity
 	]

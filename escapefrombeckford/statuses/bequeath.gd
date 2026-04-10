@@ -9,7 +9,7 @@ func get_id() -> StringName:
 
 
 func get_tooltip(intensity: int = 0, _duration: int = 0) -> String:
-	return "Bequeath: on death, draw %s card%s." % [intensity, "" if int(intensity) == 1 else "s"]
+	return "Bequeath: On Death, Draw %s." % intensity
 
 
 func on_removal(ctx: SimStatusContext, removal_ctx) -> void:

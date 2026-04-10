@@ -6,6 +6,7 @@
 [resource]
 script = ExtResource("1_e1ogf")
 name = "Butler Construct"
+description = "Support construct. Sets up an ally to hit harder."
 character_art_uid = "uid://crrbyuefv1poh"
 portrait_art_uid = "uid://crrbyuefv1poh"
 facing_right = false

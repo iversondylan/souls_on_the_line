@@ -11,4 +11,5 @@ summon_data = ExtResource("3_cia6o")
 arcanum_name = "Adamant Ally"
 starter_arcanum = true
 icon = ExtResource("1_ga55l")
+tooltip_description = "Start each battle with a 4/5 Spectral Clone."
 metadata/_custom_type_script = "uid://cnmucv1qsei4i"

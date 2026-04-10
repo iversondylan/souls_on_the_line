@@ -18,7 +18,7 @@ script = ExtResource("5_6vb3o")
 [sub_resource type="Resource" id="Resource_5y8hh"]
 script = ExtResource("6_xbyp2")
 name = "Glass Peccary"
-description = "A fragile peccary soul that only leaves an inheritance behind."
+description = "A fragile soul that leaves a parting gift."
 character_art_uid = "res://_assets/sprites/assorted/pig.png"
 portrait_art_uid = "res://_assets/sprites/assorted/pig.png"
 height = 120
@@ -46,6 +46,6 @@ target_type = 1
 name = "Glass Peccary"
 deplete = true
 summon_release_overload = 1
-description = "Summon a %s/%s %s. Give it %s Bequeath."
+description = "Summon a %s/%s %s with On Death: Draw %s. Deal %s damage."
 texture = ExtResource("10_x1gdt")
 actions = Array[ExtResource("1_w66no")]([SubResource("Resource_fbrl2"), SubResource("Resource_wgn5w"), ExtResource("9_gs3h0")])

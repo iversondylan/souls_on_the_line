@@ -6,6 +6,7 @@
 [resource]
 script = ExtResource("1_data")
 name = "Gentle Deep Priest"
+description = "Backline priest. Marks a sun beam and blesses allies."
 character_art_uid = "uid://q0vpefxsjdlj"
 portrait_art_uid = "uid://q0vpefxsjdlj"
 facing_right = false

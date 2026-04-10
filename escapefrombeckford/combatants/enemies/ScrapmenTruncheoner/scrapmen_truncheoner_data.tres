@@ -6,6 +6,7 @@
 [resource]
 script = ExtResource("2_bjjlu")
 name = "Scrapmen Truncheoner"
+description = "Brutal attacker. Weakens the group before striking."
 character_art_uid = "uid://b01mcynua2mnu"
 portrait_art_uid = "uid://b01mcynua2mnu"
 facing_right = false

@@ -9,7 +9,7 @@ func get_id() -> StringName:
 
 
 func get_tooltip(intensity: int = 0, _duration: int = 0) -> String:
-	return "Boiling Blood: on death, deal %s damage to all enemies. Expires at the start of the player's turn." % intensity
+	return "Boiling Blood: On Death, deal %s damage to all enemies. Expires at the start of the player's turn." % intensity
 
 
 func on_removal(ctx: SimStatusContext, removal_ctx) -> void:

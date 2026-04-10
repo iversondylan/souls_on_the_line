@@ -7,6 +7,7 @@
 [resource]
 script = ExtResource("1_rmw54")
 name = "Buffer Bird"
+description = "Light support enemy."
 character_art_uid = "uid://bb2atap1ej445"
 portrait_art_uid = "uid://bb2atap1ej445"
 height = 270

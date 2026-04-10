@@ -9,4 +9,4 @@ func get_id() -> StringName:
 
 
 func get_tooltip(intensity: int = 0, _duration: int = 0) -> String:
-	return "Shared Fervor [Aura]: allies deal +%s damage." % intensity
+	return "Shared Fervor: allies deal +%s damage." % intensity

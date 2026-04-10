@@ -8,4 +8,4 @@ script = ExtResource("1_status")
 status_name = "Danger Zone"
 reapply_type = 2
 icon = ExtResource("1_gl81g")
-tooltip = "Danger Zone: primed attackers center this target and splash adjacent units."
+tooltip = "The next marked attack centers here and splashes adjacent allies."

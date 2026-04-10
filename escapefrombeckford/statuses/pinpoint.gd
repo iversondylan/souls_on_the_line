@@ -43,5 +43,5 @@ func get_contributed_modifier_types() -> Array[Modifier.Type]:
 	#
 func get_tooltip(_intensity: int = 0, duration: int = 0) -> String:
 	if duration == 1:
-		return "Pinpoint: takes %s%% more damage for 1 turn." % floori(MULT_VALUE * 100)
-	return "Pinpoint: takes %s%% more damage for %s turns." % [floori(MULT_VALUE * 100), duration]
+		return "Pinpoint: take %s%% more damage for 1 turn." % floori(MULT_VALUE * 100)
+	return "Pinpoint: take %s%% more damage for %s turns." % [floori(MULT_VALUE * 100), duration]
