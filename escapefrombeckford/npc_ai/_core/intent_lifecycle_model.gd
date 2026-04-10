@@ -28,6 +28,9 @@ func on_group_layout_changed(
 ) -> void:
 	pass
 
+func on_combatant_removal(_ctx: NPCAIContext, _removal_ctx: RemovalContext) -> void:
+	pass
+
 # -------------------------------------------------------------------
 # Clearer phase hooks
 # -------------------------------------------------------------------

@@ -46,6 +46,13 @@ func on_action_execution_completed(ctx: NPCAIContext) -> void:
 	if ctx != null and ctx.state != null and state_key != &"":
 		ctx.state.erase(state_key)
 
+func on_combatant_removal(ctx: NPCAIContext, removal_ctx: RemovalContext) -> void:
+	if !_can_run_sim(ctx):
+		return
+	if removal_ctx == null or int(removal_ctx.target_id) != ctx.get_actor_id():
+		return
+	_clear_pending_status_sim(ctx)
+
 func _apply_targeted_status_sim(ctx: NPCAIContext) -> void:
 	var target_ids := _resolve_target_ids(ctx, target_model)
 	_store_target_ids(ctx, target_ids)

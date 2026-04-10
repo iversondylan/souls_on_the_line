@@ -7,6 +7,7 @@
 [ext_resource type="Resource" uid="uid://ds1puc6yesfie" path="res://cards/convocations/Interception/absorb_on_frontmost_ally_action.tres" id="4_absorb_frontmost"]
 [ext_resource type="Resource" path="res://cards/convocations/Interception/move_frontmost_npc_ally_to_front.tres" id="4_move_frontmost"]
 [ext_resource type="Texture2D" uid="uid://c2l2ccbal0fiq" path="res://_assets/sprites/assorted/bolt-shield.png" id="5_texture"]
+[ext_resource type="Resource" uid="uid://cwsantdi8vmes" path="res://cards/_generic_actions/draw_1_action.tres" id="6_t30tk"]
 
 [resource]
 script = ExtResource("2_card")
@@ -16,5 +17,5 @@ name = "Interception"
 description = "Sacrifice an ally. Move the frontmost remaining ally to the front. Apply 1 Absorb and 2 Pressure Barrier to them."
 cost = 1
 texture = ExtResource("5_texture")
-actions = Array[ExtResource("1_action")]([ExtResource("3_sacrifice"), ExtResource("4_move_frontmost"), ExtResource("4_absorb_frontmost"), ExtResource("4_5xl5h")])
+actions = Array[ExtResource("1_action")]([ExtResource("3_sacrifice"), ExtResource("4_move_frontmost"), ExtResource("4_absorb_frontmost"), ExtResource("4_5xl5h"), ExtResource("6_t30tk")])
 metadata/_custom_type_script = "uid://d2f0qepe047dc"

@@ -1,7 +1,7 @@
-[gd_resource type="Resource" script_class="SleepStatus" format=3]
+[gd_resource type="Resource" script_class="SleepStatus" format=3 uid="uid://qvoqpv21h118"]
 
-[ext_resource type="Script" path="res://statuses/sleep.gd" id="1_sleep_script"]
-[ext_resource type="Texture2D" uid="uid://dtphr4ncf8l0g" path="res://_assets/sprites/assorted/extra-lucid.png" id="2_sleep_icon"]
+[ext_resource type="Script" uid="uid://dy0jmggxedx1e" path="res://statuses/sleep.gd" id="1_sleep_script"]
+[ext_resource type="Texture2D" uid="uid://dbqsel5awd21o" path="res://_assets/sprites/assorted/sleepy.png" id="1_t2tmk"]
 
 [resource]
 script = ExtResource("1_sleep_script")
@@ -9,4 +9,4 @@ status_name = "Sleep"
 number_display_type = 2
 reapply_type = 1
 expiration_policy = 0
-icon = ExtResource("2_sleep_icon")
+icon = ExtResource("1_t2tmk")

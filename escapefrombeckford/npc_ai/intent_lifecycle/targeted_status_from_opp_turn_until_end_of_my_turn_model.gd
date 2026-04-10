@@ -52,6 +52,13 @@ func on_intent_canceled(ctx: NPCAIContext) -> void:
 		return
 	_clear_targeted_status_sim(ctx)
 
+func on_combatant_removal(ctx: NPCAIContext, removal_ctx: RemovalContext) -> void:
+	if !_can_run_sim(ctx):
+		return
+	if removal_ctx == null or int(removal_ctx.target_id) != ctx.get_actor_id():
+		return
+	_clear_targeted_status_for_removed_owner_sim(ctx)
+
 func _apply_targeted_status_sim(ctx: NPCAIContext, model: ParamModel) -> void:
 	var target_ids := _resolve_target_ids(ctx, model)
 	if target_ids.is_empty():
@@ -76,6 +83,23 @@ func _clear_targeted_status_sim(ctx: NPCAIContext) -> void:
 	_set_flag(ctx, false)
 	if _has_any_other_flagged_attacker(ctx, actor_id):
 		return
+
+	var actor_group := int(ctx.api.get_group(actor_id))
+	if actor_group < 0:
+		return
+
+	var defending_group := int(ctx.api.get_opposing_group(actor_group))
+	for cid in ctx.api.get_combatants_in_group(defending_group, true):
+		var rc := StatusContext.new()
+		rc.source_id = actor_id
+		rc.target_id = int(cid)
+		rc.status_id = _status_id()
+		rc.pending = bool(pending)
+		ctx.api.remove_status(rc)
+
+func _clear_targeted_status_for_removed_owner_sim(ctx: NPCAIContext) -> void:
+	var actor_id := ctx.get_actor_id()
+	_set_flag(ctx, false)
 
 	var actor_group := int(ctx.api.get_group(actor_id))
 	if actor_group < 0:

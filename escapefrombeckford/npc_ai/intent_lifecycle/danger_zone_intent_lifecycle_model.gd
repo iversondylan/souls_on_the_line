@@ -15,8 +15,6 @@ func on_group_layout_changed(
 		return
 	if reapply_target_model == null:
 		return
-	if _front_id_from_order(before_order_ids) == _front_id_from_order(after_order_ids):
-		return
 
 	var actor_id := ctx.get_actor_id()
 	if actor_id <= 0:
@@ -30,7 +28,13 @@ func on_group_layout_changed(
 	if int(changed_group_index) != opposing_group:
 		return
 
-	if bool(reapply_on_layout_change_only_if_missing) and _status_exists_on_opposing_team(ctx):
+	if bool(reapply_on_layout_change_only_if_missing):
+		if _status_exists_on_opposing_team(ctx):
+			return
+		_apply_targeted_status_sim(ctx, reapply_target_model)
+		return
+
+	if _front_id_from_order(before_order_ids) == _front_id_from_order(after_order_ids):
 		return
 
 	_apply_targeted_status_sim(ctx, reapply_target_model)

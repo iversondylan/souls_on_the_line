@@ -759,6 +759,7 @@ func resolve_removal(ctx) -> void:
 		ctx.after_order_ids,
 		removal_reason_label
 	)
+	ActionLifecycleSystem.on_combatant_removal(self, ctx)
 	
 	unit_removed.emit(int(ctx.target_id), int(g), int(ctx.removal_type), String(ctx.reason))
 

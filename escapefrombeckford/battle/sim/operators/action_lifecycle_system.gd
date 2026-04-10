@@ -109,6 +109,29 @@ static func on_action_execution_skipped(ctx: NPCAIContext) -> void:
 			m.on_action_execution_skipped(ctx)
 	ctx.action_name = ""
 
+static func on_combatant_removal(api: SimBattleAPI, removal_ctx: RemovalContext) -> void:
+	if api == null or api.state == null or removal_ctx == null:
+		return
+
+	var removed_id := int(removal_ctx.target_id)
+	if removed_id <= 0:
+		return
+
+	var u: CombatantState = api.state.get_unit(removed_id)
+	if u == null or u.combatant_data == null or u.combatant_data.ai == null or u.ai_state == null:
+		return
+
+	var action := _get_planned_action_for_unit(u)
+	if action == null:
+		return
+
+	var ctx := ActionPlanner.make_context(api, u)
+	ctx.action_name = action.resolve_display_name(ctx.params)
+	for m: IntentLifecycleModel in action.intent_lifecycle_models:
+		if m != null:
+			m.on_combatant_removal(ctx, removal_ctx)
+	ctx.action_name = ""
+
 static func on_group_layout_changed(
 	api: SimBattleAPI,
 	changed_group_index: int,
