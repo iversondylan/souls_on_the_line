@@ -1,0 +1,6 @@
+[gd_resource type="Resource" script_class="NPCMoveSequence" format=3]
+
+[ext_resource type="Script" path="res://npc_ai/npc_move_sequence.gd" id="1_move"]
+
+[resource]
+script = ExtResource("1_move")

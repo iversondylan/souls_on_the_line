@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="CombatantData" format=3]
+
+[ext_resource type="Script" path="res://combatants/combatant_data.gd" id="1_data"]
+[ext_resource type="Resource" path="res://combatants/enemies/StudentBodyOfficial/student_body_official_ai.tres" id="2_ai"]
+
+[resource]
+script = ExtResource("1_data")
+name = "Student Body Official"
+character_art_uid = "uid://dtvvequ1w1dlu"
+portrait_art_uid = "uid://dtvvequ1w1dlu"
+facing_right = false
+height = 310
+color_tint = Color(0.95, 0.8075, 0.52, 1)
+max_health = 20
+apr = 1
+apm = 1
+ai = ExtResource("2_ai")

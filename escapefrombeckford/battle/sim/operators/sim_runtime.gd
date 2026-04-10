@@ -682,6 +682,8 @@ func run_attack(ctx: AttackContext) -> bool:
 	if !allow_dead_source and !api.is_alive(int(ctx.attacker_id)):
 		return false
 
+	SimStatusSystem.on_attack_will_run(api, ctx)
+
 	var params: Dictionary = ctx.params if ctx.params else {}
 	var strikes := maxi(int(ctx.strikes), 1)
 	var mode := int(ctx.attack_mode)

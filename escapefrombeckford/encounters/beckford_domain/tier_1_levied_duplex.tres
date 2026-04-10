@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="BattleData" format=3]
+
+[ext_resource type="Script" path="res://combatants/combatant_data.gd" id="1_combatant_data"]
+[ext_resource type="Resource" path="res://combatants/enemies/AssistantMagister/assistant_magister_data.tres" id="2_magister"]
+[ext_resource type="Resource" path="res://combatants/enemies/StudentBodyOfficial/student_body_official_data.tres" id="3_official"]
+[ext_resource type="Script" path="res://encounters/battle_data.gd" id="4_battle_data"]
+
+[resource]
+script = ExtResource("4_battle_data")
+encounter_name = "Levied Duplex"
+battle_tier = 1
+weight = 3.0
+gold_reward_min = 50
+gold_reward_max = 60
+enemies = Array[ExtResource("1_combatant_data")]([ExtResource("2_magister"), ExtResource("3_official")])

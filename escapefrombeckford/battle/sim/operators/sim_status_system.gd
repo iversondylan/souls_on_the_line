@@ -92,6 +92,19 @@ static func on_damage_will_be_taken(api: SimBattleAPI, damage_ctx: DamageContext
 			ctx.proto.on_damage_will_be_taken(ctx, damage_ctx)
 	)
 
+static func on_attack_will_run(api: SimBattleAPI, attack_ctx: AttackContext) -> void:
+	if api == null or api.state == null or attack_ctx == null or api.state.has_terminal_outcome():
+		return
+
+	var attacker_id := int(attack_ctx.attacker_id)
+	if attacker_id <= 0:
+		return
+
+	_for_each_effective_status_on_unit(api, attacker_id, func(ctx: SimStatusContext) -> void:
+		if ctx.proto != null:
+			ctx.proto.on_attack_will_run(ctx, attack_ctx)
+	)
+
 static func on_removal(api: SimBattleAPI, removal_ctx) -> void:
 	if api == null or api.state == null or removal_ctx == null or api.state.has_terminal_outcome():
 		return

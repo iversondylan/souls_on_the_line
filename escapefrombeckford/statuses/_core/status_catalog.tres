@@ -29,11 +29,12 @@
 [ext_resource type="Resource" uid="uid://b3n0tmwd2wftw" path="res://statuses/double_edge.tres" id="23_double_edge"]
 [ext_resource type="Resource" uid="uid://00aqmemuit10" path="res://statuses/danger_zone.tres" id="24_danger_zone"]
 [ext_resource type="Resource" uid="uid://bcmd2im78na0a" path="res://statuses/despair.tres" id="25_despair"]
+[ext_resource type="Resource" path="res://statuses/alacrity.tres" id="27z_alacrity"]
 [ext_resource type="Resource" uid="uid://dvxb1b65olpr7" path="res://statuses/bequeath.tres" id="27_gyvsg"]
-[ext_resource type="Resource" path="res://statuses/vulnerable.tres" id="28_vulnerable"]
-[ext_resource type="Resource" path="res://statuses/weakened.tres" id="29_weakened"]
+[ext_resource type="Resource" uid="uid://d62rr0vbgpj4" path="res://statuses/vulnerable.tres" id="28_vulnerable"]
+[ext_resource type="Resource" uid="uid://dwgwwjn6p4t5x" path="res://statuses/weakened.tres" id="29_weakened"]
 
 [resource]
 script = ExtResource("1_2sbnh")
-statuses = Array[ExtResource("2_mko5r")]([ExtResource("18_absorb"), ExtResource("3_uxogt"), ExtResource("19_banishing_strikes"), ExtResource("6_6ckqc"), ExtResource("16_bolstered"), ExtResource("24_danger_zone"), ExtResource("25_despair"), ExtResource("23_double_edge"), ExtResource("6_00ab0"), ExtResource("9_cbbgy"), ExtResource("9_exit_strike"), ExtResource("20_fleeting"), ExtResource("5_2sbnh"), ExtResource("21_heavy_attack"), ExtResource("7_fjt00"), ExtResource("8_ho33y"), ExtResource("9_6ckqc"), ExtResource("10_cbbgy"), ExtResource("9_protected_drone"), ExtResource("11_6ocio"), ExtResource("11_mko5r"), ExtResource("22_small"), ExtResource("12_kw06w"), ExtResource("17_sundered"), ExtResource("15_suppressed"), ExtResource("13_djvpr"), ExtResource("14_gyvsg"), ExtResource("27_gyvsg"), ExtResource("28_vulnerable"), ExtResource("29_weakened")])
+statuses = Array[ExtResource("2_mko5r")]([ExtResource("18_absorb"), ExtResource("27z_alacrity"), ExtResource("3_uxogt"), ExtResource("19_banishing_strikes"), ExtResource("6_6ckqc"), ExtResource("16_bolstered"), ExtResource("24_danger_zone"), ExtResource("25_despair"), ExtResource("23_double_edge"), ExtResource("6_00ab0"), ExtResource("9_cbbgy"), ExtResource("9_exit_strike"), ExtResource("20_fleeting"), ExtResource("5_2sbnh"), ExtResource("21_heavy_attack"), ExtResource("7_fjt00"), ExtResource("8_ho33y"), ExtResource("9_6ckqc"), ExtResource("10_cbbgy"), ExtResource("9_protected_drone"), ExtResource("11_6ocio"), ExtResource("11_mko5r"), ExtResource("22_small"), ExtResource("12_kw06w"), ExtResource("17_sundered"), ExtResource("15_suppressed"), ExtResource("13_djvpr"), ExtResource("14_gyvsg"), ExtResource("27_gyvsg"), ExtResource("28_vulnerable"), ExtResource("29_weakened")])
 metadata/_custom_type_script = "uid://dgq1lfjmf2yfl"

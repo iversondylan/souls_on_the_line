@@ -13,7 +13,11 @@ func get_text(ctx: NPCAIContext) -> String:
 	result = result.replace("{action_name}", String(ctx.action_name))
 
 	# ---- Strikes ----
-	var strikes := _param_i(ctx, Keys.STRIKES, 1)
+	var strikes := PendingIntentModifierResolver.get_preview_attack_strikes(
+		ctx,
+		_param_i(ctx, Keys.STRIKES, 1),
+		ctx.get_actor_id()
+	)
 	var strikes_text := ""
 	if strikes >= 2:
 		strikes_text = "%d strikes of " % strikes

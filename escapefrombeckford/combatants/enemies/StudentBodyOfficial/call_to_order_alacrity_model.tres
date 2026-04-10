@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="StatusModel" format=3 uid="uid://nm5v26rjbsn2"]
+
+[ext_resource type="Script" uid="uid://cccygrstrra8t" path="res://npc_ai/status/status_model.gd" id="1_tjsny"]
+[ext_resource type="Resource" path="res://statuses/alacrity.tres" id="2_yag1m"]
+
+[resource]
+script = ExtResource("1_tjsny")
+status = ExtResource("2_yag1m")
+metadata/_custom_type_script = "uid://cccygrstrra8t"
