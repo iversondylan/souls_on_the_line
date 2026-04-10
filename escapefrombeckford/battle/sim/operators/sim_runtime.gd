@@ -3,6 +3,7 @@
 class_name SimRuntime extends RefCounted
 
 const Removal = preload("res://core/keys_values/removal_values.gd")
+const NPC_ACTION_SKIPPED_THIS_TURN := &"npc_action_skipped_this_turn"
 
 # Runtime orchestration for a single Sim.
 #
@@ -537,9 +538,12 @@ func _complete_actor_turn(cid: int) -> void:
 
 	var u: CombatantState = api.state.get_unit(int(cid)) if api.state != null else null
 	if u != null and u.combatant_data != null and u.combatant_data.ai != null and u.ai_state != null:
-		var ctx := ActionPlanner.make_context(api, u)
-		ctx.runtime = self
-		ActionLifecycleSystem.on_action_execution_completed(ctx)
+		var skipped := bool(u.ai_state.get(NPC_ACTION_SKIPPED_THIS_TURN, false))
+		u.ai_state[NPC_ACTION_SKIPPED_THIS_TURN] = false
+		if !skipped:
+			var ctx := ActionPlanner.make_context(api, u)
+			ctx.runtime = self
+			ActionLifecycleSystem.on_action_execution_completed(ctx)
 
 	var writer := api.writer
 	if writer != null:
@@ -619,6 +623,12 @@ func run_npc_turn(cid: int) -> void:
 
 	if !bool(ctx.state.get(Keys.FIRST_INTENTS_READY, false)):
 		ctx.state[Keys.FIRST_INTENTS_READY] = true
+
+	if SimStatusSystem.should_skip_npc_action(api, cid):
+		ctx.state[NPC_ACTION_SKIPPED_THIS_TURN] = true
+		ActionLifecycleSystem.on_action_execution_skipped(ctx)
+		_finish_npc_turn(ctx)
+		return
 
 	ActionPlanner.ensure_valid_plan_sim(profile, ctx, true)
 

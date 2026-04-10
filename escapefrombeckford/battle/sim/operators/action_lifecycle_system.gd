@@ -94,6 +94,21 @@ static func on_action_execution_completed(ctx: NPCAIContext) -> void:
 			m.on_action_execution_completed(ctx)
 	ctx.action_name = ""
 
+static func on_action_execution_skipped(ctx: NPCAIContext) -> void:
+	if ctx == null or ctx.api == null or ctx.combatant_data == null or ctx.combatant_data.ai == null:
+		return
+	if ctx.api.state == null or ctx.api.state.has_terminal_outcome():
+		return
+	var action := _get_planned_action_for_ctx(ctx)
+	if action == null:
+		return
+
+	ctx.action_name = action.resolve_display_name(ctx.params)
+	for m: IntentLifecycleModel in action.intent_lifecycle_models:
+		if m != null:
+			m.on_action_execution_skipped(ctx)
+	ctx.action_name = ""
+
 static func on_group_layout_changed(
 	api: SimBattleAPI,
 	changed_group_index: int,

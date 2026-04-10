@@ -1,0 +1,7 @@
+[gd_resource type="Resource" script_class="IntentTooltipTextModel" format=3]
+
+[ext_resource type="Script" path="res://npc_ai/text/intent_tooltip_text_model.gd" id="1_text_script"]
+
+[resource]
+script = ExtResource("1_text_script")
+text_template = "Might+2"

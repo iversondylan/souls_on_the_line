@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="TargetedStatusFromOppTurnModel" format=3]
+
+[ext_resource type="Script" path="res://npc_ai/intent_lifecycle/targeted_status_from_opp_turn_model.gd" id="1_lifecycle"]
+[ext_resource type="Resource" uid="uid://7x55fawjrwf4" path="res://statuses/might.tres" id="2_might"]
+[ext_resource type="Resource" uid="uid://h12mtobugkmp" path="res://npc_ai/status/frontmost_ally_status_target_model.tres" id="3_target_model"]
+
+[resource]
+script = ExtResource("1_lifecycle")
+status = ExtResource("2_might")
+intensity = 2
+pending = true
+target_model = ExtResource("3_target_model")
+state_key = &"sharpen_ally_targets"

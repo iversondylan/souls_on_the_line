@@ -1,6 +1,6 @@
 # intent_tooltip_text_model.gd
-class_name IntentTooltipTextModel
-extends TextModel
+
+class_name IntentTooltipTextModel extends TextModel
 
 @export_multiline var text_template: String
 

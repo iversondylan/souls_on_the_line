@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="SleepStatus" format=3]
+
+[ext_resource type="Script" path="res://statuses/sleep.gd" id="1_sleep_script"]
+[ext_resource type="Texture2D" uid="uid://dtphr4ncf8l0g" path="res://_assets/sprites/assorted/extra-lucid.png" id="2_sleep_icon"]
+
+[resource]
+script = ExtResource("1_sleep_script")
+status_name = "Sleep"
+number_display_type = 2
+reapply_type = 1
+expiration_policy = 0
+icon = ExtResource("2_sleep_icon")

@@ -15,8 +15,8 @@ static func get_modified_value(
 	if api.state == null:
 		return base
 
-	var pending_sources := SimStatusSystem.collect_pending_realization_sources(ctx, source_id)
-	var tokens := api.get_modifier_tokens_for_cid(source_id, mod_type, pending_sources)
+	var pending_owners := SimStatusSystem.collect_pending_realization_sources(ctx, source_id)
+	var tokens := api.get_modifier_tokens_for_cid(source_id, mod_type, pending_owners)
 	return SimModifierResolver.apply_tokens(base, mod_type, tokens)
 
 static func get_attack_display_components(
@@ -41,10 +41,11 @@ static func get_preview_attack_strikes(
 	if ctx == null or ctx.api == null or !(ctx.api is SimBattleAPI):
 		return maxi(int(base_strikes), 1)
 
+	var pending_owners := SimStatusSystem.collect_pending_realization_sources(ctx, source_id)
 	var attack_ctx := AttackContext.new()
 	attack_ctx.api = ctx.api
 	attack_ctx.attacker_id = int(source_id)
 	attack_ctx.source_id = int(source_id)
 	attack_ctx.strikes = maxi(int(base_strikes), 1)
-	SimStatusSystem.on_attack_will_run(ctx.api, attack_ctx)
+	SimStatusSystem.on_attack_will_run(ctx.api, attack_ctx, pending_owners)
 	return maxi(int(attack_ctx.strikes), 1)

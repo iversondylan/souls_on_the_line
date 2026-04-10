@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="NPCAIProfile" format=3]
+
+[ext_resource type="Script" path="res://npc_ai/_core/npc_action.gd" id="1_action"]
+[ext_resource type="Script" path="res://npc_ai/_core/npc_ai_profile.gd" id="2_profile"]
+[ext_resource type="Resource" path="res://combatants/enemies/GentleDeepPriest/sun_beam_action.tres" id="3_sun_beam"]
+[ext_resource type="Resource" path="res://combatants/enemies/GentleDeepPriest/deep_benediction_action.tres" id="4_benediction"]
+
+[resource]
+script = ExtResource("2_profile")
+actions = Array[ExtResource("1_action")]([ExtResource("3_sun_beam"), ExtResource("4_benediction")])

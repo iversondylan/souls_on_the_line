@@ -15,13 +15,13 @@ compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 [application]
 
 config/name="escapefrombeckford"
-run/main_scene="uid://byfyjsj2j7wh"
+run/main_scene="res://main_menu/main_menu.tscn"
 config/features=PackedStringArray("4.6", "Forward Plus")
 config/icon="res://icon.svg"
 
 [audio]
 
-buses/default_bus_layout="uid://dbgqy38x3r4ca"
+buses/default_bus_layout="res://default_bus_layout.tres"
 
 [autoload]
 
@@ -29,9 +29,9 @@ Events="*res://core/events.gd"
 Shaker="*res://core/shaker.gd"
 MusicPlayer="*res://core/music_player.tscn"
 SFXPlayer="*res://core/sfx_player.tscn"
-FxLibrary="*uid://bvxmtkalwcaf"
+FxLibrary="*res://VFX/fx_library.gd"
 SaveService="*res://core/save_service.gd"
-Autoload="*uid://di0s621fw27gb"
+Autoload="*res://main_menu/autoload.gd"
 
 [debug]
 
@@ -58,7 +58,7 @@ sim_host=""
 [gui]
 
 theme/default_font_multichannel_signed_distance_field=true
-theme/custom="uid://d2wc7fposrlqs"
+theme/custom="res://themes/wizard_theme.tres"
 
 [input]
 

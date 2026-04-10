@@ -49,3 +49,6 @@ func on_action_execution_started(ctx: NPCAIContext) -> void:
 
 func on_action_execution_completed(_ctx: NPCAIContext) -> void:
 	pass
+
+func on_action_execution_skipped(ctx: NPCAIContext) -> void:
+	on_action_execution_completed(ctx)

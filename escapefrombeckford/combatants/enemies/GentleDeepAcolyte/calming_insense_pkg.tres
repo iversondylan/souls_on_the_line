@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="NPCEffectPackage" format=3 uid="uid://is3iuaaklmj0"]
+
+[ext_resource type="Resource" uid="uid://br5dox5m0ph6v" path="res://npc_ai/npc_status_sequence.tres" id="1_status"]
+[ext_resource type="Script" uid="uid://b8d5j6ne4mt88" path="res://npc_ai/_core/param_model.gd" id="2_param"]
+[ext_resource type="Script" uid="uid://3jde7uhq2yho" path="res://npc_ai/_core/npc_effect_package.gd" id="3_pkg"]
+[ext_resource type="Resource" path="res://npc_ai/status/pseudo_random_opp_npc_status_target_model.tres" id="4_targets"]
+[ext_resource type="Script" uid="uid://cccygrstrra8t" path="res://npc_ai/status/status_model.gd" id="5_status_model_script"]
+[ext_resource type="Resource" path="res://statuses/sleep.tres" id="6_sleep"]
+[ext_resource type="Script" uid="uid://cuj4qvyx6dedj" path="res://npc_ai/_core/state_model.gd" id="7_xyifu"]
+
+[sub_resource type="Resource" id="CalmingInsenseSleep"]
+script = ExtResource("5_status_model_script")
+status = ExtResource("6_sleep")
+duration = 2
+
+[resource]
+script = ExtResource("3_pkg")
+effect = ExtResource("1_status")
+param_models = Array[ExtResource("2_param")]([ExtResource("4_targets"), SubResource("CalmingInsenseSleep")])

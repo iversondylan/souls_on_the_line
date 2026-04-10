@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="CombatantData" format=3]
+
+[ext_resource type="Script" uid="uid://cfatj0ryn8uv3" path="res://combatants/combatant_data.gd" id="1_data"]
+[ext_resource type="Resource" path="res://combatants/enemies/GentleDeepPriest/gentle_deep_priest_ai.tres" id="2_ai"]
+
+[resource]
+script = ExtResource("1_data")
+name = "Gentle Deep Priest"
+character_art_uid = "uid://q0vpefxsjdlj"
+portrait_art_uid = "uid://q0vpefxsjdlj"
+facing_right = false
+height = 330
+max_health = 30
+apr = 1
+apm = 1
+ai = ExtResource("2_ai")

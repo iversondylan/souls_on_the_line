@@ -1,5 +1,7 @@
 class_name AllNpcAlliesStatusTargetModel extends ParamModel
 
+@export var include_self: bool = true
+
 func change_params(ctx: NPCAIContext) -> NPCAIContext:
 	return _write_target_ids(ctx)
 
@@ -22,6 +24,8 @@ func _write_target_ids(ctx: NPCAIContext) -> NPCAIContext:
 	for cid in ctx.api.get_combatants_in_group(group_index, false):
 		var ally_id := int(cid)
 		if ally_id <= 0:
+			continue
+		if !include_self and ally_id == actor_id:
 			continue
 		target_ids.append(ally_id)
 

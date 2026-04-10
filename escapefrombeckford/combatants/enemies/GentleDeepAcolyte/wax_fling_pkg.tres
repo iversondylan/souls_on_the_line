@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="NPCEffectPackage" format=3 uid="uid://c36q7o88iqj0t"]
+
+[ext_resource type="Resource" uid="uid://bnqqhpu1itcb3" path="res://npc_ai/npc_attack_sequence.tres" id="1_attack"]
+[ext_resource type="Script" uid="uid://b8d5j6ne4mt88" path="res://npc_ai/_core/param_model.gd" id="2_param"]
+[ext_resource type="Script" uid="uid://3jde7uhq2yho" path="res://npc_ai/_core/npc_effect_package.gd" id="3_pkg"]
+[ext_resource type="Script" path="res://npc_ai/damage/ranged_attack_power_damage_model.gd" id="4_damage"]
+[ext_resource type="Script" uid="uid://c2r27w5ki2tiw" path="res://npc_ai/attack_mode/ranged_model.gd" id="5_mode"]
+[ext_resource type="Script" uid="uid://c0ihk6f0wbrv3" path="res://npc_ai/strikes/constant_strikes_model.gd" id="6_strikes"]
+[ext_resource type="Script" uid="uid://cuj4qvyx6dedj" path="res://npc_ai/_core/state_model.gd" id="7_272w3"]
+
+[sub_resource type="Resource" id="WaxFlingDamage"]
+script = ExtResource("4_damage")
+
+[sub_resource type="Resource" id="WaxFlingRanged"]
+script = ExtResource("5_mode")
+
+[sub_resource type="Resource" id="WaxFlingStrikes"]
+script = ExtResource("6_strikes")
+
+[resource]
+script = ExtResource("3_pkg")
+effect = ExtResource("1_attack")
+param_models = Array[ExtResource("2_param")]([SubResource("WaxFlingDamage"), SubResource("WaxFlingRanged"), SubResource("WaxFlingStrikes")])

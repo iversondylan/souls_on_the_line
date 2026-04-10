@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="NPCAction" format=3]
+
+[ext_resource type="Script" uid="uid://3jde7uhq2yho" path="res://npc_ai/_core/npc_effect_package.gd" id="1_pkg"]
+[ext_resource type="Resource" path="res://combatants/enemies/GentleDeepAcolyte/calming_insense_pkg.tres" id="2_status_pkg"]
+[ext_resource type="Texture2D" uid="uid://dtphr4ncf8l0g" path="res://_assets/sprites/assorted/extra-lucid.png" id="3_icon"]
+[ext_resource type="Script" uid="uid://bcih413oy6v73" path="res://npc_ai/_core/npc_action.gd" id="4_action"]
+[ext_resource type="Script" uid="uid://dtwuyctovqk5r" path="res://npc_ai/_core/intent_lifecycle_model.gd" id="5_lifecycle"]
+[ext_resource type="Script" uid="uid://cuj4qvyx6dedj" path="res://npc_ai/_core/state_model.gd" id="6_state"]
+[ext_resource type="Resource" path="res://combatants/enemies/GentleDeepAcolyte/calming_insense_intent_text_model.tres" id="7_text_model"]
+[ext_resource type="Resource" path="res://combatants/enemies/GentleDeepAcolyte/calming_insense_tooltip_model.tres" id="8_tooltip_model"]
+[ext_resource type="Resource" path="res://npc_ai/chance/multiply_chance_if_no_opposing_npc_state_model.tres" id="9_no_opp_npc"]
+
+[resource]
+script = ExtResource("4_action")
+effect_packages = Array[ExtResource("1_pkg")]([ExtResource("2_status_pkg")])
+chance_weight = 0.65
+state_models = Array[ExtResource("6_state")]([ExtResource("9_no_opp_npc")])
+action_name = "Calming Insense"
+intent_icon = ExtResource("3_icon")
+intent_icon_uid = "uid://dtphr4ncf8l0g"
+intent_text_model = ExtResource("7_text_model")
+tooltip_model = ExtResource("8_tooltip_model")

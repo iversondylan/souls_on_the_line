@@ -92,7 +92,11 @@ static func on_damage_will_be_taken(api: SimBattleAPI, damage_ctx: DamageContext
 			ctx.proto.on_damage_will_be_taken(ctx, damage_ctx)
 	)
 
-static func on_attack_will_run(api: SimBattleAPI, attack_ctx: AttackContext) -> void:
+static func on_attack_will_run(
+	api: SimBattleAPI,
+	attack_ctx: AttackContext,
+	include_pending_sources := {}
+) -> void:
 	if api == null or api.state == null or attack_ctx == null or api.state.has_terminal_outcome():
 		return
 
@@ -100,9 +104,16 @@ static func on_attack_will_run(api: SimBattleAPI, attack_ctx: AttackContext) -> 
 	if attacker_id <= 0:
 		return
 
-	_for_each_effective_status_on_unit(api, attacker_id, func(ctx: SimStatusContext) -> void:
+	var fn := func(ctx: SimStatusContext) -> void:
 		if ctx.proto != null:
 			ctx.proto.on_attack_will_run(ctx, attack_ctx)
+
+	_for_each_effective_status_on_unit(
+		api,
+		attacker_id,
+		fn,
+		false,
+		include_pending_sources
 	)
 
 static func on_removal(api: SimBattleAPI, removal_ctx) -> void:
@@ -118,6 +129,19 @@ static func on_removal(api: SimBattleAPI, removal_ctx) -> void:
 			ctx.proto.on_removal(ctx, removal_ctx)
 
 	_for_each_effective_status_on_unit(api, removed_id, fn, true)
+
+static func should_skip_npc_action(api: SimBattleAPI, actor_id: int) -> bool:
+	if api == null or api.state == null or api.state.has_terminal_outcome():
+		return false
+	if int(actor_id) <= 0:
+		return false
+
+	for ctx: SimStatusContext in get_effective_status_contexts_for_unit(api, int(actor_id)):
+		var proto := ctx.proto if ctx != null else null
+		if proto != null and bool(proto.should_skip_npc_action(ctx)):
+			return true
+
+	return false
 
 static func unit_grants_attack_cleave(api: SimBattleAPI, owner_id: int) -> bool:
 	return _unit_grants_cleave_internal(api, owner_id, true)
@@ -217,6 +241,8 @@ static func package_realizes_pending_statuses(pkg: NPCEffectPackage) -> bool:
 	)
 
 static func collect_pending_realization_sources(ctx: NPCAIContext, source_id: int) -> Dictionary:
+	# Historical name kept for callers; keys are status-owner IDs whose pending lane
+	# should be included in intent preview because a realize package runs first.
 	var out := {}
 	if ctx == null or ctx.api == null or !(ctx.api is SimBattleAPI):
 		return out
@@ -235,13 +261,91 @@ static func collect_pending_realization_sources(ctx: NPCAIContext, source_id: in
 		var earlier_id := int(order[i])
 		if earlier_id <= 0:
 			continue
-		if action_realizes_pending_statuses(_get_planned_action_for_pending(api, earlier_id)):
-			out[earlier_id] = true
+		_append_pending_realization_targets_for_action(out, api, ctx, earlier_id)
 
-	if _self_action_realizes_before_preview_package(api, ctx, int(source_id)):
-		out[int(source_id)] = true
+	var preview_package_index := int(ctx.preview_package_index)
+	if preview_package_index >= 0:
+		_append_pending_realization_targets_for_action(
+			out,
+			api,
+			ctx,
+			int(source_id),
+			preview_package_index
+		)
 
 	return out
+
+static func _append_pending_realization_targets_for_action(
+	out: Dictionary,
+	api: SimBattleAPI,
+	base_ctx: NPCAIContext,
+	actor_id: int,
+	before_package_index: int = -1
+) -> void:
+	if out == null or api == null or api.state == null or actor_id <= 0:
+		return
+
+	var action := _get_planned_action_for_pending(api, actor_id)
+	if action == null:
+		return
+
+	var limit := action.effect_packages.size()
+	if before_package_index >= 0:
+		limit = mini(int(before_package_index), limit)
+
+	for i in range(limit):
+		var pkg: NPCEffectPackage = action.effect_packages[i]
+		if !package_realizes_pending_statuses(pkg):
+			continue
+		var target_ids := _resolve_pending_realization_targets_for_package(api, base_ctx, actor_id, pkg)
+		for tid in target_ids:
+			out[int(tid)] = true
+
+static func _resolve_pending_realization_targets_for_package(
+	api: SimBattleAPI,
+	base_ctx: NPCAIContext,
+	actor_id: int,
+	pkg: NPCEffectPackage
+) -> PackedInt32Array:
+	var target_ids := PackedInt32Array()
+	if api == null or api.state == null or actor_id <= 0 or pkg == null:
+		return target_ids
+
+	var actor: CombatantState = api.state.get_unit(actor_id)
+	if actor == null or !actor.is_alive() or actor.combatant_data == null:
+		return target_ids
+
+	ActionPlanner.ensure_ai_state_initialized(actor)
+	var work_ctx := ActionPlanner.make_context(api, actor)
+	work_ctx.runtime = base_ctx.runtime if base_ctx != null and base_ctx.runtime != null else api.runtime
+	work_ctx.forecast = true
+	work_ctx.state = actor.ai_state.duplicate(true) if actor.ai_state != null else {}
+	work_ctx.rng = actor.rng.clone() if actor.rng != null else null
+	work_ctx.params.clear()
+
+	for pm: ParamModel in pkg.param_models:
+		if pm != null:
+			pm.change_params_sim(work_ctx)
+
+	var has_explicit_targets := work_ctx.params != null and work_ctx.params.has(Keys.TARGET_IDS)
+	if has_explicit_targets:
+		var raw_value = work_ctx.params.get(Keys.TARGET_IDS, PackedInt32Array())
+		if raw_value is PackedInt32Array:
+			target_ids = raw_value
+		elif raw_value is Array:
+			target_ids = PackedInt32Array(raw_value)
+	else:
+		target_ids.append(actor_id)
+
+	var filtered := PackedInt32Array()
+	for tid in target_ids:
+		var target_id := int(tid)
+		if target_id <= 0:
+			continue
+		if !api.is_alive(target_id):
+			continue
+		filtered.append(target_id)
+	return filtered
 
 static func realize_pending_statuses(
 	api: SimBattleAPI,
@@ -351,28 +455,6 @@ static func _get_relevant_group_order(ctx: NPCAIContext, group_index: int) -> Ar
 		return out
 
 	return api.get_combatants_in_group(group_index, false)
-
-static func _self_action_realizes_before_preview_package(
-	api: SimBattleAPI,
-	ctx: NPCAIContext,
-	source_id: int
-) -> bool:
-	if ctx == null:
-		return false
-
-	var preview_package_index := int(ctx.preview_package_index)
-	if preview_package_index <= 0:
-		return false
-
-	var action := _get_planned_action_for_pending(api, source_id)
-	if action == null:
-		return false
-
-	var last_index := mini(preview_package_index, action.effect_packages.size())
-	for i in range(last_index):
-		if package_realizes_pending_statuses(action.effect_packages[i]):
-			return true
-	return false
 
 static func _get_planned_action_for_pending(api: SimBattleAPI, source_id: int) -> NPCAction:
 	if api == null or api.state == null:

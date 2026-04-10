@@ -16,7 +16,7 @@
 [ext_resource type="PackedScene" uid="uid://cy1kfsc2qfglo" path="res://battle/card_mgmt/hand.tscn" id="15_wvgjd"]
 [ext_resource type="PackedScene" uid="uid://chyl400nmwlxo" path="res://battle/ui/selection_prompt.tscn" id="16_61i1y"]
 [ext_resource type="PackedScene" uid="uid://bxtf6la07t0t5" path="res://ui/card_pile_opener.tscn" id="17_ariee"]
-[ext_resource type="PackedScene" uid="uid://bhps5rw0coka5" path="res://VFX/turn_order_spark_controller.tscn" id="17_saiin"]
+[ext_resource type="PackedScene" path="res://VFX/turn_order_spark_controller.tscn" id="17_saiin"]
 [ext_resource type="PackedScene" uid="uid://cmc2ypry076mq" path="res://ui/status_overlay.tscn" id="18_h4dll"]
 [ext_resource type="Theme" uid="uid://1dr1eewpv0jd" path="res://themes/ui_theme.tres" id="18_s5alk"]
 [ext_resource type="PackedScene" uid="uid://d6f3t1qcn8bk" path="res://battle/ui/turn_phase_title.tscn" id="19_fpf3k"]

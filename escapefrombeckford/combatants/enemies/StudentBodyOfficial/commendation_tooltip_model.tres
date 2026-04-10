@@ -1,7 +1,7 @@
-[gd_resource type="Resource" script_class="IntentTooltipTextModel" format=3]
+[gd_resource type="Resource" script_class="IntentTooltipTextModel" format=3 uid="uid://dxkcenpdw8mm1"]
 
-[ext_resource type="Script" path="res://npc_ai/text/intent_tooltip_text_model.gd" id="1_tooltip_script"]
+[ext_resource type="Script" uid="uid://cxh1c3vqgquc5" path="res://npc_ai/text/intent_tooltip_text_model.gd" id="1_tooltip_script"]
 
 [resource]
 script = ExtResource("1_tooltip_script")
-text_template = "[b]{action_name}[/b]: heal a random teammate for {flat_amount} and apply Amplify for {status_duration} turns."
+text_template = "[b]{action_name}[/b]: apply Amplify for 2 turns and 1 Absorb to a random teammate."

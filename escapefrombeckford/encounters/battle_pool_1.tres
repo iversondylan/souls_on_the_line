@@ -10,8 +10,9 @@
 [ext_resource type="Resource" uid="uid://cdev0ybyn2i3o" path="res://encounters/beckford_domain/tier_0_levied_servitors.tres" id="6_fbmkn"]
 [ext_resource type="Resource" uid="uid://db0if7277h7kw" path="res://encounters/beckford_domain/tier_1_weber_patrol.tres" id="7_sumc2"]
 [ext_resource type="Resource" uid="uid://bro14nbxe02ih" path="res://encounters/beckford_domain/tier_1_calabash.tres" id="8_mneoi"]
+[ext_resource type="Resource" path="res://encounters/beckford_domain/tier_1_gentle_deep_procession.tres" id="9_gentle_deep"]
 
 [resource]
 script = ExtResource("2_coyo0")
-pool = Array[ExtResource("1_c5yi3")]([ExtResource("3_gu42u"), ExtResource("2_5mnow"), ExtResource("4_wgva7"), ExtResource("5_r3cy5"), ExtResource("6_fbmkn"), ExtResource("6b_duplex"), ExtResource("7_sumc2"), ExtResource("8_mneoi")])
+pool = Array[ExtResource("1_c5yi3")]([ExtResource("3_gu42u"), ExtResource("2_5mnow"), ExtResource("4_wgva7"), ExtResource("5_r3cy5"), ExtResource("6_fbmkn"), ExtResource("6b_duplex"), ExtResource("9_gentle_deep"), ExtResource("7_sumc2"), ExtResource("8_mneoi")])
 metadata/_custom_type_script = "uid://b203gsihy5ttn"

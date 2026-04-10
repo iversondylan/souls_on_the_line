@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="CombatantData" format=3 uid="uid://c4q61i01055ue"]
+
+[ext_resource type="Script" uid="uid://cfatj0ryn8uv3" path="res://combatants/combatant_data.gd" id="1_data"]
+[ext_resource type="Resource" path="res://combatants/enemies/GentleDeepAcolyte/gentle_deep_acolyte_ai.tres" id="2_ai"]
+
+[resource]
+script = ExtResource("1_data")
+name = "Gentle Deep Acolyte"
+character_art_uid = "uid://cawgplffbt5en"
+portrait_art_uid = "uid://cawgplffbt5en"
+facing_right = false
+height = 270
+max_health = 14
+apr = 1
+apm = 1
+ai = ExtResource("2_ai")

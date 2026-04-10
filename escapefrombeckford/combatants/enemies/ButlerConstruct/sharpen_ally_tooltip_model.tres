@@ -1,0 +1,7 @@
+[gd_resource type="Resource" script_class="IntentTooltipTextModel" format=3]
+
+[ext_resource type="Script" path="res://npc_ai/text/intent_tooltip_text_model.gd" id="1_tooltip_script"]
+
+[resource]
+script = ExtResource("1_tooltip_script")
+text_template = "[b]{action_name}[/b]: give the frontmost ally 2 pending Might, then realize it."
