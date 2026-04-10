@@ -35,7 +35,7 @@ const TURN_ID := &"turn_id"
 const GROUP_INDEX := &"group_index"
 const INSERT_INDEX := &"insert_index"
 const GROUP_TURN := &"group_turn"
-
+const NPC_ACTION_SKIPPED_THIS_TURN := &"npc_action_skipped_this_turn"
 const BEFORE_MANA := &"before_mana"
 const AFTER_MANA := &"after_mana"
 const BEFORE_MAX_MANA := &"before_max_mana"

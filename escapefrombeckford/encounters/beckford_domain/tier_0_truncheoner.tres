@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="BattleData" format=3 uid="uid://ds01iuqxyqf0g"]
+
+[ext_resource type="Script" uid="uid://cfatj0ryn8uv3" path="res://combatants/combatant_data.gd" id="1_cf2yl"]
+[ext_resource type="Resource" uid="uid://bd5bwepvtne07" path="res://combatants/enemies/ScrapmenTruncheoner/scrapmen_truncheoner_data.tres" id="2_ujcf0"]
+[ext_resource type="Script" uid="uid://be1v8qevmc2xw" path="res://encounters/battle_data.gd" id="3_tobyd"]
+
+[resource]
+script = ExtResource("3_tobyd")
+encounter_name = "Scrapmen Truncheoner"
+enemies = Array[ExtResource("1_cf2yl")]([ExtResource("2_ujcf0")])
+metadata/_custom_type_script = "uid://be1v8qevmc2xw"

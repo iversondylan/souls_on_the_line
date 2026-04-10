@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="BattleData" format=3 uid="uid://dqr7hmqjabyk"]
+
+[ext_resource type="Script" uid="uid://cfatj0ryn8uv3" path="res://combatants/combatant_data.gd" id="1_combatant_data"]
+[ext_resource type="Resource" uid="uid://djebnruw2l1ik" path="res://combatants/enemies/TreeBoss/tree_boss.tres" id="2_rowan"]
+[ext_resource type="Script" uid="uid://be1v8qevmc2xw" path="res://encounters/battle_data.gd" id="3_battle_data"]
+
+[resource]
+script = ExtResource("3_battle_data")
+encounter_name = "Magister Rowan Fellhart"
+battle_tier = 2
+gold_reward_min = 95
+gold_reward_max = 115
+enemies = Array[ExtResource("1_combatant_data")]([ExtResource("2_rowan")])
+metadata/_custom_type_script = "uid://be1v8qevmc2xw"

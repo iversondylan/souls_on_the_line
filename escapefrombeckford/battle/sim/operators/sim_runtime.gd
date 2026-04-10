@@ -2,8 +2,7 @@
 
 class_name SimRuntime extends RefCounted
 
-const Removal = preload("res://core/keys_values/removal_values.gd")
-const NPC_ACTION_SKIPPED_THIS_TURN := &"npc_action_skipped_this_turn"
+
 
 # Runtime orchestration for a single Sim.
 #

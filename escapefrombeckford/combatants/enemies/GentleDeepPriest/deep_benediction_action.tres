@@ -9,13 +9,13 @@
 [ext_resource type="Script" uid="uid://q408gy2b4q6a" path="res://npc_ai/_core/performable_model.gd" id="6_miiyi"]
 [ext_resource type="Script" uid="uid://cuj4qvyx6dedj" path="res://npc_ai/_core/state_model.gd" id="6_state"]
 [ext_resource type="Resource" path="res://combatants/enemies/GentleDeepPriest/deep_benediction_intent_text_model.tres" id="7_text_model"]
-[ext_resource type="Resource" path="res://combatants/enemies/GentleDeepPriest/deep_benediction_tooltip_model.tres" id="8_tooltip_model"]
+[ext_resource type="Resource" uid="uid://dsv20154fm2op" path="res://combatants/enemies/GentleDeepPriest/deep_benediction_tooltip_model.tres" id="8_tooltip_model"]
 
 [resource]
 script = ExtResource("4_action")
 effect_packages = Array[ExtResource("1_pkg")]([ExtResource("2_status_pkg")])
 intent_lifecycle_models = Array[ExtResource("5_lifecycle")]([ExtResource("5_pending_lifecycle")])
-chance_weight = 0.2
+chance_weight = 0.1
 action_name = "Deep Benediction"
 intent_icon = ExtResource("3_icon")
 intent_icon_uid = "uid://g3txk232bff5"
