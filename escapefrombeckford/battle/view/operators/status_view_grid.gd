@@ -265,8 +265,32 @@ func _get_ordered_state_ids() -> Array:
 	return ids
 
 func _on_gui_input(event: InputEvent) -> void:
-	if event.is_action_pressed("mouse_click"):
-		Events.status_tooltip_requested.emit(get_all_statuses())
+	var mb := event as InputEventMouseButton
+	if mb == null:
+		return
+	if !mb.pressed:
+		return
+	if int(mb.button_index) != int(MOUSE_BUTTON_LEFT):
+		return
+
+	var displays := get_all_statuses()
+	if displays.is_empty():
+		return
+	if !_has_display_under_pointer(displays):
+		return
+
+	Events.status_tooltip_requested.emit(displays)
+	accept_event()
+
+
+func _has_display_under_pointer(displays: Array[StatusDisplay]) -> bool:
+	var mouse_pos := get_global_mouse_position()
+	for display in displays:
+		if display == null or !is_instance_valid(display):
+			continue
+		if display.get_global_rect().has_point(mouse_pos):
+			return true
+	return false
 
 func _make_state_key(status_id: StringName, pending: bool) -> String:
 	return "%s::%s" % [String(status_id), "pending" if pending else "realized"]
