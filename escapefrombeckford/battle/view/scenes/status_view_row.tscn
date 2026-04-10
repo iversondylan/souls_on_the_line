@@ -1,0 +1,10 @@
+[gd_scene format=3]
+
+[node name="StatusViewRow" type="HBoxContainer"]
+custom_minimum_size = Vector2(428, 68)
+layout_mode = 3
+anchors_preset = 0
+mouse_filter = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 4
+alignment = 1

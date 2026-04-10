@@ -97,14 +97,14 @@ label_settings = SubResource("LabelSettings_wjd66")
 horizontal_alignment = 1
 metadata/_edit_use_anchors_ = true
 
-[node name="StatusViewGrid" type="GridContainer" parent="." unique_id=2029744781]
+[node name="StatusViewGrid" type="VBoxContainer" parent="." unique_id=2029744781]
 offset_top = 36.0
-offset_right = 40.0
-offset_bottom = 76.0
+offset_right = 428.0
+offset_bottom = 104.0
 size_flags_horizontal = 3
 size_flags_vertical = 3
 mouse_filter = 0
-columns = 6
+theme_override_constants/separation = 2
 script = ExtResource("12_rluy7")
 
 [node name="CameraFocus" type="Node2D" parent="." unique_id=1148131427]

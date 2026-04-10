@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="SummonRedIntentTextModel" load_steps=2 format=3 uid="uid://ctwocrhb1x5bv"]
+[gd_resource type="Resource" script_class="SummonRedIntentTextModel" format=3 uid="uid://ctwocrhb1x5bv"]
 
 [ext_resource type="Script" uid="uid://b5ry8wpt5jpjk" path="res://npc_ai/text/summon_red_intent_text_model.gd" id="1_xfel0"]
 
