@@ -1,6 +1,6 @@
 # danger_zone_intent_lifecycle_model.gd
-class_name DangerZoneIntentLifecycleModel
-extends "res://npc_ai/intent_lifecycle/targeted_status_from_opp_turn_until_end_of_my_turn_model.gd"
+
+class_name DangerZoneIntentLifecycleModel extends TargetedStatusFromOppTurnUntilEndOfMyTurnModel
 
 @export var reapply_on_layout_change_only_if_missing: bool = false
 

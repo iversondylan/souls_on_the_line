@@ -45,6 +45,7 @@ card_type = 1
 target_type = 1
 name = "Glass Peccary"
 deplete = true
+summon_release_overload = 1
 description = "Summon a %s/%s %s. Give it %s Bequeath."
 texture = ExtResource("10_x1gdt")
 actions = Array[ExtResource("1_w66no")]([SubResource("Resource_fbrl2"), SubResource("Resource_wgn5w"), ExtResource("9_gs3h0")])

@@ -121,7 +121,7 @@ func clear_planning() -> void:
 	dirty_group_layout_events.clear()
 
 
-func flush_planning(kind: int, sim: Sim, allow_hooks := true) -> void:
+func flush_planning(_kind: int, sim: Sim, allow_hooks := true) -> void:
 	if _is_flushing:
 		_needs_another_flush = true
 		return

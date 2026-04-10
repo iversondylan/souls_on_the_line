@@ -12,6 +12,7 @@ card_type = 1
 target_type = 1
 rarity = 1
 name = "Tempered Silverback"
+summon_release_overload = 1
 description = "Summon a %s/%s %s that gains %s max health on surviving a strike."
 cost = 1
 texture = ExtResource("3_pah8j")

@@ -16,6 +16,7 @@ var map_data: Array[Array]
 var n_encounters_finished: int
 var last_room: Room
 var camera_edge_x: float
+var battle_pool: BattlePool
 
 func _ready() -> void:
 	#camera_edge_x = MapGenerator.X_DIST * (MapGenerator.ENCOUNTERS - 1)
@@ -28,6 +29,7 @@ func generate_new_map(rng: RNG) -> void:
 	_clear_map_visuals()
 	n_encounters_finished = 0
 	last_room = null
+	map_generator.battle_pool = battle_pool
 	map_data = map_generator.make_map(rng)
 	create_map()
 

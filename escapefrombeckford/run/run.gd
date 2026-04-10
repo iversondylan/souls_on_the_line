@@ -17,6 +17,7 @@ const SAVE_NAME_DIALOG_SCN := preload("res://ui/save_name_dialog.tscn")
 @export var player_catalog: PlayerCatalog = preload("uid://b2ewfy12rhm0l")
 @export var status_catalog: StatusCatalog
 @export var arcanum_catalog: ArcanaCatalog
+@export var battle_pool: BattlePool
 
 # TEMPORARY v
 #@export var extra_arcana: Array[Arcanum]
@@ -378,6 +379,7 @@ func _generate_or_restore_map() -> void:
 		if run_state != null:
 			run_state.map_seed = map_seed
 	var rng := RNG.new(map_seed)
+	map.battle_pool = battle_pool
 	map.generate_new_map(rng)
 	_rehydrate_battle_assignments()
 	if run_state != null and !run_state.cleared_room_coords.is_empty():
@@ -411,9 +413,11 @@ func _resolve_battle_from_path(path: String) -> BattleData:
 
 
 func _get_battle_pool() -> BattlePool:
-	if map == null or map.map_generator == null:
-		return null
-	return map.map_generator.battle_pool
+	if battle_pool != null:
+		return battle_pool
+	if map != null:
+		return map.battle_pool
+	return null
 
 
 func _get_battle_tier_for_room(room: Room) -> int:

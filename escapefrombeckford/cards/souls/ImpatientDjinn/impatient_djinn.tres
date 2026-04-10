@@ -12,6 +12,7 @@ card_type = 1
 target_type = 1
 rarity = 1
 name = "Impatient Djinn"
+summon_release_overload = 1
 cost = 1
 texture = ExtResource("5_qjxo6")
 actions = Array[ExtResource("1_pn1bx")]([ExtResource("2_xcutu"), ExtResource("3_vgsdk")])

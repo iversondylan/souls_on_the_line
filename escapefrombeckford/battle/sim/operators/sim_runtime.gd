@@ -537,8 +537,8 @@ func _complete_actor_turn(cid: int) -> void:
 
 	var u: CombatantState = api.state.get_unit(int(cid)) if api.state != null else null
 	if u != null and u.combatant_data != null and u.combatant_data.ai != null and u.ai_state != null:
-		var skipped := bool(u.ai_state.get(NPC_ACTION_SKIPPED_THIS_TURN, false))
-		u.ai_state[NPC_ACTION_SKIPPED_THIS_TURN] = false
+		var skipped := bool(u.ai_state.get(Keys.NPC_ACTION_SKIPPED_THIS_TURN, false))
+		u.ai_state[Keys.NPC_ACTION_SKIPPED_THIS_TURN] = false
 		if !skipped:
 			var ctx := ActionPlanner.make_context(api, u)
 			ctx.runtime = self
@@ -624,7 +624,7 @@ func run_npc_turn(cid: int) -> void:
 		ctx.state[Keys.FIRST_INTENTS_READY] = true
 
 	if SimStatusSystem.should_skip_npc_action(api, cid):
-		ctx.state[NPC_ACTION_SKIPPED_THIS_TURN] = true
+		ctx.state[Keys.NPC_ACTION_SKIPPED_THIS_TURN] = true
 		ActionLifecycleSystem.on_action_execution_skipped(ctx)
 		_finish_npc_turn(ctx)
 		return
