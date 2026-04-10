@@ -5,7 +5,7 @@
 [ext_resource type="Resource" uid="uid://bb2svevqwn2v7" path="res://character_profiles/Cole/cole_draftable_cards.tres" id="2_guhpy"]
 [ext_resource type="Resource" uid="uid://vnoxk6md128x" path="res://character_profiles/Cole/cole_possible_arcana.tres" id="3_mgnya"]
 [ext_resource type="Resource" uid="uid://clmmoar1fhh44" path="res://arcana/adamant_ally.tres" id="5_plufk"]
-[ext_resource type="Resource" uid="uid://gsb7q5fcn68v" path="res://character_profiles/Cole/cole_basic_deck.tres" id="6_plufk"]
+[ext_resource type="Resource" uid="uid://b2gq58swp7age" path="res://character_profiles/Cole/cole_starter_deck.tres" id="6_plufk"]
 
 [resource]
 script = ExtResource("1_i82qw")

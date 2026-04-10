@@ -1003,7 +1003,11 @@ func _spawn_projectile_async(
 		else:
 			projectile = null
 		if projectile == null and int(order.chain_source_target_id) > 0:
-			start_pos = battle_view.get_mean_target_position_global([int(order.chain_source_target_id)], start_pos)
+			var chain_source := battle_view.get_combatant(int(order.chain_source_target_id))
+			if chain_source != null and is_instance_valid(chain_source):
+				start_pos = chain_source.get_projectile_origin_global()
+			else:
+				start_pos = battle_view.get_mean_target_position_global([int(order.chain_source_target_id)], start_pos)
 
 	if projectile == null:
 		var scene: PackedScene = FxLibrary.get_scene(proj_path)
@@ -1048,6 +1052,10 @@ func _get_projectile_origin_global() -> Vector2:
 	var height := float(_spec.get(Keys.HEIGHT, 270))
 	var offset := Vector2(0, -(height * 0.67))
 	return global_position + offset
+
+
+func get_projectile_origin_global() -> Vector2:
+	return _get_projectile_origin_global()
 
 
 # ------------------------------------------------------------------------------

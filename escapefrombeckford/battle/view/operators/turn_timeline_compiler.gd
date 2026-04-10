@@ -299,11 +299,11 @@ func _parse_scope_driven_attack_turn(events: Array[BattleEvent]) -> ParsedNpcAtt
 	if scope_ranges.is_empty():
 		return null
 
-	var actor_turn_scope_id := _find_actor_turn_scope_id(events, actor_id)
-	if actor_turn_scope_id <= 0:
+	var compiled_turn_scope_id := _find_compiled_turn_scope_id(events, actor_id)
+	if compiled_turn_scope_id <= 0:
 		return null
 
-	var attack_scope_id := _find_primary_attack_scope_id(events, actor_turn_scope_id, actor_id)
+	var attack_scope_id := _find_primary_attack_scope_id(events, compiled_turn_scope_id, actor_id)
 	if attack_scope_id <= 0:
 		return null
 
@@ -787,7 +787,10 @@ func _find_actor_id(events: Array[BattleEvent]) -> int:
 			continue
 		if int(e.type) == int(BattleEvent.Type.ACTOR_BEGIN):
 			return int(e.data.get(Keys.ACTOR_ID, 0)) if e.data != null else 0
-		if int(e.type) == int(BattleEvent.Type.SCOPE_BEGIN) and int(e.scope_kind) == int(Scope.Kind.ACTOR_TURN):
+		if int(e.type) == int(BattleEvent.Type.SCOPE_BEGIN) and (
+			int(e.scope_kind) == int(Scope.Kind.ACTOR_TURN)
+			or int(e.scope_kind) == int(Scope.Kind.CARD_ATTACK_NOW_TURN)
+		):
 			return int(e.data.get(Keys.ACTOR_ID, 0)) if e.data != null else 0
 	return 0
 
@@ -1149,7 +1152,23 @@ func _find_actor_turn_scope_id(events: Array[BattleEvent], actor_id: int) -> int
 	return 0
 
 
-func _find_primary_attack_scope_id(events: Array[BattleEvent], actor_turn_scope_id: int, actor_id: int) -> int:
+func _find_compiled_turn_scope_id(events: Array[BattleEvent], actor_id: int) -> int:
+	for event in events:
+		if event == null:
+			continue
+		if int(event.type) != int(BattleEvent.Type.SCOPE_BEGIN):
+			continue
+		if int(event.scope_kind) != int(Scope.Kind.ACTOR_TURN) \
+			and int(event.scope_kind) != int(Scope.Kind.CARD_ATTACK_NOW_TURN):
+			continue
+		if event.data == null:
+			continue
+		if int(event.data.get(Keys.ACTOR_ID, 0)) == int(actor_id):
+			return int(event.scope_id)
+	return 0
+
+
+func _find_primary_attack_scope_id(events: Array[BattleEvent], compiled_turn_scope_id: int, actor_id: int) -> int:
 	for event in events:
 		if event == null:
 			continue
@@ -1157,7 +1176,7 @@ func _find_primary_attack_scope_id(events: Array[BattleEvent], actor_turn_scope_
 			continue
 		if int(event.scope_kind) != int(Scope.Kind.ATTACK):
 			continue
-		if int(event.parent_scope_id) != int(actor_turn_scope_id):
+		if int(event.parent_scope_id) != int(compiled_turn_scope_id):
 			continue
 		if event.data == null:
 			continue

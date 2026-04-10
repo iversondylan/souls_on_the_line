@@ -107,9 +107,9 @@ func _playback_loop(gen: int) -> void:
 
 		var now := clock.now_sec()
 
-		if event_player.peek_is_npc_actor_turn(player_id):
-			var actor_turn := await event_player.await_complete_actor_turn_chunk()
-			if actor_turn.is_empty():
+		if event_player.peek_is_compiled_turn_chunk(player_id):
+			var compiled_turn := await event_player.await_complete_compiled_turn_chunk()
+			if compiled_turn.is_empty():
 				continue
 
 			var unit_q := 1.0 # quarter-note grid only
@@ -126,8 +126,8 @@ func _playback_loop(gen: int) -> void:
 				return
 
 			var compiler := TurnTimelineCompiler.new()
-			var timeline := compiler.compile_actor_turn(actor_turn)
-			#print(_debug_timeline_line(timeline, actor_turn))
+			var timeline := compiler.compile_actor_turn(compiled_turn)
+			#print(_debug_timeline_line(timeline, compiled_turn))
 
 			var plan_builder := TurnTimelineToDirectorPlan.new()
 			var plan := plan_builder.build_plan(
@@ -135,7 +135,7 @@ func _playback_loop(gen: int) -> void:
 				t_start,
 				transport_session.tempo_bpm if transport_session != null else tempo
 			)
-			#print(_debug_director_plan_line(plan, actor_turn, clock.now_sec(), schedule_t))
+			#print(_debug_director_plan_line(plan, compiled_turn, clock.now_sec(), schedule_t))
 
 			await cue_scheduler.play_plan(clock, event_director, plan, gen)
 			schedule_t = plan.get_end_sec()
@@ -331,7 +331,10 @@ func _chunk_actor_id(chunk: Array[BattleEvent]) -> int:
 		if e == null:
 			continue
 
-		if int(e.type) == BattleEvent.Type.SCOPE_BEGIN and int(e.scope_kind) == int(Scope.Kind.ACTOR_TURN):
+		if int(e.type) == BattleEvent.Type.SCOPE_BEGIN and (
+			int(e.scope_kind) == int(Scope.Kind.ACTOR_TURN)
+			or int(e.scope_kind) == int(Scope.Kind.CARD_ATTACK_NOW_TURN)
+		):
 			if e.data != null and e.data.has(Keys.ACTOR_ID):
 				return int(e.data[Keys.ACTOR_ID])
 

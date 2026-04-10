@@ -2,10 +2,6 @@ extends CardAction
 
 @export var bonus_damage: int = 2
 @export var attacks: int = 1
-@export var melee_impact_sound: Sound = preload("uid://c73sgxbquj1ks")
-
-const Removal = preload("res://core/keys_values/removal_values.gd")
-const RemovalContextScript = preload("res://battle/contexts/removal_context.gd")
 
 func activate_sim(ctx: CardContext) -> bool:
 	if ctx == null or ctx.api == null or ctx.runtime == null:
@@ -44,7 +40,26 @@ func activate_sim(ctx: CardContext) -> bool:
 		ctx.card_data.ensure_uid()
 		attack_ctx.origin_card_uid = String(ctx.card_data.uid)
 
+	var writer := ctx.api.writer if ctx.api != null else null
+	if writer == null:
+		return false
+
+	var scope_label := "card_attack_now"
+	if ctx.card_data != null:
+		scope_label = "card_attack_now uid=%s" % String(ctx.card_data.uid)
+
+	var attack_now_scope := writer.scope_begin(
+		Scope.Kind.CARD_ATTACK_NOW_TURN,
+		scope_label,
+		attacker_id,
+		{}
+	)
+	if attack_now_scope == null:
+		return false
+
 	var any := ctx.runtime.run_attack(attack_ctx)
+	writer.scope_end(attack_now_scope)
+
 	for tid in attack_ctx.affected_target_ids:
 		var target_id := int(tid)
 		if target_id > 0 and !ctx.affected_ids.has(target_id):
@@ -53,25 +68,7 @@ func activate_sim(ctx: CardContext) -> bool:
 	if !any:
 		return false
 
-	if melee_impact_sound != null:
-		ctx.api.play_sfx(melee_impact_sound)
-
-	var removal_ctx = RemovalContextScript.new()
-	removal_ctx.target_id = attacker_id
-	removal_ctx.removal_type = Removal.Type.DEATH
-	removal_ctx.killer_id = attacker_id
-	removal_ctx.reason = "berserkers_fury"
-	if ctx.card_data != null:
-		ctx.card_data.ensure_uid()
-		removal_ctx.origin_card_uid = String(ctx.card_data.uid)
-	ctx.api.resolve_removal(removal_ctx)
-	if !ctx.affected_ids.has(attacker_id):
-		ctx.affected_ids.append(attacker_id)
-
 	return true
-
-func _on_card_attack_sequence_done() -> void:
-	pass
 
 func description_arity() -> int:
 	return 1

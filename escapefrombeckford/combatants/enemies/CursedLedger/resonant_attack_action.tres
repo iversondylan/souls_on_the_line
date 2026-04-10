@@ -10,12 +10,13 @@
 [ext_resource type="Script" uid="uid://cuj4qvyx6dedj" path="res://npc_ai/_core/state_model.gd" id="5_4n47e"]
 [ext_resource type="Resource" uid="uid://btgtvs6ab0nsg" path="res://npc_ai/chance/half_exponential_spree_chance_state_model.tres" id="6_6yf2y"]
 [ext_resource type="Resource" uid="uid://ivsvxo0vj72x" path="res://npc_ai/text/attack_intent_tooltip_text_model.tres" id="9_qj872"]
+[ext_resource type="Resource" uid="uid://1dg4gik25c7q" path="res://combatants/enemies/Calabash/calabash_zero_chance_first_turn_model.tres" id="10_swmes"]
 
 [resource]
 script = ExtResource("4_l4lvh")
 effect_packages = Array[ExtResource("1_1hlb8")]([ExtResource("2_wv8p8")])
 intent_lifecycle_models = Array[ExtResource("2_6yf2y")]([ExtResource("4_qj872")])
-state_models = Array[ExtResource("5_4n47e")]([ExtResource("6_6yf2y")])
+state_models = Array[ExtResource("5_4n47e")]([ExtResource("6_6yf2y"), ExtResource("10_swmes")])
 action_name = "Resonant Strike"
 intent_icon_uid = "uid://1b6tx5tj6ucv"
 intent_icon_ranged_uid = "uid://1b6tx5tj6ucv"

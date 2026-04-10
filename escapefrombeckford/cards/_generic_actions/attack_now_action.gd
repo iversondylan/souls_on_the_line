@@ -65,7 +65,27 @@ func activate_sim(ctx: CardContext) -> bool:
 		ctx.card_data.ensure_uid()
 		attack_ctx.origin_card_uid = String(ctx.card_data.uid)
 
-	var any := ctx.runtime.run_attack(attack_ctx)
+	var writer := ctx.api.writer if ctx.api != null else null
+	if writer == null:
+		return false
+
+	var scope_label := "card_attack_now"
+	if ctx.card_data != null:
+		scope_label = "card_attack_now uid=%s" % String(ctx.card_data.uid)
+
+	var attack_now_scope := writer.scope_begin(
+		Scope.Kind.CARD_ATTACK_NOW_TURN,
+		scope_label,
+		attacker_id,
+		{}
+	)
+	if attack_now_scope == null:
+		return false
+
+	var any := false
+	any = ctx.runtime.run_attack(attack_ctx)
+	writer.scope_end(attack_now_scope)
+
 	for tid in attack_ctx.affected_target_ids:
 		var target_id := int(tid)
 		if target_id > 0 and !ctx.affected_ids.has(target_id):

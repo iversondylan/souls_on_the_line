@@ -149,14 +149,9 @@ text = "Exit"
 
 [node name="DebugModeToggle" type="CheckButton" parent="." unique_id=1329955616]
 unique_name_in_owner = true
-visible = false
 layout_mode = 1
-offset_left = 24.0
-offset_top = 24.0
-offset_right = 166.0
-offset_bottom = 66.0
-grow_horizontal = 0
-grow_vertical = 0
+offset_right = 269.0
+offset_bottom = 54.0
 theme = ExtResource("3_theme")
 text = "Debug Mode"
 

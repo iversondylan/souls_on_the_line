@@ -4,13 +4,14 @@
 [ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://cards/_core/card_data.gd" id="1_241b1"]
 [ext_resource type="Resource" uid="uid://c3c4c48khrwxu" path="res://cards/convocations/BerserkersFury/berserkers_fury_action.tres" id="2_lqu2x"]
 [ext_resource type="Texture2D" uid="uid://cv6qmfmw23it7" path="res://_assets/sprites/assorted/explosion.jpg" id="3_65r7g"]
+[ext_resource type="Resource" uid="uid://4a3dreaffu56" path="res://cards/_generic_actions/sacrifice_action.tres" id="3_sacrifice"]
 
 [resource]
 script = ExtResource("1_241b1")
 target_type = 3
 rarity = 2
 name = "Berserker's Fury"
-description = "Sacrifice an ally. They deal their attack damage [color=\"ff0000\"]+%s[/color] to all enemies."
+description = "An ally deals their attack damage [color=\"ff0000\"]+%s[/color] to all enemies, then dies."
 texture = ExtResource("3_65r7g")
-actions = Array[ExtResource("1_65r7g")]([ExtResource("2_lqu2x")])
+actions = Array[ExtResource("1_65r7g")]([ExtResource("2_lqu2x"), ExtResource("3_sacrifice")])
 metadata/_custom_type_script = "uid://d2f0qepe047dc"
