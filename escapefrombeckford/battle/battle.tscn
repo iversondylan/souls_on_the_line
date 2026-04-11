@@ -24,6 +24,7 @@
 [ext_resource type="PackedScene" uid="uid://b0y800rpavgwc" path="res://ui/deck_view_window.tscn" id="20_3q5c2"]
 [ext_resource type="PackedScene" uid="uid://x25ulb6i36lc" path="res://ui/thank_you_for_playing.tscn" id="20_bi5l8"]
 [ext_resource type="PackedScene" uid="uid://b1rro3h5dxilx" path="res://battle/ui/battle_over_panel.tscn" id="21_p2d7x"]
+[ext_resource type="PackedScene" path="res://battle/ui/web_music_sync_debug_overlay.tscn" id="21_syncdbg"]
 [ext_resource type="PackedScene" uid="uid://c477qukem6kmd" path="res://battle/interactions/card_target_selector.tscn" id="22_j5lq4"]
 [ext_resource type="PackedScene" uid="uid://c634qgskmd0a" path="res://ui/card_pile_view.tscn" id="22_wyn7e"]
 [ext_resource type="Script" uid="uid://bmlyytso4qsj6" path="res://battle/interactions/battle_interaction_handler.gd" id="25_jt4d8"]
@@ -218,6 +219,8 @@ grow_horizontal = 2
 [node name="ThankYouBox" parent="Battle_UI" unique_id=212376634 instance=ExtResource("20_bi5l8")]
 visible = false
 position = Vector2(1302, 347)
+
+[node name="WebMusicSyncDebugOverlay" parent="Battle_UI" instance=ExtResource("21_syncdbg")]
 
 [node name="SelectionPrompt" parent="Battle_UI" unique_id=1859690242 instance=ExtResource("16_61i1y")]
 anchors_preset = 5
