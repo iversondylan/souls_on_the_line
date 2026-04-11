@@ -48,6 +48,10 @@ func get_music_position_precise() -> float:
 	return _get_precise_position(music_player)
 
 
+func is_music_actively_playing() -> bool:
+	return music_player != null and music_player.playing and !music_player.stream_paused
+
+
 func configure_metronome(sound: Sound) -> void:
 	if sound == null or sound.stream == null:
 		stop_metronome()
