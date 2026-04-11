@@ -1,0 +1,11 @@
+[gd_resource type="StyleBoxTexture" format=3 uid="uid://nxrajwke1wpe"]
+
+[ext_resource type="Texture2D" uid="uid://blfu0eik7gos1" path="res://_assets/ui_elements/9_panel_brass_frame_200.png" id="1_qbyh8"]
+
+[resource]
+texture = ExtResource("1_qbyh8")
+texture_margin_left = 28.0
+texture_margin_top = 28.0
+texture_margin_right = 28.0
+texture_margin_bottom = 28.0
+region_rect = Rect2(0, 0, 200, 200)

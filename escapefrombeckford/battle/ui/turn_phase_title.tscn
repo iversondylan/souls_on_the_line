@@ -3,6 +3,7 @@
 [ext_resource type="Script" uid="uid://we4jnfpugpkx" path="res://battle/ui/turn_phase_title.gd" id="1_cyksq"]
 [ext_resource type="Theme" uid="uid://d2wc7fposrlqs" path="res://themes/wizard_theme.tres" id="1_fbmxl"]
 [ext_resource type="Theme" uid="uid://1dr1eewpv0jd" path="res://themes/ui_theme.tres" id="2_cyksq"]
+[ext_resource type="Theme" uid="uid://c5t2luytfgc6b" path="res://ui/elements/brass_wood_chalkboard_theme.tres" id="2_kvjjq"]
 
 [node name="Control" type="Control" unique_id=1831978529]
 layout_mode = 3
@@ -22,6 +23,7 @@ offset_right = 203.0
 offset_bottom = 100.0
 grow_horizontal = 2
 mouse_filter = 2
+theme = ExtResource("2_kvjjq")
 
 [node name="MarginContainer" type="MarginContainer" parent="PanelContainer" unique_id=1899409244]
 layout_mode = 2

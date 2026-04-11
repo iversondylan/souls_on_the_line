@@ -15,8 +15,9 @@
 [ext_resource type="Script" uid="uid://8uvr4kljlbkb" path="res://battle/view/scenes/battle_camera_rig.gd" id="10_dd63g"]
 [ext_resource type="PackedScene" uid="uid://cy1kfsc2qfglo" path="res://battle/card_mgmt/hand.tscn" id="15_wvgjd"]
 [ext_resource type="PackedScene" uid="uid://chyl400nmwlxo" path="res://battle/ui/selection_prompt.tscn" id="16_61i1y"]
+[ext_resource type="Theme" uid="uid://c5t2luytfgc6b" path="res://ui/elements/brass_wood_chalkboard_theme.tres" id="16_562sy"]
 [ext_resource type="PackedScene" uid="uid://bxtf6la07t0t5" path="res://ui/card_pile_opener.tscn" id="17_ariee"]
-[ext_resource type="PackedScene" path="res://VFX/turn_order_spark_controller.tscn" id="17_saiin"]
+[ext_resource type="PackedScene" uid="uid://bhps5rw0coka5" path="res://VFX/turn_order_spark_controller.tscn" id="17_saiin"]
 [ext_resource type="PackedScene" uid="uid://cmc2ypry076mq" path="res://ui/status_overlay.tscn" id="18_h4dll"]
 [ext_resource type="Theme" uid="uid://1dr1eewpv0jd" path="res://themes/ui_theme.tres" id="18_s5alk"]
 [ext_resource type="PackedScene" uid="uid://d6f3t1qcn8bk" path="res://battle/ui/turn_phase_title.tscn" id="19_fpf3k"]
@@ -129,12 +130,14 @@ anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -220.0
-offset_top = -100.0
-offset_right = -41.0
+offset_left = -258.0
+offset_top = -121.0
+offset_right = -26.0
 offset_bottom = -46.0
 grow_horizontal = 0
 grow_vertical = 0
+theme = ExtResource("16_562sy")
+theme_override_font_sizes/font_size = 40
 text = "End Turn"
 
 [node name="DrawPileButton" parent="Battle_UI" unique_id=175258487 node_paths=PackedStringArray("counter") instance=ExtResource("17_ariee")]
@@ -168,9 +171,9 @@ anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -303.0
+offset_left = -338.0
 offset_top = -110.0
-offset_right = -239.0
+offset_right = -274.0
 offset_bottom = -46.0
 grow_horizontal = 0
 grow_vertical = 0
@@ -223,9 +226,9 @@ position = Vector2(1302, 347)
 anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
-offset_top = 140.0
+offset_top = 113.0
 offset_right = 0.0
-offset_bottom = 140.0
+offset_bottom = 113.0
 
 [node name="Visual_Overlays" type="CanvasLayer" parent="." unique_id=1155891591]
 

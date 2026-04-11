@@ -1,9 +1,8 @@
 [gd_scene format=3 uid="uid://3hsvnd70wteq"]
 
-[ext_resource type="Theme" uid="uid://d2wc7fposrlqs" path="res://themes/wizard_theme.tres" id="1_kv0sd"]
+[ext_resource type="Theme" uid="uid://c5t2luytfgc6b" path="res://ui/elements/brass_wood_chalkboard_theme.tres" id="2_hoai8"]
 [ext_resource type="Script" uid="uid://boxb2lksxdnk5" path="res://ui/tooltip.gd" id="2_o3msy"]
 [ext_resource type="Texture2D" uid="uid://c54dbo8n7r3g" path="res://_assets/sprites/assorted/attack.PNG" id="3_acp5l"]
-[ext_resource type="Theme" uid="uid://1dr1eewpv0jd" path="res://themes/ui_theme.tres" id="4_o3msy"]
 
 [node name="Tooltip" type="Control" unique_id=1562769590]
 layout_mode = 3
@@ -20,7 +19,7 @@ layout_mode = 0
 offset_right = 320.0
 offset_bottom = 200.0
 mouse_filter = 2
-theme = ExtResource("1_kv0sd")
+theme = ExtResource("2_hoai8")
 
 [node name="MarginContainer" type="MarginContainer" parent="PanelContainer" unique_id=1782294919]
 layout_mode = 2
@@ -48,7 +47,7 @@ unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
 mouse_filter = 2
-theme = ExtResource("4_o3msy")
+theme = ExtResource("2_hoai8")
 theme_override_font_sizes/normal_font_size = 20
 theme_override_font_sizes/bold_font_size = 20
 theme_override_font_sizes/bold_italics_font_size = 20

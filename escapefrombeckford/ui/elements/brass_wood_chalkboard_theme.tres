@@ -1,0 +1,29 @@
+[gd_resource type="Theme" format=3 uid="uid://c5t2luytfgc6b"]
+
+[ext_resource type="FontFile" uid="uid://dfse3mxerp47r" path="res://_assets/fonts/Aref_Ruqaa/ArefRuqaa-Bold.ttf" id="1_5rmae"]
+[ext_resource type="StyleBox" uid="uid://cklspnmsu1cim" path="res://ui/elements/wood_style_box_flat.tres" id="2_0e7bf"]
+[ext_resource type="StyleBox" uid="uid://dpvsrnnfnccjk" path="res://ui/elements/gem_style_box_flat_disabled.tres" id="2_m5g6k"]
+[ext_resource type="StyleBox" uid="uid://45qrcmt86s37" path="res://ui/elements/gem_style_box_flat.tres" id="3_alrk0"]
+[ext_resource type="StyleBox" uid="uid://nxrajwke1wpe" path="res://ui/elements/brass_wood_frame_chalkboard_200.tres" id="4_e55rh"]
+[ext_resource type="StyleBox" uid="uid://cmm6kbuslirxb" path="res://ui/elements/gem_style_box_flat_hovered.tres" id="4_m5g6k"]
+[ext_resource type="FontFile" uid="uid://cnelekvmhj3fu" path="res://_assets/fonts/Fraunces/static/Fraunces_72pt-Bold.ttf" id="4_tbcdf"]
+[ext_resource type="FontFile" uid="uid://dxianmbmler43" path="res://_assets/fonts/Fraunces/static/Fraunces_72pt_Soft-Bold.ttf" id="5_e55rh"]
+[ext_resource type="FontFile" uid="uid://bfnja4ec1dadc" path="res://_assets/fonts/Fraunces/static/Fraunces_72pt_Soft-BoldItalic.ttf" id="6_tbcdf"]
+[ext_resource type="FontFile" uid="uid://cyfvgde85p512" path="res://_assets/fonts/Fraunces/static/Fraunces_72pt_Soft-SemiBoldItalic.ttf" id="7_m5g6k"]
+[ext_resource type="FontFile" uid="uid://b3m51k1x1p2bc" path="res://_assets/fonts/Fraunces/static/Fraunces_72pt_SuperSoft-BoldItalic.ttf" id="8_iqd46"]
+[ext_resource type="FontFile" uid="uid://dkui1m7yfdyn" path="res://_assets/fonts/Fraunces/static/Fraunces_72pt_Soft-SemiBold.ttf" id="9_13yqh"]
+
+[resource]
+Button/fonts/font = ExtResource("1_5rmae")
+Button/styles/disabled = ExtResource("2_m5g6k")
+Button/styles/focus = ExtResource("2_0e7bf")
+Button/styles/hover = ExtResource("4_m5g6k")
+Button/styles/normal = ExtResource("3_alrk0")
+Button/styles/pressed = ExtResource("3_alrk0")
+Label/fonts/font = ExtResource("4_tbcdf")
+PanelContainer/styles/panel = ExtResource("4_e55rh")
+RichTextLabel/fonts/bold_font = ExtResource("5_e55rh")
+RichTextLabel/fonts/bold_italics_font = ExtResource("6_tbcdf")
+RichTextLabel/fonts/italics_font = ExtResource("7_m5g6k")
+RichTextLabel/fonts/mono_font = ExtResource("8_iqd46")
+RichTextLabel/fonts/normal_font = ExtResource("9_13yqh")

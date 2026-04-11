@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://chyl400nmwlxo"]
 
 [ext_resource type="Script" uid="uid://cru6h26jtjj6e" path="res://battle/ui/selection_prompt.gd" id="1_a4qla"]
-[ext_resource type="Theme" uid="uid://1dr1eewpv0jd" path="res://themes/ui_theme.tres" id="2_aujeb"]
+[ext_resource type="Theme" uid="uid://bdew65vmu8k1h" path="res://ui/elements/gem_button_only.tres" id="2_tg0f1"]
 
 [node name="SelectionPrompt" type="Control" unique_id=2033934170]
 layout_mode = 3
@@ -23,14 +23,13 @@ offset_right = 7.0
 offset_bottom = 18.0
 grow_horizontal = 2
 mouse_filter = 2
+theme = ExtResource("2_tg0f1")
 
 [node name="MarginContainer" type="MarginContainer" parent="PanelContainer" unique_id=1219346833]
 layout_mode = 2
 mouse_filter = 2
 theme_override_constants/margin_left = 16
-theme_override_constants/margin_top = 16
 theme_override_constants/margin_right = 12
-theme_override_constants/margin_bottom = 12
 
 [node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer/MarginContainer" unique_id=933478615]
 layout_mode = 2
@@ -42,9 +41,9 @@ alignment = 1
 custom_minimum_size = Vector2(500, 0)
 layout_mode = 2
 mouse_filter = 2
-theme = ExtResource("2_aujeb")
-theme_override_font_sizes/normal_font_size = 30
-theme_override_font_sizes/bold_font_size = 30
+theme = ExtResource("2_tg0f1")
+theme_override_font_sizes/normal_font_size = 36
+theme_override_font_sizes/bold_font_size = 36
 bbcode_enabled = true
 text = "Choose an ally to [b]fade[/b]."
 fit_content = true
@@ -54,6 +53,6 @@ vertical_alignment = 1
 
 [node name="Button" type="Button" parent="PanelContainer/MarginContainer/VBoxContainer" unique_id=1847492165]
 layout_mode = 2
-theme = ExtResource("2_aujeb")
+theme = ExtResource("2_tg0f1")
 theme_override_font_sizes/font_size = 30
 text = "Cancel"
