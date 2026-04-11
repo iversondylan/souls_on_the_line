@@ -49,7 +49,6 @@ var _requested_music_playback_position_sec: float = 0.0
 var _audio_lock_hold_transport_sec: float = 0.0
 var _audio_lock_wait_started_wall_sec: float = 0.0
 var _web_fallback_for_session := false
-var _loop_count: int = 0
 var _warning_message: String = ""
 
 
@@ -89,7 +88,6 @@ func start() -> void:
 	_requested_music_playback_position_sec = 0.0
 	_audio_lock_hold_transport_sec = 0.0
 	_audio_lock_wait_started_wall_sec = 0.0
-	_loop_count = 0
 	_warning_message = ""
 	_web_fallback_for_session = false
 
@@ -124,7 +122,6 @@ func stop() -> void:
 	_audio_lock_hold_transport_sec = 0.0
 	_audio_lock_wait_started_wall_sec = 0.0
 	_web_fallback_for_session = false
-	_loop_count = 0
 	_warning_message = ""
 	MusicPlayer.stop_metronome()
 	MusicPlayer.stop_music()
@@ -138,7 +135,7 @@ func pause() -> void:
 	_paused_music_playback_position_sec = 0.0
 	_paused = true
 	if _music_cycle_state == MusicCycleState.PLAYING:
-		_paused_music_playback_position_sec = MusicPlayer.get_music_position_precise()
+		_paused_music_playback_position_sec = MusicPlayer.get_music_position_compensated()
 		_last_music_playback_position_sec = _paused_music_playback_position_sec
 		MusicPlayer.pause_metronome()
 		MusicPlayer.pause_music()
@@ -230,35 +227,6 @@ func wait_until(t_sec: float) -> void:
 func wait_seconds(delta_sec: float) -> void:
 	await wait_until(now_sec() + maxf(delta_sec, 0.0))
 
-
-func get_debug_snapshot() -> Dictionary:
-	var playback_position_sec: float = MusicPlayer.get_music_position_precise()
-	var audio_transport_sec: float = -1.0
-	if _music_cycle_anchor_transport_sec >= 0.0:
-		audio_transport_sec = _music_cycle_anchor_transport_sec + playback_position_sec
-
-	return {
-		"sync_mode": _sync_mode_name(_sync_mode),
-		"music_cycle_state": _music_cycle_state_name(_music_cycle_state),
-		"transport_now_sec": now_sec(),
-		"wall_now_sec": _wall_now_sec(),
-		"music_playback_position_sec": playback_position_sec,
-		"cycle_anchor_transport_sec": _music_cycle_anchor_transport_sec,
-		"cycle_duration_sec": _music_cycle_duration_sec,
-		"next_cycle_start_transport_sec": _next_music_start_transport_sec,
-		"paused_playback_position_sec": _paused_music_playback_position_sec,
-		"requested_playback_position_sec": _requested_music_playback_position_sec,
-		"audio_lock_hold_transport_sec": _audio_lock_hold_transport_sec,
-		"loop_count": _loop_count,
-		"warning": _warning_message,
-		"drift_sec": _compute_debug_drift_sec(audio_transport_sec),
-		"is_music_active": MusicPlayer.is_music_actively_playing(),
-		"audio_transport_sec": audio_transport_sec,
-		"lock_wait_elapsed_sec": maxf(0.0, _wall_now_sec() - _audio_lock_wait_started_wall_sec),
-		"lock_timeout_sec": WEB_AUDIO_LOCK_TIMEOUT_SEC,
-	}
-
-
 func _start_music_cycle(
 	from_position: float = 0.0,
 	anchor_transport_sec: float = 0.0,
@@ -298,6 +266,9 @@ func _start_music_cycle(
 func _begin_wall_clock_cycle(from_position: float) -> void:
 	_sync_mode = SyncMode.WEB_FALLBACK_WALL_CLOCK if _is_web_transport() else SyncMode.WALL_CLOCK
 	_wall_transport_offset_sec = (_music_cycle_anchor_transport_sec + from_position) - _wall_now_sec()
+	_requested_music_playback_position_sec = 0.0
+	_audio_lock_hold_transport_sec = 0.0
+	_audio_lock_wait_started_wall_sec = 0.0
 	_play_music_cycle(from_position)
 
 
@@ -325,7 +296,6 @@ func _finish_music_cycle(track_end_transport_sec: float) -> void:
 	_audio_lock_hold_transport_sec = track_end_transport_sec
 	_next_music_start_transport_sec = next_grid_time(track_end_transport_sec, 1.0) + maxf(offset_sec, 0.0)
 	_music_cycle_state = MusicCycleState.BETWEEN_LOOPS
-	_loop_count += 1
 	if _sync_mode == SyncMode.WEB_AUDIO_LOCKED or _sync_mode == SyncMode.WEB_WAITING_FOR_AUDIO_LOCK:
 		_sync_mode = SyncMode.WALL_CLOCK
 	if _sync_mode == SyncMode.WEB_FALLBACK_WALL_CLOCK:
@@ -333,7 +303,7 @@ func _finish_music_cycle(track_end_transport_sec: float) -> void:
 
 
 func _update_web_waiting_for_audio_lock() -> void:
-	var playback_position_sec: float = MusicPlayer.get_music_position_precise()
+	var playback_position_sec: float = MusicPlayer.get_music_position_compensated()
 	var has_lock: bool = (
 		MusicPlayer.is_music_actively_playing()
 		and playback_position_sec >= _requested_music_playback_position_sec + WEB_AUDIO_LOCK_EPSILON_SEC
@@ -341,7 +311,10 @@ func _update_web_waiting_for_audio_lock() -> void:
 	if has_lock:
 		_sync_mode = SyncMode.WEB_AUDIO_LOCKED
 		_last_music_playback_position_sec = playback_position_sec
-		if _warning_message.begins_with("Web audio lock lost"):
+		_requested_music_playback_position_sec = 0.0
+		_audio_lock_hold_transport_sec = 0.0
+		_audio_lock_wait_started_wall_sec = 0.0
+		if !_warning_message.is_empty():
 			_set_warning("")
 		return
 
@@ -350,7 +323,7 @@ func _update_web_waiting_for_audio_lock() -> void:
 
 
 func _update_web_audio_locked_cycle(track_end_transport_sec: float) -> void:
-	var playback_position_sec: float = MusicPlayer.get_music_position_precise()
+	var playback_position_sec: float = MusicPlayer.get_music_position_compensated(true)
 	var wrapped: bool = (
 		_last_music_playback_position_sec > WEB_LOOP_WRAP_EPSILON_SEC
 		and playback_position_sec + WEB_LOOP_WRAP_EPSILON_SEC < _last_music_playback_position_sec
@@ -384,6 +357,9 @@ func _enter_web_fallback(message: String) -> void:
 	_web_fallback_for_session = true
 	_sync_mode = SyncMode.WEB_FALLBACK_WALL_CLOCK
 	_wall_transport_offset_sec = _audio_lock_hold_transport_sec - _wall_now_sec()
+	_requested_music_playback_position_sec = 0.0
+	_audio_lock_hold_transport_sec = 0.0
+	_audio_lock_wait_started_wall_sec = 0.0
 	_set_warning(message)
 
 
@@ -410,14 +386,7 @@ func _get_audio_locked_now_sec() -> float:
 		return -1.0
 	if !MusicPlayer.is_music_actively_playing():
 		return -1.0
-	return _music_cycle_anchor_transport_sec + MusicPlayer.get_music_position_precise()
-
-
-func _compute_debug_drift_sec(audio_transport_sec: float) -> float:
-	if audio_transport_sec < 0.0:
-		return 0.0
-	var wall_transport_sec: float = _wall_now_sec() + _wall_transport_offset_sec
-	return wall_transport_sec - audio_transport_sec
+	return _music_cycle_anchor_transport_sec + MusicPlayer.get_music_position_compensated()
 
 
 func _set_warning(message: String) -> void:
@@ -426,15 +395,3 @@ func _set_warning(message: String) -> void:
 	_warning_message = message
 	if !_warning_message.is_empty():
 		print("[BattleTransportSession] %s" % _warning_message)
-
-
-func _music_cycle_state_name(value: int) -> String:
-	if value >= 0 and value < MusicCycleState.keys().size():
-		return MusicCycleState.keys()[value]
-	return "UNKNOWN"
-
-
-func _sync_mode_name(value: int) -> String:
-	if value >= 0 and value < SyncMode.keys().size():
-		return SyncMode.keys()[value]
-	return "UNKNOWN"

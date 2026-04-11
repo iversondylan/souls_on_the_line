@@ -15,7 +15,6 @@ var _debug_mode: bool = true
 			await ready
 		_debug_mode = value
 		$Debug_UI.visible = _debug_mode
-		_refresh_web_music_debug_overlay()
 	get:
 		return _debug_mode
 
@@ -54,7 +53,6 @@ var _debug_mode: bool = true
 @onready var draw_pile_view: CardPileView = %DrawPileView
 @onready var discard_pile_view: CardPileView = %DiscardPileView
 @onready var turn_phase_title: TurnPhaseTitle = $Battle_UI/TurnPhaseTitle
-@onready var web_music_sync_debug_overlay = $Battle_UI/WebMusicSyncDebugOverlay
 
 @onready var thank_you_box: Node2D = $Battle_UI/ThankYouBox
 
@@ -73,7 +71,6 @@ var my_arcana: Array[StringName]
 
 var wait_for_anims: bool = false
 var _player_end_turn_armed: bool = false
-var _web_music_sync_debug_overlay_forced := false
 var card_bins: BattleCardBins
 var card_bin_rule_host: CardBinRuleHost
 var transport_session: BattleTransportSession
@@ -102,7 +99,6 @@ func _ready() -> void:
 
 	_connect_events()
 	_connect_ui()
-	_refresh_web_music_debug_overlay()
 
 	battle_ui.set_end_turn_enabled(false)
 
@@ -113,13 +109,6 @@ func _ready() -> void:
 func _process(_delta: float) -> void:
 	if transport_session != null:
 		transport_session.update()
-
-
-func _unhandled_input(event: InputEvent) -> void:
-	if event is InputEventKey and event.pressed and !event.echo and event.keycode == KEY_F9:
-		_web_music_sync_debug_overlay_forced = !_web_music_sync_debug_overlay_forced
-		_refresh_web_music_debug_overlay()
-		get_viewport().set_input_as_handled()
 
 
 func _exit_tree() -> void:
@@ -208,8 +197,6 @@ func start_battle() -> void:
 
 	transport_session = _build_transport_session()
 	battle_view.bind_transport_session(transport_session)
-	if web_music_sync_debug_overlay != null:
-		web_music_sync_debug_overlay.bind_transport_session(transport_session)
 	battle_view.bind_log(sim_host.get_event_log())
 	battle_view.start_playback()
 
@@ -272,13 +259,6 @@ func _build_transport_session() -> BattleTransportSession:
 		resolved_volume_db,
 		resolved_pitch_scale
 	)
-
-
-func _refresh_web_music_debug_overlay() -> void:
-	if web_music_sync_debug_overlay == null:
-		return
-	web_music_sync_debug_overlay.set_debug_visible(_debug_mode)
-	web_music_sync_debug_overlay.set_manual_visible(_web_music_sync_debug_overlay_forced)
 
 
 func _spawn_from_battle_data() -> void:

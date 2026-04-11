@@ -3,8 +3,13 @@ extends Node
 
 @export var bus := &"Music"
 
+const BACKWARDS_JITTER_TOLERANCE_SEC := 0.02
+
 @onready var music_player: AudioStreamPlayer = $AudioStreamPlayer2
 @onready var metronome_player: AudioStreamPlayer = $MetronomePlayer
+
+var _last_music_compensated_position_sec: float = 0.0
+var _last_metronome_compensated_position_sec: float = 0.0
 
 
 func _ready() -> void:
@@ -42,10 +47,20 @@ func resume_music() -> void:
 func stop_music() -> void:
 	music_player.stream_paused = false
 	music_player.stop()
+	_last_music_compensated_position_sec = 0.0
 
 
 func get_music_position_precise() -> float:
-	return _get_precise_position(music_player)
+	return get_music_position_compensated()
+
+
+func get_music_position_compensated(allow_backwards_reset: bool = false) -> float:
+	_last_music_compensated_position_sec = _get_compensated_position(
+		music_player,
+		_last_music_compensated_position_sec,
+		allow_backwards_reset
+	)
+	return _last_music_compensated_position_sec
 
 
 func is_music_actively_playing() -> bool:
@@ -84,10 +99,16 @@ func resume_metronome() -> void:
 func stop_metronome() -> void:
 	metronome_player.stream_paused = false
 	metronome_player.stop()
+	_last_metronome_compensated_position_sec = 0.0
 
 
 func get_metronome_position_precise() -> float:
-	return _get_precise_position(metronome_player)
+	_last_metronome_compensated_position_sec = _get_compensated_position(
+		metronome_player,
+		_last_metronome_compensated_position_sec,
+		false
+	)
+	return _last_metronome_compensated_position_sec
 
 
 func get_stream_length_sec(stream: AudioStream, pitch_scale: float = 1.0) -> float:
@@ -96,10 +117,34 @@ func get_stream_length_sec(stream: AudioStream, pitch_scale: float = 1.0) -> flo
 	return maxf(stream.get_length(), 0.0) / maxf(pitch_scale, 0.001)
 
 
+func _get_raw_position(player: AudioStreamPlayer) -> float:
+	if player == null or player.stream == null:
+		return 0.0
+	return maxf(0.0, player.get_playback_position())
+
+
 func _get_precise_position(player: AudioStreamPlayer) -> float:
 	if player == null or player.stream == null:
 		return 0.0
+	return _get_compensated_position(player, 0.0, true)
+
+
+func _get_compensated_position(
+	player: AudioStreamPlayer,
+	last_position_sec: float,
+	allow_backwards_reset: bool
+) -> float:
+	if player == null or player.stream == null:
+		return 0.0
+
 	var position := player.get_playback_position()
 	if player.playing and !player.stream_paused:
 		position += AudioServer.get_time_since_last_mix()
+		position -= AudioServer.get_output_latency()
+	position = maxf(0.0, position)
+
+	if allow_backwards_reset:
+		return position
+	if position + BACKWARDS_JITTER_TOLERANCE_SEC < last_position_sec:
+		return last_position_sec
 	return maxf(0.0, position)
