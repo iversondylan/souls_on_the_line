@@ -902,7 +902,9 @@ func _on_strike_followthrough(e: EventPackage) -> void:
 
 
 func _on_moved(e: EventPackage) -> void:
-	_apply_group_order(int(e.event.group_index), _after_order(e), true)
+	var d := _data(e)
+	var group_index := int(d.get(Keys.GROUP_INDEX, int(e.event.group_index)))
+	_apply_group_order(group_index, _after_order(e), true)
 
 
 func _on_targeted(e: EventPackage) -> void:

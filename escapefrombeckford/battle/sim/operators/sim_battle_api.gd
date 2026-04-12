@@ -807,28 +807,41 @@ func resolve_move(ctx: MoveContext) -> void:
 		return
 	if int(ctx.actor_id) <= 0:
 		return
-	var u := state.get_unit(int(ctx.actor_id))
+
+	# Determine which unit is physically repositioned.
+	# Preferred pattern for new callers: set actor_id = initiating unit, target_id = unit to move.
+	# Legacy pattern (backward compat): set actor_id = unit to move, leave target_id unset (0).
+	# For positional moves (MOVE_TO_FRONT, MOVE_TO_BACK, INSERT_AT_INDEX):
+	#   - if target_id is set, it is the unit to reposition (actor is the initiator)
+	#   - otherwise fall back to actor_id for legacy callers that set actor_id = unit to move
+	# For SWAP_WITH_TARGET, actor_id and target_id both participate in their own roles.
+	var is_swap := int(ctx.move_type) == MoveContext.MoveType.SWAP_WITH_TARGET
+	var move_unit_id := int(ctx.actor_id)
+	if !is_swap and int(ctx.target_id) > 0:
+		move_unit_id = int(ctx.target_id)
+
+	var u := state.get_unit(move_unit_id)
 	if u == null or !u.is_alive():
 		return
-	
+
 	var g := int(u.team)
 	if g < 0:
 		return
-	
+
 	ctx.before_order_ids = PackedInt32Array(state.groups[g].order)
 	match ctx.move_type:
 		MoveContext.MoveType.MOVE_TO_FRONT:
-			_move_id_to_index(g, int(ctx.actor_id), 0)
+			_move_id_to_index(g, move_unit_id, 0)
 		MoveContext.MoveType.MOVE_TO_BACK:
-			_move_id_to_index(g, int(ctx.actor_id), state.groups[g].order.size() - 1)
+			_move_id_to_index(g, move_unit_id, state.groups[g].order.size() - 1)
 		MoveContext.MoveType.INSERT_AT_INDEX:
-			_move_id_to_index(g, int(ctx.actor_id), int(ctx.index))
+			_move_id_to_index(g, move_unit_id, int(ctx.index))
 		MoveContext.MoveType.SWAP_WITH_TARGET:
 			if int(ctx.target_id) > 0:
 				_swap_ids(g, int(ctx.actor_id), int(ctx.target_id))
 		_:
 			pass
-	
+
 	ctx.after_order_ids = PackedInt32Array(state.groups[g].order)
 	_request_group_layout_changed(
 		int(g),
@@ -837,14 +850,15 @@ func resolve_move(ctx: MoveContext) -> void:
 		String(ctx.reason if !ctx.reason.is_empty() else "move")
 	)
 	_request_turn_order_rebuild()
-	
+
 	if writer != null:
 		var extra := {}
 		if int(ctx.target_id) > 0:
 			extra[Keys.TARGET_ID] = int(ctx.target_id)
 		if int(ctx.index) >= 0:
 			extra[Keys.TO_INDEX] = int(ctx.index)
-		
+		extra[Keys.GROUP_INDEX] = int(g)
+
 		writer.emit_moved(
 			int(ctx.actor_id),
 			int(ctx.move_type),
