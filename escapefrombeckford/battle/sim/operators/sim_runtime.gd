@@ -31,6 +31,8 @@ var _active_delayed_reaction_drains: Dictionary = {}
 var _active_delayed_reaction: DelayedReaction = null
 var _battle_end_arcana_fired: bool = false
 var _pending_player_turn_draw_ctx: DrawContext = null
+var _deferred_player_input_ready: bool = false
+var _deferred_player_input_ready_draw_amount_override: int = -1
 
 
 # ============================================================================
@@ -57,6 +59,8 @@ func reset_runtime_state() -> void:
 	_active_delayed_reaction = null
 	_battle_end_arcana_fired = false
 	_pending_player_turn_draw_ctx = null
+	_deferred_player_input_ready = false
+	_deferred_player_input_ready_draw_amount_override = -1
 
 func _ensure_turn_flow_query_host_initialized() -> void:
 	if host == null:
@@ -322,12 +326,28 @@ func confirm_player_end_ready() -> void:
 func confirm_player_input_ready(draw_amount_override := -1) -> void:
 	var api := _api()
 	if api == null or _pending_player_turn_draw_ctx == null:
+		print("[TRACE sim_runtime] confirm_player_input_ready: api=%s pending_ctx=%s override=%d" % [
+			str(api != null),
+			str(_pending_player_turn_draw_ctx != null),
+			int(draw_amount_override)
+		])
+		if api != null:
+			_deferred_player_input_ready = true
+			_deferred_player_input_ready_draw_amount_override = int(draw_amount_override)
 		return
 
 	var draw_ctx := _pending_player_turn_draw_ctx
 	_pending_player_turn_draw_ctx = null
+	_deferred_player_input_ready = false
+	_deferred_player_input_ready_draw_amount_override = -1
 	if int(draw_amount_override) >= 0:
 		draw_ctx.amount = maxi(int(draw_amount_override), 0)
+	print("[TRACE sim_runtime] confirm_player_input_ready: source_id=%d amount=%d reason=%s phase=%s" % [
+		int(draw_ctx.source_id),
+		int(draw_ctx.amount),
+		String(draw_ctx.reason),
+		String(draw_ctx.phase)
+	])
 	api.process_draw_context(draw_ctx)
 
 
@@ -478,11 +498,20 @@ func _service_actor_turn(cid: int) -> void:
 		writer.emit_actor_begin(cid)
 
 	if is_player(cid):
-		if writer != null:
-			writer.emit_player_input_reached(int(cid))
 		var draw_ctx := _build_player_turn_draw_context(int(cid))
 		if draw_ctx != null:
 			_pending_player_turn_draw_ctx = draw_ctx
+		print("[TRACE sim_runtime] player_turn_begin: cid=%d pending_draw_ctx=%s amount=%d reason=%s" % [
+			int(cid),
+			str(draw_ctx != null),
+			int(draw_ctx.amount) if draw_ctx != null else -1,
+			String(draw_ctx.reason) if draw_ctx != null else ""
+		])
+		if writer != null:
+			writer.emit_player_input_reached(int(cid))
+		if _deferred_player_input_ready and _pending_player_turn_draw_ctx != null:
+			print("[TRACE sim_runtime] player_turn_begin: flushing deferred player input confirm override=%d" % int(_deferred_player_input_ready_draw_amount_override))
+			confirm_player_input_ready(_deferred_player_input_ready_draw_amount_override)
 		return
 
 	SimStatusSystem.on_actor_turn_begin(api, cid)

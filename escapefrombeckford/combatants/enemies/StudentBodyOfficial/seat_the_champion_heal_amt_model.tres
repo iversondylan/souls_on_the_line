@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="FlatHealAmountModel" format=3 uid="uid://5dujv8xfsjrv"]
+
+[ext_resource type="Script" uid="uid://s0ooar2sxbb3" path="res://npc_ai/heal/flat_heal_amount_model.gd" id="1_rudcs"]
+
+[resource]
+script = ExtResource("1_rudcs")
+flat_amount = 12
+metadata/_custom_type_script = "uid://s0ooar2sxbb3"

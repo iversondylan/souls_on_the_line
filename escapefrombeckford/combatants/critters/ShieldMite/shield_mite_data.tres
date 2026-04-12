@@ -10,6 +10,6 @@ description = "0/3 blocker."
 character_art_uid = "uid://mduxjrtw74f3"
 facing_right = false
 height = 160
-max_health = 3
+max_health = 5
 ai = ExtResource("1_rj3us")
 metadata/_custom_type_script = "uid://cfatj0ryn8uv3"

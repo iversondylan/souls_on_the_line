@@ -342,6 +342,7 @@ func on_event(e: EventPackage) -> void:
 			_on_arcanum_proc(e)
 		BattleEvent.Type.PLAYER_INPUT_REACHED:
 			var actor_id := int(e.event.data.get(Keys.ACTOR_ID, 0)) if e.event.data != null else 0
+			print("[TRACE battle_event_director] PLAYER_INPUT_REACHED actor_id=%d seq=%d" % [actor_id, int(e.event.seq)])
 			Events.player_input_view_reached.emit(actor_id)
 		BattleEvent.Type.CARD_PLAYED:
 			pass
@@ -1164,6 +1165,7 @@ func _on_discard_requested(e: EventPackage) -> void:
 
 func _on_draw_cards(e: EventPackage) -> void:
 	if e == null or e.event == null:
+		print("[TRACE battle_event_director] _on_draw_cards: missing event package")
 		return
 
 	var d := _data(e)
@@ -1175,6 +1177,12 @@ func _on_draw_cards(e: EventPackage) -> void:
 		ctx.reason = String(d.get(Keys.REASON, ""))
 		ctx.disable_until_next_player_turn = bool(d.get(Keys.DISABLE_UNTIL_NEXT_PLAYER_TURN, false))
 
+	print("[TRACE battle_event_director] DRAW_CARDS seq=%d source_id=%d amount=%d reason=%s" % [
+		int(e.event.seq),
+		int(ctx.source_id),
+		int(ctx.amount),
+		String(ctx.reason)
+	])
 	Events.request_draw_cards.emit(ctx)
 
 func _on_discard_cards(e: EventPackage) -> void:

@@ -1,7 +1,7 @@
-[gd_resource type="Resource" script_class="IntentTooltipTextModel" format=3 uid="uid://duuocfptb6aoy"]
+[gd_resource type="Resource" script_class="HealIntentTooltipTextModel" format=3 uid="uid://duuocfptb6aoy"]
 
-[ext_resource type="Script" uid="uid://cxh1c3vqgquc5" path="res://npc_ai/text/intent_tooltip_text_model.gd" id="1_tooltip_script"]
+[ext_resource type="Script" uid="uid://bgd6oasb8k3en" path="res://npc_ai/text/heal_intent_tooltip_text_model.gd" id="1_heal_tooltip_script"]
 
 [resource]
-script = ExtResource("1_tooltip_script")
-text_template = "[b]{action_name}[/b]: move the healthiest ally to the front, then heal the most wounded ally for {flat_amount}."
+script = ExtResource("1_heal_tooltip_script")
+text_template = "[b]{action_name}[/b]: move the healthiest ally to the front, then heal the most wounded ally for {heal_amount}."

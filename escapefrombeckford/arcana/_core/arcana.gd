@@ -14,4 +14,4 @@ func get_ids() -> Array[String]:
 	for arcanum: Arcanum in arcana:
 		ids.push_back(String(arcanum.get_id()))
 	return ids
-		
+	

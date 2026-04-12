@@ -12,13 +12,12 @@ func on_damage_will_be_taken(ctx: SimStatusContext, damage_ctx: DamageContext) -
 		return
 	if int(damage_ctx.target_id) != int(ctx.owner_id):
 		return
-	if int(damage_ctx.amount) <= 0:
-		return
 
 	var intensity := int(ctx.get_intensity())
 	if intensity <= 0:
 		return
 
+	# Absorb is keyed to the next incoming hit, even if mitigation reduces that hit to 0.
 	damage_ctx.amount = 0
 	if intensity <= 1:
 		ctx.remove_self("absorb_consumed")

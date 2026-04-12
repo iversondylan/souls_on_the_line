@@ -1,6 +1,6 @@
-[gd_resource type="Resource" script_class="IntentTooltipTextModel" format=3 uid="uid://dmli8brrtlw0m"]
+[gd_resource type="Resource" script_class="HealIntentTextModel" format=3 uid="uid://dmli8brrtlw0m"]
 
-[ext_resource type="Script" uid="uid://cxh1c3vqgquc5" path="res://npc_ai/text/intent_tooltip_text_model.gd" id="1_tooltip_script"]
+[ext_resource type="Script" uid="uid://bws6ai4a653pr" path="res://npc_ai/text/heal_intent_text_model.gd" id="1_heal_text_script"]
 
 [resource]
-script = ExtResource("1_tooltip_script")
+script = ExtResource("1_heal_text_script")

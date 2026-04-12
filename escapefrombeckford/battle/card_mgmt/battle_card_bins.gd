@@ -15,10 +15,7 @@ var rule_host: CardBinRuleHost
 var rng: RNG
 
 func _ready() -> void:
-	if !Events.request_draw_cards.is_connected(_on_request_draw_cards):
-		Events.request_draw_cards.connect(_on_request_draw_cards)
-	if !Events.execute_discard_cards.is_connected(_on_execute_discard_cards):
-		Events.execute_discard_cards.connect(_on_execute_discard_cards)
+	_ensure_event_connections()
 
 
 func setup(new_battle: Battle, new_hand: Hand) -> void:
@@ -26,6 +23,7 @@ func setup(new_battle: Battle, new_hand: Hand) -> void:
 	hand = new_hand
 	if hand != null:
 		hand.bins = self
+	_ensure_event_connections()
 
 
 func configure_seed(battle_seed: int) -> void:
@@ -74,8 +72,17 @@ func make_draw_pile() -> void:
 
 func request_draw(ctx: DrawContext) -> void:
 	if ctx == null:
+		print("[TRACE battle_card_bins] request_draw: ctx is null")
 		return
 
+	print("[TRACE battle_card_bins] request_draw: source_id=%d amount=%d reason=%s draw_pile=%d hand=%d discard=%d" % [
+		int(ctx.source_id),
+		int(ctx.amount),
+		String(ctx.reason),
+		int(state.draw_pile.cards.size()) if state.draw_pile != null else -1,
+		int(state.hand_pile.cards.size()) if state.hand_pile != null else -1,
+		int(state.discard_pile.cards.size()) if state.discard_pile != null else -1
+	])
 	prepare_draw(ctx)
 	ctx.drawn_cards = []
 	ctx.drawn_card_uids = []
@@ -92,6 +99,12 @@ func request_draw(ctx: DrawContext) -> void:
 	if hand != null and !ctx.drawn_cards.is_empty():
 		await hand.present_draw_cards(ctx.drawn_cards)
 
+	print("[TRACE battle_card_bins] request_draw_complete: reason=%s amount=%d actually_drawn=%d hand=%d" % [
+		String(ctx.reason),
+		int(ctx.amount),
+		int(ctx.actually_drawn),
+		int(state.hand_pile.cards.size()) if state.hand_pile != null else -1
+	])
 	after_draw(ctx)
 
 
@@ -334,10 +347,24 @@ func after_hand_cleanup(ctx: HandCleanupContext) -> void:
 
 
 func _on_request_draw_cards(ctx: DrawContext) -> void:
+	print("[TRACE battle_card_bins] _on_request_draw_cards: ctx=%s reason=%s amount=%d" % [
+		str(ctx != null),
+		String(ctx.reason) if ctx != null else "",
+		int(ctx.amount) if ctx != null else -1
+	])
 	await request_draw(ctx)
 
 func _on_execute_discard_cards(ctx: DiscardContext) -> void:
 	await request_discard(ctx)
+
+
+func _ensure_event_connections() -> void:
+	if Events == null:
+		return
+	if !Events.request_draw_cards.is_connected(_on_request_draw_cards):
+		Events.request_draw_cards.connect(_on_request_draw_cards)
+	if !Events.execute_discard_cards.is_connected(_on_execute_discard_cards):
+		Events.execute_discard_cards.connect(_on_execute_discard_cards)
 
 
 func is_hand_card_locked_until_next_player_turn(card_uid: String) -> bool:

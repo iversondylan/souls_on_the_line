@@ -3,6 +3,7 @@
 class_name ActionIntentPresenter extends RefCounted
 
 const BANISH_INTENT_TEXT_COLOR := Color(0.45, 0.75, 1.0, 1.0)
+const HEAL_INTENT_TEXT_COLOR := Color(0.22, 0.74, 0.28, 1.0)
 
 static func emit_set_intent(api: SimBattleAPI, profile: NPCAIProfile, ctx: NPCAIContext, new_idx: int) -> void:
 	if api == null or api.writer == null or profile == null or ctx == null:
@@ -33,7 +34,7 @@ static func emit_set_intent(api: SimBattleAPI, profile: NPCAIProfile, ctx: NPCAI
 	var tooltip_text := ""
 	var preview_package_index := _find_attack_preview_package_index(action)
 	ctx.preview_package_index = preview_package_index
-	intent_text_color = _resolve_intent_text_color(ctx, actor_id)
+	intent_text_color = _resolve_intent_text_color(action, ctx, actor_id)
 	ctx.action_name = action.resolve_display_name(ctx.params)
 
 	if action.intent_text_model:
@@ -97,7 +98,7 @@ static func emit_current_intent(api: SimBattleAPI, cid: int) -> void:
 	var tooltip_text := ""
 	var preview_package_index := _find_attack_preview_package_index(action)
 	ctx.preview_package_index = preview_package_index
-	var intent_text_color := _resolve_intent_text_color(ctx, int(cid))
+	var intent_text_color := _resolve_intent_text_color(action, ctx, int(cid))
 	ctx.action_name = action.resolve_display_name(ctx.params)
 
 	if action.intent_text_model:
@@ -132,7 +133,9 @@ static func _change_params_only(action: NPCAction, ctx: NPCAIContext) -> void:
 				continue
 			model.change_params_sim(ctx)
 
-static func _resolve_intent_text_color(ctx: NPCAIContext, actor_id: int) -> Color:
+static func _resolve_intent_text_color(action: NPCAction, ctx: NPCAIContext, actor_id: int) -> Color:
+	if _find_heal_preview_package_index(action) >= 0:
+		return HEAL_INTENT_TEXT_COLOR
 	if ctx == null or int(ctx.preview_package_index) < 0:
 		return Color.WHITE
 	var base_damage := 0
@@ -160,6 +163,19 @@ static func _find_attack_preview_package_index(action: NPCAction) -> int:
 		if pkg == null or pkg.effect == null:
 			continue
 		if pkg.effect is NPCAttackSequence:
+			return i
+
+	return -1
+
+static func _find_heal_preview_package_index(action: NPCAction) -> int:
+	if action == null:
+		return -1
+
+	for i in range(action.effect_packages.size()):
+		var pkg: NPCEffectPackage = action.effect_packages[i]
+		if pkg == null or pkg.effect == null:
+			continue
+		if pkg.effect is NPCHealSequence:
 			return i
 
 	return -1
