@@ -26,7 +26,7 @@ event_name = &"dialogue_acknowledged"
 script = ExtResource("4_dialogue_action")
 dialogue_id = &"oswin_intro"
 speaker_name = "Magister Oswin Carrel"
-text_bbcode = "Ahem. Stated for the record: this is Magister Oswin Carrel, Assistant Director of Resonance Integration. Associate Magister Cole Hadyn joins me today for a combat drill."
+text_bbcode = "Ahem. Stated for the record: this is Magister Oswin Carrel, Assistant Director of Resonance Integration. Associate Magister Cole Hadyn joins me today for a combat exercise."
 
 [sub_resource type="Resource" id="EncounterEventCondition_player_input"]
 script = ExtResource("5_event_condition")
@@ -68,7 +68,7 @@ capability_overrides = SubResource("EncounterCapabilitySet_locked")
 script = ExtResource("4_dialogue_action")
 dialogue_id = &"oswin_front_instruction"
 speaker_name = "Magister Oswin Carrel"
-text_bbcode = "Only you are able to create these clones, but the possibilities are limitless! For instance, try creating one [b]in front[/b] of you to protect yourself from the attack of that training golem."
+text_bbcode = "Only you are able to create these clones. Even so, the possibilities are limitless! For instance, try creating one [b]in front[/b] of you to protect yourself from the attack of that training golem."
 
 [sub_resource type="Resource" id="EncounterStep_teach_front_clone_dialogue"]
 script = ExtResource("8_step")
