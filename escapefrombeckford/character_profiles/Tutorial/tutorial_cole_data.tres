@@ -1,16 +1,14 @@
-[gd_resource type="Resource" script_class="PlayerData" format=3]
+[gd_resource type="Resource" script_class="PlayerData" format=3 uid="uid://bk7kn6kloe6sg"]
 
-[ext_resource type="Resource" path="res://character_profiles/Cole/arcana_reward_pool.tres" id="1_reward_pool"]
-[ext_resource type="Script" path="res://character_profiles/player_data.gd" id="2_player_data"]
-[ext_resource type="Resource" path="res://character_profiles/Cole/cole_draftable_cards.tres" id="3_draftable"]
-[ext_resource type="Resource" path="res://character_profiles/Cole/cole_possible_arcana.tres" id="4_arcana"]
-[ext_resource type="Resource" path="res://arcana/adamant_ally.tres" id="5_starting_arcanum"]
-[ext_resource type="Resource" path="res://character_profiles/Tutorial/tutorial_cole_deck.tres" id="6_starting_deck"]
+[ext_resource type="Resource" uid="uid://c8kt337vs6465" path="res://character_profiles/Cole/arcana_reward_pool.tres" id="1_reward_pool"]
+[ext_resource type="Script" uid="uid://bql7t8sctwe10" path="res://character_profiles/player_data.gd" id="2_player_data"]
+[ext_resource type="Resource" uid="uid://bb2svevqwn2v7" path="res://character_profiles/Cole/cole_draftable_cards.tres" id="3_draftable"]
+[ext_resource type="Resource" uid="uid://vnoxk6md128x" path="res://character_profiles/Cole/cole_possible_arcana.tres" id="4_arcana"]
+[ext_resource type="Resource" uid="uid://jhntu0vckcll" path="res://character_profiles/Tutorial/tutorial_cole_deck.tres" id="6_starting_deck"]
 
 [resource]
 script = ExtResource("2_player_data")
 profile_id = "tutorial_cole"
-starting_arcanum = ExtResource("5_starting_arcanum")
 possible_arcana = ExtResource("4_arcana")
 starting_deck = ExtResource("6_starting_deck")
 draftable_cards = ExtResource("3_draftable")

@@ -1,6 +1,6 @@
-[gd_resource type="Resource" script_class="NPCHealSequence" format=3]
+[gd_resource type="Resource" script_class="NPCHealSequence" format=3 uid="uid://divkbtpv76a47"]
 
-[ext_resource type="Script" path="res://npc_ai/npc_heal_sequence.gd" id="1_heal"]
+[ext_resource type="Script" uid="uid://dd0h5uxu7jar0" path="res://npc_ai/npc_heal_sequence.gd" id="1_heal"]
 
 [resource]
 script = ExtResource("1_heal")

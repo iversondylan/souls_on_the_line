@@ -1,7 +1,7 @@
-[gd_resource type="Resource" script_class="NPCAction" format=3]
+[gd_resource type="Resource" script_class="NPCAction" format=3 uid="uid://uvceqpamg8oc"]
 
 [ext_resource type="Script" uid="uid://3jde7uhq2yho" path="res://npc_ai/_core/npc_effect_package.gd" id="1_pkg"]
-[ext_resource type="Resource" path="res://combatants/enemies/TreeBoss/tree_boss_trample_package.tres" id="2_attack_pkg"]
+[ext_resource type="Resource" uid="uid://cv4yhuaqeb7j8" path="res://combatants/enemies/TreeBoss/tree_boss_trample_package.tres" id="2_attack_pkg"]
 [ext_resource type="Texture2D" uid="uid://c54dbo8n7r3g" path="res://_assets/sprites/assorted/attack.PNG" id="3_attack_icon"]
 [ext_resource type="Script" uid="uid://dtwuyctovqk5r" path="res://npc_ai/_core/intent_lifecycle_model.gd" id="4_lifecycle"]
 [ext_resource type="Resource" uid="uid://b8ek3tnqokdiy" path="res://combatants/enemies/GroundskeeperConstruct/heavy_attack_lifecycle_model.tres" id="5_heavy_lifecycle"]

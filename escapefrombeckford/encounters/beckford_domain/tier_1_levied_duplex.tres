@@ -1,9 +1,9 @@
-[gd_resource type="Resource" script_class="BattleData" format=3]
+[gd_resource type="Resource" script_class="BattleData" format=3 uid="uid://bxd4v4oo05155"]
 
-[ext_resource type="Script" path="res://combatants/combatant_data.gd" id="1_combatant_data"]
-[ext_resource type="Resource" path="res://combatants/enemies/AssistantMagister/assistant_magister_data.tres" id="2_magister"]
-[ext_resource type="Resource" path="res://combatants/enemies/StudentBodyOfficial/student_body_official_data.tres" id="3_official"]
-[ext_resource type="Script" path="res://encounters/battle_data.gd" id="4_battle_data"]
+[ext_resource type="Script" uid="uid://cfatj0ryn8uv3" path="res://combatants/combatant_data.gd" id="1_combatant_data"]
+[ext_resource type="Resource" uid="uid://rw3neqmn1455" path="res://combatants/enemies/AssistantMagister/assistant_magister_data.tres" id="2_magister"]
+[ext_resource type="Resource" uid="uid://dviwwraaqsvh3" path="res://combatants/enemies/StudentBodyOfficial/student_body_official_data.tres" id="3_official"]
+[ext_resource type="Script" uid="uid://be1v8qevmc2xw" path="res://encounters/battle_data.gd" id="4_battle_data"]
 
 [resource]
 script = ExtResource("4_battle_data")

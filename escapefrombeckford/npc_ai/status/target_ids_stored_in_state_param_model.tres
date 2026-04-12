@@ -1,6 +1,6 @@
-[gd_resource type="Resource" script_class="TargetIdsStoredInStateParamModel" format=3]
+[gd_resource type="Resource" script_class="TargetIdsStoredInStateParamModel" format=3 uid="uid://bol72xsxj761v"]
 
-[ext_resource type="Script" path="res://npc_ai/status/target_ids_stored_in_state_param_model.gd" id="1_model"]
+[ext_resource type="Script" uid="uid://bxv83nkt4ltse" path="res://npc_ai/status/target_ids_stored_in_state_param_model.gd" id="1_model"]
 
 [resource]
 script = ExtResource("1_model")

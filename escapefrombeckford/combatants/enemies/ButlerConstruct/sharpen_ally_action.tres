@@ -3,13 +3,13 @@
 [ext_resource type="Script" uid="uid://3jde7uhq2yho" path="res://npc_ai/_core/npc_effect_package.gd" id="1_uhi1n"]
 [ext_resource type="Script" uid="uid://dtwuyctovqk5r" path="res://npc_ai/_core/intent_lifecycle_model.gd" id="2_ksjjk"]
 [ext_resource type="Resource" uid="uid://bpx36dobm3jr5" path="res://combatants/enemies/ButlerConstruct/sharpen_ally_pkg.tres" id="2_pkotl"]
-[ext_resource type="Resource" path="res://combatants/enemies/ButlerConstruct/sharpen_ally_lifecycle.tres" id="3_lifecycle"]
+[ext_resource type="Resource" uid="uid://h7rtcjxkvkr5" path="res://combatants/enemies/ButlerConstruct/sharpen_ally_lifecycle.tres" id="3_lifecycle"]
 [ext_resource type="Script" uid="uid://q408gy2b4q6a" path="res://npc_ai/_core/performable_model.gd" id="3_pkotl"]
 [ext_resource type="Texture2D" uid="uid://brdfq5loj4rsy" path="res://_assets/sprites/assorted/sword-smithing.png" id="3_yq1pa"]
 [ext_resource type="Script" uid="uid://bcih413oy6v73" path="res://npc_ai/_core/npc_action.gd" id="4_yq1pa"]
 [ext_resource type="Script" uid="uid://cuj4qvyx6dedj" path="res://npc_ai/_core/state_model.gd" id="5_c6qn7"]
 [ext_resource type="Resource" uid="uid://btgtvs6ab0nsg" path="res://npc_ai/chance/half_exponential_spree_chance_state_model.tres" id="7_yq1pa"]
-[ext_resource type="Resource" path="res://combatants/enemies/ButlerConstruct/sharpen_ally_tooltip_model.tres" id="9_c6qn7"]
+[ext_resource type="Resource" uid="uid://dfh3s3f6weua2" path="res://combatants/enemies/ButlerConstruct/sharpen_ally_tooltip_model.tres" id="9_c6qn7"]
 
 [resource]
 script = ExtResource("4_yq1pa")

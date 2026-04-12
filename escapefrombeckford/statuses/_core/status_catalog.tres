@@ -33,7 +33,7 @@
 [ext_resource type="Resource" uid="uid://dvxb1b65olpr7" path="res://statuses/bequeath.tres" id="27_gyvsg"]
 [ext_resource type="Resource" uid="uid://d62rr0vbgpj4" path="res://statuses/vulnerable.tres" id="28_vulnerable"]
 [ext_resource type="Resource" uid="uid://dwgwwjn6p4t5x" path="res://statuses/weakened.tres" id="29_weakened"]
-[ext_resource type="Resource" path="res://statuses/sleep.tres" id="30_sleep"]
+[ext_resource type="Resource" uid="uid://qvoqpv21h118" path="res://statuses/sleep.tres" id="30_sleep"]
 
 [resource]
 script = ExtResource("1_2sbnh")

@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://bcih413oy6v73" path="res://npc_ai/_core/npc_action.gd" id="1_action"]
 [ext_resource type="Resource" uid="uid://dimqt1j4fk654" path="res://combatants/enemies/WeberPatrolArbalest/weber_patrol_arbalest_snipe_attack_action.tres" id="2_attack"]
 [ext_resource type="Script" uid="uid://bdsvca1cpka5s" path="res://npc_ai/_core/npc_ai_profile.gd" id="3_ai"]
-[ext_resource type="Resource" path="res://combatants/enemies/WeberPatrolArbalest/weber_patrol_arbalest_quarrel_spray_action.tres" id="3_quarrel_spray"]
+[ext_resource type="Resource" uid="uid://jar8piuoh2yq" path="res://combatants/enemies/WeberPatrolArbalest/weber_patrol_arbalest_quarrel_spray_action.tres" id="3_quarrel_spray"]
 
 [resource]
 script = ExtResource("3_ai")

@@ -1,10 +1,10 @@
-[gd_resource type="Resource" script_class="NPCEffectPackage" format=3]
+[gd_resource type="Resource" script_class="NPCEffectPackage" format=3 uid="uid://cjq8hwkl25fbq"]
 
 [ext_resource type="Script" uid="uid://b8d5j6ne4mt88" path="res://npc_ai/_core/param_model.gd" id="1_param"]
 [ext_resource type="Resource" uid="uid://br5dox5m0ph6v" path="res://npc_ai/npc_status_sequence.tres" id="1_status_effect"]
 [ext_resource type="Script" uid="uid://3jde7uhq2yho" path="res://npc_ai/_core/npc_effect_package.gd" id="2_pkg"]
-[ext_resource type="Resource" path="res://npc_ai/status/all_opponents_status_target_model.tres" id="3_targets"]
-[ext_resource type="Resource" path="res://combatants/enemies/ScrapmenTruncheoner/blinding_assault_weakened_status_model.tres" id="4_status_model"]
+[ext_resource type="Resource" uid="uid://bfultpdnpsr4u" path="res://npc_ai/status/all_opponents_status_target_model.tres" id="3_targets"]
+[ext_resource type="Resource" uid="uid://dln4o4rvqo7cd" path="res://combatants/enemies/ScrapmenTruncheoner/blinding_assault_weakened_status_model.tres" id="4_status_model"]
 
 [resource]
 script = ExtResource("2_pkg")

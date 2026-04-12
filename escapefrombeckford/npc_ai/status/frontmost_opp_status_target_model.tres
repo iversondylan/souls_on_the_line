@@ -1,6 +1,6 @@
-[gd_resource type="Resource" script_class="FrontmostOppStatusTargetModel" format=3]
+[gd_resource type="Resource" script_class="FrontmostOppStatusTargetModel" format=3 uid="uid://bgjkrgx05jfgx"]
 
-[ext_resource type="Script" path="res://npc_ai/status/frontmost_opp_status_target_model.gd" id="1_u0otu"]
+[ext_resource type="Script" uid="uid://bumwkrk1fdfhj" path="res://npc_ai/status/frontmost_opp_status_target_model.gd" id="1_u0otu"]
 
 [resource]
 script = ExtResource("1_u0otu")

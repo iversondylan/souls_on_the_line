@@ -10,6 +10,7 @@ enum DeniedPresentation {
 @export var next_step_id: StringName = &""
 @export var block_input_while_dialogue: bool = true
 @export var player_turn_draw_amount_override: int = -1
+@export var auto_advance_after_sec: float = -1.0
 @export var entry_actions: Array = []
 @export var completion_conditions: Array = []
 @export var triggers: Array = []

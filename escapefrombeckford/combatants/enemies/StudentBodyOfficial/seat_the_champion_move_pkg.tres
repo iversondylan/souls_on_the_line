@@ -1,9 +1,9 @@
-[gd_resource type="Resource" script_class="NPCEffectPackage" format=3]
+[gd_resource type="Resource" script_class="NPCEffectPackage" format=3 uid="uid://dcf04n2huio61"]
 
-[ext_resource type="Resource" path="res://npc_ai/npc_move_sequence.tres" id="1_move"]
-[ext_resource type="Script" path="res://npc_ai/_core/param_model.gd" id="2_param"]
-[ext_resource type="Script" path="res://npc_ai/_core/npc_effect_package.gd" id="3_pkg"]
-[ext_resource type="Resource" path="res://npc_ai/status/highest_health_ally_status_target_model.tres" id="4_target_model"]
+[ext_resource type="Resource" uid="uid://14nbx8bhklh5" path="res://npc_ai/npc_move_sequence.tres" id="1_move"]
+[ext_resource type="Script" uid="uid://b8d5j6ne4mt88" path="res://npc_ai/_core/param_model.gd" id="2_param"]
+[ext_resource type="Script" uid="uid://3jde7uhq2yho" path="res://npc_ai/_core/npc_effect_package.gd" id="3_pkg"]
+[ext_resource type="Resource" uid="uid://c8ihq1i8s2ftx" path="res://npc_ai/status/highest_health_ally_status_target_model.tres" id="4_target_model"]
 
 [resource]
 script = ExtResource("3_pkg")

@@ -5,10 +5,10 @@
 [ext_resource type="Texture2D" uid="uid://g3txk232bff5" path="res://_assets/sprites/assorted/prayer.png" id="3_icon"]
 [ext_resource type="Script" uid="uid://bcih413oy6v73" path="res://npc_ai/_core/npc_action.gd" id="4_action"]
 [ext_resource type="Script" uid="uid://dtwuyctovqk5r" path="res://npc_ai/_core/intent_lifecycle_model.gd" id="5_lifecycle"]
-[ext_resource type="Resource" path="res://combatants/enemies/GentleDeepPriest/deep_benediction_lifecycle.tres" id="5_pending_lifecycle"]
+[ext_resource type="Resource" uid="uid://bwm2agmp37oc1" path="res://combatants/enemies/GentleDeepPriest/deep_benediction_lifecycle.tres" id="5_pending_lifecycle"]
 [ext_resource type="Script" uid="uid://q408gy2b4q6a" path="res://npc_ai/_core/performable_model.gd" id="6_miiyi"]
 [ext_resource type="Script" uid="uid://cuj4qvyx6dedj" path="res://npc_ai/_core/state_model.gd" id="6_state"]
-[ext_resource type="Resource" path="res://combatants/enemies/GentleDeepPriest/deep_benediction_intent_text_model.tres" id="7_text_model"]
+[ext_resource type="Resource" uid="uid://deh1au83ybw1y" path="res://combatants/enemies/GentleDeepPriest/deep_benediction_intent_text_model.tres" id="7_text_model"]
 [ext_resource type="Resource" uid="uid://dsv20154fm2op" path="res://combatants/enemies/GentleDeepPriest/deep_benediction_tooltip_model.tres" id="8_tooltip_model"]
 
 [resource]

@@ -1,8 +1,8 @@
-[gd_resource type="Resource" script_class="DangerZoneIntentLifecycleModel" format=3]
+[gd_resource type="Resource" script_class="DangerZoneIntentLifecycleModel" format=3 uid="uid://ewe0jcda668x"]
 
-[ext_resource type="Script" path="res://npc_ai/intent_lifecycle/danger_zone_intent_lifecycle_model.gd" id="1_lifecycle"]
+[ext_resource type="Script" uid="uid://bghuik7galqjh" path="res://npc_ai/intent_lifecycle/danger_zone_intent_lifecycle_model.gd" id="1_lifecycle"]
 [ext_resource type="Resource" uid="uid://00aqmemuit10" path="res://statuses/danger_zone.tres" id="2_status"]
-[ext_resource type="Resource" path="res://npc_ai/status/frontmost_opp_status_target_model.tres" id="3_target_model"]
+[ext_resource type="Resource" uid="uid://bgjkrgx05jfgx" path="res://npc_ai/status/frontmost_opp_status_target_model.tres" id="3_target_model"]
 
 [resource]
 script = ExtResource("1_lifecycle")

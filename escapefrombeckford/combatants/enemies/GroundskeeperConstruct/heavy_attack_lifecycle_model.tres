@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="StatusFromOppTurnUntilEndOfMyTurnModel" format=3 uid="uid://b8ek3tnqokdiy"]
 
 [ext_resource type="Script" uid="uid://h88tbmmbtgjm" path="res://npc_ai/intent_lifecycle/status_from_opp_turn_until_end_of_my_turn_model.gd" id="1_wncly"]
-[ext_resource type="Resource" path="res://statuses/heavy_attack.tres" id="2_hnamg"]
+[ext_resource type="Resource" uid="uid://dranrw6gwftwj" path="res://statuses/heavy_attack.tres" id="2_hnamg"]
 
 [resource]
 script = ExtResource("1_wncly")

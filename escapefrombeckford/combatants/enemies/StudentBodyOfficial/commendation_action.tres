@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://3jde7uhq2yho" path="res://npc_ai/_core/npc_effect_package.gd" id="1_pkg"]
 [ext_resource type="Resource" uid="uid://jyct3pmncqxn" path="res://combatants/enemies/StudentBodyOfficial/commendation_apply_amplify_pkg.tres" id="2_status_pkg"]
-[ext_resource type="Resource" path="res://combatants/enemies/StudentBodyOfficial/commendation_apply_absorb_pkg.tres" id="3_absorb_pkg"]
+[ext_resource type="Resource" uid="uid://nc6sjk5cjm6n" path="res://combatants/enemies/StudentBodyOfficial/commendation_apply_absorb_pkg.tres" id="3_absorb_pkg"]
 [ext_resource type="Texture2D" uid="uid://dtphr4ncf8l0g" path="res://_assets/sprites/assorted/extra-lucid.png" id="4_vrcmc"]
 [ext_resource type="Script" uid="uid://bcih413oy6v73" path="res://npc_ai/_core/npc_action.gd" id="5_action"]
 [ext_resource type="Script" uid="uid://dtwuyctovqk5r" path="res://npc_ai/_core/intent_lifecycle_model.gd" id="5_vrcmc"]
@@ -11,7 +11,7 @@
 [ext_resource type="Resource" uid="uid://c4xg5h0753cix" path="res://combatants/enemies/StudentBodyOfficial/commendation_intent_text_model.tres" id="7_text_model"]
 [ext_resource type="Resource" uid="uid://dxkcenpdw8mm1" path="res://combatants/enemies/StudentBodyOfficial/commendation_tooltip_model.tres" id="8_tooltip_model"]
 [ext_resource type="Resource" uid="uid://btgtvs6ab0nsg" path="res://npc_ai/chance/half_exponential_spree_chance_state_model.tres" id="9_half_exp"]
-[ext_resource type="Resource" path="res://npc_ai/chance/multiply_chance_if_alone_state_model.tres" id="10_alone_mult"]
+[ext_resource type="Resource" uid="uid://dtjkil40dvxcv" path="res://npc_ai/chance/multiply_chance_if_alone_state_model.tres" id="10_alone_mult"]
 
 [resource]
 script = ExtResource("5_action")

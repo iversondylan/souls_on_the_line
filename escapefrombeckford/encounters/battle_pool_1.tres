@@ -6,7 +6,7 @@
 [ext_resource type="Resource" uid="uid://dhsripdllldnw" path="res://encounters/beckford_domain/tier_0_beckford_constructs.tres" id="3_gu42u"]
 [ext_resource type="Resource" uid="uid://ds01iuqxyqf0g" path="res://encounters/beckford_domain/tier_0_truncheoner.tres" id="4_wgva7"]
 [ext_resource type="Resource" uid="uid://cjopm7vq3b5x6" path="res://encounters/beckford_domain/tier_0_cursed_ledger.tres" id="5_r3cy5"]
-[ext_resource type="Resource" path="res://encounters/beckford_domain/tier_1_levied_duplex.tres" id="6b_duplex"]
+[ext_resource type="Resource" uid="uid://bxd4v4oo05155" path="res://encounters/beckford_domain/tier_1_levied_duplex.tres" id="6b_duplex"]
 [ext_resource type="Resource" uid="uid://cdev0ybyn2i3o" path="res://encounters/beckford_domain/tier_0_levied_servitors.tres" id="6_fbmkn"]
 [ext_resource type="Resource" uid="uid://db0if7277h7kw" path="res://encounters/beckford_domain/tier_1_weber_patrol.tres" id="7_sumc2"]
 [ext_resource type="Resource" uid="uid://bro14nbxe02ih" path="res://encounters/beckford_domain/tier_1_calabash.tres" id="8_mneoi"]

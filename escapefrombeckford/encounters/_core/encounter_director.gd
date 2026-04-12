@@ -4,6 +4,7 @@ const EncounterStateScript = preload("res://encounters/_core/encounter_state.gd"
 const EncounterCapabilitySetScript = preload("res://encounters/_core/encounter_capability_set.gd")
 const EncounterGateRequestScript = preload("res://encounters/_core/encounter_gate_request.gd")
 const EncounterDialogueRequestScript = preload("res://encounters/_core/encounter_dialogue_request.gd")
+const EncounterObservedEventScript = preload("res://encounters/_core/encounter_observed_event.gd")
 const EncounterRuleContextScript = preload("res://encounters/_core/encounter_rule_context.gd")
 const GateResultScript = preload("res://encounters/_core/gate_result.gd")
 const EncounterStepScript = preload("res://encounters/_core/encounter_step.gd")
@@ -17,8 +18,10 @@ signal blocking_state_changed(is_blocking: bool)
 var definition = null
 var state = EncounterStateScript.new()
 var battle = null
+var _step_timer_generation: int = 0
 
 func _exit_tree() -> void:
+	_invalidate_step_timer()
 	if Events != null and Events.encounter_observed_event.is_connected(observe_view_event):
 		Events.encounter_observed_event.disconnect(observe_view_event)
 
@@ -74,6 +77,11 @@ func get_player_turn_draw_amount_override() -> int:
 func observe_view_event(ev) -> void:
 	if !is_active() or ev == null:
 		return
+	_process_observed_event(ev)
+
+func _process_observed_event(ev) -> void:
+	if !is_active() or ev == null:
+		return
 	state.last_observed_event = ev
 	var ctx = _make_context(null, ev)
 	_run_triggers(definition.triggers, ctx)
@@ -91,6 +99,12 @@ func acknowledge_dialogue(dialogue_id: StringName) -> void:
 	state.active_dialogue = null
 	state.awaiting_dialogue_ack = false
 	_refresh_capabilities_from_current_step()
+	var ack_event := EncounterObservedEventScript.new()
+	ack_event.name = &"dialogue_acknowledged"
+	ack_event.data = {
+		"dialogue_id": dialogue_id,
+	}
+	_process_observed_event(ack_event)
 	blocking_state_changed.emit(_is_dialogue_blocking())
 
 func queue_dialogue(request) -> void:
@@ -105,6 +119,7 @@ func queue_dialogue(request) -> void:
 func goto_step(step_id: StringName) -> void:
 	if !is_active() or step_id == &"":
 		return
+	_invalidate_step_timer()
 	var step = definition.get_step_by_id(step_id)
 	if step == null:
 		push_warning("EncounterDirector.goto_step(): unknown step '%s'" % String(step_id))
@@ -116,6 +131,9 @@ func goto_step(step_id: StringName) -> void:
 	ctx.current_step = step
 	_run_actions(step.entry_actions, ctx)
 	_try_complete_step(ctx)
+	if state.current_step_id != step.id:
+		return
+	_start_step_auto_advance(step)
 
 func set_flag(flag_name: StringName, value: Variant) -> void:
 	if flag_name == &"":
@@ -240,6 +258,37 @@ func _emit_capabilities(caps) -> void:
 
 func _is_dialogue_blocking() -> bool:
 	return state != null and state.awaiting_dialogue_ack and state.active_dialogue != null
+
+func _invalidate_step_timer() -> void:
+	_step_timer_generation += 1
+
+func _start_step_auto_advance(step) -> void:
+	if step == null:
+		return
+	if float(step.auto_advance_after_sec) < 0.0:
+		return
+	if step.next_step_id == &"" or step.next_step_id == step.id:
+		return
+	var tree: SceneTree = battle.get_tree() if battle != null else get_tree()
+	if tree == null:
+		return
+	var generation := _step_timer_generation
+	_wait_for_step_auto_advance(StringName(step.id), StringName(step.next_step_id), float(step.auto_advance_after_sec), generation)
+
+func _wait_for_step_auto_advance(from_step_id: StringName, to_step_id: StringName, delay_sec: float, generation: int) -> void:
+	if delay_sec <= 0.0:
+		if generation == _step_timer_generation and state.current_step_id == from_step_id:
+			goto_step(to_step_id)
+		return
+	var tree: SceneTree = battle.get_tree() if battle != null else get_tree()
+	if tree == null:
+		return
+	await tree.create_timer(delay_sec, false).timeout
+	if generation != _step_timer_generation:
+		return
+	if !is_active() or state.current_step_id != from_step_id:
+		return
+	goto_step(to_step_id)
 
 func _make_context(req, ev):
 	var ctx = EncounterRuleContextScript.new()

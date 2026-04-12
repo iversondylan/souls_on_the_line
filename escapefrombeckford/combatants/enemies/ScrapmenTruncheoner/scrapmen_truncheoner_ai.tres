@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://bcih413oy6v73" path="res://npc_ai/_core/npc_action.gd" id="1_plsdi"]
 [ext_resource type="Script" uid="uid://bdsvca1cpka5s" path="res://npc_ai/_core/npc_ai_profile.gd" id="2_frbqq"]
 [ext_resource type="Resource" uid="uid://daro2dujgs168" path="res://combatants/enemies/ScrapmenTruncheoner/banish_action.tres" id="2_l4tss"]
-[ext_resource type="Resource" path="res://combatants/enemies/ScrapmenTruncheoner/blinding_assault_action.tres" id="3_blinding_assault"]
+[ext_resource type="Resource" uid="uid://badawvne56hsa" path="res://combatants/enemies/ScrapmenTruncheoner/blinding_assault_action.tres" id="3_blinding_assault"]
 
 [resource]
 script = ExtResource("2_frbqq")

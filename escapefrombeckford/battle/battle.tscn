@@ -29,7 +29,7 @@
 [ext_resource type="PackedScene" uid="uid://c634qgskmd0a" path="res://ui/card_pile_view.tscn" id="22_wyn7e"]
 [ext_resource type="Script" uid="uid://bmlyytso4qsj6" path="res://battle/interactions/battle_interaction_handler.gd" id="25_jt4d8"]
 [ext_resource type="Script" uid="uid://d1qgiqjurb6nw" path="res://battle/battle_preview_coordinator.gd" id="27_1m01a"]
-[ext_resource type="PackedScene" path="res://battle/ui/encounter/encounter_dialogue_layer.tscn" id="28_encounter_layer"]
+[ext_resource type="PackedScene" uid="uid://jxu5qilw3jl7" path="res://battle/ui/encounter/encounter_dialogue_layer.tscn" id="28_encounter_layer"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_eb6dy"]
 size = Vector2(1200, 200)

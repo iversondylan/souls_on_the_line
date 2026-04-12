@@ -76,6 +76,7 @@ var my_arcana: Array[StringName]
 
 var wait_for_anims: bool = false
 var _player_end_turn_armed: bool = false
+var _pending_player_turn_draw_amount_override: int = -1
 var card_bins: BattleCardBins
 var card_bin_rule_host: CardBinRuleHost
 var transport_session: BattleTransportSession
@@ -348,6 +349,7 @@ func _on_player_input_view_reached(player_id: int) -> void:
 	card_bins.unlock_hand_cards_for_player_turn()
 	if hand != null:
 		hand.refresh_locked_card_states()
+	_pending_player_turn_draw_amount_override = int(encounter_director.get_player_turn_draw_amount_override()) if encounter_director != null else -1
 	_release_pending_player_turn_draw_if_ready()
 
 
@@ -421,9 +423,8 @@ func _release_pending_player_turn_draw_if_ready() -> void:
 		return
 	if encounter_director != null and encounter_director.is_blocking_presentation():
 		return
-	var draw_amount_override := -1
-	if encounter_director != null:
-		draw_amount_override = int(encounter_director.get_player_turn_draw_amount_override())
+	var draw_amount_override := int(_pending_player_turn_draw_amount_override)
+	_pending_player_turn_draw_amount_override = -1
 	runtime.confirm_player_input_ready(draw_amount_override)
 
 

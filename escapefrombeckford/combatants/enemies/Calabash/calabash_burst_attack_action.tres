@@ -10,7 +10,7 @@
 [ext_resource type="Resource" uid="uid://7gggk4mmejsq" path="res://npc_ai/text/attack_intent_text_model.tres" id="7_text_model"]
 [ext_resource type="Resource" uid="uid://ivsvxo0vj72x" path="res://npc_ai/text/attack_intent_tooltip_text_model.tres" id="8_tooltip_model"]
 [ext_resource type="Script" uid="uid://cuj4qvyx6dedj" path="res://npc_ai/_core/state_model.gd" id="9_n45sh"]
-[ext_resource type="Resource" path="res://combatants/enemies/Calabash/calabash_zero_chance_first_turn_model.tres" id="10_zero_first_turn"]
+[ext_resource type="Resource" uid="uid://1dg4gik25c7q" path="res://combatants/enemies/Calabash/calabash_zero_chance_first_turn_model.tres" id="10_zero_first_turn"]
 [ext_resource type="Resource" uid="uid://btgtvs6ab0nsg" path="res://npc_ai/chance/half_exponential_spree_chance_state_model.tres" id="11_n45sh"]
 
 [resource]

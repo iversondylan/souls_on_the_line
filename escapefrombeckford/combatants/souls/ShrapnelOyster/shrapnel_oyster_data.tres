@@ -1,8 +1,8 @@
 [gd_resource type="Resource" script_class="CombatantData" format=3 uid="uid://cq26dme3yapq"]
 
-[ext_resource type="Script" path="res://npc_ai/_core/npc_action.gd" id="1_ah6fk"]
-[ext_resource type="Script" path="res://npc_ai/_core/npc_ai_profile.gd" id="2_ooeml"]
-[ext_resource type="Script" path="res://combatants/combatant_data.gd" id="3_cdawn"]
+[ext_resource type="Script" uid="uid://bcih413oy6v73" path="res://npc_ai/_core/npc_action.gd" id="1_ah6fk"]
+[ext_resource type="Script" uid="uid://bdsvca1cpka5s" path="res://npc_ai/_core/npc_ai_profile.gd" id="2_ooeml"]
+[ext_resource type="Script" uid="uid://cfatj0ryn8uv3" path="res://combatants/combatant_data.gd" id="3_cdawn"]
 
 [sub_resource type="Resource" id="Resource_0wlod"]
 script = ExtResource("2_ooeml")

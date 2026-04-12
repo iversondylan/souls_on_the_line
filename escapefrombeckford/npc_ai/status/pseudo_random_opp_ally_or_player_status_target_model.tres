@@ -1,6 +1,6 @@
-[gd_resource type="Resource" script_class="PseudoRandomOppAllyOrPlayerStatusTargetModel" format=3]
+[gd_resource type="Resource" script_class="PseudoRandomOppAllyOrPlayerStatusTargetModel" format=3 uid="uid://kx7end2rew5k"]
 
-[ext_resource type="Script" path="res://npc_ai/status/pseudo_random_opp_ally_or_player_status_target_model.gd" id="1_target_model"]
+[ext_resource type="Script" uid="uid://cacmb0ryq6h6w" path="res://npc_ai/status/pseudo_random_opp_ally_or_player_status_target_model.gd" id="1_target_model"]
 
 [resource]
 script = ExtResource("1_target_model")

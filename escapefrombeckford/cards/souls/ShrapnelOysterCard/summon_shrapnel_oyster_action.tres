@@ -1,10 +1,10 @@
 [gd_resource type="Resource" script_class="SummonAction" format=3 uid="uid://be4al1bkqe2nd"]
 
-[ext_resource type="Script" path="res://cards/_generic_actions/summon_action.gd" id="1_wj6j1"]
-[ext_resource type="Resource" path="res://audio/summon_zap.tres" id="2_sjxdo"]
-[ext_resource type="Script" path="res://npc_ai/_core/npc_action.gd" id="3_ak3i2"]
-[ext_resource type="Script" path="res://npc_ai/_core/npc_ai_profile.gd" id="4_j056b"]
-[ext_resource type="Script" path="res://combatants/combatant_data.gd" id="5_rh6m2"]
+[ext_resource type="Script" uid="uid://buhtw3540mbls" path="res://cards/_generic_actions/summon_action.gd" id="1_wj6j1"]
+[ext_resource type="Resource" uid="uid://c0cllss7w30rn" path="res://audio/summon_zap.tres" id="2_sjxdo"]
+[ext_resource type="Script" uid="uid://bcih413oy6v73" path="res://npc_ai/_core/npc_action.gd" id="3_ak3i2"]
+[ext_resource type="Script" uid="uid://bdsvca1cpka5s" path="res://npc_ai/_core/npc_ai_profile.gd" id="4_j056b"]
+[ext_resource type="Script" uid="uid://cfatj0ryn8uv3" path="res://combatants/combatant_data.gd" id="5_rh6m2"]
 
 [sub_resource type="Resource" id="Resource_0wlod"]
 script = ExtResource("4_j056b")

@@ -1,9 +1,9 @@
-[gd_resource type="Resource" script_class="CardPile" format=3]
+[gd_resource type="Resource" script_class="CardPile" format=3 uid="uid://jhntu0vckcll"]
 
-[ext_resource type="Script" path="res://cards/_core/card_data.gd" id="1_card_data"]
-[ext_resource type="Script" path="res://cards/_core/card_pile.gd" id="2_card_pile"]
-[ext_resource type="Resource" path="res://cards/souls/SpectralCloneCard/spectral_clone.tres" id="3_clone"]
-[ext_resource type="Resource" path="res://cards/convocations/ResonanceSpikeCard/resonance_spike_card.tres" id="4_spike"]
+[ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://cards/_core/card_data.gd" id="1_card_data"]
+[ext_resource type="Script" uid="uid://dnybrgm0o6gjj" path="res://cards/_core/card_pile.gd" id="2_card_pile"]
+[ext_resource type="Resource" uid="uid://b7txf6d8vmjkk" path="res://cards/souls/SpectralCloneCard/spectral_clone.tres" id="3_clone"]
+[ext_resource type="Resource" uid="uid://bhqq2dr8db5pn" path="res://cards/convocations/ResonanceSpikeCard/resonance_spike_card.tres" id="4_spike"]
 
 [resource]
 script = ExtResource("2_card_pile")

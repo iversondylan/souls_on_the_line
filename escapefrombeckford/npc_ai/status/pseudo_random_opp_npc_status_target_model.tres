@@ -1,6 +1,6 @@
-[gd_resource type="Resource" script_class="PseudoRandomOppNpcStatusTargetModel" format=3]
+[gd_resource type="Resource" script_class="PseudoRandomOppNpcStatusTargetModel" format=3 uid="uid://b6qnxju83owja"]
 
-[ext_resource type="Script" path="res://npc_ai/status/pseudo_random_opp_npc_status_target_model.gd" id="1_target_model"]
+[ext_resource type="Script" uid="uid://dyslcwdthq71u" path="res://npc_ai/status/pseudo_random_opp_npc_status_target_model.gd" id="1_target_model"]
 
 [resource]
 script = ExtResource("1_target_model")

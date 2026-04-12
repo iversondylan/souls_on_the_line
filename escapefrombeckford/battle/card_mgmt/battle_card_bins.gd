@@ -68,7 +68,8 @@ func make_draw_pile() -> void:
 		state.first_shuffle = false
 	else:
 		_take_discards_into_draw()
-	_shuffle_draw_pile()
+	if !_is_no_shuffle_mode():
+		_shuffle_draw_pile()
 
 
 func request_draw(ctx: DrawContext) -> void:
@@ -416,6 +417,8 @@ func _draw_one_from_draw_pile() -> CardData:
 			_shuffle_draw_pile()
 	if state.draw_pile.is_empty():
 		return null
+	if _is_no_shuffle_mode():
+		return state.draw_pile.draw_front()
 	return state.draw_pile.draw_back()
 
 

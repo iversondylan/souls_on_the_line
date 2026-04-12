@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="ApplyStatusToTargetsAction" format=3 uid="uid://dnd10bwwqi4pk"]
 
 [ext_resource type="Script" uid="uid://bw3gskunin2ql" path="res://cards/_generic_actions/apply_status_to_targets_action.gd" id="1_v54w6"]
-[ext_resource type="Resource" path="res://statuses/boiling_blood.tres" id="2_kssk0"]
+[ext_resource type="Resource" uid="uid://dfw7lv0so2crl" path="res://statuses/boiling_blood.tres" id="2_kssk0"]
 
 [resource]
 script = ExtResource("1_v54w6")

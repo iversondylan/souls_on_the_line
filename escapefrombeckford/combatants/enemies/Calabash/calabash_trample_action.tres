@@ -4,7 +4,7 @@
 [ext_resource type="Resource" uid="uid://c7bgkbju2psnu" path="res://combatants/enemies/Calabash/calabash_trample_package.tres" id="2_attack_pkg"]
 [ext_resource type="Texture2D" uid="uid://c54dbo8n7r3g" path="res://_assets/sprites/assorted/attack.PNG" id="3_attack_icon"]
 [ext_resource type="Script" uid="uid://dtwuyctovqk5r" path="res://npc_ai/_core/intent_lifecycle_model.gd" id="4_lifecycle"]
-[ext_resource type="Resource" path="res://combatants/enemies/Calabash/calabash_trample_lifecycle.tres" id="5_heavy_lifecycle"]
+[ext_resource type="Resource" uid="uid://66jyswakg6n7" path="res://combatants/enemies/Calabash/calabash_trample_lifecycle.tres" id="5_heavy_lifecycle"]
 [ext_resource type="Script" uid="uid://bcih413oy6v73" path="res://npc_ai/_core/npc_action.gd" id="6_action"]
 [ext_resource type="Script" uid="uid://q408gy2b4q6a" path="res://npc_ai/_core/performable_model.gd" id="7_g5rjr"]
 [ext_resource type="Resource" uid="uid://7gggk4mmejsq" path="res://npc_ai/text/attack_intent_text_model.tres" id="7_text_model"]

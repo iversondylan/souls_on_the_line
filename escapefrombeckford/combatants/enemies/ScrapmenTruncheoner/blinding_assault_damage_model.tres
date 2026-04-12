@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="MeleeAttackPowerDamageModel" format=3]
+[gd_resource type="Resource" script_class="MeleeAttackPowerDamageModel" format=3 uid="uid://d10j8pr0mu2v0"]
 
 [ext_resource type="Script" uid="uid://clc6qma1nlxt5" path="res://npc_ai/damage/melee_attack_power_damage_model.gd" id="1_damage_model"]
 
