@@ -1,5 +1,5 @@
-extends "res://encounters/_core/encounter_action.gd"
-class_name EncounterGotoStepAction
+
+class_name EncounterGotoStepAction extends EncounterAction
 
 @export var step_id: StringName = &""
 

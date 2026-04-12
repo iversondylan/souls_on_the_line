@@ -1,5 +1,5 @@
-extends "res://encounters/_core/encounter_condition.gd"
-class_name EncounterInsertIndexCondition
+
+class_name EncounterInsertIndexCondition extends EncounterCondition
 
 @export var accepted_indices: PackedInt32Array = PackedInt32Array()
 

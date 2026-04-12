@@ -1,5 +1,5 @@
-extends "res://encounters/_core/encounter_condition.gd"
-class_name EncounterFlagCondition
+
+class_name EncounterFlagCondition extends EncounterCondition
 
 @export var flag_name: StringName = &""
 @export var expected_value: Variant = true

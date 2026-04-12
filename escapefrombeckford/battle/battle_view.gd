@@ -2,8 +2,6 @@
 
 class_name BattleView extends Node2D
 
-const Removal = preload("res://core/keys_values/removal_values.gd")
-
 @onready var combatant_view_scene: PackedScene = preload("uid://bxhcb3bs75de6")
 
 @onready var friendly_group: GroupView = $Group0
@@ -12,7 +10,7 @@ const Removal = preload("res://core/keys_values/removal_values.gd")
 
 var sim_host: SimHost
 var battle_ui: BattleUI
-var encounter_director = null
+var encounter_director: EncounterDirector = null
 
 var event_player: BattleEventPlayer
 var event_director: BattleEventDirector
@@ -47,8 +45,8 @@ func _ready() -> void:
 	event_director.bind(self)
 
 
-func bind_log(log: BattleEventLog) -> void:
-	event_player.bind_log(log)
+func bind_log(battle_log: BattleEventLog) -> void:
+	event_player.bind_log(battle_log)
 
 
 func bind_transport_session(session: BattleTransportSession) -> void:
@@ -93,11 +91,11 @@ func _playback_loop(gen: int) -> void:
 
 	while _playing and gen == _playback_gen and event_player != null:
 		while _playing and gen == _playback_gen and !event_player.has_next():
-			var log := event_player.get_log()
-			if log == null:
+			var battle_log := event_player.get_log()
+			if battle_log == null:
 				_playing = false
 				return
-			await log.appended
+			await battle_log.appended
 
 		if !_playing or gen != _playback_gen:
 			return
@@ -121,7 +119,7 @@ func _playback_loop(gen: int) -> void:
 				t_start = clock.next_grid_time(now, unit_q)
 
 			if t_start > now:
-				await clock.wait_until(t_start)
+				clock.wait_until(t_start)#await clock.wait_until(t_start)
 
 			if !_playing or gen != _playback_gen:
 				return

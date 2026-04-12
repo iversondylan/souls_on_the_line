@@ -1,5 +1,5 @@
-extends "res://encounters/_core/encounter_condition.gd"
-class_name EncounterEventCondition
+
+class_name EncounterEventCondition extends EncounterCondition
 
 @export var event_name: StringName = &""
 @export var battle_event_type: int = -1

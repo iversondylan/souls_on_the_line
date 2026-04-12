@@ -1,5 +1,5 @@
-extends "res://encounters/_core/encounter_action.gd"
-class_name EncounterSetFlagAction
+
+class_name EncounterSetFlagAction extends EncounterAction
 
 @export var flag_name: StringName = &""
 @export var value: Variant = true

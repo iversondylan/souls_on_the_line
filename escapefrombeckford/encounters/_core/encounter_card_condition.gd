@@ -1,5 +1,5 @@
-extends "res://encounters/_core/encounter_condition.gd"
-class_name EncounterCardCondition
+
+class_name EncounterCardCondition extends EncounterCondition
 
 @export var card_id: StringName = &""
 @export var card_uid: StringName = &""

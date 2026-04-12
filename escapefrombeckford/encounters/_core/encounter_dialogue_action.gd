@@ -1,7 +1,4 @@
-extends "res://encounters/_core/encounter_action.gd"
-class_name EncounterDialogueAction
-
-const EncounterDialogueRequestScript = preload("res://encounters/_core/encounter_dialogue_request.gd")
+class_name EncounterDialogueAction extends EncounterAction
 
 enum DialogueMode {
 	BLOCKING,
@@ -18,9 +15,9 @@ enum DialogueMode {
 func execute(ctx) -> void:
 	if ctx == null or ctx.director == null or text_bbcode.is_empty():
 		return
-	var request = EncounterDialogueRequestScript.new()
+	var request = EncounterDialogueRequest.new()
 	request.dialogue_id = dialogue_id if dialogue_id != &"" else StringName("%s:%s" % [String(ctx.get_current_step_id()), str(get_instance_id())])
-	request.mode = EncounterDialogueRequestScript.Mode.BLOCKING if int(mode) == int(DialogueMode.BLOCKING) else EncounterDialogueRequestScript.Mode.INFO
+	request.mode = EncounterDialogueRequest.Mode.BLOCKING if int(mode) == int(DialogueMode.BLOCKING) else EncounterDialogueRequest.Mode.INFO
 	request.speaker_name = speaker_name
 	request.portrait_path = portrait_path
 	request.text_bbcode = text_bbcode

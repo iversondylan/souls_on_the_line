@@ -1,5 +1,5 @@
-extends "res://encounters/_core/encounter_condition.gd"
-class_name EncounterCurrentStepCondition
+
+class_name EncounterCurrentStepCondition extends EncounterCondition
 
 @export var step_id: StringName = &""
 

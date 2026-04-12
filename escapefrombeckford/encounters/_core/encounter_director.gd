@@ -1,14 +1,5 @@
 class_name EncounterDirector extends Node
 
-const EncounterStateScript = preload("res://encounters/_core/encounter_state.gd")
-const EncounterCapabilitySetScript = preload("res://encounters/_core/encounter_capability_set.gd")
-const EncounterGateRequestScript = preload("res://encounters/_core/encounter_gate_request.gd")
-const EncounterDialogueRequestScript = preload("res://encounters/_core/encounter_dialogue_request.gd")
-const EncounterObservedEventScript = preload("res://encounters/_core/encounter_observed_event.gd")
-const EncounterRuleContextScript = preload("res://encounters/_core/encounter_rule_context.gd")
-const GateResultScript = preload("res://encounters/_core/gate_result.gd")
-const EncounterStepScript = preload("res://encounters/_core/encounter_step.gd")
-
 signal step_changed(step_id: StringName)
 signal dialogue_requested(request)
 signal capabilities_changed(capabilities)
@@ -16,7 +7,7 @@ signal gate_denied(result)
 signal blocking_state_changed(is_blocking: bool)
 
 var definition = null
-var state = EncounterStateScript.new()
+var state = EncounterState.new()
 var battle = null
 var _step_timer_generation: int = 0
 
@@ -28,7 +19,7 @@ func _exit_tree() -> void:
 func setup(owner_battle, data) -> void:
 	battle = owner_battle
 	definition = data.encounter_definition if data != null else null
-	state = EncounterStateScript.new()
+	state = EncounterState.new()
 	if definition != null and definition.initial_flags != null:
 		state.flags = definition.initial_flags.duplicate(true)
 	if Events != null and !Events.encounter_observed_event.is_connected(observe_view_event):
@@ -36,7 +27,7 @@ func setup(owner_battle, data) -> void:
 
 func start() -> void:
 	if !is_active():
-		_emit_capabilities(EncounterCapabilitySetScript.new())
+		_emit_capabilities(EncounterCapabilitySet.new())
 		return
 	var first_step_id = definition.initial_step_id
 	if first_step_id == &"" and !definition.steps.is_empty() and definition.steps[0] != null:
@@ -99,7 +90,7 @@ func acknowledge_dialogue(dialogue_id: StringName) -> void:
 	state.active_dialogue = null
 	state.awaiting_dialogue_ack = false
 	_refresh_capabilities_from_current_step()
-	var ack_event := EncounterObservedEventScript.new()
+	var ack_event := EncounterObservedEvent.new()
 	ack_event.name = &"dialogue_acknowledged"
 	ack_event.data = {
 		"dialogue_id": dialogue_id,
@@ -111,7 +102,7 @@ func queue_dialogue(request) -> void:
 	if request == null:
 		return
 	state.active_dialogue = request
-	state.awaiting_dialogue_ack = int(request.mode) == int(EncounterDialogueRequestScript.Mode.BLOCKING)
+	state.awaiting_dialogue_ack = int(request.mode) == int(EncounterDialogueRequest.Mode.BLOCKING)
 	_refresh_capabilities_from_current_step()
 	blocking_state_changed.emit(_is_dialogue_blocking())
 	dialogue_requested.emit(request)
@@ -147,34 +138,34 @@ func get_current_step():
 
 func _evaluate_gate(req, emit_feedback: bool):
 	if !is_active():
-		return _make_gate_result(GateResultScript.Verdict.ALLOW)
+		return _make_gate_result(GateResult.Verdict.ALLOW)
 	if _is_dialogue_blocking():
-		var deferred = _make_gate_result(GateResultScript.Verdict.DEFER, &"dialogue_blocking", "Continue the tutorial dialogue first.")
+		var deferred = _make_gate_result(GateResult.Verdict.DEFER, &"dialogue_blocking", "Continue the tutorial dialogue first.")
 		deferred.dialogue_request = state.active_dialogue
 		if emit_feedback:
 			_emit_gate_feedback(deferred)
 		return deferred
 
-	var capabilities = state.capabilities if state.capabilities != null else EncounterCapabilitySetScript.new()
+	var capabilities = state.capabilities if state.capabilities != null else EncounterCapabilitySet.new()
 	var denied := false
 	match int(req.kind):
-		EncounterGateRequestScript.Kind.END_TURN:
+		EncounterGateRequest.Kind.END_TURN:
 			denied = !capabilities.can_end_turn
-		EncounterGateRequestScript.Kind.PLAY_CARD:
+		EncounterGateRequest.Kind.PLAY_CARD:
 			denied = !capabilities.allows_card_id(req.card_id) \
 				or !capabilities.allows_insert_index(req.insert_index) \
 				or !capabilities.allows_target_ids(req.target_ids)
-		EncounterGateRequestScript.Kind.OPEN_SWAP, EncounterGateRequestScript.Kind.CONFIRM_SWAP:
+		EncounterGateRequest.Kind.OPEN_SWAP, EncounterGateRequest.Kind.CONFIRM_SWAP:
 			denied = !capabilities.can_swap or !capabilities.allows_target_ids(req.target_ids)
-		EncounterGateRequestScript.Kind.OPEN_DISCARD, EncounterGateRequestScript.Kind.CONFIRM_DISCARD:
+		EncounterGateRequest.Kind.OPEN_DISCARD, EncounterGateRequest.Kind.CONFIRM_DISCARD:
 			denied = !capabilities.can_select_discard
-		EncounterGateRequestScript.Kind.OPEN_SUMMON_REPLACE, EncounterGateRequestScript.Kind.CONFIRM_SUMMON_REPLACE:
+		EncounterGateRequest.Kind.OPEN_SUMMON_REPLACE, EncounterGateRequest.Kind.CONFIRM_SUMMON_REPLACE:
 			denied = !capabilities.can_play_cards \
 				or !capabilities.allows_insert_index(req.insert_index) \
 				or !capabilities.allows_target_ids(req.target_ids)
 
 	if !denied:
-		return _make_gate_result(GateResultScript.Verdict.ALLOW)
+		return _make_gate_result(GateResult.Verdict.ALLOW)
 
 	var result = _build_denied_result(req)
 	if emit_feedback:
@@ -188,19 +179,19 @@ func _build_denied_result(req):
 	if step != null and !step.denied_message_bbcode.is_empty():
 		message = step.denied_message_bbcode
 
-	var result = _make_gate_result(GateResultScript.Verdict.DENY, &"encounter_gate", message)
+	var result = _make_gate_result(GateResult.Verdict.DENY, &"encounter_gate", message)
 	if step == null:
 		return result
 
 	match int(step.denied_presentation):
-		EncounterStepScript.DeniedPresentation.HINT:
+		EncounterStep.DeniedPresentation.HINT:
 			return result
-		EncounterStepScript.DeniedPresentation.DIALOGUE_INFO, EncounterStepScript.DeniedPresentation.DIALOGUE_BLOCKING:
-			var request = EncounterDialogueRequestScript.new()
+		EncounterStep.DeniedPresentation.DIALOGUE_INFO, EncounterStep.DeniedPresentation.DIALOGUE_BLOCKING:
+			var request = EncounterDialogueRequest.new()
 			request.dialogue_id = StringName("%s:denied" % String(step.id))
-			request.mode = EncounterDialogueRequestScript.Mode.INFO
-			if int(step.denied_presentation) == int(EncounterStepScript.DeniedPresentation.DIALOGUE_BLOCKING):
-				request.mode = EncounterDialogueRequestScript.Mode.BLOCKING
+			request.mode = EncounterDialogueRequest.Mode.INFO
+			if int(step.denied_presentation) == int(EncounterStep.DeniedPresentation.DIALOGUE_BLOCKING):
+				request.mode = EncounterDialogueRequest.Mode.BLOCKING
 			request.speaker_name = step.denied_speaker_name
 			request.portrait_path = step.denied_portrait_path
 			request.text_bbcode = message
@@ -212,15 +203,15 @@ func _build_denied_result(req):
 
 func _default_gate_message(req) -> String:
 	match int(req.kind):
-		EncounterGateRequestScript.Kind.END_TURN:
+		EncounterGateRequest.Kind.END_TURN:
 			return "Finish the current tutorial instruction first."
-		EncounterGateRequestScript.Kind.PLAY_CARD:
+		EncounterGateRequest.Kind.PLAY_CARD:
 			return "That card action is not available yet."
-		EncounterGateRequestScript.Kind.OPEN_SWAP, EncounterGateRequestScript.Kind.CONFIRM_SWAP:
+		EncounterGateRequest.Kind.OPEN_SWAP, EncounterGateRequest.Kind.CONFIRM_SWAP:
 			return "Swapping is not available right now."
-		EncounterGateRequestScript.Kind.OPEN_DISCARD, EncounterGateRequestScript.Kind.CONFIRM_DISCARD:
+		EncounterGateRequest.Kind.OPEN_DISCARD, EncounterGateRequest.Kind.CONFIRM_DISCARD:
 			return "Discarding is not available right now."
-		EncounterGateRequestScript.Kind.OPEN_SUMMON_REPLACE, EncounterGateRequestScript.Kind.CONFIRM_SUMMON_REPLACE:
+		EncounterGateRequest.Kind.OPEN_SUMMON_REPLACE, EncounterGateRequest.Kind.CONFIRM_SUMMON_REPLACE:
 			return "Choose a tutorial-approved position first."
 	return "That action is not available right now."
 
@@ -233,7 +224,7 @@ func _emit_gate_feedback(result) -> void:
 	gate_denied.emit(result)
 
 func _refresh_capabilities_from_current_step() -> void:
-	var next_caps = EncounterCapabilitySetScript.new()
+	var next_caps = EncounterCapabilitySet.new()
 	var step = get_current_step()
 	if step != null and step.capability_overrides != null:
 		next_caps = step.capability_overrides.clone()
@@ -247,7 +238,7 @@ func _refresh_capabilities_from_current_step() -> void:
 	_emit_capabilities(next_caps)
 
 func _make_gate_result(verdict: int, reason_id: StringName = &"", message := ""):
-	var result = GateResultScript.new()
+	var result = GateResult.new()
 	result.verdict = verdict
 	result.reason_id = reason_id
 	result.player_message = message
@@ -291,7 +282,7 @@ func _wait_for_step_auto_advance(from_step_id: StringName, to_step_id: StringNam
 	goto_step(to_step_id)
 
 func _make_context(req, ev):
-	var ctx = EncounterRuleContextScript.new()
+	var ctx = EncounterRuleContext.new()
 	ctx.director = self
 	ctx.state = state
 	ctx.definition = definition
