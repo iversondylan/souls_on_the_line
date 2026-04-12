@@ -2,8 +2,21 @@
 
 class_name ResourceState extends RefCounted
 
+enum HandMode {
+	KEEP,
+	DISCARD,
+}
+
+enum ShuffleMode {
+	NORMAL,
+	NO_SHUFFLE,
+}
+
 var mana: int = 0
 var max_mana: int = 0
+var player_turn_draw_amount: int = 5
+var hand_mode: int = HandMode.DISCARD
+var shuffle_mode: int = ShuffleMode.NORMAL
 
 var pending_discard: DiscardRequest = null
 
@@ -12,6 +25,9 @@ func clone() -> ResourceState:
 	var r := ResourceState.new()
 	r.mana = int(mana)
 	r.max_mana = int(max_mana)
+	r.player_turn_draw_amount = int(player_turn_draw_amount)
+	r.hand_mode = int(hand_mode)
+	r.shuffle_mode = int(shuffle_mode)
 
 	if pending_discard != null:
 		# If DiscardRequest is RefCounted/custom class without clone(),

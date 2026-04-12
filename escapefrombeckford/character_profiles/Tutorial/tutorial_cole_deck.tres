@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="CardPile" format=3]
+
+[ext_resource type="Script" path="res://cards/_core/card_data.gd" id="1_card_data"]
+[ext_resource type="Script" path="res://cards/_core/card_pile.gd" id="2_card_pile"]
+[ext_resource type="Resource" path="res://cards/souls/SpectralCloneCard/spectral_clone.tres" id="3_clone"]
+[ext_resource type="Resource" path="res://cards/convocations/ResonanceSpikeCard/resonance_spike_card.tres" id="4_spike"]
+
+[resource]
+script = ExtResource("2_card_pile")
+cards = Array[ExtResource("1_card_data")]([ExtResource("3_clone"), ExtResource("3_clone"), ExtResource("3_clone"), ExtResource("3_clone"), ExtResource("3_clone"), ExtResource("4_spike"), ExtResource("3_clone"), ExtResource("4_spike")])

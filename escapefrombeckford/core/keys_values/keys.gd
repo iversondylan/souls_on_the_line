@@ -70,6 +70,8 @@ const AMOUNT := &"amount"
 const REQUEST_ID := &"request_id"
 const CHOSEN_UIDS := &"chosen_uids"
 const DISABLE_UNTIL_NEXT_PLAYER_TURN := &"disable_until_next_player_turn"
+const DRAW_CONTEXT := &"draw_context"
+const DISCARD_CONTEXT := &"discard_context"
 
 # Arcana
 const ARCANUM_ID := &"arcanum_id"

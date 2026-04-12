@@ -17,6 +17,8 @@ var rng: RNG
 func _ready() -> void:
 	if !Events.request_draw_cards.is_connected(_on_request_draw_cards):
 		Events.request_draw_cards.connect(_on_request_draw_cards)
+	if !Events.execute_discard_cards.is_connected(_on_execute_discard_cards):
+		Events.execute_discard_cards.connect(_on_execute_discard_cards)
 
 
 func setup(new_battle: Battle, new_hand: Hand) -> void:
@@ -101,6 +103,12 @@ func request_discard(ctx: DiscardContext) -> void:
 	var chosen_uids := ctx.requested_card_uids.duplicate()
 	if chosen_uids.is_empty() and !ctx.card_uid.is_empty():
 		chosen_uids.append(ctx.card_uid)
+	if chosen_uids.is_empty() and bool(ctx.discard_all_from_hand):
+		for card in hand.get_hand_cards():
+			if card == null or !is_instance_valid(card) or card.card_data == null:
+				continue
+			card.card_data.ensure_uid()
+			chosen_uids.append(String(card.card_data.uid))
 	if chosen_uids.is_empty() and ctx.amount > 0:
 		for card in hand.get_hand_cards():
 			if card == null or !is_instance_valid(card) or card.card_data == null:
@@ -327,6 +335,9 @@ func after_hand_cleanup(ctx: HandCleanupContext) -> void:
 func _on_request_draw_cards(ctx: DrawContext) -> void:
 	await request_draw(ctx)
 
+func _on_execute_discard_cards(ctx: DiscardContext) -> void:
+	await request_discard(ctx)
+
 
 func is_hand_card_locked_until_next_player_turn(card_uid: String) -> bool:
 	return bool(state.hand_locked_until_next_player_turn.get(String(card_uid), false))
@@ -401,7 +412,7 @@ func _draw_one_from_draw_pile() -> CardData:
 		return null
 	if state.draw_pile.is_empty():
 		_take_discards_into_draw()
-		if !state.draw_pile.is_empty():
+		if !state.draw_pile.is_empty() and !_is_no_shuffle_mode():
 			_shuffle_draw_pile()
 	if state.draw_pile.is_empty():
 		return null
@@ -426,6 +437,14 @@ func _take_discards_into_draw() -> void:
 func _shuffle_draw_pile() -> void:
 	_shuffle_pile_with_rng(state.draw_pile)
 	state.draw_pile.card_pile_size_changed.emit(state.draw_pile.cards.size())
+
+func _is_no_shuffle_mode() -> bool:
+	if battle == null or battle.sim_host == null:
+		return false
+	var api := battle.sim_host.get_main_api()
+	if api == null or api.state == null or api.state.resource == null:
+		return false
+	return int(api.state.resource.shuffle_mode) == int(ResourceState.ShuffleMode.NO_SHUFFLE)
 
 
 func _shuffle_pile_with_rng(pile: CardPile) -> void:

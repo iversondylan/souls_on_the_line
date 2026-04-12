@@ -1,14 +1,14 @@
 [gd_resource type="Resource" script_class="CombatantData" format=3 uid="uid://ca8pmrs5s8td1"]
 
-[ext_resource type="Resource" uid="uid://b800j7nlnqyqx" path="res://combatants/enemies/TrainingDummy/training_dummy_ai.tres" id="1_c72t2"]
-[ext_resource type="Script" uid="uid://cfatj0ryn8uv3" path="res://combatants/combatant_data.gd" id="2_ktm54"]
+[ext_resource type="Resource" uid="uid://b800j7nlnqyqx" path="res://combatants/enemies/TrainingDummy/training_dummy_ai.tres" id="1_8pcn8"]
+[ext_resource type="Script" uid="uid://cfatj0ryn8uv3" path="res://combatants/combatant_data.gd" id="2_fg8ei"]
 
 [resource]
-script = ExtResource("2_ktm54")
-name = "Slab Construct"
-description = "Heavy construct. Builds power before slamming."
+script = ExtResource("2_fg8ei")
+name = "Training Dummy"
+description = "Training construct for combat drills."
 character_art_uid = "uid://dkfg0k5h7fab1"
 facing_right = false
-max_health = 35
-ai = ExtResource("1_c72t2")
+max_health = 22
+ai = ExtResource("1_8pcn8")
 metadata/_custom_type_script = "uid://cfatj0ryn8uv3"

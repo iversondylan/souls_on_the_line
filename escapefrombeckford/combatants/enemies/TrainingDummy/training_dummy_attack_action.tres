@@ -1,26 +1,21 @@
 [gd_resource type="Resource" script_class="NPCAction" format=3 uid="uid://cf80b6tru36x2"]
 
-[ext_resource type="Script" uid="uid://3jde7uhq2yho" path="res://npc_ai/_core/npc_effect_package.gd" id="1_umbsy"]
-[ext_resource type="Resource" uid="uid://bqeaumeltn5rn" path="res://combatants/enemies/TrainingDummy/training_dummy_attack_package.tres" id="2_qcyve"]
-[ext_resource type="Resource" path="res://combatants/enemies/TrainingDummy/realize_statuses_pkg.tres" id="3_l0il1"]
-[ext_resource type="Texture2D" uid="uid://1b6tx5tj6ucv" path="res://_assets/sprites/assorted/buff_attack.PNG" id="4_jfcpb"]
-[ext_resource type="Script" uid="uid://dtwuyctovqk5r" path="res://npc_ai/_core/intent_lifecycle_model.gd" id="5_cqutb"]
-[ext_resource type="Resource" path="res://combatants/enemies/TrainingDummy/slab_shared_fervor_lifecycle.tres" id="6_udlkn"]
-[ext_resource type="Resource" uid="uid://7gggk4mmejsq" path="res://npc_ai/text/attack_intent_text_model.tres" id="7_f0yvj"]
-[ext_resource type="Script" uid="uid://q408gy2b4q6a" path="res://npc_ai/_core/performable_model.gd" id="8_g11be"]
-[ext_resource type="Script" uid="uid://bcih413oy6v73" path="res://npc_ai/_core/npc_action.gd" id="9_6msov"]
-[ext_resource type="Script" uid="uid://cuj4qvyx6dedj" path="res://npc_ai/_core/state_model.gd" id="10_kwb6c"]
-[ext_resource type="Resource" uid="uid://btgtvs6ab0nsg" path="res://npc_ai/chance/half_exponential_spree_chance_state_model.tres" id="11_ym5uu"]
-[ext_resource type="Resource" uid="uid://ivsvxo0vj72x" path="res://npc_ai/text/attack_intent_tooltip_text_model.tres" id="12_ltubg"]
+[ext_resource type="Script" uid="uid://3jde7uhq2yho" path="res://npc_ai/_core/npc_effect_package.gd" id="1_fjd1h"]
+[ext_resource type="Resource" uid="uid://bqeaumeltn5rn" path="res://combatants/enemies/TrainingDummy/training_dummy_attack_package.tres" id="2_sser5"]
+[ext_resource type="Texture2D" uid="uid://c54dbo8n7r3g" path="res://_assets/sprites/assorted/attack.PNG" id="3_k1k3h"]
+[ext_resource type="Script" uid="uid://dtwuyctovqk5r" path="res://npc_ai/_core/intent_lifecycle_model.gd" id="4_4iqqf"]
+[ext_resource type="Resource" uid="uid://7gggk4mmejsq" path="res://npc_ai/text/attack_intent_text_model.tres" id="5_r2snh"]
+[ext_resource type="Script" uid="uid://q408gy2b4q6a" path="res://npc_ai/_core/performable_model.gd" id="6_14jtw"]
+[ext_resource type="Script" uid="uid://bcih413oy6v73" path="res://npc_ai/_core/npc_action.gd" id="7_qpojk"]
+[ext_resource type="Script" uid="uid://cuj4qvyx6dedj" path="res://npc_ai/_core/state_model.gd" id="8_14pys"]
+[ext_resource type="Resource" uid="uid://ivsvxo0vj72x" path="res://npc_ai/text/attack_intent_tooltip_text_model.tres" id="9_cjweh"]
 
 [resource]
-script = ExtResource("9_6msov")
-effect_packages = Array[ExtResource("1_umbsy")]([ExtResource("2_qcyve"), ExtResource("3_l0il1")])
-intent_lifecycle_models = Array[ExtResource("5_cqutb")]([ExtResource("6_udlkn")])
-state_models = Array[ExtResource("10_kwb6c")]([ExtResource("11_ym5uu")])
+script = ExtResource("7_qpojk")
+effect_packages = Array[ExtResource("1_fjd1h")]([ExtResource("2_sser5")])
 action_name = "Slam"
-intent_icon = ExtResource("4_jfcpb")
-intent_icon_uid = "uid://1b6tx5tj6ucv"
-intent_text_model = ExtResource("7_f0yvj")
-tooltip_model = ExtResource("12_ltubg")
+intent_icon = ExtResource("3_k1k3h")
+intent_icon_uid = "uid://c54dbo8n7r3g"
+intent_text_model = ExtResource("5_r2snh")
+tooltip_model = ExtResource("9_cjweh")
 metadata/_custom_type_script = "uid://bcih413oy6v73"

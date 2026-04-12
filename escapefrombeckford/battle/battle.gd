@@ -179,6 +179,8 @@ func _ensure_card_bins() -> void:
 		card_bin_rule_host = CardBinRuleHost.new()
 	card_bins.setup(self, hand)
 	card_bins.rule_host = card_bin_rule_host
+	if !card_bins.draw_completed.is_connected(_on_card_bins_draw_completed):
+		card_bins.draw_completed.connect(_on_card_bins_draw_completed)
 
 
 # -------------------------
@@ -200,6 +202,7 @@ func start_battle() -> void:
 	draw_pile_view.api = sim_host.get_main_api()
 	discard_pile_view.api = sim_host.get_main_api()
 	_setup_encounter_director()
+	_apply_resource_rules_from_encounter()
 
 	sim_host.seed_arcana_from_ids(my_arcana)
 
@@ -329,12 +332,6 @@ func _on_end_turn_button_pressed() -> void:
 	var runtime := _runtime()
 	if runtime != null:
 		runtime.request_player_end()
-	var api := sim_host.get_main_api() if sim_host != null else null
-	if card_bins == null or card_bin_rule_host == null or api == null:
-		return
-	var cleanup_ctx := card_bin_rule_host.build_player_end_cleanup_context(int(api.get_player_id()))
-	await card_bins.request_hand_cleanup(cleanup_ctx)
-	if runtime != null:
 		runtime.confirm_player_end_ready()
 
 
@@ -344,18 +341,14 @@ func _on_player_input_view_reached(player_id: int) -> void:
 		return
 	if int(player_id) <= 0 or int(player_id) != int(api.get_player_id()):
 		return
-	if card_bins == null or card_bin_rule_host == null:
+	if card_bins == null:
 		return
 
 	wait_for_anims = true
 	card_bins.unlock_hand_cards_for_player_turn()
 	if hand != null:
 		hand.refresh_locked_card_states()
-	var draw_ctx := card_bin_rule_host.build_player_turn_refill_context(int(player_id))
-	await card_bins.request_draw(draw_ctx)
-	Events.hand_drawn.emit()
-	_arm_end_turn_button(true)
-	wait_for_anims = false
+	_release_pending_player_turn_draw_if_ready()
 
 
 func _arm_end_turn_button(armed: bool) -> void:
@@ -388,13 +381,50 @@ func _setup_encounter_director() -> void:
 	add_child(encounter_director)
 	encounter_director.setup(self, battle_data)
 	encounter_director.capabilities_changed.connect(_on_encounter_capabilities_changed)
+	encounter_director.blocking_state_changed.connect(_on_encounter_blocking_state_changed)
 	battle_view.encounter_director = encounter_director
 	if encounter_dialogue_layer != null:
 		encounter_dialogue_layer.bind_director(encounter_director)
 	refresh_player_input_visual_state()
 
+func _apply_resource_rules_from_encounter() -> void:
+	var api := sim_host.get_main_api() if sim_host != null else null
+	if api == null or api.state == null or api.state.resource == null:
+		return
+	var definition = battle_data.encounter_definition if battle_data != null else null
+	if definition == null:
+		return
+	api.state.resource.shuffle_mode = ResourceState.ShuffleMode.NO_SHUFFLE if bool(definition.no_shuffle) else ResourceState.ShuffleMode.NORMAL
+
+func _on_card_bins_draw_completed(ctx: DrawContext) -> void:
+	if ctx == null:
+		return
+	if String(ctx.reason) != "player_turn_refill":
+		return
+	if hand != null:
+		hand.refresh_locked_card_states()
+	Events.hand_drawn.emit()
+	_arm_end_turn_button(true)
+	wait_for_anims = false
+
 func _on_encounter_capabilities_changed(_capabilities) -> void:
 	refresh_player_input_visual_state()
+
+func _on_encounter_blocking_state_changed(is_blocking: bool) -> void:
+	if is_blocking:
+		return
+	_release_pending_player_turn_draw_if_ready()
+
+func _release_pending_player_turn_draw_if_ready() -> void:
+	var runtime := _runtime()
+	if runtime == null:
+		return
+	if encounter_director != null and encounter_director.is_blocking_presentation():
+		return
+	var draw_amount_override := -1
+	if encounter_director != null:
+		draw_amount_override = int(encounter_director.get_player_turn_draw_amount_override())
+	runtime.confirm_player_input_ready(draw_amount_override)
 
 
 # -------------------------

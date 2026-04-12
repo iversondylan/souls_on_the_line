@@ -8,6 +8,7 @@ var card_uid: String = ""
 var requested_card_uids: Array[String] = []
 var discarded_card_uids: Array[String] = []
 var actually_discarded : int = 0
+var discard_all_from_hand: bool = false
 var reason: String = ""
 var phase: String = ""
 var tags: Array[String] = []

@@ -30,6 +30,7 @@ var _strike_resolution_depth: int = 0
 var _active_delayed_reaction_drains: Dictionary = {}
 var _active_delayed_reaction: DelayedReaction = null
 var _battle_end_arcana_fired: bool = false
+var _pending_player_turn_draw_ctx: DrawContext = null
 
 
 # ============================================================================
@@ -55,6 +56,7 @@ func reset_runtime_state() -> void:
 	_active_delayed_reaction_drains.clear()
 	_active_delayed_reaction = null
 	_battle_end_arcana_fired = false
+	_pending_player_turn_draw_ctx = null
 
 func _ensure_turn_flow_query_host_initialized() -> void:
 	if host == null:
@@ -308,10 +310,25 @@ func confirm_player_end_ready() -> void:
 		return
 
 	var player_id := _player_id()
+	var discard_ctx := _build_player_turn_end_discard_context(player_id)
+	if discard_ctx != null:
+		api.process_player_turn_end_discard(discard_ctx)
 	_service_arcana(TurnEngineCore.ArcanaProc.PLAYER_TURN_END)
 	engine.complete_player_end()
 	_complete_actor_turn(player_id)
 	_drive_turn_flow_until_blocked()
+
+
+func confirm_player_input_ready(draw_amount_override := -1) -> void:
+	var api := _api()
+	if api == null or _pending_player_turn_draw_ctx == null:
+		return
+
+	var draw_ctx := _pending_player_turn_draw_ctx
+	_pending_player_turn_draw_ctx = null
+	if int(draw_amount_override) >= 0:
+		draw_ctx.amount = maxi(int(draw_amount_override), 0)
+	api.process_draw_context(draw_ctx)
 
 
 func add_combatant_from_data(
@@ -463,6 +480,9 @@ func _service_actor_turn(cid: int) -> void:
 	if is_player(cid):
 		if writer != null:
 			writer.emit_player_input_reached(int(cid))
+		var draw_ctx := _build_player_turn_draw_context(int(cid))
+		if draw_ctx != null:
+			_pending_player_turn_draw_ctx = draw_ctx
 		return
 
 	SimStatusSystem.on_actor_turn_begin(api, cid)
@@ -983,8 +1003,34 @@ func run_draw_action(ctx: DrawContext) -> void:
 	#if draw_scope == null:
 		#return
 
-	api.emit_draw_cards(ctx)
+	api.process_draw_context(ctx)
 	#_end_scope(draw_scope)
+
+func _build_player_turn_draw_context(player_id: int) -> DrawContext:
+	var api := _api()
+	if api == null or api.state == null or api.state.resource == null or player_id <= 0:
+		return null
+	var resource := api.state.resource
+	var ctx := DrawContext.new()
+	ctx.source_id = int(player_id)
+	ctx.amount = maxi(int(resource.player_turn_draw_amount), 0)
+	ctx.reason = "player_turn_refill"
+	ctx.phase = "player_turn_start"
+	ctx.use_first_hand_summon_guarantee = int(resource.shuffle_mode) != int(ResourceState.ShuffleMode.NO_SHUFFLE)
+	return ctx
+
+func _build_player_turn_end_discard_context(player_id: int) -> DiscardContext:
+	var api := _api()
+	if api == null or api.state == null or api.state.resource == null or player_id <= 0:
+		return null
+	if int(api.state.resource.hand_mode) != int(ResourceState.HandMode.DISCARD):
+		return null
+	var ctx := DiscardContext.new()
+	ctx.source_id = int(player_id)
+	ctx.discard_all_from_hand = true
+	ctx.reason = "player_turn_end_discard"
+	ctx.phase = "player_turn_end"
+	return ctx
 
 func run_realize_pending_statuses(actor_id: int, source_id: int = 0, reason: String = "") -> void:
 	var api := _api()

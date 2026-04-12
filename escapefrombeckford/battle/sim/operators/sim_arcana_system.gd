@@ -58,6 +58,12 @@ static func on_player_turn_end(api: SimBattleAPI, _player_id: int) -> void:
 		if ctx.proto.procs_on_player_turn_end():
 			ctx.proto.on_player_turn_end(ctx)
 
+static func on_draw_context(_api: SimBattleAPI, _ctx: DrawContext) -> void:
+	return
+
+static func on_player_turn_end_discard(_api: SimBattleAPI, _ctx: DiscardContext) -> void:
+	return
+
 
 static func on_battle_end(api: SimBattleAPI) -> void:
 	for ctx in get_contexts(api):

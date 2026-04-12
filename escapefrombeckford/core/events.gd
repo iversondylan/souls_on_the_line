@@ -30,6 +30,7 @@ signal card_drag_ended(usable_card: UsableCard)
 signal card_played(usable_card: UsableCard)
 signal dead_combatant_data(combatant_data: CombatantData)
 signal request_draw_cards(ctx: DrawContext)
+signal execute_discard_cards(ctx: DiscardContext)
 signal hand_card_added(usable_card: UsableCard)
 signal card_selection_toggled(card: UsableCard, is_selected: bool)
 

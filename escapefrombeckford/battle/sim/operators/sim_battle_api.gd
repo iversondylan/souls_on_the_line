@@ -181,14 +181,26 @@ func emit_modify_battle_card(card_uid: String, modified_fields: Dictionary, reas
 func emit_draw_cards(ctx: DrawContext) -> void:
 	if writer == null or ctx == null:
 		return
-	if int(ctx.amount) <= 0:
+	writer.emit_draw_cards(ctx)
+
+func process_draw_context(ctx: DrawContext) -> void:
+	if ctx == null:
 		return
-	writer.emit_draw_cards(
-		int(ctx.source_id),
-		int(ctx.amount),
-		String(ctx.reason),
-		bool(ctx.disable_until_next_player_turn)
-	)
+	SimStatusSystem.on_draw_context(self, ctx)
+	SimArcanaSystem.on_draw_context(self, ctx)
+	emit_draw_cards(ctx)
+
+func emit_discard_cards(ctx: DiscardContext) -> void:
+	if writer == null or ctx == null:
+		return
+	writer.emit_discard_cards(ctx)
+
+func process_player_turn_end_discard(ctx: DiscardContext) -> void:
+	if ctx == null:
+		return
+	SimStatusSystem.on_player_turn_end_discard(self, ctx)
+	SimArcanaSystem.on_player_turn_end_discard(self, ctx)
+	emit_discard_cards(ctx)
 
 func get_soulbound_ids_for_owner(_owner_id: int) -> Array[int]:
 	return get_combatants_in_group_by_mortality(

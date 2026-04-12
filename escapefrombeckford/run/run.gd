@@ -19,6 +19,7 @@ const SAVE_NAME_DIALOG_SCN := preload("res://ui/save_name_dialog.tscn")
 @export var arcanum_catalog: ArcanaCatalog
 @export var battle_pool: BattlePool
 @export var tutorial_encounter: BattleData
+@export var tutorial_player_data: PlayerData
 
 # TEMPORARY v
 #@export var extra_arcana: Array[Arcanum]
@@ -321,7 +322,7 @@ func _start_new_run_from_profile(profile: RunProfile) -> void:
 	#print("run.gd new run startup seed: ", run_seed)
 	run_rng = RunRNG.new(run_seed)
 
-	player_data = _resolve_player_profile(profile.player_profile_id)
+	player_data = _resolve_starting_player_data(profile.player_profile_id)
 	if player_data == null:
 		push_warning("Run._start_new_run_from_profile(): no player profile found for id '%s'" % profile.player_profile_id)
 		return
@@ -363,6 +364,12 @@ func _start_new_run_from_profile(profile: RunProfile) -> void:
 		_start_tutorial_run()
 		return
 	_start_run()
+
+
+func _resolve_starting_player_data(profile_id: String) -> PlayerData:
+	if _is_tutorial_mode() and tutorial_player_data != null:
+		return tutorial_player_data
+	return _resolve_player_profile(profile_id)
 
 
 func _continue_saved_run() -> void:

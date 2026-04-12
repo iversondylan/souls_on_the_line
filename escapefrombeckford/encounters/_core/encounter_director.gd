@@ -12,6 +12,7 @@ signal step_changed(step_id: StringName)
 signal dialogue_requested(request)
 signal capabilities_changed(capabilities)
 signal gate_denied(result)
+signal blocking_state_changed(is_blocking: bool)
 
 var definition = null
 var state = EncounterStateScript.new()
@@ -61,6 +62,15 @@ func can_play_card_ui(card_uid: StringName) -> bool:
 		return true
 	return state.capabilities.allows_card_uid(String(card_uid))
 
+func is_blocking_presentation() -> bool:
+	return _is_dialogue_blocking()
+
+func get_player_turn_draw_amount_override() -> int:
+	var step = get_current_step()
+	if step == null:
+		return -1
+	return int(step.player_turn_draw_amount_override)
+
 func observe_view_event(ev) -> void:
 	if !is_active() or ev == null:
 		return
@@ -81,6 +91,7 @@ func acknowledge_dialogue(dialogue_id: StringName) -> void:
 	state.active_dialogue = null
 	state.awaiting_dialogue_ack = false
 	_refresh_capabilities_from_current_step()
+	blocking_state_changed.emit(_is_dialogue_blocking())
 
 func queue_dialogue(request) -> void:
 	if request == null:
@@ -88,6 +99,7 @@ func queue_dialogue(request) -> void:
 	state.active_dialogue = request
 	state.awaiting_dialogue_ack = int(request.mode) == int(EncounterDialogueRequestScript.Mode.BLOCKING)
 	_refresh_capabilities_from_current_step()
+	blocking_state_changed.emit(_is_dialogue_blocking())
 	dialogue_requested.emit(request)
 
 func goto_step(step_id: StringName) -> void:

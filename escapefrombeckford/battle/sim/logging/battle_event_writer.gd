@@ -617,22 +617,33 @@ func emit_discard_resolved(req: DiscardRequest, chosen_uids: Array[String]) -> i
 	})
 
 
-func emit_draw_cards(
-	source_id: int,
-	amount: int,
-	reason: String = "",
-	disable_until_next_player_turn: bool = false,
-	extra := {}
-) -> int:
+func emit_draw_cards(ctx: DrawContext, extra := {}) -> int:
+	if ctx == null:
+		return 0
 	var data := {
-		Keys.SOURCE_ID: int(source_id),
-		Keys.AMOUNT: int(amount),
-		Keys.REASON: String(reason),
-		Keys.DISABLE_UNTIL_NEXT_PLAYER_TURN: bool(disable_until_next_player_turn),
+		Keys.SOURCE_ID: int(ctx.source_id),
+		Keys.AMOUNT: int(ctx.amount),
+		Keys.REASON: String(ctx.reason),
+		Keys.DISABLE_UNTIL_NEXT_PLAYER_TURN: bool(ctx.disable_until_next_player_turn),
+		Keys.DRAW_CONTEXT: ctx,
 	}
 	for k in extra.keys():
 		data[k] = extra[k]
 	return _append(BattleEvent.Type.DRAW_CARDS, data)
+
+func emit_discard_cards(ctx: DiscardContext, extra := {}) -> int:
+	if ctx == null:
+		return 0
+	var data := {
+		Keys.SOURCE_ID: int(ctx.source_id),
+		Keys.AMOUNT: int(ctx.amount),
+		Keys.CARD_UID: String(ctx.card_uid),
+		Keys.REASON: String(ctx.reason),
+		Keys.DISCARD_CONTEXT: ctx,
+	}
+	for k in extra.keys():
+		data[k] = extra[k]
+	return _append(BattleEvent.Type.DISCARD_CARDS, data)
 
 
 

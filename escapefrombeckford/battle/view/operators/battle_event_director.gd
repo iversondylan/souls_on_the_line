@@ -351,6 +351,8 @@ func on_event(e: EventPackage) -> void:
 			pass
 		BattleEvent.Type.END_TURN_PRESSED:
 			pass
+		BattleEvent.Type.DISCARD_CARDS:
+			_on_discard_cards(e)
 		BattleEvent.Type.DISCARD_REQUESTED:
 			_on_discard_requested(e)
 		BattleEvent.Type.SUMMON_RESERVE_RELEASED:
@@ -1167,15 +1169,30 @@ func _on_draw_cards(e: EventPackage) -> void:
 		return
 
 	var d := _data(e)
-	var ctx := DrawContext.new()
-	ctx.source_id = int(d.get(Keys.SOURCE_ID, 0))
-	ctx.amount = int(d.get(Keys.AMOUNT, 0))
-	ctx.reason = String(d.get(Keys.REASON, ""))
-	ctx.disable_until_next_player_turn = bool(d.get(Keys.DISABLE_UNTIL_NEXT_PLAYER_TURN, false))
-	if ctx.amount <= 0:
-		return
+	var ctx = d.get(Keys.DRAW_CONTEXT, null) as DrawContext
+	if ctx == null:
+		ctx = DrawContext.new()
+		ctx.source_id = int(d.get(Keys.SOURCE_ID, 0))
+		ctx.amount = int(d.get(Keys.AMOUNT, 0))
+		ctx.reason = String(d.get(Keys.REASON, ""))
+		ctx.disable_until_next_player_turn = bool(d.get(Keys.DISABLE_UNTIL_NEXT_PLAYER_TURN, false))
 
 	Events.request_draw_cards.emit(ctx)
+
+func _on_discard_cards(e: EventPackage) -> void:
+	if e == null or e.event == null:
+		return
+
+	var d := _data(e)
+	var ctx = d.get(Keys.DISCARD_CONTEXT, null) as DiscardContext
+	if ctx == null:
+		ctx = DiscardContext.new()
+		ctx.source_id = int(d.get(Keys.SOURCE_ID, 0))
+		ctx.amount = int(d.get(Keys.AMOUNT, 0))
+		ctx.card_uid = String(d.get(Keys.CARD_UID, ""))
+		ctx.reason = String(d.get(Keys.REASON, ""))
+
+	Events.execute_discard_cards.emit(ctx)
 
 
 func _on_summon_windup(e: EventPackage) -> void:

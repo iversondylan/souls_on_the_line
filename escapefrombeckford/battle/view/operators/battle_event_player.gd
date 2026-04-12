@@ -284,6 +284,8 @@ func _is_stop_event(e: BattleEvent) -> bool:
 		return true
 	if int(e.type) == BattleEvent.Type.DISCARD_REQUESTED:
 		return true
+	if int(e.type) == BattleEvent.Type.DISCARD_CARDS:
+		return true
 	if e.defines_beat:
 		return true
 

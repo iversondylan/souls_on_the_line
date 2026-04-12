@@ -55,6 +55,12 @@ static func on_player_turn_begin(api: SimBattleAPI, player_id: int) -> void:
 
 	_expire_all_by_policy(api, Status.ExpirationPolicy.PLAYER_TURN_START)
 
+static func on_draw_context(_api: SimBattleAPI, _ctx: DrawContext) -> void:
+	return
+
+static func on_player_turn_end_discard(_api: SimBattleAPI, _ctx: DiscardContext) -> void:
+	return
+
 static func on_actor_turn_end(api: SimBattleAPI, actor_id: int) -> void:
 	if api == null or api.state == null or api.state.has_terminal_outcome():
 		return
