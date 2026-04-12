@@ -5,16 +5,16 @@
 [ext_resource type="Texture2D" uid="uid://ceu3xktqlv8ib" path="res://_assets/sprites/assorted/heal-sky-2.png" id="3_heal_icon"]
 [ext_resource type="Script" uid="uid://dtwuyctovqk5r" path="res://npc_ai/_core/intent_lifecycle_model.gd" id="4_lifecycle"]
 [ext_resource type="Resource" uid="uid://3n3py70oaeys" path="res://combatants/enemies/ScrapmenAcquisitionsSpecialist/repair_intent_text_model.tres" id="5_text_model"]
+[ext_resource type="Script" uid="uid://q408gy2b4q6a" path="res://npc_ai/_core/performable_model.gd" id="6_kq31s"]
 [ext_resource type="Script" uid="uid://bcih413oy6v73" path="res://npc_ai/_core/npc_action.gd" id="8_action"]
 [ext_resource type="Script" uid="uid://cuj4qvyx6dedj" path="res://npc_ai/_core/state_model.gd" id="9_state"]
 [ext_resource type="Resource" uid="uid://cd7usba570qq4" path="res://combatants/enemies/ScrapmenAcquisitionsSpecialist/repair_tooltip_model.tres" id="10_tooltip_model"]
 [ext_resource type="Resource" uid="uid://btgtvs6ab0nsg" path="res://npc_ai/chance/half_exponential_spree_chance_state_model.tres" id="11_half_exp"]
-[ext_resource type="Script" path="res://npc_ai/chance/multiply_chance_if_any_damaged_other_ally_or_self_state_model.gd" id="12_repair_chance"]
+[ext_resource type="Script" uid="uid://cmg4boowu02k4" path="res://npc_ai/chance/multiply_chance_if_any_damaged_other_ally_or_self_state_model.gd" id="12_repair_chance"]
 
 [sub_resource type="Resource" id="Resource_repair_chance"]
 script = ExtResource("12_repair_chance")
 available_multiplier = 2.0
-unavailable_multiplier = 0.0
 
 [resource]
 script = ExtResource("8_action")

@@ -15,7 +15,7 @@
 
 [resource]
 script = ExtResource("7_action")
-effect_packages = Array[ExtResource("1_pkg")]([ExtResource("2_vulnerable_pkg"), ExtResource("3_weakened_pkg"), ExtResource("5_attack_pkg")])
+effect_packages = Array[ExtResource("1_pkg")]([ExtResource("5_attack_pkg"), ExtResource("3_weakened_pkg"), ExtResource("2_vulnerable_pkg")])
 state_models = Array[ExtResource("10_jkdrk")]([ExtResource("11_xau02")])
 action_name = "Blinding Assault"
 intent_icon = ExtResource("5_hcrgo")
