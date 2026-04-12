@@ -2,6 +2,9 @@
 
 class_name SummonReplaceInteractionContext extends EscrowCardInteractionContext
 
+const EncounterGateRequestScript = preload("res://encounters/_core/encounter_gate_request.gd")
+const GateResultScript = preload("res://encounters/_core/gate_result.gd")
+
 
 var action_index: int = -1
 var preview: SummonPreview
@@ -101,6 +104,17 @@ func _confirm(chosen: CombatantView) -> void:
 		return
 	if chosen == null or !is_instance_valid(chosen):
 		return
+	if handler != null and handler.battle != null:
+		var gate_request = EncounterGateRequestScript.new()
+		gate_request.kind = EncounterGateRequestScript.Kind.CONFIRM_SUMMON_REPLACE
+		gate_request.target_ids = PackedInt32Array([int(chosen.cid)])
+		gate_request.insert_index = int(preview.insert_index) if preview != null else -1
+		if card_ctx != null and card_ctx.card_data != null:
+			card_ctx.card_data.ensure_uid()
+			gate_request.card_uid = StringName(String(card_ctx.card_data.uid))
+		var gate_result = handler.battle.evaluate_encounter_gate(gate_request)
+		if gate_result != null and int(gate_result.verdict) != int(GateResultScript.Verdict.ALLOW):
+			return
 
 	resolving = true
 

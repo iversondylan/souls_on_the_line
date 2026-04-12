@@ -1,0 +1,51 @@
+[gd_resource type="Resource" script_class="BattleData" format=3 uid="uid://trlxaybf7coq"]
+
+[ext_resource type="Script" uid="uid://be1v8qevmc2xw" path="res://encounters/battle_data.gd" id="1_battle_data"]
+[ext_resource type="Script" uid="uid://cfatj0ryn8uv3" path="res://combatants/combatant_data.gd" id="2_combatant_data"]
+[ext_resource type="Script" uid="uid://dojghhx6llod0" path="res://encounters/_core/encounter_definition.gd" id="2_definition"]
+[ext_resource type="Resource" uid="uid://c2yo7152wx0l7" path="res://combatants/enemies/CursedLedger/cursed_ledger_data.tres" id="3_enemy"]
+[ext_resource type="Script" uid="uid://bcd8uhtxdbpsn" path="res://encounters/_core/encounter_dialogue_action.gd" id="4_dialogue_action"]
+[ext_resource type="Script" uid="uid://c1gcos6skuvpg" path="res://encounters/_core/encounter_event_condition.gd" id="5_event_condition"]
+[ext_resource type="Script" uid="uid://ux5euuse2pwx" path="res://encounters/_core/encounter_capability_set.gd" id="6_capabilities"]
+[ext_resource type="Script" uid="uid://dlhcpba4e0l5c" path="res://encounters/_core/encounter_trigger.gd" id="7_trigger"]
+[ext_resource type="Script" uid="uid://dh1bydv0adqsq" path="res://encounters/_core/encounter_step.gd" id="8_step"]
+
+[sub_resource type="Resource" id="EncounterCapabilitySet_default"]
+script = ExtResource("6_capabilities")
+allowed_card_uids = null
+allowed_target_ids = null
+allowed_insert_indices = null
+
+[sub_resource type="Resource" id="EncounterDialogueAction_intro"]
+script = ExtResource("4_dialogue_action")
+dialogue_id = &"oswin_intro"
+speaker_name = "Magister Oswin Carrel"
+text_bbcode = "Ahem. Stated for the record: this is Magister Oswin Carrel, Assistant Director of Resonance Integration. Associate Magister Cole Hadyn joins me today for a combat drill."
+
+[sub_resource type="Resource" id="EncounterEventCondition_player_input"]
+script = ExtResource("5_event_condition")
+event_name = &"player_input_reached"
+
+[sub_resource type="Resource" id="EncounterTrigger_intro_on_input"]
+script = ExtResource("7_trigger")
+id = &"intro_on_input"
+conditions = [SubResource("EncounterEventCondition_player_input")]
+actions = [SubResource("EncounterDialogueAction_intro")]
+
+[sub_resource type="Resource" id="EncounterStep_intro"]
+script = ExtResource("8_step")
+id = &"intro"
+triggers = [SubResource("EncounterTrigger_intro_on_input")]
+capability_overrides = SubResource("EncounterCapabilitySet_default")
+
+[sub_resource type="Resource" id="EncounterDefinition_tutorial"]
+script = ExtResource("2_definition")
+initial_step_id = &"intro"
+steps = [SubResource("EncounterStep_intro")]
+
+[resource]
+script = ExtResource("1_battle_data")
+encounter_name = "Tutorial Drill"
+enemies = Array[ExtResource("2_combatant_data")]([ExtResource("3_enemy")])
+encounter_definition = SubResource("EncounterDefinition_tutorial")
+metadata/_custom_type_script = "uid://be1v8qevmc2xw"

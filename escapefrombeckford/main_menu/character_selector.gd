@@ -37,11 +37,18 @@ func _set_current_profile(profile_id: String) -> void:
 	set_current_character(profile)
 
 func _on_start_button_pressed() -> void:
+	_begin_run(RunProfile.StartMode.NEW_RUN)
+
+
+func _on_tutorial_button_pressed() -> void:
+	_begin_run(RunProfile.StartMode.TUTORIAL)
+
+
+func _begin_run(start_mode: RunProfile.StartMode) -> void:
 	if current_character == null:
 		return
-	#print("Start new escape attempt with %s" % current_character.name)
 	var profile := RunProfile.new()
-	profile.start_mode = RunProfile.StartMode.NEW_RUN
+	profile.start_mode = start_mode
 	profile.seed = 0
 	profile.selected_starting_soul_uid = ""
 	profile.player_profile_id = current_profile_id

@@ -12,6 +12,7 @@ const Removal = preload("res://core/keys_values/removal_values.gd")
 
 var sim_host: SimHost
 var battle_ui: BattleUI
+var encounter_director = null
 
 var event_player: BattleEventPlayer
 var event_director: BattleEventDirector

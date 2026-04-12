@@ -7,6 +7,7 @@ enum StartMode {
 	NEW_RUN,
 	CONTINUE_RUN,
 	LOAD_DEBUG_SLOT,
+	TUTORIAL,
 }
 
 var start_mode: StartMode = StartMode.NEW_RUN

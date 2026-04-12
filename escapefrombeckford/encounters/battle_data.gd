@@ -6,6 +6,7 @@ class_name BattleData extends Resource
 @export var gold_reward_min: int
 @export var gold_reward_max: int
 @export var enemies: Array[CombatantData]
+@export var encounter_definition: Resource
 
 var accumulated_weight: float = 0.0
 

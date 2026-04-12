@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="NPCAIProfile" format=3 uid="uid://b800j7nlnqyqx"]
+
+[ext_resource type="Script" uid="uid://bcih413oy6v73" path="res://npc_ai/_core/npc_action.gd" id="1_14lii"]
+[ext_resource type="Resource" uid="uid://cf80b6tru36x2" path="res://combatants/enemies/TrainingDummy/training_dummy_attack_action.tres" id="2_66du1"]
+[ext_resource type="Resource" path="res://combatants/enemies/TrainingDummy/summon_shield_mite_action.tres" id="3_2sj6m"]
+[ext_resource type="Script" uid="uid://bdsvca1cpka5s" path="res://npc_ai/_core/npc_ai_profile.gd" id="4_aci7x"]
+
+[resource]
+script = ExtResource("4_aci7x")
+actions = Array[ExtResource("1_14lii")]([ExtResource("2_66du1"), ExtResource("3_2sj6m")])
+metadata/_custom_type_script = "uid://bdsvca1cpka5s"

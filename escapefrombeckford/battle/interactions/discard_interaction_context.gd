@@ -1,6 +1,9 @@
 # discard_interaction_context.gd
 class_name DiscardInteractionContext extends InteractionContext
 
+const EncounterGateRequestScript = preload("res://encounters/_core/encounter_gate_request.gd")
+const GateResultScript = preload("res://encounters/_core/gate_result.gd")
+
 var discard_ctx: DiscardContext
 
 var _selected: Array[UsableCard] = []
@@ -195,6 +198,12 @@ func _get_selected_uids() -> Array[String]:
 	return out
 
 func _commit_selected() -> void:
+	if handler != null and handler.battle != null:
+		var gate_request = EncounterGateRequestScript.new()
+		gate_request.kind = EncounterGateRequestScript.Kind.CONFIRM_DISCARD
+		var gate_result = handler.battle.evaluate_encounter_gate(gate_request)
+		if gate_result != null and int(gate_result.verdict) != int(GateResultScript.Verdict.ALLOW):
+			return
 	_resolving = true
 	handler.prompt_set_enabled(false)
 

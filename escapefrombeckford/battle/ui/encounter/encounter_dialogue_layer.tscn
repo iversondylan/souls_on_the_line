@@ -1,0 +1,23 @@
+[gd_scene format=3 uid="uid://jxu5qilw3jl7"]
+
+[ext_resource type="Script" uid="uid://c4xn4r3gw2bun" path="res://battle/ui/encounter/encounter_dialogue_layer.gd" id="1_script"]
+[ext_resource type="PackedScene" uid="uid://t6a3tp2vlmks" path="res://battle/ui/encounter/encounter_dialogue_panel.tscn" id="2_dialogue"]
+[ext_resource type="PackedScene" uid="uid://2wttwd8q3v0s" path="res://battle/ui/encounter/encounter_hint_panel.tscn" id="3_hint"]
+
+[node name="EncounterDialogueLayer" type="Control" unique_id=2046031416]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("1_script")
+
+[node name="EncounterDialoguePanel" parent="." unique_id=1829101309 instance=ExtResource("2_dialogue")]
+unique_name_in_owner = true
+layout_mode = 1
+
+[node name="EncounterHintPanel" parent="." unique_id=298521163 instance=ExtResource("3_hint")]
+unique_name_in_owner = true
+layout_mode = 1

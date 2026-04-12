@@ -403,6 +403,7 @@ func apply_disabled_state_to_card(usable_card: UsableCard) -> void:
 		should_disable = bins.is_hand_card_locked_until_next_player_turn(String(usable_card.card_data.uid))
 
 	usable_card.disabled = should_disable
+	usable_card.playable = usable_card.is_playable()
 
 func reposition_hand_cards() -> void:
 	var cards := _get_hand_cards()

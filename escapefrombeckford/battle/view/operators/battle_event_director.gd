@@ -4,6 +4,7 @@ class_name BattleEventDirector extends RefCounted
 
 const Removal = preload("res://core/keys_values/removal_values.gd")
 const RemovalWindupOrderScript = preload("res://battle/view/containers/removal_windup_order.gd")
+const EncounterObservedEventScript = preload("res://encounters/_core/encounter_observed_event.gd")
 
 var battle_view: BattleView
 var click: Sound
@@ -314,6 +315,8 @@ func on_event(e: EventPackage) -> void:
 	if e.is_planned and _is_presentation_only_planned_event_type(int(e.event.type)):
 		return
 
+	_emit_encounter_observed_event(e)
+
 	match int(e.event.type):
 		BattleEvent.Type.SPAWNED:
 			_on_spawned(e)
@@ -344,6 +347,8 @@ func on_event(e: EventPackage) -> void:
 		BattleEvent.Type.PLAYER_INPUT_REACHED:
 			var actor_id := int(e.event.data.get(Keys.ACTOR_ID, 0)) if e.event.data != null else 0
 			Events.player_input_view_reached.emit(actor_id)
+		BattleEvent.Type.CARD_PLAYED:
+			pass
 		BattleEvent.Type.END_TURN_PRESSED:
 			pass
 		BattleEvent.Type.DISCARD_REQUESTED:
@@ -367,6 +372,62 @@ func on_event(e: EventPackage) -> void:
 		_:
 			if !_is_silent_noop_event_type(int(e.event.type)):
 				push_warning("BattleEventDirector: unhandled event type in playback: %s planned=%s" % [_event_type_name(int(e.event.type)), str(bool(e.is_planned))])
+
+func _emit_encounter_observed_event(e: EventPackage) -> void:
+	var event_name := _encounter_event_name(int(e.event.type))
+	if event_name == &"":
+		return
+	var d := _data(e)
+	var observed := EncounterObservedEventScript.new()
+	observed.name = event_name
+	observed.battle_event_type = int(e.event.type)
+	observed.seq = int(e.event.seq)
+	observed.actor_id = int(d.get(Keys.ACTOR_ID, 0))
+	observed.source_id = int(d.get(Keys.SOURCE_ID, 0))
+	observed.target_id = int(d.get(Keys.TARGET_ID, 0))
+	observed.group_index = int(d.get(Keys.GROUP_INDEX, e.event.group_index))
+	observed.active_id = int(d.get(Keys.ACTIVE_ID, 0))
+	observed.card_uid = StringName(String(d.get(Keys.CARD_UID, "")))
+	observed.insert_index = int(d.get(Keys.INSERT_INDEX, -1))
+	observed.target_ids = _to_packed_int_array(d.get(Keys.TARGETS, d.get(Keys.TARGET_IDS, PackedInt32Array())))
+	observed.summoned_ids = _to_packed_int_array(d.get(Keys.SUMMONED_IDS, PackedInt32Array()))
+	if observed.summoned_ids.is_empty() and int(d.get(Keys.SUMMONED_ID, 0)) > 0:
+		observed.summoned_ids = PackedInt32Array([int(d.get(Keys.SUMMONED_ID, 0))])
+	observed.data = d.duplicate(true)
+	Events.encounter_observed_event.emit(observed)
+
+func _encounter_event_name(event_type: int) -> StringName:
+	match event_type:
+		BattleEvent.Type.CARD_PLAYED:
+			return &"card_played"
+		BattleEvent.Type.SUMMONED:
+			return &"summoned"
+		BattleEvent.Type.MOVED:
+			return &"moved"
+		BattleEvent.Type.TURN_STATUS:
+			return &"turn_status"
+		BattleEvent.Type.PLAYER_INPUT_REACHED:
+			return &"player_input_reached"
+		BattleEvent.Type.END_TURN_PRESSED:
+			return &"end_turn_pressed"
+		BattleEvent.Type.DRAW_CARDS:
+			return &"draw_cards"
+		BattleEvent.Type.VICTORY:
+			return &"victory"
+		BattleEvent.Type.DEFEAT:
+			return &"defeat"
+		BattleEvent.Type.DISCARD_REQUESTED:
+			return &"discard_requested"
+	return &""
+
+func _to_packed_int_array(value: Variant) -> PackedInt32Array:
+	if value is PackedInt32Array:
+		return value.duplicate()
+	var packed := PackedInt32Array()
+	if value is Array:
+		for entry in value:
+			packed.append(int(entry))
+	return packed
 
 
 # ------------------------------------------------------------------------------

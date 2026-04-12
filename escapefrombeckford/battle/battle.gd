@@ -2,6 +2,10 @@
 
 class_name Battle extends Node
 
+const EncounterDirectorScript = preload("res://encounters/_core/encounter_director.gd")
+const EncounterGateRequestScript = preload("res://encounters/_core/encounter_gate_request.gd")
+const GateResultScript = preload("res://encounters/_core/gate_result.gd")
+
 
 # -------------------------
 # Inspector
@@ -55,6 +59,7 @@ var _debug_mode: bool = true
 @onready var turn_phase_title: TurnPhaseTitle = $Battle_UI/TurnPhaseTitle
 
 @onready var thank_you_box: Node2D = $Battle_UI/ThankYouBox
+@onready var encounter_dialogue_layer = $Visual_Overlays/EncounterDialogueLayer
 
 
 # -------------------------
@@ -74,6 +79,7 @@ var _player_end_turn_armed: bool = false
 var card_bins: BattleCardBins
 var card_bin_rule_host: CardBinRuleHost
 var transport_session: BattleTransportSession
+var encounter_director
 
 
 # -------------------------
@@ -86,6 +92,7 @@ func _ready() -> void:
 
 	battle_view.sim_host = sim_host
 	battle_view.battle_ui = battle_ui
+	battle_view.encounter_director = null
 
 	hand.battle_view = battle_view
 	hand.sim_host = sim_host
@@ -192,6 +199,7 @@ func start_battle() -> void:
 	hand.api = sim_host.get_main_api()
 	draw_pile_view.api = sim_host.get_main_api()
 	discard_pile_view.api = sim_host.get_main_api()
+	_setup_encounter_director()
 
 	sim_host.seed_arcana_from_ids(my_arcana)
 
@@ -216,6 +224,8 @@ func start_battle() -> void:
 	initialize_card_pile_ui()
 
 	sim_host.end_setup()
+	if encounter_director != null:
+		encounter_director.start()
 
 	var runtime := _runtime()
 	if runtime != null:
@@ -307,6 +317,11 @@ func _on_end_turn_button_pressed() -> void:
 		return
 	if !_player_end_turn_armed:
 		return
+	var gate_request = EncounterGateRequestScript.new()
+	gate_request.kind = EncounterGateRequestScript.Kind.END_TURN
+	var gate_result = evaluate_encounter_gate(gate_request)
+	if gate_result != null and int(gate_result.verdict) != int(GateResultScript.Verdict.ALLOW):
+		return
 
 	_arm_end_turn_button(false)
 	wait_for_anims = true
@@ -345,7 +360,41 @@ func _on_player_input_view_reached(player_id: int) -> void:
 
 func _arm_end_turn_button(armed: bool) -> void:
 	_player_end_turn_armed = armed
-	battle_ui.set_end_turn_enabled(armed)
+	refresh_player_input_visual_state()
+
+func refresh_player_input_visual_state() -> void:
+	if battle_ui != null:
+		battle_ui.set_end_turn_enabled(_player_end_turn_armed and _can_end_turn_from_encounter())
+	if hand != null:
+		hand.refresh_locked_card_states()
+
+func evaluate_encounter_gate(req):
+	if encounter_director == null:
+		var result = GateResultScript.new()
+		result.verdict = GateResultScript.Verdict.ALLOW
+		return result
+	return encounter_director.evaluate_gate(req)
+
+func _can_end_turn_from_encounter() -> bool:
+	if encounter_director == null:
+		return true
+	return encounter_director.can_end_turn()
+
+func _setup_encounter_director() -> void:
+	if encounter_director != null and is_instance_valid(encounter_director):
+		encounter_director.queue_free()
+	encounter_director = EncounterDirectorScript.new()
+	encounter_director.name = "EncounterDirector"
+	add_child(encounter_director)
+	encounter_director.setup(self, battle_data)
+	encounter_director.capabilities_changed.connect(_on_encounter_capabilities_changed)
+	battle_view.encounter_director = encounter_director
+	if encounter_dialogue_layer != null:
+		encounter_dialogue_layer.bind_director(encounter_director)
+	refresh_player_input_visual_state()
+
+func _on_encounter_capabilities_changed(_capabilities) -> void:
+	refresh_player_input_visual_state()
 
 
 # -------------------------

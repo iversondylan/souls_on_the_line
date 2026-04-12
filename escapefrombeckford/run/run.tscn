@@ -20,12 +20,14 @@
 [ext_resource type="Texture2D" uid="uid://djvoybbgewqqo" path="res://_assets/sprites/assorted/cog_darker.png" id="14_i44wd"]
 [ext_resource type="PackedScene" uid="uid://c6h75jpp4xd3w" path="res://run/pause_menu/pause_menu.tscn" id="21_svaf3"]
 [ext_resource type="Resource" uid="uid://hkw3l5xa63gq" path="res://encounters/battle_pool_1.tres" id="22_battle_pool"]
+[ext_resource type="Resource" path="res://encounters/tutorial/tutorial_encounter.tres" id="23_tutorial_encounter"]
 
 [node name="Run" type="Node" unique_id=13304911]
 script = ExtResource("1_l7o68")
 status_catalog = ExtResource("3_7yo0l")
 arcanum_catalog = ExtResource("4_fo0ly")
 battle_pool = ExtResource("22_battle_pool")
+tutorial_encounter = ExtResource("23_tutorial_encounter")
 
 [node name="Map" parent="." unique_id=1135074360 instance=ExtResource("2_wdonh")]
 

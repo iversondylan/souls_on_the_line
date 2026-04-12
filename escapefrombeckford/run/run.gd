@@ -18,6 +18,7 @@ const SAVE_NAME_DIALOG_SCN := preload("res://ui/save_name_dialog.tscn")
 @export var status_catalog: StatusCatalog
 @export var arcanum_catalog: ArcanaCatalog
 @export var battle_pool: BattlePool
+@export var tutorial_encounter: BattleData
 
 # TEMPORARY v
 #@export var extra_arcana: Array[Arcanum]
@@ -96,10 +97,25 @@ func _ready() -> void:
 			_continue_saved_run()
 		RunProfile.StartMode.LOAD_DEBUG_SLOT:
 			_load_debug_slot_run(run_profile.debug_slot_name)
+		RunProfile.StartMode.TUTORIAL:
+			_start_new_run_from_profile(run_profile)
 		_:
 			push_warning("Run._ready(): unknown RunProfile.start_mode '%s'" % run_profile.start_mode)
 
 func _start_run() -> void:
+	_prepare_run_runtime()
+	_generate_or_restore_map()
+	_persist_active_run()
+
+func _start_tutorial_run() -> void:
+	_prepare_run_runtime()
+	if tutorial_encounter == null:
+		push_warning("Run._start_tutorial_run(): tutorial_encounter is not assigned.")
+		get_tree().change_scene_to_packed(MAIN_MENU_SCN)
+		return
+	_start_direct_battle(tutorial_encounter, "tutorial_battle")
+
+func _prepare_run_runtime() -> void:
 	if run_state == null:
 		run_state = RunState.new()
 	run_state.draftable_cards = draftable_cards
@@ -113,16 +129,12 @@ func _start_run() -> void:
 		run_deck = run_state.run_deck
 	
 	##This is for messing around with extra starting gold
-	if startup_mode == int(RunProfile.StartMode.NEW_RUN):
+	if startup_mode == int(RunProfile.StartMode.NEW_RUN) or startup_mode == int(RunProfile.StartMode.TUTORIAL):
 		run_state.gold += player_data.bonus_starting_gold
 	_ensure_player_run_state_initialized()
 	
 	_connect_signals()
 	_init_top_bar()
-	_generate_or_restore_map()
-	#map.generate_new_map()
-	#map.unlock_encounter_column(0)
-	_persist_active_run()
 
 func _change_view(scene: PackedScene) -> Node:
 	_force_close_pause_menu()
@@ -223,6 +235,19 @@ func _on_battle_entered_with_seed(room: Room, existing_battle_seed: int = -1) ->
 	battle_scn.my_arcana = arcana_system.get_my_arcana()
 	battle_scn.start_battle()
 
+func _start_direct_battle(selected_battle_data: BattleData, seed_label: String) -> void:
+	var direct_battle_seed := RNGUtil.seed_from_label(run_seed, seed_label)
+	var battle_scn: Battle = _change_view(BATTLE_SCN) as Battle
+	battle_scn.run_seed = run_seed
+	battle_scn.battle_seed = direct_battle_seed
+	battle_scn.run = self
+	battle_scn.run_state = run_state
+	battle_scn.player_data = player_data
+	battle_scn.run_deck = run_deck
+	battle_scn.battle_data = selected_battle_data
+	battle_scn.my_arcana = arcana_system.get_my_arcana()
+	battle_scn.start_battle()
+
 func _on_rest_site_entered(room: Room = map.last_room) -> void:
 	map.set_active_room(room)
 	_set_location_for_room(room)
@@ -249,6 +274,9 @@ func _on_shop_entered(room: Room = map.last_room) -> void:
 	shop.populate_from_context(shop_ctx)
 
 func _on_battle_won() -> void:
+	if _is_tutorial_mode():
+		_exit_tutorial_to_main_menu()
+		return
 	_sync_player_health_from_active_battle()
 	_prepare_pending_reward_checkpoint(int(RewardContext.SourceKind.BATTLE), map.last_room)
 	_persist_active_run()
@@ -331,6 +359,9 @@ func _start_new_run_from_profile(profile: RunProfile) -> void:
 	# TEMPORARY ^
 	#print("run.gd STARTING RUN WITH NEW CHARACTER")
 	SaveService.save_profile(profile_data)
+	if startup_mode == int(RunProfile.StartMode.TUTORIAL):
+		_start_tutorial_run()
+		return
 	_start_run()
 
 
@@ -870,7 +901,7 @@ func _sync_run_state_from_live_state() -> void:
 
 
 func _persist_active_run() -> void:
-	if run_state == null:
+	if run_state == null or _is_tutorial_mode():
 		return
 	_sync_run_state_from_live_state()
 	SaveService.save_active_run(run_state)
@@ -878,7 +909,16 @@ func _persist_active_run() -> void:
 
 func _on_run_defeat() -> void:
 	_force_close_pause_menu()
+	if _is_tutorial_mode():
+		return
 	SaveService.clear_active_run()
+
+func _is_tutorial_mode() -> bool:
+	return startup_mode == int(RunProfile.StartMode.TUTORIAL)
+
+func _exit_tutorial_to_main_menu() -> void:
+	get_tree().paused = false
+	get_tree().change_scene_to_packed(MAIN_MENU_SCN)
 
 func _get_current_run_max_health() -> int:
 	if run_state == null or run_state.player_run_state == null:
