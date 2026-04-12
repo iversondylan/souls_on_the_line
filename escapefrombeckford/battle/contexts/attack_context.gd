@@ -34,6 +34,7 @@ var origin_arcanum_id: StringName = &""
 var reason: String = ""
 
 var affected_target_ids: PackedInt32Array = PackedInt32Array()
+var killed_target_ids: PackedInt32Array = PackedInt32Array()
 var any_hit: bool = false
 var current_strike_index: int = -1
 var current_primary_target_ids: Array[int] = []

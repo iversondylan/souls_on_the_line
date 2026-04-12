@@ -334,13 +334,13 @@ func _on_end_turn_button_pressed() -> void:
 func _on_player_input_view_reached(player_id: int) -> void:
 	var api := sim_host.get_main_api() if sim_host != null else null
 	if api == null:
-		print("[TRACE battle] _on_player_input_view_reached: missing api")
+		#print("[TRACE battle] _on_player_input_view_reached: missing api")
 		return
 	if int(player_id) <= 0 or int(player_id) != int(api.get_player_id()):
-		print("[TRACE battle] _on_player_input_view_reached: ignoring player_id=%d expected=%d" % [int(player_id), int(api.get_player_id())])
+		#print("[TRACE battle] _on_player_input_view_reached: ignoring player_id=%d expected=%d" % [int(player_id), int(api.get_player_id())])
 		return
 	if card_bins == null:
-		print("[TRACE battle] _on_player_input_view_reached: missing card_bins")
+		#print("[TRACE battle] _on_player_input_view_reached: missing card_bins")
 		return
 
 	wait_for_anims = true
@@ -348,12 +348,12 @@ func _on_player_input_view_reached(player_id: int) -> void:
 	if hand != null:
 		hand.refresh_locked_card_states()
 	_pending_player_turn_draw_amount_override = int(encounter_director.get_player_turn_draw_amount_override()) if encounter_director != null else -1
-	print("[TRACE battle] player_input_reached: player_id=%d draw_override=%d encounter_active=%s blocking=%s" % [
-		int(player_id),
-		int(_pending_player_turn_draw_amount_override),
-		str(encounter_director != null),
-		str(encounter_director != null and encounter_director.is_blocking_presentation())
-	])
+	#print("[TRACE battle] player_input_reached: player_id=%d draw_override=%d encounter_active=%s blocking=%s" % [
+		#int(player_id),
+		#int(_pending_player_turn_draw_amount_override),
+		#str(encounter_director != null),
+		#str(encounter_director != null and encounter_director.is_blocking_presentation())
+	#])
 	_release_pending_player_turn_draw_if_ready()
 
 
@@ -424,19 +424,19 @@ func _apply_resource_rules_from_encounter() -> void:
 
 func _on_card_bins_draw_completed(ctx: DrawContext) -> void:
 	if ctx == null:
-		print("[TRACE battle] _on_card_bins_draw_completed: ctx is null")
+		#print("[TRACE battle] _on_card_bins_draw_completed: ctx is null")
 		return
 	if String(ctx.reason) != "player_turn_refill":
-		print("[TRACE battle] _on_card_bins_draw_completed: ignoring reason=%s drawn=%d" % [String(ctx.reason), int(ctx.actually_drawn)])
+		#print("[TRACE battle] _on_card_bins_draw_completed: ignoring reason=%s drawn=%d" % [String(ctx.reason), int(ctx.actually_drawn)])
 		return
 	if hand != null:
 		hand.refresh_locked_card_states()
-	print("[TRACE battle] draw_completed: reason=%s amount=%d actually_drawn=%d hand_size=%d" % [
-		String(ctx.reason),
-		int(ctx.amount),
-		int(ctx.actually_drawn),
-		int(card_bins.state.hand_pile.cards.size()) if card_bins != null and card_bins.state != null and card_bins.state.hand_pile != null else -1
-	])
+	#print("[TRACE battle] draw_completed: reason=%s amount=%d actually_drawn=%d hand_size=%d" % [
+		#String(ctx.reason),
+		#int(ctx.amount),
+		#int(ctx.actually_drawn),
+		#int(card_bins.state.hand_pile.cards.size()) if card_bins != null and card_bins.state != null and card_bins.state.hand_pile != null else -1
+	#])
 	Events.hand_drawn.emit()
 	_arm_end_turn_button(true)
 	wait_for_anims = false
@@ -445,7 +445,7 @@ func _on_encounter_capabilities_changed(_capabilities) -> void:
 	refresh_player_input_visual_state()
 
 func _on_encounter_blocking_state_changed(is_blocking: bool) -> void:
-	print("[TRACE battle] encounter_blocking_state_changed: %s" % str(is_blocking))
+	#print("[TRACE battle] encounter_blocking_state_changed: %s" % str(is_blocking))
 	if is_blocking:
 		return
 	_release_pending_player_turn_draw_if_ready()
@@ -453,13 +453,13 @@ func _on_encounter_blocking_state_changed(is_blocking: bool) -> void:
 func _release_pending_player_turn_draw_if_ready() -> void:
 	var runtime := _runtime()
 	if runtime == null:
-		print("[TRACE battle] _release_pending_player_turn_draw_if_ready: missing runtime")
+		#print("[TRACE battle] _release_pending_player_turn_draw_if_ready: missing runtime")
 		return
 	if encounter_director != null and encounter_director.is_blocking_presentation():
-		print("[TRACE battle] _release_pending_player_turn_draw_if_ready: blocked by encounter presentation")
+		#print("[TRACE battle] _release_pending_player_turn_draw_if_ready: blocked by encounter presentation")
 		return
 	var draw_amount_override := int(_pending_player_turn_draw_amount_override)
-	print("[TRACE battle] confirm_player_input_ready: draw_override=%d" % draw_amount_override)
+	#print("[TRACE battle] confirm_player_input_ready: draw_override=%d" % draw_amount_override)
 	_pending_player_turn_draw_amount_override = -1
 	runtime.confirm_player_input_ready(draw_amount_override)
 

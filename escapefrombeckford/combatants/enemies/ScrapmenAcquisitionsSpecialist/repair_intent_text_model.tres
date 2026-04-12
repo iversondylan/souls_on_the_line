@@ -1,0 +1,7 @@
+[gd_resource type="Resource" script_class="HealIntentTextModel" format=3 uid="uid://3n3py70oaeys"]
+
+[ext_resource type="Script" uid="uid://bws6ai4a653pr" path="res://npc_ai/text/heal_intent_text_model.gd" id="1_heal_text"]
+
+[resource]
+script = ExtResource("1_heal_text")
+metadata/_custom_type_script = "uid://bws6ai4a653pr"

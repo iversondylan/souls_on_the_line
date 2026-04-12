@@ -3,15 +3,11 @@
 [ext_resource type="Resource" uid="uid://divkbtpv76a47" path="res://npc_ai/npc_heal_sequence.tres" id="1_heal"]
 [ext_resource type="Script" uid="uid://b8d5j6ne4mt88" path="res://npc_ai/_core/param_model.gd" id="2_param"]
 [ext_resource type="Script" uid="uid://3jde7uhq2yho" path="res://npc_ai/_core/npc_effect_package.gd" id="3_pkg"]
-[ext_resource type="Script" uid="uid://s0ooar2sxbb3" path="res://npc_ai/heal/flat_heal_amount_model.gd" id="4_heal_model_script"]
+[ext_resource type="Resource" uid="uid://5dujv8xfsjrv" path="res://combatants/enemies/StudentBodyOfficial/seat_the_champion_heal_amt_model.tres" id="4_lqdnx"]
 [ext_resource type="Resource" uid="uid://b7lbcuclv3y0t" path="res://npc_ai/status/lowest_health_ally_status_target_model.tres" id="5_target_model"]
 [ext_resource type="Script" uid="uid://cuj4qvyx6dedj" path="res://npc_ai/_core/state_model.gd" id="6_lqdnx"]
-
-[sub_resource type="Resource" id="SeatChampionHealAmount"]
-script = ExtResource("4_heal_model_script")
-flat_amount = 5
 
 [resource]
 script = ExtResource("3_pkg")
 effect = ExtResource("1_heal")
-param_models = Array[ExtResource("2_param")]([ExtResource("5_target_model"), SubResource("SeatChampionHealAmount")])
+param_models = Array[ExtResource("2_param")]([ExtResource("5_target_model"), ExtResource("4_lqdnx")])

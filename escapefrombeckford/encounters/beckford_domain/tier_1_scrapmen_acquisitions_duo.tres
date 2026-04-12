@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="BattleData" format=3 uid="uid://btvh04kju6f0m"]
+
+[ext_resource type="Script" uid="uid://cfatj0ryn8uv3" path="res://combatants/combatant_data.gd" id="1_combatant_data"]
+[ext_resource type="Resource" uid="uid://bd5bwepvtne07" path="res://combatants/enemies/ScrapmenTruncheoner/scrapmen_truncheoner_data.tres" id="2_truncheoner"]
+[ext_resource type="Resource" uid="uid://dpg3ee7g7a4ve" path="res://combatants/enemies/ScrapmenAcquisitionsSpecialist/scrapmen_acquisitions_specialist_data.tres" id="3_specialist"]
+[ext_resource type="Script" uid="uid://be1v8qevmc2xw" path="res://encounters/battle_data.gd" id="4_battle_data"]
+
+[resource]
+script = ExtResource("4_battle_data")
+encounter_name = "Scrapmen Acquisitions Detail"
+battle_tier = 1
+weight = 3.0
+gold_reward_min = 50
+gold_reward_max = 60
+enemies = Array[ExtResource("1_combatant_data")]([ExtResource("2_truncheoner"), ExtResource("3_specialist")])

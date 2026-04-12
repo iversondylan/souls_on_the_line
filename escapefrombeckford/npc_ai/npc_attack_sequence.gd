@@ -3,7 +3,7 @@
 class_name NPCAttackSequence extends NPCEffectSequence
 
 func execute(ctx: NPCAIContext) -> void:
-	if ctx == null:
+	if ctx == null or !is_sequence_executable(ctx):
 		return
 
 	var runtime := ctx.runtime if ctx.runtime != null else (ctx.api.runtime if ctx.api != null else null)
@@ -41,3 +41,33 @@ func execute(ctx: NPCAIContext) -> void:
 	attack_ctx.targeting_ctx.params = attack_ctx.params
 
 	runtime.run_attack(attack_ctx)
+	_store_killed_target_ids(ctx, attack_ctx.killed_target_ids)
+
+func _store_killed_target_ids(ctx: NPCAIContext, package_kills: PackedInt32Array) -> void:
+	if ctx == null:
+		return
+	if ctx.state == null:
+		ctx.state = {}
+
+	var merged := PackedInt32Array()
+	var stored = ctx.state.get(Keys.KILLED_TARGET_IDS, PackedInt32Array())
+	if stored is PackedInt32Array:
+		for killed_id in stored:
+			_append_unique_killed_id(merged, int(killed_id))
+	elif stored is Array:
+		for killed_id in stored:
+			_append_unique_killed_id(merged, int(killed_id))
+
+	if package_kills != null:
+		for killed_id in package_kills:
+			_append_unique_killed_id(merged, int(killed_id))
+
+	ctx.state[Keys.KILLED_TARGET_IDS] = merged
+
+func _append_unique_killed_id(arr: PackedInt32Array, killed_id: int) -> void:
+	if killed_id <= 0:
+		return
+	for existing_id in arr:
+		if int(existing_id) == killed_id:
+			return
+	arr.append(killed_id)

@@ -3,7 +3,7 @@
 class_name NPCHealSequence extends NPCEffectSequence
 
 func execute(ctx: NPCAIContext) -> void:
-	if ctx == null or bool(ctx.forecast) or ctx.api == null:
+	if ctx == null or bool(ctx.forecast) or ctx.api == null or !is_sequence_executable(ctx):
 		return
 
 	var params: Dictionary = ctx.params if ctx.params else {}

@@ -7,6 +7,5 @@
 [resource]
 script = ExtResource("3_tobyd")
 encounter_name = "Scrapmen Truncheoner"
-battle_tier = 1
 enemies = Array[ExtResource("1_cf2yl")]([ExtResource("2_ujcf0")])
 metadata/_custom_type_script = "uid://be1v8qevmc2xw"

@@ -3,7 +3,7 @@
 class_name NPCMoveSequence extends NPCEffectSequence
 
 func execute(ctx: NPCAIContext) -> void:
-	if ctx == null or bool(ctx.forecast):
+	if ctx == null or bool(ctx.forecast) or !is_sequence_executable(ctx):
 		return
 
 	var runtime := ctx.runtime if ctx.runtime != null else (ctx.api.runtime if ctx.api != null else null)

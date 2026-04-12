@@ -12,8 +12,9 @@
 [ext_resource type="Resource" uid="uid://bro14nbxe02ih" path="res://encounters/beckford_domain/tier_1_calabash.tres" id="8_mneoi"]
 [ext_resource type="Resource" uid="uid://4e7nogd8g1w8" path="res://encounters/beckford_domain/tier_1_gentle_deep_procession.tres" id="9_gentle_deep"]
 [ext_resource type="Resource" uid="uid://dqr7hmqjabyk" path="res://encounters/beckford_domain/tier_1_magister_rowan_fellhart.tres" id="10_rowan"]
+[ext_resource type="Resource" uid="uid://btvh04kju6f0m" path="res://encounters/beckford_domain/tier_1_scrapmen_acquisitions_duo.tres" id="11_scrap_detail"]
 
 [resource]
 script = ExtResource("2_coyo0")
-pool = Array[ExtResource("1_c5yi3")]([ExtResource("3_gu42u"), ExtResource("2_5mnow"), ExtResource("4_wgva7"), ExtResource("5_r3cy5"), ExtResource("6_fbmkn"), ExtResource("6b_duplex"), ExtResource("9_gentle_deep"), ExtResource("10_rowan"), ExtResource("7_sumc2"), ExtResource("8_mneoi")])
+pool = Array[ExtResource("1_c5yi3")]([ExtResource("3_gu42u"), ExtResource("2_5mnow"), ExtResource("4_wgva7"), ExtResource("5_r3cy5"), ExtResource("6_fbmkn"), ExtResource("6b_duplex"), ExtResource("9_gentle_deep"), ExtResource("10_rowan"), ExtResource("7_sumc2"), ExtResource("8_mneoi"), ExtResource("11_scrap_detail")])
 metadata/_custom_type_script = "uid://b203gsihy5ttn"

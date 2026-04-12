@@ -27,6 +27,7 @@ const TARGET_ID := &"target_id"
 const STRIKE_COUNT := &"strike_count"
 const TOTAL_HIT_COUNT := &"total_hit_count"
 const HAS_LETHAL_HIT := &"has_lethal_hit"
+const KILLED_TARGET_IDS := &"killed_target_ids"
 #for the targets of attacks (often size = 1) and STRIKES:
 const TARGET_IDS := &"target_ids"
 const ACTOR_ID := &"actor_id"
@@ -197,6 +198,7 @@ const PROJECTILE_SCENE := &"projectile_scene"
 const STATUS_SCENE := &"status_scene"
 const STATUS_INTENSITY := &"status_intensity"
 const STATUS_DURATION := &"status_duration"
+const SEQUENCE_EXECUTABLE := &"sequence_executable"
 #const STATUS_ID := &"status_id"
 
 

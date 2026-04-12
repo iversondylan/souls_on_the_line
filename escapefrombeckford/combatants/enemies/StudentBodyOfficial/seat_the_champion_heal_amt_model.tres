@@ -4,5 +4,5 @@
 
 [resource]
 script = ExtResource("1_rudcs")
-flat_amount = 12
+flat_amount = 8
 metadata/_custom_type_script = "uid://s0ooar2sxbb3"

@@ -6,3 +6,8 @@ func execute(_ctx: NPCAIContext) -> void:
 
 func realizes_pending_statuses() -> bool:
 	return false
+
+func is_sequence_executable(ctx: NPCAIContext) -> bool:
+	if ctx == null or ctx.params == null:
+		return true
+	return bool(ctx.params.get(Keys.SEQUENCE_EXECUTABLE, true))

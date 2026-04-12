@@ -5,7 +5,7 @@ extends NPCEffectSequence
 const MAX_UNITS_PER_GROUP := 7
 
 func execute(ctx: NPCAIContext) -> void:
-	if ctx == null or bool(ctx.forecast):
+	if ctx == null or bool(ctx.forecast) or !is_sequence_executable(ctx):
 		return
 	if ctx.api == null:
 		push_warning("npc_summon_sequence.gd execute(): missing api")

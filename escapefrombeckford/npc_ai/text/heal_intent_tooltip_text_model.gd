@@ -20,7 +20,7 @@ func get_text(ctx: NPCAIContext) -> String:
 		if key_str == "action_name":
 			replacement = String(ctx.action_name)
 		elif key_str == "heal_amount":
-			replacement = str(get_preview_total_heal(ctx))
+			replacement = str(get_display_heal_amount(ctx))
 		elif ctx.params.has(key_str):
 			replacement = str(ctx.params.get(key_str))
 		else:

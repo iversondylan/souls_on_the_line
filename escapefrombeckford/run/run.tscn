@@ -4,6 +4,7 @@
 [ext_resource type="PackedScene" uid="uid://6p15tduy6cd2" path="res://run/map/map.tscn" id="2_wdonh"]
 [ext_resource type="Resource" uid="uid://bqr4wekgibhim" path="res://statuses/_core/status_catalog.tres" id="3_7yo0l"]
 [ext_resource type="Resource" uid="uid://cd45rlmihsfvb" path="res://arcana/_core/arcanum_catalog.tres" id="4_fo0ly"]
+[ext_resource type="Resource" uid="uid://dq3n87o7cuyxg" path="res://encounters/battle_pool_test.tres" id="4_nnxm5"]
 [ext_resource type="Theme" uid="uid://d2wc7fposrlqs" path="res://themes/wizard_theme.tres" id="4_o4jfg"]
 [ext_resource type="PackedScene" uid="uid://bxtf6la07t0t5" path="res://ui/card_pile_opener.tscn" id="5_0tt4g"]
 [ext_resource type="PackedScene" uid="uid://b5kimimy0ccq0" path="res://ui/health_bar.tscn" id="5_ux63y"]
@@ -19,7 +20,6 @@
 [ext_resource type="Texture2D" uid="uid://c67s22088x4tf" path="res://_assets/sprites/assorted/cog.png" id="13_dbkmk"]
 [ext_resource type="Texture2D" uid="uid://djvoybbgewqqo" path="res://_assets/sprites/assorted/cog_darker.png" id="14_i44wd"]
 [ext_resource type="PackedScene" uid="uid://c6h75jpp4xd3w" path="res://run/pause_menu/pause_menu.tscn" id="21_svaf3"]
-[ext_resource type="Resource" uid="uid://hkw3l5xa63gq" path="res://encounters/battle_pool_1.tres" id="22_battle_pool"]
 [ext_resource type="Resource" uid="uid://trlxaybf7coq" path="res://encounters/tutorial/tutorial_encounter.tres" id="23_tutorial_encounter"]
 [ext_resource type="Resource" uid="uid://bk7kn6kloe6sg" path="res://character_profiles/Tutorial/tutorial_cole_data.tres" id="24_tutorial_player"]
 
@@ -27,7 +27,7 @@
 script = ExtResource("1_l7o68")
 status_catalog = ExtResource("3_7yo0l")
 arcanum_catalog = ExtResource("4_fo0ly")
-battle_pool = ExtResource("22_battle_pool")
+battle_pool = ExtResource("4_nnxm5")
 tutorial_encounter = ExtResource("23_tutorial_encounter")
 tutorial_player_data = ExtResource("24_tutorial_player")
 

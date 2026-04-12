@@ -326,11 +326,11 @@ func confirm_player_end_ready() -> void:
 func confirm_player_input_ready(draw_amount_override := -1) -> void:
 	var api := _api()
 	if api == null or _pending_player_turn_draw_ctx == null:
-		print("[TRACE sim_runtime] confirm_player_input_ready: api=%s pending_ctx=%s override=%d" % [
-			str(api != null),
-			str(_pending_player_turn_draw_ctx != null),
-			int(draw_amount_override)
-		])
+		#print("[TRACE sim_runtime] confirm_player_input_ready: api=%s pending_ctx=%s override=%d" % [
+			#str(api != null),
+			#str(_pending_player_turn_draw_ctx != null),
+			#int(draw_amount_override)
+		#])
 		if api != null:
 			_deferred_player_input_ready = true
 			_deferred_player_input_ready_draw_amount_override = int(draw_amount_override)
@@ -342,12 +342,12 @@ func confirm_player_input_ready(draw_amount_override := -1) -> void:
 	_deferred_player_input_ready_draw_amount_override = -1
 	if int(draw_amount_override) >= 0:
 		draw_ctx.amount = maxi(int(draw_amount_override), 0)
-	print("[TRACE sim_runtime] confirm_player_input_ready: source_id=%d amount=%d reason=%s phase=%s" % [
-		int(draw_ctx.source_id),
-		int(draw_ctx.amount),
-		String(draw_ctx.reason),
-		String(draw_ctx.phase)
-	])
+	#print("[TRACE sim_runtime] confirm_player_input_ready: source_id=%d amount=%d reason=%s phase=%s" % [
+		#int(draw_ctx.source_id),
+		#int(draw_ctx.amount),
+		#String(draw_ctx.reason),
+		#String(draw_ctx.phase)
+	#])
 	api.process_draw_context(draw_ctx)
 
 
@@ -501,16 +501,16 @@ func _service_actor_turn(cid: int) -> void:
 		var draw_ctx := _build_player_turn_draw_context(int(cid))
 		if draw_ctx != null:
 			_pending_player_turn_draw_ctx = draw_ctx
-		print("[TRACE sim_runtime] player_turn_begin: cid=%d pending_draw_ctx=%s amount=%d reason=%s" % [
-			int(cid),
-			str(draw_ctx != null),
-			int(draw_ctx.amount) if draw_ctx != null else -1,
-			String(draw_ctx.reason) if draw_ctx != null else ""
-		])
+		#print("[TRACE sim_runtime] player_turn_begin: cid=%d pending_draw_ctx=%s amount=%d reason=%s" % [
+			#int(cid),
+			#str(draw_ctx != null),
+			#int(draw_ctx.amount) if draw_ctx != null else -1,
+			#String(draw_ctx.reason) if draw_ctx != null else ""
+		#])
 		if writer != null:
 			writer.emit_player_input_reached(int(cid))
 		if _deferred_player_input_ready and _pending_player_turn_draw_ctx != null:
-			print("[TRACE sim_runtime] player_turn_begin: flushing deferred player input confirm override=%d" % int(_deferred_player_input_ready_draw_amount_override))
+			#print("[TRACE sim_runtime] player_turn_begin: flushing deferred player input confirm override=%d" % int(_deferred_player_input_ready_draw_amount_override))
 			confirm_player_input_ready(_deferred_player_input_ready_draw_amount_override)
 		return
 
@@ -699,6 +699,7 @@ func run_npc_turn(cid: int) -> void:
 	ctx.state[Keys.ACTIONS_PERFORMED_COUNT] = int(
 		ctx.state.get(Keys.ACTIONS_PERFORMED_COUNT, 0)
 	) + 1
+	ctx.state[Keys.KILLED_TARGET_IDS] = PackedInt32Array()
 	ctx.summoned_ids = PackedInt32Array()
 	ctx.affected_ids = PackedInt32Array()
 
@@ -854,6 +855,8 @@ func run_attack(ctx: AttackContext) -> bool:
 				direct_strike_dealt_damage = true
 			if !_packed_has_int(ctx.affected_target_ids, int(tid)):
 				ctx.affected_target_ids.append(int(tid))
+			if bool(d.was_lethal) and !_packed_has_int(ctx.killed_target_ids, int(tid)):
+				ctx.killed_target_ids.append(int(tid))
 
 			_end_scope(hit_scope)
 
@@ -946,6 +949,8 @@ func run_attack(ctx: AttackContext) -> bool:
 				any = true
 				if !_packed_has_int(ctx.affected_target_ids, int(cleave_target_id)):
 					ctx.affected_target_ids.append(int(cleave_target_id))
+				if bool(cleave_damage.was_lethal) and !_packed_has_int(ctx.killed_target_ids, int(cleave_target_id)):
+					ctx.killed_target_ids.append(int(cleave_target_id))
 
 				_end_scope(cleave_hit_scope)
 				_end_scope(cleave_scope)

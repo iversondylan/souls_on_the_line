@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="NPCEffectPackage" format=3 uid="uid://ci63cwefd4dh0"]
+
+[ext_resource type="Resource" uid="uid://divkbtpv76a47" path="res://npc_ai/npc_heal_sequence.tres" id="1_heal_effect"]
+[ext_resource type="Script" uid="uid://b8d5j6ne4mt88" path="res://npc_ai/_core/param_model.gd" id="2_param"]
+[ext_resource type="Script" uid="uid://liuknj1ran6y" path="res://npc_ai/status/pseudo_random_damaged_other_ally_else_self_status_target_model.gd" id="3_target_model"]
+[ext_resource type="Script" uid="uid://s0ooar2sxbb3" path="res://npc_ai/heal/flat_heal_amount_model.gd" id="4_heal_model"]
+[ext_resource type="Script" uid="uid://3jde7uhq2yho" path="res://npc_ai/_core/npc_effect_package.gd" id="5_pkg"]
+[ext_resource type="Script" uid="uid://cuj4qvyx6dedj" path="res://npc_ai/_core/state_model.gd" id="6_state"]
+
+[sub_resource type="Resource" id="Resource_repair_target"]
+script = ExtResource("3_target_model")
+metadata/_custom_type_script = "uid://liuknj1ran6y"
+
+[sub_resource type="Resource" id="Resource_repair_amount"]
+script = ExtResource("4_heal_model")
+flat_amount = 4
+metadata/_custom_type_script = "uid://s0ooar2sxbb3"
+
+[resource]
+script = ExtResource("5_pkg")
+effect = ExtResource("1_heal_effect")
+param_models = Array[ExtResource("2_param")]([SubResource("Resource_repair_target"), SubResource("Resource_repair_amount")])
+metadata/_custom_type_script = "uid://3jde7uhq2yho"
