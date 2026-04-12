@@ -1,12 +1,12 @@
 class_name EncounterRuleContext extends RefCounted
 
-var director = null
-var state = null
-var definition = null
-var battle = null
-var current_step = null
-var observed_event = null
-var gate_request = null
+var director: EncounterDirector = null
+var state: EncounterState = null
+var definition: EncounterDefinition = null
+var battle: Battle = null
+var current_step: EncounterStep = null
+var observed_event: EncounterObservedEvent = null
+var gate_request: EncounterGateRequest = null
 
 func get_current_step_id() -> StringName:
 	if current_step != null:
@@ -35,8 +35,6 @@ func get_card_id() -> StringName:
 	return &""
 
 func get_card_proto_path() -> String:
-	if gate_request != null and !String(gate_request.card_proto_path).is_empty():
-		return String(gate_request.card_proto_path)
 	if observed_event != null and !String(observed_event.card_proto_path).is_empty():
 		return String(observed_event.card_proto_path)
 	if observed_event != null:

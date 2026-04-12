@@ -24,9 +24,6 @@ class_name SimBattleAPI extends RefCounted
 
 const FRIENDLY := 0
 const ENEMY := 1
-const Removal = preload("res://core/keys_values/removal_values.gd")
-const RemovalContextScript = preload("res://battle/contexts/removal_context.gd")
-const RemovalDelayedReactionScript = preload("res://battle/sim/containers/removal_delayed_reaction.gd")
 
 var state: BattleState
 var checkpoint_processor: CheckpointProcessor
@@ -670,7 +667,7 @@ func resolve_damage_immediate(ctx: DamageContext) -> int:
 	on_damage_applied(ctx)
 	
 	if bool(ctx.was_lethal):
-		var removal_ctx = RemovalContextScript.new()
+		var removal_ctx = RemovalContext.new()
 		removal_ctx.target_id = int(ctx.target_id)
 		removal_ctx.removal_type = Removal.Type.DEATH
 		removal_ctx.killer_id = int(ctx.source_id)
@@ -735,7 +732,7 @@ func change_max_health(
 	# _request_intent_refresh(int(cid))
 
 	if before_health > 0 and after_health <= 0:
-		var removal_ctx = RemovalContextScript.new()
+		var removal_ctx = RemovalContext.new()
 		removal_ctx.target_id = int(cid)
 		removal_ctx.removal_type = Removal.Type.DEATH
 		removal_ctx.reason = "change_max_health:" + String(reason)
@@ -792,7 +789,7 @@ func resolve_removal(ctx) -> void:
 	_request_outcome_check()
 
 	if runtime != null:
-		var reaction = RemovalDelayedReactionScript.new()
+		var reaction = RemovalDelayedReaction.new()
 		reaction.removal_ctx = ctx
 		reaction.source_reason = String(ctx.reason)
 		reaction.origin_card_uid = String(ctx.origin_card_uid)
@@ -1298,7 +1295,7 @@ func debug_kill_all_enemies(reason: String = "debug_kill_all_enemies") -> void:
 		var enemy_id := int(cid)
 		if enemy_id <= 0 or !is_alive(enemy_id):
 			continue
-		var removal_ctx = RemovalContextScript.new()
+		var removal_ctx = RemovalContext.new()
 		removal_ctx.target_id = enemy_id
 		removal_ctx.removal_type = Removal.Type.DEATH
 		removal_ctx.reason = reason
@@ -1456,7 +1453,7 @@ func _enforce_player_group_mortality_cap(summoned_id: int, group_index: int) -> 
 		if faded_id <= 0 or !is_alive(faded_id):
 			continue
 
-		var removal_ctx = RemovalContextScript.new()
+		var removal_ctx = RemovalContext.new()
 		removal_ctx.target_id = faded_id
 		removal_ctx.removal_type = Removal.Type.FADE
 		removal_ctx.reason = fade_reason

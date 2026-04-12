@@ -1,6 +1,6 @@
 # sigil_of_mana.gd
 
-extends Arcanum
+class_name SigilOfManaArcanum extends Arcanum
 
 const ID := &"sigil_of_mana"
 
@@ -9,7 +9,10 @@ var member_var := 0
 func get_id() -> StringName:
 	return ID
 
-func on_battle_start(ctx) -> void:
+func get_timed_proc_flags() -> int:
+	return TimedProc.BATTLE_START
+
+func on_battle_start(ctx: SimArcanumContext) -> void:
 	var api: SimBattleAPI = ctx.api if ctx != null else null
 	if api == null:
 		return

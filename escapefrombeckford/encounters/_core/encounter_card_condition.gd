@@ -5,7 +5,7 @@ class_name EncounterCardCondition extends EncounterCondition
 @export var card_uid: StringName = &""
 @export var card_proto_path: String = ""
 
-func evaluate_match(ctx) -> bool:
+func evaluate_match(ctx: EncounterRuleContext) -> bool:
 	if ctx == null:
 		return false
 	if card_id != &"" and ctx.get_card_id() != card_id:

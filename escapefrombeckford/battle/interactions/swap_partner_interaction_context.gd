@@ -1,10 +1,6 @@
 # swap_partner_interaction_context.gd
 
-class_name SwapPartnerInteractionContext
-extends EscrowCardInteractionContext
-
-const EncounterGateRequestScript = preload("res://encounters/_core/encounter_gate_request.gd")
-const GateResultScript = preload("res://encounters/_core/gate_result.gd")
+class_name SwapPartnerInteractionContext extends EscrowCardInteractionContext
 
 var action_index: int = -1
 var swap_action: SwapWithTargetAction
@@ -129,14 +125,14 @@ func _confirm(chosen: CombatantView) -> void:
 		handler.end_active_context()
 		return
 	if handler != null and handler.battle != null:
-		var gate_request = EncounterGateRequestScript.new()
-		gate_request.kind = EncounterGateRequestScript.Kind.CONFIRM_SWAP
+		var gate_request = EncounterGateRequest.new()
+		gate_request.kind = EncounterGateRequest.Kind.CONFIRM_SWAP
 		gate_request.target_ids = PackedInt32Array([target_id])
 		if card_ctx != null and card_ctx.card_data != null:
 			card_ctx.card_data.ensure_uid()
 			gate_request.card_uid = StringName(String(card_ctx.card_data.uid))
 		var gate_result = handler.battle.evaluate_encounter_gate(gate_request)
-		if gate_result != null and int(gate_result.verdict) != int(GateResultScript.Verdict.ALLOW):
+		if gate_result != null and int(gate_result.verdict) != int(GateResult.Verdict.ALLOW):
 			return
 
 	# Snapshot current friendly order so the action can use it as windup order.

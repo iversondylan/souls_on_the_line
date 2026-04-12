@@ -10,8 +10,8 @@ class_name EncounterCapabilitySet extends Resource
 @export var allowed_target_ids: PackedInt32Array = PackedInt32Array()
 @export var allowed_insert_indices: PackedInt32Array = PackedInt32Array()
 
-func clone():
-	return duplicate(true)
+func clone() -> EncounterCapabilitySet:
+	return duplicate(true) as EncounterCapabilitySet
 
 func allows_card_id(card_id: StringName) -> bool:
 	if !can_play_cards:

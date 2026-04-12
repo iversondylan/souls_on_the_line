@@ -1,8 +1,6 @@
 # turn_timeline_compiler.gd
 class_name TurnTimelineCompiler extends RefCounted
 
-const Removal = preload("res://core/keys_values/removal_values.gd")
-const RemovalPresentationOrderScript = preload("res://battle/view/containers/removal_presentation_order.gd")
 
 
 class DelayedReactionNode extends RefCounted:
@@ -3011,7 +3009,7 @@ func _is_known_reaction_event_type(event: BattleEvent) -> bool:
 
 
 func _make_removal_presentation_order(actor_id: int, event: BattleEvent):
-	var order = RemovalPresentationOrderScript.new()
+	var order = RemovalPresentationOrder.new()
 	order.kind = PresentationOrder.Kind.REMOVAL
 	order.actor_id = actor_id
 	order.target_id = int(event.data.get(Keys.TARGET_ID, 0))

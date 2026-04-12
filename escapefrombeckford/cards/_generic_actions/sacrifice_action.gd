@@ -2,9 +2,6 @@ extends CardAction
 
 class_name SacrificeAction
 
-const Removal = preload("res://core/keys_values/removal_values.gd")
-const RemovalContextScript = preload("res://battle/contexts/removal_context.gd")
-
 func activate_sim(ctx: CardContext) -> bool:
 	if ctx == null or ctx.api == null:
 		return false
@@ -17,7 +14,7 @@ func activate_sim(ctx: CardContext) -> bool:
 
 	ctx.affected_target_player_pos_delta = int(ctx.api.get_player_pos_delta(target_id))
 
-	var removal_ctx = RemovalContextScript.new()
+	var removal_ctx = RemovalContext.new()
 	removal_ctx.target_id = target_id
 	removal_ctx.removal_type = Removal.Type.DEATH
 	removal_ctx.killer_id = int(ctx.source_id)

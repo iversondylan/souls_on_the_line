@@ -12,4 +12,4 @@ var player_message: String = ""
 var allowed_target_ids: PackedInt32Array = PackedInt32Array()
 var allowed_insert_indices: PackedInt32Array = PackedInt32Array()
 var followup_step_id: StringName = &""
-var dialogue_request = null
+var dialogue_request: EncounterDialogueRequest = null

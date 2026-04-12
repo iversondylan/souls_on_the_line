@@ -5,7 +5,7 @@ class_name EncounterEventCondition extends EncounterCondition
 @export var battle_event_type: int = -1
 @export var gate_request_kind: int = -1
 
-func evaluate_match(ctx) -> bool:
+func evaluate_match(ctx: EncounterRuleContext) -> bool:
 	if ctx == null:
 		return false
 	if event_name != &"" and ctx.get_event_name() != event_name:

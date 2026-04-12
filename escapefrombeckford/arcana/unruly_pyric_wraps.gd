@@ -1,6 +1,6 @@
 # unruly_pyric_wraps.gd
 
-extends Arcanum
+class_name UnrulyPyricWrapsArcanum extends Arcanum
 
 const ID := &"unruly_pyric_wraps"
 
@@ -9,7 +9,10 @@ const ID := &"unruly_pyric_wraps"
 func get_id() -> StringName:
 	return ID
 
-func on_player_turn_begin(ctx) -> void:
+func get_timed_proc_flags() -> int:
+	return TimedProc.PLAYER_TURN_BEGIN
+
+func on_player_turn_begin(ctx: SimArcanumContext) -> void:
 	var api: SimBattleAPI = ctx.api if ctx != null else null
 	if api == null:
 		return

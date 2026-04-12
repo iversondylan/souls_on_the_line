@@ -2,10 +2,6 @@
 
 class_name BattleEventDirector extends RefCounted
 
-const Removal = preload("res://core/keys_values/removal_values.gd")
-const RemovalWindupOrderScript = preload("res://battle/view/containers/removal_windup_order.gd")
-const EncounterObservedEventScript = preload("res://encounters/_core/encounter_observed_event.gd")
-
 var battle_view: BattleView
 var click: Sound
 
@@ -380,7 +376,7 @@ func _emit_encounter_observed_event(e: EventPackage) -> void:
 	if event_name == &"":
 		return
 	var d := _data(e)
-	var observed := EncounterObservedEventScript.new()
+	var observed := EncounterObservedEvent.new()
 	observed.name = event_name
 	observed.battle_event_type = int(e.event.type)
 	observed.seq = int(e.event.seq)
@@ -1070,7 +1066,7 @@ func _on_removal_windup(e: EventPackage) -> void:
 	if target == null:
 		return
 
-	var o = RemovalWindupOrderScript.new()
+	var o = RemovalWindupOrder.new()
 	o.duration = e.duration
 	o.target_id = removed_id
 	o.removal_type = int(_removal_type(e))

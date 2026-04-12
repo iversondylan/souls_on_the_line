@@ -2,9 +2,6 @@
 
 class_name SimArcanaSystem extends RefCounted
 
-const SimArcanumContextScript = preload("res://battle/sim/containers/sim_arcanum_context.gd")
-
-
 static func get_contexts(api: SimBattleAPI) -> Array:
 	var out: Array = []
 	if api == null or api.state == null or api.state.arcana == null or api.state.arcana_catalog == null:
@@ -22,7 +19,7 @@ static func get_contexts(api: SimBattleAPI) -> Array:
 		if proto == null:
 			continue
 
-		var ctx := SimArcanumContextScript.new(
+		var ctx := SimArcanumContext.new(
 			api,
 			owner_id,
 			SimBattleAPI.FRIENDLY,

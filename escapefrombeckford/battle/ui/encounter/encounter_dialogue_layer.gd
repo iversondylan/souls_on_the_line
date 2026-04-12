@@ -1,14 +1,13 @@
 class_name EncounterDialogueLayer extends Control
 
 const DEFAULT_PORTRAIT_PATH := "res://_assets/character_visuals/oswin_carrel/too_young_oswin_bdsf.png"
-const EncounterDialogueRequestScript = preload("res://encounters/_core/encounter_dialogue_request.gd")
 
 @onready var dialogue_panel = %EncounterDialoguePanel
 @onready var hint_panel = %EncounterHintPanel
 
-var director = null
+var director: EncounterDirector = null
 
-func bind_director(encounter_director) -> void:
+func bind_director(encounter_director: EncounterDirector) -> void:
 	if director != null:
 		if director.dialogue_requested.is_connected(_on_dialogue_requested):
 			director.dialogue_requested.disconnect(_on_dialogue_requested)
@@ -22,15 +21,15 @@ func bind_director(encounter_director) -> void:
 	director.dialogue_requested.connect(_on_dialogue_requested)
 	director.gate_denied.connect(_on_gate_denied)
 
-func _on_dialogue_requested(request) -> void:
+func _on_dialogue_requested(request: EncounterDialogueRequest) -> void:
 	if request == null:
 		return
-	if int(request.mode) == int(EncounterDialogueRequestScript.Mode.BLOCKING):
+	if int(request.mode) == int(EncounterDialogueRequest.Mode.BLOCKING):
 		dialogue_panel.show_request(request)
 		return
 	hint_panel.show_text(request.text_bbcode, request.speaker_name, request.portrait_path)
 
-func _on_gate_denied(result) -> void:
+func _on_gate_denied(result: GateResult) -> void:
 	if result == null or result.player_message.is_empty():
 		return
 	hint_panel.show_text(result.player_message, "Oswin", DEFAULT_PORTRAIT_PATH)

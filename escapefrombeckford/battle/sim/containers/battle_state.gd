@@ -2,8 +2,6 @@
 
 class_name BattleState extends RefCounted
 
-const ProjectionBankScript = preload("res://battle/sim/containers/projection_bank.gd")
-
 const FRIENDLY := 0
 const ENEMY := 1
 
@@ -17,7 +15,7 @@ var outcome: int = Outcome.NONE
 
 var status_catalog: StatusCatalog
 var arcana_catalog: ArcanaCatalog
-var projection_bank = ProjectionBankScript.new()
+var projection_bank = ProjectionBank.new()
 
 var events: BattleEventLog = BattleEventLog.new()
 
@@ -143,7 +141,7 @@ func clone() -> BattleState:
 	b.groups = [groups[0].clone(), groups[1].clone()]
 	b.turn = turn.clone()
 	b.arcana = arcana.clone() if arcana != null else ArcanaState.new()
-	b.projection_bank = projection_bank.clone() if projection_bank != null else ProjectionBankScript.new()
+	b.projection_bank = projection_bank.clone() if projection_bank != null else ProjectionBank.new()
 	b.resource = resource.clone()
 
 	# Policy: preview clones start with a fresh empty event log.

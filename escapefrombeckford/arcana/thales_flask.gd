@@ -1,12 +1,15 @@
 # thales_flask.gd
 
-extends Arcanum
+class_name ThalesFlaskArcanum extends Arcanum
 
 const ID := &"thales_flask"
 
 @export var n_heal := 6
 #
-func on_battle_end(ctx) -> void:
+func get_timed_proc_flags() -> int:
+	return TimedProc.BATTLE_END
+
+func on_battle_end(ctx: SimArcanumContext) -> void:
 	var api: SimBattleAPI = ctx.api if ctx != null else null
 	if api == null:
 		return

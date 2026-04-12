@@ -2,8 +2,6 @@
 
 class_name AttackTargeting extends RefCounted
 
-const SimArcanaSystemScript = preload("res://battle/sim/operators/sim_arcana_system.gd")
-
 class TargetingParticipant extends RefCounted:
 	var priority: int = 100
 	var discovery_index: int = 0
@@ -231,7 +229,7 @@ static func _append_arcana_participants(
 	if int(side_group_index) != int(SimBattleAPI.FRIENDLY):
 		return discovery_index
 
-	for arcanum_ctx in SimArcanaSystemScript.get_contexts(ctx.api):
+	for arcanum_ctx in SimArcanaSystem.get_contexts(ctx.api):
 		if arcanum_ctx == null or !arcanum_ctx.is_valid() or arcanum_ctx.proto == null:
 			continue
 		var participant := TargetingParticipant.new()

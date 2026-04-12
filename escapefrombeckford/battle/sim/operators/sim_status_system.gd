@@ -2,8 +2,6 @@
 
 class_name SimStatusSystem extends RefCounted
 
-const ProjectionBankScript = preload("res://battle/sim/containers/projection_bank.gd")
-const SimMergedIntensityStatusContextScript = preload("res://battle/sim/containers/sim_merged_intensity_status_context.gd")
 
 # Owns status lifecycle and event dispatch.
 # Turn progression belongs to SimRuntime.
@@ -634,7 +632,7 @@ static func _append_projected_status_contexts(
 	for entry: Dictionary in api.state.projection_bank.get_entries():
 		var source_kind := StringName(entry.get("source_kind", &""))
 		match source_kind:
-			ProjectionBankScript.SOURCE_KIND_STATUS_AURA:
+			ProjectionBank.SOURCE_KIND_STATUS_AURA:
 				_append_status_aura_projected_contexts(
 					out,
 					api,
@@ -644,7 +642,7 @@ static func _append_projected_status_contexts(
 					include_pending_sources,
 					allow_dead_self_aura_source
 				)
-			ProjectionBankScript.SOURCE_KIND_ARCANUM:
+			ProjectionBank.SOURCE_KIND_ARCANUM:
 				_append_arcanum_projected_contexts(out, api, target, target_id, entry)
 			_:
 				continue
@@ -818,7 +816,7 @@ static func _merge_owned_and_projected_intensity_contexts(
 		var owned_info: Dictionary = owned_by_key.get(key, {})
 		if !owned_info.is_empty() and int(owned_info.get("index", -1)) == i and mergeable_keys.has(key):
 			var owned_ctx := owned_info.get("ctx", null) as SimStatusContext
-			var merged_ctx := SimMergedIntensityStatusContextScript.new(
+			var merged_ctx := SimMergedIntensityStatusContext.new(
 				owned_ctx,
 				int(projected_totals_by_key.get(key, 0))
 			) as SimStatusContext

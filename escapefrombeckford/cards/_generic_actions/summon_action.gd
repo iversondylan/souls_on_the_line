@@ -5,9 +5,6 @@ class_name SummonAction extends CardAction
 @export var mortality: CombatantState.Mortality = CombatantState.Mortality.SOULBOUND
 @export var sound: Sound = load("uid://c0cllss7w30rn")
 
-const Removal = preload("res://core/keys_values/removal_values.gd")
-const RemovalContextScript = preload("res://battle/contexts/removal_context.gd")
-
 func get_interaction_mode(ctx: CardContext) -> int:
 	if ctx == null or ctx.api == null:
 		#print("summon_action.gd get_interaction_mode() returning NONE")
@@ -67,7 +64,7 @@ func activate_sim(ctx: CardContext) -> bool:
 		if replaced_insert_index >= 0 and replaced_insert_index < insert_index:
 			insert_index -= 1
 
-		var removal_ctx = RemovalContextScript.new()
+		var removal_ctx = RemovalContext.new()
 		removal_ctx.target_id = replaced_id
 		removal_ctx.removal_type = Removal.Type.FADE
 		removal_ctx.reason = "summon_replace"

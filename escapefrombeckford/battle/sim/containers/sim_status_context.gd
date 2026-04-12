@@ -5,9 +5,6 @@ class_name SimStatusContext extends RefCounted
 # Runtime wrapper for a specific status stack on a specific owner.
 # This keeps proto Status scripts from reaching all over raw state.
 
-const Removal = preload("res://core/keys_values/removal_values.gd")
-const RemovalContextScript = preload("res://battle/contexts/removal_context.gd")
-
 var api: SimBattleAPI
 var owner_id: int = 0
 var owner: CombatantState
@@ -163,7 +160,7 @@ func request_removal(
 	if !is_valid() or api == null or owner == null or !owner.is_alive():
 		return
 
-	var removal_ctx = RemovalContextScript.new()
+	var removal_ctx = RemovalContext.new()
 	removal_ctx.target_id = owner_id
 	removal_ctx.removal_type = removal_type
 	removal_ctx.killer_id = int(killer_id)

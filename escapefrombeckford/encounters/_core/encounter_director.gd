@@ -1,14 +1,14 @@
 class_name EncounterDirector extends Node
 
 signal step_changed(step_id: StringName)
-signal dialogue_requested(request)
-signal capabilities_changed(capabilities)
-signal gate_denied(result)
+signal dialogue_requested(request: EncounterDialogueRequest)
+signal capabilities_changed(capabilities: EncounterCapabilitySet)
+signal gate_denied(result: GateResult)
 signal blocking_state_changed(is_blocking: bool)
 
-var definition = null
-var state = EncounterState.new()
-var battle = null
+var definition: EncounterDefinition = null
+var state: EncounterState = EncounterState.new()
+var battle: Battle = null
 var _step_timer_generation: int = 0
 
 func _exit_tree() -> void:
@@ -16,7 +16,7 @@ func _exit_tree() -> void:
 	if Events != null and Events.encounter_observed_event.is_connected(observe_view_event):
 		Events.encounter_observed_event.disconnect(observe_view_event)
 
-func setup(owner_battle, data) -> void:
+func setup(owner_battle: Battle, data: BattleData) -> void:
 	battle = owner_battle
 	definition = data.encounter_definition if data != null else null
 	state = EncounterState.new()
@@ -29,7 +29,7 @@ func start() -> void:
 	if !is_active():
 		_emit_capabilities(EncounterCapabilitySet.new())
 		return
-	var first_step_id = definition.initial_step_id
+	var first_step_id: StringName = definition.initial_step_id
 	if first_step_id == &"" and !definition.steps.is_empty() and definition.steps[0] != null:
 		first_step_id = definition.steps[0].id
 	goto_step(first_step_id)
@@ -37,7 +37,7 @@ func start() -> void:
 func is_active() -> bool:
 	return definition != null and !definition.steps.is_empty()
 
-func evaluate_gate(req):
+func evaluate_gate(req: EncounterGateRequest) -> GateResult:
 	return _evaluate_gate(req, true)
 
 func can_end_turn() -> bool:
@@ -65,18 +65,18 @@ func get_player_turn_draw_amount_override() -> int:
 		return -1
 	return int(step.player_turn_draw_amount_override)
 
-func observe_view_event(ev) -> void:
+func observe_view_event(ev: EncounterObservedEvent) -> void:
 	if !is_active() or ev == null:
 		return
 	_process_observed_event(ev)
 
-func _process_observed_event(ev) -> void:
+func _process_observed_event(ev: EncounterObservedEvent) -> void:
 	if !is_active() or ev == null:
 		return
 	state.last_observed_event = ev
-	var ctx = _make_context(null, ev)
+	var ctx: EncounterRuleContext = _make_context(null, ev)
 	_run_triggers(definition.triggers, ctx)
-	var step = get_current_step()
+	var step: EncounterStep = get_current_step()
 	if step != null:
 		ctx.current_step = step
 		_run_triggers(step.triggers, ctx)
@@ -90,7 +90,7 @@ func acknowledge_dialogue(dialogue_id: StringName) -> void:
 	state.active_dialogue = null
 	state.awaiting_dialogue_ack = false
 	_refresh_capabilities_from_current_step()
-	var ack_event := EncounterObservedEvent.new()
+	var ack_event: EncounterObservedEvent = EncounterObservedEvent.new()
 	ack_event.name = &"dialogue_acknowledged"
 	ack_event.data = {
 		"dialogue_id": dialogue_id,
@@ -98,7 +98,7 @@ func acknowledge_dialogue(dialogue_id: StringName) -> void:
 	_process_observed_event(ack_event)
 	blocking_state_changed.emit(_is_dialogue_blocking())
 
-func queue_dialogue(request) -> void:
+func queue_dialogue(request: EncounterDialogueRequest) -> void:
 	if request == null:
 		return
 	state.active_dialogue = request
@@ -111,14 +111,14 @@ func goto_step(step_id: StringName) -> void:
 	if !is_active() or step_id == &"":
 		return
 	_invalidate_step_timer()
-	var step = definition.get_step_by_id(step_id)
+	var step: EncounterStep = definition.get_step_by_id(step_id)
 	if step == null:
 		push_warning("EncounterDirector.goto_step(): unknown step '%s'" % String(step_id))
 		return
 	state.current_step_id = step.id
 	step_changed.emit(step.id)
 	_refresh_capabilities_from_current_step()
-	var ctx = _make_context(null, null)
+	var ctx: EncounterRuleContext = _make_context(null, null)
 	ctx.current_step = step
 	_run_actions(step.entry_actions, ctx)
 	_try_complete_step(ctx)
@@ -131,22 +131,22 @@ func set_flag(flag_name: StringName, value: Variant) -> void:
 		return
 	state.flags[flag_name] = value
 
-func get_current_step():
+func get_current_step() -> EncounterStep:
 	if !is_active():
 		return null
 	return definition.get_step_by_id(state.current_step_id)
 
-func _evaluate_gate(req, emit_feedback: bool):
+func _evaluate_gate(req: EncounterGateRequest, emit_feedback: bool) -> GateResult:
 	if !is_active():
 		return _make_gate_result(GateResult.Verdict.ALLOW)
 	if _is_dialogue_blocking():
-		var deferred = _make_gate_result(GateResult.Verdict.DEFER, &"dialogue_blocking", "Continue the tutorial dialogue first.")
+		var deferred: GateResult = _make_gate_result(GateResult.Verdict.DEFER, &"dialogue_blocking", "Continue the tutorial dialogue first.")
 		deferred.dialogue_request = state.active_dialogue
 		if emit_feedback:
 			_emit_gate_feedback(deferred)
 		return deferred
 
-	var capabilities = state.capabilities if state.capabilities != null else EncounterCapabilitySet.new()
+	var capabilities: EncounterCapabilitySet = state.capabilities if state.capabilities != null else EncounterCapabilitySet.new()
 	var denied := false
 	match int(req.kind):
 		EncounterGateRequest.Kind.END_TURN:
@@ -167,19 +167,19 @@ func _evaluate_gate(req, emit_feedback: bool):
 	if !denied:
 		return _make_gate_result(GateResult.Verdict.ALLOW)
 
-	var result = _build_denied_result(req)
+	var result: GateResult = _build_denied_result(req)
 	if emit_feedback:
 		_emit_gate_feedback(result)
 	return result
 
-func _build_denied_result(req):
-	var step = get_current_step()
+func _build_denied_result(req: EncounterGateRequest) -> GateResult:
+	var step: EncounterStep = get_current_step()
 	var default_message := _default_gate_message(req)
 	var message := default_message
 	if step != null and !step.denied_message_bbcode.is_empty():
 		message = step.denied_message_bbcode
 
-	var result = _make_gate_result(GateResult.Verdict.DENY, &"encounter_gate", message)
+	var result: GateResult = _make_gate_result(GateResult.Verdict.DENY, &"encounter_gate", message)
 	if step == null:
 		return result
 
@@ -187,7 +187,7 @@ func _build_denied_result(req):
 		EncounterStep.DeniedPresentation.HINT:
 			return result
 		EncounterStep.DeniedPresentation.DIALOGUE_INFO, EncounterStep.DeniedPresentation.DIALOGUE_BLOCKING:
-			var request = EncounterDialogueRequest.new()
+			var request: EncounterDialogueRequest = EncounterDialogueRequest.new()
 			request.dialogue_id = StringName("%s:denied" % String(step.id))
 			request.mode = EncounterDialogueRequest.Mode.INFO
 			if int(step.denied_presentation) == int(EncounterStep.DeniedPresentation.DIALOGUE_BLOCKING):
@@ -201,7 +201,7 @@ func _build_denied_result(req):
 			return result
 	return result
 
-func _default_gate_message(req) -> String:
+func _default_gate_message(req: EncounterGateRequest) -> String:
 	match int(req.kind):
 		EncounterGateRequest.Kind.END_TURN:
 			return "Finish the current tutorial instruction first."
@@ -215,7 +215,7 @@ func _default_gate_message(req) -> String:
 			return "Choose a tutorial-approved position first."
 	return "That action is not available right now."
 
-func _emit_gate_feedback(result) -> void:
+func _emit_gate_feedback(result: GateResult) -> void:
 	if result == null:
 		return
 	if result.dialogue_request != null:
@@ -224,10 +224,10 @@ func _emit_gate_feedback(result) -> void:
 	gate_denied.emit(result)
 
 func _refresh_capabilities_from_current_step() -> void:
-	var next_caps = EncounterCapabilitySet.new()
-	var step = get_current_step()
+	var next_caps: EncounterCapabilitySet = EncounterCapabilitySet.new()
+	var step: EncounterStep = get_current_step()
 	if step != null and step.capability_overrides != null:
-		next_caps = step.capability_overrides.clone()
+		next_caps = step.capability_overrides.clone() as EncounterCapabilitySet
 	if step != null and step.block_input_while_dialogue and _is_dialogue_blocking():
 		next_caps.presentation_locked = true
 		next_caps.can_end_turn = false
@@ -237,14 +237,14 @@ func _refresh_capabilities_from_current_step() -> void:
 	state.capabilities = next_caps
 	_emit_capabilities(next_caps)
 
-func _make_gate_result(verdict: int, reason_id: StringName = &"", message := ""):
-	var result = GateResult.new()
+func _make_gate_result(verdict: int, reason_id: StringName = &"", message := "") -> GateResult:
+	var result: GateResult = GateResult.new()
 	result.verdict = verdict
 	result.reason_id = reason_id
 	result.player_message = message
 	return result
 
-func _emit_capabilities(caps) -> void:
+func _emit_capabilities(caps: EncounterCapabilitySet) -> void:
 	capabilities_changed.emit(caps)
 
 func _is_dialogue_blocking() -> bool:
@@ -253,7 +253,7 @@ func _is_dialogue_blocking() -> bool:
 func _invalidate_step_timer() -> void:
 	_step_timer_generation += 1
 
-func _start_step_auto_advance(step) -> void:
+func _start_step_auto_advance(step: EncounterStep) -> void:
 	if step == null:
 		return
 	if float(step.auto_advance_after_sec) < 0.0:
@@ -281,8 +281,8 @@ func _wait_for_step_auto_advance(from_step_id: StringName, to_step_id: StringNam
 		return
 	goto_step(to_step_id)
 
-func _make_context(req, ev):
-	var ctx = EncounterRuleContext.new()
+func _make_context(req: EncounterGateRequest, ev: EncounterObservedEvent) -> EncounterRuleContext:
+	var ctx: EncounterRuleContext = EncounterRuleContext.new()
 	ctx.director = self
 	ctx.state = state
 	ctx.definition = definition
@@ -292,7 +292,7 @@ func _make_context(req, ev):
 	ctx.observed_event = ev
 	return ctx
 
-func _run_triggers(triggers: Array, ctx) -> void:
+func _run_triggers(triggers: Array[EncounterTrigger], ctx: EncounterRuleContext) -> void:
 	for trigger in triggers:
 		if trigger == null:
 			continue
@@ -305,13 +305,13 @@ func _run_triggers(triggers: Array, ctx) -> void:
 			state.consumed_trigger_ids[trigger_key] = true
 		_run_actions(trigger.actions, ctx)
 
-func _run_actions(actions: Array, ctx) -> void:
+func _run_actions(actions: Array[EncounterAction], ctx: EncounterRuleContext) -> void:
 	for action in actions:
 		if action == null:
 			continue
 		action.execute(ctx)
 
-func _conditions_match(conditions: Array, ctx) -> bool:
+func _conditions_match(conditions: Array[EncounterCondition], ctx: EncounterRuleContext) -> bool:
 	if conditions.is_empty():
 		return false
 	for condition in conditions:
@@ -321,8 +321,8 @@ func _conditions_match(conditions: Array, ctx) -> bool:
 			return false
 	return true
 
-func _try_complete_step(ctx) -> void:
-	var step = get_current_step()
+func _try_complete_step(ctx: EncounterRuleContext) -> void:
+	var step: EncounterStep = get_current_step()
 	if step == null or step.completion_conditions.is_empty():
 		return
 	ctx.current_step = step

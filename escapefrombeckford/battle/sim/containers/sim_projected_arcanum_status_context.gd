@@ -2,8 +2,6 @@
 
 class_name SimProjectedArcanumStatusContext extends SimStatusContext
 
-const SimArcanumContextScript = preload("res://battle/sim/containers/sim_arcanum_context.gd")
-
 var arcanum_owner_id: int = 0
 var arcanum_entry: ArcanaState.ArcanumEntry = null
 var arcanum_proto: Arcanum = null
@@ -77,7 +75,7 @@ func make_token_ctx() -> StatusTokenContext:
 
 
 func _make_arcanum_ctx():
-	return SimArcanumContextScript.new(
+	return SimArcanumContext.new(
 		api,
 		arcanum_owner_id,
 		SimBattleAPI.FRIENDLY,

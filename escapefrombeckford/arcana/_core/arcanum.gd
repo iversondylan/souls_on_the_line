@@ -3,6 +3,13 @@
 class_name Arcanum extends Resource
 
 enum Beats {NONE, IN, OUT, IN_OUT}
+enum TimedProc {
+	NONE = 0,
+	BATTLE_START = 1,
+	PLAYER_TURN_BEGIN = 1 << 1,
+	PLAYER_TURN_END = 1 << 2,
+	BATTLE_END = 1 << 3,
+}
 
 @export var arcanum_name: String
 @export var starter_arcanum: bool = false
@@ -20,57 +27,36 @@ func get_id() -> StringName:
 	return &""
 
 func procs_on_battle_start() -> bool:
-	return _implements_any_timed_hook([&"on_battle_start", &"on_battle_started"])
+	return _has_timed_proc(TimedProc.BATTLE_START)
 
 func procs_on_player_turn_begin() -> bool:
-	return _implements_any_timed_hook([&"on_player_turn_begin", &"on_turn_started"])
+	return _has_timed_proc(TimedProc.PLAYER_TURN_BEGIN)
 
 func procs_on_player_turn_end() -> bool:
-	return _implements_any_timed_hook([&"on_player_turn_end", &"on_turn_ended"])
+	return _has_timed_proc(TimedProc.PLAYER_TURN_END)
 
 func procs_on_battle_end() -> bool:
-	return _implements_any_timed_hook([&"on_battle_end", &"on_battle_ended"])
+	return _has_timed_proc(TimedProc.BATTLE_END)
 
-func _implements_any_timed_hook(method_names: Array[StringName]) -> bool:
-	for method_name: StringName in method_names:
-		if _implements_timed_hook(method_name):
-			return true
-	return false
+func get_timed_proc_flags() -> int:
+	return TimedProc.NONE
 
-func _implements_timed_hook(method_name: StringName) -> bool:
-	var script := get_script() as Script
-	if script == null or method_name == &"":
-		return false
-
-	var base_script := script.get_base_script() as Script
-	if base_script == null:
-		return false
-
-	return _count_script_method(script, method_name) > _count_script_method(base_script, method_name)
-
-static func _count_script_method(script: Script, method_name: StringName) -> int:
-	if script == null or method_name == &"":
-		return 0
-
-	var count := 0
-	for method: Dictionary in script.get_script_method_list():
-		if StringName(method.get("name", &"")) == method_name:
-			count += 1
-	return count
+func _has_timed_proc(proc_flag: TimedProc) -> bool:
+	return (int(get_timed_proc_flags()) & int(proc_flag)) != 0
 
 func seed_battle_entry(_entry: ArcanaState.ArcanumEntry) -> void:
 	pass
 
-func on_battle_start(ctx) -> void:
+func on_battle_start(ctx: SimArcanumContext) -> void:
 	on_battle_started(ctx.api if ctx != null else null)
 
-func on_player_turn_begin(ctx) -> void:
+func on_player_turn_begin(ctx: SimArcanumContext) -> void:
 	on_turn_started(ctx.api if ctx != null else null)
 
-func on_player_turn_end(ctx) -> void:
+func on_player_turn_end(ctx: SimArcanumContext) -> void:
 	on_turn_ended(ctx.api if ctx != null else null)
 
-func on_battle_end(ctx) -> void:
+func on_battle_end(ctx: SimArcanumContext) -> void:
 	on_battle_ended(ctx.api if ctx != null else null)
 
 func on_actor_turn_begin(_ctx, _actor_id: int) -> void:

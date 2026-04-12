@@ -2,9 +2,6 @@
 class_name BattleInteractionHandler
 extends Node
 
-const EncounterGateRequestScript = preload("res://encounters/_core/encounter_gate_request.gd")
-const GateResultScript = preload("res://encounters/_core/gate_result.gd")
-
 enum Mode { NORMAL, SUMMON_REPLACE, SWAP_PARTNER, DISCARD }
 
 var mode: int = Mode.NORMAL
@@ -66,7 +63,7 @@ func _gate_interaction(req, card_ctx: CardContext = null, action_index: int = -1
 	if battle == null:
 		return true
 	var result = battle.evaluate_encounter_gate(req)
-	if result == null or int(result.verdict) == int(GateResultScript.Verdict.ALLOW):
+	if result == null or int(result.verdict) == int(GateResult.Verdict.ALLOW):
 		return true
 	if card_ctx != null and card_ctx.runtime != null and action_index >= 0:
 		card_ctx.runtime.cancel_waiting_action(card_ctx, action_index)
@@ -110,8 +107,8 @@ func on_request_discard_cards(ctx: DiscardContext) -> void:
 		return
 	if ctx == null:
 		return
-	var gate_request = EncounterGateRequestScript.new()
-	gate_request.kind = EncounterGateRequestScript.Kind.OPEN_DISCARD
+	var gate_request = EncounterGateRequest.new()
+	gate_request.kind = EncounterGateRequest.Kind.OPEN_DISCARD
 	if !_gate_interaction(gate_request):
 		return
 
@@ -124,8 +121,8 @@ func on_request_summon_replace(ctx: CardContext, action_index: int, preview: Sum
 		return
 	if ctx == null:
 		return
-	var gate_request = EncounterGateRequestScript.new()
-	gate_request.kind = EncounterGateRequestScript.Kind.OPEN_SUMMON_REPLACE
+	var gate_request = EncounterGateRequest.new()
+	gate_request.kind = EncounterGateRequest.Kind.OPEN_SUMMON_REPLACE
 	gate_request.action_index = int(action_index)
 	gate_request.insert_index = int(preview.insert_index) if preview != null else -1
 	if ctx.card_data != null:
@@ -147,8 +144,8 @@ func on_request_swap_partner(ctx: CardContext, action_index: int) -> void:
 		return
 	if battle == null or battle.battle_view == null:
 		return
-	var gate_request = EncounterGateRequestScript.new()
-	gate_request.kind = EncounterGateRequestScript.Kind.OPEN_SWAP
+	var gate_request = EncounterGateRequest.new()
+	gate_request.kind = EncounterGateRequest.Kind.OPEN_SWAP
 	gate_request.action_index = int(action_index)
 	gate_request.target_ids = ctx.target_ids.duplicate()
 	if ctx.card_data != null:

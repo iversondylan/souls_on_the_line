@@ -1,6 +1,6 @@
 # adamant_ally.gd
 
-extends Arcanum
+class_name AdamantAllyArcanum extends Arcanum
 
 const ID := &"adamant_ally"
 
@@ -9,7 +9,10 @@ const ID := &"adamant_ally"
 func get_id() -> StringName:
 	return ID
 
-func on_battle_start(ctx) -> void:
+func get_timed_proc_flags() -> int:
+	return TimedProc.BATTLE_START
+
+func on_battle_start(ctx: SimArcanumContext) -> void:
 	var api: SimBattleAPI = ctx.api if ctx != null else null
 	if api == null or api.runtime == null or summon_data == null:
 		return

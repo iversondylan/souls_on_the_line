@@ -19,11 +19,9 @@ extends EditorScript
 ## AFTER RUNNING:
 ##   IF THIS SCRIPT CHANGES .tres FILES, SAVE / REVIEW / COMMIT THOSE CHANGES.
 
-const ContentUpkeepHelperScript = preload("res://tools/editor/content_upkeep_helper.gd")
-
 
 func _run() -> void:
-	var helper := ContentUpkeepHelperScript.new() as ContentUpkeepHelper
+	var helper := ContentUpkeepHelper.new() as ContentUpkeepHelper
 	var results := helper.run_all()
 
 	_print_step_result(results.get("arcana_catalog", {}), "arcanum catalog")

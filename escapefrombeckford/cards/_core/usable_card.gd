@@ -2,9 +2,6 @@
 
 class_name UsableCard extends Node2D
 
-const EncounterGateRequestScript = preload("res://encounters/_core/encounter_gate_request.gd")
-const GateResultScript = preload("res://encounters/_core/gate_result.gd")
-
 const MAX_SOULBOUND := 3
 const MAX_DEPLETE := 2
 
@@ -167,15 +164,15 @@ func begin_execution(
 	if battle_view != null and battle_view.encounter_director != null:
 		card_data.ensure_id()
 		card_data.ensure_uid()
-		var gate_request = EncounterGateRequestScript.new()
-		gate_request.kind = EncounterGateRequestScript.Kind.PLAY_CARD
+		var gate_request = EncounterGateRequest.new()
+		gate_request.kind = EncounterGateRequest.Kind.PLAY_CARD
 		gate_request.card_id = card_data.id
 		gate_request.card_uid = StringName(String(card_data.uid))
 		gate_request.source_id = int(source_id)
 		gate_request.target_ids = ctx.target_ids.duplicate()
 		gate_request.insert_index = int(ctx.insert_index)
 		var result = battle_view.encounter_director.evaluate_gate(gate_request)
-		if result != null and int(result.verdict) != int(GateResultScript.Verdict.ALLOW):
+		if result != null and int(result.verdict) != int(GateResult.Verdict.ALLOW):
 			return false
 	return runtime.begin_card_execution(ctx)
 

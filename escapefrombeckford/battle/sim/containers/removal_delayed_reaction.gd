@@ -1,7 +1,5 @@
 class_name RemovalDelayedReaction extends DelayedReaction
 
-const SimArcanaSystemScript = preload("res://battle/sim/operators/sim_arcana_system.gd")
-
 var removal_ctx = null
 
 
@@ -14,4 +12,4 @@ func execute(runtime: SimRuntime) -> void:
 		return
 
 	SimStatusSystem.on_removal(runtime.sim.api, removal_ctx)
-	SimArcanaSystemScript.on_removal(runtime.sim.api, removal_ctx)
+	SimArcanaSystem.on_removal(runtime.sim.api, removal_ctx)

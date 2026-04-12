@@ -1,4 +1,4 @@
-extends Arcanum
+class_name ThornedVinesArcanum extends Arcanum
 
 const ID := &"thorned_vines"
 

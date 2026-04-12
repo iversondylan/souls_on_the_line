@@ -2,11 +2,6 @@
 
 class_name Battle extends Node
 
-const EncounterDirectorScript = preload("res://encounters/_core/encounter_director.gd")
-const EncounterGateRequestScript = preload("res://encounters/_core/encounter_gate_request.gd")
-const GateResultScript = preload("res://encounters/_core/gate_result.gd")
-
-
 # -------------------------
 # Inspector
 # -------------------------
@@ -59,7 +54,7 @@ var _debug_mode: bool = true
 @onready var turn_phase_title: TurnPhaseTitle = $Battle_UI/TurnPhaseTitle
 
 @onready var thank_you_box: Node2D = $Battle_UI/ThankYouBox
-@onready var encounter_dialogue_layer = $Visual_Overlays/EncounterDialogueLayer
+@onready var encounter_dialogue_layer: EncounterDialogueLayer = $Visual_Overlays/EncounterDialogueLayer
 
 
 # -------------------------
@@ -80,7 +75,7 @@ var _pending_player_turn_draw_amount_override: int = -1
 var card_bins: BattleCardBins
 var card_bin_rule_host: CardBinRuleHost
 var transport_session: BattleTransportSession
-var encounter_director
+var encounter_director: EncounterDirector
 
 
 # -------------------------
@@ -321,10 +316,10 @@ func _on_end_turn_button_pressed() -> void:
 		return
 	if !_player_end_turn_armed:
 		return
-	var gate_request = EncounterGateRequestScript.new()
-	gate_request.kind = EncounterGateRequestScript.Kind.END_TURN
+	var gate_request = EncounterGateRequest.new()
+	gate_request.kind = EncounterGateRequest.Kind.END_TURN
 	var gate_result = evaluate_encounter_gate(gate_request)
-	if gate_result != null and int(gate_result.verdict) != int(GateResultScript.Verdict.ALLOW):
+	if gate_result != null and int(gate_result.verdict) != int(GateResult.Verdict.ALLOW):
 		return
 
 	_arm_end_turn_button(false)
@@ -363,10 +358,10 @@ func refresh_player_input_visual_state() -> void:
 	if hand != null:
 		hand.refresh_locked_card_states()
 
-func evaluate_encounter_gate(req):
+func evaluate_encounter_gate(req: EncounterGateRequest) -> GateResult:
 	if encounter_director == null:
-		var result = GateResultScript.new()
-		result.verdict = GateResultScript.Verdict.ALLOW
+		var result: GateResult = GateResult.new()
+		result.verdict = GateResult.Verdict.ALLOW
 		return result
 	return encounter_director.evaluate_gate(req)
 
@@ -375,10 +370,30 @@ func _can_end_turn_from_encounter() -> bool:
 		return true
 	return encounter_director.can_end_turn()
 
+func _get_encounter_definition() -> EncounterDefinition:
+	if battle_data == null:
+		return null
+	var definition := battle_data.encounter_definition as EncounterDefinition
+	if battle_data.encounter_definition != null and definition == null:
+		push_warning(
+			"Battle._get_encounter_definition(): battle '%s' has a non-EncounterDefinition encounter_definition; skipping encounter flow." % battle_data.encounter_name
+		)
+	return definition
+
 func _setup_encounter_director() -> void:
 	if encounter_director != null and is_instance_valid(encounter_director):
 		encounter_director.queue_free()
-	encounter_director = EncounterDirectorScript.new()
+	encounter_director = null
+
+	var definition := _get_encounter_definition()
+	battle_view.encounter_director = null
+	if encounter_dialogue_layer != null:
+		encounter_dialogue_layer.bind_director(null)
+	if definition == null:
+		refresh_player_input_visual_state()
+		return
+
+	encounter_director = EncounterDirector.new()
 	encounter_director.name = "EncounterDirector"
 	add_child(encounter_director)
 	encounter_director.setup(self, battle_data)
@@ -393,10 +408,10 @@ func _apply_resource_rules_from_encounter() -> void:
 	var api := sim_host.get_main_api() if sim_host != null else null
 	if api == null or api.state == null or api.state.resource == null:
 		return
-	var definition = battle_data.encounter_definition if battle_data != null else null
-	if definition == null:
-		return
-	api.state.resource.shuffle_mode = ResourceState.ShuffleMode.NO_SHUFFLE if bool(definition.no_shuffle) else ResourceState.ShuffleMode.NORMAL
+	var definition := _get_encounter_definition()
+	api.state.resource.shuffle_mode = ResourceState.ShuffleMode.NORMAL
+	if definition != null and bool(definition.no_shuffle):
+		api.state.resource.shuffle_mode = ResourceState.ShuffleMode.NO_SHUFFLE
 
 func _on_card_bins_draw_completed(ctx: DrawContext) -> void:
 	if ctx == null:
