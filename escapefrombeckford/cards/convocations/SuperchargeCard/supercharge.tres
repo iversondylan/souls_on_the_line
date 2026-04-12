@@ -8,6 +8,7 @@
 
 [resource]
 script = ExtResource("2_nfj5x")
+id = &"supercharge"
 target_type = 3
 rarity = 1
 name = "Supercharge"

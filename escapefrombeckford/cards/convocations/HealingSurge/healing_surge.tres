@@ -8,6 +8,7 @@
 
 [resource]
 script = ExtResource("3_1aoj2")
+id = &"healing_surge"
 target_type = 3
 name = "Healing Surge"
 deplete = true

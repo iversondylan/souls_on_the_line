@@ -58,6 +58,7 @@ const DEFAULT_SUMMON_DATA_UID := &"DEFAULT_SUMMON_DATA_UID"
 # -------------------------
 
 # Card played
+const CARD_ID := &"card_id"
 const CARD_UID := &"card_uid"
 const CARD_NAME := &"card_name"
 const CARD_TYPE_I := &"card_type_i"

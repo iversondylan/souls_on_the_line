@@ -46,6 +46,7 @@ intensity = 1
 
 [resource]
 script = ExtResource("2_c2nov")
+id = &"shrapnel_oyster"
 card_type = 1
 target_type = 1
 name = "Shrapnel Oyster"

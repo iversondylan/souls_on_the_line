@@ -37,6 +37,7 @@ const RARITY_COLORS := {
 
 
 @export_group("Identity")
+@export var id: StringName = &""
 @export var uid: String = ""				# stable per instance
 @export var version: int = 1
 @export var base_proto_path: String = ""	# optional: template origin
@@ -59,6 +60,20 @@ func ensure_uid() -> void:
 		return
 	uid = "%d_%d_%d" % [Time.get_unix_time_from_system(), randi(), int(hash(name))]
 
+func ensure_id() -> void:
+	if id != &"":
+		return
+	var source_path := String(base_proto_path if !base_proto_path.is_empty() else resource_path)
+	if !source_path.is_empty():
+		var fallback := source_path.get_file().get_basename()
+		fallback = fallback.trim_suffix("_card")
+		fallback = fallback.trim_suffix("_data")
+		if !fallback.is_empty():
+			id = StringName(fallback)
+			return
+	if !name.is_empty():
+		id = StringName(name.to_snake_case())
+
 
 func make_runtime_instance() -> CardData:
 	var instance := duplicate(true) as CardData
@@ -76,6 +91,7 @@ func make_runtime_instance() -> CardData:
 
 	if instance.base_proto_path.is_empty():
 		instance.base_proto_path = proto_path
+	instance.ensure_id()
 	instance.ensure_uid()
 	return instance
 
@@ -88,6 +104,7 @@ static func _copy_runtime_overrides(from: CardData, to: CardData) -> void:
 	if from == null or to == null:
 		return
 	to.uid = from.uid
+	to.id = from.id
 	to.version = from.version
 	to.base_proto_path = String(from.base_proto_path if !from.base_proto_path.is_empty() else to.base_proto_path)
 	to.card_type = from.card_type

@@ -7,4 +7,3 @@
 script = ExtResource("1_lifecycle")
 status = ExtResource("2_status")
 status_id = &"heavy_attack"
-

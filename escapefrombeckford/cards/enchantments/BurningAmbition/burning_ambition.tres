@@ -7,6 +7,7 @@
 
 [resource]
 script = ExtResource("3_card_data")
+id = &"burning_ambition"
 card_type = 2
 rarity = 2
 name = "Burning Ambition"

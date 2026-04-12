@@ -56,14 +56,14 @@ func can_end_turn() -> bool:
 		return false
 	return state.capabilities != null and state.capabilities.can_end_turn
 
-func can_play_card_ui(card_uid: StringName) -> bool:
+func can_play_card_ui(card_id: StringName) -> bool:
 	if !is_active():
 		return true
 	if _is_dialogue_blocking():
 		return false
 	if state.capabilities == null:
 		return true
-	return state.capabilities.allows_card_uid(String(card_uid))
+	return state.capabilities.allows_card_id(card_id)
 
 func is_blocking_presentation() -> bool:
 	return _is_dialogue_blocking()
@@ -161,7 +161,7 @@ func _evaluate_gate(req, emit_feedback: bool):
 		EncounterGateRequestScript.Kind.END_TURN:
 			denied = !capabilities.can_end_turn
 		EncounterGateRequestScript.Kind.PLAY_CARD:
-			denied = !capabilities.allows_card_uid(String(req.card_uid)) \
+			denied = !capabilities.allows_card_id(req.card_id) \
 				or !capabilities.allows_insert_index(req.insert_index) \
 				or !capabilities.allows_target_ids(req.target_ids)
 		EncounterGateRequestScript.Kind.OPEN_SWAP, EncounterGateRequestScript.Kind.CONFIRM_SWAP:

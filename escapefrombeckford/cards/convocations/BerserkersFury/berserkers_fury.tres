@@ -8,6 +8,7 @@
 
 [resource]
 script = ExtResource("1_241b1")
+id = &"berserkers_fury"
 target_type = 3
 rarity = 2
 name = "Berserker's Fury"

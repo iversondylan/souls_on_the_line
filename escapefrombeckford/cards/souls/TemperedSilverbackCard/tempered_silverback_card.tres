@@ -8,6 +8,7 @@
 
 [resource]
 script = ExtResource("2_pah8j")
+id = &"tempered_silverback"
 card_type = 1
 target_type = 1
 rarity = 1

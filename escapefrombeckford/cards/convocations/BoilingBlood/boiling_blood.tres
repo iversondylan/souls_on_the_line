@@ -8,6 +8,7 @@
 
 [resource]
 script = ExtResource("2_s8x2x")
+id = &"boiling_blood"
 target_type = 3
 rarity = 1
 name = "Boiling Blood"

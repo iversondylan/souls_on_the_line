@@ -8,6 +8,7 @@
 
 [resource]
 script = ExtResource("2_brags")
+id = &"mark"
 target_type = 4
 name = "Mark"
 description = "Ranged attacks prioritize the target for %s turns."

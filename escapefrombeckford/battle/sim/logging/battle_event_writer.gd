@@ -205,15 +205,18 @@ func emit_card_played_ctx(ctx: CardContext) -> int:
 		return 0
 
 	ctx.card_data.ensure_uid()
+	ctx.card_data.ensure_id()
 
 	var card_type_i := int(ctx.card_data.card_type)
 	var target_type_i := int(ctx.card_data.target_type)
 
 	var data := {
+		Keys.CARD_ID: String(ctx.card_data.id),
 		Keys.CARD_UID: ctx.card_data.uid,
 		Keys.CARD_NAME: ctx.card_data.name,
 		Keys.CARD_TYPE_I: card_type_i,
 		Keys.CARD_TARGET_TYPE_I: target_type_i,
+		Keys.PROTO: String(ctx.card_data.base_proto_path if !String(ctx.card_data.base_proto_path).is_empty() else ctx.card_data.resource_path),
 		Keys.SOURCE_ID: int(ctx.source_id),
 		Keys.TARGETS: ctx.affected_ids,
 		Keys.INSERT_INDEX: int(ctx.insert_index),

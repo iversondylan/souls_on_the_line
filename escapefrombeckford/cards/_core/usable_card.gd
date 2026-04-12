@@ -165,9 +165,11 @@ func begin_execution(
 ) -> bool:
 	var ctx = make_card_context(_api, runtime, source_id, _targets, params)
 	if battle_view != null and battle_view.encounter_director != null:
+		card_data.ensure_id()
 		card_data.ensure_uid()
 		var gate_request = EncounterGateRequestScript.new()
 		gate_request.kind = EncounterGateRequestScript.Kind.PLAY_CARD
+		gate_request.card_id = card_data.id
 		gate_request.card_uid = StringName(String(card_data.uid))
 		gate_request.source_id = int(source_id)
 		gate_request.target_ids = ctx.target_ids.duplicate()
@@ -329,9 +331,10 @@ func is_playable() -> bool:
 		return false
 	if !api.can_pay_card(card_data):
 		return false
+	card_data.ensure_id()
 	card_data.ensure_uid()
 	if battle_view != null and battle_view.encounter_director != null:
-		return battle_view.encounter_director.can_play_card_ui(StringName(String(card_data.uid)))
+		return battle_view.encounter_director.can_play_card_ui(card_data.id)
 	return true
 
 func _cache_home() -> void:

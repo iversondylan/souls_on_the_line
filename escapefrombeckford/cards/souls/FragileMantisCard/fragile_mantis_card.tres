@@ -8,6 +8,7 @@
 
 [resource]
 script = ExtResource("2_card_data")
+id = &"fragile_mantis"
 card_type = 1
 target_type = 1
 rarity = 1

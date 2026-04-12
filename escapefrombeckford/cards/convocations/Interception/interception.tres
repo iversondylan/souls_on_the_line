@@ -11,6 +11,7 @@
 
 [resource]
 script = ExtResource("2_card")
+id = &"interception"
 target_type = 3
 rarity = 1
 name = "Interception"

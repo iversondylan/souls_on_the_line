@@ -11,4 +11,3 @@ status_id = &"danger_zone"
 target_model = ExtResource("3_target_model")
 reapply_target_model = ExtResource("3_target_model")
 targeting_flag_key = &"targeting_danger_zone"
-reapply_on_layout_change_only_if_missing = false

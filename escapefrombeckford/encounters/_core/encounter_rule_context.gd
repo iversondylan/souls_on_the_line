@@ -27,6 +27,22 @@ func get_card_uid() -> StringName:
 		return observed_event.card_uid
 	return &""
 
+func get_card_id() -> StringName:
+	if gate_request != null and gate_request.card_id != &"":
+		return gate_request.card_id
+	if observed_event != null and observed_event.card_id != &"":
+		return observed_event.card_id
+	return &""
+
+func get_card_proto_path() -> String:
+	if gate_request != null and !String(gate_request.card_proto_path).is_empty():
+		return String(gate_request.card_proto_path)
+	if observed_event != null and !String(observed_event.card_proto_path).is_empty():
+		return String(observed_event.card_proto_path)
+	if observed_event != null:
+		return String(observed_event.data.get("proto", ""))
+	return ""
+
 func get_insert_index() -> int:
 	if gate_request != null and gate_request.insert_index >= 0:
 		return gate_request.insert_index

@@ -12,6 +12,7 @@ enum Kind {
 }
 
 var kind: int = Kind.PLAY_CARD
+var card_id: StringName = &""
 var card_uid: StringName = &""
 var source_id: int = 0
 var target_ids: PackedInt32Array = PackedInt32Array()

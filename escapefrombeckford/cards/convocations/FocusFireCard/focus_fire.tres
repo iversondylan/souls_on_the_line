@@ -8,6 +8,7 @@
 
 [resource]
 script = ExtResource("1_numeo")
+id = &"focus_fire"
 target_type = 4
 rarity = 1
 name = "Focus Fire"

@@ -7,6 +7,7 @@
 
 [resource]
 script = ExtResource("3_card_data")
+id = &"resonance_spike"
 name = "Resonance Spike"
 description = "Allies deal +%s damage until the enemy turn."
 cost = 1

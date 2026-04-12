@@ -8,6 +8,7 @@
 
 [resource]
 script = ExtResource("2_card")
+id = &"interference_mission"
 card_type = 3
 target_type = 3
 rarity = 1

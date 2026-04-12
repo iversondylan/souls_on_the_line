@@ -1,10 +1,11 @@
 [gd_resource type="Resource" script_class="NPCEffectPackage" format=3 uid="uid://cx1shm0rwn3xs"]
 
-[ext_resource type="Script" uid="uid://b8d5j6ne4mt88" path="res://npc_ai/_core/param_model.gd" id="1_param"]
 [ext_resource type="Resource" uid="uid://bnqqhpu1itcb3" path="res://npc_ai/npc_attack_sequence.tres" id="1_attack_effect"]
+[ext_resource type="Script" uid="uid://b8d5j6ne4mt88" path="res://npc_ai/_core/param_model.gd" id="1_param"]
 [ext_resource type="Script" uid="uid://3jde7uhq2yho" path="res://npc_ai/_core/npc_effect_package.gd" id="2_pkg"]
 [ext_resource type="Resource" uid="uid://d10j8pr0mu2v0" path="res://combatants/enemies/ScrapmenTruncheoner/blinding_assault_damage_model.tres" id="3_damage"]
 [ext_resource type="Resource" uid="uid://dki0a21omfco2" path="res://combatants/enemies/ScrapmenTruncheoner/blinding_assault_multistrikes_model.tres" id="4_strikes"]
+[ext_resource type="Script" uid="uid://cuj4qvyx6dedj" path="res://npc_ai/_core/state_model.gd" id="6_2sqk5"]
 
 [resource]
 script = ExtResource("2_pkg")

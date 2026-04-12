@@ -41,6 +41,7 @@ intensity = 1
 
 [resource]
 script = ExtResource("9_y8ha6")
+id = &"glass_peccary"
 card_type = 1
 target_type = 1
 name = "Glass Peccary"

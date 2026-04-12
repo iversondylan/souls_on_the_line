@@ -7,6 +7,7 @@
 
 [resource]
 script = ExtResource("3_lnip7")
+id = &"spectral_clone"
 card_type = 1
 target_type = 1
 name = "Spectral Clone"

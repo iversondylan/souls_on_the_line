@@ -8,6 +8,7 @@
 
 [resource]
 script = ExtResource("2_y6wj4")
+id = &"decisive_choice"
 card_type = 3
 rarity = 2
 name = "Decisive Choice"

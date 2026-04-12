@@ -10,10 +10,11 @@
 [ext_resource type="Script" uid="uid://dh1bydv0adqsq" path="res://encounters/_core/encounter_step.gd" id="8_step"]
 [ext_resource type="Resource" uid="uid://ca8pmrs5s8td1" path="res://combatants/enemies/TrainingDummy/training_dummy_data.tres" id="8_yv6di"]
 [ext_resource type="Script" uid="uid://duv8xyedkq7d4" path="res://encounters/_core/encounter_insert_index_condition.gd" id="9_insert_condition"]
+[ext_resource type="Script" uid="uid://dubjkvxkbteb4" path="res://encounters/_core/encounter_card_condition.gd" id="10_card_condition"]
 
 [sub_resource type="Resource" id="EncounterCapabilitySet_default"]
 script = ExtResource("6_capabilities")
-allowed_card_uids = null
+allowed_card_ids = null
 allowed_target_ids = null
 allowed_insert_indices = null
 
@@ -52,7 +53,7 @@ can_end_turn = false
 can_play_cards = false
 can_swap = false
 can_select_discard = false
-allowed_card_uids = null
+allowed_card_ids = null
 allowed_target_ids = null
 allowed_insert_indices = null
 
@@ -67,7 +68,7 @@ capability_overrides = SubResource("EncounterCapabilitySet_locked")
 script = ExtResource("4_dialogue_action")
 dialogue_id = &"oswin_front_instruction"
 speaker_name = "Magister Oswin Carrel"
-text_bbcode = "Your ability to create perfect clones of yourself is useful in countless ways! For instance, try creating one [b]in front[/b] of you to protect yourself from the attack of that training golem."
+text_bbcode = "Only you are able to create these clones, but the possibilities are limitless! For instance, try creating one [b]in front[/b] of you to protect yourself from the attack of that training golem."
 
 [sub_resource type="Resource" id="EncounterStep_teach_front_clone_dialogue"]
 script = ExtResource("8_step")
@@ -82,7 +83,7 @@ script = ExtResource("6_capabilities")
 can_end_turn = false
 can_swap = false
 can_select_discard = false
-allowed_card_uids = null
+allowed_card_ids = null
 allowed_target_ids = null
 allowed_insert_indices = PackedInt32Array(0)
 
@@ -97,15 +98,227 @@ accepted_indices = PackedInt32Array(0)
 [sub_resource type="Resource" id="EncounterStep_teach_front_clone_action"]
 script = ExtResource("8_step")
 id = &"teach_front_clone_action"
+next_step_id = &"post_front_end_turn_lock"
 completion_conditions = [SubResource("EncounterEventCondition_card_played"), SubResource("EncounterInsertIndexCondition_front")]
 capability_overrides = SubResource("EncounterCapabilitySet_front_clone")
 denied_message_bbcode = "Try creating a clone [b]in front[/b] of yourself first."
+
+[sub_resource type="Resource" id="EncounterStep_post_front_end_turn_lock"]
+script = ExtResource("8_step")
+id = &"post_front_end_turn_lock"
+next_step_id = &"front_end_turn_dialogue"
+auto_advance_after_sec = 3.0
+capability_overrides = SubResource("EncounterCapabilitySet_locked")
+
+[sub_resource type="Resource" id="EncounterDialogueAction_front_end_turn"]
+script = ExtResource("4_dialogue_action")
+dialogue_id = &"oswin_front_end_turn"
+speaker_name = "Magister Oswin Carrel"
+text_bbcode = "Excellent. You have no cards left, so that's all you can do this turn. Press [b]End Turn[/b]."
+
+[sub_resource type="Resource" id="EncounterStep_front_end_turn_dialogue"]
+script = ExtResource("8_step")
+id = &"front_end_turn_dialogue"
+next_step_id = &"front_end_turn_only"
+entry_actions = [SubResource("EncounterDialogueAction_front_end_turn")]
+completion_conditions = [SubResource("EncounterEventCondition_dialogue_ack")]
+capability_overrides = SubResource("EncounterCapabilitySet_locked")
+
+[sub_resource type="Resource" id="EncounterCapabilitySet_end_turn_only"]
+script = ExtResource("6_capabilities")
+can_play_cards = false
+can_swap = false
+can_select_discard = false
+allowed_card_ids = null
+allowed_target_ids = null
+allowed_insert_indices = null
+
+[sub_resource type="Resource" id="EncounterDialogueAction_clone_fell"]
+script = ExtResource("4_dialogue_action")
+dialogue_id = &"oswin_clone_fell"
+speaker_name = "Magister Oswin Carrel"
+text_bbcode = "Your clone fought valiantly and protected you from harm. It was destroyed. But not to worry! The bit of soul it had is now safely in your discard pile. That's the great thing about summoning: your companions come back!"
+
+[sub_resource type="Resource" id="EncounterTrigger_clone_fell_on_input"]
+script = ExtResource("7_trigger")
+id = &"clone_fell_on_input"
+conditions = [SubResource("EncounterEventCondition_player_input")]
+actions = [SubResource("EncounterDialogueAction_clone_fell")]
+
+[sub_resource type="Resource" id="EncounterStep_front_end_turn_only"]
+script = ExtResource("8_step")
+id = &"front_end_turn_only"
+next_step_id = &"post_clone_loss_lock"
+player_turn_draw_amount_override = 1
+completion_conditions = [SubResource("EncounterEventCondition_dialogue_ack")]
+triggers = [SubResource("EncounterTrigger_clone_fell_on_input")]
+capability_overrides = SubResource("EncounterCapabilitySet_end_turn_only")
+
+[sub_resource type="Resource" id="EncounterStep_post_clone_loss_lock"]
+script = ExtResource("8_step")
+id = &"post_clone_loss_lock"
+next_step_id = &"teach_back_clone_dialogue"
+auto_advance_after_sec = 1.0
+capability_overrides = SubResource("EncounterCapabilitySet_locked")
+
+[sub_resource type="Resource" id="EncounterDialogueAction_back_instruction"]
+script = ExtResource("4_dialogue_action")
+dialogue_id = &"oswin_back_instruction"
+speaker_name = "Magister Oswin Carrel"
+text_bbcode = "This time let's get aggressive. Summon a clone [b]behind[/b] you. Combatants behind you get to act before the enemy."
+
+[sub_resource type="Resource" id="EncounterStep_teach_back_clone_dialogue"]
+script = ExtResource("8_step")
+id = &"teach_back_clone_dialogue"
+next_step_id = &"teach_back_clone_action"
+entry_actions = [SubResource("EncounterDialogueAction_back_instruction")]
+completion_conditions = [SubResource("EncounterEventCondition_dialogue_ack")]
+capability_overrides = SubResource("EncounterCapabilitySet_locked")
+
+[sub_resource type="Resource" id="EncounterCapabilitySet_back_clone"]
+script = ExtResource("6_capabilities")
+can_end_turn = false
+can_swap = false
+can_select_discard = false
+allowed_card_ids = null
+allowed_target_ids = null
+allowed_insert_indices = PackedInt32Array(1)
+
+[sub_resource type="Resource" id="EncounterInsertIndexCondition_back"]
+script = ExtResource("9_insert_condition")
+accepted_indices = PackedInt32Array(1)
+
+[sub_resource type="Resource" id="EncounterStep_teach_back_clone_action"]
+script = ExtResource("8_step")
+id = &"teach_back_clone_action"
+next_step_id = &"back_end_turn_only"
+completion_conditions = [SubResource("EncounterEventCondition_card_played"), SubResource("EncounterInsertIndexCondition_back")]
+capability_overrides = SubResource("EncounterCapabilitySet_back_clone")
+denied_message_bbcode = "Try creating a clone [b]behind[/b] yourself first."
+
+[sub_resource type="Resource" id="EncounterDialogueAction_back_result"]
+script = ExtResource("4_dialogue_action")
+dialogue_id = &"oswin_back_result"
+speaker_name = "Magister Oswin Carrel"
+text_bbcode = "Your clone damaged the enemy, but left you wide open to attack! Remember to place your summons behind you to reliably do damage."
+
+[sub_resource type="Resource" id="EncounterTrigger_back_result_on_input"]
+script = ExtResource("7_trigger")
+id = &"back_result_on_input"
+conditions = [SubResource("EncounterEventCondition_player_input")]
+actions = [SubResource("EncounterDialogueAction_back_result")]
+
+[sub_resource type="Resource" id="EncounterStep_back_end_turn_only"]
+script = ExtResource("8_step")
+id = &"back_end_turn_only"
+next_step_id = &"post_open_lock"
+player_turn_draw_amount_override = 1
+completion_conditions = [SubResource("EncounterEventCondition_dialogue_ack")]
+triggers = [SubResource("EncounterTrigger_back_result_on_input")]
+capability_overrides = SubResource("EncounterCapabilitySet_end_turn_only")
+
+[sub_resource type="Resource" id="EncounterStep_post_open_lock"]
+script = ExtResource("8_step")
+id = &"post_open_lock"
+next_step_id = &"teach_balance_dialogue"
+auto_advance_after_sec = 1.0
+capability_overrides = SubResource("EncounterCapabilitySet_locked")
+
+[sub_resource type="Resource" id="EncounterDialogueAction_balance_instruction"]
+script = ExtResource("4_dialogue_action")
+dialogue_id = &"oswin_balance_instruction"
+speaker_name = "Magister Oswin Carrel"
+text_bbcode = "A good strategy has balance. Place a clone [b]in front[/b] to protect yourself and the one [b]behind[/b] will do damage."
+
+[sub_resource type="Resource" id="EncounterStep_teach_balance_dialogue"]
+script = ExtResource("8_step")
+id = &"teach_balance_dialogue"
+next_step_id = &"teach_balance_action"
+entry_actions = [SubResource("EncounterDialogueAction_balance_instruction")]
+completion_conditions = [SubResource("EncounterEventCondition_dialogue_ack")]
+capability_overrides = SubResource("EncounterCapabilitySet_locked")
+
+[sub_resource type="Resource" id="EncounterStep_teach_balance_action"]
+script = ExtResource("8_step")
+id = &"teach_balance_action"
+next_step_id = &"final_end_turn_unlock"
+completion_conditions = [SubResource("EncounterEventCondition_card_played"), SubResource("EncounterInsertIndexCondition_front")]
+capability_overrides = SubResource("EncounterCapabilitySet_front_clone")
+denied_message_bbcode = "Place a clone [b]in front[/b] to protect yourself."
+
+[sub_resource type="Resource" id="EncounterDialogueAction_research_intro"]
+script = ExtResource("4_dialogue_action")
+dialogue_id = &"oswin_research_intro"
+speaker_name = "Magister Oswin Carrel"
+text_bbcode = "Good. Now that you know the basics of combat, it's finally time to conduct some research! Try casting Resonance Spike and see if it has an effect on your clones. If so, that means Convocation magic is compatible with paranormal entities."
+
+[sub_resource type="Resource" id="EncounterTrigger_research_intro_on_input"]
+script = ExtResource("7_trigger")
+id = &"research_intro_on_input"
+conditions = [SubResource("EncounterEventCondition_player_input")]
+actions = [SubResource("EncounterDialogueAction_research_intro")]
+
+[sub_resource type="Resource" id="EncounterStep_final_end_turn_unlock"]
+script = ExtResource("8_step")
+id = &"final_end_turn_unlock"
+next_step_id = &"teach_spike_action"
+player_turn_draw_amount_override = 5
+completion_conditions = [SubResource("EncounterEventCondition_dialogue_ack")]
+triggers = [SubResource("EncounterTrigger_research_intro_on_input")]
+capability_overrides = SubResource("EncounterCapabilitySet_end_turn_only")
+
+[sub_resource type="Resource" id="EncounterCapabilitySet_play_only"]
+script = ExtResource("6_capabilities")
+can_end_turn = false
+can_swap = false
+can_select_discard = false
+allowed_card_ids = PackedStringArray("resonance_spike")
+allowed_target_ids = null
+allowed_insert_indices = null
+
+[sub_resource type="Resource" id="EncounterCardCondition_spike"]
+script = ExtResource("10_card_condition")
+card_id = &"resonance_spike"
+
+[sub_resource type="Resource" id="EncounterStep_teach_spike_action"]
+script = ExtResource("8_step")
+id = &"teach_spike_action"
+next_step_id = &"post_spike_lock"
+completion_conditions = [SubResource("EncounterEventCondition_card_played"), SubResource("EncounterCardCondition_spike")]
+capability_overrides = SubResource("EncounterCapabilitySet_play_only")
+denied_message_bbcode = "Try casting [b]Resonance Spike[/b] first."
+
+[sub_resource type="Resource" id="EncounterStep_post_spike_lock"]
+script = ExtResource("8_step")
+id = &"post_spike_lock"
+next_step_id = &"spike_success_dialogue"
+auto_advance_after_sec = 1.5
+capability_overrides = SubResource("EncounterCapabilitySet_locked")
+
+[sub_resource type="Resource" id="EncounterDialogueAction_spike_success"]
+script = ExtResource("4_dialogue_action")
+dialogue_id = &"oswin_spike_success"
+speaker_name = "Magister Oswin Carrel"
+text_bbcode = "Sweet mother of resonance, it worked! Go ahead and finish off that training golem. I need to go. I have a research report to write."
+
+[sub_resource type="Resource" id="EncounterStep_spike_success_dialogue"]
+script = ExtResource("8_step")
+id = &"spike_success_dialogue"
+next_step_id = &"tutorial_complete"
+entry_actions = [SubResource("EncounterDialogueAction_spike_success")]
+completion_conditions = [SubResource("EncounterEventCondition_dialogue_ack")]
+capability_overrides = SubResource("EncounterCapabilitySet_locked")
+
+[sub_resource type="Resource" id="EncounterStep_tutorial_complete"]
+script = ExtResource("8_step")
+id = &"tutorial_complete"
+capability_overrides = SubResource("EncounterCapabilitySet_default")
 
 [sub_resource type="Resource" id="EncounterDefinition_tutorial"]
 script = ExtResource("2_definition")
 initial_step_id = &"intro_draw_one"
 no_shuffle = true
-steps = [SubResource("EncounterStep_intro_draw_one"), SubResource("EncounterStep_post_intro_lock"), SubResource("EncounterStep_teach_front_clone_dialogue"), SubResource("EncounterStep_teach_front_clone_action")]
+steps = [SubResource("EncounterStep_intro_draw_one"), SubResource("EncounterStep_post_intro_lock"), SubResource("EncounterStep_teach_front_clone_dialogue"), SubResource("EncounterStep_teach_front_clone_action"), SubResource("EncounterStep_post_front_end_turn_lock"), SubResource("EncounterStep_front_end_turn_dialogue"), SubResource("EncounterStep_front_end_turn_only"), SubResource("EncounterStep_post_clone_loss_lock"), SubResource("EncounterStep_teach_back_clone_dialogue"), SubResource("EncounterStep_teach_back_clone_action"), SubResource("EncounterStep_back_end_turn_only"), SubResource("EncounterStep_post_open_lock"), SubResource("EncounterStep_teach_balance_dialogue"), SubResource("EncounterStep_teach_balance_action"), SubResource("EncounterStep_final_end_turn_unlock"), SubResource("EncounterStep_teach_spike_action"), SubResource("EncounterStep_post_spike_lock"), SubResource("EncounterStep_spike_success_dialogue"), SubResource("EncounterStep_tutorial_complete")]
 
 [resource]
 script = ExtResource("1_battle_data")

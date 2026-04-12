@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="LowestHealthAllyStatusTargetModel" format=3 uid="uid://b7lbcuclv3y0t"]
 
-[ext_resource type="Script" uid="uid://cbi3uw0e7ad0s" path="res://npc_ai/status/lowest_health_ally_status_target_model.gd" id="1_target_model"]
+[ext_resource type="Script" path="res://npc_ai/status/lowest_health_ally_status_target_model.gd" id="1_target_model"]
 
 [resource]
 script = ExtResource("1_target_model")

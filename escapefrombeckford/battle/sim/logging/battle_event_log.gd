@@ -212,6 +212,7 @@ static func print_event_log(
 		Keys.GROUP_INDEX,
 		Keys.TURN_ID,
 
+		Keys.CARD_ID,
 		Keys.CARD_UID,
 		Keys.CARD_NAME,
 		Keys.INSERT_INDEX,

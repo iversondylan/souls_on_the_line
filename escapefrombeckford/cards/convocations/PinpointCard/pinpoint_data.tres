@@ -8,6 +8,7 @@
 
 [resource]
 script = ExtResource("2_xv8nt")
+id = &"pinpoint"
 target_type = 4
 name = "Pinpoint"
 description = "An enemy takes %s{percent} more damage for %s turns."
