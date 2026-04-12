@@ -550,6 +550,8 @@ func _build_scope_driven_attack_beats(parsed: ParsedNpcAttackTurn, turn_events: 
 	_tag_beat(focus_beat, [&"focus"])
 	for event in parsed.leading_events:
 		focus_beat.events.append(event)
+	for layout_order in _find_pre_attack_group_layouts(turn_events, parsed.group_index):
+		focus_beat.orders.append(layout_order)
 	beats.append(focus_beat)
 
 	var windup_beat := _make_ranged_windup_beat(1.0, parsed.analysis) if parsed.attack_mode == int(Attack.Mode.RANGED) else _make_melee_windup_beat(1.0, parsed.analysis)
@@ -1482,6 +1484,8 @@ func _build_melee_attack_beats_from_parsed(parsed: Dictionary, turn_events: Arra
 	var focus_beat := _make_focus_beat(0.0, analysis)
 	for event in leading:
 		focus_beat.events.append(event)
+	for layout_order in _find_pre_attack_group_layouts(turn_events, group_index):
+		focus_beat.orders.append(layout_order)
 	beats.append(focus_beat)
 	beats.append(_make_melee_windup_beat(1.0, analysis))
 
@@ -1545,6 +1549,8 @@ func _build_ranged_attack_beats_from_parsed(parsed: Dictionary, turn_events: Arr
 	var focus_beat := _make_focus_beat(0.0, analysis)
 	for event in leading:
 		focus_beat.events.append(event)
+	for layout_order in _find_pre_attack_group_layouts(turn_events, group_index):
+		focus_beat.orders.append(layout_order)
 	beats.append(focus_beat)
 	beats.append(_make_ranged_windup_beat(1.0, analysis))
 
@@ -1873,6 +1879,8 @@ func _build_melee_attack_beats(analysis: AttackAnalysis, turn_events: Array[Batt
 	var focus_beat := _make_focus_beat(0.0, analysis)
 	for e in leading:
 		focus_beat.events.append(e)
+	for layout_order in _find_pre_attack_group_layouts(turn_events, group_index):
+		focus_beat.orders.append(layout_order)
 	beats.append(focus_beat)
 	beats.append(_make_melee_windup_beat(1.0, analysis))
 
@@ -1937,6 +1945,8 @@ func _build_ranged_attack_beats(analysis: AttackAnalysis, turn_events: Array[Bat
 	var focus_beat := _make_focus_beat(0.0, analysis)
 	for e in leading:
 		focus_beat.events.append(e)
+	for layout_order in _find_pre_attack_group_layouts(turn_events, group_index):
+		focus_beat.orders.append(layout_order)
 	beats.append(focus_beat)
 	beats.append(_make_ranged_windup_beat(1.0, analysis))
 
@@ -2817,6 +2827,69 @@ func _find_post_action_group_layouts(
 					"seq": int(e.seq),
 					"order_ids": latest_order,
 				}
+
+	if latest_by_group.is_empty():
+		return []
+
+	var sorted_groups: Array = latest_by_group.keys()
+	sorted_groups.sort_custom(func(a, b):
+		return int(latest_by_group[a].get("seq", -1)) < int(latest_by_group[b].get("seq", -1))
+	)
+
+	var out: Array[GroupLayoutPresentationOrder] = []
+	for group_key in sorted_groups:
+		var info: Dictionary = latest_by_group[group_key]
+		var o := GroupLayoutPresentationOrder.new()
+		o.kind = PresentationOrder.Kind.GROUP_LAYOUT
+		o.group_index = int(group_key)
+		o.order_ids = info.get("order_ids", PackedInt32Array())
+		o.animate = true
+		o.visual_sec = 0.12
+		out.append(o)
+
+	return out
+
+
+func _find_pre_attack_group_layouts(
+	events: Array[BattleEvent],
+	fallback_group_index: int
+) -> Array[GroupLayoutPresentationOrder]:
+	# Find the seq of the first STRIKE/CLEAVE marker; MOVED events before it are pre-attack.
+	var cutoff_seq := -1
+	for e in events:
+		if e == null:
+			continue
+		if _is_attack_chain_marker_event_type(int(e.type)):
+			cutoff_seq = int(e.seq)
+			break
+
+	if cutoff_seq < 0:
+		return []
+
+	# Collect the latest MOVED event per group that occurs before the first strike.
+	var latest_by_group := {}
+	for e in events:
+		if e == null or e.data == null:
+			continue
+		if int(e.seq) >= cutoff_seq:
+			continue
+		if int(e.type) != BattleEvent.Type.MOVED:
+			continue
+		if !e.data.has(Keys.AFTER_ORDER_IDS):
+			continue
+		var order_ids: PackedInt32Array = e.data.get(Keys.AFTER_ORDER_IDS, PackedInt32Array())
+		if order_ids.is_empty():
+			continue
+		var group := int(e.data.get(Keys.GROUP_INDEX, e.group_index))
+		if group == -1:
+			group = fallback_group_index
+		if group == -1:
+			continue
+		if !latest_by_group.has(group) or int(e.seq) > int(latest_by_group[group].get("seq", -1)):
+			latest_by_group[group] = {
+				"seq": int(e.seq),
+				"order_ids": order_ids,
+			}
 
 	if latest_by_group.is_empty():
 		return []
