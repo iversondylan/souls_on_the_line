@@ -698,11 +698,13 @@ func _merge_beat_contents(target_beat: TurnBeat, source_beat: TurnBeat) -> void:
 
 # ============================================================================
 # Scope-Driven Attack Parsing
+# Converts a structured attack scope into ParsedNpcAttackTurn (direct strikes,
+# delayed reactions, target windows) for use by the package beat builders.
 # ============================================================================
 
-# Parse an attack scope into direct strikes plus delayed reactions. This newer
-# path still reuses AttackAnalysis/StrikePresentationInfo so it can share the
-# downstream order builders with the older attack code.
+# Parse an attack scope into direct strikes plus delayed reactions.
+# Builds ParsedNpcAttackTurn, using AttackAnalysis/StrikePresentationInfo
+# consumed by _build_scope_driven_attack_package_beats and the reaction builders.
 func _parse_scope_driven_attack_scope(
 	events: Array[BattleEvent],
 	scope_ranges: Dictionary,
@@ -1076,9 +1078,9 @@ func _find_group_index(events: Array[BattleEvent]) -> int:
 	return -1
 
 
-# Older scope-aware attack parser. It predates ParsedNpcAttackTurn, but still
-# provides valuable structure for legacy beat builders and compact nested
-# reaction attacks.
+# Scope-aware attack parser. Predates ParsedNpcAttackTurn, but still provides
+# the structured Dictionary consumed by _parse_scope_driven_attack_scope and
+# by _make_compact_reaction_attack_beat for nested reaction attacks.
 func _parse_attack_scope(
 	events: Array[BattleEvent],
 	scope_ranges: Dictionary,
@@ -1493,6 +1495,8 @@ func _record_lethal_index(analysis: AttackAnalysis, display_index: int) -> void:
 
 # ============================================================================
 # Reaction Beat Construction
+# Converts a DelayedReactionNode (summon, status, draw, or nested attack) into
+# one or more TurnBeats placed at a caller-specified on-grid beat position.
 # ============================================================================
 
 
@@ -1564,8 +1568,9 @@ func _make_reaction_draw_beat(beat_q: float, reaction_events: Array[BattleEvent]
 
 
 # ============================================================================
-# Generic / Summon / Status Fallback Builders
-# Used when the turn lacks enough scope structure for the richer compilers.
+# Generic Fallback Builder and Shared Presentation Helpers
+# Used when the turn has no recognisable scope structure, and as shared helpers
+# for the scope-driven path (clear_focus, removal, layout, status beats, etc.).
 # ============================================================================
 
 
