@@ -11,7 +11,7 @@
 [ext_resource type="Resource" uid="uid://db0if7277h7kw" path="res://encounters/beckford_domain/tier_1_weber_patrol.tres" id="7_sumc2"]
 [ext_resource type="Resource" uid="uid://bro14nbxe02ih" path="res://encounters/beckford_domain/tier_1_calabash.tres" id="8_mneoi"]
 [ext_resource type="Resource" uid="uid://4e7nogd8g1w8" path="res://encounters/beckford_domain/tier_1_gentle_deep_procession.tres" id="9_gentle_deep"]
-[ext_resource type="Resource" uid="uid://dqr7hmqjabyk" path="res://encounters/beckford_domain/tier_1_magister_rowan_fellhart.tres" id="10_rowan"]
+[ext_resource type="Resource" uid="uid://dqr7hmqjabyk" path="res://encounters/beckford_domain/tier_2_magister_rowan_fellhart.tres" id="10_rowan"]
 [ext_resource type="Resource" uid="uid://btvh04kju6f0m" path="res://encounters/beckford_domain/tier_1_scrapmen_acquisitions_duo.tres" id="11_scrap_detail"]
 
 [resource]

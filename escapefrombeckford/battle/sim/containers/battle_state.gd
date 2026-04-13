@@ -274,7 +274,7 @@ func _debug_unit_summary(unit: CombatantState) -> String:
 	if !String(unit.data_proto_path).is_empty():
 		proto = " proto=%s" % String(unit.data_proto_path).get_file()
 
-	return "cid=%d name=%s team=%s type=%s mortality=%s alive=%s hp=%d/%d mana=%d/%d apm=%d apr=%d%s%s" % [
+	return "cid=%d name=%s team=%s type=%s mortality=%s alive=%s hp=%d/%d mana=%d/%d ap=%d%s%s" % [
 		int(unit.id),
 		String(unit.name),
 		team_name,
@@ -285,8 +285,7 @@ func _debug_unit_summary(unit: CombatantState) -> String:
 		int(unit.max_health),
 		int(unit.mana),
 		int(unit.max_mana),
-		int(unit.apm),
-		int(unit.apr),
+		int(unit.ap),
 		proto,
 		statuses,
 	]

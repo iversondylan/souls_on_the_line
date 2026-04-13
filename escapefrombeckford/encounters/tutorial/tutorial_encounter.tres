@@ -301,7 +301,7 @@ capability_overrides = SubResource("EncounterCapabilitySet_locked")
 script = ExtResource("4_dialogue_action")
 dialogue_id = &"oswin_spike_success"
 speaker_name = "Magister Oswin Carrel"
-text_bbcode = "Sweet mother of resonance, it worked! Go ahead and finish off that training golem. I need to go. I have a research report to write."
+text_bbcode = "Sweet mother of resonance, it worked! Go ahead and finish off that training golem. I need to go. I have a research report to write about our findings here."
 
 [sub_resource type="Resource" id="EncounterStep_spike_success_dialogue"]
 script = ExtResource("8_step")

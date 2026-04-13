@@ -12,6 +12,5 @@ portrait_art_uid = "uid://cawgplffbt5en"
 facing_right = false
 height = 250
 max_health = 14
-apr = 1
-apm = 1
+ap = 1
 ai = ExtResource("2_ai")

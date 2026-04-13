@@ -1,13 +1,13 @@
-# summon_red_intent_tooltip_text_model.gd
-# red in the title denotes: this unit's attack damage shall equal its
-# combatant_data.apr
-# for this to work, that unit must have an attack package with MaxManaRedDamageModel
+# summon_ap_intent_tooltip_text_model.gd
+# ap in the title denotes: this unit's attack damage shall equal its
+# combatant_data.ap
+# for this to work, that unit must have an attack package with MaxApDamageModel
 # whose base damage is 0 and mana scaling is 1.0
 
-class_name SummonRedIntentTooltipTextModel
+class_name SummonApIntentTooltipTextModel
 extends TextModel
 
-const DEFAULT_TEXT_TEMPLATE := "[b]{action_name}[/b]: summon {count} {red}/{hp} {summon_name}."
+const DEFAULT_TEXT_TEMPLATE := "[b]{action_name}[/b]: summon {count} {ap}/{hp} {summon_name}."
 
 @export_multiline var text_template: String = DEFAULT_TEXT_TEMPLATE
 
@@ -25,19 +25,27 @@ func _resolve_text_template() -> String:
 	return text_template
 
 
-func _apply_legacy_stat_formatting(template: String, red: int, hp: int) -> String:
+func _apply_legacy_stat_formatting(template: String, ap: int, hp: int) -> String:
 	var placeholder_count := template.count("%s")
 	if placeholder_count >= 2:
-		return template % [red, hp]
+		return template % [ap, hp]
 	if placeholder_count == 1:
-		return template % ("%s/%s" % [red, hp])
+		return template % ("%s/%s" % [ap, hp])
 	return template
 
 
 func _format_count_token(count: int) -> String:
-	if count == 1:
-		return "a"
-	return str(count)
+	match count:
+		1:
+			return "a"
+		2:
+			return "two"
+		3:
+			return "three"
+		4:
+			return "four"
+		_:
+			return str(count)
 
 
 func get_text(ctx: NPCAIContext) -> String:
@@ -50,10 +58,10 @@ func get_text(ctx: NPCAIContext) -> String:
 	if data == null:
 		return "error"
 
-	var red := int(data.apr)
+	var ap := int(data.ap)
 	var hp := int(data.max_health)
 	var count := maxi(_param_i(ctx, Keys.SUMMON_COUNT, 1), 0)
-	if red < 0 or hp <= 0:
+	if ap < 0 or hp <= 0:
 		return "error"
 	if count <= 0:
 		return "error"
@@ -64,6 +72,7 @@ func get_text(ctx: NPCAIContext) -> String:
 	result = result.replace("{count}", _format_count_token(count))
 	result = result.replace("{summon_count}", str(count))
 	result = result.replace("{count_number}", str(count))
-	result = result.replace("{red}", str(red))
+	result = result.replace("{ap}", str(ap))
+	result = result.replace("{red}", str(ap))
 	result = result.replace("{hp}", str(hp))
-	return _apply_legacy_stat_formatting(result, red, hp)
+	return _apply_legacy_stat_formatting(result, ap, hp)

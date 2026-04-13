@@ -76,7 +76,7 @@ static func _description_values_for_action(
 				var card_uid := String(card_data.uid)
 				if !card_uid.is_empty():
 					summon_max_health += int(api.get_summon_card_max_health_bonus(card_uid))
-			return [int(summon_data.apr), summon_max_health, String(summon_data.name)]
+			return [int(summon_data.ap), summon_max_health, String(summon_data.name)]
 
 	if action is HealAction:
 		var heal_action := action as HealAction

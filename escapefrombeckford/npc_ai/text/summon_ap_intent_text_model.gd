@@ -1,10 +1,10 @@
-# summon_red_intent_text_model.gd
-# red in the title denotes: this unit's attack damage shall equal its
-# combatant_data.apr
-# for this to work, that unit must have an attack package with MaxManaRedDamageModel
+# summon_ap_intent_text_model.gd
+# ap in the title denotes: this unit's attack damage shall equal its
+# combatant_data.ap
+# for this to work, that unit must have an attack package with MaxApDamageModel
 # whose base damage is 0 and mana scaling is 1.0
 
-class_name SummonRedIntentTextModel
+class_name SummonApIntentTextModel
 extends TextModel
 
 func _fallback_summon_data(ctx: NPCAIContext) -> CombatantData:
@@ -24,15 +24,15 @@ func get_text(ctx: NPCAIContext) -> String:
 	if data == null:
 		return "error"
 
-	var red := int(data.apr)
+	var ap := int(data.ap)
 	var hp := int(data.max_health)
 	var count := maxi(_param_i(ctx, Keys.SUMMON_COUNT, 1), 0)
 
-	if red < 0 or hp <= 0:
+	if ap < 0 or hp <= 0:
 		return "error"
 	if count <= 0:
 		return "error"
 	if count == 1:
-		return "%s/%s" % [red, hp]
+		return "%s/%s" % [ap, hp]
 
-	return "%s×%s/%s" % [count, red, hp]
+	return "%s×%s/%s" % [count, ap, hp]

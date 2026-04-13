@@ -13,8 +13,7 @@ class_name CombatantData extends Resource
 
 @export_group("Gameplay Data")
 @export var max_health: int = 10
-@export var apr: int = 3
-@export var apm: int = 3
+@export var ap: int = 3
 @export var max_mana: int = 3
 @export var ai: NPCAIProfile
 

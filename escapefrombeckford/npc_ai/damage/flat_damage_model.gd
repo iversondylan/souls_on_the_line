@@ -14,5 +14,5 @@ func change_params_sim(ctx: NPCAIContext) -> NPCAIContext:
 	ctx.params[Keys.DAMAGE] = damage
 	ctx.params[Keys.DAMAGE_MELEE] = damage
 	ctx.params[Keys.DAMAGE_RANGED] = damage
-	#print("apr_damage_model.gd total: ", total)
+	#print("flat_damage_model.gd total: ", total)
 	return ctx

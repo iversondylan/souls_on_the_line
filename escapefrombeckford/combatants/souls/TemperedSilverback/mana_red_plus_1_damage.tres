@@ -1,8 +1,0 @@
-[gd_resource type="Resource" script_class="MaxManaRedDamageModel" format=3 uid="uid://cni2m8j6ug1n1"]
-
-[ext_resource type="Script" uid="uid://dexyad0u7d7ua" path="res://npc_ai/damage/max_mana_red_damage_model.gd" id="1_ixqnh"]
-
-[resource]
-script = ExtResource("1_ixqnh")
-base_damage = 1
-metadata/_custom_type_script = "uid://dexyad0u7d7ua"

@@ -17,7 +17,7 @@ func activate_sim(ctx: CardContext) -> bool:
 	if attacker_state == null or attacker_state.combatant_data == null:
 		return false
 
-	var base_damage := maxi(int(attacker_state.combatant_data.apr) + int(bonus_damage), 0)
+	var base_damage := maxi(int(attacker_state.combatant_data.ap) + int(bonus_damage), 0)
 	var attack_ctx := AttackContext.new()
 	attack_ctx.api = ctx.api
 	attack_ctx.runtime = ctx.runtime

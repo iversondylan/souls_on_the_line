@@ -1,7 +1,6 @@
-[gd_resource type="Resource" script_class="MaxManaRedDamageModel" format=3 uid="uid://b6vgjaovptslx"]
+[gd_resource type="Resource" script_class="MaxApDamageModel" format=3 uid="uid://b6vgjaovptslx"]
 
-[ext_resource type="Script" uid="uid://dexyad0u7d7ua" path="res://npc_ai/damage/max_mana_red_damage_model.gd" id="1_1cipu"]
+[ext_resource type="Script" uid="uid://dexyad0u7d7ua" path="res://npc_ai/damage/ap_damage_model.gd" id="1_mujri"]
 
 [resource]
-script = ExtResource("1_1cipu")
-metadata/_custom_type_script = "uid://dexyad0u7d7ua"
+script = ExtResource("1_mujri")

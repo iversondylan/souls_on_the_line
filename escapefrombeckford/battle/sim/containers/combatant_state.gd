@@ -24,11 +24,10 @@ var name: String = ""
 var max_health: int = 0
 var health: int = 0
 
-# mana + attack powers
+# mana + attack power
 var max_mana: int = 0
 var mana: int = 0
-var apm: int = 0 # attack power melee
-var apr: int = 0 # attack power ranged
+var ap: int = 0
 
 var bound_card_uid: String = ""
 
@@ -64,8 +63,7 @@ func init_from_combatant_data(data: CombatantData, current_health_override: int 
 	max_mana = maxi(int(data.max_mana), 0)
 	mana = max_mana
 
-	apm = maxi(int(data.apm), 0)
-	apr = maxi(int(data.apr), 0)
+	ap = maxi(int(data.ap), 0)
 
 	alive = max_health > 0
 
@@ -84,8 +82,7 @@ func clone() -> CombatantState:
 
 	c.max_mana = max_mana
 	c.mana = mana
-	c.apm = apm
-	c.apr = apr
+	c.ap = ap
 	c.bound_card_uid = bound_card_uid
 
 	c.data_proto_path = data_proto_path

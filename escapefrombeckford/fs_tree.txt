@@ -909,7 +909,7 @@ fighters
     basic_clone_attack.tres
     basic_clone_attack_pkg.tres
     basic_clone_data.tres
-    mana_red_plus_1_damage.tres
+    ap_plus_1_damage.tres
   BufferBird
     buffer_bird_ai_profile.tres
     buffer_bird_attack.tres
@@ -989,8 +989,8 @@ npc_actions
   damage
     flat_damage_model.gd
     flat_damage_model.gd.uid
-    max_mana_red_damage_model.gd
-    max_mana_red_damage_model.gd.uid
+    max_ap_damage_model.gd
+    max_ap_damage_model.gd.uid
   intent_lifecycle
     status_from_opp_turn_model.gd
     status_from_opp_turn_model.gd.uid
