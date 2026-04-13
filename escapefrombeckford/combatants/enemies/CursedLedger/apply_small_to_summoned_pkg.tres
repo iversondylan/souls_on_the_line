@@ -11,4 +11,5 @@
 script = ExtResource("2_euqp3")
 effect = ExtResource("1_xis7m")
 param_models = Array[ExtResource("1_ocwaa")]([ExtResource("3_edobf"), ExtResource("4_80b2e")])
+compact_to_previous = true
 metadata/_custom_type_script = "uid://3jde7uhq2yho"

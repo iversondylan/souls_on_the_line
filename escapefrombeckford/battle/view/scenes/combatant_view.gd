@@ -354,6 +354,21 @@ func clear_focus(duration: float) -> void:
 		tween_focus = null
 	, CONNECT_ONE_SHOT)
 
+	# Focus owns root motion during the turn, so package-driven relayouts may only
+	# update the stored anchor. When focus clears, reconcile back to that anchor.
+	if has_anchor_position and is_alive:
+		if tween_move:
+			tween_move.kill()
+			tween_move = null
+		if position.distance_to(anchor_position) <= 0.5:
+			position = anchor_position
+		else:
+			tween_move = create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+			tween_move.tween_property(self, "position", anchor_position, maxf(dur, 0.12))
+			tween_move.finished.connect(func() -> void:
+				tween_move = null
+			, CONNECT_ONE_SHOT)
+
 
 # ------------------------------------------------------------------------------
 # Group movement
@@ -373,11 +388,6 @@ func set_anchor_position(new_position: Vector2, ctx: GroupLayoutOrder) -> void:
 
 	# Dead / dying units do not participate in layout.
 	if !is_alive:
-		has_anchor_position = true
-		return
-
-	# If focus currently owns root motion, only update the stored anchor.
-	if _is_focus_active:
 		has_anchor_position = true
 		return
 
@@ -661,9 +671,11 @@ func _play_status_source_windup(order: StatusWindupPresentationOrder) -> void:
 	_cache_base_art_transform_if_needed()
 	var base_scale := _get_base_art_scale()
 	var base_pos := _get_base_art_pos()
-	var compact := StringName(order.presentation_mode) == &"compact_followup"
-	var scale_mult := 1.03 if compact else 1.06
-	var lift := -1.5 if compact else -3.0
+	var mode := StringName(order.presentation_mode)
+	var compact := mode == &"compact_followup"
+	var nonattack := mode == &"effect_sequence_nonattack"
+	var scale_mult := 1.03 if compact else (1.045 if nonattack else 1.06)
+	var lift := -1.5 if compact else (-2.2 if nonattack else -3.0)
 	var dur := maxf(order.visual_sec, 0.01)
 
 	tween_strike = create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
@@ -680,8 +692,10 @@ func _play_status_target_windup(order: StatusWindupPresentationOrder) -> void:
 
 	_cache_base_art_transform_if_needed()
 	var base_scale := _get_base_art_scale()
-	var compact := StringName(order.presentation_mode) == &"compact_followup"
-	var scale_mult := 1.02 if compact else 1.04
+	var mode := StringName(order.presentation_mode)
+	var compact := mode == &"compact_followup"
+	var nonattack := mode == &"effect_sequence_nonattack"
+	var scale_mult := 1.02 if compact else (1.03 if nonattack else 1.04)
 	var dur := maxf(order.visual_sec, 0.01)
 
 	tween_misc = create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
@@ -698,9 +712,11 @@ func _play_status_source_pop(order: StatusPopPresentationOrder) -> void:
 	_cache_base_art_transform_if_needed()
 	var base_scale := _get_base_art_scale()
 	var base_pos := _get_base_art_pos()
-	var compact := StringName(order.presentation_mode) == &"compact_followup"
-	var peak_scale := base_scale * (1.04 if compact else 1.08)
-	var peak_pos := base_pos + Vector2(0, -2.0 if compact else -4.0)
+	var mode := StringName(order.presentation_mode)
+	var compact := mode == &"compact_followup"
+	var nonattack := mode == &"effect_sequence_nonattack"
+	var peak_scale := base_scale * (1.04 if compact else (1.06 if nonattack else 1.08))
+	var peak_pos := base_pos + Vector2(0, -2.0 if compact else (-3.0 if nonattack else -4.0))
 	var dur := maxf(order.visual_sec, 0.01)
 	var up_t := maxf(dur * 0.45, 0.02)
 	var down_t := maxf(dur * 0.55, 0.02)
@@ -722,8 +738,10 @@ func _play_status_target_pop(order: StatusPopPresentationOrder) -> void:
 
 	_cache_base_art_transform_if_needed()
 	var base_scale := _get_base_art_scale()
-	var compact := StringName(order.presentation_mode) == &"compact_followup"
-	var pulse_scale := base_scale * (1.05 if compact else 1.08)
+	var mode := StringName(order.presentation_mode)
+	var compact := mode == &"compact_followup"
+	var nonattack := mode == &"effect_sequence_nonattack"
+	var pulse_scale := base_scale * (1.05 if compact else (1.06 if nonattack else 1.08))
 	var dur := maxf(order.visual_sec, 0.01)
 	var up_t := maxf(dur * 0.40, 0.02)
 	var down_t := maxf(dur * 0.60, 0.02)

@@ -5,6 +5,10 @@ class_name NPCHealSequence extends NPCEffectSequence
 func execute(ctx: NPCAIContext) -> void:
 	if ctx == null or bool(ctx.forecast) or ctx.api == null or !is_sequence_executable(ctx):
 		return
+	var runtime := ctx.runtime if ctx.runtime != null else (ctx.api.runtime if ctx.api != null else null)
+	if runtime == null:
+		push_warning("npc_heal_sequence.gd execute(): missing runtime")
+		return
 
 	var params: Dictionary = ctx.params if ctx.params else {}
 	var actor_id := ctx.get_actor_id()
@@ -30,7 +34,7 @@ func execute(ctx: NPCAIContext) -> void:
 			continue
 
 		var heal_ctx := HealContext.new(actor_id, target_id, flat_amount, of_total, of_missing)
-		var healed := ctx.api.heal(heal_ctx)
+		var healed := runtime.run_heal_action(heal_ctx, actor_id)
 		if healed > 0:
 			_append_unique_affected_id(ctx, target_id)
 

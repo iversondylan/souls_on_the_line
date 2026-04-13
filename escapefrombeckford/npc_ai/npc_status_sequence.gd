@@ -62,23 +62,23 @@ func execute(ctx: NPCAIContext) -> void:
 	var intensity := int(params.get(Keys.STATUS_INTENSITY, 0))
 	var duration := int(params.get(Keys.STATUS_DURATION, 0))
 	var pending := bool(params.get(Keys.STATUS_PENDING, false))
-
+	var status_ctx := StatusContext.new()
+	status_ctx.actor_id = actor_id
+	status_ctx.source_id = source_id
+	status_ctx.target_id = int(resolved_target_ids[0])
+	status_ctx.target_ids = resolved_target_ids
+	status_ctx.status_id = status_id
+	status_ctx.intensity = intensity
+	status_ctx.duration = duration
+	status_ctx.pending = pending
+	status_ctx.reason = "npc_status_action"
+	status_ctx.presentation_hint = (
+		&"embedded_summon_candidate"
+		if _all_targets_are_summoned(ctx.summoned_ids, resolved_target_ids)
+		else &"standalone"
+	)
+	runtime.run_status_action(status_ctx)
 	for target_id in resolved_target_ids:
-		var status_ctx := StatusContext.new()
-		status_ctx.actor_id = actor_id
-		status_ctx.source_id = source_id
-		status_ctx.target_id = int(target_id)
-		status_ctx.status_id = status_id
-		status_ctx.intensity = intensity
-		status_ctx.duration = duration
-		status_ctx.pending = pending
-		status_ctx.reason = "npc_status_action"
-		status_ctx.presentation_hint = (
-			&"embedded_summon_candidate"
-			if _has_unit_id(ctx.summoned_ids, int(target_id))
-			else &"standalone"
-		)
-		runtime.run_status_action(status_ctx)
 		_append_unit_id(ctx.affected_ids, int(target_id))
 
 func _append_unit_id(arr: PackedInt32Array, unit_id: int) -> void:
@@ -96,3 +96,11 @@ func _has_unit_id(arr: PackedInt32Array, unit_id: int) -> bool:
 		if int(existing_id) == unit_id:
 			return true
 	return false
+
+func _all_targets_are_summoned(summoned_ids: PackedInt32Array, target_ids: PackedInt32Array) -> bool:
+	if target_ids.is_empty():
+		return false
+	for target_id in target_ids:
+		if !_has_unit_id(summoned_ids, int(target_id)):
+			return false
+	return true

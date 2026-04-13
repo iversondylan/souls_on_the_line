@@ -42,13 +42,21 @@ class ParsedNpcAttackTurn extends RefCounted:
 
 class TopLevelTurnSegment extends RefCounted:
 	var kind: StringName = &""
+	var sequence_kind: StringName = &""
 	var scope_id: int = 0
+	var scope_ids: Array[int] = []
+	var scope_kind: int = -1
 	var actor_id: int = 0
+	var effect_package_index: int = -1
+	var compact_to_previous: bool = false
 	var events: Array[BattleEvent] = []
 	var status_events: Array[BattleEvent] = []
 	var summon_events: Array[BattleEvent] = []
+	var heal_events: Array[BattleEvent] = []
+	var move_events: Array[BattleEvent] = []
 	var target_ids: Array[int] = []
 	var summoned_ids: Array[int] = []
+	var parsed_attack: ParsedNpcAttackTurn = null
 
 func compile_actor_turn(turn_events: Array[BattleEvent]) -> TurnTimeline:
 	var timeline := TurnTimeline.new()
@@ -59,8 +67,12 @@ func compile_actor_turn(turn_events: Array[BattleEvent]) -> TurnTimeline:
 	timeline.group_index = _find_group_index(turn_events)
 	timeline.is_player = false
 	var beats: Array[TurnBeat] = []
+	var packaged_turn := _build_scope_driven_package_turn(turn_events)
 
-	if _is_attack_turn(turn_events):
+	if !packaged_turn.is_empty():
+		timeline.action_kind = packaged_turn.get("action_kind", &"generic")
+		beats = packaged_turn.get("beats", [])
+	elif _is_attack_turn(turn_events):
 		timeline.action_kind = &"attack"
 		var parsed_scope_attack := _parse_scope_driven_attack_turn(turn_events)
 		if parsed_scope_attack != null:
@@ -89,6 +101,576 @@ func compile_actor_turn(turn_events: Array[BattleEvent]) -> TurnTimeline:
 
 	timeline.beats = _ensure_lossless_beats(timeline.action_kind, turn_events, beats)
 	return timeline
+
+
+func _build_scope_driven_package_turn(turn_events: Array[BattleEvent]) -> Dictionary:
+	var actor_id := _find_actor_id(turn_events)
+	if actor_id <= 0:
+		return {}
+
+	var scope_ranges := _build_scope_ranges(turn_events)
+	if scope_ranges.is_empty():
+		return {}
+
+	var compiled_turn_scope_id := _find_compiled_turn_scope_id(turn_events, actor_id)
+	if compiled_turn_scope_id <= 0:
+		return {}
+
+	var child_scope_ids := _find_direct_child_scope_ids(turn_events, compiled_turn_scope_id)
+	if child_scope_ids.is_empty():
+		return {}
+
+	var segments := _parse_top_level_package_segments(turn_events, scope_ranges, compiled_turn_scope_id, child_scope_ids)
+	if segments.is_empty():
+		return {}
+
+	var group_index := _find_group_index(turn_events)
+	var external_events := _collect_top_level_package_external_events(turn_events, scope_ranges, compiled_turn_scope_id, child_scope_ids)
+	var leading: Array[BattleEvent] = external_events.get("leading", [])
+	var trailing: Array[BattleEvent] = external_events.get("trailing", [])
+	var beats: Array[TurnBeat] = []
+	var focus_targets := _collect_eventual_focus_targets_from_top_level_segments(segments)
+	var focus_beat := _make_basic_focus_beat(0.0, actor_id, focus_targets)
+	for event in leading:
+		focus_beat.events.append(event)
+	if !segments.is_empty() and StringName(segments[0].kind) == &"attack":
+		for layout_order in _find_pre_attack_group_layouts(turn_events, group_index):
+			focus_beat.orders.append(layout_order)
+	beats.append(focus_beat)
+
+	var current_q := 1.0
+	var previous_followthrough_beat: TurnBeat = null
+	var last_work_q := 0.0
+	var action_kind: StringName = StringName(segments[0].kind)
+	var has_attack := false
+
+	for segment in segments:
+		if segment == null:
+			continue
+		if StringName(segment.kind) == &"attack":
+			has_attack = true
+			action_kind = &"attack"
+
+		if bool(segment.compact_to_previous) and previous_followthrough_beat != null:
+			_merge_compacted_segment_into_beat(previous_followthrough_beat, segment)
+			continue
+
+		match StringName(segment.kind):
+			&"attack":
+				var built := _build_scope_driven_attack_package_beats(
+					segment.parsed_attack,
+					turn_events,
+					current_q
+				)
+				var attack_beats: Array[TurnBeat] = built.get("beats", [])
+				for beat in attack_beats:
+					beats.append(beat)
+				previous_followthrough_beat = built.get("followthrough_beat", null)
+				last_work_q = float(built.get("last_work_q", current_q))
+				current_q = _next_on_grid_beat_after(last_work_q)
+			&"summon":
+				var summon_windup := _make_summon_windup_beat(current_q, actor_id, segment.summon_events)
+				var summon_pop := _make_summon_pop_beat(current_q + 1.0, actor_id, segment.summon_events)
+				_tag_beat(summon_windup, [&"windup"])
+				_tag_beat(summon_pop, [&"followthrough"])
+				beats.append(summon_windup)
+				beats.append(summon_pop)
+				previous_followthrough_beat = summon_pop
+				last_work_q = current_q + 1.0
+				current_q += 2.0
+			_:
+				var nonattack := _build_effect_sequence_package_beats(current_q, segment)
+				var nonattack_beats: Array[TurnBeat] = nonattack.get("beats", [])
+				for beat in nonattack_beats:
+					beats.append(beat)
+				previous_followthrough_beat = nonattack.get("followthrough_beat", null)
+				last_work_q = float(nonattack.get("last_work_q", current_q + 1.0))
+				current_q += 2.0
+
+	var clear_q := maxi(current_q, _next_on_grid_beat_after(last_work_q))
+	clear_q = _enforce_min_clear_focus_q_for_self_death(clear_q, actor_id, turn_events)
+	var layout_orders := _find_post_action_group_layouts(turn_events, group_index)
+	beats.append(_make_clear_focus_beat(clear_q, actor_id, trailing, layout_orders))
+	if has_attack:
+		action_kind = &"attack"
+	return {
+		"action_kind": action_kind,
+		"beats": _sort_beats(beats),
+	}
+
+
+func _parse_top_level_package_segments(
+	events: Array[BattleEvent],
+	scope_ranges: Dictionary,
+	compiled_turn_scope_id: int,
+	child_scope_ids: Array[int]
+) -> Array[TopLevelTurnSegment]:
+	var out: Array[TopLevelTurnSegment] = []
+	var group_index := _find_group_index(events)
+	var active_segment: TopLevelTurnSegment = null
+
+	for scope_id in child_scope_ids:
+		var segment := _build_top_level_package_segment(events, scope_ranges, int(scope_id), group_index)
+		if segment == null:
+			continue
+		if _should_merge_top_level_package_segments(active_segment, segment):
+			_merge_top_level_package_segments(active_segment, segment)
+			continue
+		active_segment = segment
+		out.append(segment)
+
+	return out
+
+
+func _build_top_level_package_segment(
+	events: Array[BattleEvent],
+	scope_ranges: Dictionary,
+	scope_id: int,
+	group_index: int
+) -> TopLevelTurnSegment:
+	var scope_range: Dictionary = scope_ranges.get(scope_id, {})
+	var scope_kind := int(scope_range.get("kind", -1))
+	if !_is_top_level_effect_package_scope_kind(scope_kind):
+		return null
+
+	var begin_idx := int(scope_range.get("begin", -1))
+	var end_idx := int(scope_range.get("end", -1))
+	if begin_idx < 0 or end_idx < 0 or end_idx <= begin_idx:
+		return null
+
+	var scope_data: Dictionary = scope_range.get("data", {})
+	var segment := TopLevelTurnSegment.new()
+	segment.scope_id = scope_id
+	segment.scope_ids.append(scope_id)
+	segment.scope_kind = scope_kind
+	segment.actor_id = int(scope_range.get("actor_id", 0))
+	segment.effect_package_index = int(scope_data.get(Keys.EFFECT_PACKAGE_INDEX, -1))
+	segment.compact_to_previous = bool(scope_data.get(Keys.COMPACT_TO_PREVIOUS, false))
+	segment.sequence_kind = _top_level_segment_sequence_kind(scope_kind, scope_data)
+	segment.kind = segment.sequence_kind
+
+	if scope_kind == int(Scope.Kind.ATTACK):
+		segment.kind = &"attack"
+		segment.parsed_attack = _parse_scope_driven_attack_scope(events, scope_ranges, scope_id, group_index)
+		if segment.parsed_attack != null:
+			segment.target_ids = segment.parsed_attack.focus_target_ids.duplicate()
+
+	for idx in range(begin_idx + 1, end_idx):
+		var event: BattleEvent = events[idx]
+		if event == null or _is_structural_ignored_event(event):
+			continue
+		segment.events.append(event)
+
+		match int(event.type):
+			BattleEvent.Type.SUMMONED:
+				segment.summon_events.append(event)
+				var summoned_id := int(event.data.get(Keys.SUMMONED_ID, 0)) if event.data != null else 0
+				if summoned_id > 0 and !segment.summoned_ids.has(summoned_id):
+					segment.summoned_ids.append(summoned_id)
+			BattleEvent.Type.STATUS, BattleEvent.Type.STATUS_CHANGED:
+				segment.status_events.append(event)
+			BattleEvent.Type.HEAL_APPLIED:
+				segment.heal_events.append(event)
+			BattleEvent.Type.MOVED:
+				segment.move_events.append(event)
+
+	if segment.target_ids.is_empty():
+		segment.target_ids = _collect_targets_for_top_level_segment(segment, scope_data)
+	return segment
+
+
+func _should_merge_top_level_package_segments(
+	left: TopLevelTurnSegment,
+	right: TopLevelTurnSegment
+) -> bool:
+	if left == null or right == null:
+		return false
+	if int(left.effect_package_index) < 0 or int(right.effect_package_index) < 0:
+		return false
+	if int(left.effect_package_index) != int(right.effect_package_index):
+		return false
+	if int(left.actor_id) != int(right.actor_id):
+		return false
+	return true
+
+
+func _merge_top_level_package_segments(target: TopLevelTurnSegment, source: TopLevelTurnSegment) -> void:
+	if target == null or source == null:
+		return
+
+	for scope_id in source.scope_ids:
+		if !target.scope_ids.has(int(scope_id)):
+			target.scope_ids.append(int(scope_id))
+
+	for event in source.events:
+		if event != null and !target.events.has(event):
+			target.events.append(event)
+	for event in source.status_events:
+		if event != null and !target.status_events.has(event):
+			target.status_events.append(event)
+	for event in source.summon_events:
+		if event != null and !target.summon_events.has(event):
+			target.summon_events.append(event)
+	for event in source.heal_events:
+		if event != null and !target.heal_events.has(event):
+			target.heal_events.append(event)
+	for event in source.move_events:
+		if event != null and !target.move_events.has(event):
+			target.move_events.append(event)
+
+	var seen_targets := {}
+	for target_id in target.target_ids:
+		seen_targets[int(target_id)] = true
+	for target_id in source.target_ids:
+		var cid := int(target_id)
+		if cid > 0 and !seen_targets.has(cid):
+			seen_targets[cid] = true
+			target.target_ids.append(cid)
+
+	var seen_summoned := {}
+	for summoned_id in target.summoned_ids:
+		seen_summoned[int(summoned_id)] = true
+	for summoned_id in source.summoned_ids:
+		var cid := int(summoned_id)
+		if cid > 0 and !seen_summoned.has(cid):
+			seen_summoned[cid] = true
+			target.summoned_ids.append(cid)
+
+	if target.parsed_attack == null and source.parsed_attack != null:
+		target.parsed_attack = source.parsed_attack
+	if target.kind == &"":
+		target.kind = source.kind
+	if target.sequence_kind == &"":
+		target.sequence_kind = source.sequence_kind
+
+
+func _is_top_level_effect_package_scope_kind(scope_kind: int) -> bool:
+	return scope_kind == int(Scope.Kind.ATTACK) \
+		or scope_kind == int(Scope.Kind.SUMMON_ACTION) \
+		or scope_kind == int(Scope.Kind.STATUS_ACTION) \
+		or scope_kind == int(Scope.Kind.MOVE) \
+		or scope_kind == int(Scope.Kind.HEAL_ACTION)
+
+
+func _top_level_segment_sequence_kind(scope_kind: int, scope_data: Dictionary) -> StringName:
+	var explicit_kind := StringName(scope_data.get(Keys.EFFECT_SEQUENCE_KIND, &""))
+	if explicit_kind != &"":
+		return explicit_kind
+	match scope_kind:
+		Scope.Kind.ATTACK:
+			return &"attack"
+		Scope.Kind.SUMMON_ACTION:
+			return &"summon"
+		Scope.Kind.STATUS_ACTION:
+			return &"status"
+		Scope.Kind.MOVE:
+			return &"move"
+		Scope.Kind.HEAL_ACTION:
+			return &"heal"
+		_:
+			return &"generic"
+
+
+func _collect_targets_for_top_level_segment(segment: TopLevelTurnSegment, scope_data: Dictionary) -> Array[int]:
+	if segment == null:
+		return []
+	if StringName(segment.kind) == &"summon":
+		var summon_targets := _collect_targets_from_summon_events(segment.summon_events)
+		if !summon_targets.is_empty():
+			return summon_targets
+	if !segment.events.is_empty():
+		var event_targets := _collect_targets_from_events(segment.events)
+		if !event_targets.is_empty():
+			return event_targets
+
+	var out: Array[int] = []
+	var seen := {}
+	if scope_data.has(Keys.TARGET_IDS):
+		for tid in scope_data.get(Keys.TARGET_IDS, []):
+			var cid := int(tid)
+			if cid > 0 and !seen.has(cid):
+				seen[cid] = true
+				out.append(cid)
+	elif int(scope_data.get(Keys.TARGET_ID, 0)) > 0:
+		out.append(int(scope_data.get(Keys.TARGET_ID, 0)))
+
+	if out.is_empty() and StringName(segment.kind) == &"summon":
+		for summoned_id in segment.summoned_ids:
+			var cid := int(summoned_id)
+			if cid > 0 and !seen.has(cid):
+				seen[cid] = true
+				out.append(cid)
+
+	return out
+
+
+func _collect_top_level_package_external_events(
+	events: Array[BattleEvent],
+	scope_ranges: Dictionary,
+	compiled_turn_scope_id: int,
+	child_scope_ids: Array[int]
+) -> Dictionary:
+	var leading: Array[BattleEvent] = []
+	var trailing: Array[BattleEvent] = []
+	var scope_range: Dictionary = scope_ranges.get(compiled_turn_scope_id, {})
+	var begin_idx := int(scope_range.get("begin", -1))
+	var end_idx := int(scope_range.get("end", -1))
+	if begin_idx < 0 or end_idx < 0:
+		return {
+			"leading": leading,
+			"trailing": trailing,
+		}
+
+	var first_child_begin := end_idx
+	var last_child_end := begin_idx
+	for child_scope_id in child_scope_ids:
+		var child_range: Dictionary = scope_ranges.get(int(child_scope_id), {})
+		first_child_begin = mini(first_child_begin, int(child_range.get("begin", end_idx)))
+		last_child_end = maxi(last_child_end, int(child_range.get("end", begin_idx)))
+
+	for idx in range(begin_idx + 1, first_child_begin):
+		var event: BattleEvent = events[idx]
+		if event == null or _is_structural_ignored_event(event):
+			continue
+		leading.append(event)
+
+	for idx in range(last_child_end + 1, end_idx):
+		var event: BattleEvent = events[idx]
+		if event == null or _is_structural_ignored_event(event):
+			continue
+		trailing.append(event)
+
+	return {
+		"leading": leading,
+		"trailing": trailing,
+	}
+
+
+func _collect_eventual_focus_targets_from_top_level_segments(segments: Array[TopLevelTurnSegment]) -> Array[int]:
+	var out: Array[int] = []
+	var seen := {}
+
+	for segment in segments:
+		if segment == null:
+			continue
+		if StringName(segment.kind) == &"attack" and segment.parsed_attack != null:
+			_append_unique_target_ids(out, seen, segment.parsed_attack.focus_target_ids)
+			continue
+		_append_unique_target_ids(out, seen, segment.target_ids)
+
+	return out
+
+
+func _build_scope_driven_attack_package_beats(
+	parsed: ParsedNpcAttackTurn,
+	turn_events: Array[BattleEvent],
+	windup_q: float
+) -> Dictionary:
+	var beats: Array[TurnBeat] = []
+	if parsed == null or parsed.analysis == null or parsed.direct_strikes.is_empty():
+		return {
+			"beats": beats,
+			"last_work_q": windup_q,
+			"followthrough_beat": null,
+		}
+
+	var windup_beat := _make_ranged_windup_beat(windup_q, parsed.analysis) if parsed.attack_mode == int(Attack.Mode.RANGED) else _make_melee_windup_beat(windup_q, parsed.analysis)
+	_tag_beat(windup_beat, [&"windup"])
+	beats.append(windup_beat)
+
+	var next_window_base_q := windup_q + 1.0
+	var last_work_q := windup_q
+	var previous_direct_strike: ParsedDirectStrike = null
+	var final_followthrough_beat: TurnBeat = windup_beat
+
+	for window_index in range(parsed.target_windows.size()):
+		var window := parsed.target_windows[window_index]
+		if window == null or window.strikes.is_empty():
+			continue
+
+		window.base_q = next_window_base_q
+		var segment_start := 0
+		var local_base_q := window.base_q
+
+		while segment_start < window.strikes.size():
+			var segment_end := _find_reaction_segment_end(window.strikes, segment_start)
+			var segment_count := segment_end - segment_start + 1
+			var segment_span_beats := _window_span_beats(segment_count)
+			var segment_shift_q := 0.5 * float(segment_span_beats - 1)
+
+			for local_index in range(segment_count):
+				var strike := window.strikes[segment_start + local_index]
+				if strike == null:
+					continue
+
+				var impact_q := local_base_q + segment_shift_q + 0.5 * float(local_index)
+				var is_window_start := segment_start == 0 and local_index == 0
+
+				if parsed.attack_mode == int(Attack.Mode.RANGED):
+					var fire_q := impact_q - 0.5
+					if (
+						strike.info != null
+						and !strike.info.is_cleave
+						and previous_direct_strike != null
+						and previous_direct_strike.info != null
+						and previous_direct_strike.info.is_cleave
+					):
+						fire_q += 0.001
+						impact_q += 0.001
+					_add_ranged_direct_strike_to_beats(beats, parsed.analysis, strike, fire_q, impact_q, is_window_start)
+				else:
+					_add_melee_direct_strike_to_beats(beats, parsed.analysis, strike, impact_q, is_window_start)
+
+				last_work_q = maxf(last_work_q, impact_q)
+				previous_direct_strike = strike
+				final_followthrough_beat = _find_or_make_beat(beats, impact_q)
+
+			var terminal_strike := window.strikes[segment_end]
+			if terminal_strike != null and !terminal_strike.reactions.is_empty():
+				var reaction_q := _next_on_grid_beat_after(last_work_q)
+				for reaction in terminal_strike.reactions:
+					var reaction_beat := _make_delayed_reaction_beat(reaction_q, reaction)
+					beats.append(reaction_beat)
+					last_work_q = reaction_q
+					reaction_q += 1.0
+				local_base_q = _next_on_grid_beat_after(last_work_q)
+			else:
+				local_base_q = _next_on_grid_beat_after(last_work_q)
+
+			segment_start = segment_end + 1
+
+		next_window_base_q = local_base_q
+
+	return {
+		"beats": beats,
+		"last_work_q": last_work_q,
+		"followthrough_beat": final_followthrough_beat,
+	}
+
+
+func _build_effect_sequence_package_beats(beat_q: float, segment: TopLevelTurnSegment) -> Dictionary:
+	var beats: Array[TurnBeat] = []
+	var targets := segment.target_ids.duplicate()
+	var windup := _make_effect_sequence_windup_beat(beat_q, segment.actor_id, targets)
+	var followthrough := _make_effect_sequence_followthrough_beat(
+		beat_q + 1.0,
+		segment.actor_id,
+		targets,
+		segment.events,
+		segment.status_events
+	)
+	beats.append(windup)
+	beats.append(followthrough)
+	return {
+		"beats": beats,
+		"last_work_q": beat_q + 1.0,
+		"followthrough_beat": followthrough,
+	}
+
+
+func _make_effect_sequence_windup_beat(
+	beat_q: float,
+	actor_id: int,
+	target_ids: Array[int],
+	presentation_mode: StringName = &"effect_sequence_nonattack",
+	visual_sec: float = 0.14
+) -> TurnBeat:
+	var beat := _make_status_windup_beat(beat_q, actor_id, target_ids, presentation_mode, false, visual_sec)
+	beat.label = "effect_sequence_windup"
+	_tag_beat(beat, [&"windup"])
+	return beat
+
+
+func _make_effect_sequence_followthrough_beat(
+	beat_q: float,
+	actor_id: int,
+	target_ids: Array[int],
+	events: Array[BattleEvent],
+	status_events: Array[BattleEvent],
+	presentation_mode: StringName = &"effect_sequence_nonattack",
+	visual_sec: float = 0.16
+) -> TurnBeat:
+	var beat := TurnBeat.new()
+	beat.beat_q = beat_q
+	beat.label = "effect_sequence_followthrough"
+	_tag_beat(beat, [&"followthrough"])
+
+	if !status_events.is_empty():
+		var pop := _make_status_pop_beat(beat_q, actor_id, status_events, presentation_mode, false, visual_sec)
+		for order in pop.orders:
+			beat.orders.append(order)
+		for event in pop.events:
+			beat.events.append(event)
+	else:
+		var safe_targets := target_ids.duplicate()
+		if safe_targets.is_empty() and actor_id > 0:
+			safe_targets.append(actor_id)
+		for target_id in safe_targets:
+			var order := StatusPopPresentationOrder.new()
+			order.kind = PresentationOrder.Kind.STATUS_POP
+			order.actor_id = actor_id
+			order.target_ids = [int(target_id)]
+			order.visual_sec = visual_sec
+			order.source_id = actor_id
+			order.target_id = int(target_id)
+			order.presentation_mode = presentation_mode
+			beat.orders.append(order)
+
+	for event in events:
+		if event == null or beat.events.has(event):
+			continue
+		beat.events.append(event)
+
+	for order in _make_group_layout_orders_from_events(events, -1):
+		beat.orders.append(order)
+
+	return beat
+
+
+func _merge_compacted_segment_into_beat(target_beat: TurnBeat, segment: TopLevelTurnSegment) -> void:
+	if target_beat == null or segment == null:
+		return
+
+	var source_beat: TurnBeat = null
+	if StringName(segment.kind) == &"summon":
+		source_beat = _make_summon_pop_beat(target_beat.beat_q, segment.actor_id, segment.summon_events)
+	else:
+		source_beat = _make_effect_sequence_followthrough_beat(
+			target_beat.beat_q,
+			segment.actor_id,
+			segment.target_ids,
+			segment.events,
+			segment.status_events,
+			&"compact_followup",
+			0.12
+		)
+		var compact_windup := _make_effect_sequence_windup_beat(
+			target_beat.beat_q,
+			segment.actor_id,
+			segment.target_ids,
+			&"compact_followup",
+			0.10
+		)
+		_merge_beat_contents(target_beat, compact_windup)
+
+	_merge_beat_contents(target_beat, source_beat)
+
+
+func _merge_beat_contents(target_beat: TurnBeat, source_beat: TurnBeat) -> void:
+	if target_beat == null or source_beat == null:
+		return
+
+	for tag in source_beat.tags:
+		var name := StringName(tag)
+		if !target_beat.tags.has(name):
+			target_beat.tags.append(name)
+
+	for order in source_beat.orders:
+		target_beat.orders.append(order)
+
+	for event in source_beat.events:
+		if !target_beat.events.has(event):
+			target_beat.events.append(event)
 
 
 func _build_scope_mixed_nonattack_turn(turn_events: Array[BattleEvent]) -> Dictionary:
@@ -1128,6 +1710,7 @@ func _build_scope_ranges(events: Array[BattleEvent]) -> Dictionary:
 				"kind": int(event.scope_kind),
 				"parent": int(event.parent_scope_id),
 				"actor_id": int(event.data.get(Keys.ACTOR_ID, 0)) if event.data != null else 0,
+				"data": event.data.duplicate(true) if event.data != null else {},
 			}
 		elif int(event.type) == int(BattleEvent.Type.SCOPE_END):
 			if ranges.has(int(event.scope_id)):
@@ -2800,6 +3383,13 @@ func _strike_has_chain_continuation(analysis: AttackAnalysis, strike_index: int)
 
 
 func _find_post_action_group_layouts(
+	events: Array[BattleEvent],
+	fallback_group_index: int
+) -> Array[GroupLayoutPresentationOrder]:
+	return _make_group_layout_orders_from_events(events, fallback_group_index)
+
+
+func _make_group_layout_orders_from_events(
 	events: Array[BattleEvent],
 	fallback_group_index: int
 ) -> Array[GroupLayoutPresentationOrder]:

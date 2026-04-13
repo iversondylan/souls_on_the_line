@@ -9,6 +9,7 @@ var source_id: int = 0
 
 #var target: Fighter = null
 var target_id: int = 0
+var target_ids: PackedInt32Array = PackedInt32Array()
 
 # "what to apply"
 var status_id: StringName = &""

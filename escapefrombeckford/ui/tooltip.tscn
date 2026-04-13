@@ -16,8 +16,8 @@ script = ExtResource("2_o3msy")
 
 [node name="PanelContainer" type="PanelContainer" parent="." unique_id=2127930944]
 layout_mode = 0
-offset_right = 320.0
-offset_bottom = 200.0
+offset_right = 400.0
+offset_bottom = 260.0
 mouse_filter = 2
 theme = ExtResource("2_hoai8")
 

@@ -33,6 +33,9 @@ var _battle_end_arcana_fired: bool = false
 var _pending_player_turn_draw_ctx: DrawContext = null
 var _deferred_player_input_ready: bool = false
 var _deferred_player_input_ready_draw_amount_override: int = -1
+var _active_effect_package_index: int = -1
+var _active_effect_sequence_kind: StringName = &""
+var _active_effect_compact_to_previous: bool = false
 
 
 # ============================================================================
@@ -61,6 +64,7 @@ func reset_runtime_state() -> void:
 	_pending_player_turn_draw_ctx = null
 	_deferred_player_input_ready = false
 	_deferred_player_input_ready_draw_amount_override = -1
+	_clear_active_effect_package_metadata()
 
 func _ensure_turn_flow_query_host_initialized() -> void:
 	if host == null:
@@ -707,7 +711,8 @@ func run_npc_turn(cid: int) -> void:
 		if sm != null:
 			sm.change_state_sim(ctx)
 
-	for pkg: NPCEffectPackage in action.effect_packages:
+	for i in range(action.effect_packages.size()):
+		var pkg: NPCEffectPackage = action.effect_packages[i]
 		if pkg == null:
 			continue
 
@@ -723,8 +728,10 @@ func run_npc_turn(cid: int) -> void:
 
 		var effect_has_execute := pkg.effect != null and pkg.effect.has_method("execute")
 
+		_set_active_effect_package_metadata(i, pkg)
 		if effect_has_execute:
 			pkg.effect.execute(ctx)
+		_clear_active_effect_package_metadata()
 
 	_update_action_spree_state(profile, ctx.state, idx)
 
@@ -761,12 +768,17 @@ func run_attack(ctx: AttackContext) -> bool:
 	targeting_ctx.params = params
 	var any := false
 
-	var attack_scope := _begin_scope(Scope.Kind.ATTACK, "attacker=%d" % attacker_id, attacker_id, {
-		Keys.ACTOR_ID: attacker_id,
-		Keys.ATTACK_MODE: mode,
-		Keys.STRIKES: strikes,
-		Keys.TARGET_TYPE: targeting,
-	})
+	var attack_scope := _begin_scope(
+		Scope.Kind.ATTACK,
+		"attacker=%d" % attacker_id,
+		attacker_id,
+		_with_active_effect_package_scope_metadata({
+			Keys.ACTOR_ID: attacker_id,
+			Keys.ATTACK_MODE: mode,
+			Keys.STRIKES: strikes,
+			Keys.TARGET_TYPE: targeting,
+		})
+	)
 	if attack_scope == null:
 		return false
 
@@ -984,29 +996,74 @@ func run_status_action(ctx: StatusContext) -> void:
 
 	var actor_id := int(ctx.actor_id if ctx.actor_id > 0 else ctx.source_id)
 	var source_id := int(ctx.source_id if ctx.source_id > 0 else actor_id)
-	if int(ctx.target_id) <= 0 or ctx.status_id == &"":
+	if ctx.status_id == &"":
 		return
 
-	var status_scope := _begin_scope(
-		Scope.Kind.STATUS_ACTION,
-		"id=%s tgt=%d" % [String(ctx.status_id), int(ctx.target_id)],
-		actor_id,
-		{
-			Keys.ACTOR_ID: int(actor_id),
-			Keys.SOURCE_ID: int(source_id),
-			Keys.TARGET_ID: int(ctx.target_id),
-			Keys.STATUS_ID: ctx.status_id,
-			Keys.STATUS_PENDING: bool(ctx.pending),
-			Keys.INTENSITY: int(ctx.intensity),
-			Keys.DURATION: int(ctx.duration),
-		}
-	)
-	if status_scope == null:
+	var target_ids := PackedInt32Array()
+	var seen := {}
+	for raw_target_id in ctx.target_ids:
+		var target_id := int(raw_target_id)
+		if target_id <= 0 or seen.has(target_id):
+			continue
+		seen[target_id] = true
+		target_ids.append(target_id)
+	if target_ids.is_empty() and int(ctx.target_id) > 0:
+		target_ids.append(int(ctx.target_id))
+	if target_ids.is_empty():
 		return
 
 	ctx.actor_id = actor_id
 	ctx.source_id = source_id
-	api.apply_status(ctx)
+	ctx.target_ids = target_ids
+	ctx.target_id = int(target_ids[0])
+
+	var status_scope := _begin_scope(
+		Scope.Kind.STATUS_ACTION,
+		"id=%s tgts=%d" % [String(ctx.status_id), int(target_ids.size())],
+		actor_id,
+		_with_active_effect_package_scope_metadata({
+			Keys.ACTOR_ID: int(actor_id),
+			Keys.SOURCE_ID: int(source_id),
+			Keys.TARGET_ID: int(ctx.target_id),
+			Keys.TARGET_IDS: target_ids,
+			Keys.STATUS_ID: ctx.status_id,
+			Keys.STATUS_PENDING: bool(ctx.pending),
+			Keys.INTENSITY: int(ctx.intensity),
+			Keys.DURATION: int(ctx.duration),
+		})
+	)
+	if status_scope == null:
+		return
+
+	var any_applied := false
+	for target_id in target_ids:
+		var target_ctx := StatusContext.new()
+		target_ctx.actor_id = actor_id
+		target_ctx.source_id = source_id
+		target_ctx.target_id = int(target_id)
+		target_ctx.target_ids = target_ids
+		target_ctx.status_id = ctx.status_id
+		target_ctx.duration = int(ctx.duration)
+		target_ctx.intensity = int(ctx.intensity)
+		target_ctx.pending = bool(ctx.pending)
+		target_ctx.op = int(ctx.op)
+		target_ctx.delta_intensity = int(ctx.delta_intensity)
+		target_ctx.delta_duration = int(ctx.delta_duration)
+		target_ctx.before_intensity = int(ctx.before_intensity)
+		target_ctx.before_duration = int(ctx.before_duration)
+		target_ctx.after_intensity = int(ctx.after_intensity)
+		target_ctx.after_duration = int(ctx.after_duration)
+		target_ctx.before_pending = bool(ctx.before_pending)
+		target_ctx.after_pending = bool(ctx.after_pending)
+		target_ctx.tags = ctx.tags.duplicate()
+		target_ctx.reason = String(ctx.reason)
+		target_ctx.presentation_hint = ctx.presentation_hint
+		target_ctx.origin_card_uid = String(ctx.origin_card_uid)
+		target_ctx.origin_arcanum_id = ctx.origin_arcanum_id
+		api.apply_status(target_ctx)
+		any_applied = any_applied or bool(target_ctx.applied)
+
+	ctx.applied = any_applied
 
 	_end_scope(status_scope)
 
@@ -1076,12 +1133,12 @@ func run_realize_pending_statuses(actor_id: int, source_id: int = 0, reason: Str
 		Scope.Kind.STATUS_ACTION,
 		"realize_pending tgt=%d" % int(actor_id),
 		actor_id,
-		{
+		_with_active_effect_package_scope_metadata({
 			Keys.ACTOR_ID: int(actor_id),
 			Keys.SOURCE_ID: int(src_id),
 			Keys.TARGET_ID: int(actor_id),
 			Keys.REASON: String(reason),
-		}
+		})
 	)
 	if status_scope == null:
 		return
@@ -1111,14 +1168,14 @@ func run_summon_action(ctx: SummonContext) -> void:
 		Scope.Kind.SUMMON_ACTION,
 		"count=1 g=%d idx=%d" % [group_index, int(ctx.insert_index)],
 		actor_id,
-		{
+		_with_active_effect_package_scope_metadata({
 			Keys.ACTOR_ID: int(actor_id),
 			Keys.SOURCE_ID: int(source_id),
 			Keys.GROUP_INDEX: int(group_index),
 			Keys.INSERT_INDEX: int(ctx.insert_index),
 			Keys.SUMMON_COUNT: 1,
 			Keys.PROTO: String(ctx.summon_data.resource_path),
-		}
+		})
 	)
 	if summon_scope == null:
 		return
@@ -1143,7 +1200,12 @@ func run_move(ctx: MoveContext) -> void:
 	if int(ctx.index) >= 0:
 		extra[Keys.TO_INDEX] = int(ctx.index)
 
-	var move_scope := _begin_scope(Scope.Kind.MOVE, "actor=%d" % int(ctx.actor_id), int(ctx.actor_id), extra)
+	var move_scope := _begin_scope(
+		Scope.Kind.MOVE,
+		"actor=%d" % int(ctx.actor_id),
+		int(ctx.actor_id),
+		_with_active_effect_package_scope_metadata(extra)
+	)
 	if move_scope == null:
 		return
 	api.resolve_move(ctx)
@@ -1152,6 +1214,35 @@ func run_move(ctx: MoveContext) -> void:
 		engine.notify_move_executed(ctx)
 	_publish_turn_status()
 	_end_scope(move_scope)
+
+
+func run_heal_action(ctx: HealContext, actor_id: int, reason: String = "npc_heal_action") -> int:
+	var api := _api()
+	if api == null or api.state == null or ctx == null:
+		return 0
+	if actor_id <= 0 or int(ctx.target_id) <= 0:
+		return 0
+
+	var heal_scope := _begin_scope(
+		Scope.Kind.HEAL_ACTION,
+		"heal tgt=%d" % int(ctx.target_id),
+		int(actor_id),
+		_with_active_effect_package_scope_metadata({
+			Keys.ACTOR_ID: int(actor_id),
+			Keys.SOURCE_ID: int(ctx.source_id),
+			Keys.TARGET_ID: int(ctx.target_id),
+			Keys.FLAT_AMOUNT: int(ctx.flat_amount),
+			Keys.OF_TOTAL: float(ctx.of_total),
+			Keys.OF_MISSING: float(ctx.of_missing),
+			Keys.REASON: String(reason),
+		})
+	)
+	if heal_scope == null:
+		return 0
+
+	var healed := api.heal(ctx)
+	_end_scope(heal_scope)
+	return healed
 
 
 func run_removal(ctx) -> void:
@@ -1303,6 +1394,46 @@ func _end_scope(handle: ScopeHandle) -> int:
 	if writer == null or handle == null:
 		return 0
 	return writer.scope_end(handle)
+
+
+func _set_active_effect_package_metadata(package_index: int, pkg: NPCEffectPackage) -> void:
+	_active_effect_package_index = int(package_index)
+	_active_effect_sequence_kind = _effect_sequence_kind_for_package(pkg)
+	_active_effect_compact_to_previous = bool(pkg != null and pkg.compact_to_previous)
+
+
+func _clear_active_effect_package_metadata() -> void:
+	_active_effect_package_index = -1
+	_active_effect_sequence_kind = &""
+	_active_effect_compact_to_previous = false
+
+
+func _with_active_effect_package_scope_metadata(extra: Dictionary = {}) -> Dictionary:
+	var out := extra.duplicate(true) if extra != null else {}
+	if _active_effect_package_index < 0:
+		return out
+	out[Keys.EFFECT_PACKAGE_INDEX] = int(_active_effect_package_index)
+	out[Keys.EFFECT_SEQUENCE_KIND] = _active_effect_sequence_kind
+	out[Keys.COMPACT_TO_PREVIOUS] = bool(_active_effect_compact_to_previous)
+	return out
+
+
+func _effect_sequence_kind_for_package(pkg: NPCEffectPackage) -> StringName:
+	if pkg == null or pkg.effect == null:
+		return &""
+	if pkg.effect is NPCAttackSequence:
+		return &"attack"
+	if pkg.effect is NPCSummonSequence:
+		return &"summon"
+	if pkg.effect is NPCStatusSequence:
+		return &"status"
+	if pkg.effect is NPCHealSequence:
+		return &"heal"
+	if pkg.effect is NPCMoveSequence:
+		return &"move"
+	if pkg.effect is RealizePendingStatusesEffectSequence:
+		return &"realize_pending_statuses"
+	return &""
 
 
 func _finish_npc_turn(ctx: NPCAIContext) -> void:

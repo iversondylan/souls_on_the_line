@@ -9,3 +9,4 @@ class_name NPCEffectPackage extends Resource
 # Models in state_models are to modify the the state dictionary referenced
 # in the action's context that belongs to the NPCAIBehavior node.
 @export var state_models: Array[StateModel] = []
+@export var compact_to_previous: bool = false

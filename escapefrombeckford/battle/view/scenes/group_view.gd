@@ -87,6 +87,22 @@ func _flush_layout() -> void:
 	layout_ctx = null
 
 
+func _debug_child_cids() -> Array[int]:
+	var out: Array[int] = []
+	for child in get_children():
+		if child is CombatantView:
+			out.append(int((child as CombatantView).cid))
+	return out
+
+
+func _debug_layout_node_cids(nodes: Array[CombatantView]) -> Array[int]:
+	var out: Array[int] = []
+	for node in nodes:
+		if node != null:
+			out.append(int(node.cid))
+	return out
+
+
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_WM_SIZE_CHANGED:
 		var ctx := GroupLayoutOrder.new()

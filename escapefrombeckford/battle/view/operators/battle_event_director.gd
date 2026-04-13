@@ -58,14 +58,17 @@ func on_director_cue(cue: DirectorCue, gen: int) -> void:
 	if !battle_view._playing or gen != battle_view._playback_gen:
 		return
 
-	#if _cue_has_debug_reaction_tags(cue):
-		#print("[VIEW REACTION] cue q=%.2f label=%s tags=%s %s %s" % [
-			#float(cue.beat_q),
-			#String(cue.label),
-			#str(cue.tags),
-			#battle_view._debug_order_summary(cue.orders),
-			#battle_view._debug_event_summary(cue.events),
-		#])
+	var has_move_diag := false
+	for order in cue.orders:
+		if order != null and int(order.kind) == int(PresentationOrder.Kind.GROUP_LAYOUT):
+			has_move_diag = true
+			break
+	if !has_move_diag:
+		for be in cue.events:
+			if be != null and int(be.type) == int(BattleEvent.Type.MOVED):
+				has_move_diag = true
+				break
+
 
 	for order in cue.orders:
 		_start_order(order)
