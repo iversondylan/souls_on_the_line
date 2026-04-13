@@ -9,14 +9,13 @@ class_name TurnTimelineCompiler extends RefCounted
 # - events: source events resolved on that beat
 # - tags: light metadata used for timing / grouping
 #
-# Preferred compilation flow:
-# 1. Scope-driven package turns
-# 2. Scope-driven attacks
-# 3. Legacy parsed attacks
-# 4. Generic summon/status/fallback turns
+# Compilation flow:
+# 1. Scope-driven package turn (primary path) — extracts top-level effect-package
+#    segments from the actor-turn scope and builds beats per segment kind.
+# 2. Generic fallback — used only when the turn has no recognisable scope structure.
 #
 # The final _ensure_lossless_beats() pass is the safety net: every non-structural
-# event should still land on some beat even if a richer compiler path misses it.
+# event should still land on some beat.
 
 
 # ============================================================================
@@ -88,8 +87,9 @@ class TopLevelTurnSegment extends RefCounted:
 # Entry Point
 # ============================================================================
 
-# Main dispatcher. We always prefer the richest structured path first, then fall
-# back to older/generic builders, and finally reconcile any unassigned events.
+# Main entry point. Compiles a flat stream of BattleEvent records into a
+# TurnTimeline using the scope-driven package path. Falls back to a minimal
+# generic layout only when the turn carries no recognisable scope structure.
 func compile_actor_turn(turn_events: Array[BattleEvent]) -> TurnTimeline:
 	var timeline := TurnTimeline.new()
 	if turn_events.is_empty():
@@ -99,37 +99,14 @@ func compile_actor_turn(turn_events: Array[BattleEvent]) -> TurnTimeline:
 	timeline.group_index = _find_group_index(turn_events)
 	timeline.is_player = false
 	var beats: Array[TurnBeat] = []
-	var packaged_turn := _build_scope_driven_package_turn(turn_events)
 
+	var packaged_turn := _build_scope_driven_package_turn(turn_events)
 	if !packaged_turn.is_empty():
 		timeline.action_kind = packaged_turn.get("action_kind", &"generic")
 		beats = packaged_turn.get("beats", [])
-	elif _is_attack_turn(turn_events):
-		timeline.action_kind = &"attack"
-		var parsed_scope_attack := _parse_scope_driven_attack_turn(turn_events)
-		if parsed_scope_attack != null:
-			beats = _build_scope_driven_attack_beats(parsed_scope_attack, turn_events)
-		else:
-			var parsed_attack := _parse_attack_turn(turn_events)
-			if !parsed_attack.is_empty():
-				beats = _build_attack_beats_from_parsed(parsed_attack, turn_events)
-			else:
-				var analysis := _build_attack_analysis(turn_events)
-				beats = _build_attack_beats(analysis, turn_events)
 	else:
-		var mixed_scope_turn := _build_scope_mixed_nonattack_turn(turn_events)
-		if !mixed_scope_turn.is_empty():
-			timeline.action_kind = mixed_scope_turn.get("action_kind", &"generic")
-			beats = mixed_scope_turn.get("beats", [])
-		elif _is_summon_turn(turn_events):
-			timeline.action_kind = &"summon"
-			beats = _build_summon_beats(turn_events)
-		elif _is_status_turn(turn_events):
-			timeline.action_kind = &"status"
-			beats = _build_status_beats(turn_events)
-		else:
-			timeline.action_kind = &"generic"
-			beats = _build_generic_beats(turn_events)
+		timeline.action_kind = &"generic"
+		beats = _build_generic_beats(turn_events)
 
 	timeline.beats = _ensure_lossless_beats(timeline.action_kind, turn_events, beats)
 	return timeline
@@ -720,248 +697,8 @@ func _merge_beat_contents(target_beat: TurnBeat, source_beat: TurnBeat) -> void:
 
 
 # ============================================================================
-# Scope-Driven Non-Attack Mixed Turns
-# ============================================================================
-
-func _build_scope_mixed_nonattack_turn(turn_events: Array[BattleEvent]) -> Dictionary:
-	var actor_id := _find_actor_id(turn_events)
-	if actor_id <= 0:
-		return {}
-
-	var segments := _parse_top_level_nonattack_segments(turn_events, actor_id)
-	if segments.is_empty():
-		return {}
-
-	var has_summon := false
-	for segment in segments:
-		if segment != null and segment.kind == &"summon":
-			has_summon = true
-			break
-
-	if !has_summon:
-		return {
-			"action_kind": &"status",
-			"beats": _build_status_beats(turn_events),
-		}
-
-	if segments[0].kind != &"summon":
-		return {}
-
-	var beats: Array[TurnBeat] = []
-	var group_index := _find_group_index(turn_events)
-	var layout_orders := _find_post_action_group_layouts(turn_events, group_index)
-	var trailing := _collect_nonattack_trailing_events(turn_events)
-
-	var current_q := 0.0
-	var i := 0
-	var is_first_cluster := true
-
-	while i < segments.size():
-		var segment: TopLevelTurnSegment = segments[i]
-		if segment == null:
-			i += 1
-			continue
-
-		if segment.kind == &"summon":
-			var cluster := _consume_top_level_summon_cluster(segments, i)
-			var summon_events: Array[BattleEvent] = cluster.get("summon_events", [])
-			var embedded_status_events: Array[BattleEvent] = cluster.get("embedded_status_events", [])
-			var focus_targets: Array[int] = cluster.get("focus_targets", [])
-
-			if is_first_cluster:
-				beats.append(_make_basic_focus_beat(0.0, actor_id, focus_targets))
-				beats.append(_make_summon_windup_beat(1.0, actor_id, summon_events))
-				beats.append(_make_summon_pop_beat(2.0, actor_id, summon_events, embedded_status_events))
-				current_q = 3.0
-				is_first_cluster = false
-			else:
-				beats.append(_make_summon_windup_beat(current_q, actor_id, summon_events))
-				beats.append(_make_summon_pop_beat(current_q + 1.0, actor_id, summon_events, embedded_status_events))
-				current_q += 2.0
-
-			i = int(cluster.get("next_index", i + 1))
-			continue
-
-		if segment.kind == &"status":
-			beats.append(_make_compact_status_beat(current_q, actor_id, segment.status_events))
-			current_q += 1.0
-
-		i += 1
-
-	var clear_q := _enforce_min_clear_focus_q_for_self_death(current_q, actor_id, turn_events)
-	beats.append(_make_clear_focus_beat(clear_q, actor_id, trailing, layout_orders))
-	return {
-		"action_kind": &"summon",
-		"beats": _sort_beats(beats),
-	}
-
-
-func _parse_top_level_nonattack_segments(events: Array[BattleEvent], actor_id: int) -> Array[TopLevelTurnSegment]:
-	var out: Array[TopLevelTurnSegment] = []
-	var scope_ranges := _build_scope_ranges(events)
-	if scope_ranges.is_empty():
-		return out
-
-	var actor_turn_scope_id := _find_compiled_turn_scope_id(events, actor_id)
-	if actor_turn_scope_id <= 0:
-		return out
-
-	var child_scope_ids := _find_direct_child_scope_ids(events, actor_turn_scope_id)
-	for scope_id in child_scope_ids:
-		var segment := _build_top_level_nonattack_segment(events, scope_ranges, int(scope_id))
-		if segment != null:
-			out.append(segment)
-
-	return out
-
-
-func _build_top_level_nonattack_segment(
-	events: Array[BattleEvent],
-	scope_ranges: Dictionary,
-	scope_id: int
-) -> TopLevelTurnSegment:
-	var scope_range: Dictionary = scope_ranges.get(scope_id, {})
-	var scope_kind := int(scope_range.get("kind", -1))
-	if scope_kind != int(Scope.Kind.SUMMON_ACTION) and scope_kind != int(Scope.Kind.STATUS_ACTION):
-		return null
-
-	var begin_idx := int(scope_range.get("begin", -1))
-	var end_idx := int(scope_range.get("end", -1))
-	if begin_idx < 0 or end_idx < 0:
-		return null
-
-	var segment := TopLevelTurnSegment.new()
-	segment.kind = &"summon" if scope_kind == int(Scope.Kind.SUMMON_ACTION) else &"status"
-	segment.scope_id = scope_id
-	segment.actor_id = int(scope_range.get("actor_id", 0))
-
-	for idx in range(begin_idx + 1, end_idx):
-		var event: BattleEvent = events[idx]
-		if event == null or _is_structural_ignored_event(event):
-			continue
-		segment.events.append(event)
-
-		match int(event.type):
-			BattleEvent.Type.SUMMONED:
-				segment.summon_events.append(event)
-				var summoned_id := int(event.data.get(Keys.SUMMONED_ID, 0)) if event.data != null else 0
-				if summoned_id > 0 and !segment.summoned_ids.has(summoned_id):
-					segment.summoned_ids.append(summoned_id)
-			BattleEvent.Type.STATUS, BattleEvent.Type.STATUS_CHANGED:
-				segment.status_events.append(event)
-	segment.target_ids = _collect_targets_from_events(segment.events)
-	return segment
-
-
-# Summons often emit immediately-following status work for the newly created
-# unit. Clustering that status into the summon keeps the presentation coherent.
-func _consume_top_level_summon_cluster(segments: Array[TopLevelTurnSegment], start_index: int) -> Dictionary:
-	var summon_events: Array[BattleEvent] = []
-	var embedded_status_events: Array[BattleEvent] = []
-	var focus_targets: Array[int] = []
-	var summoned_ids: Array[int] = []
-	var next_index := start_index
-
-	while next_index < segments.size():
-		var segment: TopLevelTurnSegment = segments[next_index]
-		if segment == null:
-			next_index += 1
-			continue
-
-		if segment.kind == &"summon":
-			for event in segment.summon_events:
-				summon_events.append(event)
-			for target_id in _collect_targets_from_summon_events(segment.summon_events):
-				if !focus_targets.has(target_id):
-					focus_targets.append(target_id)
-			for summoned_id in segment.summoned_ids:
-				if !summoned_ids.has(summoned_id):
-					summoned_ids.append(summoned_id)
-			next_index += 1
-			continue
-
-		if segment.kind == &"status" and _segment_embeds_into_summon(segment, summoned_ids):
-			for event in segment.status_events:
-				embedded_status_events.append(event)
-			next_index += 1
-			continue
-
-		break
-
-	return {
-		"summon_events": summon_events,
-		"embedded_status_events": embedded_status_events,
-		"focus_targets": focus_targets,
-		"summoned_ids": summoned_ids,
-		"next_index": next_index,
-	}
-
-
-func _segment_embeds_into_summon(segment: TopLevelTurnSegment, summoned_ids: Array[int]) -> bool:
-	if segment == null or segment.kind != &"status":
-		return false
-	if segment.target_ids.is_empty() or summoned_ids.is_empty():
-		return false
-
-	for target_id in segment.target_ids:
-		if !summoned_ids.has(int(target_id)):
-			return false
-	return true
-
-
-func _collect_nonattack_trailing_events(events: Array[BattleEvent]) -> Array[BattleEvent]:
-	var trailing: Array[BattleEvent] = []
-	for event in events:
-		if event == null:
-			continue
-		match int(event.type):
-			BattleEvent.Type.SET_INTENT, \
-			BattleEvent.Type.TURN_STATUS, \
-			BattleEvent.Type.MOVED:
-				trailing.append(event)
-	return trailing
-
-
-# ============================================================================
 # Scope-Driven Attack Parsing
 # ============================================================================
-
-func _parse_scope_driven_attack_turn(events: Array[BattleEvent]) -> ParsedNpcAttackTurn:
-	var actor_id := _find_actor_id(events)
-	if actor_id <= 0:
-		return null
-
-	var scope_ranges := _build_scope_ranges(events)
-	if scope_ranges.is_empty():
-		return null
-
-	var compiled_turn_scope_id := _find_compiled_turn_scope_id(events, actor_id)
-	if compiled_turn_scope_id <= 0:
-		return null
-
-	var attack_scope_id := _find_primary_attack_scope_id(events, compiled_turn_scope_id, actor_id)
-	if attack_scope_id <= 0:
-		return null
-
-	var attack_range: Dictionary = scope_ranges.get(attack_scope_id, {})
-	var attack_begin := int(attack_range.get("begin", -1))
-	var attack_end := int(attack_range.get("end", -1))
-	if attack_begin < 0 or attack_end < 0:
-		return null
-
-	var parsed := _parse_scope_driven_attack_scope(
-		events,
-		scope_ranges,
-		attack_scope_id,
-		_find_group_index(events)
-	)
-	if parsed == null:
-		return null
-
-	parsed.leading_events = _collect_pre_attack_events(events, attack_begin)
-	parsed.trailing_events = _collect_post_attack_events(events, attack_end)
-	return parsed
-
 
 # Parse an attack scope into direct strikes plus delayed reactions. This newer
 # path still reuses AttackAnalysis/StrikePresentationInfo so it can share the
@@ -1191,131 +928,6 @@ func _find_reaction_segment_end(strikes: Array[ParsedDirectStrike], start_index:
 	return strikes.size() - 1
 
 
-# Build the beat cadence for a parsed scope-driven attack:
-# focus -> windup -> one or more target windows -> delayed reactions -> clear.
-func _build_scope_driven_attack_beats(parsed: ParsedNpcAttackTurn, turn_events: Array[BattleEvent]) -> Array[TurnBeat]:
-	var beats: Array[TurnBeat] = []
-	if parsed == null or parsed.analysis == null or parsed.direct_strikes.is_empty():
-		return _build_generic_beats(turn_events)
-
-	var focus_beat := _make_basic_focus_beat(0.0, parsed.actor_id, parsed.focus_target_ids)
-	_tag_beat(focus_beat, [&"focus"])
-	for event in parsed.leading_events:
-		focus_beat.events.append(event)
-	for layout_order in _find_pre_attack_group_layouts(turn_events, parsed.group_index):
-		focus_beat.orders.append(layout_order)
-	beats.append(focus_beat)
-
-	var windup_beat := _make_ranged_windup_beat(1.0, parsed.analysis) if parsed.attack_mode == int(Attack.Mode.RANGED) else _make_melee_windup_beat(1.0, parsed.analysis)
-	_tag_beat(windup_beat, [&"windup"])
-	beats.append(windup_beat)
-
-	var next_window_base_q := 2.0
-	var last_work_q := 1.0
-	var previous_direct_strike: ParsedDirectStrike = null
-
-	for window_index in range(parsed.target_windows.size()):
-		var window := parsed.target_windows[window_index]
-		if window == null or window.strikes.is_empty():
-			continue
-
-		window.base_q = next_window_base_q
-		_debug_log_reaction("window=%d base_q=%.2f span=%d strikes=%d targets=%s" % [
-			window_index,
-			float(window.base_q),
-			int(window.window_span_beats),
-			int(window.strikes.size()),
-			str(window.target_ids),
-		])
-
-		var segment_start := 0
-		var local_base_q := window.base_q
-
-		while segment_start < window.strikes.size():
-			var segment_end := _find_reaction_segment_end(window.strikes, segment_start)
-			var segment_count := segment_end - segment_start + 1
-			var segment_span_beats := _window_span_beats(segment_count)
-			var segment_shift_q := 0.5 * float(segment_span_beats - 1)
-
-			for local_index in range(segment_count):
-				var strike := window.strikes[segment_start + local_index]
-				if strike == null:
-					continue
-
-				var impact_q := local_base_q + segment_shift_q + 0.5 * float(local_index)
-				var is_window_start := segment_start == 0 and local_index == 0
-
-				if parsed.attack_mode == int(Attack.Mode.RANGED):
-					var fire_q := impact_q - 0.5
-					if (
-						strike.info != null
-						and !strike.info.is_cleave
-						and previous_direct_strike != null
-						and previous_direct_strike.info != null
-						and previous_direct_strike.info.is_cleave
-					):
-						fire_q += 0.001
-						impact_q += 0.001
-					_add_ranged_direct_strike_to_beats(beats, parsed.analysis, strike, fire_q, impact_q, is_window_start)
-					if strike.info != null and strike.info.is_cleave:
-						_debug_log_reaction("main ranged cleave=%d q=%.2f targets=%s window=%d" % [
-							int(strike.strike_index),
-							float(impact_q),
-							str(strike.target_ids),
-							window_index,
-						])
-					else:
-						_debug_log_reaction("main ranged strike=%d fire_q=%.2f impact_q=%.2f targets=%s window=%d" % [
-							int(strike.strike_index),
-							float(fire_q),
-							float(impact_q),
-							str(strike.target_ids),
-							window_index,
-						])
-				else:
-					_add_melee_direct_strike_to_beats(beats, parsed.analysis, strike, impact_q, is_window_start)
-					_debug_log_reaction("main melee %s=%d q=%.2f targets=%s window=%d" % [
-						"cleave" if strike.info != null and strike.info.is_cleave else "strike",
-						int(strike.strike_index),
-						float(impact_q),
-						str(strike.target_ids),
-						window_index,
-					])
-
-				last_work_q = maxf(last_work_q, impact_q)
-				previous_direct_strike = strike
-
-			var terminal_strike := window.strikes[segment_end]
-			if terminal_strike != null and !terminal_strike.reactions.is_empty():
-				var reaction_q := _next_on_grid_beat_after(last_work_q)
-				for reaction in terminal_strike.reactions:
-					var reaction_beat := _make_delayed_reaction_beat(reaction_q, reaction)
-					beats.append(reaction_beat)
-					_debug_log_reaction("inserted reaction beat strike=%d q=%.2f kind=%s" % [
-						int(terminal_strike.strike_index),
-						float(reaction_q),
-						String(reaction.kind),
-					])
-					last_work_q = reaction_q
-					reaction_q += 1.0
-				local_base_q = _next_on_grid_beat_after(last_work_q)
-			else:
-				local_base_q = _next_on_grid_beat_after(last_work_q)
-
-			segment_start = segment_end + 1
-
-		next_window_base_q = local_base_q
-
-	var clear_q := _next_on_grid_beat_after(last_work_q)
-	clear_q = _enforce_min_clear_focus_q_for_self_death(clear_q, parsed.actor_id, turn_events)
-	var layout_orders := _find_post_action_group_layouts(turn_events, parsed.group_index)
-	var clear_focus := _make_clear_focus_beat(clear_q, parsed.actor_id, parsed.trailing_events, layout_orders)
-	_tag_beat(clear_focus, [&"clear_focus"])
-	beats.append(clear_focus)
-
-	return _sort_beats(beats)
-
-
 func _add_melee_direct_strike_to_beats(
 	beats: Array[TurnBeat],
 	analysis: AttackAnalysis,
@@ -1462,80 +1074,6 @@ func _find_group_index(events: Array[BattleEvent]) -> int:
 		if e.data != null and e.data.has(Keys.GROUP_INDEX):
 			return int(e.data.get(Keys.GROUP_INDEX, -1))
 	return -1
-
-
-func _is_attack_turn(events: Array[BattleEvent]) -> bool:
-	for e in events:
-		if e == null:
-			continue
-		if _is_attack_chain_marker_event_type(int(e.type)):
-			return true
-	return false
-
-
-func _is_summon_turn(events: Array[BattleEvent]) -> bool:
-	var has_summon := false
-	var has_strike := false
-	for e in events:
-		if e == null:
-			continue
-		if int(e.type) == int(BattleEvent.Type.SUMMONED):
-			has_summon = true
-		elif _is_attack_chain_marker_event_type(int(e.type)):
-			has_strike = true
-	return has_summon and !has_strike
-
-
-func _is_status_turn(events: Array[BattleEvent]) -> bool:
-	var has_status := false
-	var has_strike := false
-	var has_summon := false
-	for e in events:
-		if e == null:
-			continue
-		match int(e.type):
-			BattleEvent.Type.STATUS:
-				has_status = true
-			BattleEvent.Type.STRIKE, BattleEvent.Type.CLEAVE:
-				has_strike = true
-			BattleEvent.Type.SUMMONED:
-				has_summon = true
-	return has_status and !has_strike and !has_summon
-
-
-func _parse_attack_turn(events: Array[BattleEvent]) -> Dictionary:
-	var actor_id := _find_actor_id(events)
-	if actor_id <= 0:
-		return {}
-
-	var scope_ranges := _build_scope_ranges(events)
-	if scope_ranges.is_empty():
-		return {}
-
-	var actor_turn_scope_id := _find_compiled_turn_scope_id(events, actor_id)
-	if actor_turn_scope_id <= 0:
-		return {}
-
-	var attack_scope_id := _find_primary_attack_scope_id(events, actor_turn_scope_id, actor_id)
-	if attack_scope_id <= 0:
-		return {}
-
-	var parsed := _parse_attack_scope(events, scope_ranges, attack_scope_id)
-	if parsed.is_empty():
-		return {}
-
-	var attack_range: Dictionary = scope_ranges.get(attack_scope_id, {})
-	var attack_begin := int(attack_range.get("begin", -1))
-	var attack_end := int(attack_range.get("end", -1))
-	if attack_begin < 0 or attack_end < 0:
-		return {}
-
-	parsed["scope_ranges"] = scope_ranges
-	parsed["source_events"] = events
-	parsed["attack_scope_id"] = attack_scope_id
-	parsed["leading"] = _collect_pre_attack_events(events, attack_begin)
-	parsed["trailing"] = _collect_post_attack_events(events, attack_end)
-	return parsed
 
 
 # Older scope-aware attack parser. It predates ParsedNpcAttackTurn, but still
@@ -1824,23 +1362,6 @@ func _find_compiled_turn_scope_id(events: Array[BattleEvent], actor_id: int, inc
 	return 0
 
 
-func _find_primary_attack_scope_id(events: Array[BattleEvent], compiled_turn_scope_id: int, actor_id: int) -> int:
-	for event in events:
-		if event == null:
-			continue
-		if int(event.type) != int(BattleEvent.Type.SCOPE_BEGIN):
-			continue
-		if int(event.scope_kind) != int(Scope.Kind.ATTACK):
-			continue
-		if int(event.parent_scope_id) != int(compiled_turn_scope_id):
-			continue
-		if event.data == null:
-			continue
-		if int(event.data.get(Keys.ACTOR_ID, 0)) == int(actor_id):
-			return int(event.scope_id)
-	return 0
-
-
 func _find_direct_child_scope_ids(events: Array[BattleEvent], parent_scope_id: int, kind: int = -1) -> Array[int]:
 	var out: Array[int] = []
 	for event in events:
@@ -1873,40 +1394,6 @@ func _find_direct_attack_chain_scope_ids(events: Array[BattleEvent], attack_scop
 
 func _is_attack_chain_marker_event_type(event_type: int) -> bool:
 	return int(event_type) == int(BattleEvent.Type.STRIKE) or int(event_type) == int(BattleEvent.Type.CLEAVE)
-
-
-func _collect_pre_attack_events(events: Array[BattleEvent], attack_begin: int) -> Array[BattleEvent]:
-	var leading: Array[BattleEvent] = []
-	for idx in range(maxi(attack_begin, 0)):
-		var event: BattleEvent = events[idx]
-		if event == null:
-			continue
-		match int(event.type):
-			BattleEvent.Type.STATUS, \
-			BattleEvent.Type.STATUS_CHANGED, \
-			BattleEvent.Type.SET_INTENT, \
-			BattleEvent.Type.TURN_STATUS, \
-			BattleEvent.Type.MANA, \
-			BattleEvent.Type.HEAL_APPLIED, \
-			BattleEvent.Type.CHANGE_MAX_HEALTH, \
-			BattleEvent.Type.MODIFY_BATTLE_CARD, \
-			BattleEvent.Type.MOVED:
-				leading.append(event)
-	return leading
-
-
-func _collect_post_attack_events(events: Array[BattleEvent], attack_end: int) -> Array[BattleEvent]:
-	var trailing: Array[BattleEvent] = []
-	for idx in range(attack_end + 1, events.size()):
-		var event: BattleEvent = events[idx]
-		if event == null:
-			continue
-		match int(event.type):
-			BattleEvent.Type.SET_INTENT, \
-			BattleEvent.Type.TURN_STATUS, \
-			BattleEvent.Type.MOVED:
-				trailing.append(event)
-	return trailing
 
 
 func _is_attack_direct_event(event: BattleEvent) -> bool:
@@ -1999,369 +1486,14 @@ func _build_strike_info_from_events(marker: BattleEvent, direct_events: Array[Ba
 	return s
 
 
-func _collect_strike_blocks(events: Array[BattleEvent]) -> Array[Array]:
-	var out: Array[Array] = []
-	var current: Array = []
-
-	for e in events:
-		if e == null:
-			continue
-
-		if _is_attack_chain_marker_event_type(int(e.type)):
-			if !current.is_empty():
-				out.append(current)
-			current = [e]
-			continue
-
-		if current.is_empty():
-			continue
-
-		current.append(e)
-
-	if !current.is_empty():
-		out.append(current)
-
-	return out
-
-
-func _build_attack_analysis(events: Array[BattleEvent]) -> AttackAnalysis:
-	var analysis := AttackAnalysis.new()
-	var blocks := _collect_strike_blocks(events)
-	if blocks.is_empty():
-		return analysis
-
-	var first_strike: BattleEvent = blocks[0][0]
-	analysis.attacker_id = int(first_strike.data.get(Keys.SOURCE_ID, 0)) if first_strike.data != null else 0
-	analysis.attack_mode = int(first_strike.data.get(Keys.ATTACK_MODE, Attack.Mode.MELEE)) if first_strike.data != null else int(Attack.Mode.MELEE)
-	analysis.projectile_scene_path = String(first_strike.data.get(Keys.PROJECTILE_SCENE, "uid://bxmhi3urqmpfh")) if first_strike.data != null else "uid://bxmhi3urqmpfh"
-	var primary_strike_count := 0
-
-	for i in range(blocks.size()):
-		var marker: BattleEvent = blocks[i][0] if !blocks[i].is_empty() else null
-		var display_index := primary_strike_count
-		if marker != null and marker.data != null and bool(marker.data.get(Keys.CLEAVE, false)):
-			display_index = maxi(int(marker.data.get(Keys.ORIGIN_STRIKE_INDEX, primary_strike_count - 1)), 0)
-
-		var strike_info := _build_strike_info_from_block(blocks[i], display_index)
-		if !strike_info.is_cleave:
-			analysis.strikes.append(strike_info)
-			primary_strike_count += 1
-		elif display_index >= 0 and display_index < analysis.strikes.size():
-			analysis.strikes[display_index].has_cleave = true
-		if strike_info.has_lethal_hit:
-			_record_lethal_index(analysis, display_index)
-
-	analysis.strike_count = primary_strike_count
-
-	return analysis
-
-
 func _record_lethal_index(analysis: AttackAnalysis, display_index: int) -> void:
 	if !(display_index in analysis.lethal_indices):
 		analysis.lethal_indices.append(display_index)
 
 
-func _build_strike_info_from_block(block: Array, strike_index: int) -> StrikePresentationInfo:
-	var s := StrikePresentationInfo.new()
-	s.strike_index = strike_index
-	if block.is_empty():
-		return s
-	var direct: Array[BattleEvent] = block.slice(1)
-	_populate_strike_info_from_marker_and_events(s, block[0], direct, strike_index)
-	return s
-
-
-func _build_attack_beats(analysis: AttackAnalysis, turn_events: Array[BattleEvent]) -> Array[TurnBeat]:
-	if analysis == null or analysis.strike_count <= 0:
-		return _build_generic_beats(turn_events)
-
-	if analysis.attack_mode == int(Attack.Mode.RANGED):
-		return _build_ranged_attack_beats(analysis, turn_events)
-
-	return _build_melee_attack_beats(analysis, turn_events)
-
-
-func _build_attack_beats_from_parsed(parsed: Dictionary, turn_events: Array[BattleEvent]) -> Array[TurnBeat]:
-	var analysis: AttackAnalysis = parsed.get("analysis", null)
-	if analysis == null or analysis.strike_count <= 0:
-		return _build_generic_beats(turn_events)
-
-	if analysis.attack_mode == int(Attack.Mode.RANGED):
-		return _build_ranged_attack_beats_from_parsed(parsed, turn_events)
-
-	return _build_melee_attack_beats_from_parsed(parsed, turn_events)
-
-
 # ============================================================================
-# Attack Beat Builders
-# Parsed variants preserve explicit reactions; simpler variants infer a readable
-# cadence from flatter event data.
+# Reaction Beat Construction
 # ============================================================================
-
-func _build_melee_attack_beats_from_parsed(parsed: Dictionary, turn_events: Array[BattleEvent]) -> Array[TurnBeat]:
-	var beats: Array[TurnBeat] = []
-	var analysis: AttackAnalysis = parsed.get("analysis", null)
-	var leading: Array[BattleEvent] = parsed.get("leading", [])
-	var trailing: Array[BattleEvent] = parsed.get("trailing", [])
-	var direct_events_by_strike: Array = parsed.get("direct_events_by_strike", [])
-	var reactions_by_strike: Array = parsed.get("reactions_by_strike", [])
-	var group_index := _find_group_index(turn_events)
-
-	var focus_beat := _make_focus_beat(0.0, analysis)
-	for event in leading:
-		focus_beat.events.append(event)
-	for layout_order in _find_pre_attack_group_layouts(turn_events, group_index):
-		focus_beat.orders.append(layout_order)
-	beats.append(focus_beat)
-	beats.append(_make_melee_windup_beat(1.0, analysis))
-
-	var n := analysis.strike_count
-	var start_q := 2.0
-	if n >= 3:
-		start_q = 2.5
-
-	var reaction_shift_q := 0.0
-	var final_q := 0.0
-
-	for i in range(n):
-		var beat_q := start_q + 0.5 * float(i) + reaction_shift_q
-		var strike_events: Array[BattleEvent] = direct_events_by_strike[i] if i < direct_events_by_strike.size() else []
-		beats.append(_make_melee_strike_beat(beat_q, analysis, i, strike_events))
-		_debug_log_reaction("main melee strike=%d q=%.2f targets=%s events=%s" % [
-			i,
-			beat_q,
-			str(_targets_for_focus_strike(analysis, i)),
-			_debug_event_list_summary(strike_events),
-		])
-		final_q = maxf(final_q, beat_q)
-
-		var reaction_q := beat_q
-		var reactions: Array = reactions_by_strike[i] if i < reactions_by_strike.size() else []
-		for reaction in reactions:
-			reaction_q += 1.0
-			var built := _build_reaction_beats_from_group(parsed, reaction, reaction_q)
-			var reaction_beats: Array = built.get("beats", [])
-			for reaction_beat in reaction_beats:
-				beats.append(reaction_beat)
-			reaction_q = float(built.get("last_q", reaction_q))
-			final_q = maxf(final_q, reaction_q)
-			_debug_log_reaction("inserted melee reaction beat strike=%d q=%.2f kind=%s" % [
-				i,
-				reaction_q,
-				String(reaction.get("kind", &"unknown")),
-			])
-
-		if !reactions.is_empty():
-			# After a settled reaction beat, give the outer melee cadence one clean step
-			# before the next strike starts so it reads as a pause, not a compression.
-			reaction_shift_q += (reaction_q - beat_q) + 0.5
-
-	var clear_q := final_q + _tail_gap_q_for_attack(analysis)
-	clear_q = _enforce_min_clear_focus_q_for_self_death(clear_q, analysis.attacker_id, turn_events)
-	var layout_orders := _find_post_action_group_layouts(turn_events, group_index)
-	beats.append(_make_clear_focus_beat(clear_q, analysis.attacker_id, trailing, layout_orders))
-	return _sort_beats(beats)
-
-
-func _build_ranged_attack_beats_from_parsed(parsed: Dictionary, turn_events: Array[BattleEvent]) -> Array[TurnBeat]:
-	var beats: Array[TurnBeat] = []
-	var analysis: AttackAnalysis = parsed.get("analysis", null)
-	var leading: Array[BattleEvent] = parsed.get("leading", [])
-	var trailing: Array[BattleEvent] = parsed.get("trailing", [])
-	var direct_events_by_strike: Array = parsed.get("direct_events_by_strike", [])
-	var reactions_by_strike: Array = parsed.get("reactions_by_strike", [])
-	var group_index := _find_group_index(turn_events)
-
-	var focus_beat := _make_focus_beat(0.0, analysis)
-	for event in leading:
-		focus_beat.events.append(event)
-	for layout_order in _find_pre_attack_group_layouts(turn_events, group_index):
-		focus_beat.orders.append(layout_order)
-	beats.append(focus_beat)
-	beats.append(_make_ranged_windup_beat(1.0, analysis))
-
-	var n := analysis.strike_count
-	var fire_start_q := 1.5
-	if n >= 3:
-		fire_start_q = 2.0
-
-	var reaction_shift_q := 0.0
-	var final_q := 0.0
-
-	for i in range(n):
-		var fire_q := fire_start_q + 0.5 * float(i) + reaction_shift_q
-		var impact_q := fire_q + 0.5
-		var strike_events: Array[BattleEvent] = direct_events_by_strike[i] if i < direct_events_by_strike.size() else []
-
-		_add_order_to_beat_array(
-			beats,
-			fire_q,
-			_make_focus_order(analysis.attacker_id, _targets_for_focus_strike(analysis, i), 0.20),
-			"ranged_fire_%d" % i
-		)
-		_add_order_to_beat_array(beats, fire_q, _make_ranged_fire_order(analysis, i), "ranged_fire_%d" % i)
-		_add_orders_to_beat_array(beats, impact_q, _make_impact_orders_for_strike(analysis, i, strike_events), "ranged_impact_%d" % i)
-		_add_events_to_beat_array(beats, impact_q, strike_events, "ranged_impact_%d" % i)
-		_debug_log_reaction("main ranged strike=%d fire_q=%.2f impact_q=%.2f targets=%s events=%s" % [
-			i,
-			fire_q,
-			impact_q,
-			str(_targets_for_focus_strike(analysis, i)),
-			_debug_event_list_summary(strike_events),
-		])
-		final_q = maxf(final_q, impact_q)
-
-		var reaction_q := impact_q
-		var reactions: Array = reactions_by_strike[i] if i < reactions_by_strike.size() else []
-		for reaction in reactions:
-			reaction_q += 1.0
-			var built := _build_reaction_beats_from_group(parsed, reaction, reaction_q)
-			var reaction_beats: Array = built.get("beats", [])
-			for reaction_beat in reaction_beats:
-				beats.append(reaction_beat)
-			reaction_q = float(built.get("last_q", reaction_q))
-			final_q = maxf(final_q, reaction_q)
-			_debug_log_reaction("inserted ranged reaction beat strike=%d q=%.2f kind=%s" % [
-				i,
-				reaction_q,
-				String(reaction.get("kind", &"unknown")),
-			])
-
-		if !reactions.is_empty():
-			# Ranged attacks normally let the next fire cue start on the previous impact beat.
-			# After-strike reactions need their own beat plus a clean next-fire beat afterward.
-			reaction_shift_q += (reaction_q - impact_q) + 0.5
-
-	var clear_q := final_q + _tail_gap_q_for_attack(analysis)
-	clear_q = _enforce_min_clear_focus_q_for_self_death(clear_q, analysis.attacker_id, turn_events)
-	var layout_orders := _find_post_action_group_layouts(turn_events, group_index)
-	beats.append(_make_clear_focus_beat(clear_q, analysis.attacker_id, trailing, layout_orders))
-	return _sort_beats(beats)
-
-
-func _build_reaction_beats_from_group(parsed_parent: Dictionary, reaction: Dictionary, beat_q: float) -> Dictionary:
-	var kind: StringName = reaction.get("kind", &"")
-	match kind:
-		&"summon":
-			var beat := _make_reaction_summon_beat(beat_q, reaction.get("events", []))
-			return {
-				"beats": [beat],
-				"last_q": beat_q,
-			}
-		&"attack":
-			var events: Array[BattleEvent] = parsed_parent.get("source_events", [])
-			var scope_ranges: Dictionary = parsed_parent.get("scope_ranges", {})
-			var nested_scope_id := int(reaction.get("scope_id", 0))
-			var nested := _parse_attack_scope(events, scope_ranges, nested_scope_id)
-			if nested.is_empty():
-				var fallback_beat := TurnBeat.new()
-				fallback_beat.beat_q = beat_q
-				fallback_beat.label = "reaction_attack_fallback"
-				for event in reaction.get("events", []):
-					fallback_beat.events.append(event)
-				_debug_log_reaction("fallback nested attack q=%.2f events=%s" % [
-					beat_q,
-					_debug_event_list_summary(reaction.get("events", [])),
-				])
-				return {
-					"beats": [fallback_beat],
-					"last_q": beat_q,
-				}
-
-			nested["scope_ranges"] = scope_ranges
-			nested["source_events"] = events
-			return _build_compact_reaction_attack_beats(nested, beat_q)
-		&"status":
-			var reaction_events: Array[BattleEvent] = reaction.get("events", [])
-			var has_status := false
-			for event in reaction_events:
-				if event != null and (
-					int(event.type) == int(BattleEvent.Type.STATUS)
-					or int(event.type) == int(BattleEvent.Type.STATUS_CHANGED)
-				):
-					has_status = true
-					break
-			var beat := _make_reaction_status_beat(beat_q, reaction_events) if has_status else _make_reaction_draw_beat(beat_q, reaction_events)
-			return {
-				"beats": [beat],
-				"last_q": beat_q,
-			}
-		_:
-			var generic_beat := TurnBeat.new()
-			generic_beat.beat_q = beat_q
-			generic_beat.label = "reaction_generic"
-			for event in reaction.get("events", []):
-				generic_beat.events.append(event)
-			return {
-				"beats": [generic_beat],
-				"last_q": beat_q,
-			}
-
-
-# Compact reaction attacks intentionally collapse a nested attack into a single
-# beat (plus any nested reactions after it). That keeps counters/follow-ups
-# readable without recursively exploding the whole cadence.
-func _build_compact_reaction_attack_beats(parsed: Dictionary, beat_q: float) -> Dictionary:
-	var beats: Array[TurnBeat] = []
-	var analysis: AttackAnalysis = parsed.get("analysis", null)
-	if analysis == null:
-		return {
-			"beats": beats,
-			"last_q": beat_q,
-		}
-
-	var beat := TurnBeat.new()
-	beat.beat_q = beat_q
-	beat.label = "reaction_attack"
-
-	var focus_beat := _make_basic_focus_beat(beat_q, analysis.attacker_id, _collect_all_attack_targets(analysis))
-	for order in focus_beat.orders:
-		beat.orders.append(order)
-
-	if analysis.attack_mode == int(Attack.Mode.RANGED):
-		beat.orders.append(_make_ranged_fire_order(analysis, 0))
-	else:
-		var strike_order := MeleeStrikePresentationOrder.new()
-		strike_order.kind = PresentationOrder.Kind.MELEE_STRIKE
-		strike_order.actor_id = analysis.attacker_id
-		strike_order.target_ids = _collect_all_attack_targets(analysis)
-		strike_order.visual_sec = 0.22
-		strike_order.strike_index = 0
-		strike_order.strikes_total = maxi(analysis.strike_count, 1)
-		strike_order.total_hit_count = maxi(_count_total_hits(analysis), 1)
-		strike_order.has_lethal = !analysis.lethal_indices.is_empty()
-		beat.orders.append(strike_order)
-
-	var direct_events_by_strike: Array = parsed.get("direct_events_by_strike", [])
-	for i in range(mini(direct_events_by_strike.size(), analysis.strikes.size())):
-		var strike_events: Array[BattleEvent] = direct_events_by_strike[i]
-		for order in _make_impact_orders_for_strike(analysis, i, strike_events):
-			beat.orders.append(order)
-		for event in strike_events:
-			beat.events.append(event)
-
-	beats.append(beat)
-	var final_q := beat_q
-
-	var reactions_by_strike: Array = parsed.get("reactions_by_strike", [])
-	for i in range(reactions_by_strike.size()):
-		var reactions: Array = reactions_by_strike[i]
-		for reaction in reactions:
-			final_q += 1.0
-			var built := _build_reaction_beats_from_group(parsed, reaction, final_q)
-			var reaction_beats: Array[TurnBeat] = built.get("beats", [])
-			for reaction_beat in reaction_beats:
-				beats.append(reaction_beat)
-			final_q = float(built.get("last_q", final_q))
-			_debug_log_reaction("inserted nested reaction beat q=%.2f kind=%s" % [
-				final_q,
-				String(reaction.get("kind", &"unknown")),
-			])
-
-	return {
-		"beats": beats,
-		"last_q": final_q,
-	}
 
 
 func _make_reaction_summon_beat(beat_q: float, summon_events: Array[BattleEvent]) -> TurnBeat:
@@ -2431,206 +1563,10 @@ func _make_reaction_draw_beat(beat_q: float, reaction_events: Array[BattleEvent]
 	return beat
 
 
-func _split_attack_events(events: Array[BattleEvent]) -> Dictionary:
-	var by_strike: Array[Array] = []
-	var leading: Array[BattleEvent] = []
-	var trailing: Array[BattleEvent] = []
-	var final_strike_events: Array[BattleEvent] = []
-	var saw_first_strike := false
-
-	var blocks := _collect_strike_blocks(events)
-	for block in blocks:
-		var arr: Array[BattleEvent] = []
-		for i in range(1, block.size()):
-			var e: BattleEvent = block[i]
-			if e == null:
-				continue
-			match int(e.type):
-				BattleEvent.Type.DAMAGE_APPLIED, \
-				BattleEvent.Type.CHANGE_MAX_HEALTH, \
-				BattleEvent.Type.MODIFY_BATTLE_CARD, \
-				BattleEvent.Type.STATUS, \
-				BattleEvent.Type.REMOVED:
-					arr.append(e)
-		by_strike.append(arr)
-
-	for e in events:
-		if e == null:
-			continue
-
-		if _is_attack_chain_marker_event_type(int(e.type)):
-			saw_first_strike = true
-			continue
-
-		if !saw_first_strike:
-			match int(e.type):
-				BattleEvent.Type.STATUS, \
-				BattleEvent.Type.STATUS_CHANGED, \
-				BattleEvent.Type.SET_INTENT, \
-				BattleEvent.Type.TURN_STATUS, \
-				BattleEvent.Type.MANA, \
-				BattleEvent.Type.HEAL_APPLIED, \
-				BattleEvent.Type.CHANGE_MAX_HEALTH, \
-				BattleEvent.Type.MODIFY_BATTLE_CARD, \
-				BattleEvent.Type.MOVED:
-					leading.append(e)
-			continue
-
-		match int(e.type):
-			BattleEvent.Type.SET_INTENT:
-				final_strike_events.append(e)
-
-			BattleEvent.Type.TURN_STATUS, \
-			BattleEvent.Type.MOVED:
-				trailing.append(e)
-
-	if !by_strike.is_empty() and !final_strike_events.is_empty():
-		var last_i := by_strike.size() - 1
-		for e in final_strike_events:
-			by_strike[last_i].append(e)
-
-	return {
-		"leading": leading,
-		"by_strike": by_strike,
-		"trailing": trailing,
-	}
-
-
 # ============================================================================
 # Generic / Summon / Status Fallback Builders
-# Used when the turn is not an attack package or lacks enough structure for the
-# richer attack compilers.
+# Used when the turn lacks enough scope structure for the richer compilers.
 # ============================================================================
-
-func _build_melee_attack_beats(analysis: AttackAnalysis, turn_events: Array[BattleEvent]) -> Array[TurnBeat]:
-	var beats: Array[TurnBeat] = []
-	var split := _split_attack_events(turn_events)
-	var leading: Array[BattleEvent] = split["leading"]
-	var by_strike: Array = split["by_strike"]
-	var trailing: Array[BattleEvent] = split["trailing"]
-	var group_index := _find_group_index(turn_events)
-
-	var focus_beat := _make_focus_beat(0.0, analysis)
-	for e in leading:
-		focus_beat.events.append(e)
-	for layout_order in _find_pre_attack_group_layouts(turn_events, group_index):
-		focus_beat.orders.append(layout_order)
-	beats.append(focus_beat)
-	beats.append(_make_melee_windup_beat(1.0, analysis))
-
-	var n := analysis.strike_count
-	var start_q := 2.0
-	if n >= 3:
-		start_q = 2.5
-
-	var lethal_shift_q := 0.0
-
-	for i in range(n):
-		var beat_q := start_q + 0.5 * float(i) + lethal_shift_q
-		var strike_events: Array[BattleEvent] = by_strike[i] if i < by_strike.size() else []
-
-		beats.append(_make_melee_strike_beat(
-			beat_q,
-			analysis,
-			i,
-			strike_events
-		))
-
-		if i < n - 1 and _strike_has_early_lethal(analysis, i):
-			lethal_shift_q += 0.5
-
-	var last_hit_q := start_q + 0.5 * float(n - 1) + lethal_shift_q
-	var clear_q := last_hit_q + _tail_gap_q_for_attack(analysis)
-	clear_q = _enforce_min_clear_focus_q_for_self_death(clear_q, analysis.attacker_id, turn_events)
-	var layout_orders := _find_post_action_group_layouts(turn_events, group_index)
-	beats.append(_make_clear_focus_beat(clear_q, analysis.attacker_id, trailing, layout_orders))
-
-	return beats
-
-
-func _tail_gap_q_for_attack(analysis: AttackAnalysis) -> float:
-	if analysis == null or analysis.strike_count <= 1:
-		return 1.0
-
-	for i in range(analysis.strike_count - 1):
-		if _strike_has_early_lethal(analysis, i):
-			return 1.0
-
-	return 0.5
-
-
-func _strike_has_early_lethal(analysis: AttackAnalysis, strike_index: int) -> bool:
-	if analysis == null:
-		return false
-	for i in analysis.lethal_indices:
-		if int(i) == int(strike_index):
-			return true
-	return false
-
-
-func _build_ranged_attack_beats(analysis: AttackAnalysis, turn_events: Array[BattleEvent]) -> Array[TurnBeat]:
-	var beats: Array[TurnBeat] = []
-	var split := _split_attack_events(turn_events)
-	var leading: Array[BattleEvent] = split["leading"]
-	var by_strike: Array = split["by_strike"]
-	var trailing: Array[BattleEvent] = split["trailing"]
-	var group_index := _find_group_index(turn_events)
-
-	var focus_beat := _make_focus_beat(0.0, analysis)
-	for e in leading:
-		focus_beat.events.append(e)
-	for layout_order in _find_pre_attack_group_layouts(turn_events, group_index):
-		focus_beat.orders.append(layout_order)
-	beats.append(focus_beat)
-	beats.append(_make_ranged_windup_beat(1.0, analysis))
-
-	var n := analysis.strike_count
-	var fire_start_q := 1.5
-	if n >= 3:
-		fire_start_q = 2.0
-
-	var lethal_shift_q := 0.0
-
-	for i in range(n):
-		var fire_q := fire_start_q + 0.5 * float(i) + lethal_shift_q
-		var impact_q := fire_q + 0.5
-		var strike_events: Array[BattleEvent] = by_strike[i] if i < by_strike.size() else []
-
-		_add_order_to_beat_array(
-			beats,
-			fire_q,
-			_make_focus_order(analysis.attacker_id, _targets_for_focus_strike(analysis, i), 0.20)
-		)
-		_add_order_to_beat_array(beats, fire_q, _make_ranged_fire_order(analysis, i))
-
-		var impact_orders := _make_impact_orders_for_strike(analysis, i, strike_events)
-		_add_orders_to_beat_array(beats, impact_q, impact_orders)
-		_add_events_to_beat_array(beats, impact_q, strike_events)
-
-		if i < n - 1 and _strike_has_early_lethal(analysis, i):
-			lethal_shift_q += 0.5
-
-	var last_impact_q := fire_start_q + 0.5 * float(n - 1) + lethal_shift_q + 0.5
-	var clear_q := last_impact_q + _tail_gap_q_for_attack(analysis)
-	clear_q = _enforce_min_clear_focus_q_for_self_death(clear_q, analysis.attacker_id, turn_events)
-	var layout_orders := _find_post_action_group_layouts(turn_events, group_index)
-	beats.append(_make_clear_focus_beat(clear_q, analysis.attacker_id, trailing, layout_orders))
-
-	return _sort_beats(beats)
-
-
-func _make_focus_beat(beat_q: float, analysis: AttackAnalysis) -> TurnBeat:
-	var beat := TurnBeat.new()
-	beat.beat_q = beat_q
-	beat.label = "focus"
-	_tag_beat(beat, [&"focus"])
-
-	beat.orders.append(_make_focus_order(
-		analysis.attacker_id,
-		_targets_for_focus_strike(analysis, 0),
-		0.35
-	))
-	return beat
 
 
 func _make_clear_focus_beat(
@@ -2706,15 +1642,6 @@ func _make_melee_windup_beat(beat_q: float, analysis: AttackAnalysis) -> TurnBea
 	return beat
 
 
-func _make_melee_strike_order(
-	analysis: AttackAnalysis,
-	strike_index: int,
-	override_targets := []
-) -> MeleeStrikePresentationOrder:
-	var strike := analysis.strikes[strike_index]
-	return _make_melee_strike_order_from_info(analysis, strike, strike_index, override_targets)
-
-
 func _make_melee_strike_order_from_info(
 	analysis: AttackAnalysis,
 	strike: StrikePresentationInfo,
@@ -2739,36 +1666,6 @@ func _make_melee_strike_order_from_info(
 	return o
 
 
-func _make_melee_strike_beat(
-	beat_q: float,
-	analysis: AttackAnalysis,
-	strike_index: int,
-	strike_events: Array[BattleEvent]
-) -> TurnBeat:
-	var beat := TurnBeat.new()
-	beat.beat_q = beat_q
-	beat.label = "melee_strike_%d" % strike_index
-
-	var strike := analysis.strikes[strike_index]
-
-	beat.orders.append(_make_focus_order(
-		analysis.attacker_id,
-		_targets_for_focus_strike(analysis, strike_index),
-		0.20
-	))
-
-	beat.orders.append(_make_melee_strike_order(analysis, strike_index))
-
-	for impact_order in _make_impact_orders_for_strike(analysis, strike_index, strike_events):
-		beat.orders.append(impact_order)
-
-	for e in strike_events:
-		beat.events.append(e)
-
-	return beat
-
-
-
 func _make_ranged_windup_beat(beat_q: float, analysis: AttackAnalysis) -> TurnBeat:
 	var beat := TurnBeat.new()
 	beat.beat_q = beat_q
@@ -2785,11 +1682,6 @@ func _make_ranged_windup_beat(beat_q: float, analysis: AttackAnalysis) -> TurnBe
 
 	beat.orders.append(o)
 	return beat
-
-
-func _make_ranged_fire_order(analysis: AttackAnalysis, strike_index: int) -> RangedFirePresentationOrder:
-	var strike := analysis.strikes[strike_index]
-	return _make_ranged_fire_order_from_info(analysis, strike, strike_index)
 
 
 func _make_ranged_fire_order_from_info(
@@ -2828,18 +1720,6 @@ func _make_ranged_cleave_followthrough_order_from_info(
 	o.chained_from_previous = true
 	o.has_chain_continuation = false
 	return o
-
-
-func _make_impact_orders_for_strike(
-	analysis: AttackAnalysis,
-	strike_index: int,
-	strike_events: Array[BattleEvent] = []
-) -> Array[PresentationOrder]:
-	if strike_index < 0 or strike_index >= analysis.strikes.size():
-		return []
-
-	var strike := analysis.strikes[strike_index]
-	return _make_impact_orders_for_info(analysis, strike, strike_index, strike_events)
 
 
 func _make_impact_orders_for_info(
@@ -2908,22 +1788,6 @@ func _find_or_make_beat(beats: Array[TurnBeat], beat_q: float, label: String = "
 	beats.append(b)
 	return b
 
-
-func _add_order_to_beat_array(beats: Array[TurnBeat], beat_q: float, order: PresentationOrder, label: String = "") -> void:
-	var b := _find_or_make_beat(beats, beat_q, label)
-	b.orders.append(order)
-
-
-func _add_orders_to_beat_array(beats: Array[TurnBeat], beat_q: float, orders: Array[PresentationOrder], label: String = "") -> void:
-	var b := _find_or_make_beat(beats, beat_q, label)
-	for o in orders:
-		b.orders.append(o)
-
-
-func _add_events_to_beat_array(beats: Array[TurnBeat], beat_q: float, events: Array[BattleEvent], label: String = "") -> void:
-	var b := _find_or_make_beat(beats, beat_q, label)
-	for e in events:
-		b.events.append(e)
 
 func _sort_beats(beats: Array[TurnBeat]) -> Array[TurnBeat]:
 	beats.sort_custom(func(a, b): return a.beat_q < b.beat_q)
@@ -3046,107 +1910,6 @@ func _split_generic_events(events: Array[BattleEvent]) -> Dictionary:
 		"removal_events": removal_events,
 		"trailing": trailing,
 	}
-
-
-func _split_summon_events(events: Array[BattleEvent]) -> Dictionary:
-	var summon_events: Array[BattleEvent] = []
-	var trailing: Array[BattleEvent] = []
-
-	for e in events:
-		if e == null:
-			continue
-
-		match int(e.type):
-			BattleEvent.Type.SUMMONED:
-				summon_events.append(e)
-
-			BattleEvent.Type.SET_INTENT, \
-			BattleEvent.Type.TURN_STATUS, \
-			BattleEvent.Type.MOVED:
-				trailing.append(e)
-
-	return {
-		"summon_events": summon_events,
-		"trailing": trailing,
-	}
-
-
-func _split_status_events(events: Array[BattleEvent]) -> Dictionary:
-	var status_events: Array[BattleEvent] = []
-	var removal_events: Array[BattleEvent] = []
-	var trailing: Array[BattleEvent] = []
-
-	for e in events:
-		if e == null:
-			continue
-
-		match int(e.type):
-			BattleEvent.Type.STATUS:
-				status_events.append(e)
-
-			BattleEvent.Type.REMOVED:
-				removal_events.append(e)
-
-			BattleEvent.Type.SET_INTENT, \
-			BattleEvent.Type.TURN_STATUS, \
-			BattleEvent.Type.MOVED:
-				trailing.append(e)
-
-	return {
-		"status_events": status_events,
-		"removal_events": removal_events,
-		"trailing": trailing,
-	}
-
-
-func _build_summon_beats(turn_events: Array[BattleEvent]) -> Array[TurnBeat]:
-	var beats: Array[TurnBeat] = []
-	var split := _split_summon_events(turn_events)
-	var summon_events: Array[BattleEvent] = split["summon_events"]
-	var trailing: Array[BattleEvent] = split["trailing"]
-	var actor_id := _find_actor_id(turn_events)
-	var group_index := _find_group_index(turn_events)
-	var layout_orders := _find_post_action_group_layouts(turn_events, group_index)
-
-	if summon_events.is_empty():
-		return _build_generic_beats(turn_events)
-
-	beats.append(_make_basic_focus_beat(0.0, actor_id, _collect_targets_from_summon_events(summon_events)))
-	beats.append(_make_summon_windup_beat(1.0, actor_id, summon_events))
-	beats.append(_make_summon_pop_beat(2.0, actor_id, summon_events))
-	var clear_q := _enforce_min_clear_focus_q_for_self_death(3.0, actor_id, turn_events)
-	beats.append(_make_clear_focus_beat(clear_q, actor_id, trailing, layout_orders))
-
-	return beats
-
-
-
-
-func _build_status_beats(turn_events: Array[BattleEvent]) -> Array[TurnBeat]:
-	var beats: Array[TurnBeat] = []
-	var split := _split_status_events(turn_events)
-	var status_events: Array[BattleEvent] = split["status_events"]
-	var removal_events: Array[BattleEvent] = split["removal_events"]
-	var trailing: Array[BattleEvent] = split["trailing"]
-	var actor_id := _find_actor_id(turn_events)
-	var group_index := _find_group_index(turn_events)
-	var layout_orders := _find_post_action_group_layouts(turn_events, group_index)
-
-	if status_events.is_empty():
-		return _build_generic_beats(turn_events)
-
-	var targets := _collect_targets_from_events(status_events)
-
-	beats.append(_make_basic_focus_beat(0.0, actor_id, targets))
-	beats.append(_make_status_windup_beat(1.0, actor_id, targets, &"full_status", false, 0.16))
-	beats.append(_make_status_pop_beat(2.0, actor_id, status_events, &"full_status", false, 0.18))
-	var clear_q := 4.0 if !removal_events.is_empty() else 3.0
-	clear_q = _enforce_min_clear_focus_q_for_self_death(clear_q, actor_id, turn_events)
-	if !removal_events.is_empty():
-		beats.append(_make_generic_removal_beat(3.0, actor_id, removal_events))
-	beats.append(_make_clear_focus_beat(clear_q, actor_id, trailing, layout_orders))
-
-	return beats
 
 
 func _make_basic_focus_beat(beat_q: float, actor_id: int, target_ids: Array[int]) -> TurnBeat:
