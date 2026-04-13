@@ -10,6 +10,7 @@ var definition: EncounterDefinition = null
 var state: EncounterState = EncounterState.new()
 var battle: Battle = null
 var _step_timer_generation: int = 0
+var _debug_tutorial_trace_enabled: bool = false
 
 func _exit_tree() -> void:
 	_invalidate_step_timer()
@@ -19,6 +20,7 @@ func _exit_tree() -> void:
 func setup(owner_battle: Battle, data: BattleData) -> void:
 	battle = owner_battle
 	definition = data.encounter_definition if data != null else null
+	_debug_tutorial_trace_enabled = data != null and String(data.encounter_name) == "Tutorial Drill"
 	state = EncounterState.new()
 	if definition != null and definition.initial_flags != null:
 		state.flags = definition.initial_flags.duplicate(true)
@@ -62,8 +64,11 @@ func is_blocking_presentation() -> bool:
 func get_player_turn_draw_amount_override() -> int:
 	var step = get_current_step()
 	if step == null:
+		_tutorial_trace("draw_override step=<none> override=-1")
 		return -1
-	return int(step.player_turn_draw_amount_override)
+	var override := int(step.player_turn_draw_amount_override)
+	_tutorial_trace("draw_override step=%s override=%d" % [String(step.id), override])
+	return override
 
 func observe_view_event(ev: EncounterObservedEvent) -> void:
 	if !is_active() or ev == null:
@@ -73,6 +78,16 @@ func observe_view_event(ev: EncounterObservedEvent) -> void:
 func _process_observed_event(ev: EncounterObservedEvent) -> void:
 	if !is_active() or ev == null:
 		return
+	_tutorial_trace(
+		"event step=%s name=%s card=%s insert=%d actor=%d target=%d" % [
+			String(state.current_step_id),
+			String(ev.name),
+			String(ev.card_id),
+			int(ev.insert_index),
+			int(ev.actor_id),
+			int(ev.target_id),
+		]
+	)
 	state.last_observed_event = ev
 	var ctx: EncounterRuleContext = _make_context(null, ev)
 	_run_triggers(definition.triggers, ctx)
@@ -115,7 +130,16 @@ func goto_step(step_id: StringName) -> void:
 	if step == null:
 		push_warning("EncounterDirector.goto_step(): unknown step '%s'" % String(step_id))
 		return
+	var previous_step_id := String(state.current_step_id)
 	state.current_step_id = step.id
+	_tutorial_trace(
+		"goto_step %s -> %s draw_override=%d next=%s" % [
+			previous_step_id,
+			String(step.id),
+			int(step.player_turn_draw_amount_override),
+			String(step.next_step_id),
+		]
+	)
 	step_changed.emit(step.id)
 	_refresh_capabilities_from_current_step()
 	var ctx: EncounterRuleContext = _make_context(null, null)
@@ -329,8 +353,35 @@ func _try_complete_step(ctx: EncounterRuleContext) -> void:
 	for condition in step.completion_conditions:
 		if condition == null:
 			continue
-		if !condition.evaluate(ctx):
+		var matched := bool(condition.evaluate(ctx))
+		_tutorial_trace(
+			"check step=%s condition=%s matched=%s event=%s card=%s insert=%d" % [
+				String(step.id),
+				_condition_debug_name(condition),
+				str(matched),
+				String(ctx.get_event_name()),
+				String(ctx.get_card_id()),
+				int(ctx.get_insert_index()),
+			]
+		)
+		if !matched:
 			return
+	_tutorial_trace("complete step=%s -> %s" % [String(step.id), String(step.next_step_id)])
 	_run_actions(step.on_complete_actions, ctx)
 	if step.next_step_id != &"" and step.next_step_id != step.id:
 		goto_step(step.next_step_id)
+
+func _tutorial_trace(message: String) -> void:
+	if !_debug_tutorial_trace_enabled:
+		return
+	print("[TUTORIAL TRACE director] %s" % message)
+
+func _condition_debug_name(condition: EncounterCondition) -> String:
+	if condition == null:
+		return "<null>"
+	var script: Script = condition.get_script() as Script
+	if script != null:
+		var path := String(script.resource_path)
+		if !path.is_empty():
+			return path.get_file()
+	return condition.get_class()

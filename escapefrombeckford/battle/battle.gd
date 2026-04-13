@@ -348,6 +348,14 @@ func _on_player_input_view_reached(player_id: int) -> void:
 	if hand != null:
 		hand.refresh_locked_card_states()
 	_pending_player_turn_draw_amount_override = int(encounter_director.get_player_turn_draw_amount_override()) if encounter_director != null else -1
+	_tutorial_trace(
+		"player_input_reached player_id=%d step=%s draw_override=%d blocking=%s" % [
+			int(player_id),
+			_get_encounter_step_id_for_trace(),
+			int(_pending_player_turn_draw_amount_override),
+			str(encounter_director != null and encounter_director.is_blocking_presentation()),
+		]
+	)
 	#print("[TRACE battle] player_input_reached: player_id=%d draw_override=%d encounter_active=%s blocking=%s" % [
 		#int(player_id),
 		#int(_pending_player_turn_draw_amount_override),
@@ -455,13 +463,33 @@ func _release_pending_player_turn_draw_if_ready() -> void:
 	if runtime == null:
 		#print("[TRACE battle] _release_pending_player_turn_draw_if_ready: missing runtime")
 		return
+	if !runtime.has_pending_player_turn_draw():
+		_tutorial_trace("release_pending_draw skipped step=%s reason=no_pending_draw" % _get_encounter_step_id_for_trace())
+		return
 	if encounter_director != null and encounter_director.is_blocking_presentation():
 		#print("[TRACE battle] _release_pending_player_turn_draw_if_ready: blocked by encounter presentation")
+		_tutorial_trace("release_pending_draw blocked step=%s" % _get_encounter_step_id_for_trace())
 		return
 	var draw_amount_override := int(_pending_player_turn_draw_amount_override)
+	_tutorial_trace(
+		"release_pending_draw step=%s draw_override=%d" % [
+			_get_encounter_step_id_for_trace(),
+			draw_amount_override,
+		]
+	)
 	#print("[TRACE battle] confirm_player_input_ready: draw_override=%d" % draw_amount_override)
 	_pending_player_turn_draw_amount_override = -1
 	runtime.confirm_player_input_ready(draw_amount_override)
+
+func _tutorial_trace(message: String) -> void:
+	if battle_data == null or String(battle_data.encounter_name) != "Tutorial Drill":
+		return
+	print("[TUTORIAL TRACE battle] %s" % message)
+
+func _get_encounter_step_id_for_trace() -> String:
+	if encounter_director == null or encounter_director.state == null:
+		return "<none>"
+	return String(encounter_director.state.current_step_id)
 
 
 # -------------------------

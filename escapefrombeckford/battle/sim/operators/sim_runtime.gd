@@ -327,17 +327,15 @@ func confirm_player_end_ready() -> void:
 	_drive_turn_flow_until_blocked()
 
 
+func has_pending_player_turn_draw() -> bool:
+	return _pending_player_turn_draw_ctx != null
+
+
 func confirm_player_input_ready(draw_amount_override := -1) -> void:
 	var api := _api()
 	if api == null or _pending_player_turn_draw_ctx == null:
-		#print("[TRACE sim_runtime] confirm_player_input_ready: api=%s pending_ctx=%s override=%d" % [
-			#str(api != null),
-			#str(_pending_player_turn_draw_ctx != null),
-			#int(draw_amount_override)
-		#])
-		if api != null:
-			_deferred_player_input_ready = true
-			_deferred_player_input_ready_draw_amount_override = int(draw_amount_override)
+		_deferred_player_input_ready = false
+		_deferred_player_input_ready_draw_amount_override = -1
 		return
 
 	var draw_ctx := _pending_player_turn_draw_ctx
@@ -513,9 +511,6 @@ func _service_actor_turn(cid: int) -> void:
 		#])
 		if writer != null:
 			writer.emit_player_input_reached(int(cid))
-		if _deferred_player_input_ready and _pending_player_turn_draw_ctx != null:
-			#print("[TRACE sim_runtime] player_turn_begin: flushing deferred player input confirm override=%d" % int(_deferred_player_input_ready_draw_amount_override))
-			confirm_player_input_ready(_deferred_player_input_ready_draw_amount_override)
 		return
 
 	SimStatusSystem.on_actor_turn_begin(api, cid)
