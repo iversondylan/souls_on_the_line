@@ -303,12 +303,11 @@ func _merge_unique_events(target_arr: Array[BattleEvent], source_arr: Array[Batt
 func _merge_unique_ids(target_arr: Array[int], source_arr: Array[int]) -> void:
 	var seen := {}
 	for id in target_arr:
-		seen[int(id)] = true
+		seen[id] = true
 	for id in source_arr:
-		var cid := int(id)
-		if cid > 0 and !seen.has(cid):
-			seen[cid] = true
-			target_arr.append(cid)
+		if id > 0 and !seen.has(id):
+			seen[id] = true
+			target_arr.append(id)
 
 
 func _merge_top_level_package_segments(target: TopLevelTurnSegment, source: TopLevelTurnSegment) -> void:
@@ -1894,8 +1893,8 @@ func _populate_strike_info_from_marker_and_events(
 			BattleEvent.Type.REMOVED:
 				var died_target_id := int(event.data.get(Keys.TARGET_ID, 0)) if event.data != null else 0
 				var is_self_recoil_death := bool(event.data.get(Keys.SELF_RECOIL, false)) if event.data != null else false
-				if _is_death_removal_event(event) and !is_self_recoil_death \
-					and marker != null and marker.data != null \
+				if marker != null and marker.data != null \
+					and _is_death_removal_event(event) and !is_self_recoil_death \
 					and died_target_id != int(marker.data.get(Keys.SOURCE_ID, 0)):
 					s.has_lethal_hit = true
 
