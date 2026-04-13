@@ -23,7 +23,6 @@ var mortality: Mortality
 var name: String = ""
 var max_health: int = 0
 var health: int = 0
-var armor: int = 0
 
 # mana + attack powers
 var max_mana: int = 0
@@ -61,7 +60,6 @@ func init_from_combatant_data(data: CombatantData, current_health_override: int 
 	name = data.name
 	max_health = int(data.max_health)
 	health = clampi(int(current_health_override if current_health_override >= 0 else data.max_health), 0, max_health)
-	armor = 0
 	ai_profile = data.ai
 	max_mana = maxi(int(data.max_mana), 0)
 	mana = max_mana
@@ -83,7 +81,6 @@ func clone() -> CombatantState:
 	c.name = name
 	c.max_health = max_health
 	c.health = health
-	c.armor = armor
 
 	c.max_mana = max_mana
 	c.mana = mana

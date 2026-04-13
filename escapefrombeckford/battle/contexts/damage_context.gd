@@ -42,7 +42,6 @@ var modifier_policy: int = ModifierPolicy.APPLY_ALL
 # Results (filled in when applied)
 var before_health: int = 0
 var after_health: int = 0
-var armor_damage: int = 0
 var health_damage: int = 0
 var was_lethal: bool = false
 var overflow_amount: int = 0

@@ -22,9 +22,6 @@ arcana
     unruly_pyric_wraps.gd
     unruly_pyric_wraps.gd.uid
     unruly_pyric_wraps.tres
-    vennards_vauxite.gd
-    vennards_vauxite.gd.uid
-    vennards_vauxite.tres
 assets
   backgrounds
     DF_Path_NoRorik_1080.png
@@ -477,8 +474,6 @@ assets
     enchanted tiki 86.mp3
     enchanted tiki 86.mp3.import
   sfx
-    block.wav
-    block.wav.import
     Bluezone_BC0251_heavy_metal_impact_metal_plate_05_02.wav
     Bluezone_BC0251_heavy_metal_impact_metal_plate_05_02.wav.import
     Bluezone_BC0269_creature_wood_attack_impact_006.wav
@@ -582,8 +577,6 @@ assets
       attack_and_defend.png.import
       attack_image.PNG
       attack_image.PNG.import
-      block.PNG
-      block.PNG.import
       bossskull_48_w.png
       bossskull_48_w.png.import
       bow.png
@@ -986,8 +979,6 @@ keys
   npc_keys.gd.uid
 npc_actions
   armor_amount
-    flat_armor_model.gd
-    flat_armor_model.gd.uid
   attack_mode
     melee_model.gd
     melee_model.gd.uid
@@ -1008,9 +999,6 @@ npc_actions
   npc_attack_sequence.gd
   npc_attack_sequence.gd.uid
   npc_attack_sequence.tres
-  npc_block_sequence.gd
-  npc_block_sequence.gd.uid
-  npc_block_sequence.tres
   npc_status_sequence.gd
   npc_status_sequence.gd.uid
   performable
@@ -1041,9 +1029,6 @@ npc_actions
     attack_intent_tooltip_text_model.gd
     attack_intent_tooltip_text_model.gd.uid
     attack_intent_tooltip_text_model.tres
-    block_intent_text_model.gd
-    block_intent_text_model.gd.uid
-    block_intent_tooltip_text_model.tres
     intent_tooltip_text_model.gd
     intent_tooltip_text_model.gd.uid
   weight
@@ -1203,9 +1188,6 @@ scenes
     battle_over_panel.tscn
     battle_ui.gd
     battle_ui.gd.uid
-    blocked_message.gd
-    blocked_message.gd.uid
-    blocked_message.tscn
     cards_view_window.gd
     cards_view_window.gd.uid
     card_container.gd

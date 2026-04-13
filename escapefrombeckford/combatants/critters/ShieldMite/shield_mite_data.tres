@@ -6,7 +6,7 @@
 [resource]
 script = ExtResource("3_grdiy")
 name = "Shield Mite"
-description = "0/3 blocker."
+description = "0/3 defensive mite."
 character_art_uid = "uid://mduxjrtw74f3"
 facing_right = false
 height = 160

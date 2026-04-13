@@ -169,7 +169,7 @@ func _apply_inline_self_recoil_for_strike(
 	}
 
 	api.resolve_damage_immediate(recoil)
-	return int(recoil.armor_damage) > 0 or int(recoil.health_damage) > 0
+	return int(recoil.health_damage) > 0
 
 
 func _should_apply_cleave(
@@ -863,7 +863,7 @@ func run_attack(ctx: AttackContext) -> bool:
 			d.origin_arcanum_id = ctx.origin_arcanum_id
 			api.resolve_damage_immediate(d)
 			any = true
-			if int(d.armor_damage) > 0 or int(d.health_damage) > 0:
+			if int(d.health_damage) > 0:
 				direct_strike_dealt_damage = true
 			if !_packed_has_int(ctx.affected_target_ids, int(tid)):
 				ctx.affected_target_ids.append(int(tid))

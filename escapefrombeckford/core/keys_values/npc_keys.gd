@@ -14,7 +14,6 @@
 #const EXPLODE_ON_FINISH := &"explode_on_finish"
 #const ATTACK_SOUND := &"attack_sound"
 #
-#const ARMOR_AMOUNT := &"armor_amount"
 #const PROJECTILE_SCENE := &"projectile_scene"
 #const STATUS_SCENE := &"status_scene"
 #const STATUS_INTENSITY := &"status_intensity"

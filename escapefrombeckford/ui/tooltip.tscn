@@ -16,8 +16,6 @@ script = ExtResource("2_o3msy")
 
 [node name="PanelContainer" type="PanelContainer" parent="." unique_id=2127930944]
 layout_mode = 0
-offset_right = 400.0
-offset_bottom = 260.0
 mouse_filter = 2
 theme = ExtResource("2_hoai8")
 
@@ -45,7 +43,6 @@ stretch_mode = 5
 [node name="TooltipDescription" type="RichTextLabel" parent="PanelContainer/MarginContainer/VBoxContainer" unique_id=2026069850]
 unique_name_in_owner = true
 layout_mode = 2
-size_flags_vertical = 3
 mouse_filter = 2
 theme = ExtResource("2_hoai8")
 theme_override_font_sizes/normal_font_size = 20
@@ -56,3 +53,4 @@ theme_override_font_sizes/mono_font_size = 20
 bbcode_enabled = true
 text = "[center][b]Tooltip[/b][/center]
 Tooltip description."
+horizontal_alignment = 1

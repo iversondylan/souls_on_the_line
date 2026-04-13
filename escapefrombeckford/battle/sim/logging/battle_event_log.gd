@@ -235,7 +235,6 @@ static func print_event_log(
 		Keys.BANISH_AMOUNT,
 		Keys.APPLIED_BANISH_AMOUNT,
 		Keys.HEALTH_DAMAGE,
-		Keys.ARMOR_DAMAGE,
 		Keys.WAS_LETHAL,
 
 		# mana

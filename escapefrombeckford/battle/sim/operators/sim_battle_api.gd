@@ -614,30 +614,18 @@ func resolve_damage_immediate(ctx: DamageContext) -> int:
 	var remaining_banish := post_hook_banish
 	var before_health := int(tgt.health)
 
-	var armor_damage := 0
 	var health_damage := 0
-
-	var armor_absorb_normal := mini(remaining_normal, maxi(int(tgt.armor), 0))
-	tgt.armor = int(tgt.armor) - armor_absorb_normal
-	remaining_normal -= armor_absorb_normal
-	armor_damage += armor_absorb_normal
 
 	var health_absorb_normal := mini(remaining_normal, maxi(int(tgt.health), 0))
 	tgt.health = int(tgt.health) - health_absorb_normal
 	remaining_normal -= health_absorb_normal
 	health_damage += health_absorb_normal
 
-	var armor_absorb_banish := mini(remaining_banish, maxi(int(tgt.armor), 0))
-	tgt.armor = int(tgt.armor) - armor_absorb_banish
-	remaining_banish -= armor_absorb_banish
-	armor_damage += armor_absorb_banish
-
 	var health_absorb_banish := mini(remaining_banish, maxi(int(tgt.health), 0))
 	tgt.health = int(tgt.health) - health_absorb_banish
 	remaining_banish -= health_absorb_banish
 	health_damage += health_absorb_banish
 
-	ctx.armor_damage = armor_damage
 	ctx.health_damage = health_damage
 	ctx.overflow_amount = maxi(int(remaining_normal) + int(remaining_banish), 0)
 	ctx.overflow_banish_amount = maxi(int(remaining_banish), 0)
@@ -656,7 +644,6 @@ func resolve_damage_immediate(ctx: DamageContext) -> int:
 			int(ctx.display_amount),
 			int(ctx.banish_amount),
 			int(ctx.applied_banish_amount),
-			int(ctx.armor_damage),
 			int(ctx.health_damage),
 			bool(ctx.was_lethal),
 			int(ctx.before_health),

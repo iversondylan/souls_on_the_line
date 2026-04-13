@@ -90,8 +90,6 @@ static func _description_values_for_action(
 	if action is DrawAction:
 		return [int((action as DrawAction).base_draw)]
 
-	if _has_property(action, "n_armor"):
-		return [int(action.get("n_armor"))]
 	if _has_property(action, "duration"):
 		return [int(action.get("duration"))]
 	if _has_property(action, "base_damage"):
