@@ -15,7 +15,7 @@ func _ready() -> void:
 	if player_catalog != null:
 		player_catalog.build_index()
 	_set_current_profile(DEFAULT_PROFILE_ID)
-	
+
 func set_current_character(new_character: PlayerData) -> void:
 	current_character = new_character
 	if current_character == null:

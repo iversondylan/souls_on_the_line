@@ -10,8 +10,8 @@
 [ext_resource type="Script" uid="uid://bfkcesydr8xy8" path="res://npc_ai/performable/keep_stability_performable_model.gd" id="10_eh7vo"]
 [ext_resource type="Script" uid="uid://bcih413oy6v73" path="res://npc_ai/_core/npc_action.gd" id="11_owhfw"]
 [ext_resource type="Script" uid="uid://cuj4qvyx6dedj" path="res://npc_ai/_core/state_model.gd" id="11_s81sx"]
-[ext_resource type="Resource" path="res://npc_ai/text/summon_ap_intent_text_model.tres" id="12_qrlu3"]
-[ext_resource type="Resource" path="res://npc_ai/text/summon_ap_intent_tooltip_text_model.tres" id="13_summon_tooltip"]
+[ext_resource type="Resource" uid="uid://ctwocrhb1x5bv" path="res://npc_ai/text/summon_ap_intent_text_model.tres" id="12_qrlu3"]
+[ext_resource type="Resource" uid="uid://bv4vmq637qs77" path="res://npc_ai/text/summon_ap_intent_tooltip_text_model.tres" id="13_summon_tooltip"]
 
 [sub_resource type="Resource" id="Resource_1t84l"]
 script = ExtResource("10_eh7vo")

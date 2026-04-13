@@ -1,8 +1,30 @@
 # turn_timeline_compiler.gd
 class_name TurnTimelineCompiler extends RefCounted
 
+# Overview
+# --------
+# This compiler turns a flat stream of BattleEvent records into a TurnTimeline
+# made of presentation beats. Each beat holds:
+# - orders: visual instructions for the battle view
+# - events: source events resolved on that beat
+# - tags: light metadata used for timing / grouping
+#
+# Preferred compilation flow:
+# 1. Scope-driven package turns
+# 2. Scope-driven attacks
+# 3. Legacy parsed attacks
+# 4. Generic summon/status/fallback turns
+#
+# The final _ensure_lossless_beats() pass is the safety net: every non-structural
+# event should still land on some beat even if a richer compiler path misses it.
 
 
+# ============================================================================
+# Lightweight Parse Models
+# ============================================================================
+
+# Delayed follow-up work emitted after a direct strike resolves. Some reactions
+# are simple status/summon payloads; others contain a nested compact attack.
 class DelayedReactionNode extends RefCounted:
 	var kind: StringName = &""
 	var source_strike_index: int = -1
@@ -11,6 +33,7 @@ class DelayedReactionNode extends RefCounted:
 	var nested_attack = null
 
 
+# One direct strike/cleave step plus the reactions that fire from it.
 class ParsedDirectStrike extends RefCounted:
 	var strike_index: int = -1
 	var target_ids: Array[int] = []
@@ -19,6 +42,7 @@ class ParsedDirectStrike extends RefCounted:
 	var info: StrikePresentationInfo = null
 
 
+# Consecutive strikes that can share the same target focus window.
 class TargetWindow extends RefCounted:
 	var target_ids: Array[int] = []
 	var strikes: Array[ParsedDirectStrike] = []
@@ -27,6 +51,7 @@ class TargetWindow extends RefCounted:
 	var base_q: float = 0.0
 
 
+# Rich intermediate model used by the newer scope-driven attack compiler.
 class ParsedNpcAttackTurn extends RefCounted:
 	var actor_id: int = 0
 	var group_index: int = -1
@@ -40,6 +65,7 @@ class ParsedNpcAttackTurn extends RefCounted:
 	var analysis: AttackAnalysis = null
 
 
+# Top-level effect-package segment extracted from the actor-turn scope.
 class TopLevelTurnSegment extends RefCounted:
 	var kind: StringName = &""
 	var sequence_kind: StringName = &""
@@ -58,6 +84,12 @@ class TopLevelTurnSegment extends RefCounted:
 	var summoned_ids: Array[int] = []
 	var parsed_attack: ParsedNpcAttackTurn = null
 
+# ============================================================================
+# Entry Point
+# ============================================================================
+
+# Main dispatcher. We always prefer the richest structured path first, then fall
+# back to older/generic builders, and finally reconcile any unassigned events.
 func compile_actor_turn(turn_events: Array[BattleEvent]) -> TurnTimeline:
 	var timeline := TurnTimeline.new()
 	if turn_events.is_empty():
@@ -103,6 +135,10 @@ func compile_actor_turn(turn_events: Array[BattleEvent]) -> TurnTimeline:
 	return timeline
 
 
+# ============================================================================
+# Scope-Driven Top-Level Package Compilation
+# ============================================================================
+
 func _build_scope_driven_package_turn(turn_events: Array[BattleEvent]) -> Dictionary:
 	var actor_id := _find_actor_id(turn_events)
 	if actor_id <= 0:
@@ -130,6 +166,10 @@ func _build_scope_driven_package_turn(turn_events: Array[BattleEvent]) -> Dictio
 	var trailing: Array[BattleEvent] = external_events.get("trailing", [])
 	var beats: Array[TurnBeat] = []
 	var focus_targets := _collect_eventual_focus_targets_from_top_level_segments(segments)
+
+	# The focus beat represents turn setup: pre-action status changes, intent
+	# updates, and any pre-attack layout moves that should already be visible
+	# before the first real action beat lands.
 	var focus_beat := _make_basic_focus_beat(0.0, actor_id, focus_targets)
 	for event in leading:
 		focus_beat.events.append(event)
@@ -151,6 +191,9 @@ func _build_scope_driven_package_turn(turn_events: Array[BattleEvent]) -> Dictio
 			has_attack = true
 			action_kind = &"attack"
 
+		# Some authoring paths mark a segment as "compact_to_previous" so its
+		# follow-up visuals share the prior segment's followthrough beat instead of
+		# opening a brand-new beat.
 		if segment.compact_to_previous and previous_followthrough_beat != null:
 			_merge_compacted_segment_into_beat(previous_followthrough_beat, segment)
 			continue
@@ -222,6 +265,9 @@ func _parse_top_level_package_segments(
 	return out
 
 
+# Build one top-level segment from a direct child scope under the actor turn.
+# We cache useful event subsets here so later beat builders can work from
+# semantic buckets instead of repeatedly rescanning the raw scope slice.
 func _build_top_level_package_segment(
 	events: Array[BattleEvent],
 	scope_ranges: Dictionary,
@@ -452,6 +498,9 @@ func _collect_eventual_focus_targets_from_top_level_segments(segments: Array[Top
 	return out
 
 
+# Attack package beats reuse the same target-window pacing as the standalone
+# scope-driven attack compiler, but start at an arbitrary windup beat so they
+# can sit inside a larger packaged turn.
 func _build_scope_driven_attack_package_beats(
 	parsed: ParsedNpcAttackTurn,
 	turn_events: Array[BattleEvent],
@@ -488,6 +537,8 @@ func _build_scope_driven_attack_package_beats(
 			var segment_count := segment_end - segment_start + 1
 			var segment_span_beats := _window_span_beats(segment_count)
 			var segment_shift_q := 0.5 * float(segment_span_beats - 1)
+			# We center the segment inside its allotted window so 1-hit and 2-hit
+			# clusters both land on pleasing half-step spacing without drifting.
 
 			for local_index in range(segment_count):
 				var strike := window.strikes[segment_start + local_index]
@@ -518,6 +569,8 @@ func _build_scope_driven_attack_package_beats(
 
 			var terminal_strike := window.strikes[segment_end]
 			if terminal_strike != null and !terminal_strike.reactions.is_empty():
+				# Reactions always resume on the integer beat grid so the player can
+				# read them as a distinct aftermath rather than as part of the strike.
 				var reaction_q := _next_on_grid_beat_after(last_work_q)
 				for reaction in terminal_strike.reactions:
 					var reaction_beat := _make_delayed_reaction_beat(reaction_q, reaction)
@@ -539,6 +592,8 @@ func _build_scope_driven_attack_package_beats(
 	}
 
 
+# Non-attack package segments are normalized into a simple two-beat
+# windup -> followthrough shape so mixed turns stay easy to read.
 func _build_effect_sequence_package_beats(beat_q: float, segment: TopLevelTurnSegment) -> Dictionary:
 	var beats: Array[TurnBeat] = []
 	var targets := segment.target_ids.duplicate()
@@ -663,6 +718,10 @@ func _merge_beat_contents(target_beat: TurnBeat, source_beat: TurnBeat) -> void:
 		if !target_beat.events.has(event):
 			target_beat.events.append(event)
 
+
+# ============================================================================
+# Scope-Driven Non-Attack Mixed Turns
+# ============================================================================
 
 func _build_scope_mixed_nonattack_turn(turn_events: Array[BattleEvent]) -> Dictionary:
 	var actor_id := _find_actor_id(turn_events)
@@ -794,6 +853,8 @@ func _build_top_level_nonattack_segment(
 	return segment
 
 
+# Summons often emit immediately-following status work for the newly created
+# unit. Clustering that status into the summon keeps the presentation coherent.
 func _consume_top_level_summon_cluster(segments: Array[TopLevelTurnSegment], start_index: int) -> Dictionary:
 	var summon_events: Array[BattleEvent] = []
 	var embedded_status_events: Array[BattleEvent] = []
@@ -861,6 +922,10 @@ func _collect_nonattack_trailing_events(events: Array[BattleEvent]) -> Array[Bat
 	return trailing
 
 
+# ============================================================================
+# Scope-Driven Attack Parsing
+# ============================================================================
+
 func _parse_scope_driven_attack_turn(events: Array[BattleEvent]) -> ParsedNpcAttackTurn:
 	var actor_id := _find_actor_id(events)
 	if actor_id <= 0:
@@ -898,6 +963,9 @@ func _parse_scope_driven_attack_turn(events: Array[BattleEvent]) -> ParsedNpcAtt
 	return parsed
 
 
+# Parse an attack scope into direct strikes plus delayed reactions. This newer
+# path still reuses AttackAnalysis/StrikePresentationInfo so it can share the
+# downstream order builders with the older attack code.
 func _parse_scope_driven_attack_scope(
 	events: Array[BattleEvent],
 	scope_ranges: Dictionary,
@@ -955,6 +1023,8 @@ func _parse_scope_driven_attack_scope(
 	return parsed
 
 
+# Classify each reaction so later beat builders can route it to the right
+# compact presentation shape.
 func _build_delayed_reaction_nodes(
 	events: Array[BattleEvent],
 	scope_ranges: Dictionary,
@@ -1050,6 +1120,9 @@ func _append_unique_target_ids(out: Array[int], seen: Dictionary, target_ids: Ar
 		out.append(cid)
 
 
+# Target windows are the core pacing abstraction for the newer attack path:
+# strikes that keep working on the same target set stay in one window; opening a
+# new target set forces a new focus window and usually a new timing segment.
 func _build_target_windows_for_strikes(strikes: Array[ParsedDirectStrike]) -> Array[TargetWindow]:
 	var windows: Array[TargetWindow] = []
 	var retarget_reference_targets: Array[int] = []
@@ -1059,6 +1132,8 @@ func _build_target_windows_for_strikes(strikes: Array[ParsedDirectStrike]) -> Ar
 			continue
 
 		var starts_new_window := windows.is_empty()
+		# Cleaves / chained strikes stay in the existing window even if they hit a
+		# different target, because visually they read as part of one attack burst.
 		if !starts_new_window and !bool(strike.info != null and strike.info.chained_from_previous):
 			starts_new_window = _strike_introduces_new_targets(retarget_reference_targets, strike.target_ids)
 		if starts_new_window:
@@ -1109,11 +1184,15 @@ func _next_on_grid_beat_after(q: float) -> float:
 func _find_reaction_segment_end(strikes: Array[ParsedDirectStrike], start_index: int) -> int:
 	for i in range(start_index, strikes.size()):
 		var strike := strikes[i]
+		# Reaction-bearing strikes terminate a segment because everything after
+		# that strike has to wait until the reaction sequence resolves.
 		if strike != null and !strike.reactions.is_empty():
 			return i
 	return strikes.size() - 1
 
 
+# Build the beat cadence for a parsed scope-driven attack:
+# focus -> windup -> one or more target windows -> delayed reactions -> clear.
 func _build_scope_driven_attack_beats(parsed: ParsedNpcAttackTurn, turn_events: Array[BattleEvent]) -> Array[TurnBeat]:
 	var beats: Array[TurnBeat] = []
 	if parsed == null or parsed.analysis == null or parsed.direct_strikes.is_empty():
@@ -1354,6 +1433,12 @@ func _make_compact_reaction_attack_beat(beat_q: float, reaction: DelayedReaction
 	return beat
 
 
+# ============================================================================
+# Event Classification And Legacy Attack Parsing
+# These helpers are shared by both the modern scope-driven attack path and the
+# older parsed/fallback attack compilers.
+# ============================================================================
+
 func _find_actor_id(events: Array[BattleEvent]) -> int:
 	for e in events:
 		if e == null:
@@ -1453,6 +1538,9 @@ func _parse_attack_turn(events: Array[BattleEvent]) -> Dictionary:
 	return parsed
 
 
+# Older scope-aware attack parser. It predates ParsedNpcAttackTurn, but still
+# provides valuable structure for legacy beat builders and compact nested
+# reaction attacks.
 func _parse_attack_scope(
 	events: Array[BattleEvent],
 	scope_ranges: Dictionary,
@@ -1564,6 +1652,9 @@ func _parse_attack_strike(
 	}
 
 
+# Reactions may hang directly off the attack scope instead of a strike scope.
+# We attach each one to the most recently encountered strike so the final
+# timeline still reads in the order the player saw it happen.
 func _collect_attack_level_reaction_groups(
 	events: Array[BattleEvent],
 	scope_ranges: Dictionary,
@@ -1691,6 +1782,8 @@ func _scope_kind_to_reaction_kind_name(scope_kind: int) -> StringName:
 		_: return &"attack"
 
 
+# Build a scope_id -> begin/end metadata map so later parsers can cheaply slice
+# the flat event stream by scope without re-walking nesting logic each time.
 func _build_scope_ranges(events: Array[BattleEvent]) -> Dictionary:
 	var ranges := {}
 	for i in range(events.size()):
@@ -1999,6 +2092,12 @@ func _build_attack_beats_from_parsed(parsed: Dictionary, turn_events: Array[Batt
 	return _build_melee_attack_beats_from_parsed(parsed, turn_events)
 
 
+# ============================================================================
+# Attack Beat Builders
+# Parsed variants preserve explicit reactions; simpler variants infer a readable
+# cadence from flatter event data.
+# ============================================================================
+
 func _build_melee_attack_beats_from_parsed(parsed: Dictionary, turn_events: Array[BattleEvent]) -> Array[TurnBeat]:
 	var beats: Array[TurnBeat] = []
 	var analysis: AttackAnalysis = parsed.get("analysis", null)
@@ -2199,6 +2298,9 @@ func _build_reaction_beats_from_group(parsed_parent: Dictionary, reaction: Dicti
 			}
 
 
+# Compact reaction attacks intentionally collapse a nested attack into a single
+# beat (plus any nested reactions after it). That keeps counters/follow-ups
+# readable without recursively exploding the whole cadence.
 func _build_compact_reaction_attack_beats(parsed: Dictionary, beat_q: float) -> Dictionary:
 	var beats: Array[TurnBeat] = []
 	var analysis: AttackAnalysis = parsed.get("analysis", null)
@@ -2393,6 +2495,12 @@ func _split_attack_events(events: Array[BattleEvent]) -> Dictionary:
 		"trailing": trailing,
 	}
 
+
+# ============================================================================
+# Generic / Summon / Status Fallback Builders
+# Used when the turn is not an attack package or lacks enough structure for the
+# richer attack compilers.
+# ============================================================================
 
 func _build_melee_attack_beats(analysis: AttackAnalysis, turn_events: Array[BattleEvent]) -> Array[TurnBeat]:
 	var beats: Array[TurnBeat] = []
@@ -3091,6 +3199,12 @@ func _collect_targets_from_events(events: Array[BattleEvent]) -> Array[int]:
 	return out
 
 
+# ============================================================================
+# Beat / Order Construction Helpers
+# Translate parsed data into concrete presentation order objects and attach them
+# to the appropriate beat.
+# ============================================================================
+
 func _make_summon_windup_beat(beat_q: float, actor_id: int, summon_events: Array[BattleEvent]) -> TurnBeat:
 	var beat := TurnBeat.new()
 	beat.beat_q = beat_q
@@ -3311,6 +3425,12 @@ func _find_post_action_group_layouts(
 	return _make_group_layout_orders_from_events(events, fallback_group_index)
 
 
+# ============================================================================
+# Group Layout Synchronization
+# Reconstruct battlefield ordering/layout changes so summon, move, and removal
+# events keep the visual arrangement in sync with simulation state.
+# ============================================================================
+
 func _make_group_layout_orders_from_events(
 	events: Array[BattleEvent],
 	fallback_group_index: int
@@ -3414,6 +3534,9 @@ func _place_delayed_summon_reserve_release_events(beats: Array[TurnBeat], turn_e
 	if beats.is_empty() or turn_events.is_empty():
 		return
 
+	# Most beats are built from action scopes, but summon reserve release can be
+	# observed later as a bookkeeping event. We anchor it near the matched removal
+	# so the visual story still makes sense.
 	var assigned_seqs := {}
 	for beat in beats:
 		if beat == null:
@@ -3478,6 +3601,14 @@ func _find_matching_removal_beat_for_summoned(beats: Array[TurnBeat], summoned_i
 	return fallback_beat
 
 
+# ============================================================================
+# Lossless Reconciliation And Debugging
+# This final pass guarantees every non-structural event from the source stream
+# lands on some beat, even if a richer compiler path missed it.
+# ============================================================================
+
+# Missing events are attached to the nearest sensible beat and logged loudly so
+# we can tighten the structured path later without losing presentation fidelity.
 func _ensure_lossless_beats(action_kind: StringName, turn_events: Array[BattleEvent], beats: Array[TurnBeat]) -> Array[TurnBeat]:
 	var out := beats.duplicate()
 	if out.is_empty():
@@ -3511,6 +3642,8 @@ func _ensure_lossless_beats(action_kind: StringName, turn_events: Array[BattleEv
 		if assigned_seqs.has(int(be.seq)):
 			continue
 
+		# If a richer builder forgot this event, keep the timeline lossless by
+		# attaching it near the surrounding sequence span instead of dropping it.
 		var fallback_beat := _choose_fallback_beat_for_event(out, be)
 		if fallback_beat == null:
 			fallback_beat = TurnBeat.new()

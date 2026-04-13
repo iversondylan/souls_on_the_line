@@ -40,7 +40,7 @@ func heal(ctx: HealContext) -> int:
 	var clamped_max := maxi(int(max_health), 0)
 	var initial_health := clampi(int(current_health), 0, clamped_max)
 	var new_health := clampi(initial_health + int(ctx.flat_amount), 0, clamped_max)
-	new_health = clampi(new_health + floori(float(new_health) * float(ctx.of_total)), 0, clamped_max)
+	new_health = clampi(new_health + floori(float(clamped_max) * float(ctx.of_total)), 0, clamped_max)
 	new_health = clampi(new_health + floori(float(clamped_max - new_health) * float(ctx.of_missing)), 0, clamped_max)
 	current_health = new_health
 	return int(current_health - initial_health)
