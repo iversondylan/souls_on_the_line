@@ -92,4 +92,3 @@ position = Vector2(0, -141)
 [connection signal="area_entered" from="TargetArea" to="." method="_on_target_area_area_entered"]
 [connection signal="area_exited" from="TargetArea" to="." method="_on_target_area_area_exited"]
 [connection signal="input_event" from="TargetArea" to="." method="_on_target_area_input_event"]
-[connection signal="gui_input" from="StatusViewGrid" to="StatusViewGrid" method="_on_gui_input"]

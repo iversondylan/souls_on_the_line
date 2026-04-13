@@ -18,7 +18,6 @@
 [ext_resource type="Theme" uid="uid://c5t2luytfgc6b" path="res://ui/elements/brass_wood_chalkboard_theme.tres" id="16_562sy"]
 [ext_resource type="PackedScene" uid="uid://bxtf6la07t0t5" path="res://ui/card_pile_opener.tscn" id="17_ariee"]
 [ext_resource type="PackedScene" uid="uid://bhps5rw0coka5" path="res://VFX/turn_order_spark_controller.tscn" id="17_saiin"]
-[ext_resource type="PackedScene" uid="uid://cmc2ypry076mq" path="res://ui/status_overlay.tscn" id="18_h4dll"]
 [ext_resource type="Theme" uid="uid://1dr1eewpv0jd" path="res://themes/ui_theme.tres" id="18_s5alk"]
 [ext_resource type="PackedScene" uid="uid://d6f3t1qcn8bk" path="res://battle/ui/turn_phase_title.tscn" id="19_fpf3k"]
 [ext_resource type="PackedScene" uid="uid://ggbqqkmgvjb1" path="res://battle/ui/mana_panel.tscn" id="19_tgt58"]
@@ -262,11 +261,6 @@ show_battle_modifications = true
 unique_name_in_owner = true
 visible = false
 show_battle_modifications = true
-
-[node name="StatusOverlay" type="CanvasLayer" parent="." unique_id=2094819986]
-
-[node name="StatusOverlay" parent="StatusOverlay" unique_id=1932521555 instance=ExtResource("18_h4dll")]
-visible = false
 
 [node name="BattleInteractionHandler" type="Node" parent="." unique_id=1048632546]
 script = ExtResource("25_jt4d8")

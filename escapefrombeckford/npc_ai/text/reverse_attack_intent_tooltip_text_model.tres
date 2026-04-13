@@ -4,4 +4,4 @@
 
 [resource]
 script = ExtResource("1_8chgp")
-text_template = "[b]{action_name}[/b]: deal {strikes}{damage} damage to the farthest opponent."
+text_template = "[b]{action_name}[/b]: {strikes}{damage} damage to the farthest opponent."

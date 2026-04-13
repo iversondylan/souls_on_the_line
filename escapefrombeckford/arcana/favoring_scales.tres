@@ -8,5 +8,5 @@
 script = ExtResource("2_hn816")
 arcanum_name = "Favoring Scales"
 icon = ExtResource("1_s5oc5")
-tooltip_description = "Shop prices are 50% lower."
+tooltip_description = "Favoring Scales: 50% off in shops."
 metadata/_custom_type_script = "uid://cnmucv1qsei4i"

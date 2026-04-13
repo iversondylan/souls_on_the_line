@@ -9,7 +9,7 @@
 custom_minimum_size = Vector2(64, 64)
 layout_mode = 3
 anchors_preset = 0
-mouse_filter = 2
+mouse_filter = 1
 script = ExtResource("1_movl6")
 status = ExtResource("2_c5udy")
 
@@ -17,6 +17,7 @@ status = ExtResource("2_c5udy")
 layout_mode = 1
 offset_right = 64.0
 offset_bottom = 64.0
+mouse_filter = 2
 texture = ExtResource("1_71ask")
 expand_mode = 1
 stretch_mode = 5
@@ -27,6 +28,7 @@ offset_left = 36.0
 offset_top = 28.0
 offset_right = 68.0
 offset_bottom = 68.0
+mouse_filter = 2
 theme = ExtResource("2_movl6")
 text = "99"
 vertical_alignment = 1
@@ -38,6 +40,10 @@ offset_left = 36.0
 offset_top = 28.0
 offset_right = 68.0
 offset_bottom = 68.0
+mouse_filter = 2
 theme = ExtResource("2_movl6")
 text = "99"
 vertical_alignment = 1
+
+[connection signal="mouse_entered" from="." to="." method="_on_mouse_entered"]
+[connection signal="mouse_exited" from="." to="." method="_on_mouse_exited"]

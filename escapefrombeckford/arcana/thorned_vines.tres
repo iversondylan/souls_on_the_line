@@ -1,4 +1,4 @@
-[gd_resource type="Resource" format=3 uid="uid://d2cxx7uv2q7ab"]
+[gd_resource type="Resource" script_class="ThornedVinesArcanum" format=3 uid="uid://d2cxx7uv2q7ab"]
 
 [ext_resource type="Script" uid="uid://cueedkb1u8vxy" path="res://statuses/_core/status.gd" id="1_status"]
 [ext_resource type="Texture2D" uid="uid://ps5rwh2q6k3r" path="res://_assets/sprites/assorted/light-thorny-triskelion.png" id="1_uu4in"]
@@ -9,6 +9,6 @@
 script = ExtResource("2_ajmdd")
 arcanum_name = "Thorned Vines"
 icon = ExtResource("1_uu4in")
-tooltip_description = "Friendly allies have On Death, deal 2 damage to the front enemy."
+tooltip_description = "Thorned Vines: Friendly allies have On Death, deal 2 damage."
 projected_statuses = Array[ExtResource("1_status")]([ExtResource("3_exit")])
 metadata/_custom_type_script = "uid://cnmucv1qsei4i"

@@ -2,7 +2,7 @@
 
 class_name AttackIntentTooltipTextModel extends TextModel
 
-@export_multiline var text_template: String = "[b]{action_name}[/b]: deal {strikes}{damage} damage."
+@export_multiline var text_template: String = "[b]{action_name}[/b]: {strikes}{damage} damage."
 
 func get_text(ctx: NPCAIContext) -> String:
 	if ctx == null or ctx.params == null:

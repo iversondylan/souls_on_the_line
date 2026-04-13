@@ -24,7 +24,6 @@ enum ChoiceType { CONDITIONAL, CHANCE }
 
 @export_group("Resolution Impact")
 #@export var sound: AudioStream
-@export var resolve_delay: float = 0.6
 
 func resolve_display_name(params: Dictionary = {}) -> String:
 	if params != null and !String(action_name_ranged).is_empty():

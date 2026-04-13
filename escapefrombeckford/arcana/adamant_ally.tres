@@ -1,4 +1,4 @@
-[gd_resource type="Resource" format=3 uid="uid://clmmoar1fhh44"]
+[gd_resource type="Resource" script_class="AdamantAllyArcanum" format=3 uid="uid://clmmoar1fhh44"]
 
 [ext_resource type="Texture2D" uid="uid://dqw3vrvo72rls" path="res://_assets/sprites/arcana_placeholders/clone.png" id="1_ga55l"]
 [ext_resource type="Script" uid="uid://lpr1x3npsid" path="res://arcana/adamant_ally.gd" id="1_gjwtx"]
@@ -11,5 +11,5 @@ summon_data = ExtResource("3_cia6o")
 arcanum_name = "Adamant Ally"
 starter_arcanum = true
 icon = ExtResource("1_ga55l")
-tooltip_description = "Start each battle with a 4/5 Spectral Clone."
+tooltip_description = "Adamant Ally: Start each battle with a 4/5 Spectral Clone."
 metadata/_custom_type_script = "uid://cnmucv1qsei4i"

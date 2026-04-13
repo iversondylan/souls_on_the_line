@@ -7,7 +7,9 @@
 class_name SummonRedIntentTooltipTextModel
 extends TextModel
 
-@export_multiline var text_template: String = "[b]{action_name}[/b] [{summon_name}]: %s/%s unit."
+const DEFAULT_TEXT_TEMPLATE := "[b]{action_name}[/b]: summon {count} {red}/{hp} {summon_name}."
+
+@export_multiline var text_template: String = DEFAULT_TEXT_TEMPLATE
 
 func _fallback_summon_data(ctx: NPCAIContext) -> CombatantData:
 	var path := String(_param_v(ctx, Keys.DEFAULT_SUMMON_DATA_PATH, ""))
@@ -15,6 +17,27 @@ func _fallback_summon_data(ctx: NPCAIContext) -> CombatantData:
 		return null
 	var data := load(path)
 	return data if data is CombatantData else null
+
+
+func _resolve_text_template() -> String:
+	if text_template.strip_edges().is_empty():
+		return DEFAULT_TEXT_TEMPLATE
+	return text_template
+
+
+func _apply_legacy_stat_formatting(template: String, red: int, hp: int) -> String:
+	var placeholder_count := template.count("%s")
+	if placeholder_count >= 2:
+		return template % [red, hp]
+	if placeholder_count == 1:
+		return template % ("%s/%s" % [red, hp])
+	return template
+
+
+func _format_count_token(count: int) -> String:
+	if count == 1:
+		return "a"
+	return str(count)
 
 
 func get_text(ctx: NPCAIContext) -> String:
@@ -35,9 +58,12 @@ func get_text(ctx: NPCAIContext) -> String:
 	if count <= 0:
 		return "error"
 
-	var result := text_template
-	result = result.replace("{action_name}", String(ctx.action_name))
-	result = result.replace("{summon_name}", String(data.name))
-	if count == 1:
-		return result % [red, hp]
-	return "[b]%s[/b] [%s]: %s units of %s/%s." % [String(ctx.action_name), String(data.name), count, red, hp]
+	var result := _resolve_text_template()
+	result = result.replace("{action_name}", str(ctx.action_name))
+	result = result.replace("{summon_name}", str(data.name))
+	result = result.replace("{count}", _format_count_token(count))
+	result = result.replace("{summon_count}", str(count))
+	result = result.replace("{count_number}", str(count))
+	result = result.replace("{red}", str(red))
+	result = result.replace("{hp}", str(hp))
+	return _apply_legacy_stat_formatting(result, red, hp)

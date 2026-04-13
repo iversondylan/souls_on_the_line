@@ -45,7 +45,6 @@ signal selection_prompt_button_pressed()
 ## info/menu events
 signal tooltip_show_requested(request: TooltipRequest)
 signal tooltip_hide_requested()
-signal status_tooltip_requested(statuses: Array[StatusDisplay])
 signal arcanum_popup_requested(arcanum: Arcanum)
 signal turn_status_view_changed(group_index: int, active_id: int, pending_ids: PackedInt32Array, player_id: int)
 signal player_input_view_reached(player_id: int)

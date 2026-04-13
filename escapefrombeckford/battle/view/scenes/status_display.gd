@@ -72,3 +72,17 @@ func _set_status_parent(new_status_parent: CombatantView) -> void:
 	status_parent = new_status_parent
 	if status != null:
 		status.status_parent = status_parent
+
+func _on_mouse_entered() -> void:
+	if status == null:
+		return
+
+	var request := TooltipRequest.new()
+	request.anchor_rect = get_global_rect()
+	request.icon_uid = status.icon.resource_path if status.icon != null else ""
+	request.text_bbcode = status.get_tooltip(intensity, turns_duration)
+	request.preferred_side = TooltipRequest.PreferredSide.ABOVE
+	Events.tooltip_show_requested.emit(request)
+
+func _on_mouse_exited() -> void:
+	Events.tooltip_hide_requested.emit()
