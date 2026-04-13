@@ -147,15 +147,15 @@ func _build_scope_driven_package_turn(turn_events: Array[BattleEvent]) -> Dictio
 	for segment in segments:
 		if segment == null:
 			continue
-		if StringName(segment.kind) == &"attack":
+		if segment.kind == &"attack":
 			has_attack = true
 			action_kind = &"attack"
 
-		if bool(segment.compact_to_previous) and previous_followthrough_beat != null:
+		if segment.compact_to_previous and previous_followthrough_beat != null:
 			_merge_compacted_segment_into_beat(previous_followthrough_beat, segment)
 			continue
 
-		match StringName(segment.kind):
+		match segment.kind:
 			&"attack":
 				var built := _build_scope_driven_attack_package_beats(
 					segment.parsed_attack,
@@ -294,6 +294,23 @@ func _should_merge_top_level_package_segments(
 	return true
 
 
+func _merge_unique_events(target_arr: Array[BattleEvent], source_arr: Array[BattleEvent]) -> void:
+	for event in source_arr:
+		if event != null and !target_arr.has(event):
+			target_arr.append(event)
+
+
+func _merge_unique_ids(target_arr: Array[int], source_arr: Array[int]) -> void:
+	var seen := {}
+	for id in target_arr:
+		seen[int(id)] = true
+	for id in source_arr:
+		var cid := int(id)
+		if cid > 0 and !seen.has(cid):
+			seen[cid] = true
+			target_arr.append(cid)
+
+
 func _merge_top_level_package_segments(target: TopLevelTurnSegment, source: TopLevelTurnSegment) -> void:
 	if target == null or source == null:
 		return
@@ -302,39 +319,14 @@ func _merge_top_level_package_segments(target: TopLevelTurnSegment, source: TopL
 		if !target.scope_ids.has(int(scope_id)):
 			target.scope_ids.append(int(scope_id))
 
-	for event in source.events:
-		if event != null and !target.events.has(event):
-			target.events.append(event)
-	for event in source.status_events:
-		if event != null and !target.status_events.has(event):
-			target.status_events.append(event)
-	for event in source.summon_events:
-		if event != null and !target.summon_events.has(event):
-			target.summon_events.append(event)
-	for event in source.heal_events:
-		if event != null and !target.heal_events.has(event):
-			target.heal_events.append(event)
-	for event in source.move_events:
-		if event != null and !target.move_events.has(event):
-			target.move_events.append(event)
+	_merge_unique_events(target.events, source.events)
+	_merge_unique_events(target.status_events, source.status_events)
+	_merge_unique_events(target.summon_events, source.summon_events)
+	_merge_unique_events(target.heal_events, source.heal_events)
+	_merge_unique_events(target.move_events, source.move_events)
 
-	var seen_targets := {}
-	for target_id in target.target_ids:
-		seen_targets[int(target_id)] = true
-	for target_id in source.target_ids:
-		var cid := int(target_id)
-		if cid > 0 and !seen_targets.has(cid):
-			seen_targets[cid] = true
-			target.target_ids.append(cid)
-
-	var seen_summoned := {}
-	for summoned_id in target.summoned_ids:
-		seen_summoned[int(summoned_id)] = true
-	for summoned_id in source.summoned_ids:
-		var cid := int(summoned_id)
-		if cid > 0 and !seen_summoned.has(cid):
-			seen_summoned[cid] = true
-			target.summoned_ids.append(cid)
+	_merge_unique_ids(target.target_ids, source.target_ids)
+	_merge_unique_ids(target.summoned_ids, source.summoned_ids)
 
 	if target.parsed_attack == null and source.parsed_attack != null:
 		target.parsed_attack = source.parsed_attack
@@ -374,7 +366,7 @@ func _top_level_segment_sequence_kind(scope_kind: int, scope_data: Dictionary) -
 func _collect_targets_for_top_level_segment(segment: TopLevelTurnSegment, scope_data: Dictionary) -> Array[int]:
 	if segment == null:
 		return []
-	if StringName(segment.kind) == &"summon":
+	if segment.kind == &"summon":
 		var summon_targets := _collect_targets_from_summon_events(segment.summon_events)
 		if !summon_targets.is_empty():
 			return summon_targets
@@ -394,7 +386,7 @@ func _collect_targets_for_top_level_segment(segment: TopLevelTurnSegment, scope_
 	elif int(scope_data.get(Keys.TARGET_ID, 0)) > 0:
 		out.append(int(scope_data.get(Keys.TARGET_ID, 0)))
 
-	if out.is_empty() and StringName(segment.kind) == &"summon":
+	if out.is_empty() and segment.kind == &"summon":
 		for summoned_id in segment.summoned_ids:
 			var cid := int(summoned_id)
 			if cid > 0 and !seen.has(cid):
@@ -453,7 +445,7 @@ func _collect_eventual_focus_targets_from_top_level_segments(segments: Array[Top
 	for segment in segments:
 		if segment == null:
 			continue
-		if StringName(segment.kind) == &"attack" and segment.parsed_attack != null:
+		if segment.kind == &"attack" and segment.parsed_attack != null:
 			_append_unique_target_ids(out, seen, segment.parsed_attack.focus_target_ids)
 			continue
 		_append_unique_target_ids(out, seen, segment.target_ids)
@@ -632,7 +624,7 @@ func _merge_compacted_segment_into_beat(target_beat: TurnBeat, segment: TopLevel
 		return
 
 	var source_beat: TurnBeat = null
-	if StringName(segment.kind) == &"summon":
+	if segment.kind == &"summon":
 		source_beat = _make_summon_pop_beat(target_beat.beat_q, segment.actor_id, segment.summon_events)
 	else:
 		source_beat = _make_effect_sequence_followthrough_beat(
@@ -684,7 +676,7 @@ func _build_scope_mixed_nonattack_turn(turn_events: Array[BattleEvent]) -> Dicti
 
 	var has_summon := false
 	for segment in segments:
-		if segment != null and StringName(segment.kind) == &"summon":
+		if segment != null and segment.kind == &"summon":
 			has_summon = true
 			break
 
@@ -694,7 +686,7 @@ func _build_scope_mixed_nonattack_turn(turn_events: Array[BattleEvent]) -> Dicti
 			"beats": _build_status_beats(turn_events),
 		}
 
-	if StringName(segments[0].kind) != &"summon":
+	if segments[0].kind != &"summon":
 		return {}
 
 	var beats: Array[TurnBeat] = []
@@ -712,7 +704,7 @@ func _build_scope_mixed_nonattack_turn(turn_events: Array[BattleEvent]) -> Dicti
 			i += 1
 			continue
 
-		if StringName(segment.kind) == &"summon":
+		if segment.kind == &"summon":
 			var cluster := _consume_top_level_summon_cluster(segments, i)
 			var summon_events: Array[BattleEvent] = cluster.get("summon_events", [])
 			var embedded_status_events: Array[BattleEvent] = cluster.get("embedded_status_events", [])
@@ -732,7 +724,7 @@ func _build_scope_mixed_nonattack_turn(turn_events: Array[BattleEvent]) -> Dicti
 			i = int(cluster.get("next_index", i + 1))
 			continue
 
-		if StringName(segment.kind) == &"status":
+		if segment.kind == &"status":
 			beats.append(_make_compact_status_beat(current_q, actor_id, segment.status_events))
 			current_q += 1.0
 
@@ -752,7 +744,7 @@ func _parse_top_level_nonattack_segments(events: Array[BattleEvent], actor_id: i
 	if scope_ranges.is_empty():
 		return out
 
-	var actor_turn_scope_id := _find_actor_turn_scope_id(events, actor_id)
+	var actor_turn_scope_id := _find_compiled_turn_scope_id(events, actor_id)
 	if actor_turn_scope_id <= 0:
 		return out
 
@@ -816,7 +808,7 @@ func _consume_top_level_summon_cluster(segments: Array[TopLevelTurnSegment], sta
 			next_index += 1
 			continue
 
-		if StringName(segment.kind) == &"summon":
+		if segment.kind == &"summon":
 			for event in segment.summon_events:
 				summon_events.append(event)
 			for target_id in _collect_targets_from_summon_events(segment.summon_events):
@@ -828,7 +820,7 @@ func _consume_top_level_summon_cluster(segments: Array[TopLevelTurnSegment], sta
 			next_index += 1
 			continue
 
-		if StringName(segment.kind) == &"status" and _segment_embeds_into_summon(segment, summoned_ids):
+		if segment.kind == &"status" and _segment_embeds_into_summon(segment, summoned_ids):
 			for event in segment.status_events:
 				embedded_status_events.append(event)
 			next_index += 1
@@ -846,7 +838,7 @@ func _consume_top_level_summon_cluster(segments: Array[TopLevelTurnSegment], sta
 
 
 func _segment_embeds_into_summon(segment: TopLevelTurnSegment, summoned_ids: Array[int]) -> bool:
-	if segment == null or StringName(segment.kind) != &"status":
+	if segment == null or segment.kind != &"status":
 		return false
 	if segment.target_ids.is_empty() or summoned_ids.is_empty():
 		return false
@@ -924,8 +916,8 @@ func _parse_scope_driven_attack_scope(
 	var parsed := ParsedNpcAttackTurn.new()
 	parsed.actor_id = int(analysis.attacker_id)
 	parsed.group_index = group_index
-	parsed.attack_mode = int(analysis.attack_mode)
-	parsed.projectile_scene_path = String(analysis.projectile_scene_path)
+	parsed.attack_mode = analysis.attack_mode
+	parsed.projectile_scene_path = analysis.projectile_scene_path
 	parsed.analysis = analysis
 
 	var direct_infos: Array = legacy.get("direct_infos", [])
@@ -937,7 +929,7 @@ func _parse_scope_driven_attack_scope(
 		strike.info = direct_infos[i] as StrikePresentationInfo
 		if strike.info == null:
 			continue
-		strike.strike_index = int(
+		strike.strike_index = (
 			strike.info.origin_strike_index
 			if strike.info.is_cleave and strike.info.origin_strike_index >= 0
 			else strike.info.strike_index
@@ -1105,7 +1097,7 @@ func _strike_introduces_new_targets(previous_targets: Array[int], next_targets: 
 func _window_span_beats(strike_count: int) -> int:
 	if strike_count <= 0:
 		return 1
-	return maxi(1, int(ceil(float(strike_count) / 2.0)))
+	return maxi(1, (strike_count + 1) / 2)
 
 
 func _next_on_grid_beat_after(q: float) -> float:
@@ -1436,7 +1428,7 @@ func _parse_attack_turn(events: Array[BattleEvent]) -> Dictionary:
 	if scope_ranges.is_empty():
 		return {}
 
-	var actor_turn_scope_id := _find_actor_turn_scope_id(events, actor_id)
+	var actor_turn_scope_id := _find_compiled_turn_scope_id(events, actor_id)
 	if actor_turn_scope_id <= 0:
 		return {}
 
@@ -1505,8 +1497,7 @@ func _parse_attack_scope(
 			analysis.strikes.append(strike_info)
 			primary_strike_count += 1
 		if strike_info.has_lethal_hit:
-			if !(display_index in analysis.lethal_indices):
-				analysis.lethal_indices.append(display_index)
+			_record_lethal_index(analysis, display_index)
 
 		if analysis.attacker_id <= 0 and marker != null and marker.data != null:
 			analysis.attacker_id = int(marker.data.get(Keys.SOURCE_ID, 0))
@@ -1610,19 +1601,18 @@ func _collect_attack_level_reaction_groups(
 
 		var reaction_range: Dictionary = scope_ranges.get(child_scope_id, {})
 		var scope_kind := int(reaction_range.get("kind", -1))
-		if scope_kind != int(Scope.Kind.SUMMON_ACTION) and scope_kind != int(Scope.Kind.ATTACK) and scope_kind != int(Scope.Kind.STATUS_ACTION):
-			continue
+		match scope_kind:
+			Scope.Kind.SUMMON_ACTION, Scope.Kind.ATTACK, Scope.Kind.STATUS_ACTION:
+				pass
+			_:
+				continue
 
 		var next_begin := attack_end
 		if child_index + 1 < child_scope_ids.size():
 			var next_scope_range: Dictionary = scope_ranges.get(int(child_scope_ids[child_index + 1]), {})
 			next_begin = int(next_scope_range.get("begin", attack_end))
 
-		var kind_name := &"attack"
-		if scope_kind == int(Scope.Kind.SUMMON_ACTION):
-			kind_name = &"summon"
-		elif scope_kind == int(Scope.Kind.STATUS_ACTION):
-			kind_name = &"status"
+		var kind_name := _scope_kind_to_reaction_kind_name(scope_kind)
 		var reaction := {
 			"kind": kind_name,
 			"scope_id": int(child_scope_id),
@@ -1678,14 +1668,13 @@ func _collect_reaction_groups_for_strike(
 	for scope_id in child_scope_ids:
 		var reaction_range: Dictionary = scope_ranges.get(int(scope_id), {})
 		var scope_kind := int(reaction_range.get("kind", -1))
-		if scope_kind != int(Scope.Kind.SUMMON_ACTION) and scope_kind != int(Scope.Kind.ATTACK) and scope_kind != int(Scope.Kind.STATUS_ACTION):
-			continue
+		match scope_kind:
+			Scope.Kind.SUMMON_ACTION, Scope.Kind.ATTACK, Scope.Kind.STATUS_ACTION:
+				pass
+			_:
+				continue
 
-		var kind_name := &"attack"
-		if scope_kind == int(Scope.Kind.SUMMON_ACTION):
-			kind_name = &"summon"
-		elif scope_kind == int(Scope.Kind.STATUS_ACTION):
-			kind_name = &"status"
+		var kind_name := _scope_kind_to_reaction_kind_name(scope_kind)
 		out.append({
 			"kind": kind_name,
 			"scope_id": int(scope_id),
@@ -1694,6 +1683,13 @@ func _collect_reaction_groups_for_strike(
 			"events": [],
 		})
 	return out
+
+
+func _scope_kind_to_reaction_kind_name(scope_kind: int) -> StringName:
+	match scope_kind:
+		Scope.Kind.SUMMON_ACTION: return &"summon"
+		Scope.Kind.STATUS_ACTION: return &"status"
+		_: return &"attack"
 
 
 func _build_scope_ranges(events: Array[BattleEvent]) -> Dictionary:
@@ -1720,29 +1716,14 @@ func _build_scope_ranges(events: Array[BattleEvent]) -> Dictionary:
 	return ranges
 
 
-func _find_actor_turn_scope_id(events: Array[BattleEvent], actor_id: int) -> int:
-	for event in events:
-		if event == null:
-			continue
-		if int(event.type) != int(BattleEvent.Type.SCOPE_BEGIN):
-			continue
-		if int(event.scope_kind) != int(Scope.Kind.ACTOR_TURN):
-			continue
-		if event.data == null:
-			continue
-		if int(event.data.get(Keys.ACTOR_ID, 0)) == int(actor_id):
-			return int(event.scope_id)
-	return 0
-
-
-func _find_compiled_turn_scope_id(events: Array[BattleEvent], actor_id: int) -> int:
+func _find_compiled_turn_scope_id(events: Array[BattleEvent], actor_id: int, include_card_attack_now: bool = true) -> int:
 	for event in events:
 		if event == null:
 			continue
 		if int(event.type) != int(BattleEvent.Type.SCOPE_BEGIN):
 			continue
 		if int(event.scope_kind) != int(Scope.Kind.ACTOR_TURN) \
-			and int(event.scope_kind) != int(Scope.Kind.CARD_ATTACK_NOW_TURN):
+			and not (include_card_attack_now and int(event.scope_kind) == int(Scope.Kind.CARD_ATTACK_NOW_TURN)):
 			continue
 		if event.data == null:
 			continue
@@ -1871,10 +1852,9 @@ func _index_is_inside_reaction(idx: int, reactions: Array) -> bool:
 	return false
 
 
-func _build_strike_info_from_events(marker: BattleEvent, direct_events: Array[BattleEvent], strike_index: int) -> StrikePresentationInfo:
-	var s := StrikePresentationInfo.new()
-	s.strike_index = strike_index
-
+func _populate_strike_info_from_marker_and_events(
+	s: StrikePresentationInfo, marker: BattleEvent, direct_events: Array[BattleEvent], strike_index: int
+) -> void:
 	if marker != null and marker.data != null:
 		if marker.data.has(Keys.TARGET_IDS):
 			for tid in marker.data.get(Keys.TARGET_IDS, []):
@@ -1914,9 +1894,16 @@ func _build_strike_info_from_events(marker: BattleEvent, direct_events: Array[Ba
 			BattleEvent.Type.REMOVED:
 				var died_target_id := int(event.data.get(Keys.TARGET_ID, 0)) if event.data != null else 0
 				var is_self_recoil_death := bool(event.data.get(Keys.SELF_RECOIL, false)) if event.data != null else false
-				if _is_death_removal_event(event) and !is_self_recoil_death and died_target_id != int(marker.data.get(Keys.SOURCE_ID, 0)):
+				if _is_death_removal_event(event) and !is_self_recoil_death \
+					and marker != null and marker.data != null \
+					and died_target_id != int(marker.data.get(Keys.SOURCE_ID, 0)):
 					s.has_lethal_hit = true
 
+
+func _build_strike_info_from_events(marker: BattleEvent, direct_events: Array[BattleEvent], strike_index: int) -> StrikePresentationInfo:
+	var s := StrikePresentationInfo.new()
+	s.strike_index = strike_index
+	_populate_strike_info_from_marker_and_events(s, marker, direct_events, strike_index)
 	return s
 
 
@@ -1970,67 +1957,25 @@ func _build_attack_analysis(events: Array[BattleEvent]) -> AttackAnalysis:
 		elif display_index >= 0 and display_index < analysis.strikes.size():
 			analysis.strikes[display_index].has_cleave = true
 		if strike_info.has_lethal_hit:
-			if !(display_index in analysis.lethal_indices):
-				analysis.lethal_indices.append(display_index)
+			_record_lethal_index(analysis, display_index)
 
 	analysis.strike_count = primary_strike_count
 
 	return analysis
 
 
+func _record_lethal_index(analysis: AttackAnalysis, display_index: int) -> void:
+	if !(display_index in analysis.lethal_indices):
+		analysis.lethal_indices.append(display_index)
+
+
 func _build_strike_info_from_block(block: Array, strike_index: int) -> StrikePresentationInfo:
 	var s := StrikePresentationInfo.new()
 	s.strike_index = strike_index
-
 	if block.is_empty():
 		return s
-
-	var marker: BattleEvent = block[0]
-	if marker != null and marker.data != null:
-		if marker.data.has(Keys.TARGET_IDS):
-			for tid in marker.data.get(Keys.TARGET_IDS, []):
-				s.target_ids.append(int(tid))
-		elif marker.data.has(Keys.TARGET_ID):
-			var tid := int(marker.data.get(Keys.TARGET_ID, 0))
-			if tid > 0:
-				s.target_ids.append(tid)
-		s.is_cleave = bool(marker.data.get(Keys.CLEAVE, false))
-		s.chained_from_previous = bool(marker.data.get(Keys.CHAINED_FROM_PREVIOUS, false)) or s.is_cleave
-		s.origin_strike_index = int(marker.data.get(Keys.ORIGIN_STRIKE_INDEX, -1))
-		s.chain_source_target_id = int(marker.data.get(Keys.CHAIN_SOURCE_TARGET_ID, 0))
-		s.cleave_damage = int(marker.data.get(Keys.CLEAVE_DAMAGE, 0))
-		if s.chained_from_previous and s.origin_strike_index < 0:
-			s.origin_strike_index = strike_index
-
-	for i in range(1, block.size()):
-		var e: BattleEvent = block[i]
-		if e == null:
-			continue
-
-		match int(e.type):
-			BattleEvent.Type.DAMAGE_APPLIED:
-				var h := HitPresentationInfo.new()
-				h.target_id = int(e.data.get(Keys.TARGET_ID, 0)) if e.data != null else 0
-				h.amount = int(e.data.get(Keys.FINAL_AMOUNT, 0)) if e.data != null else 0
-				h.before_health = int(e.data.get(Keys.BEFORE_HEALTH, 0)) if e.data != null else 0
-				h.after_health = int(e.data.get(Keys.AFTER_HEALTH, 0)) if e.data != null else 0
-				h.was_lethal = bool(e.data.get(Keys.WAS_LETHAL, false)) if e.data != null else false
-				h.is_self_recoil = bool(e.data.get(Keys.SELF_RECOIL, false)) if e.data != null else false
-				if h.is_self_recoil:
-					s.recoil_hits.append(h)
-					s.has_self_recoil = true
-				else:
-					s.hits.append(h)
-					s.hit_count += 1
-				if h.was_lethal and !h.is_self_recoil:
-					s.has_lethal_hit = true
-
-			BattleEvent.Type.REMOVED:
-				var died_target_id := int(e.data.get(Keys.TARGET_ID, 0)) if e.data != null else 0
-				var is_self_recoil_death := bool(e.data.get(Keys.SELF_RECOIL, false)) if e.data != null else false
-				if _is_death_removal_event(e) and !is_self_recoil_death and died_target_id != int(marker.data.get(Keys.SOURCE_ID, 0)):
-					s.has_lethal_hit = true
-
+	var direct: Array[BattleEvent] = block.slice(1)
+	_populate_strike_info_from_marker_and_events(s, block[0], direct, strike_index)
 	return s
 
 
@@ -2038,7 +1983,7 @@ func _build_attack_beats(analysis: AttackAnalysis, turn_events: Array[BattleEven
 	if analysis == null or analysis.strike_count <= 0:
 		return _build_generic_beats(turn_events)
 
-	if int(analysis.attack_mode) == int(Attack.Mode.RANGED):
+	if analysis.attack_mode == int(Attack.Mode.RANGED):
 		return _build_ranged_attack_beats(analysis, turn_events)
 
 	return _build_melee_attack_beats(analysis, turn_events)
@@ -2046,10 +1991,10 @@ func _build_attack_beats(analysis: AttackAnalysis, turn_events: Array[BattleEven
 
 func _build_attack_beats_from_parsed(parsed: Dictionary, turn_events: Array[BattleEvent]) -> Array[TurnBeat]:
 	var analysis: AttackAnalysis = parsed.get("analysis", null)
-	if analysis == null or int(analysis.strike_count) <= 0:
+	if analysis == null or analysis.strike_count <= 0:
 		return _build_generic_beats(turn_events)
 
-	if int(analysis.attack_mode) == int(Attack.Mode.RANGED):
+	if analysis.attack_mode == int(Attack.Mode.RANGED):
 		return _build_ranged_attack_beats_from_parsed(parsed, turn_events)
 
 	return _build_melee_attack_beats_from_parsed(parsed, turn_events)
@@ -2072,7 +2017,7 @@ func _build_melee_attack_beats_from_parsed(parsed: Dictionary, turn_events: Arra
 	beats.append(focus_beat)
 	beats.append(_make_melee_windup_beat(1.0, analysis))
 
-	var n := int(analysis.strike_count)
+	var n := analysis.strike_count
 	var start_q := 2.0
 	if n >= 3:
 		start_q = 2.5
@@ -2137,7 +2082,7 @@ func _build_ranged_attack_beats_from_parsed(parsed: Dictionary, turn_events: Arr
 	beats.append(focus_beat)
 	beats.append(_make_ranged_windup_beat(1.0, analysis))
 
-	var n := int(analysis.strike_count)
+	var n := analysis.strike_count
 	var fire_start_q := 1.5
 	if n >= 3:
 		fire_start_q = 2.0
@@ -2192,68 +2137,67 @@ func _build_ranged_attack_beats_from_parsed(parsed: Dictionary, turn_events: Arr
 	var clear_q := final_q + _tail_gap_q_for_attack(analysis)
 	clear_q = _enforce_min_clear_focus_q_for_self_death(clear_q, analysis.attacker_id, turn_events)
 	var layout_orders := _find_post_action_group_layouts(turn_events, group_index)
-	_add_beat_array_clear_focus(beats, clear_q, analysis.attacker_id, trailing, layout_orders)
+	beats.append(_make_clear_focus_beat(clear_q, analysis.attacker_id, trailing, layout_orders))
 	return _sort_beats(beats)
 
 
 func _build_reaction_beats_from_group(parsed_parent: Dictionary, reaction: Dictionary, beat_q: float) -> Dictionary:
 	var kind: StringName = reaction.get("kind", &"")
-	if kind == &"summon":
-		var beat := _make_reaction_summon_beat(beat_q, reaction.get("events", []))
-		return {
-			"beats": [beat],
-			"last_q": beat_q,
-		}
-
-	if kind == &"attack":
-		var events: Array[BattleEvent] = parsed_parent.get("source_events", [])
-		var scope_ranges: Dictionary = parsed_parent.get("scope_ranges", {})
-		var nested_scope_id := int(reaction.get("scope_id", 0))
-		var nested := _parse_attack_scope(events, scope_ranges, nested_scope_id)
-		if nested.is_empty():
-			var fallback_beat := TurnBeat.new()
-			fallback_beat.beat_q = beat_q
-			fallback_beat.label = "reaction_attack_fallback"
-			for event in reaction.get("events", []):
-				fallback_beat.events.append(event)
-			_debug_log_reaction("fallback nested attack q=%.2f events=%s" % [
-				beat_q,
-				_debug_event_list_summary(reaction.get("events", [])),
-			])
+	match kind:
+		&"summon":
+			var beat := _make_reaction_summon_beat(beat_q, reaction.get("events", []))
 			return {
-				"beats": [fallback_beat],
+				"beats": [beat],
 				"last_q": beat_q,
 			}
+		&"attack":
+			var events: Array[BattleEvent] = parsed_parent.get("source_events", [])
+			var scope_ranges: Dictionary = parsed_parent.get("scope_ranges", {})
+			var nested_scope_id := int(reaction.get("scope_id", 0))
+			var nested := _parse_attack_scope(events, scope_ranges, nested_scope_id)
+			if nested.is_empty():
+				var fallback_beat := TurnBeat.new()
+				fallback_beat.beat_q = beat_q
+				fallback_beat.label = "reaction_attack_fallback"
+				for event in reaction.get("events", []):
+					fallback_beat.events.append(event)
+				_debug_log_reaction("fallback nested attack q=%.2f events=%s" % [
+					beat_q,
+					_debug_event_list_summary(reaction.get("events", [])),
+				])
+				return {
+					"beats": [fallback_beat],
+					"last_q": beat_q,
+				}
 
-		nested["scope_ranges"] = scope_ranges
-		nested["source_events"] = events
-		return _build_compact_reaction_attack_beats(nested, beat_q)
-
-	if kind == &"status":
-		var reaction_events: Array[BattleEvent] = reaction.get("events", [])
-		var has_status := false
-		for event in reaction_events:
-			if event != null and (
-				int(event.type) == int(BattleEvent.Type.STATUS)
-				or int(event.type) == int(BattleEvent.Type.STATUS_CHANGED)
-			):
-				has_status = true
-				break
-		var beat := _make_reaction_status_beat(beat_q, reaction_events) if has_status else _make_reaction_draw_beat(beat_q, reaction_events)
-		return {
-			"beats": [beat],
-			"last_q": beat_q,
-		}
-
-	var generic_beat := TurnBeat.new()
-	generic_beat.beat_q = beat_q
-	generic_beat.label = "reaction_generic"
-	for event in reaction.get("events", []):
-		generic_beat.events.append(event)
-	return {
-		"beats": [generic_beat],
-		"last_q": beat_q,
-	}
+			nested["scope_ranges"] = scope_ranges
+			nested["source_events"] = events
+			return _build_compact_reaction_attack_beats(nested, beat_q)
+		&"status":
+			var reaction_events: Array[BattleEvent] = reaction.get("events", [])
+			var has_status := false
+			for event in reaction_events:
+				if event != null and (
+					int(event.type) == int(BattleEvent.Type.STATUS)
+					or int(event.type) == int(BattleEvent.Type.STATUS_CHANGED)
+				):
+					has_status = true
+					break
+			var beat := _make_reaction_status_beat(beat_q, reaction_events) if has_status else _make_reaction_draw_beat(beat_q, reaction_events)
+			return {
+				"beats": [beat],
+				"last_q": beat_q,
+			}
+		_:
+			var generic_beat := TurnBeat.new()
+			generic_beat.beat_q = beat_q
+			generic_beat.label = "reaction_generic"
+			for event in reaction.get("events", []):
+				generic_beat.events.append(event)
+			return {
+				"beats": [generic_beat],
+				"last_q": beat_q,
+			}
 
 
 func _build_compact_reaction_attack_beats(parsed: Dictionary, beat_q: float) -> Dictionary:
@@ -2273,7 +2217,7 @@ func _build_compact_reaction_attack_beats(parsed: Dictionary, beat_q: float) -> 
 	for order in focus_beat.orders:
 		beat.orders.append(order)
 
-	if int(analysis.attack_mode) == int(Attack.Mode.RANGED):
+	if analysis.attack_mode == int(Attack.Mode.RANGED):
 		beat.orders.append(_make_ranged_fire_order(analysis, 0))
 	else:
 		var strike_order := MeleeStrikePresentationOrder.new()
@@ -2282,7 +2226,7 @@ func _build_compact_reaction_attack_beats(parsed: Dictionary, beat_q: float) -> 
 		strike_order.target_ids = _collect_all_attack_targets(analysis)
 		strike_order.visual_sec = 0.22
 		strike_order.strike_index = 0
-		strike_order.strikes_total = maxi(int(analysis.strike_count), 1)
+		strike_order.strikes_total = maxi(analysis.strike_count, 1)
 		strike_order.total_hit_count = maxi(_count_total_hits(analysis), 1)
 		strike_order.has_lethal = !analysis.lethal_indices.is_empty()
 		beat.orders.append(strike_order)
@@ -2563,7 +2507,7 @@ func _build_ranged_attack_beats(analysis: AttackAnalysis, turn_events: Array[Bat
 	var clear_q := last_impact_q + _tail_gap_q_for_attack(analysis)
 	clear_q = _enforce_min_clear_focus_q_for_self_death(clear_q, analysis.attacker_id, turn_events)
 	var layout_orders := _find_post_action_group_layouts(turn_events, group_index)
-	_add_beat_array_clear_focus(beats, clear_q, analysis.attacker_id, trailing, layout_orders)
+	beats.append(_make_clear_focus_beat(clear_q, analysis.attacker_id, trailing, layout_orders))
 
 	return _sort_beats(beats)
 
@@ -2682,7 +2626,7 @@ func _make_melee_strike_order_from_info(
 	o.strikes_total = analysis.strike_count
 	o.total_hit_count = strike.hit_count
 	o.has_lethal = strike.has_lethal_hit
-	o.chained_from_previous = bool(strike.chained_from_previous)
+	o.chained_from_previous = strike.chained_from_previous
 	o.origin_strike_index = int(strike.origin_strike_index if strike.origin_strike_index >= 0 else strike_index)
 	o.chain_source_target_id = int(strike.chain_source_target_id)
 	return o
@@ -2759,7 +2703,7 @@ func _make_ranged_fire_order_from_info(
 	o.total_hit_count = strike.hit_count
 	o.has_lethal = strike.has_lethal_hit
 	o.projectile_scene_path = analysis.projectile_scene_path
-	o.chained_from_previous = bool(strike.chained_from_previous)
+	o.chained_from_previous = strike.chained_from_previous
 	o.origin_strike_index = int(strike.origin_strike_index if strike.origin_strike_index >= 0 else strike_index)
 	o.chain_source_target_id = int(strike.chain_source_target_id)
 	o.has_chain_continuation = _strike_has_chain_continuation(analysis, strike_index)
@@ -2802,41 +2746,12 @@ func _make_impact_orders_for_info(
 		return out
 
 	for h in strike.hits:
-		if h == null:
-			continue
-
-		var o := ImpactPresentationOrder.new()
-		o.kind = PresentationOrder.Kind.IMPACT
-		o.actor_id = analysis.attacker_id
-		o.target_id = int(h.target_id)
-		o.target_ids = [int(h.target_id)]
-		o.visual_sec = 0.18
-		o.strike_index = strike_index
-		o.was_lethal = bool(h.was_lethal)
-		o.amount = int(h.amount)
-		o.after_health = int(h.after_health)
-		o.chained_from_previous = bool(strike.chained_from_previous)
-		o.is_self_recoil = false
-		out.append(o)
+		if h != null:
+			out.append(_make_single_impact_order(analysis, strike, strike_index, h, false))
 
 	for h in strike.recoil_hits:
-		if h == null:
-			continue
-
-		var recoil_order := ImpactPresentationOrder.new()
-		recoil_order.kind = PresentationOrder.Kind.IMPACT
-		recoil_order.actor_id = analysis.attacker_id
-		recoil_order.target_id = int(h.target_id)
-		recoil_order.target_ids = [int(h.target_id)]
-		recoil_order.visual_sec = 0.18
-		recoil_order.strike_index = strike_index
-		recoil_order.was_lethal = bool(h.was_lethal)
-		recoil_order.amount = int(h.amount)
-		recoil_order.after_health = int(h.after_health)
-		recoil_order.chained_from_previous = false
-		recoil_order.is_self_recoil = true
-		recoil_order.meta[Keys.SELF_RECOIL] = true
-		out.append(recoil_order)
+		if h != null:
+			out.append(_make_single_impact_order(analysis, strike, strike_index, h, true))
 
 	for e in strike_events:
 		if e == null or e.data == null:
@@ -2847,6 +2762,30 @@ func _make_impact_orders_for_info(
 				out.append(_make_removal_presentation_order(analysis.attacker_id, e))
 
 	return out
+
+
+func _make_single_impact_order(
+	analysis: AttackAnalysis,
+	strike: StrikePresentationInfo,
+	strike_index: int,
+	h: HitPresentationInfo,
+	is_recoil: bool
+) -> ImpactPresentationOrder:
+	var o := ImpactPresentationOrder.new()
+	o.kind = PresentationOrder.Kind.IMPACT
+	o.actor_id = analysis.attacker_id
+	o.target_id = int(h.target_id)
+	o.target_ids = [int(h.target_id)]
+	o.visual_sec = 0.18
+	o.strike_index = strike_index
+	o.was_lethal = bool(h.was_lethal)
+	o.amount = int(h.amount)
+	o.after_health = int(h.after_health)
+	o.chained_from_previous = strike.chained_from_previous and !is_recoil
+	o.is_self_recoil = is_recoil
+	if is_recoil:
+		o.meta[Keys.SELF_RECOIL] = true
+	return o
 
 
 func _find_or_make_beat(beats: Array[TurnBeat], beat_q: float, label: String = "") -> TurnBeat:
@@ -2878,18 +2817,6 @@ func _add_events_to_beat_array(beats: Array[TurnBeat], beat_q: float, events: Ar
 	var b := _find_or_make_beat(beats, beat_q, label)
 	for e in events:
 		b.events.append(e)
-
-
-func _add_beat_array_clear_focus(
-	beats: Array[TurnBeat],
-	beat_q: float,
-	actor_id: int,
-	trailing: Array[BattleEvent],
-	layout_orders: Array[GroupLayoutPresentationOrder] = []
-) -> void:
-	var b := _make_clear_focus_beat(beat_q, actor_id, trailing, layout_orders)
-	beats.append(b)
-
 
 func _sort_beats(beats: Array[TurnBeat]) -> Array[TurnBeat]:
 	beats.sort_custom(func(a, b): return a.beat_q < b.beat_q)
@@ -2959,9 +2886,7 @@ func _build_generic_beats(events: Array[BattleEvent]) -> Array[TurnBeat]:
 		clear_q = _enforce_min_clear_focus_q_for_self_death(clear_q, actor_id, events)
 		if !removal_events.is_empty():
 			beats.append(_make_generic_removal_beat(1.0, actor_id, removal_events))
-			beats.append(_make_clear_focus_beat(clear_q, actor_id, trailing, layout_orders))
-		else:
-			beats.append(_make_clear_focus_beat(clear_q, actor_id, trailing, layout_orders))
+		beats.append(_make_clear_focus_beat(clear_q, actor_id, trailing, layout_orders))
 	else:
 		var b := TurnBeat.new()
 		b.beat_q = 0.0
@@ -3112,9 +3037,7 @@ func _build_status_beats(turn_events: Array[BattleEvent]) -> Array[TurnBeat]:
 	clear_q = _enforce_min_clear_focus_q_for_self_death(clear_q, actor_id, turn_events)
 	if !removal_events.is_empty():
 		beats.append(_make_generic_removal_beat(3.0, actor_id, removal_events))
-		beats.append(_make_clear_focus_beat(clear_q, actor_id, trailing, layout_orders))
-	else:
-		beats.append(_make_clear_focus_beat(clear_q, actor_id, trailing, layout_orders))
+	beats.append(_make_clear_focus_beat(clear_q, actor_id, trailing, layout_orders))
 
 	return beats
 
@@ -3418,6 +3341,10 @@ func _make_group_layout_orders_from_events(
 					"order_ids": latest_order,
 				}
 
+	return _build_group_layout_orders_from_map(latest_by_group)
+
+
+func _build_group_layout_orders_from_map(latest_by_group: Dictionary) -> Array[GroupLayoutPresentationOrder]:
 	if latest_by_group.is_empty():
 		return []
 
@@ -3481,26 +3408,7 @@ func _find_pre_attack_group_layouts(
 				"order_ids": order_ids,
 			}
 
-	if latest_by_group.is_empty():
-		return []
-
-	var sorted_groups: Array = latest_by_group.keys()
-	sorted_groups.sort_custom(func(a, b):
-		return int(latest_by_group[a].get("seq", -1)) < int(latest_by_group[b].get("seq", -1))
-	)
-
-	var out: Array[GroupLayoutPresentationOrder] = []
-	for group_key in sorted_groups:
-		var info: Dictionary = latest_by_group[group_key]
-		var o := GroupLayoutPresentationOrder.new()
-		o.kind = PresentationOrder.Kind.GROUP_LAYOUT
-		o.group_index = int(group_key)
-		o.order_ids = info.get("order_ids", PackedInt32Array())
-		o.animate = true
-		o.visual_sec = 0.12
-		out.append(o)
-
-	return out
+	return _build_group_layout_orders_from_map(latest_by_group)
 
 
 func _place_delayed_summon_reserve_release_events(beats: Array[TurnBeat], turn_events: Array[BattleEvent]) -> void:
@@ -3581,7 +3489,7 @@ func _ensure_lossless_beats(action_kind: StringName, turn_events: Array[BattleEv
 
 	_place_delayed_summon_reserve_release_events(out, turn_events)
 
-	var assigned_counts: Dictionary = {}
+	var assigned_seqs: Dictionary = {}
 	for beat in out:
 		if beat == null:
 			continue
@@ -3590,12 +3498,10 @@ func _ensure_lossless_beats(action_kind: StringName, turn_events: Array[BattleEv
 			if be == null:
 				continue
 			var seq := int(be.seq)
-			assigned_counts[seq] = int(assigned_counts.get(seq, 0)) + 1
-
-	for seq in assigned_counts.keys():
-		var count := int(assigned_counts[seq])
-		if count > 1:
-			push_warning("TurnTimelineCompiler: event seq=%d assigned %d times in action_kind=%s" % [int(seq), count, String(action_kind)])
+			if assigned_seqs.has(seq):
+				push_warning("TurnTimelineCompiler: event seq=%d assigned multiple times in action_kind=%s" % [seq, String(action_kind)])
+			else:
+				assigned_seqs[seq] = true
 
 	for event in turn_events:
 		var be := event as BattleEvent
@@ -3603,7 +3509,7 @@ func _ensure_lossless_beats(action_kind: StringName, turn_events: Array[BattleEv
 			continue
 		if _is_structural_ignored_event(be):
 			continue
-		if int(assigned_counts.get(int(be.seq), 0)) > 0:
+		if assigned_seqs.has(int(be.seq)):
 			continue
 
 		var fallback_beat := _choose_fallback_beat_for_event(out, be)
@@ -3614,7 +3520,7 @@ func _ensure_lossless_beats(action_kind: StringName, turn_events: Array[BattleEv
 			out.append(fallback_beat)
 
 		fallback_beat.events.append(be)
-		assigned_counts[int(be.seq)] = 1
+		assigned_seqs[int(be.seq)] = true
 		if _is_known_reaction_event_type(be):
 			_debug_log_reaction("fallback placement type=%s seq=%d action_kind=%s beat=%s" % [
 				_event_type_name(int(be.type)),
