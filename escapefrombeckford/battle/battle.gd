@@ -122,6 +122,7 @@ func _connect_events() -> void:
 	Events.dead_combatant_data.connect(_on_dead_combatant_data)
 	Events.request_defeat.connect(_on_request_defeat)
 	Events.request_victory.connect(_on_request_victory)
+	Events.summon_reserve_card_acquired.connect(_on_summon_reserve_card_acquired)
 	Events.summon_reserve_card_released.connect(_on_summon_reserve_card_released)
 	Events.end_turn_button_pressed.connect(_on_end_turn_button_pressed)
 	Events.player_input_view_reached.connect(_on_player_input_view_reached)
@@ -525,6 +526,11 @@ func _on_turn_status_view_changed(group_index: int, active_id: int, _pending_ids
 func _on_dead_combatant_data(combatant_data: CombatantData) -> void:
 	if player_data != null and combatant_data == player_data:
 		Events.request_defeat.emit()
+
+
+func _on_summon_reserve_card_acquired(_summoned_id: int, card_uid: String) -> void:
+	if card_bins != null:
+		card_bins.reserve_card_from_discard(card_uid)
 
 
 func _on_summon_reserve_card_released(summoned_id: int, card_uid: String, overload_mod: int) -> void:

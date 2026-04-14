@@ -6,4 +6,5 @@
 [resource]
 script = ExtResource("1_3jnh6")
 summon_data = ExtResource("2_5ghmy")
+reserves_card = true
 metadata/_custom_type_script = "uid://buhtw3540mbls"

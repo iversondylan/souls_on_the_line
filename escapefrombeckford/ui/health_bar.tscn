@@ -118,12 +118,12 @@ custom_minimum_size = Vector2(4, 0)
 layout_mode = 2
 size_flags_horizontal = 4
 
-[node name="SoulboundIcon" type="TextureRect" parent="HBoxContainer" unique_id=1464680930]
+[node name="BoundIcon" type="TextureRect" parent="HBoxContainer" unique_id=1464680930]
 layout_mode = 2
 texture = ExtResource("4_eo044")
 expand_mode = 2
 
-[node name="DepleteIcon" type="TextureRect" parent="HBoxContainer" unique_id=1209882937]
+[node name="WildIcon" type="TextureRect" parent="HBoxContainer" unique_id=1209882937]
 layout_mode = 2
 texture = ExtResource("5_fbv3k")
 expand_mode = 2

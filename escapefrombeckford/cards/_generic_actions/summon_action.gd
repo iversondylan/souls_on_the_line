@@ -2,7 +2,8 @@
 class_name SummonAction extends CardAction
 
 @export var summon_data: CombatantData
-@export var mortality: CombatantState.Mortality = CombatantState.Mortality.SOULBOUND
+@export var mortality: CombatantState.Mortality = CombatantState.Mortality.BOUND
+@export var reserves_card: bool = false
 @export var sound: Sound = load("uid://c0cllss7w30rn")
 
 func get_interaction_mode(ctx: CardContext) -> int:
@@ -10,7 +11,7 @@ func get_interaction_mode(ctx: CardContext) -> int:
 		#print("summon_action.gd get_interaction_mode() returning NONE")
 		return InteractionMode.NONE
 
-	if int(mortality) != int(CombatantState.Mortality.SOULBOUND):
+	if int(mortality) != int(CombatantState.Mortality.BOUND):
 		return InteractionMode.NONE
 	
 	var player_id := int(ctx.api.get_player_id())
@@ -18,8 +19,8 @@ func get_interaction_mode(ctx: CardContext) -> int:
 		#print("summon_action.gd get_interaction_mode() returning NONE")
 		return InteractionMode.NONE
 	
-	var soulbound_ids: Array[int] = ctx.api.get_soulbound_ids_for_owner(player_id)
-	if soulbound_ids.size() >= CombatantState.get_mortality_cap(CombatantState.Mortality.SOULBOUND):
+	var bound_ids: Array[int] = ctx.api.get_bound_ids_for_owner(player_id)
+	if bound_ids.size() >= CombatantState.get_mortality_cap(CombatantState.Mortality.BOUND):
 		#print("summon_action.gd get_interaction_mode() returning ESCROW")
 		return InteractionMode.ESCROW
 	
@@ -82,10 +83,15 @@ func activate_sim(ctx: CardContext) -> bool:
 	sctx.mortality = mortality
 	sctx.reason = "card_summon"
 
-	if ctx.card_data != null and !ctx.card_data.deplete:
+	if ctx.card_data != null:
 		ctx.card_data.ensure_uid()
-		sctx.bound_card_uid = String(ctx.card_data.uid)
 		sctx.origin_card_uid = String(ctx.card_data.uid)
+	var should_reserve := reserves_card \
+		and ctx.card_data != null \
+		and !ctx.card_data.deplete \
+		and !ctx.reserve_claimed
+	if should_reserve:
+		sctx.bound_card_uid = String(ctx.card_data.uid)
 
 	if ctx.params != null and ctx.params.has(Keys.WINDUP_ORDER_IDS):
 		var snap = ctx.params[Keys.WINDUP_ORDER_IDS]
@@ -96,6 +102,10 @@ func activate_sim(ctx: CardContext) -> bool:
 
 	if sctx.summoned_id > 0:
 		ctx.runtime.append_summoned_id(ctx, sctx.summoned_id)
+		if should_reserve:
+			ctx.reserve_claimed = true
+			ctx.reserved_card_uid = String(sctx.bound_card_uid)
+			ctx.reserved_summoned_id = int(sctx.summoned_id)
 
 	return true
 

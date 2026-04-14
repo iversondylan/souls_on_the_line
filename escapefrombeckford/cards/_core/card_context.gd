@@ -38,3 +38,6 @@ var confirm_action_index: int = -1
 var waiting_async_action_index: int = -1
 var waiting_async_request_id: int = 0
 var interaction_payloads: Dictionary = {} # action_index -> Dictionary
+var reserve_claimed: bool = false
+var reserved_card_uid: String = ""
+var reserved_summoned_id: int = 0

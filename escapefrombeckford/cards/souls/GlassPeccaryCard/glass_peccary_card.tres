@@ -31,6 +31,7 @@ ai = SubResource("Resource_kfx2n")
 script = ExtResource("2_gs3h0")
 summon_data = SubResource("Resource_5y8hh")
 mortality = 2
+reserves_card = true
 sound = ExtResource("3_6vd3u")
 
 [sub_resource type="Resource" id="Resource_wgn5w"]
@@ -41,7 +42,7 @@ intensity = 1
 [resource]
 script = ExtResource("9_y8ha6")
 id = &"glass_peccary"
-card_type = 1
+card_type = 4
 target_type = 1
 name = "Glass Peccary"
 deplete = true

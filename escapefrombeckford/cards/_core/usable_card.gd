@@ -380,8 +380,6 @@ func _move_to_destination() -> void:
 	#print("usable_card.gd _move_to_destination()")
 	if card_data.deplete:
 		hand.deplete_card(hand.remove_card_by_entity(self))
-	elif card_data.card_type == CardData.CardType.SUMMON:
-		hand.reserve_summon_card(hand.remove_card_by_entity(self))
 	else:
 		hand.discard_card(hand.remove_card_by_entity(self))
 

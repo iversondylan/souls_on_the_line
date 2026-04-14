@@ -4,7 +4,7 @@ class_name BattleRewardsScreen extends Control
 
 #enum Type {GOLD, NEW_CARD, RELIC}
 
-const CARD_REWARD = preload("uid://dlq3idvfn5vil")
+const MENU_CARD := preload("uid://d4g7iin5x7648")
 const REWARD_BUTTON := preload("uid://clfrebjlfonlo")
 const GOLD_TEXTURE := preload("uid://cbbohhy0ybxvy")
 const GOLD_TEXT := "%s gold"
@@ -18,9 +18,15 @@ var arcana_system_container: ArcanaSystemContainer
 var run: Run
 
 @onready var rewards: VBoxContainer = %Rewards
+@onready var card_choices_section: VBoxContainer = %CardChoicesSection
+@onready var card_choice_container: HBoxContainer = %CardChoiceContainer
+@onready var card_reward_skip_button: Button = %CardRewardSkipButton
+@onready var card_reward_take_button: Button = %CardRewardTakeButton
 var reward_context: RewardContext
 
 var card_reward_total_weight : float = 0.0
+var _selected_reward_card: CardData
+var _current_card_reward_button: RewardButton
 
 var card_rarity_weights := {
 	CardData.Rarity.COMMON: 0.0,
@@ -29,6 +35,8 @@ var card_rarity_weights := {
 }
 
 func _ready() -> void:
+	card_reward_skip_button.pressed.connect(_on_card_reward_taken.bind(null))
+	card_reward_take_button.pressed.connect(_take_selected_reward_card)
 	_clear_rewards()
 
 func populate_from_context(ctx: RewardContext) -> void:
@@ -64,6 +72,7 @@ func add_card_reward(card_choices: Array[CardData]) -> void:
 	card_reward_button.reward_texture = CARD_TEXTURE
 	card_reward_button.reward_text = CARD_TEXT
 	card_reward_button.pressed.connect(_show_card_reward.bind(card_choices))
+	_current_card_reward_button = card_reward_button
 	rewards.add_child.call_deferred(card_reward_button)
 
 func add_arcanum_reward(arcanum: Arcanum, reward_index: int) -> void:
@@ -86,12 +95,27 @@ func _on_arcanum_reward_taken(arcanum: Arcanum, reward_index: int) -> void:
 func _show_card_reward(card_choices: Array[CardData]) -> void:
 	if !run_state or card_choices.is_empty():
 		return
-	
-	var card_reward := CARD_REWARD.instantiate() as CardReward
-	add_child(card_reward)
-	card_reward.card_reward_selected.connect(_on_card_reward_taken)
-	card_reward.card_choices = card_choices
-	card_reward.show()
+	card_choices_section.visible = true
+	card_reward_take_button.disabled = true
+	_selected_reward_card = null
+
+	for child in card_choice_container.get_children():
+		child.queue_free()
+
+	for card_data in card_choices:
+		var wrapper := PanelContainer.new()
+		wrapper.mouse_filter = Control.MOUSE_FILTER_STOP
+		card_choice_container.add_child(wrapper)
+		wrapper.modulate = Color(0.72, 0.72, 0.72, 1.0)
+
+		var menu_card := MENU_CARD.instantiate() as MenuCard
+		menu_card.mouse_filter = Control.MOUSE_FILTER_STOP
+		wrapper.add_child(menu_card)
+		menu_card.set_card_data(card_data)
+		menu_card.tooltip_requested.connect(_on_reward_card_selected.bind(wrapper))
+
+	if _current_card_reward_button != null:
+		_current_card_reward_button.visible = false
 
 func _calculate_card_chances() -> void:
 	card_reward_total_weight = run_state.common_weight + run_state.uncommon_weight + run_state.rare_weight
@@ -120,8 +144,28 @@ func _on_card_reward_taken(card: CardData) -> void:
 	if card != null and run_state.run_deck:
 		run_state.run_deck.add_card(card)
 	run_state.pending_reward_card_claimed = true
+	card_choices_section.visible = false
+	for child in card_choice_container.get_children():
+		child.queue_free()
+	_current_card_reward_button = null
+	_selected_reward_card = null
 	if run != null:
 		run._persist_active_run()
+
+
+func _on_reward_card_selected(card: CardData, wrapper: PanelContainer) -> void:
+	_selected_reward_card = card
+	card_reward_take_button.disabled = false
+	for child in card_choice_container.get_children():
+		if child is CanvasItem:
+			(child as CanvasItem).modulate = Color(0.72, 0.72, 0.72, 1.0)
+	wrapper.modulate = Color.WHITE
+
+
+func _take_selected_reward_card() -> void:
+	if _selected_reward_card == null:
+		return
+	_on_card_reward_taken(_selected_reward_card)
 
 func _on_back_button_pressed() -> void:
 	if run != null:
@@ -130,4 +174,12 @@ func _on_back_button_pressed() -> void:
 
 func _clear_rewards() -> void:
 	for node: Node in rewards.get_children():
+		if node == card_choices_section:
+			continue
 		node.queue_free()
+	card_choices_section.visible = false
+	card_reward_take_button.disabled = true
+	for child in card_choice_container.get_children():
+		child.queue_free()
+	_current_card_reward_button = null
+	_selected_reward_card = null

@@ -4,8 +4,8 @@ class_name HealthBar extends PanelContainer
 @onready var damage_bar: ProgressBar = %DamageBar
 @onready var health_number: Label = %HealthNumber
 @onready var max_health_number: Label = %MaxHealthNumber
-@onready var soulbound_icon: TextureRect = $HBoxContainer/SoulboundIcon
-@onready var deplete_icon: TextureRect = $HBoxContainer/DepleteIcon
+@onready var bound_icon: TextureRect = $HBoxContainer/BoundIcon
+@onready var wild_icon: TextureRect = $HBoxContainer/WildIcon
 @onready var card_reserved_icon: TextureRect = $HBoxContainer/CardReservedIcon
 
 @export var inside_control: bool = false
@@ -33,13 +33,13 @@ func update_health_view(_max_health: int, _health: int) -> void:
 	health = _health
 
 func update_status_icons(mortality: CombatantState.Mortality, has_summon_reserve_card: bool) -> void:
-	var is_soulbound := int(mortality) == int(CombatantState.Mortality.SOULBOUND)
-	var is_deplete := int(mortality) == int(CombatantState.Mortality.DEPLETE)
+	var is_bound := int(mortality) == int(CombatantState.Mortality.BOUND)
+	var is_wild := int(mortality) == int(CombatantState.Mortality.WILD)
 
-	if soulbound_icon != null:
-		soulbound_icon.visible = is_soulbound
-	if deplete_icon != null:
-		deplete_icon.visible = is_deplete
+	if bound_icon != null:
+		bound_icon.visible = is_bound
+	if wild_icon != null:
+		wild_icon.visible = is_wild
 	if card_reserved_icon != null:
 		card_reserved_icon.visible = has_summon_reserve_card
 	_update_visuals()

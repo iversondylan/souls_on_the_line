@@ -6,4 +6,5 @@
 [resource]
 script = ExtResource("1_summon_action")
 summon_data = ExtResource("2_formic_drone_data")
+reserves_card = true
 metadata/_custom_type_script = "uid://buhtw3540mbls"

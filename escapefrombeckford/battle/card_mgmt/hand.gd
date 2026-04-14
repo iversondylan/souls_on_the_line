@@ -503,13 +503,3 @@ func _clear_hover_visuals() -> void:
 		card.selected = false
 		card.reset_visuals()
 	currently_selected_card_index = -1
-
-func reserve_summon_card(usable_card: UsableCard) -> void:
-	if usable_card == null or !is_instance_valid(usable_card):
-		return
-
-	if bins != null and usable_card.card_data != null:
-		bins.reserve_card_from_hand(usable_card.card_data)
-
-	usable_card.queue_free()
-	reposition_hand_cards()

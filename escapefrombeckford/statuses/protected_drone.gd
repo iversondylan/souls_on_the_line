@@ -31,7 +31,7 @@ func on_removal(ctx: SimStatusContext, removal_ctx) -> void:
 	summon_ctx.group_index = int(removal_ctx.group_index)
 	summon_ctx.insert_index = maxi(int(removal_ctx.insert_index), 0)
 	summon_ctx.summon_data = FIRE_ANT_DATA.duplicate(true)
-	summon_ctx.mortality = CombatantState.Mortality.DEPLETE
+	summon_ctx.mortality = CombatantState.Mortality.WILD
 	summon_ctx.reason = "protected_drone"
 	summon_ctx.origin_card_uid = String(removal_ctx.origin_card_uid)
 	summon_ctx.origin_arcanum_id = removal_ctx.origin_arcanum_id

@@ -248,15 +248,14 @@ func move_cards(ctx: CardMoveContext) -> void:
 	ctx.actually_moved = ctx.moved_cards.size()
 
 
-func reserve_card_from_hand(card: CardData) -> void:
-	if card == null:
+func reserve_card_from_discard(card_uid: String) -> void:
+	if card_uid.is_empty():
 		return
-	card.ensure_uid()
 	var move_ctx := CardMoveContext.new()
-	move_ctx.from_bin = CardMoveContext.BinKind.HAND
+	move_ctx.from_bin = CardMoveContext.BinKind.DISCARD_PILE
 	move_ctx.to_bin = CardMoveContext.BinKind.SUMMON_RESERVE
-	move_ctx.card_uids = [String(card.uid)]
-	move_ctx.reason = "reserve_summon_card"
+	move_ctx.card_uids = [card_uid]
+	move_ctx.reason = "reserve_summon_card_from_discard"
 	move_cards(move_ctx)
 
 
@@ -411,7 +410,7 @@ func _draw_first_hand_with_summon_guarantee(count: int) -> Array[CardData]:
 
 	var has_summon := false
 	for card in drawn:
-		if card != null and card.card_type == CardData.CardType.SUMMON:
+		if card != null and card.card_type == CardData.CardType.SOULBOUND:
 			has_summon = true
 			break
 
@@ -419,7 +418,7 @@ func _draw_first_hand_with_summon_guarantee(count: int) -> Array[CardData]:
 		var summon_indices: Array[int] = []
 		for idx in range(state.draw_pile.cards.size()):
 			var remaining: CardData = state.draw_pile.cards[idx]
-			if remaining != null and remaining.card_type == CardData.CardType.SUMMON:
+			if remaining != null and remaining.card_type == CardData.CardType.SOULBOUND:
 				summon_indices.append(idx)
 
 		if !summon_indices.is_empty():

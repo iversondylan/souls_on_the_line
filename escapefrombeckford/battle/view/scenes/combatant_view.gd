@@ -108,8 +108,8 @@ var _base_art_pos: Vector2 = Vector2.ZERO
 var _base_cached: bool = false
 
 
-func is_soulbound() -> bool:
-	return int(mortality) == int(CombatantState.Mortality.SOULBOUND)
+func is_bound() -> bool:
+	return int(mortality) == int(CombatantState.Mortality.BOUND)
 
 
 func set_has_summon_reserve_card(new_value: bool) -> void:

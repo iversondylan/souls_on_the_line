@@ -7,5 +7,6 @@
 [resource]
 script = ExtResource("1_summon_action")
 summon_data = ExtResource("3_fragile_mantis_data")
+reserves_card = true
 sound = ExtResource("2_summon_sound")
 metadata/_custom_type_script = "uid://buhtw3540mbls"

@@ -31,6 +31,7 @@ ai = SubResource("Resource_0wlod")
 script = ExtResource("2_txqp0")
 summon_data = SubResource("Resource_hwrsf")
 mortality = 2
+reserves_card = true
 sound = ExtResource("3_daf2a")
 
 [sub_resource type="Resource" id="Resource_lkl38"]
@@ -46,7 +47,7 @@ intensity = 1
 [resource]
 script = ExtResource("2_c2nov")
 id = &"shrapnel_oyster"
-card_type = 1
+card_type = 4
 target_type = 1
 name = "Shrapnel Oyster"
 deplete = true

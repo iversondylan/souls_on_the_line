@@ -2,13 +2,13 @@
 
 class_name CombatantState extends RefCounted
 
-enum Mortality { MORTAL, SOULBOUND, DEPLETE }
+enum Mortality { MORTAL, BOUND, WILD }
 
 static func get_mortality_cap(mortality: int) -> int:
 	match int(mortality):
-		int(Mortality.SOULBOUND):
+		int(Mortality.BOUND):
 			return 3
-		int(Mortality.DEPLETE):
+		int(Mortality.WILD):
 			return 2
 		_:
 			return 0

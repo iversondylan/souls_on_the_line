@@ -189,9 +189,24 @@ layout_mode = 2
 theme = ExtResource("5_auago")
 text = "Restore 30% of max HP"
 
+[node name="AttuneButton" type="Button" parent="UILayer/UI"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(190, 60)
+layout_mode = 2
+size_flags_horizontal = 4
+theme = ExtResource("4_6jn8c")
+text = "Attune"
+
+[node name="AttuneDescription" type="Label" parent="UILayer/UI"]
+unique_name_in_owner = true
+layout_mode = 2
+theme = ExtResource("5_auago")
+text = "Replace one attuned soul with a SoulBound card from your collection."
+
 [node name="AnimationPlayer" type="AnimationPlayer" parent="."]
 libraries = {
 &"": SubResource("AnimationLibrary_hk2pn")
 }
 
 [connection signal="pressed" from="UILayer/UI/RestButton" to="." method="_on_rest_button_pressed"]
+[connection signal="pressed" from="UILayer/UI/AttuneButton" to="." method="_on_attune_button_pressed"]

@@ -199,10 +199,10 @@ func process_player_turn_end_discard(ctx: DiscardContext) -> void:
 	SimArcanaSystem.on_player_turn_end_discard(self, ctx)
 	emit_discard_cards(ctx)
 
-func get_soulbound_ids_for_owner(_owner_id: int) -> Array[int]:
+func get_bound_ids_for_owner(_owner_id: int) -> Array[int]:
 	return get_combatants_in_group_by_mortality(
 		FRIENDLY,
-		CombatantState.Mortality.SOULBOUND,
+		CombatantState.Mortality.BOUND,
 		false
 	)
 
@@ -597,7 +597,7 @@ func resolve_damage_immediate(ctx: DamageContext) -> int:
 		ctx.applied_banish_amount = 0
 		return 0
 
-	if tgt.mortality == CombatantState.Mortality.SOULBOUND or tgt.mortality == CombatantState.Mortality.DEPLETE:
+	if tgt.mortality == CombatantState.Mortality.BOUND or tgt.mortality == CombatantState.Mortality.WILD:
 		ctx.applied_banish_amount = banish_amount
 		ctx.amount += banish_amount
 
@@ -735,7 +735,7 @@ func resolve_removal(ctx) -> void:
 	if u == null or !u.alive:
 		return
 	var removal_reason_label := _make_removal_reason_label(int(ctx.removal_type), String(ctx.reason))
-	_maybe_release_soulbound_reserve(u, int(ctx.overload_mod), removal_reason_label)
+	_maybe_release_reserved_card(u, int(ctx.overload_mod), removal_reason_label)
 
 	var g := int(u.team)
 	ctx.group_index = g
@@ -1107,8 +1107,8 @@ func count_summons_in_group(group_index: int) -> int:
 	return n
 
 
-func count_soulbound_in_group(group_index: int) -> int:
-	return count_mortality_in_group(group_index, CombatantState.Mortality.SOULBOUND)
+func count_bound_in_group(group_index: int) -> int:
+	return count_mortality_in_group(group_index, CombatantState.Mortality.BOUND)
 
 
 # ============================================================================
@@ -1410,12 +1410,9 @@ func _make_spawn_spec_from_data(combatant_data: CombatantData, u: CombatantState
 	}
 
 
-func _maybe_release_soulbound_reserve(u: CombatantState, overload_mod: int, reason: String) -> void:
+func _maybe_release_reserved_card(u: CombatantState, overload_mod: int, reason: String) -> void:
 	if u == null:
 		return
-	if int(u.mortality) != int(CombatantState.Mortality.SOULBOUND):
-		return
-	
 	var uid := String(u.bound_card_uid) if ("bound_card_uid" in u) else ""
 	if uid == "":
 		return
@@ -1462,10 +1459,10 @@ func _enforce_player_group_mortality_cap(summoned_id: int, group_index: int) -> 
 
 func _get_mortality_cap_fade_reason(mortality: int) -> String:
 	match int(mortality):
-		int(CombatantState.Mortality.SOULBOUND):
-			return "summon_over_cap_soulbound"
-		int(CombatantState.Mortality.DEPLETE):
-			return "summon_over_cap_deplete"
+		int(CombatantState.Mortality.BOUND):
+			return "summon_over_cap_bound"
+		int(CombatantState.Mortality.WILD):
+			return "summon_over_cap_wild"
 		_:
 			return "summon_over_cap"
 

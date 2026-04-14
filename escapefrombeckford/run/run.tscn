@@ -4,7 +4,7 @@
 [ext_resource type="PackedScene" uid="uid://6p15tduy6cd2" path="res://run/map/map.tscn" id="2_wdonh"]
 [ext_resource type="Resource" uid="uid://bqr4wekgibhim" path="res://statuses/_core/status_catalog.tres" id="3_7yo0l"]
 [ext_resource type="Resource" uid="uid://cd45rlmihsfvb" path="res://arcana/_core/arcanum_catalog.tres" id="4_fo0ly"]
-[ext_resource type="Resource" uid="uid://dq3n87o7cuyxg" path="res://encounters/battle_pool_test.tres" id="4_nnxm5"]
+[ext_resource type="Resource" uid="uid://hkw3l5xa63gq" path="res://encounters/battle_pool_1.tres" id="4_nnxm5"]
 [ext_resource type="Theme" uid="uid://d2wc7fposrlqs" path="res://themes/wizard_theme.tres" id="4_o4jfg"]
 [ext_resource type="PackedScene" uid="uid://bxtf6la07t0t5" path="res://ui/card_pile_opener.tscn" id="5_0tt4g"]
 [ext_resource type="Resource" uid="uid://btvh04kju6f0m" path="res://encounters/beckford_domain/tier_1_scrapmen_acquisitions_duo.tres" id="5_5phry"]

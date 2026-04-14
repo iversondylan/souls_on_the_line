@@ -2,10 +2,11 @@
 class_name CardData extends Resource
 
 enum CardType {
-	CONVOCATION,
-	SUMMON,
-	ENCHANTMENT,
-	EFFUSION
+	CONVOCATION = 0,
+	SOULBOUND = 1,
+	ENCHANTMENT = 2,
+	EFFUSION = 3,
+	SOULWILD = 4,
 }
 
 enum TargetType {
@@ -48,6 +49,7 @@ const RARITY_COLORS := {
 @export var rarity: Rarity
 @export var name: String
 @export var deplete: bool
+@export var starter_card: bool = false
 @export var summon_release_overload: int = 2
 @export_multiline var description: String
 @export var cost: int
@@ -113,6 +115,7 @@ static func _copy_runtime_overrides(from: CardData, to: CardData) -> void:
 	if !from.name.is_empty():
 		to.name = from.name
 	to.deplete = from.deplete
+	to.starter_card = from.starter_card
 	if !from.description.is_empty():
 		to.description = from.description
 	to.cost = from.cost

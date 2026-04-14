@@ -10,6 +10,8 @@ const FILE_TYPE_APP := "app"
 const FILE_TYPE_PROFILE := "profile"
 const FILE_TYPE_RUN := "run"
 const SAVE_VERSION := 3
+const DEFAULT_SOUL_RECESS_SLOT_COUNT := 2
+const DEFAULT_ATTUNED_SOUL_PATH := "res://cards/souls/SpectralCloneCard/spectral_clone.tres"
 
 const SERIALIZED_KIND_STRING_NAME := "string_name"
 const SERIALIZED_KIND_COLOR := "color"
@@ -357,6 +359,7 @@ func _normalize_profile_data(profile: ProfileData) -> void:
 		return
 	if profile.soul_recess_state == null:
 		profile.soul_recess_state = SoulRecessState.new()
+	_normalize_soul_recess_state(profile.soul_recess_state)
 
 
 func _create_user_profile_info(app_state: AppStateData, display_name: String) -> UserProfileInfo:
@@ -673,27 +676,81 @@ func _decode_soul_recess_state(data: Variant) -> SoulRecessState:
 	var state := SoulRecessState.new()
 	if typeof(data) != TYPE_DICTIONARY:
 		return state
-	state.unlocked_slot_count = int(data.get("unlocked_slot_count", 1))
+	state.unlocked_slot_count = int(data.get("unlocked_slot_count", DEFAULT_SOUL_RECESS_SLOT_COUNT))
 	state.selected_starting_soul_uid = str(data.get("selected_starting_soul_uid", ""))
-	state.slot_souls = _decode_card_snapshot_array(data.get("slot_souls", []))
 	state.attuned_souls = _decode_card_snapshot_array(data.get("attuned_souls", []))
+	if state.attuned_souls.is_empty():
+		state.attuned_souls = _decode_card_snapshot_array(data.get("slot_souls", []))
+	_normalize_soul_recess_state(state)
 	return state
 
 
 func _encode_soul_recess_state(state: SoulRecessState) -> Dictionary:
 	if state == null:
 		return {
-			"unlocked_slot_count": 1,
+			"unlocked_slot_count": DEFAULT_SOUL_RECESS_SLOT_COUNT,
 			"selected_starting_soul_uid": "",
-			"slot_souls": [],
 			"attuned_souls": [],
 		}
 	return {
 		"unlocked_slot_count": int(state.unlocked_slot_count),
 		"selected_starting_soul_uid": str(state.selected_starting_soul_uid),
-		"slot_souls": _encode_card_snapshot_array(state.slot_souls),
 		"attuned_souls": _encode_card_snapshot_array(state.attuned_souls),
 	}
+
+
+func _normalize_soul_recess_state(state: SoulRecessState) -> void:
+	if state == null:
+		return
+	state.unlocked_slot_count = maxi(int(state.unlocked_slot_count), DEFAULT_SOUL_RECESS_SLOT_COUNT)
+
+	var normalized: Array[CardSnapshot] = []
+	for snapshot in state.attuned_souls:
+		if normalized.size() >= int(state.unlocked_slot_count):
+			break
+		var normalized_snapshot := _normalize_attuned_soul_snapshot(snapshot)
+		if normalized_snapshot != null:
+			normalized.append(normalized_snapshot)
+
+	while normalized.size() < int(state.unlocked_slot_count):
+		var default_snapshot := _make_default_attuned_soul_snapshot()
+		if default_snapshot == null:
+			break
+		normalized.append(default_snapshot)
+
+	state.attuned_souls = normalized
+
+	if state.attuned_souls.is_empty():
+		state.selected_starting_soul_uid = ""
+		return
+
+	if state.get_attuned_soul_snapshot(String(state.selected_starting_soul_uid)) != null:
+		return
+
+	var first_snapshot := state.attuned_souls[0]
+	if first_snapshot == null or first_snapshot.card == null:
+		state.selected_starting_soul_uid = ""
+		return
+	first_snapshot.card.ensure_uid()
+	state.selected_starting_soul_uid = String(first_snapshot.card.uid)
+
+
+func _normalize_attuned_soul_snapshot(snapshot: CardSnapshot) -> CardSnapshot:
+	if snapshot == null:
+		return null
+	var restored := snapshot.instantiate_card()
+	if restored == null:
+		return null
+	if int(restored.card_type) != int(CardData.CardType.SOULBOUND):
+		return null
+	return CardSnapshot.from_card(restored)
+
+
+func _make_default_attuned_soul_snapshot() -> CardSnapshot:
+	var default_card := load(DEFAULT_ATTUNED_SOUL_PATH) as CardData
+	if default_card == null:
+		return null
+	return CardSnapshot.from_card(default_card)
 
 
 func _decode_run_deck(data: Variant) -> RunDeck:

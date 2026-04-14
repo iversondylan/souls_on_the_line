@@ -1232,6 +1232,7 @@ func _on_summon_followthrough(e: EventPackage) -> void:
 
 
 func _on_summoned(e: EventPackage) -> void:
+	var d := _data(e)
 	var v := _ensure_summon_view(e, true)
 	if v == null:
 		return
@@ -1242,6 +1243,11 @@ func _on_summoned(e: EventPackage) -> void:
 			v.tween_misc.kill()
 		v.tween_misc = v.create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
 		v.tween_misc.tween_property(v.character_art, "modulate:a", 1.0, maxf(e.duration, 0.01))
+
+	var summoned_id := int(d.get(Keys.SUMMONED_ID, 0))
+	var card_uid := String(d.get(Keys.CARD_UID, ""))
+	if summoned_id > 0 and !card_uid.is_empty():
+		Events.summon_reserve_card_acquired.emit(summoned_id, card_uid)
 
 
 func _on_summon_reserve_released(e: EventPackage) -> void:

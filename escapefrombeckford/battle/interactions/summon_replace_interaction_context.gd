@@ -26,7 +26,7 @@ func enter() -> void:
 			continue
 		if int(v.type) == int(CombatantView.Type.PLAYER):
 			continue
-		if int(v.mortality) == int(CombatantState.Mortality.SOULBOUND):
+		if int(v.mortality) == int(CombatantState.Mortality.BOUND):
 			candidates.append(v)
 
 	handler.prompt_show("Choose a summon to replace.", "Cancel")

@@ -257,6 +257,8 @@ func _on_rest_site_entered(room: Room = map.last_room) -> void:
 	_persist_active_run()
 	var campfire := _change_view(CAMPFIRE_SCN) as Campfire
 	campfire.run_state = run_state
+	campfire.profile_data = profile_data
+	campfire.run_deck = run_deck
 
 func _on_shop_entered(room: Room = map.last_room) -> void:
 	map.set_active_room(room)
@@ -330,14 +332,14 @@ func _start_new_run_from_profile(profile: RunProfile) -> void:
 	var starting_deck := player_data.starting_deck.duplicate()
 	draftable_cards = player_data.draftable_cards.duplicate()
 
-	var soul_snapshot: CardSnapshot = null
+	var signature_soulbound_snapshot: CardSnapshot = null
 	if profile_data != null and profile_data.soul_recess_state != null:
 		if !profile.selected_starting_soul_uid.is_empty():
-			soul_snapshot = profile_data.soul_recess_state.get_attuned_soul_snapshot(profile.selected_starting_soul_uid)
-		if soul_snapshot == null:
-			soul_snapshot = profile_data.soul_recess_state.get_selected_starting_soul_snapshot()
-	if soul_snapshot != null:
-		var carried_card := soul_snapshot.instantiate_card()
+			signature_soulbound_snapshot = profile_data.soul_recess_state.get_attuned_soul_snapshot(profile.selected_starting_soul_uid)
+		if signature_soulbound_snapshot == null:
+			signature_soulbound_snapshot = profile_data.soul_recess_state.get_selected_starting_soul_snapshot()
+	if signature_soulbound_snapshot != null:
+		var carried_card := signature_soulbound_snapshot.instantiate_card()
 		if carried_card != null:
 			starting_deck.add_back(carried_card)
 

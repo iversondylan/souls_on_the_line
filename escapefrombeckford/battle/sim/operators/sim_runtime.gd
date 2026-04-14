@@ -1594,6 +1594,9 @@ func begin_card_execution(ctx: CardContext) -> bool:
 	ctx.waiting_async_action_index = -1
 	ctx.waiting_async_request_id = 0
 	ctx.interaction_payloads.clear()
+	ctx.reserve_claimed = false
+	ctx.reserved_card_uid = ""
+	ctx.reserved_summoned_id = 0
 
 	var actions: Array = ctx.card_data.actions
 	for i in range(actions.size()):

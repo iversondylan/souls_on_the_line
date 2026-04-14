@@ -25,4 +25,5 @@ ai = SubResource("Resource_kfx2n")
 script = ExtResource("1_1rnhd")
 summon_data = SubResource("Resource_5y8hh")
 mortality = 2
+reserves_card = true
 sound = ExtResource("2_p173e")
