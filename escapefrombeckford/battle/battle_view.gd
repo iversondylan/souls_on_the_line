@@ -107,6 +107,8 @@ func _playback_loop(gen: int) -> void:
 		var now := clock.now_sec()
 
 		if event_player.peek_is_compiled_turn_chunk(player_id):
+			# Compiled path: wait for one whole compileable scope, then transform
+			# raw BattleEvents -> TurnTimeline -> DirectorPlan before any playback.
 			var compiled_turn := await event_player.await_complete_compiled_turn_chunk()
 			if compiled_turn.is_empty():
 				continue
@@ -140,6 +142,8 @@ func _playback_loop(gen: int) -> void:
 			schedule_t = plan.get_end_sec()
 			continue
 
+		# Raw path: consume only the next natural beat-sized chunk and hand its
+		# events straight to the director with no timeline compilation step.
 		var chunk := event_player.next_raw_chunk(player_id)
 		if chunk.is_empty():
 			continue

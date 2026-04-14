@@ -259,6 +259,10 @@ func _apply_checkpoint_boundary(kind: int, allow_hooks := true) -> void:
 
 	var cp := sim.checkpoint_processor
 	var had_terminal_outcome := bool(sim.state != null and sim.state.has_terminal_outcome())
+	# Checkpoints flush deferred sim-side work such as replans, intent refreshes,
+	# layout-change reactions, and outcome checks. This is a simulation barrier,
+	# not the playback/timeline boundary; emitted events can still land inside the
+	# currently open actor-turn scope if that scope has not been closed yet.
 	cp.flush_planning(kind, sim, allow_hooks)
 
 	if cp.consume_dirty_turn_order():
@@ -496,6 +500,10 @@ func _service_actor_turn(cid: int) -> void:
 	var writer := api.writer
 	if writer != null:
 		writer.set_turn_context(engine.turn_token, engine.active_group_index, cid)
+		# This ACTOR_TURN scope is the main structural envelope later consumed by
+		# BattleEventPlayer. Non-player actor turns are compiled only after this
+		# scope closes; player turns stay raw so input-facing events can surface
+		# immediately.
 		_actor_turn_scope_handle = writer.scope_begin(Scope.Kind.ACTOR_TURN, "actor=%d" % cid, cid)
 		writer.emit_actor_begin(cid)
 
@@ -596,6 +604,9 @@ func _complete_actor_turn(cid: int) -> void:
 	if writer != null:
 		writer.emit_actor_end(cid)
 		if _actor_turn_scope_handle != null:
+			# The matching SCOPE_END is the playback-side completion marker for the
+			# actor-turn chunk. BattleEventPlayer waits for this before draining a
+			# compileable turn into TurnTimelineCompiler.
 			writer.scope_end(_actor_turn_scope_handle) # actor_turn
 			_actor_turn_scope_handle = null
 

@@ -137,6 +137,10 @@ func flush_planning(_kind: int, sim: Sim, allow_hooks := true) -> void:
 			break
 
 		var api := sim.api
+		# Flushes publish any deferred "state caught up" events that were queued by
+		# the sim. Because the writer still sees the current active scope, these
+		# emissions become part of that scope's eventual playback chunk unless the
+		# caller has already closed it.
 		var replan_all_now := bool(dirty_replan_all)
 		var replan_ids_now := dirty_replan_ids.duplicate()
 		var intent_refresh_all_now := bool(dirty_intent_refresh_all)

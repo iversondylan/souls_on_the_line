@@ -50,7 +50,7 @@ class TargetWindow extends RefCounted:
 	var base_q: float = 0.0
 
 
-# Rich intermediate model used by the newer scope-driven attack compiler.
+# Rich intermediate model used by the scope-driven attack compiler.
 class ParsedNpcAttackTurn extends RefCounted:
 	var actor_id: int = 0
 	var group_index: int = -1
@@ -95,6 +95,9 @@ func compile_actor_turn(turn_events: Array[BattleEvent]) -> TurnTimeline:
 	if turn_events.is_empty():
 		return timeline
 
+	# Input here is already one complete compileable scope slice as drained by
+	# BattleEventPlayer. The compiler does not watch the live log; it only turns
+	# that closed event chunk into presentation beats.
 	timeline.actor_id = _find_actor_id(turn_events)
 	timeline.group_index = _find_group_index(turn_events)
 	timeline.is_player = false
@@ -121,6 +124,8 @@ func _build_scope_driven_package_turn(turn_events: Array[BattleEvent]) -> Dictio
 	if actor_id <= 0:
 		return {}
 
+	# The compiler reconstructs top-level effect packages by walking the nested
+	# scope tree inside the already-closed actor-turn/card-attack-now scope.
 	var scope_ranges := _build_scope_ranges(turn_events)
 	if scope_ranges.is_empty():
 		return {}

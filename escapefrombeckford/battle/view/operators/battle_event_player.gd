@@ -33,6 +33,8 @@ func peek_is_compiled_turn_chunk(player_id: int) -> bool:
 	if !_is_compiled_turn_scope_begin(e):
 		return false
 
+	# The player does the first gating pass: only non-player ACTOR_TURN scopes and
+	# all CARD_ATTACK_NOW_TURN scopes are diverted into the timeline compiler.
 	return _should_compile_scope_begin(e, player_id)
 
 
@@ -50,6 +52,9 @@ func await_complete_compiled_turn_chunk() -> Array[BattleEvent]:
 	var depth := 0
 	var started := false
 
+	# This is the concrete "turn finished" checkpoint for compiled playback:
+	# wait until the matching SCOPE_END for the currently visible compileable
+	# scope appears in the log, then drain that whole nested scope slice.
 	while true:
 		while scan_index < _log.size():
 			var e := _log.get_event(scan_index)
@@ -88,9 +93,8 @@ func next_raw_chunk(player_id: int = 0) -> Array[BattleEvent]:
 	if first == null:
 		return out
 
-	# If the next thing is a compiled turn scope:
-	# - compiled scope: do not consume here; battle_view will compile it
-	# - player actor turn: consume full scope if it's first
+	# If the next thing is a compileable scope, stop and let battle_view take the
+	# compiler path instead. Player actor turns are the exception: they stay raw.
 	if _is_compiled_turn_scope_begin(first):
 		if _should_compile_scope_begin(first, player_id):
 			#print(
@@ -218,6 +222,9 @@ func _should_compile_scope_begin(e: BattleEvent, player_id: int) -> bool:
 	if !_is_actor_turn_scope_begin(e):
 		return false
 
+	# Player actor turns are intentionally not compiled so PLAYER_INPUT_REACHED,
+	# discard prompts, end-turn signals, and other UI-facing events can stream out
+	# incrementally instead of waiting for the whole scope to close.
 	var actor_id := int(e.data.get(Keys.ACTOR_ID, 0)) if e != null and e.data != null else 0
 	if actor_id <= 0:
 		return false

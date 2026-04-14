@@ -34,6 +34,9 @@ func _append(type: int, data: Dictionary = {}) -> int:
 	if sink == null:
 		return -1
 
+	# The writer is a stamp-and-append layer. It does not decide playback chunking;
+	# it only records the current turn/group/actor context and active scope data so
+	# later readers can recover actor-turn boundaries from the flat log.
 	var sid := (scopes.current_scope_id() if scopes != null else 0)
 	if sid == 0 and !allow_unscoped_events:
 		push_warning("BattleEventWriter: attempted to append event with no active scope. type=%s" % str(type))
@@ -76,6 +79,9 @@ func scope_begin(kind: int, label: String = "", actor_id: int = 0, extra := {}) 
 		_scope_failure("BattleEventWriter.scope_begin(): missing scope manager")
 		return null
 
+	# Scope begin/end pairs are the structural markers that downstream playback
+	# uses to find whole actor-turn chunks. The compiler path waits for the
+	# matching SCOPE_END before it will package the turn into a timeline.
 	var handle := scopes.push(kind, label, actor_id, group_index, turn_id)
 	if handle == null:
 		_scope_failure("BattleEventWriter.scope_begin(): failed to create scope handle")
@@ -107,6 +113,9 @@ func scope_end(handle: ScopeHandle) -> int:
 		_scope_failure("BattleEventWriter.scope_end(): missing scope manager")
 		return 0
 
+	# Closing the scope is the signal that the structural chunk is complete in the
+	# log. BattleEventPlayer scans for this matching SCOPE_END before draining a
+	# compileable actor-turn/card-attack-now slice for the timeline compiler.
 	var closed := scopes.close(handle)
 	if closed == null:
 		_scope_failure(scopes.last_error_message if scopes != null else "BattleEventWriter.scope_end(): failed to close scope")

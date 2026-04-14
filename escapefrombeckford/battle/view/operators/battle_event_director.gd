@@ -47,6 +47,8 @@ func play_raw_chunk(pkg: BeatPackage) -> void:
 	if pkg.wait_quarters > 0.0:
 		SFXPlayer.play(click)
 
+	# Raw playback path: events are applied immediately in chunk order with no
+	# intermediate timeline/cue model.
 	for be in pkg.beat:
 		if be == null:
 			continue
@@ -70,6 +72,9 @@ func on_director_cue(cue: DirectorCue, gen: int) -> void:
 				break
 
 
+	# Planned playback path: start all presentation orders for the beat, then
+	# apply the beat's state-change events. By this point the original raw events
+	# have already been grouped and time-quantized by the compiler.
 	for order in cue.orders:
 		_start_order(order)
 

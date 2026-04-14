@@ -11,6 +11,8 @@ func build_plan(timeline: TurnTimeline, t_start_sec: float, tempo_bpm: float) ->
 	if timeline == null:
 		return plan
 
+	# This layer is intentionally thin: one TurnBeat becomes one DirectorCue.
+	# All semantic grouping/gating has already happened upstream in the compiler.
 	for i in range(timeline.beats.size()):
 		var tb := timeline.beats[i]
 		if tb == null:
