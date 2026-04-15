@@ -6,6 +6,7 @@ const DEFAULT_SOULBOUND_SLOT_COUNT := 5
 const DEFAULT_STARTER_SOUL_PATH := "res://cards/souls/SpectralCloneCard/spectral_clone.tres"
 
 @export var card_collection: CardPile = CardPile.new() : set = _set_card_collection
+@export var has_soulbound_roster: bool = true
 @export var soulbound_slot_count: int = DEFAULT_SOULBOUND_SLOT_COUNT : set = _set_soulbound_slot_count
 @export var soulbound_slots: Array = [] : set = _set_soulbound_slots
 
@@ -14,18 +15,26 @@ func add_card(card_data: CardData) -> void:
 	add_normal_card(card_data)
 
 
+func has_soulbound_roster_enabled() -> bool:
+	return bool(has_soulbound_roster)
+
+
 func add_normal_card(card_data: CardData) -> void:
 	var new_card := _instantiate_card(card_data, true)
 	if new_card == null:
 		return
-	if new_card.is_soulbound_slot_card():
+	if new_card.is_soulbound_slot_card() and has_soulbound_roster_enabled():
 		push_warning("RunDeck.add_normal_card(): soulbound slot cards must use replace_soulbound_slot().")
 		return
+	if card_collection == null:
+		card_collection = CardPile.new()
 	new_card.ensure_uid()
 	card_collection.add_back(new_card)
 
 
 func replace_soulbound_slot(slot_index: int, card_data: CardData) -> bool:
+	if !has_soulbound_roster_enabled():
+		return false
 	if slot_index < 0 or slot_index >= get_soulbound_slot_count():
 		return false
 	var new_card := _instantiate_card(card_data, true)
@@ -37,6 +46,9 @@ func replace_soulbound_slot(slot_index: int, card_data: CardData) -> bool:
 
 
 func initialize_soulbound_slots(signature_card: CardData, starter_card: CardData) -> void:
+	if !has_soulbound_roster_enabled():
+		soulbound_slots.clear()
+		return
 	var resolved_starter := starter_card
 	if resolved_starter == null:
 		resolved_starter = _load_default_starter_soul()
@@ -44,7 +56,7 @@ func initialize_soulbound_slots(signature_card: CardData, starter_card: CardData
 	if resolved_signature == null:
 		resolved_signature = _prepare_signature_slot_card(resolved_starter)
 
-	soulbound_slots = []
+	soulbound_slots.clear()
 	if resolved_signature != null:
 		soulbound_slots.append(resolved_signature)
 	while soulbound_slots.size() < get_soulbound_slot_count():
@@ -160,11 +172,24 @@ func normalize_cards(starter_card: CardData = null, expected_signature_card: Car
 	var normalized_collection := CardPile.new()
 	var normalized_slots: Array[CardData] = []
 	var seen_uids := {}
+	if !has_soulbound_roster_enabled():
+		for card_data in soulbound_slots:
+			var migrated_slot_card := _normalize_runtime_card(card_data, seen_uids)
+			if migrated_slot_card == null:
+				continue
+			normalized_collection.add_back(migrated_slot_card)
+		for card_data in card_collection.cards:
+			var migrated_collection_card := _normalize_runtime_card(card_data, seen_uids)
+			if migrated_collection_card == null:
+				continue
+			normalized_collection.add_back(migrated_collection_card)
+		card_collection = normalized_collection
+		soulbound_slots.clear()
+		_ensure_soulbound_slot_size()
+		return
 	var starter_fallback := starter_card
 	if starter_fallback == null:
 		starter_fallback = _find_starter_soul_card(soulbound_slots)
-	if starter_fallback == null:
-		starter_fallback = _find_starter_soul_card(card_collection.cards)
 
 	for index in range(soulbound_slots.size()):
 		var card_data: CardData = soulbound_slots[index] as CardData
@@ -183,12 +208,6 @@ func normalize_cards(starter_card: CardData = null, expected_signature_card: Car
 	for card_data in card_collection.cards:
 		var new_card := _normalize_runtime_card(card_data, seen_uids)
 		if new_card == null:
-			continue
-		if new_card.is_soulbound_slot_card():
-			if starter_fallback == null and bool(new_card.starter_card):
-				starter_fallback = new_card
-			if normalized_slots.size() < get_soulbound_slot_count():
-				normalized_slots.append(new_card)
 			continue
 		normalized_collection.add_back(new_card)
 
@@ -311,6 +330,9 @@ func _cards_match_signature_identity(actual: CardData, expected: CardData) -> bo
 
 
 func _ensure_soulbound_slot_size() -> void:
+	if !has_soulbound_roster_enabled():
+		soulbound_slots.clear()
+		return
 	while soulbound_slots.size() < get_soulbound_slot_count():
 		soulbound_slots.append(null)
 	while soulbound_slots.size() > get_soulbound_slot_count():

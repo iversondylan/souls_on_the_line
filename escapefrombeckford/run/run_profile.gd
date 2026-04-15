@@ -11,6 +11,7 @@ enum StartMode {
 }
 
 var start_mode: StartMode = StartMode.NEW_RUN
+var has_soulbound_roster: bool = true
 var player_profile_id: String = ""
 var selected_starting_soul_uid: String = ""
 var selected_signature_soul_serialized: Dictionary = {}

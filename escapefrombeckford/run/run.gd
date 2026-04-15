@@ -67,6 +67,7 @@ var save_name_dialog: SaveNameDialog
 var collection_display_pile: CardPile = CardPile.new()
 var _pending_launch_signature_soul: CardData
 var _has_pending_launch_signature_payload: bool = false
+var _launch_has_soulbound_roster: bool = true
 
 
 func _ready() -> void:
@@ -94,6 +95,7 @@ func _ready() -> void:
 		push_warning("Run._ready(): opened without an active user profile.")
 		get_tree().change_scene_to_packed(MAIN_MENU_SCN)
 		return
+	_launch_has_soulbound_roster = bool(run_profile.has_soulbound_roster)
 	startup_mode = int(run_profile.start_mode)
 	match int(run_profile.start_mode):
 		RunProfile.StartMode.NEW_RUN:
@@ -127,10 +129,11 @@ func _prepare_run_runtime() -> void:
 	if run_state.run_deck == null:
 		if run_deck == null:
 			run_deck = RunDeck.new()
+		run_deck.has_soulbound_roster = _launch_has_soulbound_roster
 		run_deck.soulbound_slot_count = soulbound_slot_count
 		if run_deck.card_collection == null and player_data != null and player_data.starting_deck != null:
-			run_deck.card_collection = _build_run_normal_starting_deck(player_data.starting_deck)
-		if run_deck.get_soulbound_slot_cards().is_empty() and player_data != null:
+			run_deck.card_collection = player_data.starting_deck
+		if run_deck.has_soulbound_roster_enabled() and run_deck.get_soulbound_slot_cards().is_empty() and player_data != null:
 			run_deck.initialize_soulbound_slots(null, _get_player_starter_soul())
 		run_state.run_deck = run_deck
 	else:
@@ -337,21 +340,26 @@ func _start_new_run_from_profile(profile: RunProfile) -> void:
 		push_warning("Run._start_new_run_from_profile(): no player profile found for id '%s'" % profile.player_profile_id)
 		return
 
-	var starting_deck := _build_run_normal_starting_deck(player_data.starting_deck)
+	var starting_deck := player_data.starting_deck
 	draftable_cards = player_data.draftable_cards.duplicate()
 
-	if profile.selected_signature_soul_serialized.is_empty():
-		push_warning("Run._start_new_run_from_profile(): RunProfile signature soul payload is empty; falling back to selected_starting_soul_uid resolution.")
-	var signature_soulbound_card := profile.instantiate_selected_signature_soul()
-	if !profile.selected_signature_soul_serialized.is_empty() and signature_soulbound_card == null:
-		push_warning("Run._start_new_run_from_profile(): RunProfile signature soul payload is invalid; falling back to selected_starting_soul_uid resolution.")
-	if signature_soulbound_card == null:
-		signature_soulbound_card = _resolve_profile_signature_soul(profile.selected_starting_soul_uid)
+	var signature_soulbound_card: CardData = null
+	if bool(profile.has_soulbound_roster):
+		if profile.selected_signature_soul_serialized.is_empty():
+			push_warning("Run._start_new_run_from_profile(): RunProfile signature soul payload is empty; falling back to selected_starting_soul_uid resolution.")
+		signature_soulbound_card = profile.instantiate_selected_signature_soul()
+		if !profile.selected_signature_soul_serialized.is_empty() and signature_soulbound_card == null:
+			push_warning("Run._start_new_run_from_profile(): RunProfile signature soul payload is invalid; falling back to selected_starting_soul_uid resolution.")
+		if signature_soulbound_card == null:
+			signature_soulbound_card = _resolve_profile_signature_soul(profile.selected_starting_soul_uid)
+			_has_pending_launch_signature_payload = false
+			_pending_launch_signature_soul = null
+		else:
+			_has_pending_launch_signature_payload = !profile.selected_signature_soul_serialized.is_empty()
+			_pending_launch_signature_soul = signature_soulbound_card.make_runtime_instance()
+	else:
 		_has_pending_launch_signature_payload = false
 		_pending_launch_signature_soul = null
-	else:
-		_has_pending_launch_signature_payload = !profile.selected_signature_soul_serialized.is_empty()
-		_pending_launch_signature_soul = signature_soulbound_card.make_runtime_instance()
 
 	arcana_catalog = arcanum_catalog.duplicate()
 	run_state = RunState.new()
@@ -363,9 +371,13 @@ func _start_new_run_from_profile(profile: RunProfile) -> void:
 	run_state.player_run_state.initialize_from_player_data(player_data)
 	run_state.owned_arcanum_ids = PackedStringArray([String(player_data.starting_arcanum.get_id())]) if player_data.starting_arcanum != null else PackedStringArray()
 	run_deck = RunDeck.new()
+	run_deck.has_soulbound_roster = bool(profile.has_soulbound_roster)
 	run_deck.soulbound_slot_count = soulbound_slot_count
 	run_deck.card_collection = starting_deck
-	run_deck.initialize_soulbound_slots(signature_soulbound_card, _get_player_starter_soul())
+	if run_deck.has_soulbound_roster_enabled():
+		run_deck.initialize_soulbound_slots(signature_soulbound_card, _get_player_starter_soul())
+	else:
+		run_deck.initialize_soulbound_slots(null, null)
 	run_state.run_deck = run_deck
 	# TEMPORARY v
 	#for arcanum in extra_arcana:
@@ -386,34 +398,10 @@ func _resolve_starting_player_data(profile_id: String) -> PlayerData:
 	return _resolve_player_profile(profile_id)
 
 
-func _build_run_normal_starting_deck(source_pile: CardPile) -> CardPile:
-	var filtered := CardPile.new()
-	if source_pile == null:
-		return filtered
-	for card_data in source_pile.cards:
-		if card_data == null or card_data.is_soulbound_slot_card():
-			continue
-		filtered.add_back(card_data)
-	return filtered
-
-
-func _get_starter_soul_card_from_pile(source_pile: CardPile) -> CardData:
-	if source_pile == null:
-		return null
-	for card_data in source_pile.cards:
-		if card_data == null:
-			continue
-		if card_data.is_soulbound_slot_card() and bool(card_data.starter_card):
-			return card_data
-	return null
-
-
 func _get_player_starter_soul() -> CardData:
 	if player_data == null:
 		return null
-	if player_data.starter_soul != null:
-		return player_data.starter_soul
-	return _get_starter_soul_card_from_pile(player_data.starting_deck)
+	return player_data.starter_soul
 
 
 func _resolve_profile_signature_soul(selected_uid: String) -> CardData:
@@ -452,10 +440,12 @@ func _boot_from_loaded_run_state(loaded_run_state: RunState) -> void:
 
 	draftable_cards = run_state.draftable_cards if run_state.draftable_cards != null else player_data.draftable_cards.duplicate()
 	run_deck = run_state.run_deck if run_state.run_deck != null else RunDeck.new()
+	if run_state.run_deck == null:
+		run_deck.has_soulbound_roster = _launch_has_soulbound_roster
 	run_deck.soulbound_slot_count = soulbound_slot_count
 	if run_deck.card_collection == null:
-		run_deck.card_collection = _build_run_normal_starting_deck(player_data.starting_deck)
-	if run_deck.get_soulbound_slot_cards().is_empty():
+		run_deck.card_collection = player_data.starting_deck
+	if run_deck.has_soulbound_roster_enabled() and run_deck.get_soulbound_slot_cards().is_empty():
 		run_deck.initialize_soulbound_slots(null, _get_player_starter_soul())
 	_configure_run_deck()
 	run_seed = int(run_state.run_seed)

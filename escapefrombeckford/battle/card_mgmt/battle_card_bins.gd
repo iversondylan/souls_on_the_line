@@ -456,6 +456,8 @@ func _resolve_draw_count(ctx: DrawContext) -> int:
 	var base_amount := maxi(int(ctx.amount), 0)
 	if String(ctx.reason) != "player_turn_refill":
 		return base_amount
+	if bool(ctx.exact_draw_amount):
+		return base_amount
 
 	var missing_to_until := maxi(int(player_turn_draw_until_amount) - _current_hand_size(), 0)
 	match int(player_turn_draw_type):

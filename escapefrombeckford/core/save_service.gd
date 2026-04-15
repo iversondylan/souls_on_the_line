@@ -805,6 +805,7 @@ func _decode_run_deck(data: Variant) -> RunDeck:
 	var deck := RunDeck.new()
 	if typeof(data) != TYPE_DICTIONARY:
 		return deck
+	deck.has_soulbound_roster = bool(data.get("has_soulbound_roster", true))
 	deck.soulbound_slot_count = int(data.get("soulbound_slot_count", deck.soulbound_slot_count))
 	deck.card_collection = _build_card_pile_from_cards(_decode_card_array(data.get("cards", [])))
 	deck.soulbound_slots = _decode_card_array(data.get("soulbound_slots", []))
@@ -815,11 +816,13 @@ func _encode_run_deck(run_deck: RunDeck) -> Dictionary:
 	if run_deck == null:
 		return {
 			"cards": [],
+			"has_soulbound_roster": true,
 			"soulbound_slot_count": RunDeck.DEFAULT_SOULBOUND_SLOT_COUNT,
 			"soulbound_slots": [],
 		}
 	return {
 		"cards": _encode_card_array(run_deck.card_collection.cards if run_deck.card_collection != null else []),
+		"has_soulbound_roster": run_deck.has_soulbound_roster_enabled(),
 		"soulbound_slot_count": int(run_deck.get_soulbound_slot_count()),
 		"soulbound_slots": _encode_card_array(run_deck.get_soulbound_slot_cards()),
 	}

@@ -130,13 +130,8 @@ func _get_attunement_candidates() -> Array[CardData]:
 	var candidates: Array[CardData] = []
 	if run_deck == null:
 		return candidates
-	var source_pile := run_deck.build_collection_view_card_pile()
-	if source_pile == null:
-		return candidates
-	for card_data in source_pile.cards:
+	for card_data in run_deck.get_soulbound_slot_cards():
 		if card_data == null:
-			continue
-		if !card_data.is_soulbound_slot_card():
 			continue
 		if bool(card_data.starter_card):
 			continue

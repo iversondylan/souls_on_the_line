@@ -348,6 +348,7 @@ func confirm_player_input_ready(draw_amount_override := -1) -> void:
 	_deferred_player_input_ready_draw_amount_override = -1
 	if int(draw_amount_override) >= 0:
 		draw_ctx.amount = maxi(int(draw_amount_override), 0)
+		draw_ctx.exact_draw_amount = true
 	#print("[TRACE sim_runtime] confirm_player_input_ready: source_id=%d amount=%d reason=%s phase=%s" % [
 		#int(draw_ctx.source_id),
 		#int(draw_ctx.amount),

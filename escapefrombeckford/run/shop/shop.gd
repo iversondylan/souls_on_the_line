@@ -161,7 +161,7 @@ func _on_back_button_pressed() -> void:
 func _on_shop_card_bought(card_data: CardData, gold_cost: int, offer_index: int) -> void:
 	if card_data == null or run_state == null or run_state.run_deck == null:
 		return
-	if card_data.is_soulbound_slot_card():
+	if card_data.is_soulbound_slot_card() and run_state.run_deck.has_soulbound_roster_enabled():
 		_pending_shop_card = card_data
 		_pending_shop_gold_cost = gold_cost
 		_pending_shop_offer_index = offer_index
@@ -211,7 +211,7 @@ func _build_confirm_dialog() -> void:
 
 
 func _show_soulbound_slot_overlay() -> void:
-	if run_state == null or run_state.run_deck == null:
+	if run_state == null or run_state.run_deck == null or !run_state.run_deck.has_soulbound_roster_enabled():
 		return
 	if is_instance_valid(_slot_replace_overlay):
 		_slot_replace_overlay.queue_free()

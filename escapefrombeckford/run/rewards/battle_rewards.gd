@@ -136,7 +136,7 @@ func _on_gold_reward_taken(n_gold: int, reward_index: int, reward_button: Reward
 func _on_card_reward_taken(card: CardData) -> void:
 	if run_state == null or card == null:
 		return
-	if card.is_soulbound_slot_card():
+	if card.is_soulbound_slot_card() and run_state.run_deck != null and run_state.run_deck.has_soulbound_roster_enabled():
 		_pending_reward_card = card
 		_show_soulbound_slot_overlay()
 		return
@@ -187,7 +187,7 @@ func _build_confirm_dialog() -> void:
 
 
 func _show_soulbound_slot_overlay() -> void:
-	if run_state == null or run_state.run_deck == null:
+	if run_state == null or run_state.run_deck == null or !run_state.run_deck.has_soulbound_roster_enabled():
 		return
 	if is_instance_valid(_card_reward_overlay):
 		_card_reward_overlay.queue_free()

@@ -117,16 +117,7 @@ func _add_soul_button(card_data: CardData, card_uid: String, is_selected: bool) 
 func _get_current_starter_soul() -> CardData:
 	if current_character == null:
 		return null
-	if current_character.starter_soul != null:
-		return current_character.starter_soul
-	if current_character.starting_deck == null:
-		return null
-	for card_data in current_character.starting_deck.cards:
-		if card_data == null:
-			continue
-		if card_data.is_soulbound_slot_card() and bool(card_data.starter_card):
-			return card_data
-	return null
+	return current_character.starter_soul
 
 
 func _get_signature_soul_options() -> Array:
@@ -175,6 +166,7 @@ func _begin_run(start_mode: RunProfile.StartMode) -> void:
 		return
 	var profile := RunProfile.new()
 	profile.start_mode = start_mode
+	profile.has_soulbound_roster = start_mode != RunProfile.StartMode.TUTORIAL
 	profile.seed = 0
 	profile.selected_starting_soul_uid = selected_starting_soul_uid
 	profile.player_profile_id = current_profile_id
