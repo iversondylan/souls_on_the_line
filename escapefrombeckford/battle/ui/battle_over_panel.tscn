@@ -10,7 +10,7 @@ bg_color = Color(0, 0, 0, 0.286275)
 font = ExtResource("2_qotfm")
 font_size = 52
 
-[node name="BattleOverPanel" type="Panel"]
+[node name="BattleOverPanel" type="Panel" unique_id=182540430]
 process_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -20,7 +20,7 @@ grow_vertical = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_8c1mx")
 script = ExtResource("1_5h67t")
 
-[node name="VBoxContainer" type="VBoxContainer" parent="."]
+[node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=344098207]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -34,20 +34,20 @@ offset_bottom = 20.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="Label" type="Label" parent="VBoxContainer"]
+[node name="Label" type="Label" parent="VBoxContainer" unique_id=541239639]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Path Cleared"
 label_settings = SubResource("LabelSettings_435c4")
 
-[node name="ContinueButton" type="Button" parent="VBoxContainer"]
+[node name="ContinueButton" type="Button" parent="VBoxContainer" unique_id=1005486346]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(200, 35)
 layout_mode = 2
 size_flags_horizontal = 4
 text = "Proceed..."
 
-[node name="RestartButton" type="Button" parent="VBoxContainer"]
+[node name="RestartButton" type="Button" parent="VBoxContainer" unique_id=325399535]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(200, 35)
 layout_mode = 2

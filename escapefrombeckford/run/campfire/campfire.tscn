@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://eqh4qvjkvwic" path="res://run/campfire/campfire.gd" id="1_56ahn"]
 [ext_resource type="Theme" uid="uid://d2wc7fposrlqs" path="res://themes/wizard_theme.tres" id="2_5yci7"]
 [ext_resource type="Texture2D" uid="uid://cs0yoc5t1u07u" path="res://_assets/sprites/assorted/asterisk.png" id="2_civeq"]
-[ext_resource type="PackedScene" path="res://run/campfire/slot_overlay.tscn" id="3_slot_overlay"]
+[ext_resource type="PackedScene" uid="uid://copx8afgv8hm3" path="res://run/campfire/slot_overlay.tscn" id="3_slot_overlay"]
 [ext_resource type="Theme" uid="uid://1dr1eewpv0jd" path="res://themes/ui_theme.tres" id="4_6jn8c"]
 [ext_resource type="Theme" uid="uid://dhn0og888psda" path="res://themes/description_theme.tres" id="5_auago"]
 
@@ -202,9 +202,12 @@ layout_mode = 2
 theme = ExtResource("5_auago")
 text = "Replace one attuned soul with a SoulBound card from your collection."
 
-[node name="SlotOverlay" parent="." unique_id=1150113909 instance=ExtResource("3_slot_overlay")]
+[node name="ModalLayer" type="CanvasLayer" parent="." unique_id=2037518281]
 unique_name_in_owner = true
-layout_mode = 1
+layer = 5
+
+[node name="SlotOverlay" parent="ModalLayer" unique_id=1150113909 instance=ExtResource("3_slot_overlay")]
+unique_name_in_owner = true
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=1966559140]
 libraries/ = SubResource("AnimationLibrary_hk2pn")

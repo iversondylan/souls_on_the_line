@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="RunState" load_steps=2 format=3 uid="uid://b6d7uendl35s6"]
+[gd_resource type="Resource" script_class="RunState" format=3 uid="uid://b6d7uendl35s6"]
 
 [ext_resource type="Script" uid="uid://cuqv81n553ntj" path="res://run/state/run_state.gd" id="1_foa6u"]
 

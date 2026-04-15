@@ -12,9 +12,9 @@ shader_parameter/down_right = Vector2(1, 1)
 shader_parameter/down_left = Vector2(0, 1)
 shader_parameter/plane_size = Vector2(0, 0)
 
-[node name="PerspectiveCard" type="Node2D"]
+[node name="PerspectiveCard" type="Node2D" unique_id=1979678442]
 script = ExtResource("1_y02bd")
 
-[node name="Sprite2D" type="Sprite2D" parent="."]
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=318833143]
 material = SubResource("ShaderMaterial_wmyp0")
 texture = ExtResource("2_y02bd")

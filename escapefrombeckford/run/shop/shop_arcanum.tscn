@@ -6,7 +6,7 @@
 [ext_resource type="Theme" uid="uid://d2wc7fposrlqs" path="res://themes/wizard_theme.tres" id="4_yhkb3"]
 [ext_resource type="Texture2D" uid="uid://cbbohhy0ybxvy" path="res://_assets/sprites/assorted/coin.PNG" id="5_c0y1m"]
 
-[node name="ShopArcanum" type="VBoxContainer"]
+[node name="ShopArcanum" type="VBoxContainer" unique_id=296010168]
 custom_minimum_size = Vector2(225, 185)
 offset_right = 225.0
 offset_bottom = 185.0
@@ -14,33 +14,33 @@ theme_override_constants/separation = 0
 script = ExtResource("1_vwbb3")
 arcanum = ExtResource("2_3etbk")
 
-[node name="ArcanumContainer" type="CenterContainer" parent="."]
+[node name="ArcanumContainer" type="CenterContainer" parent="." unique_id=248852330]
 unique_name_in_owner = true
 layout_mode = 2
 
-[node name="ArcanumDisplay" parent="ArcanumContainer" instance=ExtResource("2_b2kxg")]
+[node name="ArcanumDisplay" parent="ArcanumContainer" unique_id=1839515161 instance=ExtResource("2_b2kxg")]
 layout_mode = 2
 
-[node name="Price" type="HBoxContainer" parent="."]
+[node name="Price" type="HBoxContainer" parent="." unique_id=944176465]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_constants/separation = 0
 alignment = 1
 
-[node name="PriceLabel" type="Label" parent="Price"]
+[node name="PriceLabel" type="Label" parent="Price" unique_id=329618834]
 unique_name_in_owner = true
 layout_mode = 2
 theme = ExtResource("4_yhkb3")
 text = "999"
 
-[node name="GoldIcon" type="TextureRect" parent="Price"]
+[node name="GoldIcon" type="TextureRect" parent="Price" unique_id=1539664924]
 custom_minimum_size = Vector2(64, 64)
 layout_mode = 2
 texture = ExtResource("5_c0y1m")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="BuyButton" type="Button" parent="."]
+[node name="BuyButton" type="Button" parent="." unique_id=1076054606]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_font_sizes/font_size = 42

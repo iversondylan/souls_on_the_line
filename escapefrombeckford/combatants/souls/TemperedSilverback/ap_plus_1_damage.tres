@@ -1,6 +1,6 @@
-[gd_resource type="Resource" script_class="MaxApDamageModel" format=3 uid="uid://cni2m8j6ug1n1"]
+[gd_resource type="Resource" script_class="MaxApDamageModel" format=3 uid="uid://cu7jqci15sm2m"]
 
-[ext_resource type="Script" uid="uid://dexyad0u7d7ua" path="res://npc_ai/damage/max_ap_damage_model.gd" id="1_ixqnh"]
+[ext_resource type="Script" uid="uid://dexyad0u7d7ua" path="res://npc_ai/damage/ap_damage_model.gd" id="1_ixqnh"]
 
 [resource]
 script = ExtResource("1_ixqnh")

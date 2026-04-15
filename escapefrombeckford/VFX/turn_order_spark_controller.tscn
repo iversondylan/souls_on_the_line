@@ -4,15 +4,15 @@
 [ext_resource type="Texture2D" uid="uid://dwv4i12y4lmr0" path="res://_assets/sprites/assorted/circle.png" id="2_3ivoo"]
 [ext_resource type="Theme" uid="uid://1dr1eewpv0jd" path="res://themes/ui_theme.tres" id="3_qc7xi"]
 
-[node name="TurnOrderSparkController" type="Node2D"]
+[node name="TurnOrderSparkController" type="Node2D" unique_id=1625992483]
 script = ExtResource("1_mvl5u")
 
-[node name="Spark" type="Sprite2D" parent="."]
+[node name="Spark" type="Sprite2D" parent="." unique_id=2066629626]
 modulate = Color(1, 1, 1, 0.5568628)
 scale = Vector2(0.07, 0.07)
 texture = ExtResource("2_3ivoo")
 
-[node name="SparkLabel" type="RichTextLabel" parent="."]
+[node name="SparkLabel" type="RichTextLabel" parent="." unique_id=935443627]
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
@@ -33,4 +33,4 @@ scroll_active = false
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="OrdinalsParent" type="Node2D" parent="."]
+[node name="OrdinalsParent" type="Node2D" parent="." unique_id=138915852]

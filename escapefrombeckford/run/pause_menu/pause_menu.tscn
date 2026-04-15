@@ -2,7 +2,7 @@
 
 [ext_resource type="Theme" uid="uid://d2wc7fposrlqs" path="res://themes/wizard_theme.tres" id="1_f0jds"]
 
-[node name="PauseMenu" type="Control"]
+[node name="PauseMenu" type="Control" unique_id=1211767457]
 process_mode = 3
 layout_mode = 3
 anchors_preset = 15
@@ -11,7 +11,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="Background" type="ColorRect" parent="."]
+[node name="Background" type="ColorRect" parent="." unique_id=182911267]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -20,7 +20,7 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.0156863, 0.0156863, 0.0470588, 0.756863)
 
-[node name="PanelContainer" type="PanelContainer" parent="."]
+[node name="PanelContainer" type="PanelContainer" parent="." unique_id=1027729042]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -35,71 +35,71 @@ grow_horizontal = 2
 grow_vertical = 2
 theme = ExtResource("1_f0jds")
 
-[node name="MarginContainer" type="MarginContainer" parent="PanelContainer"]
+[node name="MarginContainer" type="MarginContainer" parent="PanelContainer" unique_id=1671590105]
 layout_mode = 2
 theme_override_constants/margin_left = 24
 theme_override_constants/margin_top = 24
 theme_override_constants/margin_right = 24
 theme_override_constants/margin_bottom = 24
 
-[node name="Content" type="VBoxContainer" parent="PanelContainer/MarginContainer"]
+[node name="Content" type="VBoxContainer" parent="PanelContainer/MarginContainer" unique_id=1251799260]
 layout_mode = 2
 theme_override_constants/separation = 18
 
-[node name="Title" type="Label" parent="PanelContainer/MarginContainer/Content"]
+[node name="Title" type="Label" parent="PanelContainer/MarginContainer/Content" unique_id=1238228881]
 layout_mode = 2
 theme = ExtResource("1_f0jds")
 text = "Pause"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="Buttons" type="VBoxContainer" parent="PanelContainer/MarginContainer/Content"]
+[node name="Buttons" type="VBoxContainer" parent="PanelContainer/MarginContainer/Content" unique_id=628846970]
 layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="ResumeGameButton" type="Button" parent="PanelContainer/MarginContainer/Content/Buttons"]
+[node name="ResumeGameButton" type="Button" parent="PanelContainer/MarginContainer/Content/Buttons" unique_id=453560951]
 custom_minimum_size = Vector2(0, 58)
 layout_mode = 2
 size_flags_horizontal = 3
 theme = ExtResource("1_f0jds")
 text = "Resume Game"
 
-[node name="SettingsButton" type="Button" parent="PanelContainer/MarginContainer/Content/Buttons"]
+[node name="SettingsButton" type="Button" parent="PanelContainer/MarginContainer/Content/Buttons" unique_id=996566546]
 custom_minimum_size = Vector2(0, 58)
 layout_mode = 2
 size_flags_horizontal = 3
-disabled = true
 theme = ExtResource("1_f0jds")
+disabled = true
 text = "Settings"
 
-[node name="ReturnToMainMenuButton" type="Button" parent="PanelContainer/MarginContainer/Content/Buttons"]
+[node name="ReturnToMainMenuButton" type="Button" parent="PanelContainer/MarginContainer/Content/Buttons" unique_id=711158424]
 custom_minimum_size = Vector2(0, 58)
 layout_mode = 2
 size_flags_horizontal = 3
 theme = ExtResource("1_f0jds")
 text = "Return to Main Menu"
 
-[node name="ExitGameButton" type="Button" parent="PanelContainer/MarginContainer/Content/Buttons"]
+[node name="ExitGameButton" type="Button" parent="PanelContainer/MarginContainer/Content/Buttons" unique_id=1277405864]
 custom_minimum_size = Vector2(0, 58)
 layout_mode = 2
 size_flags_horizontal = 3
-disabled = true
 theme = ExtResource("1_f0jds")
+disabled = true
 text = "Exit Game"
 
-[node name="DebugButtons" type="VBoxContainer" parent="PanelContainer/MarginContainer/Content"]
+[node name="DebugButtons" type="VBoxContainer" parent="PanelContainer/MarginContainer/Content" unique_id=1734151488]
 visible = false
 layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="DebugSaveButton" type="Button" parent="PanelContainer/MarginContainer/Content/DebugButtons"]
+[node name="DebugSaveButton" type="Button" parent="PanelContainer/MarginContainer/Content/DebugButtons" unique_id=1342702781]
 custom_minimum_size = Vector2(0, 52)
 layout_mode = 2
 size_flags_horizontal = 3
 theme = ExtResource("1_f0jds")
 text = "Debug Save"
 
-[node name="DebugLoadButton" type="Button" parent="PanelContainer/MarginContainer/Content/DebugButtons"]
+[node name="DebugLoadButton" type="Button" parent="PanelContainer/MarginContainer/Content/DebugButtons" unique_id=1549739083]
 custom_minimum_size = Vector2(0, 52)
 layout_mode = 2
 size_flags_horizontal = 3

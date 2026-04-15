@@ -267,18 +267,10 @@ func _start_summon_pop_order(order: SummonPopPresentationOrder) -> void:
 
 	if v.character_art != null:
 		var c := v.character_art.modulate
-		c.a = 0.0
+		c.a = 1.0
 		v.character_art.modulate = c
 
-		if v.tween_misc:
-			v.tween_misc.kill()
-		v.tween_misc = v.create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
-		v.tween_misc.tween_property(
-			v.character_art,
-			"modulate:a",
-			1.0,
-			maxf(order.visual_sec if order.visual_sec > 0.0 else 0.20, 0.01)
-		)
+	_apply_group_order(g, _coerce_int_array(order.after_order_ids), false)
 
 	if caster != null:
 		caster.clear_strike_pose(order.visual_sec if order.visual_sec > 0.0 else 0.20)
@@ -788,7 +780,8 @@ func _on_spawned(e: EventPackage) -> void:
 	if v == null:
 		return
 
-	v.apply_spawn_spec(d.get(Keys.SUMMON_SPEC, {}))
+	var summon_spec: Dictionary = d.get(Keys.SUMMON_SPEC, {})
+	v.apply_spawn_spec(summon_spec)
 	_apply_group_order(g, _after_order(e), false)
 
 
@@ -1238,11 +1231,9 @@ func _on_summoned(e: EventPackage) -> void:
 		return
 
 	if v.character_art != null:
-		v.character_art.modulate.a = 0.0
-		if v.tween_misc:
-			v.tween_misc.kill()
-		v.tween_misc = v.create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
-		v.tween_misc.tween_property(v.character_art, "modulate:a", 1.0, maxf(e.duration, 0.01))
+		var c := v.character_art.modulate
+		c.a = 1.0
+		v.character_art.modulate = c
 
 	var summoned_id := int(d.get(Keys.SUMMONED_ID, 0))
 	var card_uid := String(d.get(Keys.CARD_UID, ""))

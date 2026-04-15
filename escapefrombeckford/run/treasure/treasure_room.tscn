@@ -137,7 +137,7 @@ gravity = Vector3(0, 500, 0)
 scale_curve = SubResource("CurveTexture_pspxh")
 alpha_curve = SubResource("CurveTexture_6e3s4")
 
-[node name="TreasureRoom" type="Control"]
+[node name="TreasureRoom" type="Control" unique_id=14636278]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -148,7 +148,7 @@ mouse_filter = 2
 script = ExtResource("1_x7vk5")
 player_data = ExtResource("2_xqacy")
 
-[node name="ColorRect" type="ColorRect" parent="."]
+[node name="ColorRect" type="ColorRect" parent="." unique_id=24266382]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -158,7 +158,7 @@ grow_vertical = 2
 mouse_filter = 2
 color = Color(0.129713, 0.068814, 0.194495, 0.635294)
 
-[node name="VBoxContainer" type="VBoxContainer" parent="."]
+[node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=107314642]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -172,14 +172,14 @@ offset_bottom = 55.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="Label" type="Label" parent="VBoxContainer"]
+[node name="Label" type="Label" parent="VBoxContainer" unique_id=1486800758]
 layout_mode = 2
 theme = ExtResource("2_0vo2r")
 text = "Treasure"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="TextureRect" type="TextureRect" parent="."]
+[node name="TextureRect" type="TextureRect" parent="." unique_id=899458373]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -196,14 +196,12 @@ pivot_offset = Vector2(320, 240)
 mouse_filter = 0
 texture = ExtResource("3_6u0ip")
 
-[node name="AnimationPlayer" type="AnimationPlayer" parent="TextureRect"]
+[node name="AnimationPlayer" type="AnimationPlayer" parent="TextureRect" unique_id=2115776679]
 unique_name_in_owner = true
-libraries = {
-&"": SubResource("AnimationLibrary_8s1wt")
-}
-autoplay = "highlight"
+libraries/ = SubResource("AnimationLibrary_8s1wt")
+autoplay = &"highlight"
 
-[node name="GPUParticles2D" type="GPUParticles2D" parent="TextureRect"]
+[node name="GPUParticles2D" type="GPUParticles2D" parent="TextureRect" unique_id=146610519]
 position = Vector2(313, 250)
 emitting = false
 amount = 25

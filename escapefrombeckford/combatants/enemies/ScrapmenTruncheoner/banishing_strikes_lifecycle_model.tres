@@ -7,5 +7,3 @@
 script = ExtResource("1_script")
 status = ExtResource("2_status")
 intensity = 5
-duration = 0
-pending = false

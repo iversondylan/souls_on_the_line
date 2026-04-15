@@ -1,4 +1,4 @@
-[gd_resource type="Resource" format=3 uid="uid://dohwwwoux6ubx"]
+[gd_resource type="Resource" script_class="UnrulyPyricWrapsArcanum" format=3 uid="uid://dohwwwoux6ubx"]
 
 [ext_resource type="Texture2D" uid="uid://dngnha78cu11v" path="res://_assets/sprites/arcana_placeholders/mittens.png" id="1_oaq64"]
 [ext_resource type="Script" uid="uid://boja5bygddac1" path="res://arcana/unruly_pyric_wraps.gd" id="2_an6gd"]

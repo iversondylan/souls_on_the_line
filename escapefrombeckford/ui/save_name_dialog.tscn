@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://bim43ske8t2yy" path="res://ui/save_name_dialog.gd" id="1_jb4be"]
 [ext_resource type="Theme" uid="uid://d2wc7fposrlqs" path="res://themes/wizard_theme.tres" id="2_lf0ve"]
 
-[node name="SaveNameDialog" type="Control"]
+[node name="SaveNameDialog" type="Control" unique_id=909359215]
 process_mode = 3
 visible = false
 layout_mode = 3
@@ -14,7 +14,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_jb4be")
 
-[node name="Background" type="ColorRect" parent="."]
+[node name="Background" type="ColorRect" parent="." unique_id=560511181]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -23,7 +23,7 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.0156863, 0.0156863, 0.0470588, 0.756863)
 
-[node name="PanelContainer" type="PanelContainer" parent="."]
+[node name="PanelContainer" type="PanelContainer" parent="." unique_id=2023058414]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -38,49 +38,49 @@ grow_horizontal = 2
 grow_vertical = 2
 theme = ExtResource("2_lf0ve")
 
-[node name="MarginContainer" type="MarginContainer" parent="PanelContainer"]
+[node name="MarginContainer" type="MarginContainer" parent="PanelContainer" unique_id=222078932]
 layout_mode = 2
 theme_override_constants/margin_left = 24
 theme_override_constants/margin_top = 24
 theme_override_constants/margin_right = 24
 theme_override_constants/margin_bottom = 24
 
-[node name="Content" type="VBoxContainer" parent="PanelContainer/MarginContainer"]
+[node name="Content" type="VBoxContainer" parent="PanelContainer/MarginContainer" unique_id=1924801433]
 layout_mode = 2
 theme_override_constants/separation = 14
 
-[node name="Title" type="Label" parent="PanelContainer/MarginContainer/Content"]
+[node name="Title" type="Label" parent="PanelContainer/MarginContainer/Content" unique_id=1661144017]
 unique_name_in_owner = true
 layout_mode = 2
 theme = ExtResource("2_lf0ve")
 text = "Save Debug Run"
 horizontal_alignment = 1
 
-[node name="NameEdit" type="LineEdit" parent="PanelContainer/MarginContainer/Content"]
+[node name="NameEdit" type="LineEdit" parent="PanelContainer/MarginContainer/Content" unique_id=1801193580]
 unique_name_in_owner = true
 layout_mode = 2
 placeholder_text = "Save name"
 
-[node name="OverwriteWarning" type="Label" parent="PanelContainer/MarginContainer/Content"]
+[node name="OverwriteWarning" type="Label" parent="PanelContainer/MarginContainer/Content" unique_id=952792458]
 unique_name_in_owner = true
 visible = false
 layout_mode = 2
 text = "A save with this name already exists. Saving will overwrite it."
 autowrap_mode = 2
 
-[node name="Buttons" type="HBoxContainer" parent="PanelContainer/MarginContainer/Content"]
+[node name="Buttons" type="HBoxContainer" parent="PanelContainer/MarginContainer/Content" unique_id=1936168538]
 layout_mode = 2
 theme_override_constants/separation = 10
 alignment = 1
 
-[node name="CancelButton" type="Button" parent="PanelContainer/MarginContainer/Content/Buttons"]
+[node name="CancelButton" type="Button" parent="PanelContainer/MarginContainer/Content/Buttons" unique_id=1617411732]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(140, 48)
 layout_mode = 2
 theme = ExtResource("2_lf0ve")
 text = "Cancel"
 
-[node name="SaveButton" type="Button" parent="PanelContainer/MarginContainer/Content/Buttons"]
+[node name="SaveButton" type="Button" parent="PanelContainer/MarginContainer/Content/Buttons" unique_id=219791850]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(160, 48)
 layout_mode = 2

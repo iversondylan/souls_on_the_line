@@ -6,7 +6,7 @@
 [ext_resource type="Theme" uid="uid://d2wc7fposrlqs" path="res://themes/wizard_theme.tres" id="2_w7nxn"]
 [ext_resource type="Texture2D" uid="uid://cbbohhy0ybxvy" path="res://_assets/sprites/assorted/coin.PNG" id="3_ve2vk"]
 
-[node name="ShopCard" type="VBoxContainer"]
+[node name="ShopCard" type="VBoxContainer" unique_id=1508622680]
 custom_minimum_size = Vector2(225, 436)
 offset_right = 225.0
 offset_bottom = 315.0
@@ -14,33 +14,33 @@ theme_override_constants/separation = 0
 script = ExtResource("1_w7nxn")
 card_data = ExtResource("2_ve2vk")
 
-[node name="CardContainer" type="CenterContainer" parent="."]
+[node name="CardContainer" type="CenterContainer" parent="." unique_id=135970500]
 unique_name_in_owner = true
 layout_mode = 2
 
-[node name="MenuCard" parent="CardContainer" instance=ExtResource("1_q5376")]
+[node name="MenuCard" parent="CardContainer" unique_id=1649030932 instance=ExtResource("1_q5376")]
 layout_mode = 2
 
-[node name="Price" type="HBoxContainer" parent="."]
+[node name="Price" type="HBoxContainer" parent="." unique_id=2082650694]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_constants/separation = 0
 alignment = 1
 
-[node name="PriceLabel" type="Label" parent="Price"]
+[node name="PriceLabel" type="Label" parent="Price" unique_id=984985020]
 unique_name_in_owner = true
 layout_mode = 2
 theme = ExtResource("2_w7nxn")
 text = "999"
 
-[node name="GoldIcon" type="TextureRect" parent="Price"]
+[node name="GoldIcon" type="TextureRect" parent="Price" unique_id=1890515847]
 custom_minimum_size = Vector2(64, 64)
 layout_mode = 2
 texture = ExtResource("3_ve2vk")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="BuyButton" type="Button" parent="."]
+[node name="BuyButton" type="Button" parent="." unique_id=1454238710]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_font_sizes/font_size = 42

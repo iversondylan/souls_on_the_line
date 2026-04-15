@@ -11,6 +11,7 @@ id = &"spectral_clone"
 card_type = 1
 target_type = 1
 name = "Spectral Clone"
+starter_card = true
 summon_release_overload = 1
 description = "Summon a %s/%s %s."
 cost = 1

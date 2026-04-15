@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://dehd0604e4lrd" path="res://ui/arcanum_tooltip_popup.gd" id="1_b5a31"]
 [ext_resource type="Texture2D" uid="uid://dqw3vrvo72rls" path="res://_assets/sprites/arcana_placeholders/clone.png" id="2_0n13h"]
 
-[node name="ArcanumTooltipPopup" type="Control"]
+[node name="ArcanumTooltipPopup" type="Control" unique_id=453684705]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -12,7 +12,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_b5a31")
 
-[node name="Background" type="ColorRect" parent="."]
+[node name="Background" type="ColorRect" parent="." unique_id=1550234161]
 unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 15
@@ -23,7 +23,7 @@ grow_vertical = 2
 mouse_filter = 2
 color = Color(0.0505995, 0.0654161, 0.143824, 0.619608)
 
-[node name="ScrollContainer" type="ScrollContainer" parent="."]
+[node name="ScrollContainer" type="ScrollContainer" parent="." unique_id=233624160]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -38,10 +38,10 @@ grow_horizontal = 2
 grow_vertical = 2
 horizontal_scroll_mode = 0
 
-[node name="VBoxContainer" type="VBoxContainer" parent="ScrollContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="ScrollContainer" unique_id=865336123]
 layout_mode = 2
 
-[node name="ArcanumIcon" type="TextureRect" parent="ScrollContainer/VBoxContainer"]
+[node name="ArcanumIcon" type="TextureRect" parent="ScrollContainer/VBoxContainer" unique_id=1156503355]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(128, 128)
 layout_mode = 2
@@ -49,7 +49,7 @@ texture = ExtResource("2_0n13h")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="ArcanumDescription" type="RichTextLabel" parent="ScrollContainer/VBoxContainer"]
+[node name="ArcanumDescription" type="RichTextLabel" parent="ScrollContainer/VBoxContainer" unique_id=1905899171]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(800, 0)
 layout_mode = 2
@@ -61,7 +61,7 @@ Relic Tooltip Popup Error"
 fit_content = true
 horizontal_alignment = 1
 
-[node name="ArcanumFlavor" type="RichTextLabel" parent="ScrollContainer/VBoxContainer"]
+[node name="ArcanumFlavor" type="RichTextLabel" parent="ScrollContainer/VBoxContainer" unique_id=690600346]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(800, 0)
 layout_mode = 2
@@ -71,7 +71,7 @@ text = "Card Description Error Card Description Error Card Description Error Car
 fit_content = true
 horizontal_alignment = 1
 
-[node name="ArcanumLore" type="RichTextLabel" parent="ScrollContainer/VBoxContainer"]
+[node name="ArcanumLore" type="RichTextLabel" parent="ScrollContainer/VBoxContainer" unique_id=593332229]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(800, 0)
 layout_mode = 2

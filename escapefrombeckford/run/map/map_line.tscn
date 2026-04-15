@@ -2,7 +2,7 @@
 
 [ext_resource type="Texture2D" uid="uid://dxw6nnfgsuil3" path="res://_assets/sprites/assorted/circle_white_48.png" id="1_hx6oq"]
 
-[node name="MapLine" type="Line2D"]
+[node name="MapLine" type="Line2D" unique_id=1506340324]
 modulate = Color(0.596629, 0.464662, 0.301945, 1)
 texture_repeat = 2
 texture = ExtResource("1_hx6oq")

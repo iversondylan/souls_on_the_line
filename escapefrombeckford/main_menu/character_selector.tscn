@@ -1,7 +1,6 @@
 [gd_scene format=3 uid="uid://ba6ifh3shnl1d"]
 
 [ext_resource type="Script" uid="uid://bfjw1vt2woiko" path="res://main_menu/character_selector.gd" id="1_cl78x"]
-[ext_resource type="Resource" uid="uid://b2ewfy12rhm0l" path="res://character_profiles/player_catalog.tres" id="2_oh4nh"]
 [ext_resource type="FontFile" uid="uid://bghjbryekmnis" path="res://_assets/fonts/linux-libertine/LinLibertine_5.3.0_2012_07_02/LinLibertineOTF_5.3.0_2012_07_02/LinLibertine_R.otf" id="2_otyuf"]
 [ext_resource type="FontFile" uid="uid://b1ahfe6v5ucl7" path="res://_assets/fonts/linux-libertine/LinLibertine_5.3.0_2012_07_02/LinLibertineOTF_5.3.0_2012_07_02/LinLibertine_RBI.otf" id="2_wamhw"]
 [ext_resource type="Theme" uid="uid://d2wc7fposrlqs" path="res://themes/wizard_theme.tres" id="3_otyuf"]
@@ -23,7 +22,7 @@ font_size = 40
 font = ExtResource("2_otyuf")
 font_size = 25
 
-[node name="CharacterSelector" type="Control"]
+[node name="CharacterSelector" type="Control" unique_id=1098635039]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -31,9 +30,8 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_cl78x")
-player_catalog = ExtResource("2_oh4nh")
 
-[node name="Background" type="TextureRect" parent="."]
+[node name="Background" type="TextureRect" parent="." unique_id=397001696]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -42,7 +40,7 @@ grow_horizontal = 2
 grow_vertical = 2
 texture = SubResource("GradientTexture1D_bqqt6")
 
-[node name="CharacterText" type="VBoxContainer" parent="."]
+[node name="CharacterText" type="VBoxContainer" parent="." unique_id=896569176]
 layout_mode = 1
 anchors_preset = 5
 anchor_left = 0.5
@@ -53,7 +51,7 @@ offset_right = 331.0
 offset_bottom = 186.0
 grow_horizontal = 2
 
-[node name="Title" type="Label" parent="CharacterText"]
+[node name="Title" type="Label" parent="CharacterText" unique_id=686200287]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Cole"
@@ -61,7 +59,7 @@ label_settings = SubResource("LabelSettings_wu84c")
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="Description" type="Label" parent="CharacterText"]
+[node name="Description" type="Label" parent="CharacterText" unique_id=2022716472]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(660, 10)
 layout_mode = 2
@@ -72,7 +70,7 @@ horizontal_alignment = 1
 vertical_alignment = 1
 autowrap_mode = 2
 
-[node name="CharacterImage" type="TextureRect" parent="."]
+[node name="CharacterImage" type="TextureRect" parent="." unique_id=1550524061]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(236, 365)
 layout_mode = 1
@@ -88,7 +86,7 @@ texture = ExtResource("3_wamhw")
 expand_mode = 1
 stretch_mode = 3
 
-[node name="StartButton" type="Button" parent="."]
+[node name="StartButton" type="Button" parent="." unique_id=1124692912]
 layout_mode = 1
 anchors_preset = 3
 anchor_left = 1.0
@@ -104,7 +102,7 @@ grow_vertical = 0
 theme = ExtResource("3_otyuf")
 text = "Start"
 
-[node name="TutorialButton" type="Button" parent="."]
+[node name="TutorialButton" type="Button" parent="." unique_id=883063117]
 layout_mode = 1
 anchors_preset = 3
 anchor_left = 1.0
@@ -120,7 +118,7 @@ grow_vertical = 0
 theme = ExtResource("3_otyuf")
 text = "Tutorial"
 
-[node name="CharacterButtons" type="HBoxContainer" parent="."]
+[node name="CharacterButtons" type="HBoxContainer" parent="." unique_id=1127931052]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -135,7 +133,7 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/separation = 32
 
-[node name="ColeButton" type="Button" parent="CharacterButtons"]
+[node name="ColeButton" type="Button" parent="CharacterButtons" unique_id=308250454]
 custom_minimum_size = Vector2(100, 100)
 layout_mode = 2
 theme = ExtResource("3_otyuf")
@@ -143,39 +141,39 @@ toggle_mode = true
 button_pressed = true
 button_group = ExtResource("5_dy3sk")
 
-[node name="TextureRect" type="TextureRect" parent="CharacterButtons/ColeButton"]
+[node name="TextureRect" type="TextureRect" parent="CharacterButtons/ColeButton" unique_id=887634075]
 layout_mode = 0
 offset_right = 40.0
 offset_bottom = 40.0
 texture = ExtResource("5_ktnu4")
 
-[node name="Char2Button" type="Button" parent="CharacterButtons"]
+[node name="Char2Button" type="Button" parent="CharacterButtons" unique_id=28448874]
 custom_minimum_size = Vector2(100, 100)
 layout_mode = 2
 theme = ExtResource("3_otyuf")
 toggle_mode = true
 button_group = ExtResource("5_dy3sk")
 
-[node name="TextureRect" type="TextureRect" parent="CharacterButtons/Char2Button"]
+[node name="TextureRect" type="TextureRect" parent="CharacterButtons/Char2Button" unique_id=1277242566]
 layout_mode = 0
 offset_right = 40.0
 offset_bottom = 40.0
 texture = ExtResource("5_ktnu4")
 
-[node name="Char3Button" type="Button" parent="CharacterButtons"]
+[node name="Char3Button" type="Button" parent="CharacterButtons" unique_id=1594074148]
 custom_minimum_size = Vector2(100, 100)
 layout_mode = 2
 theme = ExtResource("3_otyuf")
 toggle_mode = true
 button_group = ExtResource("5_dy3sk")
 
-[node name="TextureRect" type="TextureRect" parent="CharacterButtons/Char3Button"]
+[node name="TextureRect" type="TextureRect" parent="CharacterButtons/Char3Button" unique_id=844513237]
 layout_mode = 0
 offset_right = 40.0
 offset_bottom = 40.0
 texture = ExtResource("5_ktnu4")
 
-[node name="SoulTitle" type="Label" parent="."]
+[node name="SoulTitle" type="Label" parent="." unique_id=1292044583]
 unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 8
@@ -193,7 +191,7 @@ theme = ExtResource("3_otyuf")
 text = "Signature Soul"
 horizontal_alignment = 1
 
-[node name="SoulButtons" type="HBoxContainer" parent="."]
+[node name="SoulButtons" type="HBoxContainer" parent="." unique_id=2069637022]
 unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 8
@@ -207,8 +205,8 @@ offset_right = 380.0
 offset_bottom = 420.0
 grow_horizontal = 2
 grow_vertical = 2
-alignment = 1
 theme_override_constants/separation = 42
+alignment = 1
 
 [connection signal="pressed" from="StartButton" to="." method="_on_start_button_pressed"]
 [connection signal="pressed" from="TutorialButton" to="." method="_on_tutorial_button_pressed"]

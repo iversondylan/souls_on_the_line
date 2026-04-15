@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="AttackIntentTooltipTextModel" load_steps=2 format=3 uid="uid://ivsvxo0vj72x"]
+[gd_resource type="Resource" script_class="AttackIntentTooltipTextModel" format=3 uid="uid://ivsvxo0vj72x"]
 
 [ext_resource type="Script" uid="uid://8lp7x60y132v" path="res://npc_ai/text/attack_intent_tooltip_text_model.gd" id="1_vrvvr"]
 

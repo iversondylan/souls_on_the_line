@@ -4,7 +4,6 @@
 
 [node name="MusicPlayer" type="Node" unique_id=150153256]
 script = ExtResource("1_uyuvo")
-bus = "Music"
 
 [node name="AudioStreamPlayer2" type="AudioStreamPlayer" parent="." unique_id=1770311386]
 bus = &"Music"

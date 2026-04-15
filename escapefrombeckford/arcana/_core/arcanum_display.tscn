@@ -70,14 +70,14 @@ _data = {
 &"flash": SubResource("Animation_p1i7h")
 }
 
-[node name="ArcanumDisplay" type="Control"]
+[node name="ArcanumDisplay" type="Control" unique_id=1297973977]
 custom_minimum_size = Vector2(64, 64)
 layout_mode = 3
 anchors_preset = 0
 script = ExtResource("1_1sww4")
 arcanum = ExtResource("2_cn34x")
 
-[node name="Icon" type="TextureRect" parent="."]
+[node name="Icon" type="TextureRect" parent="." unique_id=41552853]
 layout_mode = 0
 offset_right = 64.0
 offset_bottom = 64.0
@@ -86,10 +86,8 @@ texture = ExtResource("3_uqa2w")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
-libraries = {
-&"": SubResource("AnimationLibrary_3dch0")
-}
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=294840151]
+libraries/ = SubResource("AnimationLibrary_3dch0")
 
 [connection signal="gui_input" from="." to="." method="_on_gui_input"]
 [connection signal="mouse_entered" from="." to="." method="_on_mouse_entered"]

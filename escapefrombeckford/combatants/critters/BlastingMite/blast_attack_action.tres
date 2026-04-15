@@ -13,7 +13,6 @@
 [resource]
 script = ExtResource("8_hf52q")
 effect_packages = Array[ExtResource("1_t7w8n")]([ExtResource("2_kb7m6")])
-choice_type = 0
 action_name = "Blast"
 intent_icon = ExtResource("3_4d1hc")
 intent_icon_uid = "uid://dp3uhdoaut1lx"

@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="AttackIntentTextModel" load_steps=2 format=3 uid="uid://7gggk4mmejsq"]
+[gd_resource type="Resource" script_class="AttackIntentTextModel" format=3 uid="uid://7gggk4mmejsq"]
 
 [ext_resource type="Script" uid="uid://cgyx5yvchgfsk" path="res://npc_ai/text/attack_intent_text_model.gd" id="1_abxfa"]
 

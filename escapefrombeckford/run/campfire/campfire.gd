@@ -8,9 +8,11 @@ var run_deck: RunDeck
 
 @onready var animation_player: AnimationPlayer = $AnimationPlayer
 @onready var attune_button: Button = %AttuneButton
+@onready var modal_layer: CanvasLayer = %ModalLayer
 @onready var slot_overlay = %SlotOverlay
 
 var _confirm_dialog: ConfirmationDialog
+var _candidate_overlay: CardSelectionOverlay
 var _pending_slot_index: int = -1
 var _pending_slot_uid: String = ""
 var _pending_attuned_card: CardData
@@ -48,7 +50,10 @@ func _build_confirm_dialog() -> void:
 	_confirm_dialog.dialog_text = "Are you sure? This will replace the currently attuned soul."
 	_confirm_dialog.get_ok_button().text = "Attune"
 	_confirm_dialog.confirmed.connect(_confirm_attunement)
-	add_child(_confirm_dialog)
+	if modal_layer != null:
+		modal_layer.add_child(_confirm_dialog)
+	else:
+		add_child(_confirm_dialog)
 
 
 func _on_rest_button_pressed() -> void:
@@ -66,7 +71,11 @@ func _on_attune_button_pressed() -> void:
 
 
 func _show_slot_overlay() -> void:
-	if slot_overlay == null or profile_data == null or profile_data.soul_recess_state == null:
+	if slot_overlay == null:
+		push_warning("Campfire._show_slot_overlay(): SlotOverlay is missing.")
+		return
+	if profile_data == null or profile_data.soul_recess_state == null:
+		push_warning("Campfire._show_slot_overlay(): soul_recess_state is missing.")
 		return
 	slot_overlay.show_slots(profile_data.soul_recess_state)
 
@@ -77,6 +86,7 @@ func _hide_slot_overlay() -> void:
 
 
 func _on_slot_overlay_selected(slot_index: int, slot_uid: String) -> void:
+	_hide_slot_overlay()
 	_open_attunement_candidates(slot_index, slot_uid)
 
 
@@ -88,10 +98,18 @@ func _open_attunement_candidates(slot_index: int, slot_uid: String) -> void:
 	_pending_slot_index = slot_index
 	_pending_slot_uid = slot_uid
 
-	var overlay = CARD_SELECTION_OVERLAY.instantiate()
-	add_child(overlay)
-	overlay.selection_confirmed.connect(_on_attunement_candidate_selected)
-	overlay.configure(
+	if is_instance_valid(_candidate_overlay):
+		_candidate_overlay.queue_free()
+
+	_candidate_overlay = CARD_SELECTION_OVERLAY.instantiate() as CardSelectionOverlay
+	if modal_layer != null:
+		modal_layer.add_child(_candidate_overlay)
+	else:
+		add_child(_candidate_overlay)
+	_candidate_overlay.selection_confirmed.connect(_on_attunement_candidate_selected)
+	_candidate_overlay.selection_canceled.connect(_on_attunement_candidate_canceled)
+	_candidate_overlay.tree_exited.connect(_on_attunement_candidate_overlay_exited)
+	_candidate_overlay.configure(
 		_get_attunement_candidates(),
 		"Choose a SoulBound Card",
 		"Attune",
@@ -122,6 +140,15 @@ func _on_attunement_candidate_selected(card_data: CardData) -> void:
 		_confirm_dialog.popup_centered()
 
 
+func _on_attunement_candidate_canceled() -> void:
+	_candidate_overlay = null
+	_show_slot_overlay()
+
+
+func _on_attunement_candidate_overlay_exited() -> void:
+	_candidate_overlay = null
+
+
 func _confirm_attunement() -> void:
 	if _pending_attuned_card == null or profile_data == null or profile_data.soul_recess_state == null:
 		return
@@ -136,6 +163,9 @@ func _confirm_attunement() -> void:
 		profile_data.soul_recess_state.selected_starting_soul_uid = String(snapshot.card.uid)
 	SaveService.save_profile(profile_data)
 
+	if is_instance_valid(_candidate_overlay):
+		_candidate_overlay.queue_free()
+	_candidate_overlay = null
 	_pending_slot_index = -1
 	_pending_slot_uid = ""
 	_pending_attuned_card = null

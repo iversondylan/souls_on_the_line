@@ -4,14 +4,14 @@
 [ext_resource type="Texture2D" uid="uid://cbbohhy0ybxvy" path="res://_assets/sprites/assorted/coin.PNG" id="1_y2wrr"]
 [ext_resource type="Theme" uid="uid://1dr1eewpv0jd" path="res://themes/ui_theme.tres" id="2_8fbqs"]
 
-[node name="RewardButton" type="Button"]
+[node name="RewardButton" type="Button" unique_id=418291806]
 custom_minimum_size = Vector2(0, 60)
 offset_right = 300.0
 offset_bottom = 60.0
 theme_override_font_sizes/font_size = 32
 script = ExtResource("1_8fbqs")
 
-[node name="MarginContainer" type="MarginContainer" parent="."]
+[node name="MarginContainer" type="MarginContainer" parent="." unique_id=184245412]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -23,11 +23,11 @@ theme_override_constants/margin_top = 8
 theme_override_constants/margin_right = 16
 theme_override_constants/margin_bottom = 8
 
-[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer"]
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer" unique_id=1501998943]
 layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="CustomIcon" type="TextureRect" parent="MarginContainer/HBoxContainer"]
+[node name="CustomIcon" type="TextureRect" parent="MarginContainer/HBoxContainer" unique_id=1389591652]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(50, 50)
 layout_mode = 2
@@ -35,7 +35,7 @@ texture = ExtResource("1_y2wrr")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="CustomText" type="Label" parent="MarginContainer/HBoxContainer"]
+[node name="CustomText" type="Label" parent="MarginContainer/HBoxContainer" unique_id=432086492]
 unique_name_in_owner = true
 layout_mode = 2
 theme = ExtResource("2_8fbqs")

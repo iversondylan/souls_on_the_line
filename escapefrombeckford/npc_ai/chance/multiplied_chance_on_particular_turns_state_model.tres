@@ -4,5 +4,4 @@
 
 [resource]
 script = ExtResource("1_state_model")
-chance_multiplier = 1.0
 turn_numbers = []

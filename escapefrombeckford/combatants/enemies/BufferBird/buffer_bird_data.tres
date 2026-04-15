@@ -1,7 +1,6 @@
 [gd_resource type="Resource" script_class="CombatantData" format=3 uid="uid://dquci30xue6eo"]
 
 [ext_resource type="Resource" uid="uid://xw2ha8sh5j4f" path="res://combatants/enemies/BufferBird/buffer_bird_ai_profile.tres" id="1_0aghq"]
-[ext_resource type="Texture2D" uid="uid://bb2atap1ej445" path="res://_assets/character_visuals/buffer_bird/DemonRaven (1).png" id="1_7ocbv"]
 [ext_resource type="Script" uid="uid://cfatj0ryn8uv3" path="res://combatants/combatant_data.gd" id="1_rmw54"]
 
 [resource]

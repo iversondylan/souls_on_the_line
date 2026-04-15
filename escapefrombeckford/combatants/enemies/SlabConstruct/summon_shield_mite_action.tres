@@ -7,9 +7,9 @@
 [ext_resource type="Script" uid="uid://q408gy2b4q6a" path="res://npc_ai/_core/performable_model.gd" id="3_ghfs1"]
 [ext_resource type="Script" uid="uid://bcih413oy6v73" path="res://npc_ai/_core/npc_action.gd" id="4_vlhit"]
 [ext_resource type="Script" uid="uid://cuj4qvyx6dedj" path="res://npc_ai/_core/state_model.gd" id="5_bpa23"]
-[ext_resource type="Resource" path="res://npc_ai/text/summon_ap_intent_text_model.tres" id="5_t4713"]
+[ext_resource type="Resource" uid="uid://ctwocrhb1x5bv" path="res://npc_ai/text/summon_ap_intent_text_model.tres" id="5_t4713"]
 [ext_resource type="Resource" uid="uid://btgtvs6ab0nsg" path="res://npc_ai/chance/half_exponential_spree_chance_state_model.tres" id="9_2pqbx"]
-[ext_resource type="Resource" path="res://npc_ai/text/summon_ap_intent_tooltip_text_model.tres" id="9_ao534"]
+[ext_resource type="Resource" uid="uid://bv4vmq637qs77" path="res://npc_ai/text/summon_ap_intent_tooltip_text_model.tres" id="9_ao534"]
 
 [resource]
 script = ExtResource("4_vlhit")
