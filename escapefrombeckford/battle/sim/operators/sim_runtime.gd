@@ -888,6 +888,9 @@ func run_attack(ctx: AttackContext) -> bool:
 				"overflow_banish_amount": int(d.overflow_banish_amount),
 			}
 
+		# Trigger strike-based statuses before recoil so lethal self-damage still keeps the strike reward.
+		SimStatusSystem.on_strike_resolved(api, attacker_id, ctx, s, target_ids)
+
 		if direct_strike_dealt_damage:
 			_apply_inline_self_recoil_for_strike(api, ctx, attacker_id, s)
 

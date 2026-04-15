@@ -21,6 +21,7 @@ var events: BattleEventLog = BattleEventLog.new()
 
 var battle_seed: int = 0
 var run_seed: int = 0
+var summon_card_ap_bonus: Dictionary = {} # String(card_uid) -> int
 var summon_card_max_health_bonus: Dictionary = {} # String(card_uid) -> int
 
 # combat_id -> CombatantState
@@ -46,6 +47,7 @@ func init(_battle_seed: int, _run_seed: int) -> void:
 	run_seed = _run_seed
 	rng = RNG.new(battle_seed)
 	events = BattleEventLog.new()
+	summon_card_ap_bonus.clear()
 	summon_card_max_health_bonus.clear()
 
 	resource = ResourceState.new()
@@ -128,6 +130,7 @@ func clone() -> BattleState:
 	var b := BattleState.new()
 	b.battle_seed = battle_seed
 	b.run_seed = run_seed
+	b.summon_card_ap_bonus = summon_card_ap_bonus.duplicate(true)
 	b.summon_card_max_health_bonus = summon_card_max_health_bonus.duplicate(true)
 
 	b.rng = RNG.new()

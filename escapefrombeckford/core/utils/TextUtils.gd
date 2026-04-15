@@ -71,12 +71,14 @@ static func _description_values_for_action(
 	if action is SummonAction:
 		var summon_data := (action as SummonAction).get_preview_summon_data()
 		if summon_data != null:
+			var summon_ap := int(summon_data.ap)
 			var summon_max_health := int(summon_data.max_health)
 			if api != null and card_data != null:
 				var card_uid := String(card_data.uid)
 				if !card_uid.is_empty():
+					summon_ap += int(api.get_summon_card_ap_bonus(card_uid))
 					summon_max_health += int(api.get_summon_card_max_health_bonus(card_uid))
-			return [int(summon_data.ap), summon_max_health, String(summon_data.name)]
+			return [summon_ap, summon_max_health, String(summon_data.name)]
 
 	if action is HealAction:
 		var heal_action := action as HealAction

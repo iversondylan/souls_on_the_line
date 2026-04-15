@@ -13,6 +13,7 @@ var before_order_ids: PackedInt32Array = PackedInt32Array()
 var after_order_ids: PackedInt32Array = PackedInt32Array()
 var removed: bool = false
 var overload_mod: int = 0
+var released_reserve_card_uid: String = ""
 
 var killer_id: int = 0
 var event_extra := {}

@@ -120,6 +120,23 @@ static func on_attack_will_run(
 		include_pending_sources
 	)
 
+static func on_strike_resolved(
+	api: SimBattleAPI,
+	attacker_id: int,
+	attack_ctx: AttackContext,
+	strike_index: int,
+	target_ids: Array[int]
+) -> void:
+	if api == null or api.state == null or api.state.has_terminal_outcome():
+		return
+	if int(attacker_id) <= 0 or attack_ctx == null or target_ids.is_empty():
+		return
+
+	_for_each_effective_status_on_unit(api, attacker_id, func(ctx: SimStatusContext) -> void:
+		if ctx.proto != null:
+			ctx.proto.on_strike_resolved(ctx, attack_ctx, strike_index, target_ids)
+	)
+
 static func on_summon_will_resolve(
 	api: SimBattleAPI,
 	source_id: int,

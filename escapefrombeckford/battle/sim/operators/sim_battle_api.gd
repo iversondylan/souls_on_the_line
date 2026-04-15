@@ -147,6 +147,29 @@ func get_summon_card_max_health_bonus(card_uid: String) -> int:
 		return 0
 	return int(state.summon_card_max_health_bonus.get(uid, 0))
 
+func get_summon_card_ap_bonus(card_uid: String) -> int:
+	if state == null:
+		return 0
+	var uid := String(card_uid)
+	if uid.is_empty():
+		return 0
+	return int(state.summon_card_ap_bonus.get(uid, 0))
+
+func add_summon_card_ap_bonus(card_uid: String, amount: int) -> int:
+	if state == null:
+		return 0
+	var uid := String(card_uid)
+	if uid.is_empty():
+		return 0
+	if int(amount) == 0:
+		return get_summon_card_ap_bonus(uid)
+	var next_amount := maxi(0, get_summon_card_ap_bonus(uid) + int(amount))
+	if next_amount <= 0:
+		state.summon_card_ap_bonus.erase(uid)
+		return 0
+	state.summon_card_ap_bonus[uid] = next_amount
+	return next_amount
+
 
 func add_summon_card_max_health_bonus(card_uid: String, amount: int) -> int:
 	if state == null:
@@ -735,7 +758,7 @@ func resolve_removal(ctx) -> void:
 	if u == null or !u.alive:
 		return
 	var removal_reason_label := _make_removal_reason_label(int(ctx.removal_type), String(ctx.reason))
-	_maybe_release_reserved_card(u, int(ctx.overload_mod), removal_reason_label)
+	_maybe_release_reserved_card(u, int(ctx.overload_mod), removal_reason_label, ctx)
 
 	var g := int(u.team)
 	ctx.group_index = g
@@ -1041,6 +1064,9 @@ func summon(ctx: SummonContext) -> void:
 	var id := state.alloc_id()
 	var u := _make_unit_from_combatant_data(ctx.summon_data, id, g, false)
 	u.bound_card_uid = String(ctx.bound_card_uid)
+	var summon_ap_bonus := get_summon_card_ap_bonus(u.bound_card_uid)
+	if summon_ap_bonus > 0:
+		u.ap += summon_ap_bonus
 	var summon_bonus := get_summon_card_max_health_bonus(u.bound_card_uid)
 	if summon_bonus > 0:
 		u.max_health += summon_bonus
@@ -1400,7 +1426,7 @@ func _make_spawn_spec_from_data(combatant_data: CombatantData, u: CombatantState
 		Keys.MAX_HEALTH: int(u.max_health),
 		Keys.HEALTH: int(u.health),
 		Keys.MAX_MANA: int(combatant_data.max_mana),
-		Keys.AP: int(combatant_data.ap),
+		Keys.AP: int(u.ap),
 		Keys.PROTO_PATH: String(combatant_data.resource_path),
 		Keys.ART_UID: String(combatant_data.character_art_uid),
 		Keys.ART_FACES_RIGHT: bool(combatant_data.facing_right),
@@ -1411,12 +1437,20 @@ func _make_spawn_spec_from_data(combatant_data: CombatantData, u: CombatantState
 	}
 
 
-func _maybe_release_reserved_card(u: CombatantState, overload_mod: int, reason: String) -> void:
+func _maybe_release_reserved_card(
+	u: CombatantState,
+	overload_mod: int,
+	reason: String,
+	removal_ctx: RemovalContext = null
+) -> void:
 	if u == null:
 		return
 	var uid := String(u.bound_card_uid) if ("bound_card_uid" in u) else ""
 	if uid == "":
 		return
+
+	if removal_ctx != null:
+		removal_ctx.released_reserve_card_uid = uid
 	
 	if writer != null:
 		writer.emit_summon_reserve_released(int(u.id), uid, overload_mod, String(reason))

@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="SummonAction" format=3 uid="uid://d4t6q0aa1js0w"]
+
+[ext_resource type="Script" path="res://cards/_generic_actions/summon_action.gd" id="1_summon_action"]
+[ext_resource type="Resource" path="res://audio/summon_zap.tres" id="2_sound"]
+[ext_resource type="Resource" path="res://combatants/souls/LavaFuelGorger/lava_fuel_gorger_data.tres" id="3_data"]
+
+[resource]
+script = ExtResource("1_summon_action")
+summon_data = ExtResource("3_data")
+reserves_card = true
+sound = ExtResource("2_sound")
+metadata/_custom_type_script = "uid://buhtw3540mbls"
