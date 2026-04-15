@@ -86,6 +86,15 @@ func activate_sim(ctx: CardContext) -> bool:
 	if ctx.card_data != null:
 		ctx.card_data.ensure_uid()
 		sctx.origin_card_uid = String(ctx.card_data.uid)
+		sctx.origin_card_type = int(ctx.card_data.card_type)
+		var player_id := int(ctx.api.get_player_id())
+		sctx.eligible_player_soul_summon = (
+			int(ctx.source_id) == player_id
+			and (
+				int(ctx.card_data.card_type) == int(CardData.CardType.SOULBOUND)
+				or int(ctx.card_data.card_type) == int(CardData.CardType.SOULWILD)
+			)
+		)
 	var should_reserve := reserves_card \
 		and ctx.card_data != null \
 		and !ctx.card_data.deplete \

@@ -22,8 +22,10 @@
 [ext_resource type="Resource" uid="uid://c66n0b7ujjpvo" path="res://cards/convocations/Interception/interception.tres" id="19_a0f4y"]
 [ext_resource type="Resource" uid="uid://sdnvejwfmf81" path="res://cards/convocations/ConvokedAssault/convoked_assault.tres" id="20_te347"]
 [ext_resource type="Resource" uid="uid://c5dtic064buhl" path="res://cards/convocations/BoilingBlood/boiling_blood.tres" id="21_lom3f"]
+[ext_resource type="Resource" uid="uid://dhlr0v7pv8gdf" path="res://cards/convocations/CreativePotency/creative_potency.tres" id="22_creative_potency"]
+[ext_resource type="Resource" path="res://cards/convocations/CrystalBarrier/crystal_barrier.tres" id="23_crystal_barrier"]
 
 [resource]
 script = ExtResource("2_a8mjb")
-cards = Array[ExtResource("1_fen0u")]([ExtResource("3_8eqlo"), ExtResource("4_h6k4i"), ExtResource("6_ytsqa"), ExtResource("7_h10r8"), ExtResource("10_tqeyv"), ExtResource("11_8ihx4"), ExtResource("12_3bcm6"), ExtResource("13_h6k4i"), ExtResource("14_sbe0n"), ExtResource("15_burning_ambition"), ExtResource("12_no6fn"), ExtResource("13_ky7r7"), ExtResource("14_w7ewq"), ExtResource("15_avo5p"), ExtResource("16_h6ubd"), ExtResource("17_kqfcr"), ExtResource("18_nlv8u"), ExtResource("19_a0f4y"), ExtResource("20_te347"), ExtResource("21_lom3f")])
+cards = Array[ExtResource("1_fen0u")]([ExtResource("3_8eqlo"), ExtResource("4_h6k4i"), ExtResource("6_ytsqa"), ExtResource("7_h10r8"), ExtResource("10_tqeyv"), ExtResource("11_8ihx4"), ExtResource("12_3bcm6"), ExtResource("13_h6k4i"), ExtResource("14_sbe0n"), ExtResource("15_burning_ambition"), ExtResource("12_no6fn"), ExtResource("13_ky7r7"), ExtResource("14_w7ewq"), ExtResource("15_avo5p"), ExtResource("16_h6ubd"), ExtResource("17_kqfcr"), ExtResource("18_nlv8u"), ExtResource("19_a0f4y"), ExtResource("20_te347"), ExtResource("21_lom3f"), ExtResource("22_creative_potency"), ExtResource("23_crystal_barrier")])
 metadata/_custom_type_script = "uid://dnybrgm0o6gjj"

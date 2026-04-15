@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="StatusFromOppTurnModel" format=3 uid="uid://wbtqwxj3pdou"]
 
 [ext_resource type="Script" uid="uid://dbd3fjfn7d3ah" path="res://npc_ai/intent_lifecycle/status_from_opp_turn_model.gd" id="1_thnnu"]
-[ext_resource type="Resource" uid="uid://bfon8dtpvipfp" path="res://statuses/resonance_spike_3.tres" id="2_5m1pb"]
+[ext_resource type="Resource" uid="uid://bfon8dtpvipfp" path="res://statuses/resonance_spike.tres" id="2_5m1pb"]
 
 [resource]
 script = ExtResource("1_thnnu")

@@ -46,4 +46,6 @@ static func apply_tokens(
 	)
 
 	var d := compute_modifier_deltas(mod_type, tokens)
-	return floori((base + int(d["flat"])) * float(d["mult"]))
+	# Intent previews should match live modifier rounding while still showing
+	# attacker-side damage dealt, not target-side damage taken.
+	return int(round((base + int(d["flat"])) * float(d["mult"])))

@@ -20,7 +20,7 @@ func show_slots(recess: SoulRecessState) -> void:
 		visible = false
 		return
 
-	var visible_slots := mini(recess.attuned_souls.size(), maxi(int(recess.unlocked_slot_count), 0))
+	var visible_slots := maxi(int(recess.unlocked_slot_count), 0)
 	for slot_index in range(visible_slots):
 		var snapshot := recess.get_attuned_soul_snapshot_at(slot_index)
 		var card_data := snapshot.instantiate_card() if snapshot != null else null

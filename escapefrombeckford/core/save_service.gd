@@ -145,6 +145,33 @@ func create_user_profile(display_name: String) -> UserProfileInfo:
 	return info
 
 
+func delete_user_profile(user_profile_key: String) -> bool:
+	if user_profile_key.is_empty():
+		return false
+	var app_state := load_or_create_app_state()
+	if _find_user_profile_info(app_state, user_profile_key) == null:
+		return false
+
+	var root_path := ProjectSettings.globalize_path(_profile_root_dir_path(user_profile_key))
+	if DirAccess.dir_exists_absolute(root_path):
+		if !_delete_dir_recursive(root_path):
+			push_warning("SaveService: failed to delete profile directory for '%s'" % user_profile_key)
+			return false
+
+	for i in range(app_state.profiles.size() - 1, -1, -1):
+		var info := app_state.profiles[i]
+		if info != null and str(info.profile_key) == user_profile_key:
+			app_state.profiles.remove_at(i)
+
+	if str(app_state.active_user_profile_key) == user_profile_key:
+		app_state.active_user_profile_key = ""
+	if _profile_cache_key == user_profile_key:
+		_profile_cache = null
+		_profile_cache_key = ""
+
+	return save_app_state(app_state)
+
+
 func load_or_create_profile(user_profile_key: String = "") -> ProfileData:
 	var resolved_key := _resolve_user_profile_key(user_profile_key)
 	if resolved_key.is_empty():
@@ -301,6 +328,33 @@ func _ensure_parent_dir_exists(path: String) -> void:
 	var global_path := ProjectSettings.globalize_path(path)
 	var parent_dir := global_path.get_base_dir()
 	DirAccess.make_dir_recursive_absolute(parent_dir)
+
+
+func _delete_dir_recursive(global_dir_path: String) -> bool:
+	if !DirAccess.dir_exists_absolute(global_dir_path):
+		return true
+	var dir := DirAccess.open(global_dir_path)
+	if dir == null:
+		return false
+
+	dir.list_dir_begin()
+	var entry := dir.get_next()
+	while !entry.is_empty():
+		if entry == "." or entry == "..":
+			entry = dir.get_next()
+			continue
+		var child_path := global_dir_path.path_join(entry)
+		if dir.current_is_dir():
+			if !_delete_dir_recursive(child_path):
+				dir.list_dir_end()
+				return false
+		else:
+			if DirAccess.remove_absolute(child_path) != OK:
+				dir.list_dir_end()
+				return false
+		entry = dir.get_next()
+	dir.list_dir_end()
+	return DirAccess.remove_absolute(global_dir_path) == OK
 
 
 func _resolve_user_profile_key(user_profile_key: String) -> String:
@@ -702,7 +756,7 @@ func _encode_soul_recess_state(state: SoulRecessState) -> Dictionary:
 func _normalize_soul_recess_state(state: SoulRecessState) -> void:
 	if state == null:
 		return
-	state.unlocked_slot_count = maxi(int(state.unlocked_slot_count), DEFAULT_SOUL_RECESS_SLOT_COUNT)
+	state.unlocked_slot_count = maxi(int(state.unlocked_slot_count), 0)
 
 	var normalized: Array[CardSnapshot] = []
 	for snapshot in state.attuned_souls:
@@ -723,16 +777,10 @@ func _normalize_soul_recess_state(state: SoulRecessState) -> void:
 	if state.attuned_souls.is_empty():
 		state.selected_starting_soul_uid = ""
 		return
-
-	if state.get_attuned_soul_snapshot(String(state.selected_starting_soul_uid)) != null:
+	if str(state.selected_starting_soul_uid).is_empty():
 		return
-
-	var first_snapshot := state.attuned_souls[0]
-	if first_snapshot == null or first_snapshot.card == null:
+	if state.get_attuned_soul_snapshot(String(state.selected_starting_soul_uid)) == null:
 		state.selected_starting_soul_uid = ""
-		return
-	first_snapshot.card.ensure_uid()
-	state.selected_starting_soul_uid = String(first_snapshot.card.uid)
 
 
 func _normalize_attuned_soul_snapshot(snapshot: CardSnapshot) -> CardSnapshot:
@@ -757,6 +805,7 @@ func _decode_run_deck(data: Variant) -> RunDeck:
 	var deck := RunDeck.new()
 	if typeof(data) != TYPE_DICTIONARY:
 		return deck
+	deck.soulbound_slot_count = int(data.get("soulbound_slot_count", deck.soulbound_slot_count))
 	deck.card_collection = _build_card_pile_from_cards(_decode_card_array(data.get("cards", [])))
 	deck.soulbound_slots = _decode_card_array(data.get("soulbound_slots", []))
 	return deck
@@ -766,10 +815,12 @@ func _encode_run_deck(run_deck: RunDeck) -> Dictionary:
 	if run_deck == null:
 		return {
 			"cards": [],
+			"soulbound_slot_count": RunDeck.DEFAULT_SOULBOUND_SLOT_COUNT,
 			"soulbound_slots": [],
 		}
 	return {
 		"cards": _encode_card_array(run_deck.card_collection.cards if run_deck.card_collection != null else []),
+		"soulbound_slot_count": int(run_deck.get_soulbound_slot_count()),
 		"soulbound_slots": _encode_card_array(run_deck.get_soulbound_slot_cards()),
 	}
 
@@ -835,7 +886,7 @@ func _decode_card_array(values: Variant) -> Array[CardData]:
 	for value in values:
 		if typeof(value) != TYPE_DICTIONARY:
 			continue
-		var card := _decode_card_data(value)
+		var card := CardSnapshot.deserialize_card_data(value)
 		if card != null:
 			cards.append(card)
 	return cards
@@ -847,7 +898,7 @@ func _encode_card_array(values: Array) -> Array[Dictionary]:
 		var card_data := value as CardData
 		if card_data == null:
 			continue
-		cards.append(_encode_card_data(card_data))
+		cards.append(CardSnapshot.serialize_card_data(card_data))
 	return cards
 
 
@@ -858,7 +909,7 @@ func _decode_card_snapshot_array(values: Variant) -> Array[CardSnapshot]:
 	for value in values:
 		if typeof(value) != TYPE_DICTIONARY:
 			continue
-		var snapshot := _decode_card_snapshot(value)
+		var snapshot := CardSnapshot.from_serialized_dict(value)
 		if snapshot != null:
 			snapshots.append(snapshot)
 	return snapshots
@@ -870,68 +921,24 @@ func _encode_card_snapshot_array(values: Array) -> Array[Dictionary]:
 		var snapshot := value as CardSnapshot
 		if snapshot == null:
 			continue
-		encoded.append(_encode_card_snapshot(snapshot))
+		encoded.append(CardSnapshot.to_serialized_dict(snapshot))
 	return encoded
 
 
 func _decode_card_snapshot(data: Dictionary) -> CardSnapshot:
-	var snapshot := CardSnapshot.new()
-	snapshot.template_hint_path = str(data.get("template_hint_path", ""))
-	snapshot.card = _decode_card_data(_as_dictionary(data.get("card", {})))
-	if snapshot.card == null:
-		return null
-	return snapshot
+	return CardSnapshot.from_serialized_dict(data)
 
 
 func _encode_card_snapshot(snapshot: CardSnapshot) -> Dictionary:
-	return {
-		"template_hint_path": str(snapshot.template_hint_path if snapshot != null else ""),
-		"card": _encode_card_data(snapshot.card if snapshot != null else null),
-	}
+	return CardSnapshot.to_serialized_dict(snapshot)
 
 
 func _decode_card_data(data: Dictionary) -> CardData:
-	if data.is_empty():
-		return null
-	var card := CardData.new()
-	card.uid = str(data.get("uid", ""))
-	card.version = int(data.get("version", 1))
-	card.card_type = int(data.get("card_type", 0))
-	card.target_type = int(data.get("target_type", 0))
-	card.rarity = int(data.get("rarity", 0))
-	card.name = str(data.get("name", ""))
-	card.deplete = bool(data.get("deplete", false))
-	card.description = str(data.get("description", ""))
-	card.cost = int(data.get("cost", 0))
-	card.texture = _load_external_resource_ref(str(data.get("texture_ref", ""))) as Texture2D
-	card.actions = _decode_card_action_array(data.get("actions", []))
-	card.ensure_uid()
-	return card
+	return CardSnapshot.deserialize_card_data(data)
 
 
 func _encode_card_data(card_data: CardData) -> Dictionary:
-	if card_data == null:
-		return {}
-	card_data.ensure_uid()
-	var encoded_actions: Array[Dictionary] = []
-	for action in card_data.actions:
-		var action_dto := _encode_scripted_resource(action)
-		if action_dto.is_empty():
-			continue
-		encoded_actions.append(action_dto)
-	return {
-		"uid": str(card_data.uid),
-		"version": int(card_data.version),
-		"card_type": int(card_data.card_type),
-		"target_type": int(card_data.target_type),
-		"rarity": int(card_data.rarity),
-		"name": str(card_data.name),
-		"deplete": bool(card_data.deplete),
-		"description": str(card_data.description),
-		"cost": int(card_data.cost),
-		"texture_ref": _external_resource_ref_string(card_data.texture),
-		"actions": encoded_actions,
-	}
+	return CardSnapshot.serialize_card_data(card_data)
 
 
 func _decode_card_action_array(values: Variant) -> Array[CardAction]:

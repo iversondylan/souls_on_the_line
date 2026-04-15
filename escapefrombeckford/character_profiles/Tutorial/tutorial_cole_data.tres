@@ -4,12 +4,14 @@
 [ext_resource type="Script" uid="uid://bql7t8sctwe10" path="res://character_profiles/player_data.gd" id="2_player_data"]
 [ext_resource type="Resource" uid="uid://bb2svevqwn2v7" path="res://character_profiles/Cole/cole_draftable_cards.tres" id="3_draftable"]
 [ext_resource type="Resource" uid="uid://vnoxk6md128x" path="res://character_profiles/Cole/cole_possible_arcana.tres" id="4_arcana"]
+[ext_resource type="Resource" uid="uid://b7txf6d8vmjkk" path="res://cards/souls/SpectralCloneCard/spectral_clone.tres" id="5_starter_soul"]
 [ext_resource type="Resource" uid="uid://jhntu0vckcll" path="res://character_profiles/Tutorial/tutorial_cole_deck.tres" id="6_starting_deck"]
 
 [resource]
 script = ExtResource("2_player_data")
 profile_id = "tutorial_cole"
 possible_arcana = ExtResource("4_arcana")
+starter_soul = ExtResource("5_starter_soul")
 starting_deck = ExtResource("6_starting_deck")
 draftable_cards = ExtResource("3_draftable")
 bonus_starting_gold = 700

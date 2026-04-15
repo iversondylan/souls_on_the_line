@@ -11,7 +11,6 @@ id = &"pressure_barrier"
 target_type = 3
 name = "Pressure Barrier"
 description = "An ally takes %s less damage per strike until your next turn."
-cost = 1
 texture = ExtResource("4_37wan")
 actions = Array[ExtResource("1_ji37n")]([ExtResource("2_823uo")])
 metadata/_custom_type_script = "uid://d2f0qepe047dc"

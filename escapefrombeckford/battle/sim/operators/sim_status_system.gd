@@ -120,6 +120,22 @@ static func on_attack_will_run(
 		include_pending_sources
 	)
 
+static func on_summon_will_resolve(
+	api: SimBattleAPI,
+	source_id: int,
+	summon_ctx: SummonContext,
+	summoned: CombatantState
+) -> void:
+	if api == null or api.state == null or api.state.has_terminal_outcome():
+		return
+	if int(source_id) <= 0 or summon_ctx == null or summoned == null:
+		return
+
+	_for_each_effective_status_on_unit(api, source_id, func(ctx: SimStatusContext) -> void:
+		if ctx.proto != null:
+			ctx.proto.on_summon_will_resolve(ctx, summon_ctx, summoned)
+	)
+
 static func on_removal(api: SimBattleAPI, removal_ctx) -> void:
 	if api == null or api.state == null or removal_ctx == null or api.state.has_terminal_outcome():
 		return

@@ -147,6 +147,50 @@ custom_minimum_size = Vector2(0, 50)
 layout_mode = 2
 text = "Exit"
 
+[node name="SettingsMenu" type="VBoxContainer" parent="." unique_id=764031399]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -170.0
+offset_top = -68.0
+offset_right = 170.0
+offset_bottom = 250.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("3_theme")
+theme_override_constants/separation = 8
+
+[node name="SettingsLabel" type="Label" parent="SettingsMenu" unique_id=1555319013]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
+text = "Settings"
+horizontal_alignment = 1
+
+[node name="SettingsProfileLabel" type="Label" parent="SettingsMenu" unique_id=955531901]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
+text = "Profile:"
+horizontal_alignment = 1
+
+[node name="DeleteProfile" type="Button" parent="SettingsMenu" unique_id=1380998899]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+text = "Delete Profile"
+
+[node name="SettingsBack" type="Button" parent="SettingsMenu" unique_id=1620146414]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+text = "Back"
+
 [node name="DebugModeToggle" type="CheckButton" parent="." unique_id=1329955616]
 unique_name_in_owner = true
 layout_mode = 1
@@ -165,4 +209,6 @@ text = "Debug Mode"
 [connection signal="pressed" from="ProfileMenu/Back" to="." method="_on_back_pressed"]
 [connection signal="pressed" from="ProfileMenu/ProfileSettings" to="." method="_on_profile_settings_pressed"]
 [connection signal="pressed" from="ProfileMenu/ProfileExit" to="." method="_on_exit_pressed"]
+[connection signal="pressed" from="SettingsMenu/DeleteProfile" to="." method="_on_delete_profile_pressed"]
+[connection signal="pressed" from="SettingsMenu/SettingsBack" to="." method="_on_settings_back_pressed"]
 [connection signal="toggled" from="DebugModeToggle" to="." method="_on_debug_mode_toggled"]

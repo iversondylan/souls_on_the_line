@@ -2,6 +2,8 @@ extends CardAction
 
 class_name StatusApplyAction
 
+const CREATIVE_POTENCY_STATUS_ID := &"creative_potency"
+
 @export var status: Status
 @export var intensity: int = 0
 @export var duration: int = 0
@@ -60,6 +62,8 @@ func get_description_values(_ctx: CardActionContext) -> Array:
 		return [floori(float(PinpointStatus.MULT_VALUE) * 100.0), int(duration)]
 	if status_id == MarkedStatus.ID:
 		return [int(duration)]
+	if status_id == CREATIVE_POTENCY_STATUS_ID:
+		return [int(intensity), int(intensity)]
 
 	if int(duration) > 0 and int(intensity) > 0:
 		return [int(intensity), int(duration)]

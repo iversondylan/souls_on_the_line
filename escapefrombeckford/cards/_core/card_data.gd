@@ -116,6 +116,7 @@ static func _copy_runtime_overrides(from: CardData, to: CardData) -> void:
 		to.name = from.name
 	to.deplete = from.deplete
 	to.starter_card = from.starter_card
+	to.summon_release_overload = from.summon_release_overload
 	if !from.description.is_empty():
 		to.description = from.description
 	to.cost = from.cost

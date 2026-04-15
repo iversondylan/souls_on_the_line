@@ -8,6 +8,7 @@ var run_deck: RunDeck
 
 @onready var animation_player: AnimationPlayer = $AnimationPlayer
 @onready var attune_button: Button = %AttuneButton
+@onready var attune_description: Label = %AttuneDescription
 @onready var modal_layer: CanvasLayer = %ModalLayer
 @onready var slot_overlay = %SlotOverlay
 
@@ -39,16 +40,21 @@ func _ready() -> void:
 
 
 func _refresh_attune_button() -> void:
-	attune_button.disabled = profile_data == null \
-		or profile_data.soul_recess_state == null \
-		or run_deck == null \
-		or run_deck.card_collection == null \
+	var can_show_attunement := profile_data != null \
+		and profile_data.soul_recess_state != null \
+		and int(profile_data.soul_recess_state.unlocked_slot_count) > 0
+	attune_button.visible = can_show_attunement
+	if attune_description != null:
+		attune_description.visible = can_show_attunement
+	if !can_show_attunement:
+		return
+	attune_button.disabled = run_deck == null \
 		or _get_attunement_candidates().is_empty()
 
 
 func _build_confirm_dialog() -> void:
 	_confirm_dialog = ConfirmationDialog.new()
-	_confirm_dialog.dialog_text = "Are you sure? This will replace your signature soul for future runs."
+	_confirm_dialog.dialog_text = "Are you sure? This will replace one attuned soul option for future runs."
 	_confirm_dialog.get_ok_button().text = "Attune"
 	_confirm_dialog.confirmed.connect(_confirm_attunement)
 	if modal_layer != null:
@@ -77,6 +83,8 @@ func _show_slot_overlay() -> void:
 		return
 	if profile_data == null or profile_data.soul_recess_state == null:
 		push_warning("Campfire._show_slot_overlay(): soul_recess_state is missing.")
+		return
+	if int(profile_data.soul_recess_state.unlocked_slot_count) <= 0:
 		return
 	slot_overlay.show_slots(profile_data.soul_recess_state)
 
@@ -112,7 +120,7 @@ func _open_attunement_candidates(slot_index: int, slot_uid: String) -> void:
 	_candidate_overlay.tree_exited.connect(_on_attunement_candidate_overlay_exited)
 	_candidate_overlay.configure(
 		_get_attunement_candidates(),
-		"Choose a SoulBound Card",
+		"Choose a SoulBound Card to Attune",
 		"Attune",
 		"Cancel"
 	)
@@ -120,18 +128,19 @@ func _open_attunement_candidates(slot_index: int, slot_uid: String) -> void:
 
 func _get_attunement_candidates() -> Array[CardData]:
 	var candidates: Array[CardData] = []
-	if run_deck == null or run_deck.card_collection == null:
+	if run_deck == null:
 		return candidates
-	for card_data in run_deck.card_collection.cards:
+	var source_pile := run_deck.build_collection_view_card_pile()
+	if source_pile == null:
+		return candidates
+	for card_data in source_pile.cards:
 		if card_data == null:
 			continue
-		if int(card_data.card_type) != int(CardData.CardType.SOULBOUND):
+		if !card_data.is_soulbound_slot_card():
 			continue
 		if bool(card_data.starter_card):
 			continue
 		candidates.append(card_data)
-		if candidates.size() >= 5:
-			break
 	return candidates
 
 

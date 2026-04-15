@@ -1045,9 +1045,10 @@ func summon(ctx: SummonContext) -> void:
 	if summon_bonus > 0:
 		u.max_health += summon_bonus
 		u.health += summon_bonus
+	SimStatusSystem.on_summon_will_resolve(self, source_id, ctx, u)
 	u.mortality = int(ctx.mortality) as CombatantState.Mortality
 	u.type = CombatantView.Type.ALLY if g == 0 else CombatantView.Type.ENEMY
-	
+
 	state.add_unit(u, g, int(ctx.insert_index))
 	_rebuild_modifier_cache_for(id)
 	_request_turn_order_rebuild()

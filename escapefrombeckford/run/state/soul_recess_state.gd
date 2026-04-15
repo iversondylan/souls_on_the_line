@@ -11,6 +11,44 @@ func get_selected_starting_soul_snapshot() -> CardSnapshot:
 	return get_attuned_soul_snapshot(selected_starting_soul_uid)
 
 
+func build_signature_soul_options(starter_soul: CardData) -> Array:
+	var options: Array = []
+	var starter_card := _instantiate_signature_card(starter_soul)
+	if starter_card != null:
+		options.append({
+			"selection_uid": "",
+			"card": starter_card,
+		})
+
+	for slot_index in range(maxi(int(unlocked_slot_count), 0)):
+		var snapshot := get_attuned_soul_snapshot_at(slot_index)
+		if snapshot == null:
+			continue
+		var card_data := snapshot.instantiate_card()
+		if card_data == null:
+			continue
+		card_data.ensure_uid()
+		options.append({
+			"selection_uid": String(card_data.uid),
+			"card": card_data,
+		})
+	return options
+
+
+func resolve_selected_signature_soul_card(selected_uid: String, starter_soul: CardData) -> CardData:
+	if selected_uid.is_empty():
+		return _instantiate_signature_card(starter_soul)
+
+	var snapshot := get_attuned_soul_snapshot(selected_uid)
+	if snapshot != null:
+		var card_data := snapshot.instantiate_card()
+		if card_data != null:
+			card_data.ensure_uid()
+			return card_data
+
+	return _instantiate_signature_card(starter_soul)
+
+
 func get_attuned_soul_snapshot(uid: String) -> CardSnapshot:
 	if uid.is_empty():
 		return null
@@ -35,3 +73,13 @@ func set_attuned_soul_snapshot(slot_index: int, snapshot: CardSnapshot) -> void:
 	while attuned_souls.size() <= slot_index:
 		attuned_souls.append(null)
 	attuned_souls[slot_index] = snapshot
+
+
+func _instantiate_signature_card(source_card: CardData) -> CardData:
+	if source_card == null:
+		return null
+	var card_data := source_card.make_runtime_instance()
+	if card_data == null:
+		return null
+	card_data.ensure_uid()
+	return card_data

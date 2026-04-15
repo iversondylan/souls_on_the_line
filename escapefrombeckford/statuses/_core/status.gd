@@ -70,6 +70,13 @@ func on_damage_will_be_taken(_ctx: SimStatusContext, _damage_ctx: DamageContext)
 func on_attack_will_run(_ctx: SimStatusContext, _attack_ctx: AttackContext) -> void:
 	pass
 
+func on_summon_will_resolve(
+	_ctx: SimStatusContext,
+	_summon_ctx: SummonContext,
+	_summoned: CombatantState
+) -> void:
+	pass
+
 func should_skip_npc_action(_ctx: SimStatusContext) -> bool:
 	return false
 

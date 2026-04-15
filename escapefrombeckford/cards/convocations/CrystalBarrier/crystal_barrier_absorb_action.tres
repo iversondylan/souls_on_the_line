@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="ApplyStatusToTargetsAction" format=3]
+
+[ext_resource type="Script" uid="uid://bw3gskunin2ql" path="res://cards/_generic_actions/apply_status_to_targets_action.gd" id="1_action"]
+[ext_resource type="Resource" uid="uid://bgyyborj1j54" path="res://statuses/absorb.tres" id="2_absorb"]
+
+[resource]
+script = ExtResource("1_action")
+status = ExtResource("2_absorb")
+intensity = 1
+metadata/_custom_type_script = "uid://bw3gskunin2ql"

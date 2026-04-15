@@ -1,0 +1,7 @@
+[gd_resource type="Resource" script_class="ApplyStatusToSelfAction" format=3 uid="uid://dd3acfx16q2ej"]
+
+[ext_resource type="Script" uid="uid://bnww04vabnac4" path="res://cards/_generic_actions/apply_status_to_self_action.gd" id="1_jp2ye"]
+
+[resource]
+script = ExtResource("1_jp2ye")
+metadata/_custom_type_script = "uid://bnww04vabnac4"

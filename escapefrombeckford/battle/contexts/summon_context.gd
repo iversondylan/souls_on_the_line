@@ -22,6 +22,8 @@ var reason: String = ""
 var bound_card_uid: String = ""
 var origin_card_uid: String = ""
 var origin_arcanum_id: StringName = &""
+var origin_card_type: int = -1
+var eligible_player_soul_summon: bool = false
 # Optional snapshot used ONLY for windup positioning.
 # For normal summon: leave empty.
 # For summon-replace: set this to the order BEFORE the replaced unit was removed in SIM.

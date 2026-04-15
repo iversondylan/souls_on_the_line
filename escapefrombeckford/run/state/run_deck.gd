@@ -2,10 +2,11 @@
 
 class_name RunDeck extends Resource
 
-const SOULBOUND_SLOT_COUNT := 5
+const DEFAULT_SOULBOUND_SLOT_COUNT := 5
 const DEFAULT_STARTER_SOUL_PATH := "res://cards/souls/SpectralCloneCard/spectral_clone.tres"
 
 @export var card_collection: CardPile = CardPile.new() : set = _set_card_collection
+@export var soulbound_slot_count: int = DEFAULT_SOULBOUND_SLOT_COUNT : set = _set_soulbound_slot_count
 @export var soulbound_slots: Array = [] : set = _set_soulbound_slots
 
 
@@ -25,7 +26,7 @@ func add_normal_card(card_data: CardData) -> void:
 
 
 func replace_soulbound_slot(slot_index: int, card_data: CardData) -> bool:
-	if slot_index < 0 or slot_index >= SOULBOUND_SLOT_COUNT:
+	if slot_index < 0 or slot_index >= get_soulbound_slot_count():
 		return false
 	var new_card := _instantiate_card(card_data, true)
 	if new_card == null or !new_card.is_soulbound_slot_card():
@@ -39,17 +40,17 @@ func initialize_soulbound_slots(signature_card: CardData, starter_card: CardData
 	var resolved_starter := starter_card
 	if resolved_starter == null:
 		resolved_starter = _load_default_starter_soul()
-	var resolved_signature := signature_card if signature_card != null else resolved_starter
+	var resolved_signature := _prepare_signature_slot_card(signature_card)
+	if resolved_signature == null:
+		resolved_signature = _prepare_signature_slot_card(resolved_starter)
 
 	soulbound_slots = []
 	if resolved_signature != null:
-		var new_signature := _instantiate_card(resolved_signature, true)
-		if new_signature != null:
-			soulbound_slots.append(new_signature)
-	while soulbound_slots.size() < SOULBOUND_SLOT_COUNT:
+		soulbound_slots.append(resolved_signature)
+	while soulbound_slots.size() < get_soulbound_slot_count():
 		if resolved_starter == null:
 			break
-		var starter_copy := _instantiate_card(resolved_starter, true)
+		var starter_copy := _prepare_signature_slot_card(resolved_starter)
 		if starter_copy == null:
 			break
 		soulbound_slots.append(starter_copy)
@@ -62,6 +63,15 @@ func get_soulbound_slot_cards() -> Array[CardData]:
 		if card_data != null:
 			out.append(card_data)
 	return out
+
+
+func get_soulbound_slot_count() -> int:
+	return maxi(int(soulbound_slot_count), 1)
+
+
+func configure_soulbound_slot_count(new_count: int, starter_card: CardData = null, expected_signature_card: CardData = null) -> void:
+	soulbound_slot_count = int(new_count)
+	normalize_cards(starter_card, expected_signature_card)
 
 
 func build_battle_card_collection() -> CardPile:
@@ -78,6 +88,20 @@ func build_battle_card_collection() -> CardPile:
 	return pile
 
 
+func build_collection_view_card_pile() -> CardPile:
+	var pile := CardPile.new()
+	for card_data in soulbound_slots:
+		if card_data == null:
+			continue
+		pile.add_back(card_data)
+	if card_collection != null:
+		for card_data in card_collection.cards:
+			if card_data == null:
+				continue
+			pile.add_back(card_data)
+	return pile
+
+
 func _set_card_collection(card_pile: CardPile) -> void:
 	card_collection = CardPile.new()
 	if card_pile == null:
@@ -90,6 +114,11 @@ func _set_card_collection(card_pile: CardPile) -> void:
 		card_collection.add_back(new_card)
 
 
+func _set_soulbound_slot_count(new_count: int) -> void:
+	soulbound_slot_count = maxi(int(new_count), 1)
+	_ensure_soulbound_slot_size()
+
+
 func _set_soulbound_slots(cards: Array) -> void:
 	soulbound_slots = []
 	for card_data in cards:
@@ -98,6 +127,7 @@ func _set_soulbound_slots(cards: Array) -> void:
 			continue
 		new_card.ensure_uid()
 		soulbound_slots.append(new_card)
+	_ensure_soulbound_slot_size()
 
 
 func remove_card(card_uid: String) -> void:
@@ -124,23 +154,30 @@ func _instantiate_card(card_data: CardData, regenerate_uid: bool) -> CardData:
 	return new_card
 
 
-func normalize_cards() -> void:
+func normalize_cards(starter_card: CardData = null, expected_signature_card: CardData = null) -> void:
 	if card_collection == null:
 		card_collection = CardPile.new()
 	var normalized_collection := CardPile.new()
 	var normalized_slots: Array[CardData] = []
 	var seen_uids := {}
-	var starter_fallback := _find_starter_soul_card(soulbound_slots)
+	var starter_fallback := starter_card
+	if starter_fallback == null:
+		starter_fallback = _find_starter_soul_card(soulbound_slots)
 	if starter_fallback == null:
 		starter_fallback = _find_starter_soul_card(card_collection.cards)
 
-	for card_data in soulbound_slots:
+	for index in range(soulbound_slots.size()):
+		var card_data: CardData = soulbound_slots[index] as CardData
 		var new_card := _normalize_runtime_card(card_data, seen_uids)
+		if index == 0 and expected_signature_card != null:
+			var normalized_signature := _normalize_expected_signature_card(card_data, expected_signature_card, seen_uids)
+			if normalized_signature != null:
+				new_card = normalized_signature
 		if new_card == null or !new_card.is_soulbound_slot_card():
 			continue
 		if starter_fallback == null and bool(new_card.starter_card):
 			starter_fallback = new_card
-		if normalized_slots.size() < SOULBOUND_SLOT_COUNT:
+		if normalized_slots.size() < get_soulbound_slot_count():
 			normalized_slots.append(new_card)
 
 	for card_data in card_collection.cards:
@@ -150,19 +187,23 @@ func normalize_cards() -> void:
 		if new_card.is_soulbound_slot_card():
 			if starter_fallback == null and bool(new_card.starter_card):
 				starter_fallback = new_card
-			if normalized_slots.size() < SOULBOUND_SLOT_COUNT:
+			if normalized_slots.size() < get_soulbound_slot_count():
 				normalized_slots.append(new_card)
 			continue
 		normalized_collection.add_back(new_card)
 
 	if starter_fallback == null:
 		starter_fallback = _load_default_starter_soul()
-	while normalized_slots.size() < SOULBOUND_SLOT_COUNT and starter_fallback != null:
-		var starter_copy := _instantiate_card(starter_fallback, true)
+	while normalized_slots.size() < get_soulbound_slot_count() and starter_fallback != null:
+		var starter_copy := _prepare_signature_slot_card(starter_fallback)
 		if starter_copy == null:
 			break
 		_ensure_unique_uid(starter_copy, seen_uids)
 		normalized_slots.append(starter_copy)
+
+	if expected_signature_card != null:
+		if normalized_slots.is_empty() or !_cards_match_signature_identity(normalized_slots[0], expected_signature_card):
+			push_warning("RunDeck.normalize_cards(): slot 0 was replaced during new-run normalization; starter fallback was used instead of the selected signature soul.")
 
 	card_collection = normalized_collection
 	soulbound_slots = normalized_slots
@@ -200,6 +241,20 @@ func _normalize_runtime_card(card_data: CardData, seen_uids: Dictionary) -> Card
 	return new_card
 
 
+func _normalize_expected_signature_card(card_data: CardData, expected_signature_card: CardData, seen_uids: Dictionary) -> CardData:
+	var normalized := _normalize_runtime_card(card_data, seen_uids)
+	if normalized != null and normalized.is_soulbound_slot_card() and _cards_match_signature_identity(normalized, expected_signature_card):
+		return normalized
+	if normalized != null and !normalized.is_soulbound_slot_card():
+		push_warning("RunDeck.normalize_cards(): deserialized signature soul in slot 0 failed soulbound-slot classification; attempting proto recovery.")
+	var recovered := _recover_soulbound_slot_card(expected_signature_card, true)
+	if recovered != null and recovered.is_soulbound_slot_card():
+		_ensure_unique_uid(recovered, seen_uids)
+		return recovered
+	push_warning("RunDeck.normalize_cards(): failed to recover selected signature soul for slot 0; starter fallback will be used.")
+	return null
+
+
 func _ensure_unique_uid(card_data: CardData, seen_uids: Dictionary) -> void:
 	card_data.ensure_uid()
 	if seen_uids.has(card_data.uid):
@@ -208,10 +263,57 @@ func _ensure_unique_uid(card_data: CardData, seen_uids: Dictionary) -> void:
 	seen_uids[card_data.uid] = true
 
 
+func _prepare_signature_slot_card(card_data: CardData) -> CardData:
+	if card_data == null:
+		return null
+	var prepared := _instantiate_card(card_data, true)
+	if prepared != null and prepared.is_soulbound_slot_card():
+		return prepared
+	if prepared != null:
+		push_warning("RunDeck.initialize_soulbound_slots(): signature soul failed soulbound-slot classification after instantiation; attempting proto recovery.")
+	var recovered := _recover_soulbound_slot_card(card_data, true)
+	if recovered != null and recovered.is_soulbound_slot_card():
+		return recovered
+	push_warning("RunDeck.initialize_soulbound_slots(): unable to preserve selected signature soul; falling back to starter soul.")
+	return null
+
+
+func _recover_soulbound_slot_card(card_data: CardData, regenerate_uid: bool) -> CardData:
+	if card_data == null:
+		return null
+	var proto_path := String(card_data.base_proto_path if !card_data.base_proto_path.is_empty() else card_data.resource_path)
+	if proto_path.is_empty():
+		return null
+	var proto := load(proto_path) as CardData
+	if proto == null:
+		return null
+	var recovered := proto.duplicate(true) as CardData
+	if recovered == null:
+		return null
+	CardData._copy_runtime_overrides(card_data, recovered)
+	if recovered.base_proto_path.is_empty():
+		recovered.base_proto_path = proto_path
+	if regenerate_uid:
+		recovered.uid = ""
+	recovered.ensure_id()
+	recovered.ensure_uid()
+	return recovered
+
+
+func _cards_match_signature_identity(actual: CardData, expected: CardData) -> bool:
+	if actual == null or expected == null:
+		return false
+	var actual_data := CardSnapshot.serialize_card_data(actual)
+	var expected_data := CardSnapshot.serialize_card_data(expected)
+	actual_data.erase("uid")
+	expected_data.erase("uid")
+	return actual_data == expected_data
+
+
 func _ensure_soulbound_slot_size() -> void:
-	while soulbound_slots.size() < SOULBOUND_SLOT_COUNT:
+	while soulbound_slots.size() < get_soulbound_slot_count():
 		soulbound_slots.append(null)
-	while soulbound_slots.size() > SOULBOUND_SLOT_COUNT:
+	while soulbound_slots.size() > get_soulbound_slot_count():
 		soulbound_slots.remove_at(soulbound_slots.size() - 1)
 
 

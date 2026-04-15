@@ -2,6 +2,7 @@ extends Control
 
 const DEFAULT_PROFILE_ID := "cole"
 const MENU_CARD := preload("uid://d4g7iin5x7648")
+const MAIN_MENU_SCENE_PATH := "res://main_menu/main_menu.tscn"
 
 @export var player_catalog: PlayerCatalog = preload("uid://b2ewfy12rhm0l")
 
@@ -47,6 +48,7 @@ func _set_current_profile(profile_id: String) -> void:
 	current_profile_id = profile_id
 	if player_catalog == null:
 		current_character = null
+		_refresh_soul_buttons()
 		return
 	var profile := player_catalog.get_profile(profile_id)
 	if profile == null:
@@ -54,13 +56,15 @@ func _set_current_profile(profile_id: String) -> void:
 		if profile != null:
 			current_profile_id = String(profile.profile_id)
 	set_current_character(profile)
+	_refresh_soul_buttons()
 
 
 func _refresh_soul_buttons() -> void:
 	for child in soul_buttons.get_children():
 		child.queue_free()
 
-	if profile_data == null or profile_data.soul_recess_state == null:
+	var soul_options := _get_signature_soul_options()
+	if soul_options.is_empty():
 		soul_title.visible = false
 		soul_buttons.visible = false
 		return
@@ -68,35 +72,10 @@ func _refresh_soul_buttons() -> void:
 	soul_title.visible = true
 	soul_buttons.visible = true
 
-	var recess := profile_data.soul_recess_state
-	var visible_slots := mini(recess.attuned_souls.size(), maxi(int(recess.unlocked_slot_count), 0))
-	for slot_index in range(visible_slots):
-		var snapshot := recess.get_attuned_soul_snapshot_at(slot_index)
-		if snapshot == null:
-			continue
-		var card_data := snapshot.instantiate_card()
-		if card_data == null:
-			continue
-		card_data.ensure_uid()
-
-		var button := Button.new()
-		button.custom_minimum_size = Vector2(275, 370)
-		button.toggle_mode = true
-		button.button_group = _soul_button_group
-		button.button_pressed = String(card_data.uid) == selected_starting_soul_uid
-		button.set_meta("card_uid", String(card_data.uid))
-		button.pressed.connect(_on_soul_button_pressed.bind(String(card_data.uid)))
-		soul_buttons.add_child(button)
-
-		var menu_card := MENU_CARD.instantiate() as MenuCard
-		button.add_child(menu_card)
-		menu_card.set_anchors_preset(Control.PRESET_FULL_RECT)
-		menu_card.offset_left = 0.0
-		menu_card.offset_top = 0.0
-		menu_card.offset_right = 0.0
-		menu_card.offset_bottom = 0.0
-		menu_card.set_card_data(card_data)
-		_set_mouse_passthrough(menu_card)
+	for option in soul_options:
+		var card_data := option.get("card", null) as CardData
+		var selection_uid := String(option.get("selection_uid", ""))
+		_add_soul_button(card_data, selection_uid, selection_uid == selected_starting_soul_uid)
 
 	if _soul_button_group.get_pressed_button() == null and soul_buttons.get_child_count() > 0:
 		var first_button := soul_buttons.get_child(0) as Button
@@ -110,6 +89,65 @@ func _set_mouse_passthrough(node: Node) -> void:
 		(node as Control).mouse_filter = Control.MOUSE_FILTER_IGNORE
 	for child in node.get_children():
 		_set_mouse_passthrough(child)
+
+
+func _add_soul_button(card_data: CardData, card_uid: String, is_selected: bool) -> void:
+	if card_data == null:
+		return
+	var button := Button.new()
+	button.custom_minimum_size = Vector2(275, 370)
+	button.toggle_mode = true
+	button.button_group = _soul_button_group
+	button.button_pressed = is_selected
+	button.set_meta("card_uid", card_uid)
+	button.pressed.connect(_on_soul_button_pressed.bind(card_uid))
+	soul_buttons.add_child(button)
+
+	var menu_card := MENU_CARD.instantiate() as MenuCard
+	button.add_child(menu_card)
+	menu_card.set_anchors_preset(Control.PRESET_FULL_RECT)
+	menu_card.offset_left = 0.0
+	menu_card.offset_top = 0.0
+	menu_card.offset_right = 0.0
+	menu_card.offset_bottom = 0.0
+	menu_card.set_card_data(card_data)
+	_set_mouse_passthrough(menu_card)
+
+
+func _get_current_starter_soul() -> CardData:
+	if current_character == null:
+		return null
+	if current_character.starter_soul != null:
+		return current_character.starter_soul
+	if current_character.starting_deck == null:
+		return null
+	for card_data in current_character.starting_deck.cards:
+		if card_data == null:
+			continue
+		if card_data.is_soulbound_slot_card() and bool(card_data.starter_card):
+			return card_data
+	return null
+
+
+func _get_signature_soul_options() -> Array:
+	var starter_soul := _get_current_starter_soul()
+	if starter_soul == null:
+		return []
+	if profile_data == null or profile_data.soul_recess_state == null:
+		return [{
+			"selection_uid": "",
+			"card": starter_soul.make_runtime_instance(),
+		}]
+	return profile_data.soul_recess_state.build_signature_soul_options(starter_soul)
+
+
+func _get_selected_signature_soul_card() -> CardData:
+	for option in _get_signature_soul_options():
+		if String(option.get("selection_uid", "")) != selected_starting_soul_uid:
+			continue
+		return option.get("card", null) as CardData
+	var starter_soul := _get_current_starter_soul()
+	return starter_soul.make_runtime_instance() if starter_soul != null else null
 
 
 func _on_soul_button_pressed(card_uid: String) -> void:
@@ -128,6 +166,10 @@ func _on_tutorial_button_pressed() -> void:
 	_begin_run(RunProfile.StartMode.TUTORIAL)
 
 
+func _on_back_button_pressed() -> void:
+	get_tree().change_scene_to_file(MAIN_MENU_SCENE_PATH)
+
+
 func _begin_run(start_mode: RunProfile.StartMode) -> void:
 	if current_character == null:
 		return
@@ -136,6 +178,7 @@ func _begin_run(start_mode: RunProfile.StartMode) -> void:
 	profile.seed = 0
 	profile.selected_starting_soul_uid = selected_starting_soul_uid
 	profile.player_profile_id = current_profile_id
+	profile.set_selected_signature_soul(_get_selected_signature_soul_card())
 	Autoload.begin_new_run(profile)
 
 

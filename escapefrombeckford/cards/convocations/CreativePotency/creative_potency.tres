@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="CardData" format=3 uid="uid://dhlr0v7pv8gdf"]
+
+[ext_resource type="Script" uid="uid://wtk5v77fcqvn" path="res://cards/_core/card_action.gd" id="1_action"]
+[ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://cards/_core/card_data.gd" id="2_card_data"]
+[ext_resource type="Resource" uid="uid://4a3dreaffu56" path="res://cards/_generic_actions/sacrifice_action.tres" id="3_sacrifice"]
+[ext_resource type="Resource" uid="uid://cwsantdi8vmes" path="res://cards/_generic_actions/draw_1_action.tres" id="4_8nq32"]
+[ext_resource type="Resource" path="res://cards/convocations/CreativePotency/creative_potency_action.tres" id="4_creative_potency_action"]
+[ext_resource type="Texture2D" uid="uid://b1i3rxto6mwol" path="res://_assets/sprites/assorted/soul-vessel.png" id="5_texture"]
+
+[resource]
+script = ExtResource("2_card_data")
+id = &"creative_potency"
+target_type = 3
+rarity = 1
+name = "Creative Potency"
+description = "Sacrifice an ally. Your next Soul this turn enters with [color=\"008000\"]+%s/+%s[/color]."
+cost = 1
+texture = ExtResource("5_texture")
+actions = Array[ExtResource("1_action")]([ExtResource("3_sacrifice"), ExtResource("4_creative_potency_action"), ExtResource("4_8nq32")])
+metadata/_custom_type_script = "uid://d2f0qepe047dc"
