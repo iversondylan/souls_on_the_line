@@ -256,9 +256,7 @@ func _on_rest_site_entered(room: Room = map.last_room) -> void:
 		run_state.pending_room_seed = _derive_room_seed(room, "rest")
 	_persist_active_run()
 	var campfire := _change_view(CAMPFIRE_SCN) as Campfire
-	campfire.run_state = run_state
-	campfire.profile_data = profile_data
-	campfire.run_deck = run_deck
+	campfire.configure(run_state, profile_data, run_deck)
 
 func _on_shop_entered(room: Room = map.last_room) -> void:
 	map.set_active_room(room)

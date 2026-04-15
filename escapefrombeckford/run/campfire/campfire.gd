@@ -1,7 +1,6 @@
 class_name Campfire extends Control
 
 const CARD_SELECTION_OVERLAY := preload("res://run/ui/card_selection_overlay.tscn")
-const MENU_CARD := preload("uid://d4g7iin5x7648")
 
 var run_state: RunState
 var profile_data: ProfileData
@@ -9,12 +8,20 @@ var run_deck: RunDeck
 
 @onready var animation_player: AnimationPlayer = $AnimationPlayer
 @onready var attune_button: Button = %AttuneButton
+@onready var slot_overlay = %SlotOverlay
 
-var _slot_overlay: ColorRect
 var _confirm_dialog: ConfirmationDialog
 var _pending_slot_index: int = -1
 var _pending_slot_uid: String = ""
 var _pending_attuned_card: CardData
+
+
+func configure(new_run_state: RunState, new_profile_data: ProfileData, new_run_deck: RunDeck) -> void:
+	run_state = new_run_state
+	profile_data = new_profile_data
+	run_deck = new_run_deck if new_run_deck != null else (run_state.run_deck if run_state != null else null)
+	if is_node_ready():
+		_refresh_attune_button()
 
 
 func _ready() -> void:
@@ -22,7 +29,9 @@ func _ready() -> void:
 		profile_data = SaveService.load_or_create_profile()
 	if run_deck == null and run_state != null:
 		run_deck = run_state.run_deck
-	_build_slot_overlay()
+	if slot_overlay != null:
+		slot_overlay.slot_selected.connect(_on_slot_overlay_selected)
+		slot_overlay.canceled.connect(_on_slot_overlay_canceled)
 	_build_confirm_dialog()
 	_refresh_attune_button()
 
@@ -32,38 +41,6 @@ func _refresh_attune_button() -> void:
 		or profile_data.soul_recess_state == null \
 		or run_deck == null \
 		or run_deck.card_collection == null
-
-
-func _build_slot_overlay() -> void:
-	_slot_overlay = ColorRect.new()
-	_slot_overlay.color = Color(0.076, 0.06, 0.12, 0.94)
-	_slot_overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
-	_slot_overlay.visible = false
-	add_child(_slot_overlay)
-
-	var center := CenterContainer.new()
-	center.set_anchors_preset(Control.PRESET_FULL_RECT)
-	_slot_overlay.add_child(center)
-
-	var box := VBoxContainer.new()
-	box.theme_override_constants.separation = 20
-	center.add_child(box)
-
-	var title := Label.new()
-	title.text = "Choose an Attuned Soul"
-	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	box.add_child(title)
-
-	var slots := HBoxContainer.new()
-	slots.name = "Slots"
-	slots.alignment = BoxContainer.ALIGNMENT_CENTER
-	slots.theme_override_constants.separation = 20
-	box.add_child(slots)
-
-	var cancel_button := Button.new()
-	cancel_button.text = "Cancel"
-	cancel_button.pressed.connect(_hide_slot_overlay)
-	box.add_child(cancel_button)
 
 
 func _build_confirm_dialog() -> void:
@@ -89,40 +66,22 @@ func _on_attune_button_pressed() -> void:
 
 
 func _show_slot_overlay() -> void:
-	if _slot_overlay == null:
+	if slot_overlay == null or profile_data == null or profile_data.soul_recess_state == null:
 		return
-	var slots := _slot_overlay.get_node("CenterContainer/VBoxContainer/Slots") as HBoxContainer
-	for child in slots.get_children():
-		child.queue_free()
-
-	var recess := profile_data.soul_recess_state
-	var visible_slots := mini(recess.attuned_souls.size(), maxi(int(recess.unlocked_slot_count), 0))
-	for slot_index in range(visible_slots):
-		var snapshot := recess.get_attuned_soul_snapshot_at(slot_index)
-		var card_data := snapshot.instantiate_card() if snapshot != null else null
-		if card_data == null:
-			continue
-		var button := Button.new()
-		button.custom_minimum_size = Vector2(210, 320)
-		button.pressed.connect(_open_attunement_candidates.bind(slot_index, String(card_data.uid)))
-		slots.add_child(button)
-
-		var menu_card := MENU_CARD.instantiate() as MenuCard
-		button.add_child(menu_card)
-		menu_card.set_anchors_preset(Control.PRESET_FULL_RECT)
-		menu_card.offset_left = 0.0
-		menu_card.offset_top = 0.0
-		menu_card.offset_right = 0.0
-		menu_card.offset_bottom = 0.0
-		menu_card.set_card_data(card_data)
-		_set_mouse_passthrough(menu_card)
-
-	_slot_overlay.visible = true
+	slot_overlay.show_slots(profile_data.soul_recess_state)
 
 
 func _hide_slot_overlay() -> void:
-	if _slot_overlay != null:
-		_slot_overlay.visible = false
+	if slot_overlay != null:
+		slot_overlay.hide_overlay()
+
+
+func _on_slot_overlay_selected(slot_index: int, slot_uid: String) -> void:
+	_open_attunement_candidates(slot_index, slot_uid)
+
+
+func _on_slot_overlay_canceled() -> void:
+	pass
 
 
 func _open_attunement_candidates(slot_index: int, slot_uid: String) -> void:
@@ -181,14 +140,6 @@ func _confirm_attunement() -> void:
 	_pending_slot_uid = ""
 	_pending_attuned_card = null
 	_hide_slot_overlay()
-
-
-func _set_mouse_passthrough(node: Node) -> void:
-	if node is Control:
-		(node as Control).mouse_filter = Control.MOUSE_FILTER_IGNORE
-	for child in node.get_children():
-		_set_mouse_passthrough(child)
-
 
 func _on_fade_out_finished() -> void:
 	Events.campfire_exited.emit()

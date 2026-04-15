@@ -79,44 +79,6 @@ layout_mode = 2
 [node name="CardRewardButton" parent="VBoxContainer/RewardContainer/MarginContainer/Rewards" unique_id=345271063 instance=ExtResource("4_kxtc4")]
 layout_mode = 2
 
-[node name="CardChoicesSection" type="VBoxContainer" parent="VBoxContainer/RewardContainer/MarginContainer/Rewards"]
-unique_name_in_owner = true
-visible = false
-layout_mode = 2
-theme_override_constants/separation = 20
-
-[node name="CardChoicesTitle" type="Label" parent="VBoxContainer/RewardContainer/MarginContainer/Rewards/CardChoicesSection"]
-layout_mode = 2
-theme = ExtResource("2_nyf7h")
-text = "Choose a Card"
-horizontal_alignment = 1
-
-[node name="CardChoiceContainer" type="HBoxContainer" parent="VBoxContainer/RewardContainer/MarginContainer/Rewards/CardChoicesSection"]
-unique_name_in_owner = true
-layout_mode = 2
-alignment = 1
-theme_override_constants/separation = 20
-
-[node name="Buttons" type="HBoxContainer" parent="VBoxContainer/RewardContainer/MarginContainer/Rewards/CardChoicesSection"]
-layout_mode = 2
-alignment = 1
-theme_override_constants/separation = 20
-
-[node name="CardRewardSkipButton" type="Button" parent="VBoxContainer/RewardContainer/MarginContainer/Rewards/CardChoicesSection/Buttons"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(180, 0)
-layout_mode = 2
-theme_override_font_sizes/font_size = 32
-text = "Skip"
-
-[node name="CardRewardTakeButton" type="Button" parent="VBoxContainer/RewardContainer/MarginContainer/Rewards/CardChoicesSection/Buttons"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(180, 0)
-layout_mode = 2
-disabled = true
-theme_override_font_sizes/font_size = 32
-text = "Take"
-
 [node name="BackButton" type="Button" parent="VBoxContainer" unique_id=1840636352]
 custom_minimum_size = Vector2(190, 60)
 layout_mode = 2
@@ -125,5 +87,4 @@ theme_override_font_sizes/font_size = 40
 text = "Continue
 "
 
-[connection signal="pressed" from="VBoxContainer/BackButton" to="." method="_on_button_pressed"]
 [connection signal="pressed" from="VBoxContainer/BackButton" to="." method="_on_back_button_pressed"]

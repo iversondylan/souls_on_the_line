@@ -80,7 +80,7 @@ func _refresh_soul_buttons() -> void:
 		card_data.ensure_uid()
 
 		var button := Button.new()
-		button.custom_minimum_size = Vector2(210, 320)
+		button.custom_minimum_size = Vector2(275, 370)
 		button.toggle_mode = true
 		button.button_group = _soul_button_group
 		button.button_pressed = String(card_data.uid) == selected_starting_soul_uid

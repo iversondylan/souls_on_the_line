@@ -2,8 +2,8 @@
 
 [ext_resource type="Script" uid="uid://eqh4qvjkvwic" path="res://run/campfire/campfire.gd" id="1_56ahn"]
 [ext_resource type="Theme" uid="uid://d2wc7fposrlqs" path="res://themes/wizard_theme.tres" id="2_5yci7"]
-[ext_resource type="Resource" uid="uid://cv7ssxqkw1opq" path="res://character_profiles/Cole/cole_data.tres" id="2_6jn8c"]
 [ext_resource type="Texture2D" uid="uid://cs0yoc5t1u07u" path="res://_assets/sprites/assorted/asterisk.png" id="2_civeq"]
+[ext_resource type="PackedScene" path="res://run/campfire/slot_overlay.tscn" id="3_slot_overlay"]
 [ext_resource type="Theme" uid="uid://1dr1eewpv0jd" path="res://themes/ui_theme.tres" id="4_6jn8c"]
 [ext_resource type="Theme" uid="uid://dhn0og888psda" path="res://themes/description_theme.tres" id="5_auago"]
 
@@ -122,7 +122,7 @@ _data = {
 &"fade_out": SubResource("Animation_auago")
 }
 
-[node name="Campfire" type="Control"]
+[node name="Campfire" type="Control" unique_id=310134427]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -130,11 +130,10 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_56ahn")
-player_data = ExtResource("2_6jn8c")
 
-[node name="BackgroundLayer" type="CanvasLayer" parent="."]
+[node name="BackgroundLayer" type="CanvasLayer" parent="." unique_id=337166697]
 
-[node name="TextureRect" type="TextureRect" parent="BackgroundLayer"]
+[node name="TextureRect" type="TextureRect" parent="BackgroundLayer" unique_id=1805621036]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -142,18 +141,18 @@ grow_horizontal = 2
 grow_vertical = 2
 texture = SubResource("GradientTexture2D_hk2pn")
 
-[node name="ParticlesLayer" type="CanvasLayer" parent="."]
+[node name="ParticlesLayer" type="CanvasLayer" parent="." unique_id=1384856545]
 
-[node name="CampfireParticles" type="GPUParticles2D" parent="ParticlesLayer"]
+[node name="CampfireParticles" type="GPUParticles2D" parent="ParticlesLayer" unique_id=387369329]
 position = Vector2(960, 951)
 amount = 128
 texture = ExtResource("2_civeq")
 lifetime = 1.5
 process_material = SubResource("ParticleProcessMaterial_ki1b5")
 
-[node name="UILayer" type="CanvasLayer" parent="."]
+[node name="UILayer" type="CanvasLayer" parent="." unique_id=418809427]
 
-[node name="UI" type="VBoxContainer" parent="UILayer"]
+[node name="UI" type="VBoxContainer" parent="UILayer" unique_id=1054979771]
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
@@ -166,30 +165,30 @@ offset_bottom = 88.5
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="Title" type="Label" parent="UILayer/UI"]
+[node name="Title" type="Label" parent="UILayer/UI" unique_id=818707356]
 layout_mode = 2
 theme = ExtResource("2_5yci7")
 text = "Campfire"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="Space" type="Control" parent="UILayer/UI"]
+[node name="Space" type="Control" parent="UILayer/UI" unique_id=622492345]
 custom_minimum_size = Vector2(0, 10)
 layout_mode = 2
 
-[node name="RestButton" type="Button" parent="UILayer/UI"]
+[node name="RestButton" type="Button" parent="UILayer/UI" unique_id=1576139520]
 custom_minimum_size = Vector2(190, 60)
 layout_mode = 2
 size_flags_horizontal = 4
 theme = ExtResource("4_6jn8c")
 text = "Rest"
 
-[node name="Description" type="Label" parent="UILayer/UI"]
+[node name="Description" type="Label" parent="UILayer/UI" unique_id=805841688]
 layout_mode = 2
 theme = ExtResource("5_auago")
 text = "Restore 30% of max HP"
 
-[node name="AttuneButton" type="Button" parent="UILayer/UI"]
+[node name="AttuneButton" type="Button" parent="UILayer/UI" unique_id=2010341332]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(190, 60)
 layout_mode = 2
@@ -197,16 +196,18 @@ size_flags_horizontal = 4
 theme = ExtResource("4_6jn8c")
 text = "Attune"
 
-[node name="AttuneDescription" type="Label" parent="UILayer/UI"]
+[node name="AttuneDescription" type="Label" parent="UILayer/UI" unique_id=2054432292]
 unique_name_in_owner = true
 layout_mode = 2
 theme = ExtResource("5_auago")
 text = "Replace one attuned soul with a SoulBound card from your collection."
 
-[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
-libraries = {
-&"": SubResource("AnimationLibrary_hk2pn")
-}
+[node name="SlotOverlay" parent="." unique_id=1150113909 instance=ExtResource("3_slot_overlay")]
+unique_name_in_owner = true
+layout_mode = 1
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=1966559140]
+libraries/ = SubResource("AnimationLibrary_hk2pn")
 
 [connection signal="pressed" from="UILayer/UI/RestButton" to="." method="_on_rest_button_pressed"]
 [connection signal="pressed" from="UILayer/UI/AttuneButton" to="." method="_on_attune_button_pressed"]
