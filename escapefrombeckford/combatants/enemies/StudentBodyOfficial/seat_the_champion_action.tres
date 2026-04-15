@@ -11,11 +11,12 @@
 [ext_resource type="Resource" uid="uid://dmli8brrtlw0m" path="res://combatants/enemies/StudentBodyOfficial/seat_the_champion_intent_text_model.tres" id="7_text_model"]
 [ext_resource type="Resource" uid="uid://duuocfptb6aoy" path="res://combatants/enemies/StudentBodyOfficial/seat_the_champion_tooltip_model.tres" id="8_tooltip_model"]
 [ext_resource type="Resource" uid="uid://btgtvs6ab0nsg" path="res://npc_ai/chance/half_exponential_spree_chance_state_model.tres" id="9_half_exp"]
+[ext_resource type="Resource" path="res://npc_ai/chance/multiply_chance_if_in_front_state_model.tres" id="10_in_front_mult"]
 
 [resource]
 script = ExtResource("5_action")
 effect_packages = Array[ExtResource("1_pkg")]([ExtResource("2_move_pkg"), ExtResource("3_heal_pkg")])
-state_models = Array[ExtResource("6_state")]([ExtResource("9_half_exp")])
+state_models = Array[ExtResource("6_state")]([ExtResource("9_half_exp"), ExtResource("10_in_front_mult")])
 action_name = "Seat the Champion"
 intent_icon = ExtResource("4_heal_icon")
 intent_icon_uid = "uid://ceu3xktqlv8ib"
