@@ -1113,7 +1113,8 @@ func _build_player_turn_draw_context(player_id: int) -> DrawContext:
 	ctx.amount = maxi(int(resource.player_turn_draw_amount), 0)
 	ctx.reason = "player_turn_refill"
 	ctx.phase = "player_turn_start"
-	ctx.use_first_hand_summon_guarantee = int(resource.shuffle_mode) != int(ResourceState.ShuffleMode.NO_SHUFFLE)
+	ctx.use_soulbound_guarantee = bool(resource.player_turn_use_soulbound_guarantee) \
+		and int(resource.shuffle_mode) != int(ResourceState.ShuffleMode.NO_SHUFFLE)
 	return ctx
 
 func _build_player_turn_end_discard_context(player_id: int) -> DiscardContext:

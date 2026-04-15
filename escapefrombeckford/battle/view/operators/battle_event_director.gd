@@ -270,7 +270,7 @@ func _start_summon_pop_order(order: SummonPopPresentationOrder) -> void:
 		c.a = 1.0
 		v.character_art.modulate = c
 
-	_apply_group_order(g, _coerce_int_array(order.after_order_ids), false)
+	_apply_group_order(g, _coerce_int_array(order.after_order_ids), true)
 
 	if caster != null:
 		caster.clear_strike_pose(order.visual_sec if order.visual_sec > 0.0 else 0.20)

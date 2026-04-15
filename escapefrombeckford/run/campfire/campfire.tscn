@@ -200,7 +200,7 @@ text = "Attune"
 unique_name_in_owner = true
 layout_mode = 2
 theme = ExtResource("5_auago")
-text = "Replace one attuned soul with a SoulBound card from your collection."
+text = "Choose a signature soul for future runs from SoulBound cards in your collection."
 
 [node name="ModalLayer" type="CanvasLayer" parent="." unique_id=2037518281]
 unique_name_in_owner = true

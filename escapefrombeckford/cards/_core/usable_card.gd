@@ -378,7 +378,7 @@ func _kill_pop_tween() -> void:
 
 func _move_to_destination() -> void:
 	#print("usable_card.gd _move_to_destination()")
-	if card_data.deplete:
+	if card_data.should_exhaust_on_play():
 		hand.deplete_card(hand.remove_card_by_entity(self))
 	else:
 		hand.discard_card(hand.remove_card_by_entity(self))

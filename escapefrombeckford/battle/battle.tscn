@@ -35,6 +35,8 @@ size = Vector2(1200, 200)
 
 [node name="Battle" type="Node" unique_id=1485552347]
 script = ExtResource("1_dd63g")
+player_turn_draw_type = 2
+player_turn_draw_amount = 4
 
 [node name="SimHost" type="Node" parent="." unique_id=1488075628 groups=["sim_host"]]
 script = ExtResource("3_1m01a")

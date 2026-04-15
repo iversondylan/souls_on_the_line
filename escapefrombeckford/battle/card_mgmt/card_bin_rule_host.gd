@@ -1,7 +1,7 @@
 class_name CardBinRuleHost extends RefCounted
 
-var player_turn_refill_amount: int = 5
-var player_turn_refill_use_first_hand_summon_guarantee: bool = true
+var player_turn_refill_amount: int = 3
+var player_turn_refill_use_soulbound_guarantee: bool = true
 
 var player_end_cleanup_should_discard_hand: bool = true
 var player_end_cleanup_should_exhaust_hand: bool = false
@@ -14,7 +14,7 @@ func build_player_turn_refill_context(source_id: int) -> DrawContext:
 	ctx.amount = maxi(int(player_turn_refill_amount), 0)
 	ctx.reason = "player_turn_refill"
 	ctx.phase = "player_turn_start"
-	ctx.use_first_hand_summon_guarantee = bool(player_turn_refill_use_first_hand_summon_guarantee)
+	ctx.use_soulbound_guarantee = bool(player_turn_refill_use_soulbound_guarantee)
 	return ctx
 
 

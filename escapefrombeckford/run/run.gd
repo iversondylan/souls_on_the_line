@@ -124,7 +124,9 @@ func _prepare_run_runtime() -> void:
 		if run_deck == null:
 			run_deck = RunDeck.new()
 		if run_deck.card_collection == null and player_data != null and player_data.starting_deck != null:
-			run_deck.card_collection = player_data.starting_deck.duplicate()
+			run_deck.card_collection = _build_run_normal_starting_deck(player_data.starting_deck)
+		if run_deck.get_soulbound_slot_cards().is_empty() and player_data != null and player_data.starting_deck != null:
+			run_deck.initialize_soulbound_slots(null, _get_starter_soul_card_from_pile(player_data.starting_deck))
 		run_state.run_deck = run_deck
 	else:
 		run_deck = run_state.run_deck
@@ -327,7 +329,7 @@ func _start_new_run_from_profile(profile: RunProfile) -> void:
 		push_warning("Run._start_new_run_from_profile(): no player profile found for id '%s'" % profile.player_profile_id)
 		return
 
-	var starting_deck := player_data.starting_deck.duplicate()
+	var starting_deck := _build_run_normal_starting_deck(player_data.starting_deck)
 	draftable_cards = player_data.draftable_cards.duplicate()
 
 	var signature_soulbound_snapshot: CardSnapshot = null
@@ -336,10 +338,7 @@ func _start_new_run_from_profile(profile: RunProfile) -> void:
 			signature_soulbound_snapshot = profile_data.soul_recess_state.get_attuned_soul_snapshot(profile.selected_starting_soul_uid)
 		if signature_soulbound_snapshot == null:
 			signature_soulbound_snapshot = profile_data.soul_recess_state.get_selected_starting_soul_snapshot()
-	if signature_soulbound_snapshot != null:
-		var carried_card := signature_soulbound_snapshot.instantiate_card()
-		if carried_card != null:
-			starting_deck.add_back(carried_card)
+	var signature_soulbound_card := signature_soulbound_snapshot.instantiate_card() if signature_soulbound_snapshot != null else null
 
 	arcana_catalog = arcanum_catalog.duplicate()
 	run_state = RunState.new()
@@ -352,6 +351,7 @@ func _start_new_run_from_profile(profile: RunProfile) -> void:
 	run_state.owned_arcanum_ids = PackedStringArray([String(player_data.starting_arcanum.get_id())]) if player_data.starting_arcanum != null else PackedStringArray()
 	run_deck = RunDeck.new()
 	run_deck.card_collection = starting_deck
+	run_deck.initialize_soulbound_slots(signature_soulbound_card, _get_starter_soul_card_from_pile(player_data.starting_deck))
 	run_state.run_deck = run_deck
 	# TEMPORARY v
 	#for arcanum in extra_arcana:
@@ -370,6 +370,28 @@ func _resolve_starting_player_data(profile_id: String) -> PlayerData:
 	if _is_tutorial_mode() and tutorial_player_data != null:
 		return tutorial_player_data
 	return _resolve_player_profile(profile_id)
+
+
+func _build_run_normal_starting_deck(source_pile: CardPile) -> CardPile:
+	var filtered := CardPile.new()
+	if source_pile == null:
+		return filtered
+	for card_data in source_pile.cards:
+		if card_data == null or card_data.is_soulbound_slot_card():
+			continue
+		filtered.add_back(card_data)
+	return filtered
+
+
+func _get_starter_soul_card_from_pile(source_pile: CardPile) -> CardData:
+	if source_pile == null:
+		return null
+	for card_data in source_pile.cards:
+		if card_data == null:
+			continue
+		if card_data.is_soulbound_slot_card() and bool(card_data.starter_card):
+			return card_data
+	return null
 
 
 func _continue_saved_run() -> void:
@@ -402,7 +424,9 @@ func _boot_from_loaded_run_state(loaded_run_state: RunState) -> void:
 	draftable_cards = run_state.draftable_cards if run_state.draftable_cards != null else player_data.draftable_cards.duplicate()
 	run_deck = run_state.run_deck if run_state.run_deck != null else RunDeck.new()
 	if run_deck.card_collection == null:
-		run_deck.card_collection = player_data.starting_deck.duplicate()
+		run_deck.card_collection = _build_run_normal_starting_deck(player_data.starting_deck)
+	if run_deck.get_soulbound_slot_cards().is_empty():
+		run_deck.initialize_soulbound_slots(null, _get_starter_soul_card_from_pile(player_data.starting_deck))
 	run_seed = int(run_state.run_seed)
 	run_rng = RunRNG.from_snapshot(run_state.run_rng_snapshot) if run_state.run_rng_snapshot != null and !run_state.run_rng_snapshot.is_empty() else RunRNG.new(run_seed)
 	arcana_catalog = arcanum_catalog.duplicate()

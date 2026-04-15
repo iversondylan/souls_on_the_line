@@ -2,15 +2,80 @@
 
 class_name RunDeck extends Resource
 
+const SOULBOUND_SLOT_COUNT := 5
+const DEFAULT_STARTER_SOUL_PATH := "res://cards/souls/SpectralCloneCard/spectral_clone.tres"
+
 @export var card_collection: CardPile = CardPile.new() : set = _set_card_collection
+@export var soulbound_slots: Array = [] : set = _set_soulbound_slots
 
 
 func add_card(card_data: CardData) -> void:
+	add_normal_card(card_data)
+
+
+func add_normal_card(card_data: CardData) -> void:
 	var new_card := _instantiate_card(card_data, true)
 	if new_card == null:
 		return
+	if new_card.is_soulbound_slot_card():
+		push_warning("RunDeck.add_normal_card(): soulbound slot cards must use replace_soulbound_slot().")
+		return
 	new_card.ensure_uid()
 	card_collection.add_back(new_card)
+
+
+func replace_soulbound_slot(slot_index: int, card_data: CardData) -> bool:
+	if slot_index < 0 or slot_index >= SOULBOUND_SLOT_COUNT:
+		return false
+	var new_card := _instantiate_card(card_data, true)
+	if new_card == null or !new_card.is_soulbound_slot_card():
+		return false
+	_ensure_soulbound_slot_size()
+	soulbound_slots[slot_index] = new_card
+	return true
+
+
+func initialize_soulbound_slots(signature_card: CardData, starter_card: CardData) -> void:
+	var resolved_starter := starter_card
+	if resolved_starter == null:
+		resolved_starter = _load_default_starter_soul()
+	var resolved_signature := signature_card if signature_card != null else resolved_starter
+
+	soulbound_slots = []
+	if resolved_signature != null:
+		var new_signature := _instantiate_card(resolved_signature, true)
+		if new_signature != null:
+			soulbound_slots.append(new_signature)
+	while soulbound_slots.size() < SOULBOUND_SLOT_COUNT:
+		if resolved_starter == null:
+			break
+		var starter_copy := _instantiate_card(resolved_starter, true)
+		if starter_copy == null:
+			break
+		soulbound_slots.append(starter_copy)
+	_ensure_soulbound_slot_size()
+
+
+func get_soulbound_slot_cards() -> Array[CardData]:
+	var out: Array[CardData] = []
+	for card_data in soulbound_slots:
+		if card_data != null:
+			out.append(card_data)
+	return out
+
+
+func build_battle_card_collection() -> CardPile:
+	var pile := CardPile.new()
+	if card_collection != null:
+		for card_data in card_collection.cards:
+			if card_data == null:
+				continue
+			pile.add_back(card_data)
+	for card_data in soulbound_slots:
+		if card_data == null:
+			continue
+		pile.add_back(card_data)
+	return pile
 
 
 func _set_card_collection(card_pile: CardPile) -> void:
@@ -23,6 +88,16 @@ func _set_card_collection(card_pile: CardPile) -> void:
 			continue
 		new_card.ensure_uid()
 		card_collection.add_back(new_card)
+
+
+func _set_soulbound_slots(cards: Array) -> void:
+	soulbound_slots = []
+	for card_data in cards:
+		var new_card := _instantiate_card(card_data, false)
+		if new_card == null:
+			continue
+		new_card.ensure_uid()
+		soulbound_slots.append(new_card)
 
 
 func remove_card(card_uid: String) -> void:
@@ -52,20 +127,46 @@ func _instantiate_card(card_data: CardData, regenerate_uid: bool) -> CardData:
 func normalize_cards() -> void:
 	if card_collection == null:
 		card_collection = CardPile.new()
-		return
-	var normalized := CardPile.new()
+	var normalized_collection := CardPile.new()
+	var normalized_slots: Array[CardData] = []
 	var seen_uids := {}
+	var starter_fallback := _find_starter_soul_card(soulbound_slots)
+	if starter_fallback == null:
+		starter_fallback = _find_starter_soul_card(card_collection.cards)
+
+	for card_data in soulbound_slots:
+		var new_card := _normalize_runtime_card(card_data, seen_uids)
+		if new_card == null or !new_card.is_soulbound_slot_card():
+			continue
+		if starter_fallback == null and bool(new_card.starter_card):
+			starter_fallback = new_card
+		if normalized_slots.size() < SOULBOUND_SLOT_COUNT:
+			normalized_slots.append(new_card)
+
 	for card_data in card_collection.cards:
-		var new_card := _instantiate_card(card_data, false)
+		var new_card := _normalize_runtime_card(card_data, seen_uids)
 		if new_card == null:
 			continue
-		new_card.ensure_uid()
-		if seen_uids.has(new_card.uid):
-			new_card.uid = ""
-			new_card.ensure_uid()
-		seen_uids[new_card.uid] = true
-		normalized.add_back(new_card)
-	card_collection = normalized
+		if new_card.is_soulbound_slot_card():
+			if starter_fallback == null and bool(new_card.starter_card):
+				starter_fallback = new_card
+			if normalized_slots.size() < SOULBOUND_SLOT_COUNT:
+				normalized_slots.append(new_card)
+			continue
+		normalized_collection.add_back(new_card)
+
+	if starter_fallback == null:
+		starter_fallback = _load_default_starter_soul()
+	while normalized_slots.size() < SOULBOUND_SLOT_COUNT and starter_fallback != null:
+		var starter_copy := _instantiate_card(starter_fallback, true)
+		if starter_copy == null:
+			break
+		_ensure_unique_uid(starter_copy, seen_uids)
+		normalized_slots.append(starter_copy)
+
+	card_collection = normalized_collection
+	soulbound_slots = normalized_slots
+	_ensure_soulbound_slot_size()
 
 
 func serialize_cards() -> Array[CardSnapshot]:
@@ -89,3 +190,40 @@ func deserialize_cards(snapshots: Array[CardSnapshot]) -> void:
 			continue
 		restored.ensure_uid()
 		card_collection.add_back(restored)
+
+
+func _normalize_runtime_card(card_data: CardData, seen_uids: Dictionary) -> CardData:
+	var new_card := _instantiate_card(card_data, false)
+	if new_card == null:
+		return null
+	_ensure_unique_uid(new_card, seen_uids)
+	return new_card
+
+
+func _ensure_unique_uid(card_data: CardData, seen_uids: Dictionary) -> void:
+	card_data.ensure_uid()
+	if seen_uids.has(card_data.uid):
+		card_data.uid = ""
+		card_data.ensure_uid()
+	seen_uids[card_data.uid] = true
+
+
+func _ensure_soulbound_slot_size() -> void:
+	while soulbound_slots.size() < SOULBOUND_SLOT_COUNT:
+		soulbound_slots.append(null)
+	while soulbound_slots.size() > SOULBOUND_SLOT_COUNT:
+		soulbound_slots.remove_at(soulbound_slots.size() - 1)
+
+
+func _find_starter_soul_card(cards: Array) -> CardData:
+	for card_value in cards:
+		var card_data := card_value as CardData
+		if card_data == null:
+			continue
+		if card_data.is_soulbound_slot_card() and bool(card_data.starter_card):
+			return card_data
+	return null
+
+
+func _load_default_starter_soul() -> CardData:
+	return load(DEFAULT_STARTER_SOUL_PATH) as CardData

@@ -758,6 +758,7 @@ func _decode_run_deck(data: Variant) -> RunDeck:
 	if typeof(data) != TYPE_DICTIONARY:
 		return deck
 	deck.card_collection = _build_card_pile_from_cards(_decode_card_array(data.get("cards", [])))
+	deck.soulbound_slots = _decode_card_array(data.get("soulbound_slots", []))
 	return deck
 
 
@@ -765,9 +766,11 @@ func _encode_run_deck(run_deck: RunDeck) -> Dictionary:
 	if run_deck == null:
 		return {
 			"cards": [],
+			"soulbound_slots": [],
 		}
 	return {
 		"cards": _encode_card_array(run_deck.card_collection.cards if run_deck.card_collection != null else []),
+		"soulbound_slots": _encode_card_array(run_deck.get_soulbound_slot_cards()),
 	}
 
 

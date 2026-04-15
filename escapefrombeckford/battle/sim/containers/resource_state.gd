@@ -14,7 +14,8 @@ enum ShuffleMode {
 
 var mana: int = 0
 var max_mana: int = 0
-var player_turn_draw_amount: int = 5
+var player_turn_draw_amount: int = 3
+var player_turn_use_soulbound_guarantee: bool = true
 var hand_mode: int = HandMode.DISCARD
 var shuffle_mode: int = ShuffleMode.NORMAL
 
@@ -26,6 +27,7 @@ func clone() -> ResourceState:
 	r.mana = int(mana)
 	r.max_mana = int(max_mana)
 	r.player_turn_draw_amount = int(player_turn_draw_amount)
+	r.player_turn_use_soulbound_guarantee = bool(player_turn_use_soulbound_guarantee)
 	r.hand_mode = int(hand_mode)
 	r.shuffle_mode = int(shuffle_mode)
 

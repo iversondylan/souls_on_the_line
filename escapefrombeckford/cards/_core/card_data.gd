@@ -138,3 +138,27 @@ func is_single_targeted() -> bool:
 
 func get_total_cost() -> int:
 	return maxi(int(cost) + int(overload), 0)
+
+
+func is_soulbound_slot_card() -> bool:
+	if int(card_type) != int(CardType.SOULBOUND) or bool(deplete):
+		return false
+	return _has_summon_with_mortality(CombatantState.Mortality.BOUND)
+
+
+func is_wild_soul_card() -> bool:
+	return int(card_type) == int(CardType.SOULWILD)
+
+
+func should_exhaust_on_play() -> bool:
+	return bool(deplete) and !is_wild_soul_card()
+
+
+func _has_summon_with_mortality(mortality_value: int) -> bool:
+	for action in actions:
+		var summon_action := action as SummonAction
+		if summon_action == null:
+			continue
+		if int(summon_action.mortality) == int(mortality_value):
+			return true
+	return false

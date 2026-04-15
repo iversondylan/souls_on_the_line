@@ -23,6 +23,9 @@ var reward_context: RewardContext
 var card_reward_total_weight : float = 0.0
 var _current_card_reward_button: RewardButton
 var _card_reward_overlay: CardSelectionOverlay
+var _confirm_dialog: ConfirmationDialog
+var _pending_reward_card: CardData
+var _pending_reward_slot_index: int = -1
 
 var card_rarity_weights := {
 	CardData.Rarity.COMMON: 0.0,
@@ -32,6 +35,7 @@ var card_rarity_weights := {
 
 func _ready() -> void:
 	_clear_rewards()
+	_build_confirm_dialog()
 
 func populate_from_context(ctx: RewardContext) -> void:
 	if ctx == null:
@@ -132,8 +136,12 @@ func _on_gold_reward_taken(n_gold: int, reward_index: int, reward_button: Reward
 func _on_card_reward_taken(card: CardData) -> void:
 	if run_state == null or card == null:
 		return
+	if card.is_soulbound_slot_card():
+		_pending_reward_card = card
+		_show_soulbound_slot_overlay()
+		return
 	if run_state.run_deck:
-		run_state.run_deck.add_card(card)
+		run_state.run_deck.add_normal_card(card)
 	run_state.pending_reward_card_claimed = true
 	if is_instance_valid(_current_card_reward_button):
 		_current_card_reward_button.queue_free()
@@ -144,10 +152,17 @@ func _on_card_reward_taken(card: CardData) -> void:
 
 
 func _on_card_reward_selection_canceled() -> void:
+	if _pending_reward_card != null and reward_context != null:
+		_pending_reward_card = null
+		_pending_reward_slot_index = -1
+		_show_card_reward(reward_context.card_choices)
+		return
 	_card_reward_overlay = null
 
 
 func _on_card_reward_overlay_exited() -> void:
+	if is_instance_valid(_card_reward_overlay):
+		return
 	_card_reward_overlay = null
 
 func _on_back_button_pressed() -> void:
@@ -162,3 +177,68 @@ func _clear_rewards() -> void:
 		_card_reward_overlay.queue_free()
 	_card_reward_overlay = null
 	_current_card_reward_button = null
+
+
+func _build_confirm_dialog() -> void:
+	_confirm_dialog = ConfirmationDialog.new()
+	_confirm_dialog.get_ok_button().text = "Replace"
+	_confirm_dialog.confirmed.connect(_confirm_reward_soulbound_replacement)
+	add_child(_confirm_dialog)
+
+
+func _show_soulbound_slot_overlay() -> void:
+	if run_state == null or run_state.run_deck == null:
+		return
+	if is_instance_valid(_card_reward_overlay):
+		_card_reward_overlay.queue_free()
+	_card_reward_overlay = CARD_SELECTION_OVERLAY.instantiate() as CardSelectionOverlay
+	add_child(_card_reward_overlay)
+	_card_reward_overlay.selection_confirmed.connect(_on_soulbound_slot_selected)
+	_card_reward_overlay.selection_canceled.connect(_on_card_reward_selection_canceled)
+	_card_reward_overlay.tree_exited.connect(_on_card_reward_overlay_exited)
+	_card_reward_overlay.configure(
+		run_state.run_deck.get_soulbound_slot_cards(),
+		"Choose a Soulbound Slot to Replace",
+		"Replace",
+		"Back"
+	)
+
+
+func _on_soulbound_slot_selected(slot_card: CardData) -> void:
+	if slot_card == null or _pending_reward_card == null or run_state == null or run_state.run_deck == null:
+		return
+	_pending_reward_slot_index = _find_soulbound_slot_index(slot_card)
+	if _pending_reward_slot_index < 0:
+		return
+	_confirm_dialog.dialog_text = "Replace %s with %s for this run?" % [slot_card.name, _pending_reward_card.name]
+	_confirm_dialog.popup_centered()
+
+
+func _confirm_reward_soulbound_replacement() -> void:
+	if run_state == null or run_state.run_deck == null or _pending_reward_card == null or _pending_reward_slot_index < 0:
+		return
+	if !run_state.run_deck.replace_soulbound_slot(_pending_reward_slot_index, _pending_reward_card):
+		return
+	run_state.pending_reward_card_claimed = true
+	if is_instance_valid(_current_card_reward_button):
+		_current_card_reward_button.queue_free()
+	_current_card_reward_button = null
+	_pending_reward_card = null
+	_pending_reward_slot_index = -1
+	if run != null:
+		run._persist_active_run()
+
+
+func _find_soulbound_slot_index(slot_card: CardData) -> int:
+	if slot_card == null or run_state == null or run_state.run_deck == null:
+		return -1
+	slot_card.ensure_uid()
+	var slot_cards := run_state.run_deck.get_soulbound_slot_cards()
+	for slot_index in range(slot_cards.size()):
+		var current := slot_cards[slot_index]
+		if current == null:
+			continue
+		current.ensure_uid()
+		if String(current.uid) == String(slot_card.uid):
+			return slot_index
+	return -1

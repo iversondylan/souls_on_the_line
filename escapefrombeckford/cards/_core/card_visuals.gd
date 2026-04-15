@@ -44,6 +44,7 @@ func _ready() -> void:
 	mana_panel_radius = cost_container.texture.get_size().y * cost_container.scale.y * 0.5 - 0.75
 	_default_cost_label_modulate = cost_label.modulate
 	_default_name_label_font_size = name_label.get_theme_font_size("font_size")
+	_connect_overload_pip_signals()
 
 	refresh_from_card_data()
 	_fit_name_label_text()
@@ -55,10 +56,12 @@ func _notification(what: int) -> void:
 func set_overload(amount: int) -> void:
 	overload = maxi(int(amount), 0)
 	for pip in _get_overload_pips():
+		if pip.get_parent() == cost_display:
+			cost_display.remove_child(pip)
 		pip.queue_free()
 	for _i in range(overload):
 		cost_display.add_child(OVERLOAD_PIP.instantiate())
-	reposition_overload_pips()
+	_request_overload_pip_reposition()
 	_refresh_cost_label_color()
 
 func _set_card_data(value: CardData) -> void:
@@ -141,6 +144,26 @@ func reposition_overload_pips() -> void:
 	for pip in pips:
 		_update_pip_transform(pip, current_pip_angle_flt)
 		current_pip_angle_flt += pip_angle_increment_flt
+
+
+func _connect_overload_pip_signals() -> void:
+	if cost_display == null:
+		return
+	if !cost_display.child_entered_tree.is_connected(_on_cost_display_child_tree_changed):
+		cost_display.child_entered_tree.connect(_on_cost_display_child_tree_changed)
+	if !cost_display.child_exiting_tree.is_connected(_on_cost_display_child_tree_changed):
+		cost_display.child_exiting_tree.connect(_on_cost_display_child_tree_changed)
+
+
+func _on_cost_display_child_tree_changed(node: Node) -> void:
+	if node is OverloadPip:
+		_request_overload_pip_reposition()
+
+
+func _request_overload_pip_reposition() -> void:
+	if !is_node_ready():
+		return
+	call_deferred("reposition_overload_pips")
 
 func get_pip_position(angle_deg_flt: float) -> Vector2:
 	var x: float = mana_panel_radius * cos(deg_to_rad(angle_deg_flt + 270))

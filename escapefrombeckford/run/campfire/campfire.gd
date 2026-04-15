@@ -42,12 +42,13 @@ func _refresh_attune_button() -> void:
 	attune_button.disabled = profile_data == null \
 		or profile_data.soul_recess_state == null \
 		or run_deck == null \
-		or run_deck.card_collection == null
+		or run_deck.card_collection == null \
+		or _get_attunement_candidates().is_empty()
 
 
 func _build_confirm_dialog() -> void:
 	_confirm_dialog = ConfirmationDialog.new()
-	_confirm_dialog.dialog_text = "Are you sure? This will replace the currently attuned soul."
+	_confirm_dialog.dialog_text = "Are you sure? This will replace your signature soul for future runs."
 	_confirm_dialog.get_ok_button().text = "Attune"
 	_confirm_dialog.confirmed.connect(_confirm_attunement)
 	if modal_layer != null:

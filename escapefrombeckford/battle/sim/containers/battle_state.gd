@@ -51,7 +51,8 @@ func init(_battle_seed: int, _run_seed: int) -> void:
 	resource = ResourceState.new()
 	resource.max_mana = 3
 	resource.mana = 3
-	resource.player_turn_draw_amount = 5
+	resource.player_turn_draw_amount = 3
+	resource.player_turn_use_soulbound_guarantee = true
 	resource.hand_mode = ResourceState.HandMode.DISCARD
 	resource.shuffle_mode = ResourceState.ShuffleMode.NORMAL
 

@@ -1,5 +1,12 @@
 class_name BattleCardBins extends Node
 
+enum PlayerTurnDrawType {
+	FLAT,
+	UNTIL,
+	GREATER_OF,
+	LESSER_OF,
+}
+
 signal draw_prepare_requested(ctx: DrawContext)
 signal draw_completed(ctx: DrawContext)
 signal discard_prepare_requested(ctx: DiscardContext)
@@ -13,6 +20,13 @@ var battle: Battle
 var hand: Hand
 var rule_host: CardBinRuleHost
 var rng: RNG
+var player_turn_draw_type: int = PlayerTurnDrawType.FLAT
+var player_turn_draw_until_amount: int = 5
+var player_turn_use_soulbound_guarantee: bool = true
+var player_turn_soulbound_guarantee_when_bound_below: int = 3
+var player_end_retain_soulbound_slot_cards: bool = true
+var player_end_discard_hand: bool = true
+var player_end_exhaust_hand: bool = false
 
 func _ready() -> void:
 	_ensure_event_connections()
@@ -30,6 +44,31 @@ func configure_seed(battle_seed: int) -> void:
 	rng = RNG.new(RNGUtil.seed_from_label(int(battle_seed), "battle_card_bins"))
 
 
+func configure_player_card_rules(
+	new_player_turn_draw_type: int,
+	new_player_turn_draw_until_amount: int,
+	new_player_turn_use_soulbound_guarantee: bool,
+	new_player_turn_soulbound_guarantee_when_bound_below: int,
+	new_player_end_retain_soulbound_slot_cards: bool,
+	new_player_end_discard_hand: bool,
+	new_player_end_exhaust_hand: bool
+) -> void:
+	player_turn_draw_type = clampi(
+		int(new_player_turn_draw_type),
+		int(PlayerTurnDrawType.FLAT),
+		int(PlayerTurnDrawType.LESSER_OF)
+	)
+	player_turn_draw_until_amount = maxi(int(new_player_turn_draw_until_amount), 0)
+	player_turn_use_soulbound_guarantee = bool(new_player_turn_use_soulbound_guarantee)
+	player_turn_soulbound_guarantee_when_bound_below = maxi(
+		int(new_player_turn_soulbound_guarantee_when_bound_below),
+		0
+	)
+	player_end_retain_soulbound_slot_cards = bool(new_player_end_retain_soulbound_slot_cards)
+	player_end_discard_hand = bool(new_player_end_discard_hand)
+	player_end_exhaust_hand = bool(new_player_end_exhaust_hand)
+
+
 func reset_bins() -> void:
 	state.card_collection.clear()
 	state.draw_pile.clear()
@@ -40,7 +79,6 @@ func reset_bins() -> void:
 	state.summon_reserve_by_uid.clear()
 	state.hand_locked_until_next_player_turn.clear()
 	state.first_shuffle = true
-	state.first_hand_drawn = false
 
 
 func seed_card_collection(source_pile: CardPile) -> void:
@@ -115,11 +153,15 @@ func request_discard(ctx: DiscardContext) -> void:
 	prepare_discard(ctx)
 
 	var chosen_uids := ctx.requested_card_uids.duplicate()
+	var retained_cards: Array[CardData] = []
 	if chosen_uids.is_empty() and !ctx.card_uid.is_empty():
 		chosen_uids.append(ctx.card_uid)
 	if chosen_uids.is_empty() and bool(ctx.discard_all_from_hand):
 		for card in hand.get_hand_cards():
 			if card == null or !is_instance_valid(card) or card.card_data == null:
+				continue
+			if _should_retain_card_on_player_end(card.card_data, ctx):
+				retained_cards.append(card.card_data)
 				continue
 			card.card_data.ensure_uid()
 			chosen_uids.append(String(card.card_data.uid))
@@ -135,20 +177,30 @@ func request_discard(ctx: DiscardContext) -> void:
 	var move_ctx := CardMoveContext.new()
 	move_ctx.source_id = ctx.source_id
 	move_ctx.from_bin = CardMoveContext.BinKind.HAND
-	move_ctx.to_bin = CardMoveContext.BinKind.DISCARD_PILE
+	move_ctx.to_bin = _get_player_end_destination_bin(ctx)
 	move_ctx.card_uids = chosen_uids
 	move_ctx.reason = ctx.reason
 	move_ctx.phase = ctx.phase
 	move_ctx.tags = ctx.tags.duplicate()
 	move_cards(move_ctx)
 	_clear_overload_on_cards(move_ctx.moved_cards)
+	_reduce_overload_for_cards(retained_cards, 1)
+	if !retained_cards.is_empty():
+		_refresh_hand_cards()
 
-	var removed := hand.get_hand_cards_by_uids(move_ctx.card_uids)
+	var removed: Array[UsableCard] = []
+	if move_ctx.to_bin == CardMoveContext.BinKind.EXHAUSTED:
+		removed = hand.remove_cards_by_uids(move_ctx.card_uids)
+	else:
+		removed = hand.get_hand_cards_by_uids(move_ctx.card_uids)
 	ctx.discarded_card_uids = move_ctx.card_uids.duplicate()
 	ctx.actually_discarded = move_ctx.actually_moved
 
 	if !removed.is_empty():
-		await hand.animate_discard_cards(removed, true)
+		if move_ctx.to_bin == CardMoveContext.BinKind.EXHAUSTED:
+			hand.clear_removed_cards(removed)
+		else:
+			await hand.animate_discard_cards(removed, true)
 
 	after_discard(ctx)
 
@@ -378,15 +430,15 @@ func unlock_hand_cards_for_player_turn() -> void:
 
 func _draw_cards_into_hand(ctx: DrawContext) -> Array[CardData]:
 	var drawn: Array[CardData] = []
-	var count := maxi(ctx.amount, 0)
+	var count := _resolve_draw_count(ctx)
+	ctx.amount = count
 	if count <= 0:
 		return drawn
 	if !_has_any_cards_available_to_draw():
 		return drawn
 
-	if !state.first_hand_drawn and ctx.use_first_hand_summon_guarantee:
-		state.first_hand_drawn = true
-		return _draw_first_hand_with_summon_guarantee(count)
+	if bool(ctx.use_soulbound_guarantee) and _should_apply_soulbound_guarantee(ctx):
+		return _draw_cards_with_soulbound_guarantee(count)
 
 	for _i in range(count):
 		var card := _draw_one_from_draw_pile()
@@ -397,7 +449,33 @@ func _draw_cards_into_hand(ctx: DrawContext) -> Array[CardData]:
 	return drawn
 
 
-func _draw_first_hand_with_summon_guarantee(count: int) -> Array[CardData]:
+func _resolve_draw_count(ctx: DrawContext) -> int:
+	if ctx == null:
+		return 0
+
+	var base_amount := maxi(int(ctx.amount), 0)
+	if String(ctx.reason) != "player_turn_refill":
+		return base_amount
+
+	var missing_to_until := maxi(int(player_turn_draw_until_amount) - _current_hand_size(), 0)
+	match int(player_turn_draw_type):
+		PlayerTurnDrawType.UNTIL:
+			return missing_to_until
+		PlayerTurnDrawType.GREATER_OF:
+			return maxi(base_amount, missing_to_until)
+		PlayerTurnDrawType.LESSER_OF:
+			return mini(base_amount, missing_to_until)
+		_:
+			return base_amount
+
+
+func _current_hand_size() -> int:
+	if state == null or state.hand_pile == null:
+		return 0
+	return state.hand_pile.cards.size()
+
+
+func _draw_cards_with_soulbound_guarantee(count: int) -> Array[CardData]:
 	var drawn: Array[CardData] = []
 	if count <= 0 or !_has_any_cards_available_to_draw():
 		return drawn
@@ -410,24 +488,18 @@ func _draw_first_hand_with_summon_guarantee(count: int) -> Array[CardData]:
 
 	var has_summon := false
 	for card in drawn:
-		if card != null and card.card_type == CardData.CardType.SOULBOUND:
+		if card != null and card.is_soulbound_slot_card():
 			has_summon = true
 			break
 
-	if !has_summon and state.first_hand_summon_guarantee and !drawn.is_empty():
-		var summon_indices: Array[int] = []
-		for idx in range(state.draw_pile.cards.size()):
-			var remaining: CardData = state.draw_pile.cards[idx]
-			if remaining != null and remaining.card_type == CardData.CardType.SOULBOUND:
-				summon_indices.append(idx)
-
-		if !summon_indices.is_empty():
-			var summon_choice_idx := _rng_range_i(0, summon_indices.size() - 1, "first_hand.summon_index")
-			var draw_pile_idx := summon_indices[summon_choice_idx]
-			var hand_idx := _rng_range_i(0, drawn.size() - 1, "first_hand.hand_index")
-			var summon_card: CardData = state.draw_pile.cards[draw_pile_idx]
-			state.draw_pile.cards[draw_pile_idx] = drawn[hand_idx]
+	if !has_summon and !drawn.is_empty():
+		var summon_choice := _extract_guaranteed_soulbound_choice()
+		var summon_card: CardData = summon_choice.get("card", null) as CardData
+		if summon_card != null:
+			var hand_idx := _rng_range_i(0, drawn.size() - 1, "soulbound_guarantee.hand_index")
+			var replaced_card := drawn[hand_idx]
 			drawn[hand_idx] = summon_card
+			_return_guarantee_replacement_card(replaced_card, summon_choice)
 
 	for card in drawn:
 		state.hand_pile.add_back(card)
@@ -492,6 +564,79 @@ func _rng_range_i(lo: int, hi: int, tag: String) -> int:
 	if rng == null:
 		rng = RNG.new(1)
 	return rng.debug_range_i(lo, hi, "battle_card_bins.%s" % tag)
+
+
+func _should_apply_soulbound_guarantee(ctx: DrawContext) -> bool:
+	if ctx == null or String(ctx.reason) != "player_turn_refill":
+		return false
+	if !bool(player_turn_use_soulbound_guarantee):
+		return false
+	if _count_bound_summons_in_play() >= int(player_turn_soulbound_guarantee_when_bound_below):
+		return false
+	return _has_guaranteed_soulbound_candidate()
+
+
+func _count_bound_summons_in_play() -> int:
+	if battle == null or battle.sim_host == null:
+		return 0
+	var api := battle.sim_host.get_main_api()
+	if api == null:
+		return 0
+	return int(api.count_bound_in_group(SimBattleAPI.FRIENDLY))
+
+
+func _has_guaranteed_soulbound_candidate() -> bool:
+	for card in state.draw_pile.cards:
+		if card != null and card.is_soulbound_slot_card():
+			return true
+	for card in state.discard_pile.cards:
+		if card != null and card.is_soulbound_slot_card():
+			return true
+	return false
+
+
+func _extract_guaranteed_soulbound_choice() -> Dictionary:
+	var candidates: Array[Dictionary] = []
+	for idx in range(state.draw_pile.cards.size()):
+		var draw_card: CardData = state.draw_pile.cards[idx]
+		if draw_card != null and draw_card.is_soulbound_slot_card():
+			candidates.append({
+				"bin": CardMoveContext.BinKind.DRAW_PILE,
+				"index": idx,
+			})
+	for idx in range(state.discard_pile.cards.size()):
+		var discard_card: CardData = state.discard_pile.cards[idx]
+		if discard_card != null and discard_card.is_soulbound_slot_card():
+			candidates.append({
+				"bin": CardMoveContext.BinKind.DISCARD_PILE,
+				"index": idx,
+			})
+	if candidates.is_empty():
+		return {}
+	var candidate_idx := _rng_range_i(0, candidates.size() - 1, "soulbound_guarantee.choice")
+	var choice := candidates[candidate_idx]
+	var bin_kind := int(choice.get("bin", CardMoveContext.BinKind.DRAW_PILE))
+	var card_index := int(choice.get("index", -1))
+	var source_pile := _get_bin_pile(bin_kind)
+	if source_pile == null or card_index < 0 or card_index >= source_pile.cards.size():
+		return {}
+	var card := source_pile.cards[card_index]
+	source_pile.cards.remove_at(card_index)
+	source_pile.card_pile_size_changed.emit(source_pile.cards.size())
+	choice["card"] = card
+	return choice
+
+
+func _return_guarantee_replacement_card(card_data: CardData, choice: Dictionary) -> void:
+	if card_data == null:
+		return
+	var bin_kind := int(choice.get("bin", CardMoveContext.BinKind.DRAW_PILE))
+	if bin_kind == int(CardMoveContext.BinKind.DRAW_PILE):
+		var draw_index := clampi(int(choice.get("index", state.draw_pile.cards.size())), 0, state.draw_pile.cards.size())
+		state.draw_pile.cards.insert(draw_index, card_data)
+		state.draw_pile.card_pile_size_changed.emit(state.draw_pile.cards.size())
+		return
+	state.discard_pile.add_back(card_data)
 
 
 func _get_bin_pile(kind: int) -> CardPile:
@@ -570,3 +715,17 @@ func _refresh_hand_cards() -> void:
 	if hand == null:
 		return
 	hand.refresh_hand_cards()
+
+
+func _should_retain_card_on_player_end(card_data: CardData, ctx: DiscardContext) -> bool:
+	if card_data == null or ctx == null:
+		return false
+	return String(ctx.reason) == "player_turn_end_discard" \
+		and bool(player_end_retain_soulbound_slot_cards) \
+		and card_data.is_soulbound_slot_card()
+
+
+func _get_player_end_destination_bin(ctx: DiscardContext) -> int:
+	if ctx != null and String(ctx.reason) == "player_turn_end_discard" and bool(player_end_exhaust_hand):
+		return CardMoveContext.BinKind.EXHAUSTED
+	return CardMoveContext.BinKind.DISCARD_PILE

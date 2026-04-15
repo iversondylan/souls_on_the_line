@@ -23,6 +23,16 @@ var _debug_mode: bool = true
 @export var idle_delay_sec: float = 1.0
 @export var idle_cooldown_sec: float = 6.0
 
+@export_group("Player Card Flow")
+@export var player_turn_draw_type: BattleCardBins.PlayerTurnDrawType = BattleCardBins.PlayerTurnDrawType.FLAT
+@export_range(0, 99, 1) var player_turn_draw_amount: int = 3
+@export_range(0, 99, 1) var player_turn_draw_ultil_amount: int = 5
+@export var player_turn_use_soulbound_guarantee: bool = true
+@export_range(0, 99, 1) var player_turn_soulbound_guarantee_when_bound_below: int = 3
+@export var player_end_discard_hand: bool = true
+@export var player_end_exhaust_hand: bool = false
+@export var player_end_retain_soulbound_slot_cards: bool = true
+
 
 # -------------------------
 # Scene refs
@@ -176,6 +186,16 @@ func _ensure_card_bins() -> void:
 		card_bin_rule_host = CardBinRuleHost.new()
 	card_bins.setup(self, hand)
 	card_bins.rule_host = card_bin_rule_host
+	_sync_player_card_flow_rule_host()
+	card_bins.configure_player_card_rules(
+		player_turn_draw_type,
+		player_turn_draw_ultil_amount,
+		player_turn_use_soulbound_guarantee,
+		player_turn_soulbound_guarantee_when_bound_below,
+		player_end_retain_soulbound_slot_cards,
+		player_end_discard_hand,
+		player_end_exhaust_hand,
+	)
 	if !card_bins.draw_completed.is_connected(_on_card_bins_draw_completed):
 		card_bins.draw_completed.connect(_on_card_bins_draw_completed)
 
@@ -200,6 +220,7 @@ func start_battle() -> void:
 	discard_pile_view.api = sim_host.get_main_api()
 	_setup_encounter_director()
 	_apply_resource_rules_from_encounter()
+	_apply_player_card_flow_rules()
 
 	sim_host.seed_arcana_from_ids(my_arcana)
 
@@ -218,8 +239,8 @@ func start_battle() -> void:
 	if card_bins != null:
 		card_bins.configure_seed(resolved_battle_seed)
 		card_bins.reset_bins()
-		if run_deck != null and run_deck.card_collection != null:
-			card_bins.seed_card_collection(run_deck.card_collection)
+		if run_deck != null:
+			card_bins.seed_card_collection(run_deck.build_battle_card_collection())
 		card_bins.make_draw_pile()
 	initialize_card_pile_ui()
 
@@ -430,6 +451,44 @@ func _apply_resource_rules_from_encounter() -> void:
 	api.state.resource.shuffle_mode = ResourceState.ShuffleMode.NORMAL
 	if definition != null and bool(definition.no_shuffle):
 		api.state.resource.shuffle_mode = ResourceState.ShuffleMode.NO_SHUFFLE
+
+
+func _apply_player_card_flow_rules() -> void:
+	_sync_player_card_flow_rule_host()
+	if card_bins != null:
+		card_bins.configure_player_card_rules(
+			player_turn_draw_type,
+			player_turn_draw_ultil_amount,
+			player_turn_use_soulbound_guarantee,
+			player_turn_soulbound_guarantee_when_bound_below,
+			player_end_retain_soulbound_slot_cards,
+			player_end_discard_hand,
+			player_end_exhaust_hand,
+		)
+
+	var api := sim_host.get_main_api() if sim_host != null else null
+	if api == null or api.state == null or api.state.resource == null:
+		return
+
+	api.state.resource.player_turn_draw_amount = maxi(int(player_turn_draw_amount), 0)
+	api.state.resource.player_turn_use_soulbound_guarantee = bool(player_turn_use_soulbound_guarantee)
+	api.state.resource.hand_mode = _get_player_end_hand_mode()
+
+
+func _sync_player_card_flow_rule_host() -> void:
+	if card_bin_rule_host == null:
+		return
+	card_bin_rule_host.player_turn_refill_amount = maxi(int(player_turn_draw_amount), 0)
+	card_bin_rule_host.player_turn_refill_use_soulbound_guarantee = bool(player_turn_use_soulbound_guarantee)
+	card_bin_rule_host.player_end_cleanup_should_discard_hand = bool(player_end_discard_hand)
+	card_bin_rule_host.player_end_cleanup_should_exhaust_hand = bool(player_end_exhaust_hand)
+	card_bin_rule_host.player_end_cleanup_cards_to_keep = []
+
+
+func _get_player_end_hand_mode() -> int:
+	if bool(player_end_discard_hand) or bool(player_end_exhaust_hand):
+		return ResourceState.HandMode.DISCARD
+	return ResourceState.HandMode.KEEP
 
 func _on_card_bins_draw_completed(ctx: DrawContext) -> void:
 	if ctx == null:
