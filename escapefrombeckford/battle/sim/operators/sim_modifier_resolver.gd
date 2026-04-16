@@ -2,23 +2,22 @@
 class_name SimModifierResolver
 
 static func get_modified_value(
-	b: BattleState,
+	api: SimBattleAPI,
 	base: int,
 	mod_type: Modifier.Type,
 	cid: int
 ) -> int:
-	if !b:
+	if api == null or api.state == null:
 		return base
 	if int(mod_type) == int(Modifier.Type.NO_MODIFIER):
 		return base
-	var u: CombatantState = b.get_unit(cid)
-	if u != null:
-		return u.modifiers.apply(int(mod_type), base)
-	# Fallback for cids not tracked in state (edge case): no modifiers available.
-	return base
+	var tokens := api.get_modifier_tokens_for_cid(int(cid), mod_type)
+	if tokens.is_empty():
+		return base
+	return apply_tokens(base, mod_type, tokens)
 
 # Returns the pre-aggregated {flat: int, mult: float} for a token set.
-# Used by both apply_tokens and _rebuild_modifier_cache_for so the
+# Used by apply_tokens so the
 # aggregation formula lives in one place.
 static func compute_modifier_deltas(
 	mod_type: Modifier.Type,

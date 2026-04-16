@@ -583,14 +583,14 @@ func resolve_damage_immediate(ctx: DamageContext) -> int:
 	var normal_amount := int(ctx.base_amount)
 	if apply_deal_modifiers and int(ctx.deal_modifier_type) != int(Modifier.Type.NO_MODIFIER):
 		normal_amount = SimModifierResolver.get_modified_value(
-			state,
+			self,
 			int(normal_amount),
 			ctx.deal_modifier_type,
 			int(ctx.source_id)
 		)
 	if apply_take_modifiers and int(ctx.take_modifier_type) != int(Modifier.Type.NO_MODIFIER):
 		normal_amount = SimModifierResolver.get_modified_value(
-			state,
+			self,
 			int(normal_amount),
 			ctx.take_modifier_type,
 			int(ctx.target_id)
@@ -599,7 +599,7 @@ func resolve_damage_immediate(ctx: DamageContext) -> int:
 	var banish_amount := int(ctx.base_banish_amount)
 	if apply_deal_modifiers:
 		banish_amount = SimModifierResolver.get_modified_value(
-			state,
+			self,
 			int(banish_amount),
 			Modifier.Type.BANISH_DMG_DEALT,
 			int(ctx.source_id)
@@ -925,8 +925,6 @@ func apply_status(ctx: StatusContext) -> void:
 			}
 		)
 	
-	_rebuild_modifier_cache_for(int(ctx.target_id))
-
 	if SimStatusSystem.is_aura_proto(proto):
 		_track_status_aura_projection(int(ctx.target_id), ctx.status_id, bool(ctx.pending))
 	
@@ -995,8 +993,6 @@ func remove_status(ctx: StatusContext) -> void:
 			}
 		)
 	
-	_rebuild_modifier_cache_for(int(ctx.target_id))
-
 	if SimStatusSystem.is_aura_proto(proto):
 		_untrack_status_aura_projection(int(ctx.target_id), ctx.status_id, bool(ctx.pending))
 	
@@ -1033,8 +1029,7 @@ func spawn_from_data(
 	
 	var u := _make_unit_from_combatant_data(combatant_data, id, g, is_player, int(current_health_override))
 	state.add_unit(u, g, int(insert_index))
-	# I believe only arcana modifiers could possibly be contributing at this moment
-	_rebuild_modifier_cache_for(id)
+	_refresh_projected_status_cache_for(id, [], true)
 	_request_turn_order_rebuild()
 	var after_order_ids := PackedInt32Array(state.groups[g].order)
 	_request_group_layout_changed(int(g), before_order_ids, after_order_ids, "spawn")
@@ -1077,8 +1072,7 @@ func summon(ctx: SummonContext) -> void:
 	u.type = CombatantView.Type.ALLY if g == 0 else CombatantView.Type.ENEMY
 	
 	state.add_unit(u, g, int(ctx.insert_index))
-	# I believe only arcana modifiers could possibly be contributing at this moment
-	_rebuild_modifier_cache_for(id)
+	_refresh_projected_status_cache_for(id, [], true)
 	_request_turn_order_rebuild()
 	
 	if writer != null:
@@ -1350,13 +1344,13 @@ func modify_damage_amount(ctx: DamageContext, base: int) -> int:
 		return amount
 
 	amount = SimModifierResolver.get_modified_value(
-		state,
+		self,
 		amount,
 		int(ctx.deal_modifier_type),
 		int(ctx.source_id)
 	)
 	amount = SimModifierResolver.get_modified_value(
-		state,
+		self,
 		amount,
 		int(ctx.take_modifier_type),
 		int(ctx.target_id)
@@ -1536,36 +1530,24 @@ func _swap_ids(group_index: int, a: int, b: int) -> void:
 	g.order[bi] = tmp
 
 
-func _rebuild_modifier_cache_for(id: int) -> void:
-	var u: CombatantState = state.get_unit(id) if state != null else null
-	if u == null:
-		return
-	u.modifiers.clear()
-	# when building a cache, it would be more efficient to avoid iterating by Type
-	# but that could potentially require some code duplication if the Type-specific
-	# pathway is required. Because modifiers are sparse, I think collecting all
-	# modifiers each time is probably faster.
-	for mod_type_variant in Modifier.Type.values():
-		var mod_type := mod_type_variant as Modifier.Type
-		if int(mod_type) == int(Modifier.Type.NO_MODIFIER):
-			continue
-		var tokens := get_modifier_tokens_for_cid(id, mod_type)
-		if tokens.is_empty():
-			continue
-		var d := SimModifierResolver.compute_modifier_deltas(mod_type, tokens)
-		var flat := int(d["flat"])
-		var mult := float(d["mult"])
-		if flat != 0:
-			u.modifiers.set_add(int(mod_type), flat)
-		if mult != 1.0:
-			u.modifiers.set_mul(int(mod_type), mult)
+func _refresh_projected_status_cache_for(
+	id: int,
+	source_keys: Array[String] = [],
+	full_rebuild := false
+) -> void:
+	SimStatusSystem.refresh_cached_projected_statuses_for_unit(
+		self,
+		int(id),
+		source_keys,
+		bool(full_rebuild)
+	)
 
 
-func _rebuild_all_modifier_caches() -> void:
+func _refresh_all_projected_status_caches() -> void:
 	if state == null:
 		return
 	for cid in state.units.keys():
-		_rebuild_modifier_cache_for(int(cid))
+		_refresh_projected_status_cache_for(int(cid), [], true)
 
 
 # ============================================================================

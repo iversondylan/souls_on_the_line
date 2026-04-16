@@ -38,7 +38,7 @@ func _modified_sim(ctx: NPCAIContext, base_amount: int, modifier_type: int, sour
 	var api: SimBattleAPI = ctx.api
 	if api.state == null:
 		return base_amount
-	return int(SimModifierResolver.get_modified_value(api.state, int(base_amount), int(modifier_type), int(source_id)))
+	return int(SimModifierResolver.get_modified_value(api, int(base_amount), int(modifier_type), int(source_id)))
 
 func _modified_intent_sim(ctx: NPCAIContext, base_amount: int, modifier_type: int, source_id: int) -> int:
 	if ctx == null:

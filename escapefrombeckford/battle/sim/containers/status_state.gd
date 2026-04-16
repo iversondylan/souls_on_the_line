@@ -2,6 +2,11 @@
 class_name StatusState extends RefCounted
 
 var by_id: Dictionary = {}  # StringName -> { false: StatusStack, true: StatusStack }
+var by_id_projected: Dictionary = {} # StringName -> StatusStack
+var _projected_source_contributions: Dictionary = {} # String -> { StringName -> StatusStack }
+var _projected_status_ids_by_source: Dictionary = {} # String -> { StringName -> bool }
+var _projected_source_keys_by_status_id: Dictionary = {} # StringName -> { String -> bool }
+var _projected_cache_ready: bool = false
 
 func has(id: StringName, pending := false) -> bool:
 	var bucket := _get_bucket(id, false)
@@ -42,6 +47,97 @@ func get_all_stacks(include_pending := true) -> Array[StatusStack]:
 			if pending_stack is StatusStack:
 				out.append(pending_stack)
 	return out
+
+func has_projected(id: StringName) -> bool:
+	return by_id_projected.has(id)
+
+func get_projected_status_stack(id: StringName) -> StatusStack:
+	var stack = by_id_projected.get(id, null)
+	return stack if stack is StatusStack else null
+
+func get_projected_status_ids() -> Array[StringName]:
+	var out: Array[StringName] = []
+	for id_key in by_id_projected.keys():
+		out.append(StringName(id_key))
+	return out
+
+func get_all_projected_stacks() -> Array[StatusStack]:
+	var out: Array[StatusStack] = []
+	for id_key in by_id_projected.keys():
+		var stack = by_id_projected.get(id_key, null)
+		if stack is StatusStack:
+			out.append(stack)
+	return out
+
+func clear_projected() -> void:
+	by_id_projected.clear()
+	_projected_source_contributions.clear()
+	_projected_status_ids_by_source.clear()
+	_projected_source_keys_by_status_id.clear()
+	_projected_cache_ready = false
+
+func is_projected_cache_ready() -> bool:
+	return bool(_projected_cache_ready)
+
+func set_projected_cache_ready(ready: bool) -> void:
+	_projected_cache_ready = bool(ready)
+
+func get_projected_dependency_status_ids(source_key: String) -> Array[StringName]:
+	var out: Array[StringName] = []
+	if source_key.is_empty():
+		return out
+	var ids = _projected_status_ids_by_source.get(source_key, {})
+	if !(ids is Dictionary):
+		return out
+	for status_id_key in (ids as Dictionary).keys():
+		out.append(StringName(status_id_key))
+	return out
+
+func upsert_projected_source(source_key: String, projected_stacks: Array[StatusStack]) -> Array[StringName]:
+	var affected_ids := {}
+	if source_key.is_empty():
+		return []
+
+	var previous_map = _projected_source_contributions.get(source_key, {})
+	if !(previous_map is Dictionary):
+		previous_map = {}
+
+	var next_map: Dictionary = {}
+	for stack: StatusStack in projected_stacks:
+		if stack == null or stack.id == &"":
+			continue
+
+		var copied := stack.clone()
+		copied.pending = false
+		next_map[copied.id] = copied
+		affected_ids[copied.id] = true
+
+	for status_id_key in (previous_map as Dictionary).keys():
+		affected_ids[StringName(status_id_key)] = true
+
+	_projected_source_contributions[source_key] = next_map
+	_projected_status_ids_by_source[source_key] = _status_id_set_from_map(next_map)
+
+	_rebuild_projected_source_index_for_affected_ids(source_key, affected_ids)
+	_recompute_projected_bins_for_ids(affected_ids)
+	_projected_cache_ready = true
+	return _to_sorted_status_id_array(affected_ids)
+
+func remove_projected_source(source_key: String) -> Array[StringName]:
+	var previous_map = _projected_source_contributions.get(source_key, {})
+	if !(previous_map is Dictionary):
+		previous_map = {}
+
+	var affected_ids := {}
+	for status_id_key in (previous_map as Dictionary).keys():
+		affected_ids[StringName(status_id_key)] = true
+
+	_projected_source_contributions.erase(source_key)
+	_projected_status_ids_by_source.erase(source_key)
+	_rebuild_projected_source_index_for_affected_ids(source_key, affected_ids)
+	_recompute_projected_bins_for_ids(affected_ids)
+	_projected_cache_ready = true
+	return _to_sorted_status_id_array(affected_ids)
 
 func realize_pending_ctx(ctx: StatusContext, max_intensity: int = 0) -> bool:
 	if ctx == null:
@@ -261,6 +357,23 @@ func clone() -> StatusState:
 				cloned_bucket[lane_key] = stack.clone()
 		if !cloned_bucket.is_empty():
 			st.by_id[id] = cloned_bucket
+	for id_key in by_id_projected.keys():
+		var id := StringName(id_key)
+		var stack = by_id_projected.get(id, null)
+		if stack is StatusStack:
+			st.by_id_projected[id] = stack.clone()
+	for source_key in _projected_source_contributions.keys():
+		var source_map = _projected_source_contributions.get(source_key, {})
+		var cloned_source_map := {}
+		if source_map is Dictionary:
+			for status_id_key in (source_map as Dictionary).keys():
+				var source_stack = (source_map as Dictionary).get(status_id_key, null)
+				if source_stack is StatusStack:
+					cloned_source_map[StringName(status_id_key)] = source_stack.clone()
+		st._projected_source_contributions[String(source_key)] = cloned_source_map
+	st._projected_status_ids_by_source = _projected_status_ids_by_source.duplicate(true)
+	st._projected_source_keys_by_status_id = _projected_source_keys_by_status_id.duplicate(true)
+	st._projected_cache_ready = _projected_cache_ready
 	return st
 
 func set_stack(id: StringName, intensity: int, duration: int, pending := false) -> bool:
@@ -287,3 +400,84 @@ func _clamp_intensity_total(value: int, max_intensity: int) -> int:
 	if int(max_intensity) > 0:
 		out = mini(out, int(max_intensity))
 	return out
+
+func _status_id_set_from_map(map: Dictionary) -> Dictionary:
+	var out := {}
+	for status_id_key in map.keys():
+		out[StringName(status_id_key)] = true
+	return out
+
+func _rebuild_projected_source_index_for_affected_ids(source_key: String, affected_ids: Dictionary) -> void:
+	for status_id_key in affected_ids.keys():
+		var status_id := StringName(status_id_key)
+		var source_keys = _projected_source_keys_by_status_id.get(status_id, {})
+		if !(source_keys is Dictionary):
+			source_keys = {}
+		(source_keys as Dictionary).erase(source_key)
+		if (source_keys as Dictionary).is_empty():
+			_projected_source_keys_by_status_id.erase(status_id)
+		else:
+			_projected_source_keys_by_status_id[status_id] = source_keys
+
+	var source_status_ids = _projected_status_ids_by_source.get(source_key, {})
+	if !(source_status_ids is Dictionary):
+		return
+	for status_id_key in (source_status_ids as Dictionary).keys():
+		var status_id := StringName(status_id_key)
+		var source_keys = _projected_source_keys_by_status_id.get(status_id, {})
+		if !(source_keys is Dictionary):
+			source_keys = {}
+		(source_keys as Dictionary)[source_key] = true
+		_projected_source_keys_by_status_id[status_id] = source_keys
+
+func _recompute_projected_bins_for_ids(affected_ids: Dictionary) -> void:
+	for status_id_key in affected_ids.keys():
+		var status_id := StringName(status_id_key)
+		var source_keys = _projected_source_keys_by_status_id.get(status_id, {})
+		if !(source_keys is Dictionary) or (source_keys as Dictionary).is_empty():
+			by_id_projected.erase(status_id)
+			continue
+
+		var total_intensity := 0
+		var max_duration := 0
+		for source_key in (source_keys as Dictionary).keys():
+			var source_map = _projected_source_contributions.get(String(source_key), {})
+			if !(source_map is Dictionary):
+				continue
+			var stack = (source_map as Dictionary).get(status_id, null)
+			if !(stack is StatusStack):
+				continue
+			total_intensity += int(stack.intensity)
+			max_duration = maxi(max_duration, int(stack.duration))
+
+		if total_intensity <= 0:
+			by_id_projected.erase(status_id)
+			continue
+
+		var out_stack = StatusStack.new(status_id)
+		out_stack.pending = false
+		out_stack.intensity = total_intensity
+		out_stack.duration = max_duration
+		by_id_projected[status_id] = out_stack
+
+func _to_sorted_status_id_array(source_ids: Dictionary) -> Array[StringName]:
+	var out: Array[StringName] = []
+	for status_id_key in source_ids.keys():
+		out.append(StringName(status_id_key))
+	out.sort()
+	return out
+
+func debug_projected_snapshot() -> Dictionary:
+	var snapshot := {
+		"projected_status_ids": get_projected_status_ids(),
+		"sources": {},
+		"status_dependencies": {},
+	}
+	for source_key in _projected_status_ids_by_source.keys():
+		snapshot["sources"][String(source_key)] = get_projected_dependency_status_ids(String(source_key))
+	for status_id in by_id_projected.keys():
+		var key := StringName(status_id)
+		var source_keys := _projected_source_keys_by_status_id.get(key, {})
+		if source_keys is Dictionary:
+			snapshot["status_dependencies"][String(key)] = (source_keys as Dictionary).keys()
+	return snapshot

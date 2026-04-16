@@ -54,6 +54,7 @@ func _refresh_main_arcanum_projection_entries() -> void:
 		return
 
 	main.state.projection_bank.rebuild_arcanum_entries(main.state, player_id)
+	main.api._refresh_all_projected_status_caches()
 
 
 # -------------------------
@@ -199,6 +200,8 @@ func seed_arcana_from_ids(ids: Array[StringName]) -> void:
 		var entry := main.state.arcana.add_arcanum(id)
 		if entry != null:
 			proto.seed_battle_entry(entry)
+
+	_refresh_main_arcanum_projection_entries()
 
 
 # -------------------------

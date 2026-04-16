@@ -36,7 +36,6 @@ var data_proto_path: String = "" # optional for reconstruction
 
 # Systems (data-side) - keep stubs, even if you ignore them for now
 var statuses: StatusState = StatusState.new()
-var modifiers: ModifierCache = ModifierCache.new()
 
 # AI (data-side)
 var ai_profile: NPCAIProfile
@@ -88,7 +87,6 @@ func clone() -> CombatantState:
 	c.data_proto_path = data_proto_path
 
 	c.statuses = statuses.clone()
-	c.modifiers = modifiers.clone()
 	c.ai_profile = ai_profile
 	c.ai_state = ai_state.duplicate(true)
 
