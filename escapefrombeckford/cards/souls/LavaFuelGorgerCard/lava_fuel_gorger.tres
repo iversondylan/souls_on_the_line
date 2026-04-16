@@ -2,9 +2,9 @@
 
 [ext_resource type="Script" uid="uid://wtk5v77fcqvn" path="res://cards/_core/card_action.gd" id="1_card_action"]
 [ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://cards/_core/card_data.gd" id="2_card_data"]
-[ext_resource type="Resource" path="res://cards/souls/LavaFuelGorgerCard/summon_lava_fuel_gorger.tres" id="3_summon"]
-[ext_resource type="Resource" path="res://cards/souls/LavaFuelGorgerCard/fighters_spirit_on_summoned_action.tres" id="4_on_summoned"]
-[ext_resource type="Texture2D" path="res://_assets/sprites/assorted/fireball.png" id="5_texture"]
+[ext_resource type="Resource" uid="uid://gb5xc1hcw85" path="res://cards/souls/LavaFuelGorgerCard/summon_lava_fuel_gorger.tres" id="3_summon"]
+[ext_resource type="Resource" uid="uid://be3ynk8ql2wxx" path="res://cards/souls/LavaFuelGorgerCard/fighters_spirit_on_summoned_action.tres" id="4_on_summoned"]
+[ext_resource type="Texture2D" uid="uid://d3bjsmssrm65" path="res://_assets/sprites/assorted/gooey-daemon.png" id="5_vjbhe"]
 
 [resource]
 script = ExtResource("2_card_data")
@@ -16,6 +16,6 @@ name = "Lava Fuel-Gorger"
 summon_release_overload = 1
 description = "Summon a %s/%s %s with 1 Fighter's Spirit."
 cost = 1
-texture = ExtResource("5_texture")
+texture = ExtResource("5_vjbhe")
 actions = Array[ExtResource("1_card_action")]([ExtResource("3_summon"), ExtResource("4_on_summoned")])
 metadata/_custom_type_script = "uid://d2f0qepe047dc"

@@ -1,11 +1,10 @@
 [gd_resource type="Resource" script_class="FightersSpiritStatus" format=3 uid="uid://d41e88w2vsfr"]
 
-[ext_resource type="Texture2D" uid="uid://dp3uhdoaut1lx" path="res://_assets/sprites/assorted/fireball.png" id="1_icon"]
+[ext_resource type="Texture2D" uid="uid://n68fj3n8v6nl" path="res://_assets/sprites/assorted/burning-book.png" id="1_8qhwf"]
 [ext_resource type="Script" path="res://statuses/fighters_spirit.gd" id="2_script"]
 
 [resource]
 script = ExtResource("2_script")
 status_name = "Fighter's Spirit"
 number_display_type = 1
-icon = ExtResource("1_icon")
-metadata/_custom_type_script = "uid://c8skga0q3gc5a"
+icon = ExtResource("1_8qhwf")
