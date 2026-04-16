@@ -20,7 +20,8 @@ static func track_status_aura(
 		api,
 		source_owner_id,
 		impact_info,
-		changed or bool(impact_info.get("known", false))
+		changed or bool(impact_info.get("known", false)),
+		[_make_status_aura_source_key(source_owner_id, status_id, pending)]
 	)
 
 
@@ -38,7 +39,13 @@ static func untrack_status_aura(
 	if !bool(bank.untrack_status_aura(source_owner_id, status_id, pending)):
 		return
 	
-	_handle_status_aura_projection_change(api, source_owner_id, impact_info, true)
+	_handle_status_aura_projection_change(
+		api,
+		source_owner_id,
+		impact_info,
+		true,
+		[_make_status_aura_source_key(source_owner_id, status_id, pending)]
+	)
 
 
 static func untrack_auras_from_removed_combatant(api: SimBattleAPI, removed_id: int) -> void:
@@ -80,7 +87,16 @@ static func swap_status_aura_lane(
 	var after_info := bank.get_status_aura_impact_info(api.state, source_owner_id, status_id, to_pending)
 
 	var merged_info := _merge_impact_info(before_info, after_info)
-	_handle_status_aura_projection_change(api, source_owner_id, merged_info, changed)
+	_handle_status_aura_projection_change(
+		api,
+		source_owner_id,
+		merged_info,
+		changed,
+		[
+			_make_status_aura_source_key(source_owner_id, status_id, from_pending),
+			_make_status_aura_source_key(source_owner_id, status_id, to_pending),
+		]
+	)
 
 
 static func refresh_status_aura(
@@ -98,7 +114,8 @@ static func refresh_status_aura(
 		api,
 		source_owner_id,
 		impact_info,
-		bool(impact_info.get("known", false))
+		bool(impact_info.get("known", false)),
+		[_make_status_aura_source_key(source_owner_id, status_id, pending)]
 	)
 
 
@@ -138,7 +155,8 @@ static func _handle_status_aura_projection_change(
 	api: SimBattleAPI,
 	source_owner_id: int,
 	impact_info: Dictionary,
-	should_process: bool
+	should_process: bool,
+	source_keys: Array[String] = []
 ) -> void:
 	if api == null or api.state == null or !should_process:
 		return
@@ -153,15 +171,12 @@ static func _handle_status_aura_projection_change(
 		api._request_replan_all()
 		api._request_intent_refresh_all()
 
-	# Rebuild modifier caches for all units whose effective modifier tokens
-	# may have changed due to the aura projection update.
 	if known:
-		api._rebuild_modifier_cache_for(int(source_owner_id))
+		api._refresh_projected_status_cache_for(int(source_owner_id), source_keys)
 		for raw_id in impacted_ids:
-			api._rebuild_modifier_cache_for(int(raw_id))
+			api._refresh_projected_status_cache_for(int(raw_id), source_keys)
 	else:
-		# Impact unknown: conservatively rebuild every unit.
-		api._rebuild_all_modifier_caches()
+		api._refresh_all_projected_status_caches()
 
 	_request_immediate_projection_flush_if_needed(api)
 
@@ -215,3 +230,14 @@ static func _request_immediate_projection_flush_if_needed(api: SimBattleAPI) -> 
 		return
 
 	api.runtime.request_projection_cleanup_flush()
+
+
+static func _make_status_aura_source_key(source_owner_id: int, status_id: StringName, pending: bool) -> String:
+	if source_owner_id <= 0 or status_id == &"":
+		return ""
+	return "%s::%s::%s::%s" % [
+		String(ProjectionBank.SOURCE_KIND_STATUS_AURA),
+		str(int(source_owner_id)),
+		String(status_id),
+		"pending" if bool(pending) else "realized",
+	]

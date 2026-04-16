@@ -172,8 +172,6 @@ static func should_skip_npc_action(api: SimBattleAPI, actor_id: int) -> bool:
 		return false
 	if int(actor_id) <= 0:
 		return false
-	# get_effective_status_contexts_for_unit seems to be very wasteful as-is.
-	# probably need to migrate to a cached projected status system.
 	for ctx: SimStatusContext in get_effective_status_contexts_for_unit(api, int(actor_id)):
 		var proto := ctx.proto if ctx != null else null
 		if proto != null and bool(proto.should_skip_npc_action(ctx)):
@@ -243,19 +241,27 @@ static func get_effective_status_contexts_for_unit(
 	include_pending_sources := {},
 	allow_dead_self_aura_source := false
 ) -> Array[SimStatusContext]:
-	var out: Array[SimStatusContext] = []
+	var owned: Array[SimStatusContext] = []
+	var projected: Array[SimStatusContext] = []
 	if api == null or api.state == null or target_id <= 0:
-		return out
+		return owned
 	
-	_append_owned_status_contexts(out, api, target_id, include_pending_sources)
-	_append_projected_status_contexts(
-		out,
-		api,
-		target_id,
-		include_pending_sources,
-		allow_dead_self_aura_source
+	_append_owned_status_contexts(owned, api, target_id, include_pending_sources)
+	var include_pending_projection_sources := (
+		include_pending_sources is Dictionary and !(include_pending_sources as Dictionary).is_empty()
 	)
-	return _merge_owned_and_projected_intensity_contexts(out)
+	if include_pending_projection_sources or allow_dead_self_aura_source:
+		_append_projected_status_contexts(
+			projected,
+			api,
+			target_id,
+			include_pending_sources,
+			allow_dead_self_aura_source
+		)
+	else:
+		ensure_cached_projected_statuses_for_unit(api, target_id)
+		_append_cached_projected_status_contexts(projected, api, target_id)
+	return _merge_owned_and_projected_contexts(owned, projected)
 
 
 # -------------------------------------------------------------------
@@ -469,7 +475,7 @@ static func realize_pending_statuses(
 	if !any_changed:
 		return
 
-	api._rebuild_modifier_cache_for(int(target_id))
+	api._refresh_projected_status_cache_for(int(target_id))
 	if !any_aura:
 		api._request_intent_refresh(int(target_id))
 	if any_non_aura:
@@ -681,6 +687,24 @@ static func _append_projected_status_contexts(
 			_:
 				continue
 
+static func _append_cached_projected_status_contexts(
+	out: Array[SimStatusContext],
+	api: SimBattleAPI,
+	target_id: int
+) -> void:
+	if api == null or api.state == null:
+		return
+	var target: CombatantState = api.state.get_unit(target_id)
+	if target == null or target.statuses == null:
+		return
+	for projected_stack: StatusStack in target.statuses.get_all_projected_stacks():
+		if projected_stack == null:
+			continue
+		var projected_ctx := make_context(api, target_id, projected_stack)
+		if projected_ctx == null or !projected_ctx.is_valid():
+			continue
+		out.append(projected_ctx)
+
 
 static func _append_status_aura_projected_contexts(
 	out: Array[SimStatusContext],
@@ -799,25 +823,36 @@ static func _append_arcanum_projected_contexts(
 		out.append(projected_ctx)
 
 
-static func _merge_owned_and_projected_intensity_contexts(
-	contexts: Array[SimStatusContext]
+static func _merge_owned_and_projected_contexts(
+	owned_contexts: Array[SimStatusContext],
+	projected_contexts: Array[SimStatusContext]
 ) -> Array[SimStatusContext]:
-	if contexts.size() < 2:
-		return contexts
+	if projected_contexts.is_empty():
+		return owned_contexts
+	if owned_contexts.is_empty():
+		return projected_contexts
+
+	var projected_totals_by_key: Dictionary = {}
+	for projected_ctx in projected_contexts:
+		var ctx := projected_ctx as SimStatusContext
+		if ctx == null or !ctx.is_valid() or ctx.proto == null:
+			continue
+		var key := _make_effective_status_merge_key(ctx.get_status_id(), ctx.is_pending())
+		projected_totals_by_key[key] = int(projected_totals_by_key.get(key, 0)) + int(ctx.get_intensity())
+
+	if projected_totals_by_key.is_empty():
+		var passthrough: Array[SimStatusContext] = []
+		passthrough.append_array(owned_contexts)
+		passthrough.append_array(projected_contexts)
+		return passthrough
 
 	var owned_by_key: Dictionary = {}
-	var projected_totals_by_key: Dictionary = {}
-
-	for i in range(contexts.size()):
-		var ctx := contexts[i]
+	for i in range(owned_contexts.size()):
+		var ctx := owned_contexts[i]
 		if ctx == null or !ctx.is_valid() or ctx.proto == null:
 			continue
 
 		var key := _make_effective_status_merge_key(ctx.get_status_id(), ctx.is_pending())
-		if ctx is SimAuraStatusContext or ctx is SimProjectedArcanumStatusContext:
-			projected_totals_by_key[key] = int(projected_totals_by_key.get(key, 0)) + int(ctx.get_intensity())
-			continue
-
 		if int(ctx.proto.reapply_type) != int(Status.ReapplyType.INTENSITY):
 			continue
 
@@ -826,8 +861,11 @@ static func _merge_owned_and_projected_intensity_contexts(
 			"ctx": ctx,
 		}
 
-	if owned_by_key.is_empty() or projected_totals_by_key.is_empty():
-		return contexts
+	if owned_by_key.is_empty():
+		var concatenated: Array[SimStatusContext] = []
+		concatenated.append_array(owned_contexts)
+		concatenated.append_array(projected_contexts)
+		return concatenated
 
 	var mergeable_keys: Dictionary = {}
 	for key in owned_by_key.keys():
@@ -835,18 +873,18 @@ static func _merge_owned_and_projected_intensity_contexts(
 			mergeable_keys[key] = true
 
 	if mergeable_keys.is_empty():
-		return contexts
+		var untouched: Array[SimStatusContext] = []
+		untouched.append_array(owned_contexts)
+		untouched.append_array(projected_contexts)
+		return untouched
 
 	var out: Array[SimStatusContext] = []
-	for i in range(contexts.size()):
-		var ctx := contexts[i]
+	for i in range(owned_contexts.size()):
+		var ctx := owned_contexts[i]
 		if ctx == null or !ctx.is_valid():
 			continue
 
 		var key := _make_effective_status_merge_key(ctx.get_status_id(), ctx.is_pending())
-		if (ctx is SimAuraStatusContext or ctx is SimProjectedArcanumStatusContext) and mergeable_keys.has(key):
-			continue
-
 		var owned_info: Dictionary = owned_by_key.get(key, {})
 		if !owned_info.is_empty() and int(owned_info.get("index", -1)) == i and mergeable_keys.has(key):
 			var owned_ctx := owned_info.get("ctx", null) as SimStatusContext
@@ -860,7 +898,202 @@ static func _merge_owned_and_projected_intensity_contexts(
 
 		out.append(ctx)
 
+	for projected_ctx in projected_contexts:
+		var ctx := projected_ctx as SimStatusContext
+		if ctx == null or !ctx.is_valid():
+			continue
+		var key := _make_effective_status_merge_key(ctx.get_status_id(), ctx.is_pending())
+		if mergeable_keys.has(key):
+			continue
+		out.append(ctx)
+
 	return out
+
+static func ensure_cached_projected_statuses_for_unit(api: SimBattleAPI, target_id: int) -> void:
+	refresh_cached_projected_statuses_for_unit(api, target_id)
+
+static func refresh_cached_projected_statuses_for_unit(
+	api: SimBattleAPI,
+	target_id: int,
+	source_keys: Array[String] = [],
+	full_rebuild := false
+) -> void:
+	if api == null or api.state == null or target_id <= 0:
+		return
+	var target: CombatantState = api.state.get_unit(target_id)
+	if target == null or target.statuses == null:
+		return
+
+	var entries_by_key := _collect_projected_source_entries_for_target(api, target_id)
+	if full_rebuild:
+		target.statuses.clear_projected()
+		for source_key in entries_by_key.keys():
+			var key := String(source_key)
+			var entry: Dictionary = entries_by_key.get(key, {})
+			target.statuses.upsert_projected_source(key, _build_projected_stacks_for_entry(api, target_id, entry))
+		target.statuses.set_projected_cache_ready(true)
+		return
+
+	if source_keys.is_empty():
+		if !target.statuses.is_projected_cache_ready():
+			refresh_cached_projected_statuses_for_unit(api, target_id, [], true)
+		return
+
+	var unique_source_keys := {}
+	for source_key in source_keys:
+		if String(source_key).is_empty():
+			continue
+		unique_source_keys[String(source_key)] = true
+
+	for source_key_variant in unique_source_keys.keys():
+		var source_key := String(source_key_variant)
+		if !entries_by_key.has(source_key):
+			target.statuses.remove_projected_source(source_key)
+			continue
+		var entry: Dictionary = entries_by_key.get(source_key, {})
+		target.statuses.upsert_projected_source(
+			source_key,
+			_build_projected_stacks_for_entry(api, target_id, entry)
+		)
+	target.statuses.set_projected_cache_ready(true)
+
+static func _collect_projected_source_entries_for_target(api: SimBattleAPI, target_id: int) -> Dictionary:
+	var out := {}
+	if api == null or api.state == null or api.state.projection_bank == null:
+		return out
+
+	for entry: Dictionary in api.state.projection_bank.get_entries():
+		var source_key := _make_projection_source_key(entry)
+		if source_key.is_empty():
+			continue
+		out[source_key] = entry
+	return out
+
+static func _build_projected_stacks_for_entry(
+	api: SimBattleAPI,
+	target_id: int,
+	entry: Dictionary
+) -> Array[StatusStack]:
+	var out: Array[StatusStack] = []
+	var source_kind := StringName(entry.get("source_kind", &""))
+	match source_kind:
+		ProjectionBank.SOURCE_KIND_STATUS_AURA:
+			_append_status_aura_projected_stacks(out, api, target_id, entry)
+		ProjectionBank.SOURCE_KIND_ARCANUM:
+			_append_arcanum_projected_stacks(out, api, target_id, entry)
+		_:
+			return out
+	return out
+
+static func _append_status_aura_projected_stacks(
+	out: Array[StatusStack],
+	api: SimBattleAPI,
+	target_id: int,
+	entry: Dictionary
+) -> void:
+	if api == null or api.state == null:
+		return
+	var pending := bool(entry.get("pending", false))
+	if pending:
+		return
+
+	var source_id := int(entry.get("source_owner_id", 0))
+	if source_id <= 0:
+		return
+	var source: CombatantState = api.state.get_unit(source_id)
+	if source == null or !source.is_alive():
+		return
+
+	var aura_status_id := StringName(entry.get("source_id", &""))
+	var aura_proto := get_proto(api, aura_status_id) as Aura
+	if aura_proto == null:
+		return
+	if source.statuses == null:
+		return
+	var aura_stack := source.statuses.get_status_stack(aura_status_id, false)
+	if aura_stack == null:
+		return
+	if int(aura_proto.expiration_policy) == int(Status.ExpirationPolicy.DURATION) and int(aura_stack.duration) <= 0:
+		return
+	if !aura_proto.affects_target(api.state, source_id, target_id):
+		return
+
+	for projected_proto: Status in aura_proto.get_projected_statuses():
+		if projected_proto == null:
+			continue
+		var projected_stack := StatusStack.new(StringName(projected_proto.get_id()))
+		projected_stack.pending = false
+		projected_stack.intensity = maxi(int(aura_stack.intensity), 0)
+		projected_stack.duration = maxi(int(aura_stack.duration), 0)
+		if projected_stack.intensity > 0:
+			out.append(projected_stack)
+
+static func _append_arcanum_projected_stacks(
+	out: Array[StatusStack],
+	api: SimBattleAPI,
+	target_id: int,
+	entry: Dictionary
+) -> void:
+	if api == null or api.state == null or api.state.arcana == null or api.state.arcana_catalog == null:
+		return
+	var arcanum_owner_id := int(entry.get("source_owner_id", 0))
+	var arcanum_id := StringName(entry.get("source_id", &""))
+	if arcanum_owner_id <= 0 or arcanum_id == &"":
+		return
+
+	var arcanum_entry: ArcanaState.ArcanumEntry = api.state.arcana.get_entry(arcanum_id)
+	if arcanum_entry == null:
+		return
+	var arcanum_proto: Arcanum = api.state.arcana_catalog.get_proto(arcanum_id)
+	if arcanum_proto == null or !arcanum_proto.affects_others():
+		return
+	if !arcanum_proto.affects_target(api.state, arcanum_owner_id, target_id):
+		return
+
+	var arcanum_ctx := SimArcanumContext.new(
+		api,
+		arcanum_owner_id,
+		SimBattleAPI.FRIENDLY,
+		arcanum_entry,
+		arcanum_proto
+	)
+	if arcanum_ctx == null or !arcanum_ctx.is_valid():
+		return
+
+	var projection_intensity := maxi(int(arcanum_proto.get_projection_intensity(arcanum_ctx)), 0)
+	var projection_duration := maxi(int(arcanum_proto.get_projection_duration(arcanum_ctx)), 0)
+	if projection_intensity <= 0:
+		return
+
+	for projected_proto: Status in arcanum_proto.get_projected_statuses():
+		if projected_proto == null:
+			continue
+		if (
+			int(projected_proto.expiration_policy) == int(Status.ExpirationPolicy.DURATION)
+			and projection_duration <= 0
+		):
+			continue
+		var projected_stack := StatusStack.new(StringName(projected_proto.get_id()))
+		projected_stack.pending = false
+		projected_stack.intensity = projection_intensity
+		projected_stack.duration = projection_duration
+		out.append(projected_stack)
+
+static func _make_projection_source_key(entry: Dictionary) -> String:
+	if entry == null or entry.is_empty():
+		return ""
+	var source_kind := StringName(entry.get("source_kind", &""))
+	var source_owner_id := int(entry.get("source_owner_id", 0))
+	var source_id := StringName(entry.get("source_id", &""))
+	var pending := bool(entry.get("pending", false))
+	if source_kind == &"" or source_owner_id <= 0 or source_id == &"":
+		return ""
+	return "%s::%s::%s::%s" % [
+		String(source_kind),
+		str(source_owner_id),
+		String(source_id),
+		"pending" if pending else "realized",
+	]
 
 
 static func _make_effective_status_merge_key(status_id: StringName, pending: bool) -> String:
