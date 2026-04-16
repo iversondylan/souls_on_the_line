@@ -2,6 +2,10 @@
 
 class_name SimStatusSystem extends RefCounted
 
+const PendingStatusSourceSet := preload("res://battle/sim/containers/pending_status_source_set.gd")
+const ProjectionSourceEntry := preload("res://battle/sim/containers/projection_source_entry.gd")
+const ProjectionSourceEntryLookup := preload("res://battle/sim/containers/projection_source_entry_lookup.gd")
+
 
 # Owns status lifecycle and event dispatch.
 # Turn progression belongs to SimRuntime.
@@ -99,7 +103,7 @@ static func on_damage_will_be_taken(api: SimBattleAPI, damage_ctx: DamageContext
 static func on_attack_will_run(
 	api: SimBattleAPI,
 	attack_ctx: AttackContext,
-	include_pending_sources := {}
+	include_pending_sources: PendingStatusSourceSet = null
 ) -> void:
 	if api == null or api.state == null or attack_ctx == null or api.state.has_terminal_outcome():
 		return
@@ -234,41 +238,44 @@ static func make_context(api: SimBattleAPI, owner_id: int, stack: StatusStack) -
 
 	return SimStatusContext.new(api, owner_id, owner, stack, proto)
 
-
+# Daddy's favorite function
 static func get_effective_status_contexts_for_unit(
 	api: SimBattleAPI,
 	target_id: int,
-	include_pending_sources := {},
+	include_pending_sources: PendingStatusSourceSet = null,
 	allow_dead_self_aura_source := false
 ) -> Array[SimStatusContext]:
 	var owned: Array[SimStatusContext] = []
 	var projected: Array[SimStatusContext] = []
 	if api == null or api.state == null or target_id <= 0:
 		return owned
+	var pending_sources := _ensure_pending_status_sources(include_pending_sources)
 	var target: CombatantState = api.state.get_unit(int(target_id))
 	var unit_status_version := 0
 	if target != null and target.statuses != null:
 		unit_status_version = int(target.statuses.get_effective_context_version())
-	var include_pending_sources_signature := _make_pending_sources_signature(include_pending_sources)
-	var cached = api._get_cached_effective_status_contexts_for_unit(
+	var include_pending_sources_signature := pending_sources.signature()
+	if api._has_cached_effective_status_contexts_for_unit(
 		int(target_id),
 		unit_status_version,
 		include_pending_sources_signature,
 		bool(allow_dead_self_aura_source)
-	)
-	if cached is Array:
-		return cached as Array[SimStatusContext]
+	):
+		return api._get_cached_effective_status_contexts_for_unit(
+			int(target_id),
+			unit_status_version,
+			include_pending_sources_signature,
+			bool(allow_dead_self_aura_source)
+		)
 	
-	_append_owned_status_contexts(owned, api, target_id, include_pending_sources)
-	var include_pending_projection_sources := (
-		include_pending_sources is Dictionary and !(include_pending_sources as Dictionary).is_empty()
-	)
+	_append_owned_status_contexts(owned, api, target_id, pending_sources)
+	var include_pending_projection_sources := !pending_sources.is_empty()
 	if include_pending_projection_sources or allow_dead_self_aura_source:
 		_append_projected_status_contexts(
 			projected,
 			api,
 			target_id,
-			include_pending_sources,
+			pending_sources,
 			allow_dead_self_aura_source
 		)
 	else:
@@ -305,10 +312,13 @@ static func package_realizes_pending_statuses(pkg: NPCEffectPackage) -> bool:
 		and bool(pkg.effect.realizes_pending_statuses())
 	)
 
-static func collect_pending_realization_sources(ctx: NPCAIContext, source_id: int) -> Dictionary:
+static func collect_pending_realization_sources(
+	ctx: NPCAIContext,
+	source_id: int
+) -> PendingStatusSourceSet:
 	# Historical name kept for callers; keys are status-owner IDs whose pending lane
 	# should be included in intent preview because a realize package runs first.
-	var out := {}
+	var out := PendingStatusSourceSet.new()
 	if ctx == null or ctx.api == null or !(ctx.api is SimBattleAPI):
 		return out
 
@@ -341,7 +351,7 @@ static func collect_pending_realization_sources(ctx: NPCAIContext, source_id: in
 	return out
 
 static func _append_pending_realization_targets_for_action(
-	out: Dictionary,
+	out: PendingStatusSourceSet,
 	api: SimBattleAPI,
 	base_ctx: NPCAIContext,
 	actor_id: int,
@@ -364,7 +374,7 @@ static func _append_pending_realization_targets_for_action(
 			continue
 		var target_ids := _resolve_pending_realization_targets_for_package(api, base_ctx, actor_id, pkg)
 		for tid in target_ids:
-			out[int(tid)] = true
+			out.include_source(int(tid))
 
 static func _resolve_pending_realization_targets_for_package(
 	api: SimBattleAPI,
@@ -502,28 +512,6 @@ static func realize_pending_statuses(
 	if any_non_aura:
 		api._on_status_changed(int(target_id))
 
-static func _make_pending_sources_signature(include_pending_sources) -> String:
-	if !(include_pending_sources is Dictionary):
-		return ""
-	var source_dict := include_pending_sources as Dictionary
-	if source_dict.is_empty():
-		return ""
-	var ids: Array[int] = []
-	for source_id_variant in source_dict.keys():
-		var source_id := int(source_id_variant)
-		if source_id <= 0:
-			continue
-		if !bool(source_dict.get(source_id_variant, false)):
-			continue
-		ids.append(source_id)
-	if ids.is_empty():
-		return ""
-	ids.sort()
-	var parts: Array[String] = []
-	for source_id in ids:
-		parts.append(str(int(source_id)))
-	return ",".join(parts)
-
 static func _get_relevant_group_order(ctx: NPCAIContext, group_index: int) -> Array[int]:
 	var out: Array[int] = []
 	if ctx == null or ctx.api == null or !(ctx.api is SimBattleAPI):
@@ -615,7 +603,7 @@ static func _for_each_effective_status_on_unit(
 	owner_id: int,
 	fn: Callable,
 	allow_dead_self_aura_source := false,
-	include_pending_sources := {}
+	include_pending_sources: PendingStatusSourceSet = null
 ) -> void:
 	if api == null or api.state == null or owner_id <= 0 or !fn.is_valid():
 		return
@@ -671,7 +659,7 @@ static func _append_owned_status_contexts(
 	out: Array[SimStatusContext],
 	api: SimBattleAPI,
 	target_id: int,
-	include_pending_sources := {}
+	include_pending_sources: PendingStatusSourceSet
 ) -> void:
 	if api == null or api.state == null:
 		return
@@ -682,9 +670,7 @@ static func _append_owned_status_contexts(
 	if u.statuses.by_id.is_empty():
 		return
 
-	var include_pending_owned := false
-	if include_pending_sources is Dictionary:
-		include_pending_owned = bool(include_pending_sources.get(int(target_id), false))
+	var include_pending_owned := include_pending_sources != null and include_pending_sources.has_source(int(target_id))
 
 	for stack: StatusStack in u.statuses.get_all_stacks(include_pending_owned):
 		if stack == null:
@@ -702,7 +688,7 @@ static func _append_projected_status_contexts(
 	out: Array[SimStatusContext],
 	api: SimBattleAPI,
 	target_id: int,
-	include_pending_sources := {},
+	include_pending_sources: PendingStatusSourceSet,
 	allow_dead_self_aura_source := false
 ) -> void:
 	if api == null or api.state == null or api.state.projection_bank == null:
@@ -712,8 +698,8 @@ static func _append_projected_status_contexts(
 	if target == null:
 		return
 	
-	for entry: Dictionary in api.state.projection_bank.get_entries():
-		var source_kind := StringName(entry.get("source_kind", &""))
+	for entry: ProjectionSourceEntry in api.state.projection_bank.get_entries():
+		var source_kind := entry.source_kind
 		match source_kind:
 			ProjectionBank.SOURCE_KIND_STATUS_AURA:
 				_append_status_aura_projected_contexts(
@@ -754,18 +740,16 @@ static func _append_status_aura_projected_contexts(
 	api: SimBattleAPI,
 	target: CombatantState,
 	target_id: int,
-	entry: Dictionary,
-	include_pending_sources := {},
+	entry: ProjectionSourceEntry,
+	include_pending_sources: PendingStatusSourceSet,
 	allow_dead_self_aura_source := false
 ) -> void:
-	var source_id := int(entry.get("source_owner_id", 0))
+	var source_id := int(entry.source_owner_id)
 	if source_id <= 0:
 		return
 	
-	var pending := bool(entry.get("pending", false))
-	var include_pending_source := false
-	if include_pending_sources is Dictionary:
-		include_pending_source = bool(include_pending_sources.get(source_id, false))
+	var pending := bool(entry.pending)
+	var include_pending_source := include_pending_sources != null and include_pending_sources.has_source(source_id)
 	if pending and !include_pending_source:
 		return
 	
@@ -775,7 +759,7 @@ static func _append_status_aura_projected_contexts(
 	if !source.is_alive() and !(allow_dead_self_aura_source and int(source_id) == int(target_id)):
 		return
 	
-	var aura_status_id := StringName(entry.get("source_id", &""))
+	var aura_status_id := StringName(entry.source_id)
 	var aura_proto := get_proto(api, aura_status_id) as Aura
 	if aura_proto == null:
 		return
@@ -814,13 +798,13 @@ static func _append_arcanum_projected_contexts(
 	api: SimBattleAPI,
 	target: CombatantState,
 	target_id: int,
-	entry: Dictionary
+	entry: ProjectionSourceEntry
 ) -> void:
 	if api == null or api.state == null or api.state.arcana == null or api.state.arcana_catalog == null:
 		return
 
-	var arcanum_owner_id := int(entry.get("source_owner_id", 0))
-	var arcanum_id := StringName(entry.get("source_id", &""))
+	var arcanum_owner_id := int(entry.source_owner_id)
+	var arcanum_id := StringName(entry.source_id)
 	if arcanum_owner_id <= 0 or arcanum_id == &"":
 		return
 
@@ -964,13 +948,12 @@ static func refresh_cached_projected_statuses_for_unit(
 	if target == null or target.statuses == null:
 		return
 
-	var entries_by_key := _collect_projected_source_entries_for_target(api, target_id)
+	var entries_by_key := _collect_projection_entries_by_source_key(api)
 	if full_rebuild:
 		target.statuses.clear_projected()
-		for source_key in entries_by_key.keys():
-			var key := String(source_key)
-			var entry: Dictionary = entries_by_key.get(key, {})
-			target.statuses.upsert_projected_source(key, _build_projected_stacks_for_entry(api, target_id, entry))
+		for source_key in entries_by_key.get_source_keys():
+			var entry := entries_by_key.get_entry(source_key)
+			target.statuses.upsert_projected_source(source_key, _build_projected_stacks_for_entry(api, target_id, entry))
 		target.statuses.set_projected_cache_ready(true)
 		return
 
@@ -987,35 +970,36 @@ static func refresh_cached_projected_statuses_for_unit(
 
 	for source_key_variant in unique_source_keys.keys():
 		var source_key := String(source_key_variant)
-		if !entries_by_key.has(source_key):
+		if !entries_by_key.has_entry(source_key):
 			target.statuses.remove_projected_source(source_key)
 			continue
-		var entry: Dictionary = entries_by_key.get(source_key, {})
+		var entry := entries_by_key.get_entry(source_key)
 		target.statuses.upsert_projected_source(
 			source_key,
 			_build_projected_stacks_for_entry(api, target_id, entry)
 		)
 	target.statuses.set_projected_cache_ready(true)
 
-static func _collect_projected_source_entries_for_target(api: SimBattleAPI, target_id: int) -> Dictionary:
-	var out := {}
+static func _collect_projection_entries_by_source_key(api: SimBattleAPI) -> ProjectionSourceEntryLookup:
+	var out := ProjectionSourceEntryLookup.new()
 	if api == null or api.state == null or api.state.projection_bank == null:
 		return out
 
-	for entry: Dictionary in api.state.projection_bank.get_entries():
-		var source_key := _make_projection_source_key(entry)
-		if source_key.is_empty():
-			continue
-		out[source_key] = entry
+	# This is a source-keyed lookup over the full projection bank.
+	# Per-target relevance is checked later when each source is materialized.
+	for entry: ProjectionSourceEntry in api.state.projection_bank.get_entries():
+		out.set_entry(entry)
 	return out
 
 static func _build_projected_stacks_for_entry(
 	api: SimBattleAPI,
 	target_id: int,
-	entry: Dictionary
+	entry: ProjectionSourceEntry
 ) -> Array[StatusStack]:
 	var out: Array[StatusStack] = []
-	var source_kind := StringName(entry.get("source_kind", &""))
+	if entry == null:
+		return out
+	var source_kind := entry.source_kind
 	match source_kind:
 		ProjectionBank.SOURCE_KIND_STATUS_AURA:
 			_append_status_aura_projected_stacks(out, api, target_id, entry)
@@ -1029,22 +1013,22 @@ static func _append_status_aura_projected_stacks(
 	out: Array[StatusStack],
 	api: SimBattleAPI,
 	target_id: int,
-	entry: Dictionary
+	entry: ProjectionSourceEntry
 ) -> void:
 	if api == null or api.state == null:
 		return
-	var pending := bool(entry.get("pending", false))
+	var pending := bool(entry.pending)
 	if pending:
 		return
 
-	var source_id := int(entry.get("source_owner_id", 0))
+	var source_id := int(entry.source_owner_id)
 	if source_id <= 0:
 		return
 	var source: CombatantState = api.state.get_unit(source_id)
 	if source == null or !source.is_alive():
 		return
 
-	var aura_status_id := StringName(entry.get("source_id", &""))
+	var aura_status_id := StringName(entry.source_id)
 	var aura_proto := get_proto(api, aura_status_id) as Aura
 	if aura_proto == null:
 		return
@@ -1072,12 +1056,12 @@ static func _append_arcanum_projected_stacks(
 	out: Array[StatusStack],
 	api: SimBattleAPI,
 	target_id: int,
-	entry: Dictionary
+	entry: ProjectionSourceEntry
 ) -> void:
 	if api == null or api.state == null or api.state.arcana == null or api.state.arcana_catalog == null:
 		return
-	var arcanum_owner_id := int(entry.get("source_owner_id", 0))
-	var arcanum_id := StringName(entry.get("source_id", &""))
+	var arcanum_owner_id := int(entry.source_owner_id)
+	var arcanum_id := StringName(entry.source_id)
 	if arcanum_owner_id <= 0 or arcanum_id == &"":
 		return
 
@@ -1119,25 +1103,14 @@ static func _append_arcanum_projected_stacks(
 		projected_stack.duration = projection_duration
 		out.append(projected_stack)
 
-static func _make_projection_source_key(entry: Dictionary) -> String:
-	if entry == null or entry.is_empty():
-		return ""
-	var source_kind := StringName(entry.get("source_kind", &""))
-	var source_owner_id := int(entry.get("source_owner_id", 0))
-	var source_id := StringName(entry.get("source_id", &""))
-	var pending := bool(entry.get("pending", false))
-	if source_kind == &"" or source_owner_id <= 0 or source_id == &"":
-		return ""
-	return "%s::%s::%s::%s" % [
-		String(source_kind),
-		str(source_owner_id),
-		String(source_id),
-		"pending" if pending else "realized",
-	]
-
-
 static func _make_effective_status_merge_key(status_id: StringName, pending: bool) -> String:
 	return "%s::%s" % [String(status_id), "pending" if pending else "realized"]
+
+
+static func _ensure_pending_status_sources(
+	include_pending_sources: PendingStatusSourceSet
+) -> PendingStatusSourceSet:
+	return include_pending_sources if include_pending_sources != null else PendingStatusSourceSet.new()
 
 
 # -------------------------------------------------------------------

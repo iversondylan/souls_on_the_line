@@ -3,6 +3,9 @@
 class_name ProjectionChangeSystem
 extends RefCounted
 
+const ProjectionImpactInfo := preload("res://battle/sim/containers/projection_impact_info.gd")
+const ProjectionSourceEntry := preload("res://battle/sim/containers/projection_source_entry.gd")
+
 
 static func track_status_aura(
 	api: SimBattleAPI,
@@ -20,7 +23,7 @@ static func track_status_aura(
 		api,
 		source_owner_id,
 		impact_info,
-		changed or bool(impact_info.get("known", false)),
+		changed or impact_info.known,
 		[_make_status_aura_source_key(source_owner_id, status_id, pending)]
 	)
 
@@ -55,14 +58,14 @@ static func untrack_auras_from_removed_combatant(api: SimBattleAPI, removed_id: 
 		return
 
 	var bank: ProjectionBank = api.state.projection_bank
-	for entry: Dictionary in bank.get_entries():
-		if StringName(entry.get("source_kind", &"")) == ProjectionBank.SOURCE_KIND_STATUS_AURA \
-				and int(entry.get("source_owner_id", 0)) == removed_id:
+	for entry: ProjectionSourceEntry in bank.get_entries():
+		if entry.source_kind == ProjectionBank.SOURCE_KIND_STATUS_AURA \
+				and int(entry.source_owner_id) == removed_id:
 			untrack_status_aura(
 				api,
-				int(entry.get("source_owner_id", 0)),
-				StringName(entry.get("source_id", &"")),
-				bool(entry.get("pending", false))
+				int(entry.source_owner_id),
+				StringName(entry.source_id),
+				bool(entry.pending)
 			)
 
 
@@ -114,7 +117,7 @@ static func refresh_status_aura(
 		api,
 		source_owner_id,
 		impact_info,
-		bool(impact_info.get("known", false)),
+		impact_info.known,
 		[_make_status_aura_source_key(source_owner_id, status_id, pending)]
 	)
 
@@ -133,30 +136,19 @@ static func _can_use_status_aura_projection_bank(
 	)
 
 
-static func _merge_impact_info(a: Dictionary, b: Dictionary) -> Dictionary:
-	var merged_targets := PackedInt32Array()
-	var seen := {}
-	for info in [a, b]:
-		var ids: PackedInt32Array = info.get("target_ids", PackedInt32Array())
-		for raw_id in ids:
-			var cid := int(raw_id)
-			if cid <= 0 or seen.has(cid):
-				continue
-			seen[cid] = true
-			merged_targets.append(cid)
-
-	return {
-		# If either side provides a known impacted set we can stay on targeted
-		# source-key cache updates and avoid full projected cache rebuilds.
-		"known": bool(a.get("known", false)) or bool(b.get("known", false)),
-		"target_ids": merged_targets,
-	}
+static func _merge_impact_info(
+	a: ProjectionImpactInfo,
+	b: ProjectionImpactInfo
+) -> ProjectionImpactInfo:
+	if a == null:
+		return b.clone() if b != null else ProjectionImpactInfo.new()
+	return a.merged_with(b)
 
 
 static func _handle_status_aura_projection_change(
 	api: SimBattleAPI,
 	source_owner_id: int,
-	impact_info: Dictionary,
+	impact_info: ProjectionImpactInfo,
 	should_process: bool,
 	source_keys: Array[String] = []
 ) -> void:
@@ -164,9 +156,9 @@ static func _handle_status_aura_projection_change(
 		return
 
 	var impacted_ids := PackedInt32Array()
-	var known := bool(impact_info.get("known", false))
+	var known := impact_info != null and impact_info.known
 	if known:
-		impacted_ids = impact_info.get("target_ids", PackedInt32Array())
+		impacted_ids = impact_info.target_ids
 
 	var applied_targeted := _request_targeted_projection_dirtying(api, source_owner_id, impacted_ids, known)
 	if !applied_targeted:
@@ -249,11 +241,9 @@ static func _refresh_projection_source_for_all_units(
 
 
 static func _make_status_aura_source_key(source_owner_id: int, status_id: StringName, pending: bool) -> String:
-	if source_owner_id <= 0 or status_id == &"":
-		return ""
-	return "%s::%s::%s::%s" % [
-		String(ProjectionBank.SOURCE_KIND_STATUS_AURA),
-		str(int(source_owner_id)),
-		String(status_id),
-		"pending" if bool(pending) else "realized",
-	]
+	return ProjectionSourceEntry.make_source_key(
+		ProjectionBank.SOURCE_KIND_STATUS_AURA,
+		source_owner_id,
+		status_id,
+		pending
+	)

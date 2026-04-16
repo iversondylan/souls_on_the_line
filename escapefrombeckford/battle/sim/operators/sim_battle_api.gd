@@ -2,6 +2,9 @@
 
 class_name SimBattleAPI extends RefCounted
 
+const EffectiveStatusContextCacheStore := preload("res://battle/sim/containers/effective_status_context_cache_store.gd")
+const PendingStatusSourceSet := preload("res://battle/sim/containers/pending_status_source_set.gd")
+
 # ============================================================================
 # SimBattleAPI
 # ----------------------------------------------------------------------------
@@ -37,8 +40,7 @@ signal urgent_planning_requested()
 
 var scopes: BattleScopeManager
 var writer: BattleEventWriter
-var _effective_status_context_cache: Dictionary = {}
-var _effective_status_context_cache_epoch: int = 1
+var _effective_status_context_cache_store: EffectiveStatusContextCacheStore = EffectiveStatusContextCacheStore.new()
 
 
 # ============================================================================
@@ -288,7 +290,7 @@ func get_status_intensity(combat_id: int, status_id: StringName) -> int:
 
 func get_effective_status_contexts_for_unit(
 	target_id: int,
-	include_pending_sources := {},
+	include_pending_sources: PendingStatusSourceSet = null,
 	allow_dead_self_aura_source := false
 ) -> Array[SimStatusContext]:
 	return SimStatusSystem.get_effective_status_contexts_for_unit(
@@ -298,24 +300,33 @@ func get_effective_status_contexts_for_unit(
 		allow_dead_self_aura_source
 	)
 
-func _get_cached_effective_status_contexts_for_unit(
+func _has_cached_effective_status_contexts_for_unit(
 	target_id: int,
 	unit_status_version: int,
 	include_pending_sources_signature: String,
 	allow_dead_self_aura_source: bool
-) -> Variant:
-	var cache_key := _make_effective_status_context_cache_key(
+) -> bool:
+	return _effective_status_context_cache_store.has_contexts(
 		target_id,
 		unit_status_version,
 		include_pending_sources_signature,
 		allow_dead_self_aura_source
 	)
-	if !_effective_status_context_cache.has(cache_key):
-		return null
-	var cached := _effective_status_context_cache.get(cache_key, null)
-	if !(cached is Array):
-		return null
-	return cached
+
+
+func _get_cached_effective_status_contexts_for_unit(
+	target_id: int,
+	unit_status_version: int,
+	include_pending_sources_signature: String,
+	allow_dead_self_aura_source: bool
+) -> Array[SimStatusContext]:
+	return _effective_status_context_cache_store.get_contexts(
+		target_id,
+		unit_status_version,
+		include_pending_sources_signature,
+		allow_dead_self_aura_source
+	)
+
 
 func _set_cached_effective_status_contexts_for_unit(
 	target_id: int,
@@ -324,32 +335,17 @@ func _set_cached_effective_status_contexts_for_unit(
 	allow_dead_self_aura_source: bool,
 	contexts: Array[SimStatusContext]
 ) -> void:
-	var cache_key := _make_effective_status_context_cache_key(
+	_effective_status_context_cache_store.set_contexts(
 		target_id,
 		unit_status_version,
 		include_pending_sources_signature,
-		allow_dead_self_aura_source
+		allow_dead_self_aura_source,
+		contexts
 	)
-	# Context objects are treated as immutable snapshots for a single sim pass.
-	_effective_status_context_cache[cache_key] = contexts.duplicate()
+
 
 func _invalidate_effective_status_context_cache() -> void:
-	_effective_status_context_cache.clear()
-	_effective_status_context_cache_epoch += 1
-
-func _make_effective_status_context_cache_key(
-	target_id: int,
-	unit_status_version: int,
-	include_pending_sources_signature: String,
-	allow_dead_self_aura_source: bool
-) -> String:
-	return "%s::%s::%s::%s::%s" % [
-		str(int(target_id)),
-		str(int(unit_status_version)),
-		String(include_pending_sources_signature),
-		"allow_dead" if bool(allow_dead_self_aura_source) else "alive_only",
-		str(int(_effective_status_context_cache_epoch)),
-	]
+	_effective_status_context_cache_store.invalidate()
 
 
 func get_non_status_modifier_tokens_for_target(target_id: int, mod_type: Modifier.Type) -> Array[ModifierToken]:
@@ -359,7 +355,7 @@ func get_non_status_modifier_tokens_for_target(target_id: int, mod_type: Modifie
 func get_modifier_tokens_for_cid(
 	target_id: int,
 	mod_type: Modifier.Type,
-	include_pending_sources := {}
+	include_pending_sources: PendingStatusSourceSet = null
 ) -> Array[ModifierToken]:
 	var tokens: Array[ModifierToken] = []
 
@@ -377,7 +373,7 @@ func get_modifier_tokens_for_cid(
 func _get_effective_status_modifier_tokens_for_target(
 	target_id: int,
 	mod_type: Modifier.Type,
-	include_pending_sources := {}
+	include_pending_sources: PendingStatusSourceSet = null
 ) -> Array[ModifierToken]:
 	var out: Array[ModifierToken] = []
 	if state == null or state.status_catalog == null:
