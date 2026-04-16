@@ -464,9 +464,7 @@ func _to_sorted_status_id_array(source_ids: Dictionary) -> Array[StringName]:
 	var out: Array[StringName] = []
 	for status_id_key in source_ids.keys():
 		out.append(StringName(status_id_key))
-	out.sort_custom(func(a: StringName, b: StringName) -> bool:
-		return String(a) < String(b)
-	)
+	out.sort()
 	return out
 
 func debug_projected_snapshot() -> Dictionary:

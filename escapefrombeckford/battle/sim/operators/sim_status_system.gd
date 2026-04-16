@@ -259,7 +259,7 @@ static func get_effective_status_contexts_for_unit(
 			allow_dead_self_aura_source
 		)
 	else:
-		ensure_cached_projected_statuses_for_unit(api, target_id)
+		refresh_cached_projected_statuses_for_unit(api, target_id)
 		_append_cached_projected_status_contexts(projected, api, target_id)
 	return _merge_owned_and_projected_contexts(owned, projected)
 
@@ -908,9 +908,6 @@ static func _merge_owned_and_projected_contexts(
 		out.append(ctx)
 
 	return out
-
-static func ensure_cached_projected_statuses_for_unit(api: SimBattleAPI, target_id: int) -> void:
-	refresh_cached_projected_statuses_for_unit(api, target_id)
 
 static func refresh_cached_projected_statuses_for_unit(
 	api: SimBattleAPI,
