@@ -6,6 +6,8 @@ const SOURCE_KIND_STATUS_AURA := &"status_aura"
 const SOURCE_KIND_ARCANUM := &"arcanum"
 
 var _entries_by_key: Dictionary = {}
+var _ordered_entries_cache: Array[Dictionary] = []
+var _ordered_entries_cache_valid := false
 
 
 func track_status_aura(source_owner_id: int, status_id: StringName, pending := false) -> bool:
@@ -16,6 +18,8 @@ func untrack_status_aura(source_owner_id: int, status_id: StringName, pending :=
 	var key := _make_key(SOURCE_KIND_STATUS_AURA, int(source_owner_id), StringName(status_id), bool(pending))
 	var existed := _entries_by_key.has(key)
 	_entries_by_key.erase(key)
+	if existed:
+		_invalidate_ordered_entries_cache()
 	return existed
 
 
@@ -80,6 +84,7 @@ func rebuild_arcanum_entries(state: BattleState, owner_id: int) -> void:
 
 func clear() -> void:
 	_entries_by_key.clear()
+	_invalidate_ordered_entries_cache()
 
 
 func clear_arcanum_entries() -> void:
@@ -91,34 +96,16 @@ func clear_arcanum_entries() -> void:
 
 	for key: String in keys_to_remove:
 		_entries_by_key.erase(key)
+	if !keys_to_remove.is_empty():
+		_invalidate_ordered_entries_cache()
 
 
 func get_entries() -> Array[Dictionary]:
+	if !_ordered_entries_cache_valid:
+		_rebuild_ordered_entries_cache()
 	var out: Array[Dictionary] = []
-	for key in _entries_by_key.keys():
-		var entry = _entries_by_key.get(key, {})
-		if entry is Dictionary and !entry.is_empty():
-			out.append((entry as Dictionary).duplicate(true))
-
-	out.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
-		var a_kind := String(a.get("source_kind", &""))
-		var b_kind := String(b.get("source_kind", &""))
-		if a_kind != b_kind:
-			return a_kind < b_kind
-
-		var a_owner := int(a.get("source_owner_id", 0))
-		var b_owner := int(b.get("source_owner_id", 0))
-		if a_owner != b_owner:
-			return a_owner < b_owner
-
-		var a_source := String(a.get("source_id", &""))
-		var b_source := String(b.get("source_id", &""))
-		if a_source != b_source:
-			return a_source < b_source
-
-		return int(bool(a.get("pending", false))) < int(bool(b.get("pending", false)))
-	)
-
+	for entry: Dictionary in _ordered_entries_cache:
+		out.append(entry.duplicate(true))
 	return out
 
 
@@ -142,6 +129,8 @@ func _track(source_kind: StringName, source_owner_id: int, source_id: StringName
 		"source_id": StringName(source_id),
 		"pending": bool(pending),
 	}
+	if changed:
+		_invalidate_ordered_entries_cache()
 	return changed
 
 
@@ -152,3 +141,35 @@ func _make_key(source_kind: StringName, source_owner_id: int, source_id: StringN
 		String(source_id),
 		"pending" if pending else "realized",
 	]
+
+func _invalidate_ordered_entries_cache() -> void:
+	_ordered_entries_cache_valid = false
+	_ordered_entries_cache.clear()
+
+func _rebuild_ordered_entries_cache() -> void:
+	var ordered: Array[Dictionary] = []
+	for key in _entries_by_key.keys():
+		var entry = _entries_by_key.get(key, {})
+		if entry is Dictionary and !(entry as Dictionary).is_empty():
+			ordered.append((entry as Dictionary).duplicate(true))
+
+	ordered.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		var a_kind := String(a.get("source_kind", &""))
+		var b_kind := String(b.get("source_kind", &""))
+		if a_kind != b_kind:
+			return a_kind < b_kind
+
+		var a_owner := int(a.get("source_owner_id", 0))
+		var b_owner := int(b.get("source_owner_id", 0))
+		if a_owner != b_owner:
+			return a_owner < b_owner
+
+		var a_source := String(a.get("source_id", &""))
+		var b_source := String(b.get("source_id", &""))
+		if a_source != b_source:
+			return a_source < b_source
+
+		return int(bool(a.get("pending", false))) < int(bool(b.get("pending", false)))
+	)
+	_ordered_entries_cache = ordered
+	_ordered_entries_cache_valid = true

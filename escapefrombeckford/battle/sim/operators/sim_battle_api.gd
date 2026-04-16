@@ -37,6 +37,8 @@ signal urgent_planning_requested()
 
 var scopes: BattleScopeManager
 var writer: BattleEventWriter
+var _effective_status_context_cache: Dictionary = {}
+var _effective_status_context_cache_epoch: int = 1
 
 
 # ============================================================================
@@ -295,6 +297,58 @@ func get_effective_status_contexts_for_unit(
 		include_pending_sources,
 		allow_dead_self_aura_source
 	)
+
+func _get_cached_effective_status_contexts_for_unit(
+	target_id: int,
+	unit_status_version: int,
+	include_pending_sources_signature: String,
+	allow_dead_self_aura_source: bool
+) -> Variant:
+	var cache_key := _make_effective_status_context_cache_key(
+		target_id,
+		unit_status_version,
+		include_pending_sources_signature,
+		allow_dead_self_aura_source
+	)
+	if !_effective_status_context_cache.has(cache_key):
+		return null
+	var cached := _effective_status_context_cache.get(cache_key, null)
+	if !(cached is Array):
+		return null
+	return (cached as Array).duplicate()
+
+func _set_cached_effective_status_contexts_for_unit(
+	target_id: int,
+	unit_status_version: int,
+	include_pending_sources_signature: String,
+	allow_dead_self_aura_source: bool,
+	contexts: Array[SimStatusContext]
+) -> void:
+	var cache_key := _make_effective_status_context_cache_key(
+		target_id,
+		unit_status_version,
+		include_pending_sources_signature,
+		allow_dead_self_aura_source
+	)
+	_effective_status_context_cache[cache_key] = contexts.duplicate()
+
+func _invalidate_effective_status_context_cache() -> void:
+	_effective_status_context_cache.clear()
+	_effective_status_context_cache_epoch = maxi(int(_effective_status_context_cache_epoch) + 1, 1)
+
+func _make_effective_status_context_cache_key(
+	target_id: int,
+	unit_status_version: int,
+	include_pending_sources_signature: String,
+	allow_dead_self_aura_source: bool
+) -> String:
+	return "%s::%s::%s::%s::%s" % [
+		str(int(target_id)),
+		str(int(unit_status_version)),
+		String(include_pending_sources_signature),
+		"allow_dead" if bool(allow_dead_self_aura_source) else "alive_only",
+		str(int(_effective_status_context_cache_epoch)),
+	]
 
 
 func get_non_status_modifier_tokens_for_target(target_id: int, mod_type: Modifier.Type) -> Array[ModifierToken]:
@@ -574,6 +628,10 @@ func resolve_damage_immediate(ctx: DamageContext) -> int:
 		ctx.banish_amount = 0
 		ctx.applied_banish_amount = 0
 		return 0
+
+	if state.is_alive(int(ctx.source_id)):
+		get_effective_status_contexts_for_unit(int(ctx.source_id))
+	get_effective_status_contexts_for_unit(int(ctx.target_id))
 	
 	ctx.phase = DamageContext.Phase.PRE_MODIFIERS
 	var policy := int(ctx.modifier_policy)
@@ -899,6 +957,7 @@ func apply_status(ctx: StatusContext) -> void:
 		ctx,
 		int(proto.get_max_intensity()) if proto != null else 0
 	)
+	var first_apply := int(ctx.op) == int(Status.OP.APPLY)
 	ctx.applied = changed or (ctx.op == Status.OP.APPLY)
 	
 	if writer != null and (ctx.op == Status.OP.APPLY or changed):
@@ -924,6 +983,11 @@ func apply_status(ctx: StatusContext) -> void:
 				Keys.AFTER_DURATION: int(ctx.after_duration),
 			}
 		)
+
+	if changed or first_apply:
+		_invalidate_effective_status_context_cache()
+	if !changed and !first_apply:
+		return
 	
 	if SimStatusSystem.is_aura_proto(proto):
 		_track_status_aura_projection(int(ctx.target_id), ctx.status_id, bool(ctx.pending))
@@ -971,6 +1035,7 @@ func remove_status(ctx: StatusContext) -> void:
 	
 	var status_ctx := SimStatusSystem.make_context(self, int(ctx.target_id), old_stack)
 	u.statuses.remove_ctx(ctx)
+	_invalidate_effective_status_context_cache()
 	
 	if writer != null:
 		writer.emit_status(
@@ -1535,6 +1600,7 @@ func _refresh_projected_status_cache_for(
 	source_keys: Array[String] = [],
 	full_rebuild := false
 ) -> void:
+	_invalidate_effective_status_context_cache()
 	SimStatusSystem.refresh_cached_projected_statuses_for_unit(
 		self,
 		int(id),
