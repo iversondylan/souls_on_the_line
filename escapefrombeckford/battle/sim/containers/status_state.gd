@@ -477,7 +477,7 @@ func debug_projected_snapshot() -> Dictionary:
 		snapshot["sources"][String(source_key)] = get_projected_dependency_status_ids(String(source_key))
 	for status_id in by_id_projected.keys():
 		var key := StringName(status_id)
-		var source_keys := _projected_source_keys_by_status_id.get(key, {})
+		var source_keys = _projected_source_keys_by_status_id.get(key, {}) # would be good to include hard typing here. What's type of source_keys?
 		if source_keys is Dictionary:
 			snapshot["status_dependencies"][String(key)] = (source_keys as Dictionary).keys()
 	return snapshot
