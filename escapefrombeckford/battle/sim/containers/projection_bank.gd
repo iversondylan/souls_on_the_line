@@ -151,7 +151,7 @@ func _rebuild_ordered_entries_cache() -> void:
 	for key in _entries_by_key.keys():
 		var entry = _entries_by_key.get(key, {})
 		if entry is Dictionary and !(entry as Dictionary).is_empty():
-			ordered.append((entry as Dictionary).duplicate(true))
+			ordered.append(entry as Dictionary)
 
 	ordered.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
 		var a_kind := String(a.get("source_kind", &""))

@@ -629,6 +629,7 @@ func resolve_damage_immediate(ctx: DamageContext) -> int:
 		ctx.applied_banish_amount = 0
 		return 0
 
+	# Prime status contexts once per hit so modifier and hook phases can reuse them.
 	if state.is_alive(int(ctx.source_id)):
 		get_effective_status_contexts_for_unit(int(ctx.source_id))
 	get_effective_status_contexts_for_unit(int(ctx.target_id))
@@ -984,10 +985,9 @@ func apply_status(ctx: StatusContext) -> void:
 			}
 		)
 
-	if changed or first_apply:
-		_invalidate_effective_status_context_cache()
 	if !changed and !first_apply:
 		return
+	_invalidate_effective_status_context_cache()
 	
 	if SimStatusSystem.is_aura_proto(proto):
 		_track_status_aura_projection(int(ctx.target_id), ctx.status_id, bool(ctx.pending))
