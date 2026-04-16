@@ -390,7 +390,7 @@ func clone() -> StatusState:
 	return st
 
 func _bump_effective_context_version() -> void:
-	_effective_context_version = maxi(int(_effective_context_version) + 1, 1)
+	_effective_context_version += 1
 
 func set_stack(id: StringName, intensity: int, duration: int, pending := false) -> bool:
 	var s := get_status_stack(id, pending)

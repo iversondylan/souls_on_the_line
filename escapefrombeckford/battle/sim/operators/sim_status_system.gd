@@ -256,7 +256,7 @@ static func get_effective_status_contexts_for_unit(
 		include_pending_sources_signature,
 		bool(allow_dead_self_aura_source)
 	)
-	if cached != null and cached is Array:
+	if cached is Array:
 		var cached_contexts: Array[SimStatusContext] = []
 		for v in (cached as Array):
 			var ctx := v as SimStatusContext

@@ -103,10 +103,7 @@ func clear_arcanum_entries() -> void:
 func get_entries() -> Array[Dictionary]:
 	if !_ordered_entries_cache_valid:
 		_rebuild_ordered_entries_cache()
-	var out: Array[Dictionary] = []
-	for entry: Dictionary in _ordered_entries_cache:
-		out.append(entry.duplicate(true))
-	return out
+	return _ordered_entries_cache.duplicate(true)
 
 
 func clone():
@@ -151,7 +148,7 @@ func _rebuild_ordered_entries_cache() -> void:
 	for key in _entries_by_key.keys():
 		var entry = _entries_by_key.get(key, {})
 		if entry is Dictionary and !(entry as Dictionary).is_empty():
-			ordered.append(entry as Dictionary)
+			ordered.append((entry as Dictionary).duplicate(true))
 
 	ordered.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
 		var a_kind := String(a.get("source_kind", &""))

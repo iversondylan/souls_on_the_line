@@ -315,7 +315,7 @@ func _get_cached_effective_status_contexts_for_unit(
 	var cached := _effective_status_context_cache.get(cache_key, null)
 	if !(cached is Array):
 		return null
-	return (cached as Array).duplicate()
+	return cached
 
 func _set_cached_effective_status_contexts_for_unit(
 	target_id: int,
@@ -330,11 +330,12 @@ func _set_cached_effective_status_contexts_for_unit(
 		include_pending_sources_signature,
 		allow_dead_self_aura_source
 	)
+	# Context objects are treated as immutable snapshots for a single sim pass.
 	_effective_status_context_cache[cache_key] = contexts.duplicate()
 
 func _invalidate_effective_status_context_cache() -> void:
 	_effective_status_context_cache.clear()
-	_effective_status_context_cache_epoch = maxi(int(_effective_status_context_cache_epoch) + 1, 1)
+	_effective_status_context_cache_epoch += 1
 
 func _make_effective_status_context_cache_key(
 	target_id: int,

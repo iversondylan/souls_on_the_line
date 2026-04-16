@@ -146,6 +146,7 @@ static func _merge_impact_info(a: Dictionary, b: Dictionary) -> Dictionary:
 			merged_targets.append(cid)
 
 	return {
+		# If either side has known impacted targets we can stay on targeted propagation.
 		"known": bool(a.get("known", false)) or bool(b.get("known", false)),
 		"target_ids": merged_targets,
 	}
