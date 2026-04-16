@@ -32,12 +32,12 @@ static func untrack_status_aura(
 ) -> void:
 	if !_can_use_status_aura_projection_bank(api, source_owner_id, status_id):
 		return
-
+	
 	var bank: ProjectionBank = api.state.projection_bank
 	var impact_info := bank.get_status_aura_impact_info(api.state, source_owner_id, status_id, pending)
 	if !bool(bank.untrack_status_aura(source_owner_id, status_id, pending)):
 		return
-
+	
 	_handle_status_aura_projection_change(api, source_owner_id, impact_info, true)
 
 

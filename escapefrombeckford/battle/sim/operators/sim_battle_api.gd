@@ -297,7 +297,7 @@ func get_effective_status_contexts_for_unit(
 	)
 
 
-func get_modifier_tokens_for_target(target_id: int, mod_type: Modifier.Type) -> Array[ModifierToken]:
+func get_non_status_modifier_tokens_for_target(target_id: int, mod_type: Modifier.Type) -> Array[ModifierToken]:
 	return SimArcanaSystem.get_modifier_tokens_for_target(self, target_id, mod_type)
 
 
@@ -308,8 +308,8 @@ func get_modifier_tokens_for_cid(
 ) -> Array[ModifierToken]:
 	var tokens: Array[ModifierToken] = []
 
-	# Battle-level globals (arcana, relic-like systems, etc.)
-	tokens.append_array(get_modifier_tokens_for_target(target_id, mod_type))
+	# Battle-level globals (arcana)
+	tokens.append_array(get_non_status_modifier_tokens_for_target(target_id, mod_type))
 
 	var target: CombatantState = state.get_unit(target_id) if state != null else null
 	if target == null or !target.is_alive():
@@ -1033,6 +1033,7 @@ func spawn_from_data(
 	
 	var u := _make_unit_from_combatant_data(combatant_data, id, g, is_player, int(current_health_override))
 	state.add_unit(u, g, int(insert_index))
+	# I believe only arcana modifiers could possibly be contributing at this moment
 	_rebuild_modifier_cache_for(id)
 	_request_turn_order_rebuild()
 	var after_order_ids := PackedInt32Array(state.groups[g].order)
@@ -1074,8 +1075,9 @@ func summon(ctx: SummonContext) -> void:
 	SimStatusSystem.on_summon_will_resolve(self, source_id, ctx, u)
 	u.mortality = int(ctx.mortality) as CombatantState.Mortality
 	u.type = CombatantView.Type.ALLY if g == 0 else CombatantView.Type.ENEMY
-
+	
 	state.add_unit(u, g, int(ctx.insert_index))
+	# I believe only arcana modifiers could possibly be contributing at this moment
 	_rebuild_modifier_cache_for(id)
 	_request_turn_order_rebuild()
 	
@@ -1105,7 +1107,7 @@ func summon(ctx: SummonContext) -> void:
 		ctx.after_order_ids,
 		String(ctx.reason if !ctx.reason.is_empty() else "summon")
 	)
-
+	
 	_enforce_player_group_mortality_cap(int(id), int(g))
 	
 	summoned.emit(ctx)
@@ -1539,6 +1541,10 @@ func _rebuild_modifier_cache_for(id: int) -> void:
 	if u == null:
 		return
 	u.modifiers.clear()
+	# when building a cache, it would be more efficient to avoid iterating by Type
+	# but that could potentially require some code duplication if the Type-specific
+	# pathway is required. Because modifiers are sparse, I think collecting all
+	# modifiers each time is probably faster.
 	for mod_type_variant in Modifier.Type.values():
 		var mod_type := mod_type_variant as Modifier.Type
 		if int(mod_type) == int(Modifier.Type.NO_MODIFIER):

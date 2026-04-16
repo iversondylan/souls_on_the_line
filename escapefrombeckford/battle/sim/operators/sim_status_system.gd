@@ -172,7 +172,8 @@ static func should_skip_npc_action(api: SimBattleAPI, actor_id: int) -> bool:
 		return false
 	if int(actor_id) <= 0:
 		return false
-
+	# get_effective_status_contexts_for_unit seems to be very wasteful as-is.
+	# probably need to migrate to a cached projected status system.
 	for ctx: SimStatusContext in get_effective_status_contexts_for_unit(api, int(actor_id)):
 		var proto := ctx.proto if ctx != null else null
 		if proto != null and bool(proto.should_skip_npc_action(ctx)):
@@ -245,7 +246,7 @@ static func get_effective_status_contexts_for_unit(
 	var out: Array[SimStatusContext] = []
 	if api == null or api.state == null or target_id <= 0:
 		return out
-
+	
 	_append_owned_status_contexts(out, api, target_id, include_pending_sources)
 	_append_projected_status_contexts(
 		out,
@@ -657,11 +658,11 @@ static func _append_projected_status_contexts(
 ) -> void:
 	if api == null or api.state == null or api.state.projection_bank == null:
 		return
-
+	
 	var target: CombatantState = api.state.get_unit(target_id)
 	if target == null:
 		return
-
+	
 	for entry: Dictionary in api.state.projection_bank.get_entries():
 		var source_kind := StringName(entry.get("source_kind", &""))
 		match source_kind:
@@ -693,25 +694,25 @@ static func _append_status_aura_projected_contexts(
 	var source_id := int(entry.get("source_owner_id", 0))
 	if source_id <= 0:
 		return
-
+	
 	var pending := bool(entry.get("pending", false))
 	var include_pending_source := false
 	if include_pending_sources is Dictionary:
 		include_pending_source = bool(include_pending_sources.get(source_id, false))
 	if pending and !include_pending_source:
 		return
-
+	
 	var source: CombatantState = api.state.get_unit(source_id)
 	if source == null:
 		return
 	if !source.is_alive() and !(allow_dead_self_aura_source and int(source_id) == int(target_id)):
 		return
-
+	
 	var aura_status_id := StringName(entry.get("source_id", &""))
 	var aura_proto := get_proto(api, aura_status_id) as Aura
 	if aura_proto == null:
 		return
-
+	
 	var aura_stack := source.statuses.get_status_stack(aura_status_id, pending) if source.statuses != null else null
 	if aura_stack == null:
 		return
@@ -719,11 +720,11 @@ static func _append_status_aura_projected_contexts(
 		return
 	if !aura_proto.affects_target(api.state, source_id, target_id):
 		return
-
+	
 	for projected_proto: Status in aura_proto.get_projected_statuses():
 		if projected_proto == null:
 			continue
-
+		
 		var projected_ctx: SimStatusContext = SimAuraStatusContext.new(
 			api,
 			target_id,
@@ -737,7 +738,7 @@ static func _append_status_aura_projected_contexts(
 		)
 		if projected_ctx == null or !projected_ctx.is_valid():
 			continue
-
+		
 		out.append(projected_ctx)
 
 
