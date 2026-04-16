@@ -103,7 +103,8 @@ func clear_arcanum_entries() -> void:
 func get_entries() -> Array[Dictionary]:
 	if !_ordered_entries_cache_valid:
 		_rebuild_ordered_entries_cache()
-	return _ordered_entries_cache.duplicate(true)
+	# Read-only by convention; avoids per-call deep duplication.
+	return _ordered_entries_cache
 
 
 func clone():

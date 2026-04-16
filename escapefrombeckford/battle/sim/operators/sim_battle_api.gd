@@ -987,6 +987,7 @@ func apply_status(ctx: StatusContext) -> void:
 		)
 
 	if !changed and !first_apply:
+		# No effective mutation means no projection, status-hook, or intent side effects.
 		return
 	_invalidate_effective_status_context_cache()
 	

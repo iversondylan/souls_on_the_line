@@ -257,12 +257,7 @@ static func get_effective_status_contexts_for_unit(
 		bool(allow_dead_self_aura_source)
 	)
 	if cached is Array:
-		var cached_contexts: Array[SimStatusContext] = []
-		for v in (cached as Array):
-			var ctx := v as SimStatusContext
-			if ctx != null:
-				cached_contexts.append(ctx)
-		return cached_contexts
+		return cached as Array[SimStatusContext]
 	
 	_append_owned_status_contexts(owned, api, target_id, include_pending_sources)
 	var include_pending_projection_sources := (
