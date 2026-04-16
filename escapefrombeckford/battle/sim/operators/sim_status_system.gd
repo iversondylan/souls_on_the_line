@@ -245,6 +245,19 @@ static func get_effective_status_contexts_for_unit(
 	var projected: Array[SimStatusContext] = []
 	if api == null or api.state == null or target_id <= 0:
 		return owned
+	var target: CombatantState = api.state.get_unit(int(target_id))
+	var unit_status_version := 0
+	if target != null and target.statuses != null:
+		unit_status_version = int(target.statuses.get_effective_context_version())
+	var include_pending_sources_signature := _make_pending_sources_signature(include_pending_sources)
+	var cached = api._get_cached_effective_status_contexts_for_unit(
+		int(target_id),
+		unit_status_version,
+		include_pending_sources_signature,
+		bool(allow_dead_self_aura_source)
+	)
+	if cached is Array:
+		return cached as Array[SimStatusContext]
 	
 	_append_owned_status_contexts(owned, api, target_id, include_pending_sources)
 	var include_pending_projection_sources := (
@@ -261,7 +274,15 @@ static func get_effective_status_contexts_for_unit(
 	else:
 		refresh_cached_projected_statuses_for_unit(api, target_id)
 		_append_cached_projected_status_contexts(projected, api, target_id)
-	return _merge_owned_and_projected_contexts(owned, projected)
+	var merged := _merge_owned_and_projected_contexts(owned, projected)
+	api._set_cached_effective_status_contexts_for_unit(
+		int(target_id),
+		unit_status_version,
+		include_pending_sources_signature,
+		bool(allow_dead_self_aura_source),
+		merged
+	)
+	return merged
 
 
 # -------------------------------------------------------------------
@@ -480,6 +501,28 @@ static func realize_pending_statuses(
 		api._request_intent_refresh(int(target_id))
 	if any_non_aura:
 		api._on_status_changed(int(target_id))
+
+static func _make_pending_sources_signature(include_pending_sources) -> String:
+	if !(include_pending_sources is Dictionary):
+		return ""
+	var source_dict := include_pending_sources as Dictionary
+	if source_dict.is_empty():
+		return ""
+	var ids: Array[int] = []
+	for source_id_variant in source_dict.keys():
+		var source_id := int(source_id_variant)
+		if source_id <= 0:
+			continue
+		if !bool(source_dict.get(source_id_variant, false)):
+			continue
+		ids.append(source_id)
+	if ids.is_empty():
+		return ""
+	ids.sort()
+	var parts: Array[String] = []
+	for source_id in ids:
+		parts.append(str(int(source_id)))
+	return ",".join(parts)
 
 static func _get_relevant_group_order(ctx: NPCAIContext, group_index: int) -> Array[int]:
 	var out: Array[int] = []

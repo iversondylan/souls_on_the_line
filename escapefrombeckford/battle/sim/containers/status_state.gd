@@ -7,6 +7,7 @@ var _projected_source_contributions: Dictionary = {} # String -> { StringName ->
 var _projected_status_ids_by_source: Dictionary = {} # String -> { StringName -> bool }
 var _projected_source_keys_by_status_id: Dictionary = {} # StringName -> { String -> bool }
 var _projected_cache_ready: bool = false
+var _effective_context_version: int = 1
 
 func has(id: StringName, pending := false) -> bool:
 	var bucket := _get_bucket(id, false)
@@ -75,12 +76,16 @@ func clear_projected() -> void:
 	_projected_status_ids_by_source.clear()
 	_projected_source_keys_by_status_id.clear()
 	_projected_cache_ready = false
+	_bump_effective_context_version()
 
 func is_projected_cache_ready() -> bool:
 	return bool(_projected_cache_ready)
 
 func set_projected_cache_ready(ready: bool) -> void:
 	_projected_cache_ready = bool(ready)
+
+func get_effective_context_version() -> int:
+	return int(_effective_context_version)
 
 func get_projected_dependency_status_ids(source_key: String) -> Array[StringName]:
 	var out: Array[StringName] = []
@@ -121,6 +126,7 @@ func upsert_projected_source(source_key: String, projected_stacks: Array[StatusS
 	_rebuild_projected_source_index_for_affected_ids(source_key, affected_ids)
 	_recompute_projected_bins_for_ids(affected_ids)
 	_projected_cache_ready = true
+	_bump_effective_context_version()
 	return _to_sorted_status_id_array(affected_ids)
 
 func remove_projected_source(source_key: String) -> Array[StringName]:
@@ -137,6 +143,7 @@ func remove_projected_source(source_key: String) -> Array[StringName]:
 	_rebuild_projected_source_index_for_affected_ids(source_key, affected_ids)
 	_recompute_projected_bins_for_ids(affected_ids)
 	_projected_cache_ready = true
+	_bump_effective_context_version()
 	return _to_sorted_status_id_array(affected_ids)
 
 func realize_pending_ctx(ctx: StatusContext, max_intensity: int = 0) -> bool:
@@ -187,6 +194,7 @@ func realize_pending_ctx(ctx: StatusContext, max_intensity: int = 0) -> bool:
 	ctx.delta_duration = int(realized_stack.duration) - realized_before_d
 	ctx.intensity = ctx.delta_intensity
 	ctx.duration = ctx.delta_duration
+	_bump_effective_context_version()
 	return true
 
 # Convenience wrapper (keeps old callsites alive)
@@ -248,6 +256,7 @@ func add_or_reapply_ctx(ctx: StatusContext, max_intensity: int = 0) -> bool:
 		ctx.after_duration = int(s.duration)
 		ctx.intensity = int(s.intensity)
 		ctx.duration = int(s.duration)
+		_bump_effective_context_version()
 
 		return true
 
@@ -281,6 +290,8 @@ func add_or_reapply_ctx(ctx: StatusContext, max_intensity: int = 0) -> bool:
 	ctx.after_duration = int(s.duration)
 	ctx.intensity = di
 	ctx.duration = dd
+	if (di != 0) or (dd != 0):
+		_bump_effective_context_version()
 
 	return (di != 0) or (dd != 0)
 
@@ -338,6 +349,7 @@ func remove_ctx(ctx: StatusContext) -> void:
 		by_id.erase(ctx.status_id)
 	else:
 		by_id[ctx.status_id] = bucket
+	_bump_effective_context_version()
 
 func remove(id: StringName) -> void:
 	var ctx := StatusContext.new()
@@ -374,7 +386,11 @@ func clone() -> StatusState:
 	st._projected_status_ids_by_source = _projected_status_ids_by_source.duplicate(true)
 	st._projected_source_keys_by_status_id = _projected_source_keys_by_status_id.duplicate(true)
 	st._projected_cache_ready = _projected_cache_ready
+	st._effective_context_version = _effective_context_version
 	return st
+
+func _bump_effective_context_version() -> void:
+	_effective_context_version += 1
 
 func set_stack(id: StringName, intensity: int, duration: int, pending := false) -> bool:
 	var s := get_status_stack(id, pending)

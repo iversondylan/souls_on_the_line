@@ -146,7 +146,9 @@ static func _merge_impact_info(a: Dictionary, b: Dictionary) -> Dictionary:
 			merged_targets.append(cid)
 
 	return {
-		"known": bool(a.get("known", false)) and bool(b.get("known", false)),
+		# If either side provides a known impacted set we can stay on targeted
+		# source-key cache updates and avoid full projected cache rebuilds.
+		"known": bool(a.get("known", false)) or bool(b.get("known", false)),
 		"target_ids": merged_targets,
 	}
 
@@ -171,12 +173,12 @@ static func _handle_status_aura_projection_change(
 		api._request_replan_all()
 		api._request_intent_refresh_all()
 
+	api._refresh_projected_status_cache_for(int(source_owner_id), source_keys)
 	if known:
-		api._refresh_projected_status_cache_for(int(source_owner_id), source_keys)
 		for raw_id in impacted_ids:
 			api._refresh_projected_status_cache_for(int(raw_id), source_keys)
 	else:
-		api._refresh_all_projected_status_caches()
+		_refresh_projection_source_for_all_units(api, source_owner_id, source_keys)
 
 	_request_immediate_projection_flush_if_needed(api)
 
@@ -230,6 +232,20 @@ static func _request_immediate_projection_flush_if_needed(api: SimBattleAPI) -> 
 		return
 
 	api.runtime.request_projection_cleanup_flush()
+
+
+static func _refresh_projection_source_for_all_units(
+	api: SimBattleAPI,
+	source_owner_id: int,
+	source_keys: Array[String]
+) -> void:
+	if api == null or api.state == null:
+		return
+	for cid_variant in api.state.units.keys():
+		var cid := int(cid_variant)
+		if cid <= 0 or cid == int(source_owner_id):
+			continue
+		api._refresh_projected_status_cache_for(cid, source_keys)
 
 
 static func _make_status_aura_source_key(source_owner_id: int, status_id: StringName, pending: bool) -> String:

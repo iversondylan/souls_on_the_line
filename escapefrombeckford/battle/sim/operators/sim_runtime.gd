@@ -524,7 +524,6 @@ func _service_actor_turn(cid: int) -> void:
 
 	SimStatusSystem.on_actor_turn_begin(api, cid)
 	SimArcanaSystem.on_actor_turn_begin(api, cid)
-	api._refresh_all_projected_status_caches()
 	_apply_checkpoint_boundary(CheckpointProcessor.Kind.AFTER_ACTOR_TURN, true)
 
 	run_npc_turn(cid)
@@ -540,12 +539,10 @@ func _service_player_begin() -> void:
 	var player_id := _player_id()
 	if player_id > 0:
 		SimStatusSystem.on_player_turn_begin(api, player_id)
-		api._refresh_all_projected_status_caches()
 		_apply_checkpoint_boundary(CheckpointProcessor.Kind.AFTER_ACTOR_TURN, true)
 
 		SimStatusSystem.on_actor_turn_begin(api, player_id)
 		SimArcanaSystem.on_actor_turn_begin(api, player_id)
-		api._refresh_all_projected_status_caches()
 		_apply_checkpoint_boundary(CheckpointProcessor.Kind.AFTER_ACTOR_TURN, true)
 
 	engine.complete_player_begin()
@@ -613,7 +610,6 @@ func _complete_actor_turn(cid: int) -> void:
 
 	SimStatusSystem.on_actor_turn_end(api, cid)
 	SimArcanaSystem.on_actor_turn_end(api, cid)
-	api._refresh_all_projected_status_caches()
 	_apply_checkpoint_boundary(CheckpointProcessor.Kind.AFTER_ACTOR_TURN, true)
 
 	_replan_actor_intent_after_turn_cleanup(cid)
@@ -1309,7 +1305,6 @@ func run_arcana_proc(proc: int) -> void:
 		_end_scope(arcanum_scope)
 
 	_apply_checkpoint_boundary(CheckpointProcessor.Kind.AFTER_ARCANA, true)
-	sim.api._refresh_all_projected_status_caches()
 	_end_scope(arcana_scope)
 
 func _dispatch_battle_timed_arcanum(ctx, proc: int) -> void:
