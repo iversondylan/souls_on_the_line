@@ -318,6 +318,8 @@ func set_stack(id: StringName, intensity: int, duration: int, pending := false) 
 	var changed := (stack.intensity != intensity) or (stack.duration != duration)
 	stack.intensity = intensity
 	stack.duration = duration
+	if changed:
+		_bump_effective_context_version()
 	return changed
 
 

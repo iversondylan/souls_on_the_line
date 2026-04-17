@@ -7,5 +7,6 @@
 script = ExtResource("1_creative_potency_script")
 status_name = "Creative Potency"
 number_display_type = 1
+expiration_policy = 2
 icon = ExtResource("2_creative_potency_icon")
 tooltip = "The next Soul you summon this turn enters with bonus power and max health."

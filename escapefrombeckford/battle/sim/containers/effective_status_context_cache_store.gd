@@ -6,27 +6,23 @@ var _epoch: int = 1
 
 func has_contexts(
 	target_id: int,
-	unit_status_version: int,
-	include_pending_sources_signature: String
+	unit_status_version: int
 ) -> bool:
 	return _contexts_by_key.has(
 		_make_cache_key(
 			target_id,
-			unit_status_version,
-			include_pending_sources_signature
+			unit_status_version
 		)
 	)
 
 
 func get_contexts(
 	target_id: int,
-	unit_status_version: int,
-	include_pending_sources_signature: String
+	unit_status_version: int
 ) -> Array[SimStatusContext]:
 	var cache_key := _make_cache_key(
 		target_id,
-		unit_status_version,
-		include_pending_sources_signature
+		unit_status_version
 	)
 	if !_contexts_by_key.has(cache_key):
 		return []
@@ -37,13 +33,11 @@ func get_contexts(
 func set_contexts(
 	target_id: int,
 	unit_status_version: int,
-	include_pending_sources_signature: String,
 	contexts: Array[SimStatusContext]
 ) -> void:
 	var cache_key := _make_cache_key(
 		target_id,
-		unit_status_version,
-		include_pending_sources_signature
+		unit_status_version
 	)
 	_contexts_by_key[cache_key] = _copy_contexts(contexts)
 
@@ -55,13 +49,11 @@ func invalidate() -> void:
 
 func _make_cache_key(
 	target_id: int,
-	unit_status_version: int,
-	include_pending_sources_signature: String
+	unit_status_version: int
 ) -> String:
-	return "%s::%s::%s::%s" % [
+	return "%s::%s::%s" % [
 		str(int(target_id)),
 		str(int(unit_status_version)),
-		String(include_pending_sources_signature),
 		str(int(_epoch)),
 	]
 

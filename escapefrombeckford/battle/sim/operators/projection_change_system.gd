@@ -7,47 +7,25 @@ const ProjectionImpactInfo := preload("res://battle/sim/containers/projection_im
 const ProjectionSourceEntry := preload("res://battle/sim/containers/projection_source_entry.gd")
 
 
-static func track_status_aura(
-	api: SimBattleAPI,
-	source_owner_id: int,
-	status_id: StringName,
-	pending := false
-) -> void:
-	if !_can_use_status_aura_projection_bank(api, source_owner_id, status_id):
-		return
-
-	var bank: ProjectionBank = api.state.projection_bank
-	var impact_info := bank.get_status_aura_impact_info(api.state, source_owner_id, status_id, pending)
-	var changed := bool(bank.track_status_aura(source_owner_id, status_id, pending))
-	_handle_status_aura_projection_change(
-		api,
-		source_owner_id,
-		impact_info,
-		changed or impact_info.known,
-		[_make_status_aura_source_key(source_owner_id, status_id, pending)]
-	)
-
-
 static func untrack_status_aura(
 	api: SimBattleAPI,
 	source_owner_id: int,
-	status_id: StringName,
-	pending := false
+	status_id: StringName
 ) -> void:
 	if !_can_use_status_aura_projection_bank(api, source_owner_id, status_id):
 		return
-	
+
 	var bank: ProjectionBank = api.state.projection_bank
-	var impact_info := bank.get_status_aura_impact_info(api.state, source_owner_id, status_id, pending)
-	if !bool(bank.untrack_status_aura(source_owner_id, status_id, pending)):
+	var impact_info := bank.get_status_aura_impact_info(api.state, source_owner_id, status_id)
+	if !bool(bank.untrack_status_aura(source_owner_id, status_id)):
 		return
-	
+
 	_handle_status_aura_projection_change(
 		api,
 		source_owner_id,
 		impact_info,
 		true,
-		[_make_status_aura_source_key(source_owner_id, status_id, pending)]
+		[_make_status_aura_source_key(source_owner_id, status_id)]
 	)
 
 
@@ -64,61 +42,35 @@ static func untrack_auras_from_removed_combatant(api: SimBattleAPI, removed_id: 
 			untrack_status_aura(
 				api,
 				int(entry.source_owner_id),
-				StringName(entry.source_id),
-				bool(entry.pending)
+				StringName(entry.source_id)
 			)
-
-
-static func swap_status_aura_lane(
-	api: SimBattleAPI,
-	source_owner_id: int,
-	status_id: StringName,
-	from_pending: bool,
-	to_pending: bool
-) -> void:
-	if !_can_use_status_aura_projection_bank(api, source_owner_id, status_id):
-		return
-	if bool(from_pending) == bool(to_pending):
-		refresh_status_aura(api, source_owner_id, status_id, from_pending)
-		return
-
-	var bank: ProjectionBank = api.state.projection_bank
-	var before_info := bank.get_status_aura_impact_info(api.state, source_owner_id, status_id, from_pending)
-	var changed := false
-	changed = bool(bank.untrack_status_aura(source_owner_id, status_id, from_pending)) or changed
-	changed = bool(bank.track_status_aura(source_owner_id, status_id, to_pending)) or changed
-	var after_info := bank.get_status_aura_impact_info(api.state, source_owner_id, status_id, to_pending)
-
-	var merged_info := _merge_impact_info(before_info, after_info)
-	_handle_status_aura_projection_change(
-		api,
-		source_owner_id,
-		merged_info,
-		changed,
-		[
-			_make_status_aura_source_key(source_owner_id, status_id, from_pending),
-			_make_status_aura_source_key(source_owner_id, status_id, to_pending),
-		]
-	)
 
 
 static func refresh_status_aura(
 	api: SimBattleAPI,
 	source_owner_id: int,
-	status_id: StringName,
-	pending := false
+	status_id: StringName
 ) -> void:
 	if !_can_use_status_aura_projection_bank(api, source_owner_id, status_id):
 		return
 
 	var bank: ProjectionBank = api.state.projection_bank
-	var impact_info := bank.get_status_aura_impact_info(api.state, source_owner_id, status_id, pending)
+	var impact_info := bank.get_status_aura_impact_info(api.state, source_owner_id, status_id)
+	var should_track := _source_has_live_aura_stack(api, source_owner_id, status_id)
+	var had_entry := bool(bank.has_status_aura(source_owner_id, status_id))
+	var changed := false
+
+	if should_track and !had_entry:
+		changed = bool(bank.track_status_aura(source_owner_id, status_id))
+	elif !should_track and had_entry:
+		changed = bool(bank.untrack_status_aura(source_owner_id, status_id))
+
 	_handle_status_aura_projection_change(
 		api,
 		source_owner_id,
 		impact_info,
-		impact_info.known,
-		[_make_status_aura_source_key(source_owner_id, status_id, pending)]
+		changed or (should_track and impact_info.known),
+		[_make_status_aura_source_key(source_owner_id, status_id)]
 	)
 
 
@@ -136,13 +88,22 @@ static func _can_use_status_aura_projection_bank(
 	)
 
 
-static func _merge_impact_info(
-	a: ProjectionImpactInfo,
-	b: ProjectionImpactInfo
-) -> ProjectionImpactInfo:
-	if a == null:
-		return b.clone() if b != null else ProjectionImpactInfo.new()
-	return a.merged_with(b)
+static func _source_has_live_aura_stack(
+	api: SimBattleAPI,
+	source_owner_id: int,
+	status_id: StringName
+) -> bool:
+	if api == null or api.state == null or source_owner_id <= 0 or status_id == &"":
+		return false
+
+	var source: CombatantState = api.state.get_unit(source_owner_id)
+	if source == null or !source.is_alive() or source.statuses == null:
+		return false
+
+	# Pending aura stacks are fully live and project immediately. The projection bank
+	# tracks the aura source once, and the cached projected stacks collapse both
+	# lanes into a single non-pending projected view for targets.
+	return source.statuses.has(status_id, false) or source.statuses.has(status_id, true)
 
 
 static func _handle_status_aura_projection_change(
@@ -240,10 +201,9 @@ static func _refresh_projection_source_for_all_units(
 		api._refresh_projected_status_cache_for(cid, source_keys)
 
 
-static func _make_status_aura_source_key(source_owner_id: int, status_id: StringName, pending: bool) -> String:
+static func _make_status_aura_source_key(source_owner_id: int, status_id: StringName) -> String:
 	return ProjectionSourceEntry.make_source_key(
 		ProjectionBank.SOURCE_KIND_STATUS_AURA,
 		source_owner_id,
-		status_id,
-		pending
+		status_id
 	)

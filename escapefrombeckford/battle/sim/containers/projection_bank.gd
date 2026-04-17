@@ -13,12 +13,12 @@ var _ordered_entries_cache: Array[ProjectionSourceEntry] = []
 var _ordered_entries_cache_valid := false
 
 
-func track_status_aura(source_owner_id: int, status_id: StringName, pending := false) -> bool:
-	return _track(SOURCE_KIND_STATUS_AURA, int(source_owner_id), StringName(status_id), bool(pending))
+func track_status_aura(source_owner_id: int, status_id: StringName) -> bool:
+	return _track(SOURCE_KIND_STATUS_AURA, int(source_owner_id), StringName(status_id))
 
 
-func untrack_status_aura(source_owner_id: int, status_id: StringName, pending := false) -> bool:
-	var key := _make_key(SOURCE_KIND_STATUS_AURA, int(source_owner_id), StringName(status_id), bool(pending))
+func untrack_status_aura(source_owner_id: int, status_id: StringName) -> bool:
+	var key := _make_key(SOURCE_KIND_STATUS_AURA, int(source_owner_id), StringName(status_id))
 	var existed := _entries_by_key.has(key)
 	_entries_by_key.erase(key)
 	if existed:
@@ -26,17 +26,16 @@ func untrack_status_aura(source_owner_id: int, status_id: StringName, pending :=
 	return existed
 
 
-func has_status_aura(source_owner_id: int, status_id: StringName, pending := false) -> bool:
+func has_status_aura(source_owner_id: int, status_id: StringName) -> bool:
 	return _entries_by_key.has(
-		_make_key(SOURCE_KIND_STATUS_AURA, int(source_owner_id), StringName(status_id), bool(pending))
+		_make_key(SOURCE_KIND_STATUS_AURA, int(source_owner_id), StringName(status_id))
 	)
 
 
 func get_status_aura_impact_info(
 	state: BattleState,
 	source_owner_id: int,
-	status_id: StringName,
-	_pending := false
+	status_id: StringName
 ) -> ProjectionImpactInfo:
 	var target_ids := PackedInt32Array()
 	if state == null or state.status_catalog == null or source_owner_id <= 0 or status_id == &"":
@@ -82,7 +81,7 @@ func rebuild_arcanum_entries(state: BattleState, owner_id: int) -> void:
 		if arcanum_proto == null or !arcanum_proto.affects_others():
 			continue
 
-		_track(SOURCE_KIND_ARCANUM, owner_id, arcanum_entry.id, false)
+		_track(SOURCE_KIND_ARCANUM, owner_id, arcanum_entry.id)
 
 
 func clear() -> void:
@@ -121,11 +120,11 @@ func clone():
 	return bank
 
 
-func _track(source_kind: StringName, source_owner_id: int, source_id: StringName, pending: bool) -> bool:
+func _track(source_kind: StringName, source_owner_id: int, source_id: StringName) -> bool:
 	if source_kind == &"" or source_owner_id <= 0 or source_id == &"":
 		return false
 
-	var entry := ProjectionSourceEntry.new(source_kind, source_owner_id, source_id, pending)
+	var entry := ProjectionSourceEntry.new(source_kind, source_owner_id, source_id)
 	var key := entry.get_source_key()
 	var changed := !_entries_by_key.has(key)
 	_entries_by_key[key] = entry
@@ -134,8 +133,8 @@ func _track(source_kind: StringName, source_owner_id: int, source_id: StringName
 	return changed
 
 
-func _make_key(source_kind: StringName, source_owner_id: int, source_id: StringName, pending: bool) -> String:
-	return ProjectionSourceEntry.make_source_key(source_kind, source_owner_id, source_id, pending)
+func _make_key(source_kind: StringName, source_owner_id: int, source_id: StringName) -> String:
+	return ProjectionSourceEntry.make_source_key(source_kind, source_owner_id, source_id)
 
 func _invalidate_ordered_entries_cache() -> void:
 	_ordered_entries_cache_valid = false
@@ -164,8 +163,7 @@ func _rebuild_ordered_entries_cache() -> void:
 		var b_source := String(b.source_id)
 		if a_source != b_source:
 			return a_source < b_source
-
-		return int(a.pending) < int(b.pending)
+		return false
 	)
 	_ordered_entries_cache = ordered
 	_ordered_entries_cache_valid = true

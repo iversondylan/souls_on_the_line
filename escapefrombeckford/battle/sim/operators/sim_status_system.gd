@@ -2,11 +2,6 @@
 
 class_name SimStatusSystem extends RefCounted
 
-const PendingStatusSourceSet := preload("res://battle/sim/containers/pending_status_source_set.gd")
-const ProjectionSourceEntry := preload("res://battle/sim/containers/projection_source_entry.gd")
-const ProjectionSourceEntryLookup := preload("res://battle/sim/containers/projection_source_entry_lookup.gd")
-
-
 # Owns status lifecycle and event dispatch.
 # Turn progression belongs to SimRuntime.
 # Atomistic mutations belong to SimBattleAPI.
@@ -102,8 +97,7 @@ static func on_damage_will_be_taken(api: SimBattleAPI, damage_ctx: DamageContext
 
 static func on_attack_will_run(
 	api: SimBattleAPI,
-	attack_ctx: AttackContext,
-	include_pending_sources: PendingStatusSourceSet = null
+	attack_ctx: AttackContext
 ) -> void:
 	if api == null or api.state == null or attack_ctx == null or api.state.has_terminal_outcome():
 		return
@@ -116,12 +110,7 @@ static func on_attack_will_run(
 		if ctx.proto != null:
 			ctx.proto.on_attack_will_run(ctx, attack_ctx)
 
-	_for_each_effective_status_on_unit(
-		api,
-		attacker_id,
-		fn,
-		include_pending_sources
-	)
+	_for_each_effective_status_on_unit(api, attacker_id, fn)
 
 static func on_strike_resolved(
 	api: SimBattleAPI,
@@ -240,181 +229,38 @@ static func make_context(api: SimBattleAPI, owner_id: int, stack: StatusStack) -
 # Daddy's favorite function
 static func get_effective_status_contexts_for_unit(
 	api: SimBattleAPI,
-	target_id: int,
-	include_pending_sources: PendingStatusSourceSet = null
+	target_id: int
 ) -> Array[SimStatusContext]:
 	var owned: Array[SimStatusContext] = []
 	var projected: Array[SimStatusContext] = []
 	if api == null or api.state == null or target_id <= 0:
 		return owned
-	var pending_sources := _ensure_pending_status_sources(include_pending_sources)
 	var target: CombatantState = api.state.get_unit(int(target_id))
 	var unit_status_version := 0
 	if target != null and target.statuses != null:
 		unit_status_version = int(target.statuses.get_effective_context_version())
-	var include_pending_sources_signature := pending_sources.signature()
 	if api.has_cached_effective_status_contexts_for_unit(
 		int(target_id),
-		unit_status_version,
-		include_pending_sources_signature
+		unit_status_version
 	):
 		return api._get_cached_effective_status_contexts_for_unit(
 			int(target_id),
-			unit_status_version,
-			include_pending_sources_signature
+			unit_status_version
 		)
-	
-	_append_owned_status_contexts(owned, api, target_id, pending_sources)
-	var include_pending_projection_sources := !pending_sources.is_empty()
-	if include_pending_projection_sources:
-		_append_projected_status_contexts(
-			projected,
-			api,
-			target_id,
-			pending_sources
-		)
-	else:
-		refresh_cached_projected_statuses_for_unit(api, target_id)
-		_append_cached_projected_status_contexts(projected, api, target_id)
+
+	# Pending owned stacks are fully live, so effective status queries always
+	# report both owned lanes and the collapsed projected cache with no preview-only
+	# inclusion path.
+	_append_owned_status_contexts(owned, api, target_id)
+	refresh_cached_projected_statuses_for_unit(api, target_id)
+	_append_cached_projected_status_contexts(projected, api, target_id)
 	var merged := _merge_owned_and_projected_contexts(owned, projected)
 	api._set_cached_effective_status_contexts_for_unit(
 		int(target_id),
 		unit_status_version,
-		include_pending_sources_signature,
 		merged
 	)
 	return merged
-
-
-# -------------------------------------------------------------------
-# Pending-status helpers
-# -------------------------------------------------------------------
-
-static func action_realizes_pending_statuses(action: NPCAction) -> bool:
-	if action == null:
-		return false
-
-	for pkg: NPCEffectPackage in action.effect_packages:
-		if package_realizes_pending_statuses(pkg):
-			return true
-	return false
-
-static func package_realizes_pending_statuses(pkg: NPCEffectPackage) -> bool:
-	return (
-		pkg != null
-		and pkg.effect != null
-		and bool(pkg.effect.realizes_pending_statuses())
-	)
-
-static func collect_pending_realization_sources(
-	ctx: NPCAIContext,
-	source_id: int
-) -> PendingStatusSourceSet:
-	# Historical name kept for callers; keys are status-owner IDs whose pending lane
-	# should be included in intent preview because a realize package runs first.
-	var out := PendingStatusSourceSet.new()
-	if ctx == null or ctx.api == null or !(ctx.api is SimBattleAPI):
-		return out
-
-	var api: SimBattleAPI = ctx.api
-	var group_index := int(api.get_group(source_id))
-	if group_index < 0:
-		return out
-
-	var order := _get_relevant_group_order(ctx, group_index)
-	var source_pos := order.find(int(source_id))
-	if source_pos == -1:
-		return out
-
-	for i in range(source_pos):
-		var earlier_id := int(order[i])
-		if earlier_id <= 0:
-			continue
-		_append_pending_realization_targets_for_action(out, api, ctx, earlier_id)
-
-	var preview_package_index := int(ctx.preview_package_index)
-	if preview_package_index >= 0:
-		_append_pending_realization_targets_for_action(
-			out,
-			api,
-			ctx,
-			int(source_id),
-			preview_package_index
-		)
-
-	return out
-
-static func _append_pending_realization_targets_for_action(
-	out: PendingStatusSourceSet,
-	api: SimBattleAPI,
-	base_ctx: NPCAIContext,
-	actor_id: int,
-	before_package_index: int = -1
-) -> void:
-	if out == null or api == null or api.state == null or actor_id <= 0:
-		return
-
-	var action := _get_planned_action_for_pending(api, actor_id)
-	if action == null:
-		return
-
-	var limit := action.effect_packages.size()
-	if before_package_index >= 0:
-		limit = mini(int(before_package_index), limit)
-
-	for i in range(limit):
-		var pkg: NPCEffectPackage = action.effect_packages[i]
-		if !package_realizes_pending_statuses(pkg):
-			continue
-		var target_ids := _resolve_pending_realization_targets_for_package(api, base_ctx, actor_id, pkg)
-		for tid in target_ids:
-			out.include_source(int(tid))
-
-static func _resolve_pending_realization_targets_for_package(
-	api: SimBattleAPI,
-	base_ctx: NPCAIContext,
-	actor_id: int,
-	pkg: NPCEffectPackage
-) -> PackedInt32Array:
-	var target_ids := PackedInt32Array()
-	if api == null or api.state == null or actor_id <= 0 or pkg == null:
-		return target_ids
-
-	var actor: CombatantState = api.state.get_unit(actor_id)
-	if actor == null or !actor.is_alive() or actor.combatant_data == null:
-		return target_ids
-
-	ActionPlanner.ensure_ai_state_initialized(actor)
-	var work_ctx := ActionPlanner.make_context(api, actor)
-	work_ctx.runtime = base_ctx.runtime if base_ctx != null and base_ctx.runtime != null else api.runtime
-	work_ctx.forecast = true
-	work_ctx.state = actor.ai_state.duplicate(true) if actor.ai_state != null else {}
-	work_ctx.rng = actor.rng.clone() if actor.rng != null else null
-	work_ctx.params.clear()
-
-	for pm: ParamModel in pkg.param_models:
-		if pm != null:
-			pm.change_params_sim(work_ctx)
-
-	var has_explicit_targets := work_ctx.params != null and work_ctx.params.has(Keys.TARGET_IDS)
-	if has_explicit_targets:
-		var raw_value = work_ctx.params.get(Keys.TARGET_IDS, PackedInt32Array())
-		if raw_value is PackedInt32Array:
-			target_ids = raw_value
-		elif raw_value is Array:
-			target_ids = PackedInt32Array(raw_value)
-	else:
-		target_ids.append(actor_id)
-
-	var filtered := PackedInt32Array()
-	for tid in target_ids:
-		var target_id := int(tid)
-		if target_id <= 0:
-			continue
-		if !api.is_alive(target_id):
-			continue
-		filtered.append(target_id)
-	return filtered
 
 static func realize_pending_statuses(
 	api: SimBattleAPI,
@@ -433,13 +279,11 @@ static func realize_pending_statuses(
 	if pending_ids.is_empty():
 		return
 
-	var any_aura := false
 	var any_changed := false
-	var any_non_aura := false
 	var src_id := int(source_id if source_id > 0 else target_id)
+	var changed_aura_ids: Array[StringName] = []
 
 	for status_id in pending_ids:
-		var had_realized := u.statuses.has(status_id, false)
 		var proto := get_proto(api, status_id)
 		var status_max_intensity := int(proto.get_max_intensity()) if proto != null else 0
 
@@ -480,62 +324,15 @@ static func realize_pending_statuses(
 		if proto == null:
 			continue
 
-		any_aura = any_aura or is_aura_proto(proto)
-		any_non_aura = any_non_aura or !is_aura_proto(proto)
 		if is_aura_proto(proto):
-			api._swap_status_aura_projection_lane(int(target_id), status_id, true, false)
-
-		if !had_realized:
-			var status_ctx := make_context(
-				api,
-				int(target_id),
-				u.statuses.get_status_stack(status_id, false)
-			)
-			if status_ctx != null and status_ctx.proto != null:
-				status_ctx.proto.on_apply(status_ctx, ctx)
-
-		if !is_aura_proto(proto):
-			api._request_immediate_planning_flush_if_needed(int(target_id), proto)
+			changed_aura_ids.append(status_id)
 
 	if !any_changed:
 		return
 
 	api._refresh_projected_status_cache_for(int(target_id))
-	if !any_aura:
-		api._request_intent_refresh(int(target_id))
-	if any_non_aura:
-		api._on_status_changed(int(target_id))
-
-static func _get_relevant_group_order(ctx: NPCAIContext, group_index: int) -> Array[int]:
-	var out: Array[int] = []
-	if ctx == null or ctx.api == null or !(ctx.api is SimBattleAPI):
-		return out
-
-	var api: SimBattleAPI = ctx.api
-	var runtime := ctx.runtime if ctx.runtime != null else api.runtime
-	if runtime != null and runtime.turn_engine != null and int(runtime.turn_engine.active_group_index) == int(group_index):
-		var snapshot := runtime.turn_engine.build_pending_actor_snapshot()
-		if int(snapshot.active_id) > 0:
-			out.append(int(snapshot.active_id))
-		for cid in snapshot.pending_ids:
-			var id := int(cid)
-			if id > 0 and !out.has(id):
-				out.append(id)
-		return out
-
-	return api.get_combatants_in_group(group_index, false)
-
-static func _get_planned_action_for_pending(api: SimBattleAPI, source_id: int) -> NPCAction:
-	if api == null or api.state == null:
-		return null
-
-	var unit: CombatantState = api.state.get_unit(source_id)
-	if unit == null or !unit.is_alive() or unit.combatant_data == null or unit.combatant_data.ai == null:
-		return null
-
-	ActionPlanner.ensure_ai_state_initialized(unit)
-	var planned_idx := int(unit.ai_state.get(ActionPlanner.KEY_PLANNED_IDX, -1))
-	return ActionPlanner.get_action_by_idx(unit.combatant_data.ai, planned_idx)
+	for aura_status_id in changed_aura_ids:
+		api._refresh_status_aura_projection(int(target_id), aura_status_id)
 
 
 # -------------------------------------------------------------------
@@ -582,7 +379,7 @@ static func _for_each_status_on_unit(api: SimBattleAPI, owner_id: int, fn: Calla
 	if u.statuses.by_id.is_empty():
 		return
 
-	for stack: StatusStack in u.statuses.get_all_stacks(false):
+	for stack: StatusStack in u.statuses.get_all_stacks(true):
 		if stack == null:
 			continue
 
@@ -595,17 +392,12 @@ static func _for_each_status_on_unit(api: SimBattleAPI, owner_id: int, fn: Calla
 static func _for_each_effective_status_on_unit(
 	api: SimBattleAPI,
 	owner_id: int,
-	fn: Callable,
-	include_pending_sources: PendingStatusSourceSet = null
+	fn: Callable
 ) -> void:
 	if api == null or api.state == null or owner_id <= 0 or !fn.is_valid():
 		return
 
-	for ctx: SimStatusContext in get_effective_status_contexts_for_unit(
-		api,
-		owner_id,
-		include_pending_sources
-	):
+	for ctx: SimStatusContext in get_effective_status_contexts_for_unit(api, owner_id):
 		if ctx == null or !ctx.is_valid():
 			continue
 		fn.call(ctx)
@@ -650,8 +442,7 @@ static func _unit_grants_cleave_internal(
 static func _append_owned_status_contexts(
 	out: Array[SimStatusContext],
 	api: SimBattleAPI,
-	target_id: int,
-	include_pending_sources: PendingStatusSourceSet
+	target_id: int
 ) -> void:
 	if api == null or api.state == null:
 		return
@@ -662,49 +453,14 @@ static func _append_owned_status_contexts(
 	if u.statuses.by_id.is_empty():
 		return
 
-	var include_pending_owned := include_pending_sources != null and include_pending_sources.has_source(int(target_id))
-
-	for stack: StatusStack in u.statuses.get_all_stacks(include_pending_owned):
+	for stack: StatusStack in u.statuses.get_all_stacks(true):
 		if stack == null:
-			continue
-		if bool(stack.pending) and !include_pending_owned:
 			continue
 
 		var ctx := make_context(api, target_id, stack)
 		if ctx == null or !ctx.is_valid():
 			continue
 		out.append(ctx)
-
-
-static func _append_projected_status_contexts(
-	out: Array[SimStatusContext],
-	api: SimBattleAPI,
-	target_id: int,
-	include_pending_sources: PendingStatusSourceSet
-) -> void:
-	if api == null or api.state == null or api.state.projection_bank == null:
-		return
-	
-	var target: CombatantState = api.state.get_unit(target_id)
-	if target == null:
-		return
-	
-	for entry: ProjectionSourceEntry in api.state.projection_bank.get_entries():
-		var source_kind := entry.source_kind
-		match source_kind:
-			ProjectionBank.SOURCE_KIND_STATUS_AURA:
-				_append_status_aura_projected_contexts(
-					out,
-					api,
-					target,
-					target_id,
-					entry,
-					include_pending_sources
-				)
-			ProjectionBank.SOURCE_KIND_ARCANUM:
-				_append_arcanum_projected_contexts(out, api, target, target_id, entry)
-			_:
-				continue
 
 static func _append_cached_projected_status_contexts(
 	out: Array[SimStatusContext],
@@ -724,119 +480,6 @@ static func _append_cached_projected_status_contexts(
 			continue
 		out.append(projected_ctx)
 
-
-static func _append_status_aura_projected_contexts(
-	out: Array[SimStatusContext],
-	api: SimBattleAPI,
-	target: CombatantState,
-	target_id: int,
-	entry: ProjectionSourceEntry,
-	include_pending_sources: PendingStatusSourceSet
-) -> void:
-	var source_id := int(entry.source_owner_id)
-	if source_id <= 0:
-		return
-	
-	var pending := bool(entry.pending)
-	var include_pending_source := include_pending_sources != null and include_pending_sources.has_source(source_id)
-	if pending and !include_pending_source:
-		return
-	
-	var source: CombatantState = api.state.get_unit(source_id)
-	if source == null:
-		return
-	if !source.is_alive():
-		return
-	
-	var aura_status_id := StringName(entry.source_id)
-	var aura_proto := get_proto(api, aura_status_id) as Aura
-	if aura_proto == null:
-		return
-	
-	var aura_stack := source.statuses.get_status_stack(aura_status_id, pending) if source.statuses != null else null
-	if aura_stack == null:
-		return
-	if int(aura_proto.expiration_policy) == int(Status.ExpirationPolicy.DURATION) and int(aura_stack.duration) <= 0:
-		return
-	if !aura_proto.affects_target(api.state, source_id, target_id):
-		return
-	
-	for projected_proto: Status in aura_proto.get_projected_statuses():
-		if projected_proto == null:
-			continue
-		
-		var projected_ctx: SimStatusContext = SimAuraStatusContext.new(
-			api,
-			target_id,
-			target,
-			source_id,
-			source,
-			aura_status_id,
-			pending,
-			aura_proto,
-			projected_proto
-		)
-		if projected_ctx == null or !projected_ctx.is_valid():
-			continue
-		
-		out.append(projected_ctx)
-
-
-static func _append_arcanum_projected_contexts(
-	out: Array[SimStatusContext],
-	api: SimBattleAPI,
-	target: CombatantState,
-	target_id: int,
-	entry: ProjectionSourceEntry
-) -> void:
-	if api == null or api.state == null or api.state.arcana == null or api.state.arcana_catalog == null:
-		return
-
-	var arcanum_owner_id := int(entry.source_owner_id)
-	var arcanum_id := StringName(entry.source_id)
-	if arcanum_owner_id <= 0 or arcanum_id == &"":
-		return
-
-	var arcanum_entry: ArcanaState.ArcanumEntry = api.state.arcana.get_entry(arcanum_id)
-	if arcanum_entry == null:
-		return
-
-	var arcanum_proto: Arcanum = api.state.arcana_catalog.get_proto(arcanum_id)
-	if arcanum_proto == null or !arcanum_proto.affects_others():
-		return
-	if !arcanum_proto.affects_target(api.state, arcanum_owner_id, target_id):
-		return
-
-	for projected_proto: Status in arcanum_proto.get_projected_statuses():
-		if projected_proto == null:
-			continue
-		if (
-			int(projected_proto.expiration_policy) == int(Status.ExpirationPolicy.DURATION)
-			and int(arcanum_proto.get_projection_duration(
-				SimArcanumContext.new(
-					api,
-					arcanum_owner_id,
-					SimBattleAPI.FRIENDLY,
-					arcanum_entry,
-					arcanum_proto
-				)
-			)) <= 0
-		):
-			continue
-
-		var projected_ctx: SimStatusContext = SimProjectedArcanumStatusContext.new(
-			api,
-			target_id,
-			target,
-			arcanum_owner_id,
-			arcanum_entry,
-			arcanum_proto,
-			projected_proto
-		)
-		if projected_ctx == null or !projected_ctx.is_valid():
-			continue
-
-		out.append(projected_ctx)
 
 
 static func _merge_owned_and_projected_contexts(
@@ -1006,9 +649,6 @@ static func _append_status_aura_projected_stacks(
 ) -> void:
 	if api == null or api.state == null:
 		return
-	var pending := bool(entry.pending)
-	if pending:
-		return
 
 	var source_id := int(entry.source_owner_id)
 	if source_id <= 0:
@@ -1023,23 +663,32 @@ static func _append_status_aura_projected_stacks(
 		return
 	if source.statuses == null:
 		return
-	var aura_stack := source.statuses.get_status_stack(aura_status_id, false)
-	if aura_stack == null:
-		return
-	if int(aura_proto.expiration_policy) == int(Status.ExpirationPolicy.DURATION) and int(aura_stack.duration) <= 0:
-		return
 	if !aura_proto.affects_target(api.state, source_id, target_id):
+		return
+
+	var total_intensity := 0
+	var max_duration := 0
+	for aura_stack: StatusStack in source.statuses.get_all_stacks(true):
+		if aura_stack == null or StringName(aura_stack.id) != aura_status_id:
+			continue
+		if int(aura_proto.expiration_policy) == int(Status.ExpirationPolicy.DURATION) and int(aura_stack.duration) <= 0:
+			continue
+		total_intensity += maxi(int(aura_stack.intensity), 0)
+		max_duration = maxi(max_duration, int(aura_stack.duration))
+
+	if total_intensity <= 0:
 		return
 
 	for projected_proto: Status in aura_proto.get_projected_statuses():
 		if projected_proto == null:
 			continue
+		# Pending aura stacks are fully live, but targets only ever see the combined
+		# projected result as a single non-pending stack.
 		var projected_stack := StatusStack.new(StringName(projected_proto.get_id()))
 		projected_stack.pending = false
-		projected_stack.intensity = maxi(int(aura_stack.intensity), 0)
-		projected_stack.duration = maxi(int(aura_stack.duration), 0)
-		if projected_stack.intensity > 0:
-			out.append(projected_stack)
+		projected_stack.intensity = total_intensity
+		projected_stack.duration = max_duration
+		out.append(projected_stack)
 
 static func _append_arcanum_projected_stacks(
 	out: Array[StatusStack],
@@ -1096,12 +745,6 @@ static func _make_effective_status_merge_key(status_id: StringName, pending: boo
 	return "%s::%s" % [String(status_id), "pending" if pending else "realized"]
 
 
-static func _ensure_pending_status_sources(
-	include_pending_sources: PendingStatusSourceSet
-) -> PendingStatusSourceSet:
-	return include_pending_sources if include_pending_sources != null else PendingStatusSourceSet.new()
-
-
 # -------------------------------------------------------------------
 # Generic expiration / ticking
 # -------------------------------------------------------------------
@@ -1125,20 +768,27 @@ static func _expire_unit_by_policy(api: SimBattleAPI, cid: int, policy: int) -> 
 	if u.statuses.by_id.is_empty():
 		return
 
-	var to_remove: Array[StringName] = []
+	var to_remove: Array[Dictionary] = []
 
-	for sid in u.statuses.get_status_ids(false):
+	for stack: StatusStack in u.statuses.get_all_stacks(true):
+		if stack == null:
+			continue
+		var sid := StringName(stack.id)
 		var proto := get_proto(api, sid)
 		if proto == null:
 			continue
 		if int(proto.expiration_policy) == policy:
-			to_remove.append(StringName(sid))
+			to_remove.append({
+				"status_id": sid,
+				"pending": bool(stack.pending),
+			})
 
-	for sid in to_remove:
+	for item in to_remove:
 		var rc := StatusContext.new()
 		rc.source_id = cid
 		rc.target_id = cid
-		rc.status_id = sid
+		rc.status_id = StringName(item.status_id)
+		rc.pending = bool(item.pending)
 		api.remove_status(rc)
 
 static func _tick_duration_statuses_for_owner_turn_end(api: SimBattleAPI, actor_id: int) -> void:
@@ -1149,9 +799,9 @@ static func _tick_duration_statuses_for_owner_turn_end(api: SimBattleAPI, actor_
 		return
 
 	var changed: Array[Dictionary] = []
-	var expired: Array[StringName] = []
+	var expired: Array[Dictionary] = []
 
-	for stack: StatusStack in u.statuses.get_all_stacks(false):
+	for stack: StatusStack in u.statuses.get_all_stacks(true):
 		if stack == null:
 			continue
 
@@ -1165,19 +815,27 @@ static func _tick_duration_statuses_for_owner_turn_end(api: SimBattleAPI, actor_
 
 		var before_i := int(stack.intensity)
 		var before_d := int(stack.duration)
+		var pending := bool(stack.pending)
 
 		if before_d <= 0:
-			expired.append(StringName(sid))
+			expired.append({
+				"sid": StringName(sid),
+				"pending": pending,
+			})
 			continue
 
 		var after_d := before_d - 1
-		stack.duration = after_d
+		u.statuses.set_stack(sid, before_i, after_d, pending)
 
 		if after_d <= 0:
-			expired.append(StringName(sid))
+			expired.append({
+				"sid": StringName(sid),
+				"pending": pending,
+			})
 		else:
 			changed.append({
 				"sid": StringName(sid),
+				"pending": pending,
 				"before_intensity": before_i,
 				"before_duration": before_d,
 				"after_intensity": before_i,
@@ -1196,6 +854,9 @@ static func _tick_duration_statuses_for_owner_turn_end(api: SimBattleAPI, actor_
 				int(item.delta_intensity),
 				int(item.delta_duration),
 				{
+					Keys.STATUS_PENDING: bool(item.pending),
+					Keys.BEFORE_PENDING: bool(item.pending),
+					Keys.AFTER_PENDING: bool(item.pending),
 					Keys.BEFORE_INTENSITY: int(item.before_intensity),
 					Keys.BEFORE_DURATION: int(item.before_duration),
 					Keys.AFTER_INTENSITY: int(item.after_intensity),
@@ -1206,9 +867,10 @@ static func _tick_duration_statuses_for_owner_turn_end(api: SimBattleAPI, actor_
 				}
 			)
 
-	for sid in expired:
+	for item in expired:
 		var rc := StatusContext.new()
 		rc.source_id = actor_id
 		rc.target_id = actor_id
-		rc.status_id = sid
+		rc.status_id = StringName(item.sid)
+		rc.pending = bool(item.pending)
 		api.remove_status(rc)

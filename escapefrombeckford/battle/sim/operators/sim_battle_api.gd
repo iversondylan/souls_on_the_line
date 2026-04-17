@@ -3,7 +3,6 @@
 class_name SimBattleAPI extends RefCounted
 
 const EffectiveStatusContextCacheStore := preload("res://battle/sim/containers/effective_status_context_cache_store.gd")
-const PendingStatusSourceSet := preload("res://battle/sim/containers/pending_status_source_set.gd")
 
 # ============================================================================
 # SimBattleAPI
@@ -266,7 +265,7 @@ func has_status(combat_id: int, status_id: StringName) -> bool:
 	if u == null or !u.is_alive():
 		return false
 	
-	return u.statuses.has(status_id, false)
+	return u.statuses.has_any(status_id)
 
 
 func get_status_intensity(combat_id: int, status_id: StringName) -> int:
@@ -277,11 +276,17 @@ func get_status_intensity(combat_id: int, status_id: StringName) -> int:
 	if u == null or !u.is_alive() or u.statuses == null:
 		return -1
 
-	var stack: StatusStack = u.statuses.get_status_stack(status_id, false)
-	if stack == null:
+	var total := 0
+	var found := false
+	for stack: StatusStack in u.statuses.get_all_stacks(true):
+		if stack == null or StringName(stack.id) != status_id:
+			continue
+		total += int(stack.intensity)
+		found = true
+	if !found:
 		return -1
 
-	return int(stack.intensity)
+	return total
 
 
 # ============================================================================
@@ -289,49 +294,41 @@ func get_status_intensity(combat_id: int, status_id: StringName) -> int:
 # ============================================================================
 
 func get_effective_status_contexts_for_unit(
-	target_id: int,
-	include_pending_sources: PendingStatusSourceSet = null
+	target_id: int
 ) -> Array[SimStatusContext]:
 	return SimStatusSystem.get_effective_status_contexts_for_unit(
 		self,
-		target_id,
-		include_pending_sources
+		target_id
 	)
 
 func has_cached_effective_status_contexts_for_unit(
 	target_id: int,
-	unit_status_version: int,
-	include_pending_sources_signature: String
+	unit_status_version: int
 ) -> bool:
 	return _effective_status_context_cache_store.has_contexts(
 		target_id,
-		unit_status_version,
-		include_pending_sources_signature
+		unit_status_version
 	)
 
 
 func _get_cached_effective_status_contexts_for_unit(
 	target_id: int,
-	unit_status_version: int,
-	include_pending_sources_signature: String
+	unit_status_version: int
 ) -> Array[SimStatusContext]:
 	return _effective_status_context_cache_store.get_contexts(
 		target_id,
-		unit_status_version,
-		include_pending_sources_signature
+		unit_status_version
 	)
 
 
 func _set_cached_effective_status_contexts_for_unit(
 	target_id: int,
 	unit_status_version: int,
-	include_pending_sources_signature: String,
 	contexts: Array[SimStatusContext]
 ) -> void:
 	_effective_status_context_cache_store.set_contexts(
 		target_id,
 		unit_status_version,
-		include_pending_sources_signature,
 		contexts
 	)
 
@@ -346,8 +343,7 @@ func get_non_status_modifier_tokens_for_target(target_id: int, mod_type: Modifie
 
 func get_modifier_tokens_for_cid(
 	target_id: int,
-	mod_type: Modifier.Type,
-	include_pending_sources: PendingStatusSourceSet = null
+	mod_type: Modifier.Type
 ) -> Array[ModifierToken]:
 	var tokens: Array[ModifierToken] = []
 
@@ -358,20 +354,19 @@ func get_modifier_tokens_for_cid(
 	if target == null or !target.is_alive():
 		return tokens
 
-	tokens.append_array(_get_effective_status_modifier_tokens_for_target(target_id, mod_type, include_pending_sources))
+	tokens.append_array(_get_effective_status_modifier_tokens_for_target(target_id, mod_type))
 	return tokens
 
 
 func _get_effective_status_modifier_tokens_for_target(
 	target_id: int,
-	mod_type: Modifier.Type,
-	include_pending_sources: PendingStatusSourceSet = null
+	mod_type: Modifier.Type
 ) -> Array[ModifierToken]:
 	var out: Array[ModifierToken] = []
 	if state == null or state.status_catalog == null:
 		return out
 
-	for ctx: SimStatusContext in get_effective_status_contexts_for_unit(target_id, include_pending_sources):
+	for ctx: SimStatusContext in get_effective_status_contexts_for_unit(target_id):
 		if ctx == null or !ctx.is_valid():
 			continue
 		var proto := ctx.proto
@@ -575,31 +570,11 @@ func _request_outcome_check() -> void:
 func _on_status_changed(cid: int) -> void:
 	_request_replan(int(cid))
 
-func _track_status_aura_projection(source_owner_id: int, status_id: StringName, pending := false) -> void:
-	ProjectionChangeSystem.track_status_aura(self, source_owner_id, status_id, pending)
-
-func _untrack_status_aura_projection(source_owner_id: int, status_id: StringName, pending := false) -> void:
-	ProjectionChangeSystem.untrack_status_aura(self, source_owner_id, status_id, pending)
-
 func _untrack_auras_for_removed_combatant(removed_id: int) -> void:
 	ProjectionChangeSystem.untrack_auras_from_removed_combatant(self, removed_id)
 
-func _swap_status_aura_projection_lane(
-	source_owner_id: int,
-	status_id: StringName,
-	from_pending: bool,
-	to_pending: bool
-) -> void:
-	ProjectionChangeSystem.swap_status_aura_lane(
-		self,
-		source_owner_id,
-		status_id,
-		from_pending,
-		to_pending
-	)
-
-func _refresh_status_aura_projection(source_owner_id: int, status_id: StringName, pending := false) -> void:
-	ProjectionChangeSystem.refresh_status_aura(self, source_owner_id, status_id, pending)
+func _refresh_status_aura_projection(source_owner_id: int, status_id: StringName) -> void:
+	ProjectionChangeSystem.refresh_status_aura(self, source_owner_id, status_id)
 
 
 
@@ -978,23 +953,24 @@ func apply_status(ctx: StatusContext) -> void:
 		# No effective mutation means no projection, status-hook, or intent side effects.
 		return
 	_invalidate_effective_status_context_cache()
-	
+
+	var status_ctx := SimStatusSystem.make_context(
+		self,
+		int(ctx.target_id),
+		u.statuses.get_status_stack(ctx.status_id, bool(ctx.pending))
+	)
+	if status_ctx != null and status_ctx.proto != null:
+		status_ctx.proto.on_apply(status_ctx, ctx)
+
 	if SimStatusSystem.is_aura_proto(proto):
-		_track_status_aura_projection(int(ctx.target_id), ctx.status_id, bool(ctx.pending))
-	
-	if !bool(ctx.pending):
-		var status_ctx := SimStatusSystem.make_context(
-			self,
-			int(ctx.target_id),
-			u.statuses.get_status_stack(ctx.status_id, false)
-		)
-		if status_ctx != null and status_ctx.proto != null:
-			status_ctx.proto.on_apply(status_ctx, ctx)
-	
+		# Pending aura stacks are fully live and must project immediately, but the
+		# projected cache collapses all aura lanes into one combined projected stack.
+		_refresh_status_aura_projection(int(ctx.target_id), ctx.status_id)
+
 	if !SimStatusSystem.is_aura_proto(proto):
 		_request_intent_refresh(int(ctx.target_id))
 	
-	if !bool(ctx.pending) and !SimStatusSystem.is_aura_proto(proto):
+	if !SimStatusSystem.is_aura_proto(proto):
 		_on_status_changed(int(ctx.target_id))
 		_request_immediate_planning_flush_if_needed(int(ctx.target_id), proto)
 
@@ -1048,16 +1024,16 @@ func remove_status(ctx: StatusContext) -> void:
 			}
 		)
 	
-	if SimStatusSystem.is_aura_proto(proto):
-		_untrack_status_aura_projection(int(ctx.target_id), ctx.status_id, bool(ctx.pending))
-	
-	if !bool(ctx.pending) and status_ctx != null and status_ctx.proto != null:
+	if status_ctx != null and status_ctx.proto != null:
 		status_ctx.proto.on_remove(status_ctx, ctx)
+
+	if SimStatusSystem.is_aura_proto(proto):
+		_refresh_status_aura_projection(int(ctx.target_id), ctx.status_id)
 	
 	if !SimStatusSystem.is_aura_proto(proto):
 		_request_intent_refresh(int(ctx.target_id))
 	
-	if !bool(ctx.pending) and !SimStatusSystem.is_aura_proto(proto):
+	if !SimStatusSystem.is_aura_proto(proto):
 		_on_status_changed(int(ctx.target_id))
 		_request_immediate_planning_flush_if_needed(int(ctx.target_id), proto)
 
