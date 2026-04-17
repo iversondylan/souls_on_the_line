@@ -2,6 +2,8 @@
 
 class_name SimStatusSystem extends RefCounted
 
+const StatusToken := preload("res://battle/sim/containers/status_token.gd")
+
 # Owns status lifecycle and event dispatch.
 # Turn progression belongs to SimRuntime.
 # Atomistic mutations belong to SimBattleAPI.
@@ -212,19 +214,19 @@ static func get_proto(api: SimBattleAPI, status_id: StringName) -> Status:
 static func is_aura_proto(proto: Status) -> bool:
 	return proto is Aura
 
-static func make_context(api: SimBattleAPI, owner_id: int, stack: StatusStack) -> SimStatusContext:
-	if api == null or api.state == null or owner_id <= 0 or stack == null:
+static func make_context(api: SimBattleAPI, owner_id: int, token: StatusToken) -> SimStatusContext:
+	if api == null or api.state == null or owner_id <= 0 or token == null:
 		return null
 
 	var owner: CombatantState = api.state.get_unit(owner_id)
 	if owner == null:
 		return null
 
-	var proto := get_proto(api, stack.id)
+	var proto := get_proto(api, token.id)
 	if proto == null:
 		return null
 
-	return SimStatusContext.new(api, owner_id, owner, stack, proto)
+	return SimStatusContext.new(api, owner_id, owner, token, proto)
 
 # Daddy's favorite function
 static func get_effective_status_contexts_for_unit(
@@ -248,7 +250,7 @@ static func get_effective_status_contexts_for_unit(
 			unit_status_version
 		)
 
-	# Pending owned stacks are fully live, so effective status queries always
+	# Pending owned tokens are fully live, so effective status queries always
 	# report both owned lanes and the collapsed projected cache with no preview-only
 	# inclusion path.
 	_append_owned_status_contexts(owned, api, target_id)
@@ -379,11 +381,11 @@ static func _for_each_status_on_unit(api: SimBattleAPI, owner_id: int, fn: Calla
 	if u.statuses.by_id.is_empty():
 		return
 
-	for stack: StatusStack in u.statuses.get_all_stacks(true):
-		if stack == null:
+	for token: StatusToken in u.statuses.get_all_tokens(true):
+		if token == null:
 			continue
 
-		var ctx := make_context(api, owner_id, stack)
+		var ctx := make_context(api, owner_id, token)
 		if ctx == null or !ctx.is_valid():
 			continue
 
@@ -453,11 +455,11 @@ static func _append_owned_status_contexts(
 	if u.statuses.by_id.is_empty():
 		return
 
-	for stack: StatusStack in u.statuses.get_all_stacks(true):
-		if stack == null:
+	for token: StatusToken in u.statuses.get_all_tokens(true):
+		if token == null:
 			continue
 
-		var ctx := make_context(api, target_id, stack)
+		var ctx := make_context(api, target_id, token)
 		if ctx == null or !ctx.is_valid():
 			continue
 		out.append(ctx)
@@ -472,10 +474,10 @@ static func _append_cached_projected_status_contexts(
 	var target: CombatantState = api.state.get_unit(target_id)
 	if target == null or target.statuses == null:
 		return
-	for projected_stack: StatusStack in target.statuses.get_all_projected_stacks():
-		if projected_stack == null:
+	for projected_token: StatusToken in target.statuses.get_all_projected_tokens():
+		if projected_token == null:
 			continue
-		var projected_ctx := make_context(api, target_id, projected_stack)
+		var projected_ctx := make_context(api, target_id, projected_token)
 		if projected_ctx == null or !projected_ctx.is_valid():
 			continue
 		out.append(projected_ctx)
@@ -585,7 +587,7 @@ static func refresh_cached_projected_statuses_for_unit(
 		target.statuses.clear_projected()
 		for source_key in entries_by_key.get_source_keys():
 			var entry := entries_by_key.get_entry(source_key)
-			target.statuses.upsert_projected_source(source_key, _build_projected_stacks_for_entry(api, target_id, entry))
+			target.statuses.upsert_projected_source(source_key, _build_projected_tokens_for_entry(api, target_id, entry))
 		target.statuses.set_projected_cache_ready(true)
 		return
 
@@ -608,7 +610,7 @@ static func refresh_cached_projected_statuses_for_unit(
 		var entry := entries_by_key.get_entry(source_key)
 		target.statuses.upsert_projected_source(
 			source_key,
-			_build_projected_stacks_for_entry(api, target_id, entry)
+			_build_projected_tokens_for_entry(api, target_id, entry)
 		)
 	target.statuses.set_projected_cache_ready(true)
 
@@ -623,26 +625,26 @@ static func _collect_projection_entries_by_source_key(api: SimBattleAPI) -> Proj
 		out.set_entry(entry)
 	return out
 
-static func _build_projected_stacks_for_entry(
+static func _build_projected_tokens_for_entry(
 	api: SimBattleAPI,
 	target_id: int,
 	entry: ProjectionSourceEntry
-) -> Array[StatusStack]:
-	var out: Array[StatusStack] = []
+) -> Array[StatusToken]:
+	var out: Array[StatusToken] = []
 	if entry == null:
 		return out
 	var source_kind := entry.source_kind
 	match source_kind:
 		ProjectionBank.SOURCE_KIND_STATUS_AURA:
-			_append_status_aura_projected_stacks(out, api, target_id, entry)
+			_append_status_aura_projected_tokens(out, api, target_id, entry)
 		ProjectionBank.SOURCE_KIND_ARCANUM:
-			_append_arcanum_projected_stacks(out, api, target_id, entry)
+			_append_arcanum_projected_tokens(out, api, target_id, entry)
 		_:
 			return out
 	return out
 
-static func _append_status_aura_projected_stacks(
-	out: Array[StatusStack],
+static func _append_status_aura_projected_tokens(
+	out: Array[StatusToken],
 	api: SimBattleAPI,
 	target_id: int,
 	entry: ProjectionSourceEntry
@@ -668,13 +670,13 @@ static func _append_status_aura_projected_stacks(
 
 	var total_intensity := 0
 	var max_duration := 0
-	for aura_stack: StatusStack in source.statuses.get_all_stacks(true):
-		if aura_stack == null or StringName(aura_stack.id) != aura_status_id:
+	for aura_token: StatusToken in source.statuses.get_all_tokens(true):
+		if aura_token == null or StringName(aura_token.id) != aura_status_id:
 			continue
-		if int(aura_proto.expiration_policy) == int(Status.ExpirationPolicy.DURATION) and int(aura_stack.duration) <= 0:
+		if int(aura_proto.expiration_policy) == int(Status.ExpirationPolicy.DURATION) and int(aura_token.duration) <= 0:
 			continue
-		total_intensity += maxi(int(aura_stack.intensity), 0)
-		max_duration = maxi(max_duration, int(aura_stack.duration))
+		total_intensity += maxi(int(aura_token.intensity), 0)
+		max_duration = maxi(max_duration, int(aura_token.duration))
 
 	if total_intensity <= 0:
 		return
@@ -682,16 +684,16 @@ static func _append_status_aura_projected_stacks(
 	for projected_proto: Status in aura_proto.get_projected_statuses():
 		if projected_proto == null:
 			continue
-		# Pending aura stacks are fully live, but targets only ever see the combined
-		# projected result as a single non-pending stack.
-		var projected_stack := StatusStack.new(StringName(projected_proto.get_id()))
-		projected_stack.pending = false
-		projected_stack.intensity = total_intensity
-		projected_stack.duration = max_duration
-		out.append(projected_stack)
+		# Pending aura tokens are fully live, but targets only ever see the combined
+		# projected result as a single non-pending token.
+		var projected_token := StatusToken.new(StringName(projected_proto.get_id()))
+		projected_token.pending = false
+		projected_token.intensity = total_intensity
+		projected_token.duration = max_duration
+		out.append(projected_token)
 
-static func _append_arcanum_projected_stacks(
-	out: Array[StatusStack],
+static func _append_arcanum_projected_tokens(
+	out: Array[StatusToken],
 	api: SimBattleAPI,
 	target_id: int,
 	entry: ProjectionSourceEntry
@@ -735,11 +737,11 @@ static func _append_arcanum_projected_stacks(
 			and projection_duration <= 0
 		):
 			continue
-		var projected_stack := StatusStack.new(StringName(projected_proto.get_id()))
-		projected_stack.pending = false
-		projected_stack.intensity = projection_intensity
-		projected_stack.duration = projection_duration
-		out.append(projected_stack)
+		var projected_token := StatusToken.new(StringName(projected_proto.get_id()))
+		projected_token.pending = false
+		projected_token.intensity = projection_intensity
+		projected_token.duration = projection_duration
+		out.append(projected_token)
 
 static func _make_effective_status_merge_key(status_id: StringName, pending: bool) -> String:
 	return "%s::%s" % [String(status_id), "pending" if pending else "realized"]
@@ -770,17 +772,17 @@ static func _expire_unit_by_policy(api: SimBattleAPI, cid: int, policy: int) -> 
 
 	var to_remove: Array[Dictionary] = []
 
-	for stack: StatusStack in u.statuses.get_all_stacks(true):
-		if stack == null:
+	for token: StatusToken in u.statuses.get_all_tokens(true):
+		if token == null:
 			continue
-		var sid := StringName(stack.id)
+		var sid := StringName(token.id)
 		var proto := get_proto(api, sid)
 		if proto == null:
 			continue
 		if int(proto.expiration_policy) == policy:
 			to_remove.append({
 				"status_id": sid,
-				"pending": bool(stack.pending),
+				"pending": bool(token.pending),
 			})
 
 	for item in to_remove:
@@ -801,11 +803,11 @@ static func _tick_duration_statuses_for_owner_turn_end(api: SimBattleAPI, actor_
 	var changed: Array[Dictionary] = []
 	var expired: Array[Dictionary] = []
 
-	for stack: StatusStack in u.statuses.get_all_stacks(true):
-		if stack == null:
+	for token: StatusToken in u.statuses.get_all_tokens(true):
+		if token == null:
 			continue
 
-		var sid := StringName(stack.id)
+		var sid := StringName(token.id)
 		var proto := get_proto(api, sid)
 		if proto == null:
 			continue
@@ -813,9 +815,9 @@ static func _tick_duration_statuses_for_owner_turn_end(api: SimBattleAPI, actor_
 		if int(proto.expiration_policy) != Status.ExpirationPolicy.DURATION:
 			continue
 
-		var before_i := int(stack.intensity)
-		var before_d := int(stack.duration)
-		var pending := bool(stack.pending)
+		var before_i := int(token.intensity)
+		var before_d := int(token.duration)
+		var pending := bool(token.pending)
 
 		if before_d <= 0:
 			expired.append({
@@ -825,7 +827,7 @@ static func _tick_duration_statuses_for_owner_turn_end(api: SimBattleAPI, actor_
 			continue
 
 		var after_d := before_d - 1
-		u.statuses.set_stack(sid, before_i, after_d, pending)
+		u.statuses.set_token(sid, before_i, after_d, pending)
 
 		if after_d <= 0:
 			expired.append({

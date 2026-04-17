@@ -1,5 +1,7 @@
 class_name ProjectedStatusContributionIndex extends RefCounted
 
+const StatusToken := preload("res://battle/sim/containers/status_token.gd")
+
 var _stacks_by_source_key: Dictionary = {}
 var _status_ids_by_source_key: Dictionary = {}
 var _source_keys_by_status_id: Dictionary = {}
@@ -12,15 +14,15 @@ func clear() -> void:
 
 
 func clone():
-	var copied = get_script().new()
+	var copied: Variant = get_script().new()
 	for source_key_variant in _stacks_by_source_key.keys():
 		var source_key := String(source_key_variant)
 		var source_map: Dictionary = _stacks_by_source_key[source_key]
 		var cloned_source_map: Dictionary = {}
 		for status_id_key in source_map.keys():
-			var source_stack: StatusStack = source_map[status_id_key]
-			if source_stack != null:
-				cloned_source_map[StringName(status_id_key)] = source_stack.clone()
+			var source_token: StatusToken = source_map[status_id_key]
+			if source_token != null:
+				cloned_source_map[StringName(status_id_key)] = source_token.clone()
 		copied._stacks_by_source_key[source_key] = cloned_source_map
 	copied._status_ids_by_source_key = _status_ids_by_source_key.duplicate(true)
 	copied._source_keys_by_status_id = _source_keys_by_status_id.duplicate(true)
@@ -54,20 +56,20 @@ func get_source_keys_for_status(status_id: StringName) -> Array[String]:
 	return out
 
 
-func replace_source(source_key: String, projected_stacks: Array[StatusStack]) -> Array[StringName]:
+func replace_source(source_key: String, projected_tokens: Array[StatusToken]) -> Array[StringName]:
 	var affected_ids := {}
 	if source_key.is_empty():
 		return []
 
 	var previous_map := _get_source_map(source_key)
 	var next_map: Dictionary = {}
-	for stack: StatusStack in projected_stacks:
-		if stack == null or stack.id == &"":
+	for token: StatusToken in projected_tokens:
+		if token == null or token.id == &"":
 			continue
-		var copied := stack.clone()
-		copied.pending = false
-		next_map[copied.id] = copied
-		affected_ids[copied.id] = true
+		var copied_token: Variant = token.clone()
+		copied_token.pending = false
+		next_map[copied_token.id] = copied_token
+		affected_ids[copied_token.id] = true
 
 	for status_id_key in previous_map.keys():
 		affected_ids[StringName(status_id_key)] = true
@@ -93,7 +95,7 @@ func remove_source(source_key: String) -> Array[StringName]:
 	return _to_sorted_status_id_array(affected_ids)
 
 
-func build_projected_stack(status_id: StringName) -> StatusStack:
+func build_projected_token(status_id: StringName) -> StatusToken:
 	if status_id == &"":
 		return null
 	if !_source_keys_by_status_id.has(status_id):
@@ -110,20 +112,20 @@ func build_projected_stack(status_id: StringName) -> StatusStack:
 		var source_map := _get_source_map(source_key)
 		if !source_map.has(status_id):
 			continue
-		var stack: StatusStack = source_map[status_id]
-		if stack == null:
+		var token: StatusToken = source_map[status_id]
+		if token == null:
 			continue
-		total_intensity += int(stack.intensity)
-		max_duration = maxi(max_duration, int(stack.duration))
+		total_intensity += int(token.intensity)
+		max_duration = maxi(max_duration, int(token.duration))
 
 	if total_intensity <= 0:
 		return null
 
-	var out_stack := StatusStack.new(status_id)
-	out_stack.pending = false
-	out_stack.intensity = total_intensity
-	out_stack.duration = max_duration
-	return out_stack
+	var out_token := StatusToken.new(status_id)
+	out_token.pending = false
+	out_token.intensity = total_intensity
+	out_token.duration = max_duration
+	return out_token
 
 
 func _get_source_map(source_key: String) -> Dictionary:

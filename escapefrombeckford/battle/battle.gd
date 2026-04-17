@@ -137,6 +137,7 @@ func _connect_events() -> void:
 	Events.end_turn_button_pressed.connect(_on_end_turn_button_pressed)
 	Events.player_input_view_reached.connect(_on_player_input_view_reached)
 	Events.mana_view_update.connect(_on_mana_view_update)
+	Events.battle_status_changed.connect(_on_battle_status_changed)
 	Events.turn_status_view_changed.connect(_on_turn_status_view_changed)
 
 
@@ -385,6 +386,15 @@ func _on_player_input_view_reached(player_id: int) -> void:
 		#str(encounter_director != null and encounter_director.is_blocking_presentation())
 	#])
 	_release_pending_player_turn_draw_if_ready()
+
+
+func _on_battle_status_changed(target_id: int) -> void:
+	var api := sim_host.get_main_api() if sim_host != null else null
+	if api == null or hand == null:
+		return
+	if int(target_id) != int(api.get_player_id()):
+		return
+	hand.refresh_hand_cards()
 
 
 func _arm_end_turn_button(armed: bool) -> void:

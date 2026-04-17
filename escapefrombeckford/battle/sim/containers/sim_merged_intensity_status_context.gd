@@ -16,7 +16,7 @@ func _init(_owned_ctx: SimStatusContext = null, _projected_intensity_bonus: int 
 	api = owned_ctx.api
 	owner_id = int(owned_ctx.owner_id)
 	owner = owned_ctx.owner
-	stack = owned_ctx.stack
+	token = owned_ctx.token
 	proto = owned_ctx.proto
 
 

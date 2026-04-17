@@ -2,13 +2,15 @@
 
 class_name SimStatusContext extends RefCounted
 
-# Runtime wrapper for a specific status stack on a specific owner.
+const StatusToken := preload("res://battle/sim/containers/status_token.gd")
+
+# Runtime wrapper for a specific status token on a specific owner.
 # This keeps proto Status scripts from reaching all over raw state.
 
 var api: SimBattleAPI
 var owner_id: int = 0
 var owner: CombatantState
-var stack: StatusStack
+var token: StatusToken
 var proto: Status
 
 
@@ -16,33 +18,33 @@ func _init(
 	_api: SimBattleAPI = null,
 	_owner_id: int = 0,
 	_owner: CombatantState = null,
-	_stack: StatusStack = null,
+	_token: StatusToken = null,
 	_proto: Status = null
 ) -> void:
 	api = _api
 	owner_id = int(_owner_id)
 	owner = _owner
-	stack = _stack
+	token = _token
 	proto = _proto
 
 
 func is_valid() -> bool:
-	return api != null and owner != null and stack != null and proto != null and owner_id > 0
+	return api != null and owner != null and token != null and proto != null and owner_id > 0
 
 
 func get_status_id() -> StringName:
-	return stack.id if stack != null else &""
+	return token.id if token != null else &""
 
 
 func get_intensity() -> int:
-	return int(stack.intensity) if stack != null else 0
+	return int(token.intensity) if token != null else 0
 
 
 func get_duration() -> int:
-	return int(stack.duration) if stack != null else 0
+	return int(token.duration) if token != null else 0
 
 func is_pending() -> bool:
-	return bool(stack.pending) if stack != null else false
+	return bool(token.pending) if token != null else false
 
 
 func get_group_index() -> int:
@@ -74,11 +76,11 @@ func change_intensity(delta: int, reason: String = "") -> void:
 	if int(delta) == 0:
 		return
 
-	var before_i := int(stack.intensity)
-	var before_d := int(stack.duration)
+	var before_i := int(token.intensity)
+	var before_d := int(token.duration)
 	var after_i := before_i + int(delta)
 
-	stack.intensity = after_i
+	token.intensity = after_i
 
 	if api.writer != null:
 		api.writer.emit_status(
@@ -93,8 +95,8 @@ func change_intensity(delta: int, reason: String = "") -> void:
 				Keys.DELTA_DURATION: 0,
 				Keys.BEFORE_INTENSITY: before_i,
 				Keys.BEFORE_DURATION: before_d,
-				Keys.AFTER_INTENSITY: int(stack.intensity),
-				Keys.AFTER_DURATION: int(stack.duration),
+				Keys.AFTER_INTENSITY: int(token.intensity),
+				Keys.AFTER_DURATION: int(token.duration),
 				Keys.STATUS_PENDING: bool(is_pending()),
 				Keys.BEFORE_PENDING: bool(is_pending()),
 				Keys.AFTER_PENDING: bool(is_pending()),
@@ -109,11 +111,11 @@ func change_duration(delta: int, reason: String = "") -> void:
 	if int(delta) == 0:
 		return
 
-	var before_i := int(stack.intensity)
-	var before_d := int(stack.duration)
+	var before_i := int(token.intensity)
+	var before_d := int(token.duration)
 	var after_d := before_d + int(delta)
 
-	stack.duration = after_d
+	token.duration = after_d
 
 	if api.writer != null:
 		api.writer.emit_status(
@@ -128,8 +130,8 @@ func change_duration(delta: int, reason: String = "") -> void:
 				Keys.DELTA_DURATION: int(delta),
 				Keys.BEFORE_INTENSITY: before_i,
 				Keys.BEFORE_DURATION: before_d,
-				Keys.AFTER_INTENSITY: int(stack.intensity),
-				Keys.AFTER_DURATION: int(stack.duration),
+				Keys.AFTER_INTENSITY: int(token.intensity),
+				Keys.AFTER_DURATION: int(token.duration),
 				Keys.STATUS_PENDING: bool(is_pending()),
 				Keys.BEFORE_PENDING: bool(is_pending()),
 				Keys.AFTER_PENDING: bool(is_pending()),

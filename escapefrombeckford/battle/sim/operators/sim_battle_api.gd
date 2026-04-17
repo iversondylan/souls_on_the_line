@@ -3,6 +3,7 @@
 class_name SimBattleAPI extends RefCounted
 
 const EffectiveStatusContextCacheStore := preload("res://battle/sim/containers/effective_status_context_cache_store.gd")
+const StatusToken := preload("res://battle/sim/containers/status_token.gd")
 
 # ============================================================================
 # SimBattleAPI
@@ -277,10 +278,10 @@ func get_status_intensity(combat_id: int, status_id: StringName) -> int:
 
 	var total := 0
 	var found := false
-	for stack: StatusStack in u.statuses.get_all_stacks(true):
-		if stack == null or StringName(stack.id) != status_id:
+	for token: StatusToken in u.statuses.get_all_tokens(true):
+		if token == null or StringName(token.id) != status_id:
 			continue
-		total += int(stack.intensity)
+		total += int(token.intensity)
 		found = true
 	if !found:
 		return -1
@@ -434,7 +435,27 @@ func can_pay_cost(cost: int) -> bool:
 func can_pay_card(card: CardData) -> bool:
 	if card == null:
 		return false
-	return can_pay_cost(int(card.get_total_cost()))
+	return can_pay_card_cost(get_player_id(), card)
+
+
+func get_effective_card_cost(source_id: int, card: CardData) -> int:
+	if card == null:
+		return 0
+
+	var effective_cost := int(card.get_total_cost())
+	if state == null or source_id <= 0:
+		return maxi(effective_cost, 0)
+
+	var total_discount := 0
+	for status_ctx: SimStatusContext in get_effective_status_contexts_for_unit(int(source_id)):
+		if status_ctx == null or !status_ctx.is_valid():
+			continue
+		var proto := status_ctx.proto
+		if proto == null or !proto.affects_card_cost():
+			continue
+		total_discount += maxi(int(proto.get_card_cost_discount(status_ctx, card)), 0)
+
+	return maxi(effective_cost - total_discount, 0)
 
 func get_mana() -> int:
 	if state == null or state.resource == null:
@@ -976,14 +997,14 @@ func apply_status(ctx: StatusContext) -> void:
 	var status_ctx := SimStatusSystem.make_context(
 		self,
 		int(ctx.target_id),
-		u.statuses.get_status_stack(ctx.status_id, bool(ctx.pending))
+		u.statuses.get_status_token(ctx.status_id, bool(ctx.pending))
 	)
 	if status_ctx != null and status_ctx.proto != null:
 		status_ctx.proto.on_apply(status_ctx, ctx)
 
 	if SimStatusSystem.is_aura_proto(proto):
-		# Pending aura stacks are fully live and must project immediately, but the
-		# projected cache collapses all aura lanes into one combined projected stack.
+		# Pending aura tokens are fully live and must project immediately, but the
+		# projected cache collapses all aura lanes into one combined projected token.
 		_refresh_status_aura_projection(int(ctx.target_id), ctx.status_id)
 
 	if !SimStatusSystem.is_aura_proto(proto):
@@ -1009,16 +1030,16 @@ func remove_status(ctx: StatusContext) -> void:
 	if u == null:
 		return
 	
-	var old_stack: StatusStack = u.statuses.get_status_stack(ctx.status_id, bool(ctx.pending))
-	if old_stack == null:
+	var old_token: StatusToken = u.statuses.get_status_token(ctx.status_id, bool(ctx.pending))
+	if old_token == null:
 		return
 	
 	var proto := SimStatusSystem.get_proto(self, ctx.status_id)
 	
-	var before_i := int(old_stack.intensity)
-	var before_d := int(old_stack.duration)
+	var before_i := int(old_token.intensity)
+	var before_d := int(old_token.duration)
 	
-	var status_ctx := SimStatusSystem.make_context(self, int(ctx.target_id), old_stack)
+	var status_ctx := SimStatusSystem.make_context(self, int(ctx.target_id), old_token)
 	u.statuses.remove_ctx(ctx)
 	_invalidate_effective_status_context_cache()
 	
@@ -1286,19 +1307,30 @@ func gain_mana(ctx: ManaContext) -> void:
 	ctx.new_mana = int(state.resource.mana) + int(ctx.amount)
 	set_mana(ctx)
 
-func can_pay_card_cost(_source_id: int, card: CardData) -> bool:
+func can_pay_card_cost(source_id: int, card: CardData) -> bool:
 	if state == null or state.resource == null or card == null:
 		return false
-	return int(state.resource.mana) >= int(card.get_total_cost())
+	return int(state.resource.mana) >= int(get_effective_card_cost(source_id, card))
 
 func spend_mana_for_card(ctx: ManaContext, card: CardData) -> bool:
 	if state == null or state.resource == null or card == null or ctx == null:
 		return false
 	
-	var cost := int(card.get_total_cost())
+	var source_id := int(ctx.source_id)
+	var cost := int(get_effective_card_cost(source_id, card))
+	card.ensure_uid()
+	ctx.card_uid = String(card.uid)
+	ctx.card_name = String(card.name)
 	if cost <= 0:
+		ctx.amount = 0
+		ctx.mode = ManaContext.Mode.SPEND_FOR_CARD
 		ctx.new_mana = int(state.resource.mana)
-		set_mana(ctx)
+		set_mana(ctx, {
+			Keys.CARD_UID: ctx.card_uid,
+			Keys.CARD_NAME: ctx.card_name,
+			Keys.AMOUNT: 0,
+		})
+		_consume_card_cost_statuses_after_play(source_id, card)
 		return true
 	
 	if int(state.resource.mana) < cost:
@@ -1307,17 +1339,42 @@ func spend_mana_for_card(ctx: ManaContext, card: CardData) -> bool:
 	ctx.amount = cost
 	ctx.mode = ManaContext.Mode.SPEND_FOR_CARD
 	ctx.new_mana = int(state.resource.mana) - cost
-	card.ensure_uid()
-	ctx.card_uid = String(card.uid)
-	ctx.card_name = String(card.name)
 	
 	set_mana(ctx, {
 		Keys.CARD_UID: ctx.card_uid,
 		Keys.CARD_NAME: ctx.card_name,
 		Keys.AMOUNT: int(cost),
 	})
+	_consume_card_cost_statuses_after_play(source_id, card)
 	
 	return true
+
+
+func _consume_card_cost_statuses_after_play(source_id: int, card: CardData) -> void:
+	if state == null or card == null or source_id <= 0:
+		return
+
+	var removals: Array[Dictionary] = []
+	for status_ctx: SimStatusContext in get_effective_status_contexts_for_unit(int(source_id)):
+		if status_ctx == null or !status_ctx.is_valid():
+			continue
+		var proto := status_ctx.proto
+		if proto == null or !proto.affects_card_cost():
+			continue
+		if !proto.consume_on_card_play(status_ctx, card):
+			continue
+		removals.append({
+			"status_id": status_ctx.get_status_id(),
+			"pending": status_ctx.is_pending(),
+		})
+
+	for removal in removals:
+		var remove_ctx := StatusContext.new()
+		remove_ctx.source_id = int(source_id)
+		remove_ctx.target_id = int(source_id)
+		remove_ctx.status_id = removal.get("status_id", &"")
+		remove_ctx.pending = bool(removal.get("pending", false))
+		remove_status(remove_ctx)
 
 # ============================================================================
 # Planning Helpers

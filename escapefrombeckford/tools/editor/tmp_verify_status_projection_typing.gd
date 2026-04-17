@@ -15,7 +15,7 @@ const NPCAIContext := preload("res://npc_ai/_core/npc_ai_context.gd")
 const StatusCatalog := preload("res://statuses/_core/status_catalog.gd")
 const StatusState := preload("res://battle/sim/containers/status_state.gd")
 const StatusContext := preload("res://battle/contexts/status_context.gd")
-const StatusStack := preload("res://battle/sim/containers/status_stack.gd")
+const StatusToken := preload("res://battle/sim/containers/status_token.gd")
 
 
 func _initialize() -> void:
@@ -84,21 +84,21 @@ func _verify_projection_bank_entries(failures: Array[String]) -> void:
 
 func _verify_status_state_projection_aggregation(failures: Array[String]) -> void:
 	var status_state := StatusState.new()
-	var projected_a := StatusStack.new(&"marked")
+	var projected_a := StatusToken.new(&"marked")
 	projected_a.intensity = 2
 	projected_a.duration = 3
-	var projected_b := StatusStack.new(&"marked")
+	var projected_b := StatusToken.new(&"marked")
 	projected_b.intensity = 1
 	projected_b.duration = 5
 
 	var version_before := status_state.get_effective_context_version()
-	var source_a_stacks: Array[StatusStack] = [projected_a]
-	var source_b_stacks: Array[StatusStack] = [projected_b]
-	status_state.upsert_projected_source("src_a", source_a_stacks)
-	status_state.upsert_projected_source("src_b", source_b_stacks)
-	var combined: StatusStack = status_state.get_projected_status_stack(&"marked")
+	var source_a_tokens: Array[StatusToken] = [projected_a]
+	var source_b_tokens: Array[StatusToken] = [projected_b]
+	status_state.upsert_projected_source("src_a", source_a_tokens)
+	status_state.upsert_projected_source("src_b", source_b_tokens)
+	var combined: StatusToken = status_state.get_projected_status_token(&"marked")
 	if combined == null:
-		failures.append("status_state: expected projected marked stack after two sources")
+		failures.append("status_state: expected projected marked token after two sources")
 		return
 	if int(combined.intensity) != 3 or int(combined.duration) != 5:
 		failures.append("status_state: projected aggregation expected intensity=3 duration=5, got %s/%s" % [str(combined.intensity), str(combined.duration)])
@@ -106,7 +106,7 @@ func _verify_status_state_projection_aggregation(failures: Array[String]) -> voi
 		failures.append("status_state: projected source updates should bump effective context version")
 
 	status_state.remove_projected_source("src_a")
-	var reduced: StatusStack = status_state.get_projected_status_stack(&"marked")
+	var reduced: StatusToken = status_state.get_projected_status_token(&"marked")
 	if reduced == null or int(reduced.intensity) != 1 or int(reduced.duration) != 5:
 		failures.append("status_state: removing one projected source should leave the other contribution intact")
 
@@ -119,20 +119,20 @@ func _verify_status_state_pending_realization(failures: Array[String]) -> void:
 	ctx.intensity = 2
 	ctx.duration = 4
 	if !status_state.add_or_reapply_ctx(ctx):
-		failures.append("status_state: expected pending add_or_reapply_ctx to apply a new stack")
+		failures.append("status_state: expected pending add_or_reapply_ctx to apply a new token")
 		return
 
 	var realize_ctx := StatusContext.new()
 	realize_ctx.status_id = &"weakened"
 	realize_ctx.pending = true
 	if !status_state.realize_pending_ctx(realize_ctx):
-		failures.append("status_state: expected pending stack to realize successfully")
+		failures.append("status_state: expected pending token to realize successfully")
 		return
 
-	var realized := status_state.get_status_stack(&"weakened", false)
+	var realized := status_state.get_status_token(&"weakened", false)
 	if realized == null or int(realized.intensity) != 2 or int(realized.duration) != 4:
-		failures.append("status_state: realized stack did not preserve pending values")
-	if status_state.get_status_stack(&"weakened", true) != null:
+		failures.append("status_state: realized token did not preserve pending values")
+	if status_state.get_status_token(&"weakened", true) != null:
 		failures.append("status_state: pending lane should be empty after realization")
 
 
@@ -162,14 +162,14 @@ func _verify_pending_and_realized_aura_projection_merge(failures: Array[String])
 	source.statuses.add_or_reapply_ctx(pending_ctx)
 
 	SimStatusSystem.refresh_cached_projected_statuses_for_unit(api, target.id, [], true)
-	var might_stack := target.statuses.get_projected_status_stack(&"might")
-	if might_stack == null:
+	var might_token := target.statuses.get_projected_status_token(&"might")
+	if might_token == null:
 		failures.append("aura_projection_merge: expected projected might from live pending+realized shared fervor")
 		return
-	if bool(might_stack.pending):
-		failures.append("aura_projection_merge: projected stack should collapse to non-pending output")
-	if int(might_stack.intensity) != 5:
-		failures.append("aura_projection_merge: expected projected might intensity 5, got %s" % [str(might_stack.intensity)])
+	if bool(might_token.pending):
+		failures.append("aura_projection_merge: projected token should collapse to non-pending output")
+	if int(might_token.intensity) != 5:
+		failures.append("aura_projection_merge: expected projected might intensity 5, got %s" % [str(might_token.intensity)])
 
 
 func _verify_pending_modifier_preview(failures: Array[String]) -> void:
@@ -218,9 +218,9 @@ func _verify_pending_duration_and_group_expiration(failures: Array[String]) -> v
 	api.apply_status(marked_ctx)
 
 	SimStatusSystem.on_actor_turn_end(api, 31)
-	var marked_stack := api.state.get_unit(31).statuses.get_status_stack(marked_proto.get_id(), true)
-	if marked_stack == null or int(marked_stack.duration) != 1:
-		failures.append("pending_lifecycle: pending duration stack should tick on actor turn end")
+	var marked_token := api.state.get_unit(31).statuses.get_status_token(marked_proto.get_id(), true)
+	if marked_token == null or int(marked_token.duration) != 1:
+		failures.append("pending_lifecycle: pending duration token should tick on actor turn end")
 
 	var suppressed_ctx := StatusContext.new()
 	suppressed_ctx.source_id = 31
@@ -231,8 +231,8 @@ func _verify_pending_duration_and_group_expiration(failures: Array[String]) -> v
 	api.apply_status(suppressed_ctx)
 
 	SimStatusSystem.on_group_turn_end(api, 0)
-	if api.state.get_unit(31).statuses.get_status_stack(suppressed_proto.get_id(), true) != null:
-		failures.append("pending_lifecycle: pending group-turn-end status should expire like a live stack")
+	if api.state.get_unit(31).statuses.get_status_token(suppressed_proto.get_id(), true) != null:
+		failures.append("pending_lifecycle: pending group-turn-end status should expire like a live token")
 
 
 func _verify_realization_does_not_reapply_pending_on_apply_hooks(failures: Array[String]) -> void:

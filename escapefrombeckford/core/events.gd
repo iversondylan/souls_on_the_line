@@ -9,6 +9,7 @@ signal combatant_view_unhovered(combatant: CombatantView)
 signal summon_reserve_card_acquired(summoned_id: int, card_uid: String)
 signal summon_reserve_card_released(summoned_id: int, card_uid: String, overload_mod: int)
 signal modify_battle_card(card_uid: String, modified_fields: Dictionary, reason: String)
+signal battle_status_changed(target_id: int)
 signal mana_view_update(mana_view_order: ManaViewOrder)
 
 

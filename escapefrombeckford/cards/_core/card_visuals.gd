@@ -36,6 +36,7 @@ var cost_green: int = 0 : set = set_cost_green
 var cost_blue: int = 0 : set = set_cost_blue
 var overload: int = 0
 var _card_data_internal: CardData
+var _display_total_cost_override: int = -1
 var mana_panel_radius: float
 var _default_cost_label_modulate: Color = Color.WHITE
 var _default_name_label_font_size: int = 16
@@ -93,10 +94,18 @@ func refresh_from_card_data() -> void:
 func set_description(new_description: String) -> void:
 	description.set_text(new_description)
 
+func set_display_total_cost_override(new_value: int) -> void:
+	_display_total_cost_override = int(new_value)
+	if is_node_ready():
+		set_total_cost()
+
 func set_total_cost() -> void:
 	if _card_data_internal == null:
 		return
-	cost_label.text = str(_card_data_internal.get_total_cost())
+	var total_cost := _display_total_cost_override
+	if total_cost < 0:
+		total_cost = int(_card_data_internal.get_total_cost())
+	cost_label.text = str(total_cost)
 	_refresh_cost_label_color()
 
 func set_cost_red(cost: int) -> void:

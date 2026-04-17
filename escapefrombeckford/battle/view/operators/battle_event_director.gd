@@ -1008,8 +1008,11 @@ func _on_status_changed(e: EventPackage) -> void:
 		return
 
 	var d := _data(e)
+	var target_id := int(d.get(Keys.TARGET_ID, 0))
+	if !e.is_planned:
+		Events.battle_status_changed.emit(target_id)
 	var op := int(d.get(Keys.OP, 0))
-	var target := battle_view.get_combatant(int(d.get(Keys.TARGET_ID, 0)))
+	var target := battle_view.get_combatant(target_id)
 	if target == null or target.status_view_grid == null:
 		return
 

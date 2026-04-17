@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="CreativeFlowStatus" format=3 uid="uid://b10qjs2jvfad8"]
+
+[ext_resource type="Script" path="res://statuses/creative_flow.gd" id="1_creative_flow_script"]
+[ext_resource type="Texture2D" uid="uid://bkxkseqjc0dl0" path="res://_assets/sprites/assorted/soul.png" id="2_creative_flow_icon"]
+
+[resource]
+script = ExtResource("1_creative_flow_script")
+status_name = "Creative Flow"
+number_display_type = 1
+expiration_policy = 2
+icon = ExtResource("2_creative_flow_icon")
+tooltip = "The next Soul card you play costs less."

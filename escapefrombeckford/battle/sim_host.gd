@@ -302,7 +302,7 @@ func _configure_preview_api_logging() -> void:
 	preview.api.scopes = scopes
 	preview.api.writer = BattleEventWriter.new(EventSinkPreview.new(), scopes)
 	# Preview logging is discarded, so cloned runtime resumes should not warn
-	# when the preview writer does not inherit the live scope stack.
+	# when the preview writer does not inherit the live scope token.
 	preview.api.writer.allow_unscoped_events = true
 
 # -------------------------
@@ -382,22 +382,22 @@ func _format_sim_statuses(u: CombatantState) -> String:
 		return ""
 
 	var parts: Array[String] = []
-	for stack in u.statuses.get_all_stacks(true):
-		if stack == null:
+	for token in u.statuses.get_all_tokens(true):
+		if token == null:
 			continue
 
-		var sid := String(stack.id)
+		var sid := String(token.id)
 		var intensity := 0
 		var dur := 0
 		var pending := false
 
-		if "intensity" in stack:
-			intensity = int(stack.intensity)
+		if "intensity" in token:
+			intensity = int(token.intensity)
 
-		if "duration" in stack:
-			dur = int(stack.duration)
-		if "pending" in stack:
-			pending = bool(stack.pending)
+		if "duration" in token:
+			dur = int(token.duration)
+		if "pending" in token:
+			pending = bool(token.pending)
 
 		var show_bits: Array[String] = []
 		if dur > 0:

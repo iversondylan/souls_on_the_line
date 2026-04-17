@@ -145,6 +145,15 @@ func get_tooltip_sim(ctx: SimStatusContext) -> String:
 func affects_intent_legality() -> bool:
 	return false
 
+func affects_card_cost() -> bool:
+	return false
+
+func get_card_cost_discount(_ctx: SimStatusContext, _card: CardData) -> int:
+	return 0
+
+func consume_on_card_play(_ctx: SimStatusContext, _card: CardData) -> bool:
+	return false
+
 # -------------------------------------------------------------------
 # Helpers
 # -------------------------------------------------------------------

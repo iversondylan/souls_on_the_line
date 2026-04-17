@@ -100,8 +100,8 @@ static func _source_has_live_aura_stack(
 	if source == null or !source.is_alive() or source.statuses == null:
 		return false
 
-	# Pending aura stacks are fully live and project immediately. The projection bank
-	# tracks the aura source once, and the cached projected stacks collapse both
+	# Pending aura tokens are fully live and project immediately. The projection bank
+	# tracks the aura source once, and the cached projected tokens collapse both
 	# lanes into a single non-pending projected view for targets.
 	return source.statuses.has(status_id, false) or source.statuses.has(status_id, true)
 

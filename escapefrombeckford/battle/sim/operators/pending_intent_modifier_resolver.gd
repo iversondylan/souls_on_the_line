@@ -15,7 +15,7 @@ static func get_modified_value(
 	if api.state == null:
 		return base
 
-	# Pending stacks are now fully live, so intent math uses the same query path as runtime.
+	# Pending tokens are now fully live, so intent math uses the same query path as runtime.
 	return SimModifierResolver.get_modified_value(api, base, mod_type, source_id)
 
 static func get_attack_display_components(

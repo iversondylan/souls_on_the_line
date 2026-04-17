@@ -6,7 +6,8 @@
 [ext_resource type="Resource" uid="uid://nnor45w1kk5c" path="res://statuses/growing_fervor.tres" id="5_2sbnh"]
 [ext_resource type="Resource" uid="uid://brcqbk316gbmr" path="res://statuses/burning_ambition.tres" id="6_00ab0"]
 [ext_resource type="Resource" uid="uid://dfw7lv0so2crl" path="res://statuses/boiling_blood.tres" id="6_6ckqc"]
-[ext_resource type="Resource" path="res://statuses/creative_potency.tres" id="6_creative_potency"]
+[ext_resource type="Resource" path="res://statuses/creative_flow.tres" id="6_creative_flow"]
+[ext_resource type="Resource" uid="uid://ccdod2y1rngoo" path="res://statuses/creative_potency.tres" id="6_creative_potency"]
 [ext_resource type="Resource" uid="uid://blu8qhnwmlstx" path="res://statuses/marked.tres" id="7_fjt00"]
 [ext_resource type="Resource" uid="uid://7x55fawjrwf4" path="res://statuses/might.tres" id="8_ho33y"]
 [ext_resource type="Resource" uid="uid://bh05r8var8mj3" path="res://statuses/pinpoint.tres" id="9_6ckqc"]
@@ -40,5 +41,5 @@
 
 [resource]
 script = ExtResource("1_2sbnh")
-statuses = Array[ExtResource("2_mko5r")]([ExtResource("18_absorb"), ExtResource("27z_alacrity"), ExtResource("3_uxogt"), ExtResource("19_banishing_strikes"), ExtResource("6_6ckqc"), ExtResource("16_bolstered"), ExtResource("6_creative_potency"), ExtResource("24_danger_zone"), ExtResource("25_despair"), ExtResource("23_double_edge"), ExtResource("6_00ab0"), ExtResource("9_cbbgy"), ExtResource("9_exit_strike"), ExtResource("20_fighters_spirit"), ExtResource("20_fleeting"), ExtResource("5_2sbnh"), ExtResource("21_heavy_attack"), ExtResource("7_fjt00"), ExtResource("8_ho33y"), ExtResource("9_6ckqc"), ExtResource("10_cbbgy"), ExtResource("9_protected_drone"), ExtResource("11_6ocio"), ExtResource("11_mko5r"), ExtResource("22_small"), ExtResource("30_sleep"), ExtResource("27_spirited_return"), ExtResource("12_kw06w"), ExtResource("17_sundered"), ExtResource("15_suppressed"), ExtResource("13_djvpr"), ExtResource("14_gyvsg"), ExtResource("27_gyvsg"), ExtResource("28_vulnerable"), ExtResource("29_weakened")])
+statuses = Array[ExtResource("2_mko5r")]([ExtResource("18_absorb"), ExtResource("27z_alacrity"), ExtResource("3_uxogt"), ExtResource("19_banishing_strikes"), ExtResource("6_6ckqc"), ExtResource("16_bolstered"), ExtResource("6_creative_flow"), ExtResource("6_creative_potency"), ExtResource("24_danger_zone"), ExtResource("25_despair"), ExtResource("23_double_edge"), ExtResource("6_00ab0"), ExtResource("9_cbbgy"), ExtResource("9_exit_strike"), ExtResource("20_fighters_spirit"), ExtResource("20_fleeting"), ExtResource("5_2sbnh"), ExtResource("21_heavy_attack"), ExtResource("7_fjt00"), ExtResource("8_ho33y"), ExtResource("9_6ckqc"), ExtResource("10_cbbgy"), ExtResource("9_protected_drone"), ExtResource("11_6ocio"), ExtResource("11_mko5r"), ExtResource("22_small"), ExtResource("30_sleep"), ExtResource("27_spirited_return"), ExtResource("12_kw06w"), ExtResource("17_sundered"), ExtResource("15_suppressed"), ExtResource("13_djvpr"), ExtResource("14_gyvsg"), ExtResource("27_gyvsg"), ExtResource("28_vulnerable"), ExtResource("29_weakened")])
 metadata/_custom_type_script = "uid://dgq1lfjmf2yfl"

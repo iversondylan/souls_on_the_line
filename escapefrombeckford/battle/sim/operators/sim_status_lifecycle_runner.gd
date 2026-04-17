@@ -1,6 +1,8 @@
 # sim_status_lifecycle_runner.gd
 class_name SimStatusLifecycleRunner extends RefCounted
 
+const StatusToken := preload("res://battle/sim/containers/status_token.gd")
+
 static func on_group_turn_begin(api: SimBattleAPI, group_index: int) -> void:
 	if api == null or api.state == null:
 		return
@@ -58,11 +60,11 @@ static func _tick_duration_statuses_for_owner_turn_end(api: SimBattleAPI, actor_
 	var changed: Array[Dictionary] = []
 	var expired: Array[StringName] = []
 
-	for stack: StatusStack in u.statuses.get_all_stacks(false):
-		if stack == null:
+	for token: StatusToken in u.statuses.get_all_tokens(false):
+		if token == null:
 			continue
 
-		var sid := StringName(stack.id)
+		var sid := StringName(token.id)
 		var proto := _get_proto(api, sid)
 		if proto == null:
 			continue
@@ -70,15 +72,15 @@ static func _tick_duration_statuses_for_owner_turn_end(api: SimBattleAPI, actor_
 		if int(proto.expiration_policy) != Status.ExpirationPolicy.DURATION:
 			continue
 
-		var before_i := int(stack.intensity)
-		var before_d := int(stack.duration)
+		var before_i := int(token.intensity)
+		var before_d := int(token.duration)
 
 		if before_d <= 0:
 			expired.append(sid)
 			continue
 
 		var after_d := before_d - 1
-		stack.duration = after_d
+		token.duration = after_d
 
 		if after_d <= 0:
 			expired.append(sid)

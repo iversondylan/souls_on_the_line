@@ -2,6 +2,8 @@
 
 class_name BattleState extends RefCounted
 
+const StatusToken := preload("res://battle/sim/containers/status_token.gd")
+
 const FRIENDLY := 0
 const ENEMY := 1
 
@@ -309,13 +311,13 @@ func _debug_status_summary(unit: CombatantState) -> String:
 		return ""
 
 	var parts: Array[String] = []
-	for stack: StatusStack in unit.statuses.get_all_stacks(true):
-		if stack == null:
+	for token: StatusToken in unit.statuses.get_all_tokens(true):
+		if token == null:
 			continue
 		parts.append("%s(i=%d,d=%d)" % [
-			("%s[p]" % String(stack.id)) if bool(stack.pending) else String(stack.id),
-			int(stack.intensity),
-			int(stack.duration),
+			("%s[p]" % String(token.id)) if bool(token.pending) else String(token.id),
+			int(token.intensity),
+			int(token.duration),
 		])
 
 	parts.sort()

@@ -1,6 +1,6 @@
-# status_stack.gd
+# status_token.gd
 
-class_name  StatusStack extends RefCounted
+class_name  StatusToken extends RefCounted
 	
 var id: StringName
 var pending: bool = false
@@ -11,8 +11,8 @@ var data: Dictionary = {}
 func _init(_id: StringName = &"") -> void:
 	id = _id
 
-func clone() -> StatusStack:
-	var s := StatusStack.new(id)
+func clone():
+	var s: Variant = get_script().new(id)
 	s.pending = pending
 	s.intensity = intensity
 	s.duration = duration

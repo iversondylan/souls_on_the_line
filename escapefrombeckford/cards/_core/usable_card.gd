@@ -103,7 +103,7 @@ func _set_card_data(_card_data: CardData) -> void:
 		await ready
 	card_data = _card_data
 	card_visuals.card_data = card_data
-	cost = int(card_data.get_total_cost()) if card_data != null else 0
+	_refresh_cost_display_from_state()
 	_update_graphics()
 	update_description()
 	playable = is_playable()
@@ -113,7 +113,7 @@ func refresh_from_card_data() -> void:
 		await ready
 	if card_data == null:
 		return
-	cost = int(card_data.get_total_cost())
+	_refresh_cost_display_from_state()
 	card_visuals.refresh_from_card_data()
 	playable = is_playable()
 
@@ -140,7 +140,9 @@ func get_description() -> String:
 func get_cost() -> int:
 	if card_data == null:
 		return 0
-	return int(card_data.get_total_cost())
+	if api == null:
+		return int(card_data.get_total_cost())
+	return int(api.get_effective_card_cost(_player_id(), card_data))
 
 
 
@@ -251,6 +253,17 @@ func _on_modify_battle_card(card_uid: String, _modified_fields: Dictionary, _rea
 	if String(card_data.uid) != String(card_uid):
 		return
 	update_description()
+
+
+func _refresh_cost_display_from_state() -> void:
+	if card_data == null:
+		cost = 0
+		if card_visuals != null:
+			card_visuals.set_display_total_cost_override(0)
+		return
+	cost = get_cost()
+	if card_visuals != null:
+		card_visuals.set_display_total_cost_override(cost)
 
 func is_mouse_over() -> bool:
 	# Get the global mouse position

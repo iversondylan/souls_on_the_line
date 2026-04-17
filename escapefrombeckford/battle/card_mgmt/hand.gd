@@ -126,6 +126,7 @@ func add_card(card: CardData) -> void:
 	usable_card.api = api
 	
 	hand_cards_node.add_child(usable_card)
+	usable_card.refresh_from_card_data.call_deferred()
 	var target_global := draw_anchor.global_position
 	usable_card.global_position = target_global
 	usable_card.scale = MINI_CARD_SCALE
