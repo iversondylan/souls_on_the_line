@@ -953,11 +953,8 @@ func _on_heal_applied(e: EventPackage) -> void:
 	if e.is_planned:
 		return
 
-	if target.has_method("play_heal_fx"):
-		target.play_heal_fx()
-
-	if target.has_method("pop_heal_number"):
-		target.pop_heal_number(healed)
+	target.play_heal_fx()
+	target.pop_heal_number(healed)
 
 func _on_change_max_health(e: EventPackage) -> void:
 	#print("director _on_change_max_health")

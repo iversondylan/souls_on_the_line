@@ -1,18 +1,15 @@
 [gd_scene format=3 uid="uid://byfyjsj2j7wh"]
 
 [ext_resource type="Script" uid="uid://c82r707xq7wjh" path="res://main_menu/main_menu.gd" id="1_main"]
-[ext_resource type="FontFile" uid="uid://b1ahfe6v5ucl7" path="res://_assets/fonts/linux-libertine/LinLibertine_5.3.0_2012_07_02/LinLibertineOTF_5.3.0_2012_07_02/LinLibertine_RBI.otf" id="2_font"]
+[ext_resource type="Theme" uid="uid://71burk04clet" path="res://ui/elements/accent_theme.tres" id="2_bws42"]
 [ext_resource type="Theme" uid="uid://d2wc7fposrlqs" path="res://themes/wizard_theme.tres" id="3_theme"]
+[ext_resource type="Theme" uid="uid://c5t2luytfgc6b" path="res://ui/elements/brass_wood_chalkboard_theme.tres" id="4_3f7m4"]
 
 [sub_resource type="Gradient" id="Gradient_ekxnf"]
 colors = PackedColorArray(0.07, 0.0021, 0.0518934, 1, 0.0493923, 0.0443764, 0.066303, 1)
 
 [sub_resource type="GradientTexture1D" id="GradientTexture1D_bqqt6"]
 gradient = SubResource("Gradient_ekxnf")
-
-[sub_resource type="LabelSettings" id="LabelSettings_wu84c"]
-font = ExtResource("2_font")
-font_size = 40
 
 [node name="MainMenu" type="Control" unique_id=122703714]
 layout_mode = 3
@@ -45,8 +42,9 @@ offset_right = 220.0
 offset_bottom = -118.0
 grow_horizontal = 2
 grow_vertical = 2
+theme = ExtResource("2_bws42")
+theme_override_font_sizes/font_size = 35
 text = "Escape from Beckford"
-label_settings = SubResource("LabelSettings_wu84c")
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -71,22 +69,26 @@ theme_override_constants/separation = 8
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 50)
 layout_mode = 2
+theme = ExtResource("4_3f7m4")
 text = "Choose Profile"
 
 [node name="CreateProfile" type="Button" parent="ProfileHubMenu" unique_id=1314298837]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 50)
 layout_mode = 2
+theme = ExtResource("4_3f7m4")
 text = "Create Profile"
 
 [node name="Settings" type="Button" parent="ProfileHubMenu" unique_id=906316721]
 custom_minimum_size = Vector2(0, 50)
 layout_mode = 2
+theme = ExtResource("4_3f7m4")
 text = "Settings"
 
 [node name="Exit" type="Button" parent="ProfileHubMenu" unique_id=1951835257]
 custom_minimum_size = Vector2(0, 50)
 layout_mode = 2
+theme = ExtResource("4_3f7m4")
 text = "Exit"
 
 [node name="ProfileMenu" type="VBoxContainer" parent="." unique_id=1640313993]

@@ -1,0 +1,6 @@
+[gd_resource type="Theme" format=3 uid="uid://71burk04clet"]
+
+[ext_resource type="FontFile" uid="uid://cyfvgde85p512" path="res://_assets/fonts/Fraunces/static/Fraunces_72pt_Soft-SemiBoldItalic.ttf" id="1_trkao"]
+
+[resource]
+Label/fonts/font = ExtResource("1_trkao")

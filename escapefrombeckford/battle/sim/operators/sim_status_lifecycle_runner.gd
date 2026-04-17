@@ -29,7 +29,7 @@ static func _expire_by_policy(api: SimBattleAPI, group_index: int, policy: int) 
 
 static func _expire_unit_by_policy(api: SimBattleAPI, cid: int, policy: int) -> void:
 	var u: CombatantState = api.state.get_unit(cid)
-	if u == null or u.statuses == null:
+	if u == null:
 		return
 	if u.statuses.by_id.is_empty():
 		return
@@ -52,7 +52,7 @@ static func _expire_unit_by_policy(api: SimBattleAPI, cid: int, policy: int) -> 
 
 static func _tick_duration_statuses_for_owner_turn_end(api: SimBattleAPI, actor_id: int) -> void:
 	var u: CombatantState = api.state.get_unit(actor_id)
-	if u == null or u.statuses == null:
+	if u == null:
 		return
 	if u.statuses.by_id.is_empty():
 		return

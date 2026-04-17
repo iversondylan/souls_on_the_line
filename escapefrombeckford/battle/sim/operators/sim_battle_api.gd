@@ -273,7 +273,7 @@ func get_status_intensity(combat_id: int, status_id: StringName) -> int:
 		return -1
 
 	var u := state.get_unit(int(combat_id))
-	if u == null or !u.is_alive() or u.statuses == null:
+	if u == null or !u.is_alive():
 		return -1
 
 	var total := 0
@@ -1548,7 +1548,7 @@ func _maybe_release_reserved_card(
 ) -> void:
 	if u == null:
 		return
-	var uid := String(u.bound_card_uid) if ("bound_card_uid" in u) else ""
+	var uid := String(u.bound_card_uid)
 	if uid == "":
 		return
 

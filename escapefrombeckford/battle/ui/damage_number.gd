@@ -1,6 +1,6 @@
 # damage_number.gd
 
-class_name DamageNumber extends Node2D
+class_name DamageNumber extends BattleFloatingNumber
 
 @onready var damage_number_label: Label = $DamageText
 

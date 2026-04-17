@@ -344,8 +344,8 @@ func debug_dump_units() -> void:
 
 			var uname := _debug_unit_name(u)
 			var hp := int(u.health)
-			var max_hp := int(u.max_health) if "max_health" in u else int(u.max_hp) if "max_hp" in u else -1
-			var alive := bool(u.alive) if "alive" in u else main.state.is_alive(cid)
+			var max_hp := int(u.max_health)
+			var alive := bool(u.alive)
 
 			var hp_str := "%d/%d" % [hp, max_hp] if max_hp >= 0 else "%d" % hp
 			var statuses_str := _format_sim_statuses(u)
@@ -374,11 +374,8 @@ func _format_sim_statuses(u: CombatantState) -> String:
 	if u == null:
 		return ""
 
-	if u.statuses == null:
-		return ""
-
-	var by_id := u.statuses.by_id#: Dictionary = u.statuses.by_id if ("by_id" in u.statuses) else null
-	if by_id == null or by_id.size() == 0:
+	var by_id: Dictionary = u.statuses.by_id
+	if by_id.is_empty():
 		return ""
 
 	var parts: Array[String] = []
@@ -387,17 +384,9 @@ func _format_sim_statuses(u: CombatantState) -> String:
 			continue
 
 		var sid := String(token.id)
-		var intensity := 0
-		var dur := 0
-		var pending := false
-
-		if "intensity" in token:
-			intensity = int(token.intensity)
-
-		if "duration" in token:
-			dur = int(token.duration)
-		if "pending" in token:
-			pending = bool(token.pending)
+		var intensity := int(token.intensity)
+		var dur := int(token.duration)
+		var pending := bool(token.pending)
 
 		var show_bits: Array[String] = []
 		if dur > 0:
@@ -416,17 +405,18 @@ func _format_sim_statuses(u: CombatantState) -> String:
 
 
 func _debug_unit_name(u: CombatantState) -> String:
-	if u != null and ("name" in u):
-		var n := String(u.name)
-		if n != "":
-			return n
+	if u == null:
+		return "<unnamed>"
 
-	if u != null and ("data_proto_path" in u):
-		var p := String(u.data_proto_path)
-		if p != "":
-			var base := p.get_file()
-			if base != "":
-				return base.get_basename()
+	var n := String(u.name)
+	if n != "":
+		return n
+
+	var p := String(u.data_proto_path)
+	if p != "":
+		var base := p.get_file()
+		if base != "":
+			return base.get_basename()
 
 	return "<unnamed>"
 

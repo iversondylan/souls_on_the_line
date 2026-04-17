@@ -722,10 +722,8 @@ func run_npc_turn(cid: int) -> void:
 			if pm != null:
 				pm.change_params_sim(ctx)
 
-		var effect_has_execute := pkg.effect != null and pkg.effect.has_method("execute")
-
 		_set_active_effect_package_metadata(i, pkg)
-		if effect_has_execute:
+		if pkg.effect != null:
 			pkg.effect.execute(ctx)
 		_clear_active_effect_package_metadata()
 

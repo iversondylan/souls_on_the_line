@@ -1,0 +1,6 @@
+[gd_resource type="FontVariation" format=3 uid="uid://c6t3pmgfo61wa"]
+
+[ext_resource type="FontFile" uid="uid://xxbed7d08wvt" path="res://_assets/fonts/Ysabeau_Infant/YsabeauInfant-VariableFont_wght.ttf" id="1_2ea2o"]
+
+[resource]
+base_font = ExtResource("1_2ea2o")

@@ -63,10 +63,9 @@ static func _description_values_for_action(
 	if action == null:
 		return []
 
-	if action.has_method("get_description_values"):
-		var explicit_values = action.call("get_description_values", CardActionContext.new())
-		if explicit_values is Array and !explicit_values.is_empty():
-			return explicit_values
+	var explicit_values := action.get_description_values(CardActionContext.new())
+	if !explicit_values.is_empty():
+		return explicit_values
 
 	if action is SummonAction:
 		var summon_data := (action as SummonAction).get_preview_summon_data()

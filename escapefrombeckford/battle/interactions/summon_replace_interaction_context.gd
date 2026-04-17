@@ -93,8 +93,7 @@ func _can_target(v: CombatantView) -> bool:
 func _set_candidate_mark(v: CombatantView, on: bool) -> void:
 	if v == null or !is_instance_valid(v):
 		return
-	if v.has_method("set_fade_mark"):
-		v.set_fade_mark(on)
+	v.set_fade_mark(on)
 
 
 func _confirm(chosen: CombatantView) -> void:

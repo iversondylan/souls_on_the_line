@@ -162,20 +162,17 @@ func on_request_swap_partner(ctx: CardContext, action_index: int) -> void:
 func on_combatant_view_hovered(v: CombatantView) -> void:
 	if active == null:
 		return
-	if active.has_method("on_hover"):
-		active.on_hover(v)
+	active.on_hover(v)
 
 func on_combatant_view_unhovered(v: CombatantView) -> void:
 	if active == null:
 		return
-	if active.has_method("on_unhover"):
-		active.on_unhover(v)
+	active.on_unhover(v)
 
 func on_combatant_view_clicked(v: CombatantView) -> void:
 	if active == null:
 		return
-	if active.has_method("on_click"):
-		active.on_click(v)
+	active.on_click(v)
 
 func on_prompt_button_pressed() -> void:
 	if active == null:

@@ -20,6 +20,7 @@ class_name CombatantView
 extends Node2D
 
 const Removal = preload("res://core/keys_values/removal_values.gd")
+const BattleFloatingNumber := preload("res://battle/ui/battle_floating_number.gd")
 
 # ------------------------------------------------------------------------------
 # Scene refs
@@ -1059,10 +1060,7 @@ func _spawn_projectile_async(
 			battle_view.put_projectile(projectile_key, projectile)
 			return
 		_play_sound(fireball_impact_sound)
-		if projectile.has_method("play_impact"):
-			projectile.call("play_impact")
-		else:
-			projectile.queue_free()
+		projectile.play_impact()
 	)
 
 
@@ -1234,6 +1232,10 @@ func show_targeted(_is_targeted: bool) -> void:
 	pass
 
 
+func set_fade_mark(_on: bool) -> void:
+	pass
+
+
 func play_attack_react() -> void:
 	pass
 
@@ -1262,6 +1264,10 @@ func play_hit() -> void:
 	tween_hit.tween_property(art_parent, "scale", base_scale, 0.08)
 
 
+func play_heal_fx() -> void:
+	pass
+
+
 func pop_damage_number(amount: int) -> void:
 	if amount <= 0:
 		return
@@ -1269,12 +1275,15 @@ func pop_damage_number(amount: int) -> void:
 	if scn == null:
 		push_warning("Missing DamageNumber scene at %s" % DAMAGE_NUMBER_SCN_PATH)
 		return
-	var dn := scn.instantiate() as Node2D
+	var dn := scn.instantiate() as BattleFloatingNumber
 	if dn == null:
 		return
 	add_child(dn)
-	if dn.has_method("animate_and_vanish"):
-		dn.call("animate_and_vanish", amount, _height_px)
+	dn.animate_and_vanish(amount, _height_px)
+
+
+func pop_heal_number(_amount: int) -> void:
+	pass
 
 
 func set_health(new_health: int, was_lethal: bool = false) -> void:

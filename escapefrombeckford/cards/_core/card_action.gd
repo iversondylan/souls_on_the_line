@@ -35,9 +35,9 @@ func description_arity() -> int:
 	# Number of %s this action consumes
 	return 0
 
-#func get_description_values(_ctx: CardActionContext) -> Array:
-	## Return exactly description_arity() values
-	#return []
+func get_description_values(_ctx: CardActionContext) -> Array:
+	# Return exactly description_arity() values
+	return []
 #
 #func get_modular_description(_ctx: CardActionContext) -> String:
 	#return ""

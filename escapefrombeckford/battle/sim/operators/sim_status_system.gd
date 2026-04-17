@@ -274,7 +274,7 @@ static func realize_pending_statuses(
 		return
 
 	var u: CombatantState = api.state.get_unit(int(target_id))
-	if u == null or !u.is_alive() or u.statuses == null:
+	if u == null or !u.is_alive():
 		return
 
 	var pending_ids := u.statuses.get_status_ids(true, true)
@@ -376,7 +376,7 @@ static func _for_each_status_on_unit(api: SimBattleAPI, owner_id: int, fn: Calla
 		return
 
 	var u: CombatantState = api.state.get_unit(owner_id)
-	if u == null or u.statuses == null or u.statuses.by_id == null:
+	if u == null:
 		return
 	if u.statuses.by_id.is_empty():
 		return
@@ -450,7 +450,7 @@ static func _append_owned_status_contexts(
 		return
 
 	var u: CombatantState = api.state.get_unit(target_id)
-	if u == null or u.statuses == null or u.statuses.by_id == null:
+	if u == null:
 		return
 	if u.statuses.by_id.is_empty():
 		return
@@ -472,7 +472,7 @@ static func _append_cached_projected_status_contexts(
 	if api == null or api.state == null:
 		return
 	var target: CombatantState = api.state.get_unit(target_id)
-	if target == null or target.statuses == null:
+	if target == null:
 		return
 	for projected_token: StatusToken in target.statuses.get_all_projected_tokens():
 		if projected_token == null:
@@ -579,7 +579,7 @@ static func refresh_cached_projected_statuses_for_unit(
 	if api == null or api.state == null or target_id <= 0:
 		return
 	var target: CombatantState = api.state.get_unit(target_id)
-	if target == null or target.statuses == null:
+	if target == null:
 		return
 
 	var entries_by_key := _collect_projection_entries_by_source_key(api)
@@ -662,8 +662,6 @@ static func _append_status_aura_projected_tokens(
 	var aura_status_id := StringName(entry.source_id)
 	var aura_proto := get_proto(api, aura_status_id) as Aura
 	if aura_proto == null:
-		return
-	if source.statuses == null:
 		return
 	if !aura_proto.affects_target(api.state, source_id, target_id):
 		return
@@ -765,7 +763,7 @@ static func _expire_all_by_policy(api: SimBattleAPI, policy: int) -> void:
 
 static func _expire_unit_by_policy(api: SimBattleAPI, cid: int, policy: int) -> void:
 	var u: CombatantState = api.state.get_unit(cid)
-	if u == null or u.statuses == null:
+	if u == null:
 		return
 	if u.statuses.by_id.is_empty():
 		return
@@ -795,7 +793,7 @@ static func _expire_unit_by_policy(api: SimBattleAPI, cid: int, policy: int) -> 
 
 static func _tick_duration_statuses_for_owner_turn_end(api: SimBattleAPI, actor_id: int) -> void:
 	var u: CombatantState = api.state.get_unit(actor_id)
-	if u == null or u.statuses == null:
+	if u == null:
 		return
 	if u.statuses.by_id.is_empty():
 		return

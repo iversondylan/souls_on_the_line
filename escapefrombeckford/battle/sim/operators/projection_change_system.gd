@@ -97,7 +97,7 @@ static func _source_has_live_aura_stack(
 		return false
 
 	var source: CombatantState = api.state.get_unit(source_owner_id)
-	if source == null or !source.is_alive() or source.statuses == null:
+	if source == null or !source.is_alive():
 		return false
 
 	# Pending aura tokens are fully live and project immediately. The projection bank

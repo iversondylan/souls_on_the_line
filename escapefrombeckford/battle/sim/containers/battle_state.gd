@@ -307,7 +307,7 @@ func _debug_mortality_name(value: int) -> String:
 	return str(value)
 
 func _debug_status_summary(unit: CombatantState) -> String:
-	if unit == null or unit.statuses == null or unit.statuses.by_id.is_empty():
+	if unit == null or unit.statuses.by_id.is_empty():
 		return ""
 
 	var parts: Array[String] = []

@@ -52,7 +52,7 @@ sim_host=""
 [gui]
 
 theme/default_font_multichannel_signed_distance_field=true
-theme/custom="res://themes/wizard_theme.tres"
+theme/custom="uid://c5t2luytfgc6b"
 
 [input]
 

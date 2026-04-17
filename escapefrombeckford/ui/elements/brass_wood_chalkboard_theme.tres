@@ -1,6 +1,6 @@
 [gd_resource type="Theme" format=3 uid="uid://c5t2luytfgc6b"]
 
-[ext_resource type="FontFile" uid="uid://dfse3mxerp47r" path="res://_assets/fonts/Aref_Ruqaa/ArefRuqaa-Bold.ttf" id="1_5rmae"]
+[ext_resource type="FontVariation" uid="uid://ct7jxc6iygcyi" path="res://ui/elements/cormorant_infant_regular_font_variation.tres" id="1_iqd46"]
 [ext_resource type="StyleBox" uid="uid://cklspnmsu1cim" path="res://ui/elements/wood_style_box_flat.tres" id="2_0e7bf"]
 [ext_resource type="StyleBox" uid="uid://dpvsrnnfnccjk" path="res://ui/elements/gem_style_box_flat_disabled.tres" id="2_m5g6k"]
 [ext_resource type="StyleBox" uid="uid://45qrcmt86s37" path="res://ui/elements/gem_style_box_flat.tres" id="3_alrk0"]
@@ -14,7 +14,7 @@
 [ext_resource type="FontFile" uid="uid://dkui1m7yfdyn" path="res://_assets/fonts/Fraunces/static/Fraunces_72pt_Soft-SemiBold.ttf" id="9_13yqh"]
 
 [resource]
-Button/fonts/font = ExtResource("1_5rmae")
+Button/fonts/font = ExtResource("1_iqd46")
 Button/styles/disabled = ExtResource("2_m5g6k")
 Button/styles/focus = ExtResource("2_0e7bf")
 Button/styles/hover = ExtResource("4_m5g6k")
