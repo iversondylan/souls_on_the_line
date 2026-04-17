@@ -1,6 +1,7 @@
 class_name Campfire extends Control
 
 const CARD_SELECTION_OVERLAY := preload("res://run/ui/card_selection_overlay.tscn")
+const CONFIRMATION_PROMPT_SCN := preload("res://ui/confirmation_prompt.tscn")
 
 var run_state: RunState
 var profile_data: ProfileData
@@ -12,7 +13,7 @@ var run_deck: RunDeck
 @onready var modal_layer: CanvasLayer = %ModalLayer
 @onready var slot_overlay = %SlotOverlay
 
-var _confirm_dialog: ConfirmationDialog
+var _confirm_dialog
 var _candidate_overlay: CardSelectionOverlay
 var _pending_slot_index: int = -1
 var _pending_slot_uid: String = ""
@@ -53,10 +54,11 @@ func _refresh_attune_button() -> void:
 
 
 func _build_confirm_dialog() -> void:
-	_confirm_dialog = ConfirmationDialog.new()
-	_confirm_dialog.dialog_text = "Are you sure? This will replace one attuned soul option for future runs."
-	_confirm_dialog.get_ok_button().text = "Attune"
+	_confirm_dialog = CONFIRMATION_PROMPT_SCN.instantiate()
+	if _confirm_dialog == null:
+		return
 	_confirm_dialog.confirmed.connect(_confirm_attunement)
+	_confirm_dialog.canceled.connect(_clear_pending_attunement)
 	if modal_layer != null:
 		modal_layer.add_child(_confirm_dialog)
 	else:
@@ -142,7 +144,11 @@ func _get_attunement_candidates() -> Array[CardData]:
 func _on_attunement_candidate_selected(card_data: CardData) -> void:
 	_pending_attuned_card = card_data
 	if _confirm_dialog != null:
-		_confirm_dialog.popup_centered()
+		_confirm_dialog.open(
+			"Are you sure? This will replace one attuned soul option for future runs.",
+			"Attune",
+			"Cancel"
+		)
 
 
 func _on_attunement_candidate_canceled() -> void:
@@ -171,10 +177,14 @@ func _confirm_attunement() -> void:
 	if is_instance_valid(_candidate_overlay):
 		_candidate_overlay.queue_free()
 	_candidate_overlay = null
-	_pending_slot_index = -1
-	_pending_slot_uid = ""
-	_pending_attuned_card = null
+	_clear_pending_attunement()
 	_hide_slot_overlay()
 
 func _on_fade_out_finished() -> void:
 	Events.campfire_exited.emit()
+
+
+func _clear_pending_attunement() -> void:
+	_pending_slot_index = -1
+	_pending_slot_uid = ""
+	_pending_attuned_card = null

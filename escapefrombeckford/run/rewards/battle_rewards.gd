@@ -5,6 +5,7 @@ class_name BattleRewardsScreen extends Control
 #enum Type {GOLD, NEW_CARD, RELIC}
 
 const CARD_SELECTION_OVERLAY := preload("res://run/ui/card_selection_overlay.tscn")
+const CONFIRMATION_PROMPT_SCN := preload("res://ui/confirmation_prompt.tscn")
 const REWARD_BUTTON := preload("uid://clfrebjlfonlo")
 const GOLD_TEXTURE := preload("uid://cbbohhy0ybxvy")
 const GOLD_TEXT := "%s gold"
@@ -23,7 +24,7 @@ var reward_context: RewardContext
 var card_reward_total_weight : float = 0.0
 var _current_card_reward_button: RewardButton
 var _card_reward_overlay: CardSelectionOverlay
-var _confirm_dialog: ConfirmationDialog
+var _confirm_dialog
 var _pending_reward_card: CardData
 var _pending_reward_slot_index: int = -1
 
@@ -180,9 +181,11 @@ func _clear_rewards() -> void:
 
 
 func _build_confirm_dialog() -> void:
-	_confirm_dialog = ConfirmationDialog.new()
-	_confirm_dialog.get_ok_button().text = "Replace"
+	_confirm_dialog = CONFIRMATION_PROMPT_SCN.instantiate()
+	if _confirm_dialog == null:
+		return
 	_confirm_dialog.confirmed.connect(_confirm_reward_soulbound_replacement)
+	_confirm_dialog.canceled.connect(_clear_pending_reward_replacement)
 	add_child(_confirm_dialog)
 
 
@@ -210,8 +213,11 @@ func _on_soulbound_slot_selected(slot_card: CardData) -> void:
 	_pending_reward_slot_index = _find_soulbound_slot_index(slot_card)
 	if _pending_reward_slot_index < 0:
 		return
-	_confirm_dialog.dialog_text = "Replace %s with %s for this run?" % [slot_card.name, _pending_reward_card.name]
-	_confirm_dialog.popup_centered()
+	_confirm_dialog.open(
+		"Replace %s with %s for this run?" % [slot_card.name, _pending_reward_card.name],
+		"Replace",
+		"Cancel"
+	)
 
 
 func _confirm_reward_soulbound_replacement() -> void:
@@ -223,10 +229,14 @@ func _confirm_reward_soulbound_replacement() -> void:
 	if is_instance_valid(_current_card_reward_button):
 		_current_card_reward_button.queue_free()
 	_current_card_reward_button = null
-	_pending_reward_card = null
-	_pending_reward_slot_index = -1
+	_clear_pending_reward_replacement()
 	if run != null:
 		run._persist_active_run()
+
+
+func _clear_pending_reward_replacement() -> void:
+	_pending_reward_card = null
+	_pending_reward_slot_index = -1
 
 
 func _find_soulbound_slot_index(slot_card: CardData) -> int:

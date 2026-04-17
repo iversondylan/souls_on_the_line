@@ -3,6 +3,7 @@ extends Control
 const CHAR_SELECTOR_SCENE := preload("uid://ba6ifh3shnl1d")
 const RUN_SAVE_PICKER_SCN := preload("res://ui/run_save_picker.tscn")
 const SAVE_NAME_DIALOG_SCN := preload("res://ui/save_name_dialog.tscn")
+const CONFIRMATION_PROMPT_SCN := preload("res://ui/confirmation_prompt.tscn")
 
 enum PickerContext {
 	NONE,
@@ -36,7 +37,7 @@ enum MainMenuView {
 
 var run_save_picker: RunSavePicker
 var save_name_dialog: SaveNameDialog
-var delete_profile_confirm_dialog: ConfirmationDialog
+var delete_profile_confirm_dialog
 var picker_context: PickerContext = PickerContext.NONE
 var naming_context: NamingContext = NamingContext.NONE
 var current_view: MainMenuView = MainMenuView.PROFILE_HUB
@@ -181,7 +182,7 @@ func _hide_overlays() -> void:
 	if save_name_dialog != null:
 		save_name_dialog.hide_dialog()
 	if delete_profile_confirm_dialog != null:
-		delete_profile_confirm_dialog.hide()
+		delete_profile_confirm_dialog.hide_prompt()
 	_clear_pending_delete_profile()
 
 
@@ -217,9 +218,9 @@ func _on_naming_closed() -> void:
 
 
 func _build_delete_profile_confirm_dialog() -> void:
-	delete_profile_confirm_dialog = ConfirmationDialog.new()
-	delete_profile_confirm_dialog.title = "Delete Profile"
-	delete_profile_confirm_dialog.get_ok_button().text = "Delete"
+	delete_profile_confirm_dialog = CONFIRMATION_PROMPT_SCN.instantiate()
+	if delete_profile_confirm_dialog == null:
+		return
 	delete_profile_confirm_dialog.canceled.connect(_clear_pending_delete_profile)
 	delete_profile_confirm_dialog.confirmed.connect(_confirm_delete_profile)
 	add_child(delete_profile_confirm_dialog)
@@ -253,8 +254,11 @@ func _open_delete_profile_confirmation(profile_key: String) -> void:
 		return
 	pending_delete_profile_key = profile_key
 	pending_delete_profile_name = String(profile_info.display_name)
-	delete_profile_confirm_dialog.dialog_text = "Delete profile \"%s\" and all of its saves?" % pending_delete_profile_name
-	delete_profile_confirm_dialog.popup_centered()
+	delete_profile_confirm_dialog.open(
+		"Delete profile \"%s\" and all of its saves?" % pending_delete_profile_name,
+		"Delete",
+		"Cancel"
+	)
 
 
 func _clear_pending_delete_profile() -> void:

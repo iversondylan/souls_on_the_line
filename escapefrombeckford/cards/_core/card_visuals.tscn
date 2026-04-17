@@ -16,6 +16,7 @@
 [ext_resource type="Texture2D" uid="uid://cdv0klth22vog" path="res://_assets/sprites/card_elements/cost_circle_L_red1.png" id="12_gqdbl"]
 [ext_resource type="Texture2D" uid="uid://csxfvex0guwsl" path="res://_assets/sprites/card_elements/cost_circle_R_gray.png" id="13_s0hpw"]
 [ext_resource type="Texture2D" uid="uid://bie3ywpj1wrhn" path="res://_assets/sprites/card_elements/cost_circle_R_green1.png" id="14_x7t2n"]
+[ext_resource type="Theme" uid="uid://b585x04q3pfqf" path="res://themes/battle_ui_theme.tres" id="15_5754s"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_g488w"]
 size = Vector2(225, 315)
@@ -180,7 +181,7 @@ offset_right = 20.0
 offset_bottom = 29.5
 grow_horizontal = 2
 grow_vertical = 2
-theme = ExtResource("3_2ndsp")
+theme = ExtResource("15_5754s")
 theme_override_font_sizes/font_size = 34
 text = "1"
 horizontal_alignment = 1

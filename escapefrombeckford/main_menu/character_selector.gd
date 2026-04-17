@@ -33,7 +33,7 @@ func set_current_character(new_character: PlayerData) -> void:
 		return
 	title.text = current_character.name
 	description.text = current_character.description
-	character_image.texture = current_character.load_portrait_art()
+	character_image.texture = current_character.load_character_art()
 
 
 func _load_profile_data() -> void:

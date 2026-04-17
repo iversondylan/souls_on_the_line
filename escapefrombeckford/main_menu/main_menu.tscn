@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://byfyjsj2j7wh"]
 
 [ext_resource type="Script" uid="uid://c82r707xq7wjh" path="res://main_menu/main_menu.gd" id="1_main"]
-[ext_resource type="FontFile" path="res://_assets/fonts/Jim_Nightshade/JimNightshade-Regular.ttf" id="2_title_font"]
+[ext_resource type="FontFile" uid="uid://djm1s0rli431d" path="res://_assets/fonts/Jim_Nightshade/JimNightshade-Regular.ttf" id="2_title_font"]
 [ext_resource type="Theme" uid="uid://c5t2luytfgc6b" path="res://ui/elements/brass_wood_chalkboard_theme.tres" id="4_3f7m4"]
 
 [sub_resource type="Gradient" id="Gradient_ekxnf"]
@@ -36,15 +36,35 @@ anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
 offset_left = -220.0
-offset_top = -164.0
+offset_top = -227.0
 offset_right = 220.0
-offset_bottom = -118.0
+offset_bottom = -136.0
 grow_horizontal = 2
 grow_vertical = 2
 theme = ExtResource("4_3f7m4")
 theme_override_fonts/font = ExtResource("2_title_font")
-theme_override_font_sizes/font_size = 48
-text = "Escape from Beckford"
+theme_override_font_sizes/font_size = 64
+text = "Souls on the Line"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Title2" type="Label" parent="." unique_id=1563190181]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -220.0
+offset_top = -175.0
+offset_right = 220.0
+offset_bottom = -84.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("4_3f7m4")
+theme_override_fonts/font = ExtResource("2_title_font")
+theme_override_font_sizes/font_size = 34
+text = "a Beckford Story"
 horizontal_alignment = 1
 vertical_alignment = 1
 

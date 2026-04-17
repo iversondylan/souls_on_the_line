@@ -3,6 +3,7 @@ class_name Shop extends Control
 const SHOP_CARD_SCN = preload("uid://bsiw7kxq3vytd")
 const SHOP_ARCANUM_SCN = preload("uid://6rwtjllgr66t")
 const CARD_SELECTION_OVERLAY := preload("res://run/ui/card_selection_overlay.tscn")
+const CONFIRMATION_PROMPT_SCN := preload("res://ui/confirmation_prompt.tscn")
 
 @export var shop_arcana: Arcana
 @export var player_data: PlayerData
@@ -19,7 +20,7 @@ var arcana_system_container: ArcanaSystemContainer
 var run: Run
 var arcana_reward_pool: ArcanaRewardPool
 var arcana_catalog: ArcanaCatalog
-var _confirm_dialog: ConfirmationDialog
+var _confirm_dialog
 var _slot_replace_overlay: CardSelectionOverlay
 var _pending_shop_card: CardData
 var _pending_shop_slot_index: int = -1
@@ -204,9 +205,11 @@ func is_arcanum_eligible(arcanum: Arcanum) -> bool:
 
 
 func _build_confirm_dialog() -> void:
-	_confirm_dialog = ConfirmationDialog.new()
-	_confirm_dialog.get_ok_button().text = "Buy & Replace"
+	_confirm_dialog = CONFIRMATION_PROMPT_SCN.instantiate()
+	if _confirm_dialog == null:
+		return
 	_confirm_dialog.confirmed.connect(_confirm_shop_soulbound_purchase)
+	_confirm_dialog.canceled.connect(_clear_pending_shop_purchase)
 	add_child(_confirm_dialog)
 
 
@@ -234,15 +237,15 @@ func _on_shop_slot_selected(slot_card: CardData) -> void:
 	_pending_shop_slot_index = _find_soulbound_slot_index(slot_card)
 	if _pending_shop_slot_index < 0:
 		return
-	_confirm_dialog.dialog_text = "Buy %s and replace %s for this run?" % [_pending_shop_card.name, slot_card.name]
-	_confirm_dialog.popup_centered()
+	_confirm_dialog.open(
+		"Buy %s and replace %s for this run?" % [_pending_shop_card.name, slot_card.name],
+		"Buy & Replace",
+		"Cancel"
+	)
 
 
 func _on_shop_slot_selection_canceled() -> void:
-	_pending_shop_card = null
-	_pending_shop_slot_index = -1
-	_pending_shop_gold_cost = 0
-	_pending_shop_offer_index = -1
+	_clear_pending_shop_purchase()
 	_slot_replace_overlay = null
 
 
@@ -261,12 +264,16 @@ func _confirm_shop_soulbound_purchase() -> void:
 	if !run_state.pending_shop_claimed_card_offer_indices.has(_pending_shop_offer_index):
 		run_state.pending_shop_claimed_card_offer_indices.append(_pending_shop_offer_index)
 	_update_items()
+	_clear_pending_shop_purchase()
+	if run != null:
+		run._persist_active_run()
+
+
+func _clear_pending_shop_purchase() -> void:
 	_pending_shop_card = null
 	_pending_shop_slot_index = -1
 	_pending_shop_gold_cost = 0
 	_pending_shop_offer_index = -1
-	if run != null:
-		run._persist_active_run()
 
 
 func _find_soulbound_slot_index(slot_card: CardData) -> int:
