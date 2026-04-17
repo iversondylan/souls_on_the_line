@@ -1,8 +1,8 @@
 extends Control
 
 const DEFAULT_PROFILE_ID := "cole"
-const MENU_CARD := preload("uid://d4g7iin5x7648")
 const MAIN_MENU_SCENE_PATH := "res://main_menu/main_menu.tscn"
+const SOUL_SLOT_BUTTON := preload("res://ui/soul_slot_button.tscn")
 
 @export var player_catalog: PlayerCatalog = preload("uid://b2ewfy12rhm0l")
 
@@ -75,7 +75,8 @@ func _refresh_soul_buttons() -> void:
 	for option in soul_options:
 		var card_data := option.get("card", null) as CardData
 		var selection_uid := String(option.get("selection_uid", ""))
-		_add_soul_button(card_data, selection_uid, selection_uid == selected_starting_soul_uid)
+		var slot_label := String(option.get("slot_label", ""))
+		_add_soul_button(card_data, selection_uid, slot_label, selection_uid == selected_starting_soul_uid)
 
 	if _soul_button_group.get_pressed_button() == null and soul_buttons.get_child_count() > 0:
 		var first_button := soul_buttons.get_child(0) as Button
@@ -84,34 +85,18 @@ func _refresh_soul_buttons() -> void:
 			_on_soul_button_pressed(String(first_button.get_meta("card_uid", "")))
 
 
-func _set_mouse_passthrough(node: Node) -> void:
-	if node is Control:
-		(node as Control).mouse_filter = Control.MOUSE_FILTER_IGNORE
-	for child in node.get_children():
-		_set_mouse_passthrough(child)
-
-
-func _add_soul_button(card_data: CardData, card_uid: String, is_selected: bool) -> void:
+func _add_soul_button(card_data: CardData, card_uid: String, slot_label: String, is_selected: bool) -> void:
 	if card_data == null:
 		return
-	var button := Button.new()
-	button.custom_minimum_size = Vector2(275, 370)
+	var button := SOUL_SLOT_BUTTON.instantiate() as Button
 	button.toggle_mode = true
 	button.button_group = _soul_button_group
 	button.button_pressed = is_selected
 	button.set_meta("card_uid", card_uid)
 	button.pressed.connect(_on_soul_button_pressed.bind(card_uid))
+	button.set("card_data", card_data)
+	button.set("caption_text", slot_label)
 	soul_buttons.add_child(button)
-
-	var menu_card := MENU_CARD.instantiate() as MenuCard
-	button.add_child(menu_card)
-	menu_card.set_anchors_preset(Control.PRESET_FULL_RECT)
-	menu_card.offset_left = 0.0
-	menu_card.offset_top = 0.0
-	menu_card.offset_right = 0.0
-	menu_card.offset_bottom = 0.0
-	menu_card.set_card_data(card_data)
-	_set_mouse_passthrough(menu_card)
 
 
 func _get_current_starter_soul() -> CardData:
@@ -127,6 +112,8 @@ func _get_signature_soul_options() -> Array:
 	if profile_data == null or profile_data.soul_recess_state == null:
 		return [{
 			"selection_uid": "",
+			"slot_index": -1,
+			"slot_label": SoulRecessState.DEFAULT_SOUL_SLOT_LABEL,
 			"card": starter_soul.make_runtime_instance(),
 		}]
 	return profile_data.soul_recess_state.build_signature_soul_options(starter_soul)

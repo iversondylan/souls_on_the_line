@@ -1,5 +1,8 @@
 class_name SoulRecessState extends Resource
 
+const DEFAULT_SOUL_SLOT_LABEL := "Default Soul"
+const ATTUNED_SOUL_LABEL_FORMAT := "Attuned Soul %d"
+
 @export var unlocked_slot_count: int = 2
 @export var attuned_souls: Array[CardSnapshot] = []
 @export var selected_starting_soul_uid: String = ""
@@ -17,6 +20,8 @@ func build_signature_soul_options(starter_soul: CardData) -> Array:
 	if starter_card != null:
 		options.append({
 			"selection_uid": "",
+			"slot_index": -1,
+			"slot_label": get_default_soul_slot_label(),
 			"card": starter_card,
 		})
 
@@ -30,6 +35,8 @@ func build_signature_soul_options(starter_soul: CardData) -> Array:
 		card_data.ensure_uid()
 		options.append({
 			"selection_uid": String(card_data.uid),
+			"slot_index": slot_index,
+			"slot_label": get_attuned_soul_slot_label(slot_index),
 			"card": card_data,
 		})
 	return options
@@ -73,6 +80,14 @@ func set_attuned_soul_snapshot(slot_index: int, snapshot: CardSnapshot) -> void:
 	while attuned_souls.size() <= slot_index:
 		attuned_souls.append(null)
 	attuned_souls[slot_index] = snapshot
+
+
+func get_default_soul_slot_label() -> String:
+	return DEFAULT_SOUL_SLOT_LABEL
+
+
+func get_attuned_soul_slot_label(slot_index: int) -> String:
+	return ATTUNED_SOUL_LABEL_FORMAT % maxi(slot_index + 1, 1)
 
 
 func _instantiate_signature_card(source_card: CardData) -> CardData:
