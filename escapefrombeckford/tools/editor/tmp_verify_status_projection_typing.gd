@@ -58,15 +58,13 @@ func _verify_projection_impact_info_merge(failures: Array[String]) -> void:
 func _verify_effective_status_context_cache_store(failures: Array[String]) -> void:
 	var store := EffectiveStatusContextCacheStore.new()
 	var empty_contexts: Array[SimStatusContext] = []
-	store.set_contexts(3, 7, "2,5", false, empty_contexts)
+	store.set_contexts(3, 7, "2,5", empty_contexts)
 
-	if !store.has_contexts(3, 7, "2,5", false):
+	if !store.has_contexts(3, 7, "2,5"):
 		failures.append("effective_status_context_cache_store: expected cached empty array to count as a hit")
-	if store.has_contexts(3, 7, "2,5", true):
-		failures.append("effective_status_context_cache_store: allow_dead should be part of the cache key")
 
 	store.invalidate()
-	if store.has_contexts(3, 7, "2,5", false):
+	if store.has_contexts(3, 7, "2,5"):
 		failures.append("effective_status_context_cache_store: invalidate should clear cached entries")
 
 

@@ -120,7 +120,6 @@ static func on_attack_will_run(
 		api,
 		attacker_id,
 		fn,
-		false,
 		include_pending_sources
 	)
 
@@ -169,7 +168,7 @@ static func on_removal(api: SimBattleAPI, removal_ctx) -> void:
 		if ctx.proto != null:
 			ctx.proto.on_removal(ctx, removal_ctx)
 
-	_for_each_effective_status_on_unit(api, removed_id, fn, true)
+	_for_each_effective_status_on_unit(api, removed_id, fn)
 
 static func should_skip_npc_action(api: SimBattleAPI, actor_id: int) -> bool:
 	if api == null or api.state == null or api.state.has_terminal_outcome():
@@ -242,8 +241,7 @@ static func make_context(api: SimBattleAPI, owner_id: int, stack: StatusStack) -
 static func get_effective_status_contexts_for_unit(
 	api: SimBattleAPI,
 	target_id: int,
-	include_pending_sources: PendingStatusSourceSet = null,
-	allow_dead_self_aura_source := false
+	include_pending_sources: PendingStatusSourceSet = null
 ) -> Array[SimStatusContext]:
 	var owned: Array[SimStatusContext] = []
 	var projected: Array[SimStatusContext] = []
@@ -255,28 +253,25 @@ static func get_effective_status_contexts_for_unit(
 	if target != null and target.statuses != null:
 		unit_status_version = int(target.statuses.get_effective_context_version())
 	var include_pending_sources_signature := pending_sources.signature()
-	if api._has_cached_effective_status_contexts_for_unit(
+	if api.has_cached_effective_status_contexts_for_unit(
 		int(target_id),
 		unit_status_version,
-		include_pending_sources_signature,
-		bool(allow_dead_self_aura_source)
+		include_pending_sources_signature
 	):
 		return api._get_cached_effective_status_contexts_for_unit(
 			int(target_id),
 			unit_status_version,
-			include_pending_sources_signature,
-			bool(allow_dead_self_aura_source)
+			include_pending_sources_signature
 		)
 	
 	_append_owned_status_contexts(owned, api, target_id, pending_sources)
 	var include_pending_projection_sources := !pending_sources.is_empty()
-	if include_pending_projection_sources or allow_dead_self_aura_source:
+	if include_pending_projection_sources:
 		_append_projected_status_contexts(
 			projected,
 			api,
 			target_id,
-			pending_sources,
-			allow_dead_self_aura_source
+			pending_sources
 		)
 	else:
 		refresh_cached_projected_statuses_for_unit(api, target_id)
@@ -286,7 +281,6 @@ static func get_effective_status_contexts_for_unit(
 		int(target_id),
 		unit_status_version,
 		include_pending_sources_signature,
-		bool(allow_dead_self_aura_source),
 		merged
 	)
 	return merged
@@ -602,7 +596,6 @@ static func _for_each_effective_status_on_unit(
 	api: SimBattleAPI,
 	owner_id: int,
 	fn: Callable,
-	allow_dead_self_aura_source := false,
 	include_pending_sources: PendingStatusSourceSet = null
 ) -> void:
 	if api == null or api.state == null or owner_id <= 0 or !fn.is_valid():
@@ -611,8 +604,7 @@ static func _for_each_effective_status_on_unit(
 	for ctx: SimStatusContext in get_effective_status_contexts_for_unit(
 		api,
 		owner_id,
-		include_pending_sources,
-		allow_dead_self_aura_source
+		include_pending_sources
 	):
 		if ctx == null or !ctx.is_valid():
 			continue
@@ -688,8 +680,7 @@ static func _append_projected_status_contexts(
 	out: Array[SimStatusContext],
 	api: SimBattleAPI,
 	target_id: int,
-	include_pending_sources: PendingStatusSourceSet,
-	allow_dead_self_aura_source := false
+	include_pending_sources: PendingStatusSourceSet
 ) -> void:
 	if api == null or api.state == null or api.state.projection_bank == null:
 		return
@@ -708,8 +699,7 @@ static func _append_projected_status_contexts(
 					target,
 					target_id,
 					entry,
-					include_pending_sources,
-					allow_dead_self_aura_source
+					include_pending_sources
 				)
 			ProjectionBank.SOURCE_KIND_ARCANUM:
 				_append_arcanum_projected_contexts(out, api, target, target_id, entry)
@@ -741,8 +731,7 @@ static func _append_status_aura_projected_contexts(
 	target: CombatantState,
 	target_id: int,
 	entry: ProjectionSourceEntry,
-	include_pending_sources: PendingStatusSourceSet,
-	allow_dead_self_aura_source := false
+	include_pending_sources: PendingStatusSourceSet
 ) -> void:
 	var source_id := int(entry.source_owner_id)
 	if source_id <= 0:
@@ -756,7 +745,7 @@ static func _append_status_aura_projected_contexts(
 	var source: CombatantState = api.state.get_unit(source_id)
 	if source == null:
 		return
-	if !source.is_alive() and !(allow_dead_self_aura_source and int(source_id) == int(target_id)):
+	if !source.is_alive():
 		return
 	
 	var aura_status_id := StringName(entry.source_id)

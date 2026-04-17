@@ -7,15 +7,13 @@ var _epoch: int = 1
 func has_contexts(
 	target_id: int,
 	unit_status_version: int,
-	include_pending_sources_signature: String,
-	allow_dead_self_aura_source: bool
+	include_pending_sources_signature: String
 ) -> bool:
 	return _contexts_by_key.has(
 		_make_cache_key(
 			target_id,
 			unit_status_version,
-			include_pending_sources_signature,
-			allow_dead_self_aura_source
+			include_pending_sources_signature
 		)
 	)
 
@@ -23,14 +21,12 @@ func has_contexts(
 func get_contexts(
 	target_id: int,
 	unit_status_version: int,
-	include_pending_sources_signature: String,
-	allow_dead_self_aura_source: bool
+	include_pending_sources_signature: String
 ) -> Array[SimStatusContext]:
 	var cache_key := _make_cache_key(
 		target_id,
 		unit_status_version,
-		include_pending_sources_signature,
-		allow_dead_self_aura_source
+		include_pending_sources_signature
 	)
 	if !_contexts_by_key.has(cache_key):
 		return []
@@ -42,14 +38,12 @@ func set_contexts(
 	target_id: int,
 	unit_status_version: int,
 	include_pending_sources_signature: String,
-	allow_dead_self_aura_source: bool,
 	contexts: Array[SimStatusContext]
 ) -> void:
 	var cache_key := _make_cache_key(
 		target_id,
 		unit_status_version,
-		include_pending_sources_signature,
-		allow_dead_self_aura_source
+		include_pending_sources_signature
 	)
 	_contexts_by_key[cache_key] = _copy_contexts(contexts)
 
@@ -62,14 +56,12 @@ func invalidate() -> void:
 func _make_cache_key(
 	target_id: int,
 	unit_status_version: int,
-	include_pending_sources_signature: String,
-	allow_dead_self_aura_source: bool
+	include_pending_sources_signature: String
 ) -> String:
-	return "%s::%s::%s::%s::%s" % [
+	return "%s::%s::%s::%s" % [
 		str(int(target_id)),
 		str(int(unit_status_version)),
 		String(include_pending_sources_signature),
-		"allow_dead" if bool(allow_dead_self_aura_source) else "alive_only",
 		str(int(_epoch)),
 	]
 

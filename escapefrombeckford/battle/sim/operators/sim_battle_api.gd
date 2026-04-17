@@ -290,41 +290,35 @@ func get_status_intensity(combat_id: int, status_id: StringName) -> int:
 
 func get_effective_status_contexts_for_unit(
 	target_id: int,
-	include_pending_sources: PendingStatusSourceSet = null,
-	allow_dead_self_aura_source := false
+	include_pending_sources: PendingStatusSourceSet = null
 ) -> Array[SimStatusContext]:
 	return SimStatusSystem.get_effective_status_contexts_for_unit(
 		self,
 		target_id,
-		include_pending_sources,
-		allow_dead_self_aura_source
+		include_pending_sources
 	)
 
-func _has_cached_effective_status_contexts_for_unit(
+func has_cached_effective_status_contexts_for_unit(
 	target_id: int,
 	unit_status_version: int,
-	include_pending_sources_signature: String,
-	allow_dead_self_aura_source: bool
+	include_pending_sources_signature: String
 ) -> bool:
 	return _effective_status_context_cache_store.has_contexts(
 		target_id,
 		unit_status_version,
-		include_pending_sources_signature,
-		allow_dead_self_aura_source
+		include_pending_sources_signature
 	)
 
 
 func _get_cached_effective_status_contexts_for_unit(
 	target_id: int,
 	unit_status_version: int,
-	include_pending_sources_signature: String,
-	allow_dead_self_aura_source: bool
+	include_pending_sources_signature: String
 ) -> Array[SimStatusContext]:
 	return _effective_status_context_cache_store.get_contexts(
 		target_id,
 		unit_status_version,
-		include_pending_sources_signature,
-		allow_dead_self_aura_source
+		include_pending_sources_signature
 	)
 
 
@@ -332,14 +326,12 @@ func _set_cached_effective_status_contexts_for_unit(
 	target_id: int,
 	unit_status_version: int,
 	include_pending_sources_signature: String,
-	allow_dead_self_aura_source: bool,
 	contexts: Array[SimStatusContext]
 ) -> void:
 	_effective_status_context_cache_store.set_contexts(
 		target_id,
 		unit_status_version,
 		include_pending_sources_signature,
-		allow_dead_self_aura_source,
 		contexts
 	)
 
