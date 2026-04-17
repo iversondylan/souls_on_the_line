@@ -48,7 +48,6 @@ func bind(_sim: Sim, _host: SimHost) -> void:
 	if sim.api != null:
 		sim.api.summoned.connect(on_summoned)
 		sim.api.unit_removed.connect(on_unit_removed)
-		sim.api.urgent_planning_requested.connect(request_urgent_planning_flush)
 
 
 func reset_runtime_state() -> void:
@@ -371,12 +370,6 @@ func add_combatant_from_data(
 
 	return api.spawn_from_data(data, group_index, insert_index, is_player, current_health_override)
 
-
-func request_urgent_planning_flush() -> void:
-	#print("sim_runtime.gd request_urgent_planning_flush()")
-	if sim == null or sim.checkpoint_processor == null:
-		return
-	sim.checkpoint_processor.flush_planning(CheckpointProcessor.Kind.URGENT_STATUS_LEGALITY, sim)#request_followup_flush()
 
 func request_projection_cleanup_flush() -> void:
 	_apply_checkpoint_boundary(CheckpointProcessor.Kind.AFTER_PROJECTION_CLEANUP, true)

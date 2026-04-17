@@ -72,29 +72,8 @@ static func ensure_valid_plan_sim(profile: NPCAIProfile, ctx: NPCAIContext, allo
 		plan_next_intent_sim(profile, ctx, allow_hooks)
 		return
 
-	var idx := int(ctx.state.get(KEY_PLANNED_IDX, -1))
-	var action := get_action_by_idx(profile, idx)
-	var selection_source := int(ctx.state.get(Keys.PLANNED_SELECTION_SOURCE, SELECTION_SOURCE_NONE))
-	var is_still_valid := false
-
-	match selection_source:
-		SELECTION_SOURCE_OVERRIDE:
-			is_still_valid = int(_get_first_override_idx_sim(profile, ctx)) == idx
-		SELECTION_SOURCE_CHANCE:
-			if action != null:
-				var override_idx := int(_get_first_override_idx_sim(profile, ctx))
-				is_still_valid = override_idx == -1
-			else:
-				is_still_valid = false
-		_:
-			is_still_valid = false
-
-	if !is_still_valid:
-		if allow_hooks:
-			_transition_planned_intent_sim(profile, idx, -1, ctx)
-		else:
-			ctx.state[KEY_PLANNED_IDX] = -1
-			ctx.state[Keys.PLANNED_SELECTION_SOURCE] = SELECTION_SOURCE_NONE
+	if !is_current_plan_valid_sim(profile, ctx):
+		cancel_current_plan_sim(profile, ctx, allow_hooks)
 		plan_next_intent_sim(profile, ctx, allow_hooks)
 
 
@@ -156,6 +135,41 @@ static func get_action_by_idx(profile: NPCAIProfile, idx: int) -> NPCAction:
 
 static func emit_current_intent(api: SimBattleAPI, cid: int) -> void:
 	ActionIntentPresenter.emit_current_intent(api, cid)
+
+
+static func is_current_plan_valid_sim(profile: NPCAIProfile, ctx: NPCAIContext) -> bool:
+	if profile == null or ctx == null or ctx.state == null:
+		return false
+
+	var idx := int(ctx.state.get(KEY_PLANNED_IDX, -1))
+	var action := get_action_by_idx(profile, idx)
+	var selection_source := int(ctx.state.get(Keys.PLANNED_SELECTION_SOURCE, SELECTION_SOURCE_NONE))
+
+	match selection_source:
+		SELECTION_SOURCE_OVERRIDE:
+			return int(_get_first_override_idx_sim(profile, ctx)) == idx
+		SELECTION_SOURCE_CHANCE:
+			if action == null:
+				return false
+			return int(_get_first_override_idx_sim(profile, ctx)) == -1
+		_:
+			return false
+
+
+static func cancel_current_plan_sim(profile: NPCAIProfile, ctx: NPCAIContext, allow_hooks := true) -> bool:
+	if ctx == null or ctx.state == null:
+		return false
+
+	var prev_idx := int(ctx.state.get(KEY_PLANNED_IDX, -1))
+	if prev_idx < 0:
+		return false
+
+	if allow_hooks:
+		_transition_planned_intent_sim(profile, prev_idx, -1, ctx)
+	else:
+		ctx.state[KEY_PLANNED_IDX] = -1
+		ctx.state[Keys.PLANNED_SELECTION_SOURCE] = SELECTION_SOURCE_NONE
+	return true
 
 
 static func _can_cancel_intent_sim(state: Dictionary) -> bool:

@@ -35,7 +35,6 @@ var is_main: bool = true
 # Runtime signals
 signal summoned(ctx: SummonContext)
 signal unit_removed(id: int, g: int, removal_type: int, reason: String)
-signal urgent_planning_requested()
 
 var scopes: BattleScopeManager
 var writer: BattleEventWriter
@@ -536,15 +535,35 @@ func _request_immediate_planning_flush_if_needed(target_id: int, proto: Status) 
 	if proto == null:
 		return
 	if !proto.affects_intent_legality():
-		#print("sim_battle_api.gd _request_immediate_planning_flush_if_needed() affects_legality: false, status: ", proto.get_id())
 		return
-	#print("sim_battle_api.gd _request_immediate_planning_flush_if_needed() affects_legality: true, status: ", proto.get_id())
-	# Dirtiness should already be requested before this point,
-	# but make sure the target definitely gets both.
-	_request_replan(int(target_id))
-	_request_intent_refresh(int(target_id))
-	
-	urgent_planning_requested.emit()
+	_cancel_invalid_plan_immediately_if_needed(int(target_id))
+
+
+func _cancel_invalid_plan_immediately_if_needed(target_id: int) -> void:
+	if state == null or state.has_terminal_outcome() or target_id <= 0:
+		return
+
+	var u: CombatantState = state.get_unit(int(target_id))
+	if u == null or !u.is_alive():
+		return
+	if u.combatant_data == null or u.combatant_data.ai == null:
+		return
+
+	ActionPlanner.ensure_ai_state_initialized(u)
+	if bool(u.ai_state.get(Keys.PLANNING_NOW, false)) or bool(u.ai_state.get(Keys.IS_ACTING, false)):
+		return
+	if int(u.ai_state.get(ActionPlanner.KEY_PLANNED_IDX, -1)) < 0:
+		return
+	if !bool(u.ai_state.get(Keys.FIRST_INTENTS_READY, false)):
+		return
+
+	var ctx := ActionPlanner.make_context(self, u)
+	if ActionPlanner.is_current_plan_valid_sim(u.combatant_data.ai, ctx):
+		return
+	if !ActionPlanner.cancel_current_plan_sim(u.combatant_data.ai, ctx, true):
+		return
+
+	ActionIntentPresenter.emit_current_intent(self, int(target_id))
 
 func _did_group_layout_change(
 	before_order_ids: PackedInt32Array,

@@ -9,6 +9,6 @@ name = "Slab Construct"
 description = "Heavy construct. Builds power before slamming."
 character_art_uid = "uid://dkfg0k5h7fab1"
 facing_right = false
-max_health = 35
+max_health = 32
 ai = ExtResource("1_xvhqi")
 metadata/_custom_type_script = "uid://cfatj0ryn8uv3"

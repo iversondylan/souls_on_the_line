@@ -121,7 +121,7 @@ func clear_planning() -> void:
 	dirty_group_layout_events.clear()
 
 
-func flush_planning(_kind: int, sim: Sim, allow_hooks := true) -> void:
+func flush_planning(kind: int, sim: Sim, allow_hooks := true) -> void:
 	if _is_flushing:
 		_needs_another_flush = true
 		return
@@ -147,8 +147,14 @@ func flush_planning(_kind: int, sim: Sim, allow_hooks := true) -> void:
 		var intent_refresh_ids_now := dirty_intent_refresh_ids.duplicate()
 		var group_layout_events_now := dirty_group_layout_events.duplicate()
 		var outcome_now := bool(dirty_outcome)
+		var should_apply_replans := _should_apply_replans_now(int(kind))
 
-		clear_planning()
+		if should_apply_replans:
+			clear_planning()
+		else:
+			dirty_intent_refresh_ids.clear()
+			dirty_intent_refresh_all = false
+			dirty_group_layout_events.clear()
 		dirty_outcome = false
 
 		var cids_to_publish := _collect_cids_to_publish(
@@ -159,9 +165,9 @@ func flush_planning(_kind: int, sim: Sim, allow_hooks := true) -> void:
 			intent_refresh_ids_now
 		)
 
-		if replan_all_now:
+		if should_apply_replans and replan_all_now:
 			_replan_all(api, allow_hooks)
-		else:
+		elif should_apply_replans:
 			for cid in replan_ids_now.keys():
 				_replan_if_valid(api, int(cid), allow_hooks)
 
@@ -175,6 +181,11 @@ func flush_planning(_kind: int, sim: Sim, allow_hooks := true) -> void:
 			break
 
 	_is_flushing = false
+
+
+func _should_apply_replans_now(kind: int) -> bool:
+	return int(kind) != int(Kind.AFTER_PROJECTION_CLEANUP) \
+		and int(kind) != int(Kind.URGENT_STATUS_LEGALITY)
 
 
 func consume_dirty_turn_order() -> bool:

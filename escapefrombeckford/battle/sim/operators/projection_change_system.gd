@@ -157,6 +157,7 @@ static func _request_targeted_projection_dirtying(
 		var cid := int(cid_variant)
 		api._request_replan(cid)
 		api._request_intent_refresh(cid)
+		api._cancel_invalid_plan_immediately_if_needed(cid)
 
 	return true
 

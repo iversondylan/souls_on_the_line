@@ -14,7 +14,6 @@
 [resource]
 script = ExtResource("4_vlhit")
 effect_packages = Array[ExtResource("1_t7gtc")]([ExtResource("2_ghfs1")])
-chance_weight = 0.8
 state_models = Array[ExtResource("5_bpa23")]([ExtResource("9_2pqbx")])
 action_name = "Call Shield Mite"
 intent_icon = ExtResource("3_bpa23")
