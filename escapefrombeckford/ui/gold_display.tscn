@@ -2,19 +2,21 @@
 
 [ext_resource type="Script" uid="uid://xjfkbtibk1h6" path="res://ui/gold_display.gd" id="1_0t3bo"]
 [ext_resource type="Texture2D" uid="uid://cbbohhy0ybxvy" path="res://_assets/sprites/assorted/coin.PNG" id="1_1b25k"]
-[ext_resource type="Theme" uid="uid://1dr1eewpv0jd" path="res://themes/ui_theme.tres" id="2_0t3bo"]
+[ext_resource type="Theme" uid="uid://b585x04q3pfqf" path="res://themes/battle_ui_theme.tres" id="1_ksuli"]
 
 [node name="GoldDisplay" type="HBoxContainer" unique_id=1765616896]
 custom_minimum_size = Vector2(160, 64)
 offset_right = 157.0
 offset_bottom = 64.0
 size_flags_vertical = 4
+theme = ExtResource("1_ksuli")
 theme_override_constants/separation = 0
 script = ExtResource("1_0t3bo")
 
 [node name="Icon" type="TextureRect" parent="." unique_id=1307287909]
 custom_minimum_size = Vector2(64, 64)
 layout_mode = 2
+theme = ExtResource("1_ksuli")
 texture = ExtResource("1_1b25k")
 expand_mode = 1
 stretch_mode = 5
@@ -22,7 +24,7 @@ stretch_mode = 5
 [node name="Label" type="Label" parent="." unique_id=1405600499]
 layout_mode = 2
 size_flags_vertical = 1
-theme = ExtResource("2_0t3bo")
+theme = ExtResource("1_ksuli")
 theme_override_font_sizes/font_size = 36
 text = "9999"
 vertical_alignment = 1

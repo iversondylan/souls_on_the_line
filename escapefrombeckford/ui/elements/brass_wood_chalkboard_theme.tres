@@ -1,29 +1,33 @@
 [gd_resource type="Theme" format=3 uid="uid://c5t2luytfgc6b"]
 
-[ext_resource type="FontVariation" uid="uid://ct7jxc6iygcyi" path="res://ui/elements/cormorant_infant_regular_font_variation.tres" id="1_iqd46"]
-[ext_resource type="StyleBox" uid="uid://cklspnmsu1cim" path="res://ui/elements/wood_style_box_flat.tres" id="2_0e7bf"]
-[ext_resource type="StyleBox" uid="uid://dpvsrnnfnccjk" path="res://ui/elements/gem_style_box_flat_disabled.tres" id="2_m5g6k"]
-[ext_resource type="StyleBox" uid="uid://45qrcmt86s37" path="res://ui/elements/gem_style_box_flat.tres" id="3_alrk0"]
-[ext_resource type="StyleBox" uid="uid://nxrajwke1wpe" path="res://ui/elements/brass_wood_frame_chalkboard_200.tres" id="4_e55rh"]
-[ext_resource type="StyleBox" uid="uid://cmm6kbuslirxb" path="res://ui/elements/gem_style_box_flat_hovered.tres" id="4_m5g6k"]
-[ext_resource type="FontFile" uid="uid://cnelekvmhj3fu" path="res://_assets/fonts/Fraunces/static/Fraunces_72pt-Bold.ttf" id="4_tbcdf"]
-[ext_resource type="FontFile" uid="uid://dxianmbmler43" path="res://_assets/fonts/Fraunces/static/Fraunces_72pt_Soft-Bold.ttf" id="5_e55rh"]
-[ext_resource type="FontFile" uid="uid://bfnja4ec1dadc" path="res://_assets/fonts/Fraunces/static/Fraunces_72pt_Soft-BoldItalic.ttf" id="6_tbcdf"]
-[ext_resource type="FontFile" uid="uid://cyfvgde85p512" path="res://_assets/fonts/Fraunces/static/Fraunces_72pt_Soft-SemiBoldItalic.ttf" id="7_m5g6k"]
-[ext_resource type="FontFile" uid="uid://b3m51k1x1p2bc" path="res://_assets/fonts/Fraunces/static/Fraunces_72pt_SuperSoft-BoldItalic.ttf" id="8_iqd46"]
-[ext_resource type="FontFile" uid="uid://dkui1m7yfdyn" path="res://_assets/fonts/Fraunces/static/Fraunces_72pt_Soft-SemiBold.ttf" id="9_13yqh"]
+[ext_resource type="FontVariation" uid="uid://ct7jxc6iygcyi" path="res://ui/elements/cormorant_infant_regular_font_variation.tres" id="1_cormorant_regular"]
+[ext_resource type="FontVariation" path="res://ui/elements/cormorant_infant_italic_font_variation.tres" id="2_cormorant_italic"]
+[ext_resource type="FontVariation" uid="uid://c6t3pmgfo61wa" path="res://ui/elements/ysabeau_infant_regular_font_variation.tres" id="3_ysabeau_regular"]
+[ext_resource type="StyleBox" uid="uid://cklspnmsu1cim" path="res://ui/elements/wood_style_box_flat.tres" id="5_focus"]
+[ext_resource type="StyleBox" uid="uid://dpvsrnnfnccjk" path="res://ui/elements/gem_style_box_flat_disabled.tres" id="6_disabled"]
+[ext_resource type="StyleBox" uid="uid://yxqiaxub80h" path="res://ui/elements/gem_style_box_flat_pressed.tres" id="6_e55rh"]
+[ext_resource type="StyleBox" uid="uid://45qrcmt86s37" path="res://ui/elements/gem_style_box_flat.tres" id="7_normal"]
+[ext_resource type="StyleBox" uid="uid://nxrajwke1wpe" path="res://ui/elements/brass_wood_frame_chalkboard_200.tres" id="8_panel"]
+[ext_resource type="StyleBox" uid="uid://cmm6kbuslirxb" path="res://ui/elements/gem_style_box_flat_hovered.tres" id="9_hover"]
 
 [resource]
-Button/fonts/font = ExtResource("1_iqd46")
-Button/styles/disabled = ExtResource("2_m5g6k")
-Button/styles/focus = ExtResource("2_0e7bf")
-Button/styles/hover = ExtResource("4_m5g6k")
-Button/styles/normal = ExtResource("3_alrk0")
-Button/styles/pressed = ExtResource("3_alrk0")
-Label/fonts/font = ExtResource("4_tbcdf")
-PanelContainer/styles/panel = ExtResource("4_e55rh")
-RichTextLabel/fonts/bold_font = ExtResource("5_e55rh")
-RichTextLabel/fonts/bold_italics_font = ExtResource("6_tbcdf")
-RichTextLabel/fonts/italics_font = ExtResource("7_m5g6k")
-RichTextLabel/fonts/mono_font = ExtResource("8_iqd46")
-RichTextLabel/fonts/normal_font = ExtResource("9_13yqh")
+Button/font_sizes/font_size = 22
+Button/fonts/font = ExtResource("3_ysabeau_regular")
+Button/styles/disabled = ExtResource("6_disabled")
+Button/styles/focus = ExtResource("5_focus")
+Button/styles/hover = ExtResource("9_hover")
+Button/styles/normal = ExtResource("7_normal")
+Button/styles/pressed = ExtResource("6_e55rh")
+CheckButton/font_sizes/font_size = 22
+CheckButton/fonts/font = ExtResource("3_ysabeau_regular")
+Label/font_sizes/font_size = 20
+Label/fonts/font = ExtResource("1_cormorant_regular")
+LineEdit/font_sizes/font_size = 22
+LineEdit/fonts/font = ExtResource("3_ysabeau_regular")
+Panel/styles/panel = ExtResource("8_panel")
+PanelContainer/styles/panel = ExtResource("8_panel")
+RichTextLabel/fonts/bold_font = ExtResource("1_cormorant_regular")
+RichTextLabel/fonts/bold_italics_font = ExtResource("2_cormorant_italic")
+RichTextLabel/fonts/italics_font = ExtResource("2_cormorant_italic")
+RichTextLabel/fonts/mono_font = ExtResource("3_ysabeau_regular")
+RichTextLabel/fonts/normal_font = ExtResource("1_cormorant_regular")

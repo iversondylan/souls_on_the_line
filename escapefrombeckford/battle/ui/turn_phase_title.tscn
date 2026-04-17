@@ -1,8 +1,6 @@
 [gd_scene format=3 uid="uid://d6f3t1qcn8bk"]
 
 [ext_resource type="Script" uid="uid://we4jnfpugpkx" path="res://battle/ui/turn_phase_title.gd" id="1_cyksq"]
-[ext_resource type="Theme" uid="uid://d2wc7fposrlqs" path="res://themes/wizard_theme.tres" id="1_fbmxl"]
-[ext_resource type="Theme" uid="uid://1dr1eewpv0jd" path="res://themes/ui_theme.tres" id="2_cyksq"]
 [ext_resource type="Theme" uid="uid://c5t2luytfgc6b" path="res://ui/elements/brass_wood_chalkboard_theme.tres" id="2_kvjjq"]
 
 [node name="Control" type="Control" unique_id=1831978529]
@@ -42,7 +40,7 @@ custom_minimum_size = Vector2(400, 0)
 layout_mode = 2
 size_flags_vertical = 4
 mouse_filter = 2
-theme = ExtResource("1_fbmxl")
+theme = ExtResource("2_kvjjq")
 theme_override_font_sizes/normal_font_size = 35
 bbcode_enabled = true
 text = "Player Turn"
@@ -55,6 +53,6 @@ vertical_alignment = 1
 visible = false
 layout_mode = 2
 size_flags_horizontal = 4
-theme = ExtResource("2_cyksq")
+theme = ExtResource("2_kvjjq")
 theme_override_font_sizes/font_size = 18
 text = " Preview Turn Flow "

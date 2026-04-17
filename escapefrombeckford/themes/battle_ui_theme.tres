@@ -1,0 +1,29 @@
+[gd_resource type="Theme" format=3 uid="uid://b585x04q3pfqf"]
+
+[ext_resource type="FontVariation" uid="uid://c6t3pmgfo61wa" path="res://ui/elements/ysabeau_infant_regular_font_variation.tres" id="1_regular"]
+[ext_resource type="FontVariation" path="res://ui/elements/ysabeau_infant_italic_font_variation.tres" id="2_italic"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_dg6tn"]
+bg_color = Color(0.2018441, 0.1550051, 0.22335845, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.09019322, 0.08254669, 0.13296863, 1)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+
+[resource]
+Button/font_sizes/font_size = 26
+Button/fonts/font = ExtResource("1_regular")
+Label/font_sizes/font_size = 45
+Label/fonts/font = ExtResource("1_regular")
+PanelContainer/styles/panel = SubResource("StyleBoxFlat_dg6tn")
+RichTextLabel/constants/line_separation = 0
+RichTextLabel/fonts/bold_font = ExtResource("1_regular")
+RichTextLabel/fonts/bold_italics_font = ExtResource("2_italic")
+RichTextLabel/fonts/italics_font = ExtResource("2_italic")
+RichTextLabel/fonts/mono_font = ExtResource("1_regular")
+RichTextLabel/fonts/normal_font = ExtResource("1_regular")

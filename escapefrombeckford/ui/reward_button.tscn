@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://cuk1enmwc4toj" path="res://ui/reward_button.gd" id="1_8fbqs"]
 [ext_resource type="Texture2D" uid="uid://cbbohhy0ybxvy" path="res://_assets/sprites/assorted/coin.PNG" id="1_y2wrr"]
-[ext_resource type="Theme" uid="uid://1dr1eewpv0jd" path="res://themes/ui_theme.tres" id="2_8fbqs"]
+[ext_resource type="Theme" uid="uid://b585x04q3pfqf" path="res://themes/battle_ui_theme.tres" id="3_sx68g"]
 
 [node name="RewardButton" type="Button" unique_id=418291806]
 custom_minimum_size = Vector2(0, 60)
@@ -38,5 +38,5 @@ stretch_mode = 5
 [node name="CustomText" type="Label" parent="MarginContainer/HBoxContainer" unique_id=432086492]
 unique_name_in_owner = true
 layout_mode = 2
-theme = ExtResource("2_8fbqs")
+theme = ExtResource("3_sx68g")
 text = "99 gold"

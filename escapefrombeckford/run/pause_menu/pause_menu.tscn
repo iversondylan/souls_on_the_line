@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://c6h75jpp4xd3w"]
 
-[ext_resource type="Theme" uid="uid://d2wc7fposrlqs" path="res://themes/wizard_theme.tres" id="1_f0jds"]
+[ext_resource type="Theme" uid="uid://c5t2luytfgc6b" path="res://ui/elements/brass_wood_chalkboard_theme.tres" id="1_f0jds"]
 
 [node name="PauseMenu" type="Control" unique_id=1211767457]
 process_mode = 3
@@ -49,6 +49,7 @@ theme_override_constants/separation = 18
 [node name="Title" type="Label" parent="PanelContainer/MarginContainer/Content" unique_id=1238228881]
 layout_mode = 2
 theme = ExtResource("1_f0jds")
+theme_override_font_sizes/font_size = 56
 text = "Pause"
 horizontal_alignment = 1
 vertical_alignment = 1

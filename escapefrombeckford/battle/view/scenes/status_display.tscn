@@ -3,7 +3,7 @@
 [ext_resource type="Texture2D" uid="uid://delb6dvd52afu" path="res://_assets/sprites/assorted/afflict.PNG" id="1_71ask"]
 [ext_resource type="Script" uid="uid://dgjgtflakvpbf" path="res://battle/view/scenes/status_display.gd" id="1_movl6"]
 [ext_resource type="Resource" uid="uid://bh05r8var8mj3" path="res://statuses/pinpoint.tres" id="2_c5udy"]
-[ext_resource type="Theme" uid="uid://1dr1eewpv0jd" path="res://themes/ui_theme.tres" id="2_movl6"]
+[ext_resource type="Theme" path="res://themes/battle_ui_theme.tres" id="2_movl6"]
 
 [node name="StatusDisplay" type="Control" unique_id=1282689648]
 custom_minimum_size = Vector2(64, 64)

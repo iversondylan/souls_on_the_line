@@ -931,6 +931,7 @@ func _on_damage_applied(e: EventPackage) -> void:
 		return
 
 	target_combatant.set_health(after_health, lethal)
+	_emit_player_battle_health_changed(tid, target_combatant.health, target_combatant.max_health)
 
 	if e.is_planned:
 		return
@@ -949,6 +950,7 @@ func _on_heal_applied(e: EventPackage) -> void:
 		return
 
 	target.set_health(after_health, false)
+	_emit_player_battle_health_changed(tid, target.health, target.max_health)
 
 	if e.is_planned:
 		return
@@ -977,12 +979,29 @@ func _on_change_max_health(e: EventPackage) -> void:
 
 	if v.health_bar != null:
 		v.health_bar.update_health_view(v.max_health, v.health)
+	_emit_player_battle_health_changed(tid, v.health, v.max_health)
 
 	# Optional tiny cosmetic when max health changes.
 	# Only pop a number if health actually changed.
 	var delta_health := after_health - before_health
 	if !e.is_planned and delta_health > 0:
 		v.pop_damage_number(delta_health) # replace later with heal/max-hp popup if desired
+
+
+func _emit_player_battle_health_changed(target_id: int, current_health: int, max_health: int) -> void:
+	var player_id := _get_player_id()
+	if player_id <= 0 or int(target_id) != player_id:
+		return
+	Events.player_battle_health_changed.emit(int(current_health), int(max_health))
+
+
+func _get_player_id() -> int:
+	if battle_view == null or battle_view.sim_host == null:
+		return 0
+	var api := battle_view.sim_host.get_main_api()
+	if api == null:
+		return 0
+	return int(api.get_player_id())
 
 
 func _on_modify_battle_card(e: EventPackage) -> void:

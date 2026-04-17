@@ -2,7 +2,7 @@
 
 [ext_resource type="Texture2D" uid="uid://c73rgxbvcwveo" path="res://_assets/sprites/assorted/death-skull.png" id="1_b60qy"]
 [ext_resource type="Script" uid="uid://bhv8ixnp8xqgv" path="res://battle/view/scenes/combat_preview_overlay.gd" id="1_glr07"]
-[ext_resource type="Theme" uid="uid://1dr1eewpv0jd" path="res://themes/ui_theme.tres" id="2_glr07"]
+[ext_resource type="Theme" path="res://themes/battle_ui_theme.tres" id="2_glr07"]
 
 [node name="CombatPreviewOverlay" type="Node2D" unique_id=326907784]
 script = ExtResource("1_glr07")

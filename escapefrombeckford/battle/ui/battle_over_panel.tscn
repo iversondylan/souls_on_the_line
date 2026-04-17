@@ -1,14 +1,16 @@
 [gd_scene format=3 uid="uid://b1rro3h5dxilx"]
 
 [ext_resource type="Script" uid="uid://dc6e84kn4fdhr" path="res://battle/ui/battle_over_panel.gd" id="1_5h67t"]
-[ext_resource type="FontFile" uid="uid://cbyf4c40xnj2l" path="res://_assets/fonts/linux-libertine/LinLibertine_5.3.0_2012_07_02/LinLibertineOTF_5.3.0_2012_07_02/LinLibertine_RZI.otf" id="2_qotfm"]
+[ext_resource type="Theme" uid="uid://c5t2luytfgc6b" path="res://ui/elements/brass_wood_chalkboard_theme.tres" id="2_theme"]
+[ext_resource type="FontFile" uid="uid://djm1s0rli431d" path="res://_assets/fonts/Jim_Nightshade/JimNightshade-Regular.ttf" id="3_accent_font"]
+[ext_resource type="FontFile" uid="uid://hntyaf1tskb" path="res://_assets/fonts/Uncial_Antiqua/UncialAntiqua-Regular.ttf" id="4_iu85l"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_8c1mx"]
 bg_color = Color(0, 0, 0, 0.286275)
 
-[sub_resource type="LabelSettings" id="LabelSettings_435c4"]
-font = ExtResource("2_qotfm")
-font_size = 52
+[sub_resource type="LabelSettings" id="LabelSettings_fr778"]
+font = ExtResource("4_iu85l")
+font_size = 40
 
 [node name="BattleOverPanel" type="Panel" unique_id=182540430]
 process_mode = 3
@@ -17,6 +19,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+theme = ExtResource("2_theme")
 theme_override_styles/panel = SubResource("StyleBoxFlat_8c1mx")
 script = ExtResource("1_5h67t")
 
@@ -37,8 +40,12 @@ grow_vertical = 2
 [node name="Label" type="Label" parent="VBoxContainer" unique_id=541239639]
 unique_name_in_owner = true
 layout_mode = 2
-text = "Path Cleared"
-label_settings = SubResource("LabelSettings_435c4")
+theme_override_fonts/font = ExtResource("3_accent_font")
+theme_override_font_sizes/font_size = 52
+text = "PATH CLEARED"
+label_settings = SubResource("LabelSettings_fr778")
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="ContinueButton" type="Button" parent="VBoxContainer" unique_id=1005486346]
 unique_name_in_owner = true

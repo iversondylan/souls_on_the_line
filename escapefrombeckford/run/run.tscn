@@ -5,12 +5,11 @@
 [ext_resource type="Resource" uid="uid://bqr4wekgibhim" path="res://statuses/_core/status_catalog.tres" id="3_7yo0l"]
 [ext_resource type="Resource" uid="uid://cd45rlmihsfvb" path="res://arcana/_core/arcanum_catalog.tres" id="4_fo0ly"]
 [ext_resource type="Resource" uid="uid://dq3n87o7cuyxg" path="res://encounters/battle_pool_test.tres" id="4_nnxm5"]
-[ext_resource type="Theme" uid="uid://d2wc7fposrlqs" path="res://themes/wizard_theme.tres" id="4_o4jfg"]
 [ext_resource type="PackedScene" uid="uid://bxtf6la07t0t5" path="res://ui/card_pile_opener.tscn" id="5_0tt4g"]
 [ext_resource type="Resource" uid="uid://trlxaybf7coq" path="res://encounters/tutorial/tutorial_encounter.tres" id="5_5phry"]
 [ext_resource type="PackedScene" uid="uid://b5kimimy0ccq0" path="res://ui/health_bar.tscn" id="5_ux63y"]
 [ext_resource type="PackedScene" uid="uid://yab08gtx7087" path="res://ui/gold_display.tscn" id="5_wo0nw"]
-[ext_resource type="Theme" uid="uid://1dr1eewpv0jd" path="res://themes/ui_theme.tres" id="6_wo0nw"]
+[ext_resource type="Theme" uid="uid://c5t2luytfgc6b" path="res://ui/elements/brass_wood_chalkboard_theme.tres" id="6_wo0nw"]
 [ext_resource type="PackedScene" uid="uid://c634qgskmd0a" path="res://ui/card_pile_view.tscn" id="7_0tt4g"]
 [ext_resource type="Script" uid="uid://5lbmyp40fhgy" path="res://arcana/_core/arcana_system_container.gd" id="7_y5iaq"]
 [ext_resource type="Texture2D" uid="uid://6uxtaq6s35em" path="res://_assets/sprites/assorted/white_arrow_transparent.png" id="8_i51gm"]
@@ -20,6 +19,7 @@
 [ext_resource type="PackedScene" uid="uid://3hsvnd70wteq" path="res://ui/tooltip.tscn" id="11_g42ja"]
 [ext_resource type="Texture2D" uid="uid://c67s22088x4tf" path="res://_assets/sprites/assorted/cog.png" id="13_dbkmk"]
 [ext_resource type="Texture2D" uid="uid://djvoybbgewqqo" path="res://_assets/sprites/assorted/cog_darker.png" id="14_i44wd"]
+[ext_resource type="Theme" uid="uid://b585x04q3pfqf" path="res://themes/battle_ui_theme.tres" id="16_nnxm5"]
 [ext_resource type="PackedScene" uid="uid://c6h75jpp4xd3w" path="res://run/pause_menu/pause_menu.tscn" id="21_svaf3"]
 [ext_resource type="Resource" uid="uid://bk7kn6kloe6sg" path="res://character_profiles/Tutorial/tutorial_cole_data.tres" id="24_tutorial_player"]
 
@@ -55,7 +55,7 @@ alignment = 1
 [node name="MapButton" type="Button" parent="DebugUI/DebugButtons" unique_id=23717238]
 unique_name_in_owner = true
 layout_mode = 2
-theme = ExtResource("4_o4jfg")
+theme = ExtResource("6_wo0nw")
 text = "Map"
 
 [node name="BattleButton" type="Button" parent="DebugUI/DebugButtons" unique_id=1178515211]
@@ -93,28 +93,28 @@ anchor_right = 1.0
 grow_horizontal = 2
 color = Color(0.0990533, 0.0897, 0.23, 0.690196)
 
-[node name="Items" type="HBoxContainer" parent="UI" unique_id=1631769811]
+[node name="TopBarItems" type="HBoxContainer" parent="UI" unique_id=1631769811]
 custom_minimum_size = Vector2(0, 64)
 anchors_preset = 10
 anchor_right = 1.0
 grow_horizontal = 2
 
-[node name="HealthPanel" parent="UI/Items" unique_id=132000857 instance=ExtResource("5_ux63y")]
+[node name="HealthPanel" parent="UI/TopBarItems" unique_id=132000857 instance=ExtResource("5_ux63y")]
 layout_mode = 2
 inside_control = true
 font_size = 36
 
-[node name="GoldDisplay" parent="UI/Items" unique_id=1342691864 instance=ExtResource("5_wo0nw")]
+[node name="GoldDisplay" parent="UI/TopBarItems" unique_id=1342691864 instance=ExtResource("5_wo0nw")]
 unique_name_in_owner = true
 layout_mode = 2
 
-[node name="ArcanaSystemContainer" type="HBoxContainer" parent="UI/Items" unique_id=2083010515]
+[node name="ArcanaSystemContainer" type="HBoxContainer" parent="UI/TopBarItems" unique_id=2083010515]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 script = ExtResource("7_y5iaq")
 
-[node name="LeftButton" type="TextureButton" parent="UI/Items/ArcanaSystemContainer" unique_id=1752536203]
+[node name="LeftButton" type="TextureButton" parent="UI/TopBarItems/ArcanaSystemContainer" unique_id=1752536203]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(64, 64)
 layout_mode = 2
@@ -127,7 +127,7 @@ ignore_texture_size = true
 stretch_mode = 5
 flip_h = true
 
-[node name="ArcanaControl" type="Control" parent="UI/Items/ArcanaSystemContainer" unique_id=619053241 node_paths=PackedStringArray("left_button", "right_button")]
+[node name="ArcanaControl" type="Control" parent="UI/TopBarItems/ArcanaSystemContainer" unique_id=619053241 node_paths=PackedStringArray("left_button", "right_button")]
 clip_contents = true
 custom_minimum_size = Vector2(448, 0)
 layout_mode = 2
@@ -136,7 +136,7 @@ script = ExtResource("10_or2k3")
 left_button = NodePath("../LeftButton")
 right_button = NodePath("../RightButton")
 
-[node name="ArcanaContainer" type="HBoxContainer" parent="UI/Items/ArcanaSystemContainer/ArcanaControl" unique_id=1060101209]
+[node name="ArcanaContainer" type="HBoxContainer" parent="UI/TopBarItems/ArcanaSystemContainer/ArcanaControl" unique_id=1060101209]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(448, 0)
 layout_mode = 0
@@ -144,7 +144,7 @@ offset_right = 1560.0
 offset_bottom = 64.0
 theme_override_constants/separation = 0
 
-[node name="RightButton" type="TextureButton" parent="UI/Items/ArcanaSystemContainer" unique_id=2092973501]
+[node name="RightButton" type="TextureButton" parent="UI/TopBarItems/ArcanaSystemContainer" unique_id=2092973501]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(64, 64)
 layout_mode = 2
@@ -156,23 +156,24 @@ texture_disabled = ExtResource("9_rq1c8")
 ignore_texture_size = true
 stretch_mode = 5
 
-[node name="CollectionButton" parent="UI/Items" unique_id=539564306 node_paths=PackedStringArray("counter") instance=ExtResource("5_0tt4g")]
+[node name="CollectionButton" parent="UI/TopBarItems" unique_id=539564306 node_paths=PackedStringArray("counter") instance=ExtResource("5_0tt4g")]
 unique_name_in_owner = true
 layout_mode = 2
 counter = NodePath("Label")
 
-[node name="Label" type="Label" parent="UI/Items/CollectionButton" unique_id=983631839]
+[node name="Label" type="Label" parent="UI/TopBarItems/CollectionButton" unique_id=983631839]
 layout_mode = 0
 offset_left = 12.0
 offset_top = 22.0
 offset_right = 52.0
 offset_bottom = 68.0
-theme = ExtResource("6_wo0nw")
+theme = ExtResource("16_nnxm5")
 theme_override_colors/font_color = Color(0.450155, 0.160414, 0.275357, 1)
+theme_override_font_sizes/font_size = 26
 text = "99"
 horizontal_alignment = 1
 
-[node name="MenuButton" type="TextureButton" parent="UI/Items" unique_id=312219928]
+[node name="MenuButton" type="TextureButton" parent="UI/TopBarItems" unique_id=312219928]
 custom_minimum_size = Vector2(64, 64)
 layout_mode = 2
 texture_normal = ExtResource("14_i44wd")
@@ -196,4 +197,4 @@ layer = 10
 
 [node name="Tooltip" parent="TooltipLayer" unique_id=2137160839 instance=ExtResource("11_g42ja")]
 
-[connection signal="pressed" from="UI/Items/MenuButton" to="." method="_on_menu_button_pressed"]
+[connection signal="pressed" from="UI/TopBarItems/MenuButton" to="." method="_on_menu_button_pressed"]

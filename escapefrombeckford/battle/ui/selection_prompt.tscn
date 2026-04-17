@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://chyl400nmwlxo"]
 
 [ext_resource type="Script" uid="uid://cru6h26jtjj6e" path="res://battle/ui/selection_prompt.gd" id="1_a4qla"]
-[ext_resource type="Theme" uid="uid://bdew65vmu8k1h" path="res://ui/elements/gem_button_only.tres" id="2_tg0f1"]
+[ext_resource type="Theme" uid="uid://c5t2luytfgc6b" path="res://ui/elements/brass_wood_chalkboard_theme.tres" id="2_tg0f1"]
 
 [node name="SelectionPrompt" type="Control" unique_id=2033934170]
 layout_mode = 3

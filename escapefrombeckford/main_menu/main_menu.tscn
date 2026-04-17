@@ -1,8 +1,7 @@
 [gd_scene format=3 uid="uid://byfyjsj2j7wh"]
 
 [ext_resource type="Script" uid="uid://c82r707xq7wjh" path="res://main_menu/main_menu.gd" id="1_main"]
-[ext_resource type="Theme" uid="uid://71burk04clet" path="res://ui/elements/accent_theme.tres" id="2_bws42"]
-[ext_resource type="Theme" uid="uid://d2wc7fposrlqs" path="res://themes/wizard_theme.tres" id="3_theme"]
+[ext_resource type="FontFile" path="res://_assets/fonts/Jim_Nightshade/JimNightshade-Regular.ttf" id="2_title_font"]
 [ext_resource type="Theme" uid="uid://c5t2luytfgc6b" path="res://ui/elements/brass_wood_chalkboard_theme.tres" id="4_3f7m4"]
 
 [sub_resource type="Gradient" id="Gradient_ekxnf"]
@@ -42,8 +41,9 @@ offset_right = 220.0
 offset_bottom = -118.0
 grow_horizontal = 2
 grow_vertical = 2
-theme = ExtResource("2_bws42")
-theme_override_font_sizes/font_size = 35
+theme = ExtResource("4_3f7m4")
+theme_override_fonts/font = ExtResource("2_title_font")
+theme_override_font_sizes/font_size = 48
 text = "Escape from Beckford"
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -62,7 +62,7 @@ offset_right = 170.0
 offset_bottom = 300.0
 grow_horizontal = 2
 grow_vertical = 2
-theme = ExtResource("3_theme")
+theme = ExtResource("4_3f7m4")
 theme_override_constants/separation = 8
 
 [node name="ChooseProfile" type="Button" parent="ProfileHubMenu" unique_id=799270772]
@@ -106,7 +106,7 @@ offset_right = 170.0
 offset_bottom = 340.0
 grow_horizontal = 2
 grow_vertical = 2
-theme = ExtResource("3_theme")
+theme = ExtResource("4_3f7m4")
 theme_override_constants/separation = 8
 
 [node name="CurrentProfileLabel" type="Label" parent="ProfileMenu" unique_id=555319013]
@@ -164,7 +164,7 @@ offset_right = 170.0
 offset_bottom = 250.0
 grow_horizontal = 2
 grow_vertical = 2
-theme = ExtResource("3_theme")
+theme = ExtResource("4_3f7m4")
 theme_override_constants/separation = 8
 
 [node name="SettingsLabel" type="Label" parent="SettingsMenu" unique_id=1555319013]
@@ -198,7 +198,7 @@ unique_name_in_owner = true
 layout_mode = 1
 offset_right = 269.0
 offset_bottom = 54.0
-theme = ExtResource("3_theme")
+theme = ExtResource("4_3f7m4")
 text = "Debug Mode"
 
 [connection signal="pressed" from="ProfileHubMenu/ChooseProfile" to="." method="_on_choose_profile_pressed"]

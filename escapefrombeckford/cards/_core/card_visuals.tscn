@@ -2,9 +2,10 @@
 
 [ext_resource type="Script" uid="uid://ds2ql77j3pbxq" path="res://cards/_core/card_visuals.gd" id="1_2ndsp"]
 [ext_resource type="Texture2D" uid="uid://7wqf7vhvv0ae" path="res://_assets/sprites/assorted/card_glow.PNG" id="1_w227c"]
-[ext_resource type="Theme" uid="uid://1dr1eewpv0jd" path="res://themes/ui_theme.tres" id="3_2ndsp"]
+[ext_resource type="Theme" uid="uid://c5t2luytfgc6b" path="res://ui/elements/brass_wood_chalkboard_theme.tres" id="3_2ndsp"]
 [ext_resource type="Texture2D" uid="uid://cvvxggb32iq5y" path="res://_assets/sprites/assorted/warp_weasel.png" id="4_e5rkb"]
 [ext_resource type="Texture2D" uid="uid://b7vtyi61om1lo" path="res://_assets/sprites/card_elements/brass_instrument_card_front_vectors_main.png" id="5_d6xg4"]
+[ext_resource type="FontVariation" uid="uid://c6t3pmgfo61wa" path="res://ui/elements/ysabeau_infant_regular_font_variation.tres" id="6_4k560"]
 [ext_resource type="Texture2D" uid="uid://c2cpjnsgjdd1x" path="res://_assets/sprites/assorted/card_back_1.PNG" id="6_spa0x"]
 [ext_resource type="Texture2D" uid="uid://cdap6hv4e5qcw" path="res://_assets/sprites/assorted/tri_white.png" id="7_fq4np"]
 [ext_resource type="Texture2D" uid="uid://bmcmfx1vvvaeg" path="res://_assets/sprites/card_elements/brass_instrument_cost_panel.png" id="8_kvkof"]
@@ -126,9 +127,10 @@ offset_right = 189.0
 offset_bottom = 178.0
 mouse_filter = 2
 theme = ExtResource("3_2ndsp")
-theme_override_font_sizes/normal_font_size = 14
-theme_override_font_sizes/bold_font_size = 14
-theme_override_font_sizes/italics_font_size = 14
+theme_override_fonts/normal_font = ExtResource("6_4k560")
+theme_override_font_sizes/normal_font_size = 16
+theme_override_font_sizes/bold_font_size = 16
+theme_override_font_sizes/italics_font_size = 16
 bbcode_enabled = true
 text = "Card Description"
 scroll_active = false

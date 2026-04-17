@@ -1,9 +1,7 @@
 [gd_scene format=3 uid="uid://ba6ifh3shnl1d"]
 
 [ext_resource type="Script" uid="uid://bfjw1vt2woiko" path="res://main_menu/character_selector.gd" id="1_cl78x"]
-[ext_resource type="FontFile" uid="uid://bghjbryekmnis" path="res://_assets/fonts/linux-libertine/LinLibertine_5.3.0_2012_07_02/LinLibertineOTF_5.3.0_2012_07_02/LinLibertine_R.otf" id="2_otyuf"]
-[ext_resource type="FontFile" uid="uid://b1ahfe6v5ucl7" path="res://_assets/fonts/linux-libertine/LinLibertine_5.3.0_2012_07_02/LinLibertineOTF_5.3.0_2012_07_02/LinLibertine_RBI.otf" id="2_wamhw"]
-[ext_resource type="Theme" uid="uid://d2wc7fposrlqs" path="res://themes/wizard_theme.tres" id="3_otyuf"]
+[ext_resource type="Theme" uid="uid://c5t2luytfgc6b" path="res://ui/elements/brass_wood_chalkboard_theme.tres" id="3_otyuf"]
 [ext_resource type="Texture2D" uid="uid://ppn4laxwte56" path="res://_assets/sprites/assorted/cole.PNG" id="3_wamhw"]
 [ext_resource type="ButtonGroup" uid="uid://c1ah1mjr0h2as" path="res://themes/character_button_group.tres" id="5_dy3sk"]
 [ext_resource type="Texture2D" uid="uid://cd1e7xebxf3sc" path="res://_assets/sprites/assorted/cole_portrait.png" id="5_ktnu4"]
@@ -15,11 +13,9 @@ colors = PackedColorArray(0.07, 0.0021, 0.0518934, 1, 0.0493923, 0.0443764, 0.06
 gradient = SubResource("Gradient_ekxnf")
 
 [sub_resource type="LabelSettings" id="LabelSettings_wu84c"]
-font = ExtResource("2_wamhw")
 font_size = 40
 
 [sub_resource type="LabelSettings" id="LabelSettings_otyuf"]
-font = ExtResource("2_otyuf")
 font_size = 25
 
 [node name="CharacterSelector" type="Control" unique_id=1098635039]
@@ -29,6 +25,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+theme = ExtResource("3_otyuf")
 script = ExtResource("1_cl78x")
 
 [node name="Background" type="TextureRect" parent="." unique_id=397001696]
@@ -99,7 +96,6 @@ offset_right = -24.0
 offset_bottom = -34.0
 grow_horizontal = 0
 grow_vertical = 0
-theme = ExtResource("3_otyuf")
 theme_override_constants/separation = 12
 
 [node name="StartButton" type="Button" parent="ActionButtons" unique_id=1124692912]
@@ -135,7 +131,6 @@ theme_override_constants/separation = 32
 [node name="ColeButton" type="Button" parent="CharacterButtons" unique_id=308250454]
 custom_minimum_size = Vector2(100, 100)
 layout_mode = 2
-theme = ExtResource("3_otyuf")
 toggle_mode = true
 button_pressed = true
 button_group = ExtResource("5_dy3sk")
@@ -149,7 +144,6 @@ texture = ExtResource("5_ktnu4")
 [node name="Char2Button" type="Button" parent="CharacterButtons" unique_id=28448874]
 custom_minimum_size = Vector2(100, 100)
 layout_mode = 2
-theme = ExtResource("3_otyuf")
 toggle_mode = true
 button_group = ExtResource("5_dy3sk")
 
@@ -162,7 +156,6 @@ texture = ExtResource("5_ktnu4")
 [node name="Char3Button" type="Button" parent="CharacterButtons" unique_id=1594074148]
 custom_minimum_size = Vector2(100, 100)
 layout_mode = 2
-theme = ExtResource("3_otyuf")
 toggle_mode = true
 button_group = ExtResource("5_dy3sk")
 
@@ -181,12 +174,12 @@ anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
 offset_left = -240.0
-offset_top = -49.0
+offset_top = 23.0
 offset_right = 240.0
-offset_bottom = 6.0
+offset_bottom = 78.0
 grow_horizontal = 2
 grow_vertical = 2
-theme = ExtResource("3_otyuf")
+theme_override_font_sizes/font_size = 40
 text = "Signature Soul"
 horizontal_alignment = 1
 

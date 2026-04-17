@@ -19,7 +19,7 @@ class_name CardVisuals extends Control
 @export var card_angle_limit_flt: float = 180
 @export var max_card_spread_angle_flt: float = 38
 
-@export var card_name_base_font_size: int = 16
+@export var card_name_base_font_size: int = 20
 @export var card_name_min_font_size: int = 6
 @export var card_name_h_padding: float = 0.0
 @export var card_name_use_ellipsis_at_min_size: bool = false

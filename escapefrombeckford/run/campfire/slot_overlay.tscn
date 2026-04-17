@@ -1,8 +1,7 @@
 [gd_scene format=3 uid="uid://copx8afgv8hm3"]
 
 [ext_resource type="Script" uid="uid://pjqjvpugvi53" path="res://run/campfire/slot_overlay.gd" id="1_slot_overlay"]
-[ext_resource type="Theme" uid="uid://d2wc7fposrlqs" path="res://themes/wizard_theme.tres" id="2_wizard_theme"]
-[ext_resource type="Theme" uid="uid://1dr1eewpv0jd" path="res://themes/ui_theme.tres" id="3_ui_theme"]
+[ext_resource type="Theme" uid="uid://c5t2luytfgc6b" path="res://ui/elements/brass_wood_chalkboard_theme.tres" id="2_theme"]
 
 [node name="CampfireSlotOverlay" type="ColorRect" unique_id=1685637694]
 visible = false
@@ -28,7 +27,8 @@ theme_override_constants/separation = 24
 
 [node name="Title" type="Label" parent="CenterContainer/VBoxContainer" unique_id=728720312]
 layout_mode = 2
-theme = ExtResource("2_wizard_theme")
+theme = ExtResource("2_theme")
+theme_override_font_sizes/font_size = 48
 text = "Choose an Attuned Soul"
 horizontal_alignment = 1
 
@@ -43,5 +43,5 @@ unique_name_in_owner = true
 custom_minimum_size = Vector2(180, 0)
 layout_mode = 2
 size_flags_horizontal = 4
-theme = ExtResource("3_ui_theme")
+theme = ExtResource("2_theme")
 text = "Cancel"

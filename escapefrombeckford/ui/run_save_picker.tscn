@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://doon1ou4cnepy"]
 
 [ext_resource type="Script" uid="uid://d1k3m68nrr3a2" path="res://ui/run_save_picker.gd" id="1_hn4w0"]
-[ext_resource type="Theme" uid="uid://d2wc7fposrlqs" path="res://themes/wizard_theme.tres" id="2_9q0ok"]
+[ext_resource type="Theme" uid="uid://c5t2luytfgc6b" path="res://ui/elements/brass_wood_chalkboard_theme.tres" id="2_9q0ok"]
 
 [node name="RunSavePicker" type="Control" unique_id=633033407]
 process_mode = 3
@@ -53,6 +53,7 @@ theme_override_constants/separation = 16
 unique_name_in_owner = true
 layout_mode = 2
 theme = ExtResource("2_9q0ok")
+theme_override_font_sizes/font_size = 42
 text = "Load Game"
 horizontal_alignment = 1
 
@@ -60,6 +61,7 @@ horizontal_alignment = 1
 unique_name_in_owner = true
 visible = false
 layout_mode = 2
+theme_override_font_sizes/font_size = 24
 text = "No debug saves found."
 horizontal_alignment = 1
 

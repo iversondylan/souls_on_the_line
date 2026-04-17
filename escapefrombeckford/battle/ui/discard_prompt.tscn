@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://bciw5fkt3ixlx"]
 
 [ext_resource type="Script" uid="uid://chhkg8ba8elt0" path="res://battle/ui/discard_prompt.gd" id="1_8r55t"]
-[ext_resource type="Theme" uid="uid://1dr1eewpv0jd" path="res://themes/ui_theme.tres" id="2_yekji"]
+[ext_resource type="Theme" uid="uid://c5t2luytfgc6b" path="res://ui/elements/brass_wood_chalkboard_theme.tres" id="2_yekji"]
 
 [node name="DiscardPrompt" type="Node2D" unique_id=1148858141]
 script = ExtResource("1_8r55t")

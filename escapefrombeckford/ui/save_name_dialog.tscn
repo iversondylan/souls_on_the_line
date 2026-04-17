@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://d4nc07r3vld0y"]
 
 [ext_resource type="Script" uid="uid://bim43ske8t2yy" path="res://ui/save_name_dialog.gd" id="1_jb4be"]
-[ext_resource type="Theme" uid="uid://d2wc7fposrlqs" path="res://themes/wizard_theme.tres" id="2_lf0ve"]
+[ext_resource type="Theme" uid="uid://c5t2luytfgc6b" path="res://ui/elements/brass_wood_chalkboard_theme.tres" id="2_lf0ve"]
 
 [node name="SaveNameDialog" type="Control" unique_id=909359215]
 process_mode = 3
@@ -53,6 +53,7 @@ theme_override_constants/separation = 14
 unique_name_in_owner = true
 layout_mode = 2
 theme = ExtResource("2_lf0ve")
+theme_override_font_sizes/font_size = 42
 text = "Save Debug Run"
 horizontal_alignment = 1
 

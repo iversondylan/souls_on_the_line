@@ -50,7 +50,7 @@ const SAVE_NAME_DIALOG_SCN := preload("res://ui/save_name_dialog.tscn")
 @onready var treasure_button: Button = %TreasureButton
 @onready var rewards_button: Button = %RewardsButton
 @onready var campfire_button: Button = %CampfireButton
-@onready var health_panel: HealthBar = $UI/Items/HealthPanel
+@onready var health_panel: HealthBar = $UI/TopBarItems/HealthPanel
 
 var run_state: RunState
 var profile_data: ProfileData
@@ -183,6 +183,7 @@ func _connect_signals() -> void:
 	Events.map_exited.connect(_on_map_exited)
 	Events.shop_exited.connect(_on_pending_room_exited_to_map)
 	Events.treasure_room_exited.connect(_on_treasure_room_exited)
+	Events.player_battle_health_changed.connect(_on_player_battle_health_changed)
 	Events.request_defeat.connect(_on_run_defeat)
 	
 	battle_button.pressed.connect(_change_view.bind(BATTLE_SCN))
@@ -1021,17 +1022,32 @@ func _ensure_player_run_state_initialized() -> void:
 		run_state.player_run_state.current_health = int(run_state.player_run_state.max_health)
 	run_state.player_run_state.clamp_health()
 
+func _apply_player_health_update(current_health: int, max_health: int) -> void:
+	if run_state == null:
+		return
+	_ensure_player_run_state_initialized()
+	if run_state.player_run_state == null:
+		return
+	run_state.player_run_state.max_health = maxi(int(max_health), 0)
+	run_state.player_run_state.current_health = int(current_health)
+	run_state.player_run_state.clamp_health()
+	_refresh_top_bar_health()
+
+func _on_player_battle_health_changed(current_health: int, max_health: int) -> void:
+	_apply_player_health_update(current_health, max_health)
+
 func _sync_player_health_from_active_battle() -> void:
-	if run_state == null or run_state.player_run_state == null:
+	if run_state == null:
 		return
 	if current_view == null or current_view.get_child_count() == 0:
 		return
 	var battle := current_view.get_child(0) as Battle
 	if battle == null:
 		return
-	run_state.player_run_state.current_health = int(battle.get_player_current_health())
-	run_state.player_run_state.max_health = int(battle.get_player_max_health())
-	_refresh_top_bar_health()
+	_apply_player_health_update(
+		int(battle.get_player_current_health()),
+		int(battle.get_player_max_health())
+	)
 	
 func _resolve_player_profile(profile_id: String) -> PlayerData:
 	if player_catalog == null:

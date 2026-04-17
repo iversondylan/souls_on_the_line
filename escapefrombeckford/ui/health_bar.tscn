@@ -1,8 +1,7 @@
 [gd_scene format=3 uid="uid://b5kimimy0ccq0"]
 
 [ext_resource type="Script" uid="uid://dt1x8ukdg7b33" path="res://ui/health_bar.gd" id="1_1vcc2"]
-[ext_resource type="Theme" uid="uid://d2wc7fposrlqs" path="res://themes/wizard_theme.tres" id="1_4rf34"]
-[ext_resource type="Theme" uid="uid://1dr1eewpv0jd" path="res://themes/ui_theme.tres" id="2_qi2ti"]
+[ext_resource type="Theme" uid="uid://b585x04q3pfqf" path="res://themes/battle_ui_theme.tres" id="1_dtgp1"]
 [ext_resource type="Texture2D" uid="uid://bkxkseqjc0dl0" path="res://_assets/sprites/assorted/soul.png" id="4_eo044"]
 [ext_resource type="Texture2D" uid="uid://c2cpjnsgjdd1x" path="res://_assets/sprites/assorted/card_back_1.PNG" id="5_dtgp1"]
 [ext_resource type="Texture2D" uid="uid://b1i3rxto6mwol" path="res://_assets/sprites/assorted/soul-vessel.png" id="5_fbv3k"]
@@ -36,27 +35,31 @@ corner_radius_bottom_left = 2
 offset_right = 142.0
 offset_bottom = 31.0
 size_flags_horizontal = 0
-theme = ExtResource("1_4rf34")
+theme = ExtResource("1_dtgp1")
 script = ExtResource("1_1vcc2")
 
 [node name="HBoxContainer" type="HBoxContainer" parent="." unique_id=159523378]
 layout_mode = 2
 size_flags_horizontal = 0
 size_flags_vertical = 4
+theme = ExtResource("1_dtgp1")
 theme_override_constants/separation = 0
 
 [node name="Spacer1" type="Control" parent="HBoxContainer" unique_id=740264339]
 custom_minimum_size = Vector2(4, 0)
 layout_mode = 2
 size_flags_horizontal = 4
+theme = ExtResource("1_dtgp1")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="HBoxContainer" unique_id=1457270270]
 layout_mode = 2
+theme = ExtResource("1_dtgp1")
 theme_override_constants/separation = 0
 
 [node name="Control2" type="Control" parent="HBoxContainer/VBoxContainer" unique_id=1226161153]
 custom_minimum_size = Vector2(0, 4)
 layout_mode = 2
+theme = ExtResource("1_dtgp1")
 
 [node name="HealthBar" type="ProgressBar" parent="HBoxContainer/VBoxContainer" unique_id=186254310]
 unique_name_in_owner = true
@@ -64,6 +67,7 @@ z_index = 1
 custom_minimum_size = Vector2(56, 17)
 layout_mode = 2
 size_flags_vertical = 3
+theme = ExtResource("1_dtgp1")
 theme_override_styles/background = SubResource("StyleBoxEmpty_qi2ti")
 theme_override_styles/fill = SubResource("StyleBoxFlat_4rf34")
 step = 1.0
@@ -79,6 +83,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+theme = ExtResource("1_dtgp1")
 theme_override_styles/background = SubResource("StyleBoxFlat_8ymem")
 theme_override_styles/fill = SubResource("StyleBoxFlat_x4hh8")
 step = 1.0
@@ -88,17 +93,19 @@ show_percentage = false
 [node name="Control" type="Control" parent="HBoxContainer/VBoxContainer" unique_id=926488559]
 custom_minimum_size = Vector2(0, 4)
 layout_mode = 2
+theme = ExtResource("1_dtgp1")
 
 [node name="Spacer2" type="Control" parent="HBoxContainer" unique_id=1449378515]
 custom_minimum_size = Vector2(4, 0)
 layout_mode = 2
 size_flags_horizontal = 4
+theme = ExtResource("1_dtgp1")
 
 [node name="HealthNumber" type="Label" parent="HBoxContainer" unique_id=1855095715]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 4
-theme = ExtResource("2_qi2ti")
+theme = ExtResource("1_dtgp1")
 theme_override_font_sizes/font_size = 16
 text = "999"
 horizontal_alignment = 1
@@ -107,7 +114,7 @@ vertical_alignment = 1
 [node name="MaxHealthNumber" type="Label" parent="HBoxContainer" unique_id=919146511]
 unique_name_in_owner = true
 layout_mode = 2
-theme = ExtResource("2_qi2ti")
+theme = ExtResource("1_dtgp1")
 theme_override_font_sizes/font_size = 16
 text = "/999"
 horizontal_alignment = 1
@@ -117,18 +124,28 @@ vertical_alignment = 1
 custom_minimum_size = Vector2(4, 0)
 layout_mode = 2
 size_flags_horizontal = 4
+theme = ExtResource("1_dtgp1")
 
 [node name="BoundIcon" type="TextureRect" parent="HBoxContainer" unique_id=1464680930]
 layout_mode = 2
+theme = ExtResource("1_dtgp1")
 texture = ExtResource("4_eo044")
 expand_mode = 2
 
 [node name="WildIcon" type="TextureRect" parent="HBoxContainer" unique_id=1209882937]
 layout_mode = 2
+theme = ExtResource("1_dtgp1")
 texture = ExtResource("5_fbv3k")
 expand_mode = 2
 
 [node name="CardReservedIcon" type="TextureRect" parent="HBoxContainer" unique_id=1718017617]
 layout_mode = 2
+theme = ExtResource("1_dtgp1")
 texture = ExtResource("5_dtgp1")
 expand_mode = 3
+
+[node name="Spacer4" type="Control" parent="HBoxContainer" unique_id=1975115993]
+custom_minimum_size = Vector2(2, 0)
+layout_mode = 2
+size_flags_horizontal = 4
+theme = ExtResource("1_dtgp1")

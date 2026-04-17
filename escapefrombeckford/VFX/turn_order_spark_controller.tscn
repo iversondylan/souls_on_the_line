@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://cjcs8c08xkbpf" path="res://VFX/turn_order_spark_controller.gd" id="1_mvl5u"]
 [ext_resource type="Texture2D" uid="uid://dwv4i12y4lmr0" path="res://_assets/sprites/assorted/circle.png" id="2_3ivoo"]
-[ext_resource type="Theme" uid="uid://1dr1eewpv0jd" path="res://themes/ui_theme.tres" id="3_qc7xi"]
+[ext_resource type="Theme" path="res://themes/battle_ui_theme.tres" id="3_qc7xi"]
 
 [node name="TurnOrderSparkController" type="Node2D" unique_id=1625992483]
 script = ExtResource("1_mvl5u")

@@ -1,8 +1,0 @@
-[gd_resource type="Theme" format=3 uid="uid://dhn0og888psda"]
-
-[ext_resource type="FontFile" uid="uid://drxcflywvwkl" path="res://_assets/fonts/Prompt/Prompt-MediumItalic.ttf" id="1_mbdut"]
-
-[resource]
-Button/fonts/font = ExtResource("1_mbdut")
-Label/font_sizes/font_size = 26
-Label/fonts/font = ExtResource("1_mbdut")

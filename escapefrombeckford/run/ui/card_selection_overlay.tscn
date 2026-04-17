@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://bkw001dxq7ovl"]
 
 [ext_resource type="Script" uid="uid://duibxsdamdxlm" path="res://run/ui/card_selection_overlay.gd" id="1_overlay"]
-[ext_resource type="Theme" uid="uid://d2wc7fposrlqs" path="res://themes/wizard_theme.tres" id="2_theme"]
+[ext_resource type="Theme" uid="uid://c5t2luytfgc6b" path="res://ui/elements/brass_wood_chalkboard_theme.tres" id="2_theme"]
 
 [node name="CardSelectionOverlay" type="ColorRect" unique_id=1130023686]
 anchors_preset = 15

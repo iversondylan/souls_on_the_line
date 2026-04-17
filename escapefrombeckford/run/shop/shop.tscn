@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://d1jkbwk3ol66f" path="res://run/shop/shop.gd" id="1_qaxay"]
 [ext_resource type="Texture2D" uid="uid://dqdcx4h1y8epd" path="res://_assets/character_visuals/venroy/vencit_1.PNG" id="2_qaxay"]
 [ext_resource type="Texture2D" uid="uid://bplsfdtwgsmmv" path="res://_assets/character_visuals/venroy/Vencit_blink.PNG" id="3_ge4d2"]
-[ext_resource type="Theme" uid="uid://d2wc7fposrlqs" path="res://themes/wizard_theme.tres" id="3_jp048"]
+[ext_resource type="Theme" uid="uid://c5t2luytfgc6b" path="res://ui/elements/brass_wood_chalkboard_theme.tres" id="3_jp048"]
 [ext_resource type="PackedScene" uid="uid://bsiw7kxq3vytd" path="res://run/shop/shop_card.tscn" id="4_ctpgp"]
 [ext_resource type="PackedScene" uid="uid://c4ioesrs574d7" path="res://ui/card_tooltip_popup.tscn" id="5_ctpgp"]
 [ext_resource type="PackedScene" uid="uid://6rwtjllgr66t" path="res://run/shop/shop_arcanum.tscn" id="5_ptf86"]

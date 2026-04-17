@@ -35,6 +35,7 @@ signal request_draw_cards(ctx: DrawContext)
 signal execute_discard_cards(ctx: DiscardContext)
 signal hand_card_added(usable_card: UsableCard)
 signal card_selection_toggled(card: UsableCard, is_selected: bool)
+signal player_battle_health_changed(current_health: int, max_health: int)
 
 ## summon replace events
 signal request_swap_partner(ctx: CardContext, action_index: int)

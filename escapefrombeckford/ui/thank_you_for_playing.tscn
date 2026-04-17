@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://x25ulb6i36lc"]
 
-[ext_resource type="Theme" uid="uid://d2wc7fposrlqs" path="res://themes/wizard_theme.tres" id="2_qgbs3"]
+[ext_resource type="Theme" uid="uid://c5t2luytfgc6b" path="res://ui/elements/brass_wood_chalkboard_theme.tres" id="2_qgbs3"]
+[ext_resource type="FontFile" path="res://_assets/fonts/Jim_Nightshade/JimNightshade-Regular.ttf" id="3_accent_font"]
 
 [node name="ThankYouBox" type="Node2D" unique_id=212376634]
 
@@ -27,6 +28,7 @@ offset_right = 600.0
 offset_bottom = 231.0
 grow_horizontal = 2
 mouse_filter = 2
+theme = ExtResource("2_qgbs3")
 
 [node name="MarginContainer" type="MarginContainer" parent="Control/PanelContainer" unique_id=314207627]
 layout_mode = 2
@@ -46,6 +48,7 @@ layout_mode = 2
 size_flags_vertical = 4
 mouse_filter = 2
 theme = ExtResource("2_qgbs3")
+theme_override_fonts/normal_font = ExtResource("3_accent_font")
 theme_override_font_sizes/normal_font_size = 69
 bbcode_enabled = true
 text = "Thanks for playing!"
