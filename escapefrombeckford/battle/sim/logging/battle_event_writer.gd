@@ -2,8 +2,6 @@
 
 class_name BattleEventWriter extends RefCounted
 
-const Removal = preload("res://core/keys_values/removal_values.gd")
-
 var sink: EventSink
 var scopes: BattleScopeManager
 

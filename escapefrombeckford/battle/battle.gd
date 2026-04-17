@@ -554,7 +554,6 @@ func _release_pending_player_turn_draw_if_ready() -> void:
 func _tutorial_trace(message: String) -> void:
 	if battle_data == null or String(battle_data.encounter_name) != "Tutorial Drill":
 		return
-	print("[TUTORIAL TRACE battle] %s" % message)
 
 func _get_encounter_step_id_for_trace() -> String:
 	if encounter_director == null or encounter_director.state == null:

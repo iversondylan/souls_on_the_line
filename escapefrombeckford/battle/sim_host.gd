@@ -377,7 +377,7 @@ func _format_sim_statuses(u: CombatantState) -> String:
 	if u.statuses == null:
 		return ""
 
-	var by_id: Dictionary = u.statuses.by_id if ("by_id" in u.statuses) else null
+	var by_id := u.statuses.by_id#: Dictionary = u.statuses.by_id if ("by_id" in u.statuses) else null
 	if by_id == null or by_id.size() == 0:
 		return ""
 

@@ -1,10 +1,6 @@
 # status_state.gd
 class_name StatusState extends RefCounted
 
-const ProjectedStatusContributionIndex := preload("res://battle/sim/containers/projected_status_contribution_index.gd")
-const StatusToken := preload("res://battle/sim/containers/status_token.gd")
-const StatusTokenBucket := preload("res://battle/sim/containers/status_token_bucket.gd")
-
 var by_id: Dictionary = {}  # StringName -> StatusTokenBucket
 var by_id_projected: Dictionary = {} # StringName -> StatusToken
 var _projected_contribution_index: ProjectedStatusContributionIndex = ProjectedStatusContributionIndex.new()

@@ -1,6 +1,5 @@
 class_name ProjectedStatusContributionIndex extends RefCounted
 
-const StatusToken := preload("res://battle/sim/containers/status_token.gd")
 
 var _stacks_by_source_key: Dictionary = {}
 var _status_ids_by_source_key: Dictionary = {}

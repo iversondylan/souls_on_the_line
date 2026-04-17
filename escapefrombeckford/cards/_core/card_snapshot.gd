@@ -75,9 +75,9 @@ static func deserialize_card_data(data: Dictionary) -> CardData:
 	card_data.uid = str(data.get("uid", ""))
 	card_data.version = int(data.get("version", 1))
 	card_data.base_proto_path = str(data.get("base_proto_path", ""))
-	card_data.card_type = int(data.get("card_type", 0))
-	card_data.target_type = int(data.get("target_type", 0))
-	card_data.rarity = int(data.get("rarity", 0))
+	card_data.card_type = int(data.get("card_type", 0)) as CardData.CardType
+	card_data.target_type = int(data.get("target_type", 0)) as CardData.TargetType
+	card_data.rarity = int(data.get("rarity", 0)) as CardData.Rarity
 	card_data.name = str(data.get("name", ""))
 	card_data.deplete = bool(data.get("deplete", false))
 	card_data.starter_card = bool(data.get("starter_card", false))

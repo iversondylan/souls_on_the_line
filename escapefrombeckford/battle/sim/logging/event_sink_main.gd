@@ -2,12 +2,12 @@
 
 class_name EventSinkMain extends EventSink
 
-var log: BattleEventLog
+var be_log: BattleEventLog
 
 func _init(_log: BattleEventLog) -> void:
-	log = _log
+	be_log = _log
 
 func append(e: BattleEvent) -> int:
 	if log == null:
 		return -1
-	return log.append(e)
+	return be_log.append(e)

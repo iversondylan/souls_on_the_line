@@ -1,6 +1,5 @@
 class_name StatusTokenBucket extends RefCounted
 
-const StatusToken := preload("res://battle/sim/containers/status_token.gd")
 
 var realized_token: StatusToken = null
 var pending_token: StatusToken = null

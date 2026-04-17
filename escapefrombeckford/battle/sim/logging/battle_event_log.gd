@@ -168,7 +168,7 @@ func validate_scope_nesting() -> ScopeValidationReport:
 
 
 static func print_event_log(
-	log: BattleEventLog,
+	be_log: BattleEventLog,
 	last_n: int = -1,
 	sleep_ms_every: int = 100,
 	sleep_ms: float = 500.0,
@@ -187,7 +187,7 @@ static func print_event_log(
 	if log == null:
 		return
 
-	var total := log.size()
+	var total := be_log.size()
 	if total <= 0:
 		print("(BattleEventLog) <empty>")
 		return
@@ -268,7 +268,7 @@ static func print_event_log(
 	var scope_label_stack: Array[String] = []
 
 	for i in range(start, total):
-		var e := log.get_event(i)
+		var e := be_log.get_event(i)
 		if e == null:
 			continue
 

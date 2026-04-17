@@ -2,7 +2,7 @@ class_name CombatPreviewOverlay
 extends Node2D
 
 @onready var _icon_parent: Node2D = $IconParent
-@onready var _icon: Sprite2D = $IconParent/Icon
+#@onready var _icon: Sprite2D = $IconParent/Icon
 @onready var _text_parent: Node2D = $TextParent
 @onready var _label: Label = $TextParent/Label
 

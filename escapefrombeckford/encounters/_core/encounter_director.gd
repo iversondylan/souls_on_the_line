@@ -371,10 +371,9 @@ func _try_complete_step(ctx: EncounterRuleContext) -> void:
 	if step.next_step_id != &"" and step.next_step_id != step.id:
 		goto_step(step.next_step_id)
 
-func _tutorial_trace(message: String) -> void:
+func _tutorial_trace(_message: String) -> void:
 	if !_debug_tutorial_trace_enabled:
 		return
-	print("[TUTORIAL TRACE director] %s" % message)
 
 func _condition_debug_name(condition: EncounterCondition) -> String:
 	if condition == null:

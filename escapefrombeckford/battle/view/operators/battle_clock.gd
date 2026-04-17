@@ -15,14 +15,14 @@ func wait_until(_t_sec: float) -> void:
 func wait_seconds(_delta_sec: float) -> void:
 	return
 
-func next_grid_time(now_sec: float, grid_quarters: float) -> float:
+func next_grid_time(current_time_sec: float, grid_quarters: float) -> float:
 	# Default: quantize to quarter-notes
 	var spq := seconds_per_quarter()
 	if spq <= 0.0:
-		return now_sec
+		return current_time_sec
 	var grid_sec := maxf(0.0001, spq * maxf(grid_quarters, 0.25))
-	var k := ceilf(now_sec / grid_sec)
+	var k := ceilf(current_time_sec / grid_sec)
 	return k * grid_sec
 
-func next_downbeat_time(now_sec: float, beats_per_bar: float = 4.0) -> float:
-	return next_grid_time(now_sec, beats_per_bar)
+func next_downbeat_time(current_time_sec: float, beats_per_bar: float = 4.0) -> float:
+	return next_grid_time(current_time_sec, beats_per_bar)
