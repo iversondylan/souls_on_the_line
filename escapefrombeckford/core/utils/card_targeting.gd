@@ -1,17 +1,14 @@
 # card_targeting.gd
 class_name CardTargeting extends RefCounted
 
+static var _ally_enum_verified := false
+
 static func get_valid_targets(card_data: CardData, actor_id: int, api: SimBattleAPI) -> Array[int]:
 	var out: Array[int] = []
 	if card_data == null or api == null or actor_id <= 0:
 		return out
 
-	# Serialized card assets currently rely on enum ordinal mapping:
-	# Allies == CardData.TargetType.ALLY == 3
-	if int(CardData.TargetType.ALLY) != 3:
-		push_error("CardData.TargetType.ALLY enum value changed; serialized target_type mappings must be updated.")
-	if OS.is_debug_build():
-		assert(int(CardData.TargetType.ALLY) == 3, "CardData.TargetType.ALLY enum value changed; serialized target_type mappings must be updated.")
+	_verify_target_enum_mapping_once()
 
 	match int(card_data.target_type):
 		CardData.TargetType.SELF:
@@ -91,8 +88,23 @@ static func _filter_non_player_targets(target_ids: Array[int], player_id: int) -
 	return out
 
 static func _first_valid_requested_target(requested_ids: PackedInt32Array, valid_ids: Array[int]) -> int:
+	var valid_set := {}
+	for id in valid_ids:
+		valid_set[int(id)] = true
 	for id in requested_ids:
 		var cid := int(id)
-		if valid_ids.has(cid):
+		if bool(valid_set.get(cid, false)):
 			return cid
 	return 0
+
+static func _verify_target_enum_mapping_once() -> void:
+	if _ally_enum_verified:
+		return
+	_ally_enum_verified = true
+
+	# Serialized card assets currently rely on enum ordinal mapping:
+	# Allies == CardData.TargetType.ALLY == 3
+	if int(CardData.TargetType.ALLY) != 3:
+		push_error("CardData.TargetType.ALLY enum value changed; serialized target_type mappings must be updated.")
+	if OS.is_debug_build():
+		assert(int(CardData.TargetType.ALLY) == 3, "CardData.TargetType.ALLY enum value changed; serialized target_type mappings must be updated.")

@@ -1626,6 +1626,12 @@ func _validate_card_targets(ctx: CardContext) -> bool:
 				if valid_ids.has(cid):
 					ctx.target_ids = PackedInt32Array([cid])
 					return true
+			push_warning("Card target validation rejected %s with source_id=%d requested=%s valid=%s" % [
+				String(card.id),
+				int(ctx.source_id),
+				var_to_str(ctx.target_ids),
+				var_to_str(valid_ids),
+			])
 			return false
 
 		CardData.TargetType.BATTLEFIELD:
