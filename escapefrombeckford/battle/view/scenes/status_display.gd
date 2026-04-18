@@ -16,6 +16,9 @@ var _pending_tween: Tween = null
 func _ready() -> void:
 	_refresh_display()
 
+func _exit_tree() -> void:
+	Events.tooltip_source_exited.emit(self)
+
 func _set_status(new_status: Status) -> void:
 	if !is_node_ready():
 		await ready
@@ -75,12 +78,16 @@ func _on_icon_mouse_entered() -> void:
 	if status == null:
 		return
 
+	Events.tooltip_source_entered.emit(self, _build_tooltip_request())
+
+func _on_icon_mouse_exited() -> void:
+	Events.tooltip_source_exited.emit(self)
+
+func _build_tooltip_request() -> TooltipRequest:
 	var request := TooltipRequest.new()
+	request.anchor_control = icon
 	request.anchor_rect = icon.get_global_rect()
 	request.icon_uid = status.icon.resource_path if status.icon != null else ""
 	request.text_bbcode = status.get_tooltip(intensity, turns_duration)
 	request.preferred_side = TooltipRequest.PreferredSide.ABOVE
-	Events.tooltip_show_requested.emit(request)
-
-func _on_icon_mouse_exited() -> void:
-	Events.tooltip_hide_requested.emit()
+	return request

@@ -46,8 +46,8 @@ signal request_summon_replace(ctx: CardContext, action_index: int, preview: Summ
 signal selection_prompt_button_pressed()
 
 ## info/menu events
-signal tooltip_show_requested(request: TooltipRequest)
-signal tooltip_hide_requested()
+signal tooltip_source_entered(source: Object, request: TooltipRequest)
+signal tooltip_source_exited(source: Object)
 signal arcanum_popup_requested(arcanum: Arcanum)
 signal turn_status_view_changed(group_index: int, active_id: int, pending_ids: PackedInt32Array, player_id: int)
 signal player_input_view_reached(player_id: int)
