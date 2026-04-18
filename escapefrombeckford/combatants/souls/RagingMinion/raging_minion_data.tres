@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="CombatantData" format=3 uid="uid://dpwtup3383nl0"]
+
+[ext_resource type="Script" uid="uid://cfatj0ryn8uv3" path="res://combatants/combatant_data.gd" id="1_data_script"]
+[ext_resource type="Resource" uid="uid://cgpwhod3u7ewj" path="res://combatants/souls/RagingMinion/raging_minion_ai.tres" id="2_ai"]
+
+[resource]
+script = ExtResource("1_data_script")
+name = "Raging Minion"
+description = "3/3 ally. Whenever another ally dies, gain 1 Rage until end of turn."
+character_art_uid = "uid://dtlnu57wly63k"
+portrait_art_uid = "uid://dtlnu57wly63k"
+height = 220
+max_health = 3
+ai = ExtResource("2_ai")
+metadata/_custom_type_script = "uid://cfatj0ryn8uv3"

@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="ColdRevengeStatus" format=3 uid="uid://byhtuae2g3w1c"]
+
+[ext_resource type="Texture2D" uid="uid://b1pk63bwq3l2q" path="res://_assets/sprites/assorted/one-eyed.png" id="1_fincp"]
+[ext_resource type="Script" uid="uid://dgq6y3fwf75i6" path="res://statuses/cold_revenge.gd" id="2_script"]
+
+[resource]
+script = ExtResource("2_script")
+status_name = "Cold Revenge"
+number_display_type = 1
+icon = ExtResource("1_fincp")
+metadata/_custom_type_script = "uid://cueedkb1u8vxy"

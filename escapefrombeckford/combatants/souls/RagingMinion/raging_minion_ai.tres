@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="NPCAIProfile" format=3 uid="uid://cgpwhod3u7ewj"]
+
+[ext_resource type="Script" uid="uid://bcih413oy6v73" path="res://npc_ai/_core/npc_action.gd" id="1_npc_action"]
+[ext_resource type="Resource" uid="uid://blaif4hjpsppa" path="res://combatants/souls/BasicClone/basic_clone_attack_action.tres" id="2_0kgur"]
+[ext_resource type="Script" uid="uid://bdsvca1cpka5s" path="res://npc_ai/_core/npc_ai_profile.gd" id="2_ai_profile"]
+
+[resource]
+script = ExtResource("2_ai_profile")
+actions = Array[ExtResource("1_npc_action")]([ExtResource("2_0kgur")])
+metadata/_custom_type_script = "uid://bdsvca1cpka5s"

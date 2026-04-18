@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="CombatantData" format=3 uid="uid://c0nblu5vguns1"]
+
+[ext_resource type="Script" uid="uid://cfatj0ryn8uv3" path="res://combatants/combatant_data.gd" id="1_data_script"]
+[ext_resource type="Resource" uid="uid://b5wbvmrke60ak" path="res://combatants/souls/WatchfulSphinx/watchful_sphinx_ai.tres" id="2_ai"]
+
+[resource]
+script = ExtResource("1_data_script")
+name = "Watchful Sphinx"
+description = "3/4 ally. Whenever another SoulBound ally dies, gain 1 Might."
+character_art_uid = "uid://qq0urvtv85ub"
+portrait_art_uid = "uid://qq0urvtv85ub"
+height = 250
+max_health = 4
+ai = ExtResource("2_ai")
+metadata/_custom_type_script = "uid://cfatj0ryn8uv3"

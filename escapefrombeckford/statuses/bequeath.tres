@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="BequeathStatus" format=3 uid="uid://dvxb1b65olpr7"]
 
-[ext_resource type="Texture2D" uid="uid://b8e1wo2qc3kiu" path="res://_assets/sprites/assorted/deck.png" id="1_rbers"]
+[ext_resource type="Texture2D" uid="uid://dwtttlpv0uaoc" path="res://_assets/sprites/assorted/locked-chest.png" id="1_rbers"]
 [ext_resource type="Script" uid="uid://cm2l7a0gcxtko" path="res://statuses/bequeath.gd" id="2_8h1dg"]
 
 [resource]

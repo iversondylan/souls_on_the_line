@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="BoilingBloodStatus" format=3 uid="uid://dfw7lv0so2crl"]
 
-[ext_resource type="Texture2D" uid="uid://dfm4wyrok3dku" path="res://_assets/sprites/assorted/explosion_icon.png" id="1_cs1el"]
+[ext_resource type="Texture2D" uid="uid://30ob5x2luu26" path="res://_assets/sprites/assorted/enrage.png" id="1_cs1el"]
 [ext_resource type="Script" uid="uid://bsvxqv6nty16r" path="res://statuses/boiling_blood.gd" id="2_t35rc"]
 
 [resource]

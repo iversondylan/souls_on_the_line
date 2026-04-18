@@ -16,4 +16,4 @@ func get_attack_self_damage_on_strike(ctx: SimStatusContext, _attack_ctx: Attack
 
 
 func get_tooltip(intensity: int = 0, _duration: int = 0) -> String:
-	return "Double Edge: whenever this unit deals strike damage, it takes %s recoil damage." % intensity
+	return "Double Edge: on each srike, takes %s damage." % intensity

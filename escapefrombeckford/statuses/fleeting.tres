@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="FleetingStatus" format=3 uid="uid://dx5u1ohri7h0t"]
 
 [ext_resource type="Script" uid="uid://dpynoh6b044u2" path="res://statuses/fleeting.gd" id="1_fleeting_script"]
-[ext_resource type="Texture2D" uid="uid://cwtmp7i2upnbt" path="res://_assets/sprites/assorted/invisible.png" id="1_gxmth"]
+[ext_resource type="Texture2D" uid="uid://04txspjhb0jm" path="res://_assets/backgrounds/ghost.png" id="1_gxmth"]
 
 [resource]
 script = ExtResource("1_fleeting_script")

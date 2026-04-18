@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="CardData" format=3 uid="uid://uvvhvloxia2x"]
+
+[ext_resource type="Script" uid="uid://wtk5v77fcqvn" path="res://cards/_core/card_action.gd" id="1_card_action"]
+[ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://cards/_core/card_data.gd" id="2_card_data"]
+[ext_resource type="Resource" path="res://cards/souls/WatchfulSphinxCard/summon_watchful_sphinx.tres" id="3_summon"]
+[ext_resource type="Resource" path="res://cards/souls/WatchfulSphinxCard/cold_revenge_on_summoned_action.tres" id="4_on_summoned"]
+[ext_resource type="Texture2D" uid="uid://qq0urvtv85ub" path="res://_assets/sprites/assorted/greek-sphinx.png" id="5_u5o4p"]
+
+[resource]
+script = ExtResource("2_card_data")
+id = &"watchful_sphinx"
+card_type = 1
+target_type = 1
+rarity = 1
+name = "Watchful Sphinx"
+summon_release_overload = 1
+description = "Summon a 3/4 Watchful Sphinx that deals +1 damage for each friendly Soulbound death."
+cost = 1
+texture = ExtResource("5_u5o4p")
+actions = Array[ExtResource("1_card_action")]([ExtResource("3_summon"), ExtResource("4_on_summoned")])
+metadata/_custom_type_script = "uid://d2f0qepe047dc"

@@ -31,5 +31,11 @@ func get_modifier_tokens(ctx: StatusTokenContext) -> Array[ModifierToken]:
 	return [token]
 
 
+func on_actor_turn_end(ctx: SimStatusContext) -> void:
+	if ctx == null or !ctx.is_valid():
+		return
+	ctx.remove_self("rage_turn_end")
+
+
 func get_tooltip(intensity: int = 0, _duration: int = 0) -> String:
-	return "Rage: deal +%s damage." % intensity
+	return "Rage: deal +%s damage this turn." % intensity

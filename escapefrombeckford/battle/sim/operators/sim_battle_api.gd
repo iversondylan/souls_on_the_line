@@ -2,7 +2,6 @@
 
 class_name SimBattleAPI extends RefCounted
 
-const EffectiveStatusContextCacheStore := preload("res://battle/sim/containers/effective_status_context_cache_store.gd")
 const StatusToken := preload("res://battle/sim/containers/status_token.gd")
 
 # ============================================================================
@@ -15,11 +14,14 @@ const StatusToken := preload("res://battle/sim/containers/status_token.gd")
 # - request dirtying/checkpoint work
 #
 # Explicitly NOT responsible for:
+# - owning persistent or derived battle state
 # - turn/group lifecycle orchestration
 # - intent lifecycle orchestration
 # - status proto classification rules
 #
 # Those belong in:
+# - BattleState for battle-owned state and derived caches
+# - CombatantState / TurnState / GroupState for structured sub-state
 # - SimRuntime
 # - ActionLifecycleSystem
 # - SimStatusSystem
@@ -39,12 +41,6 @@ signal unit_removed(id: int, g: int, removal_type: int, reason: String)
 
 var scopes: BattleScopeManager
 var writer: BattleEventWriter
-var _effective_status_context_cache_store: EffectiveStatusContextCacheStore = EffectiveStatusContextCacheStore.new()
-var _owned_any_death_listener_owner_ids_by_group := {
-	FRIENDLY: [],
-	ENEMY: [],
-}
-var _owned_any_death_listener_cache_dirty: bool = true
 
 
 # ============================================================================
@@ -295,7 +291,7 @@ func get_status_intensity(combat_id: int, status_id: StringName) -> int:
 
 
 # ============================================================================
-# Derived Query Methods (API-owned)
+# Derived Query Methods (API facade)
 # ============================================================================
 
 func get_effective_status_contexts_for_unit(
@@ -310,7 +306,9 @@ func has_cached_effective_status_contexts_for_unit(
 	target_id: int,
 	unit_status_version: int
 ) -> bool:
-	return _effective_status_context_cache_store.has_contexts(
+	if state == null:
+		return false
+	return state.has_cached_effective_status_contexts_for_unit(
 		target_id,
 		unit_status_version
 	)
@@ -320,7 +318,9 @@ func _get_cached_effective_status_contexts_for_unit(
 	target_id: int,
 	unit_status_version: int
 ) -> Array[SimStatusContext]:
-	return _effective_status_context_cache_store.get_contexts(
+	if state == null:
+		return []
+	return state.get_cached_effective_status_contexts_for_unit(
 		target_id,
 		unit_status_version
 	)
@@ -331,7 +331,9 @@ func _set_cached_effective_status_contexts_for_unit(
 	unit_status_version: int,
 	contexts: Array[SimStatusContext]
 ) -> void:
-	_effective_status_context_cache_store.set_contexts(
+	if state == null:
+		return
+	state.set_cached_effective_status_contexts_for_unit(
 		target_id,
 		unit_status_version,
 		contexts
@@ -339,61 +341,21 @@ func _set_cached_effective_status_contexts_for_unit(
 
 
 func _invalidate_effective_status_context_cache() -> void:
-	_effective_status_context_cache_store.invalidate()
+	if state == null:
+		return
+	state.invalidate_effective_status_context_cache()
 
 
 func _invalidate_owned_any_death_listener_cache() -> void:
-	_owned_any_death_listener_cache_dirty = true
+	if state == null:
+		return
+	state.invalidate_owned_any_death_listener_cache()
 
 
 func get_owned_any_death_listener_owner_ids_for_group(group_index: int) -> Array[int]:
-	_ensure_owned_any_death_listener_cache()
-	var gi := clampi(int(group_index), 0, 1)
-	var cached: Array = _owned_any_death_listener_owner_ids_by_group.get(gi, [])
-	var out: Array[int] = []
-	for raw_id in cached:
-		out.append(int(raw_id))
-	return out
-
-
-func _ensure_owned_any_death_listener_cache() -> void:
-	if !_owned_any_death_listener_cache_dirty:
-		return
-
-	var rebuilt := {
-		FRIENDLY: [],
-		ENEMY: [],
-	}
-	if state == null or state.status_catalog == null:
-		_owned_any_death_listener_owner_ids_by_group = rebuilt
-		_owned_any_death_listener_cache_dirty = false
-		return
-
-	for gi in [FRIENDLY, ENEMY]:
-		var listeners: Array[int] = []
-		for raw_id in state.groups[int(gi)].order:
-			var owner_id := int(raw_id)
-			var u: CombatantState = state.get_unit(owner_id)
-			if u == null or !u.is_alive() or u.statuses == null:
-				continue
-
-			var has_listener := false
-			for token: StatusToken in u.statuses.get_all_tokens(true):
-				if token == null:
-					continue
-				var proto := SimStatusSystem.get_proto(self, StringName(token.id))
-				if proto == null or !proto.listens_for_any_death():
-					continue
-				has_listener = true
-				break
-
-			if has_listener:
-				listeners.append(owner_id)
-
-		rebuilt[int(gi)] = listeners
-
-	_owned_any_death_listener_owner_ids_by_group = rebuilt
-	_owned_any_death_listener_cache_dirty = false
+	if state == null:
+		return []
+	return state.get_owned_any_death_listener_owner_ids_for_group(group_index)
 
 
 func get_non_status_modifier_tokens_for_target(target_id: int, mod_type: Modifier.Type) -> Array[ModifierToken]:

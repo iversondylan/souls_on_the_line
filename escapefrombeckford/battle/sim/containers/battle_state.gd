@@ -2,6 +2,7 @@
 
 class_name BattleState extends RefCounted
 
+const EffectiveStatusContextCacheStore := preload("res://battle/sim/containers/effective_status_context_cache_store.gd")
 const StatusToken := preload("res://battle/sim/containers/status_token.gd")
 
 const FRIENDLY := 0
@@ -44,6 +45,15 @@ var arcana: ArcanaState = ArcanaState.new()
 # Resource(s)
 var resource: ResourceState = ResourceState.new() 
 
+# Derived caches live on the state object so cloned battle states carry their
+# own cache containers instead of sharing API-bound runtime data.
+var _effective_status_context_cache_store: EffectiveStatusContextCacheStore = EffectiveStatusContextCacheStore.new()
+var _owned_any_death_listener_owner_ids_by_group := {
+	FRIENDLY: [],
+	ENEMY: [],
+}
+var _owned_any_death_listener_cache_dirty: bool = true
+
 func init(_battle_seed: int, _run_seed: int) -> void:
 	battle_seed = _battle_seed
 	run_seed = _run_seed
@@ -59,6 +69,8 @@ func init(_battle_seed: int, _run_seed: int) -> void:
 	resource.player_turn_use_soulbound_guarantee = true
 	resource.hand_mode = ResourceState.HandMode.DISCARD
 	resource.shuffle_mode = ResourceState.ShuffleMode.NORMAL
+	invalidate_effective_status_context_cache()
+	invalidate_owned_any_death_listener_cache()
 
 func has_terminal_outcome() -> bool:
 	return int(outcome) != int(Outcome.NONE)
@@ -123,6 +135,89 @@ func is_alive(id: int) -> bool:
 	var u: CombatantState = units.get(id, null)
 	return u != null and u.alive and u.health > 0
 
+func has_cached_effective_status_contexts_for_unit(
+	target_id: int,
+	unit_status_version: int
+) -> bool:
+	return _effective_status_context_cache_store.has_contexts(
+		target_id,
+		unit_status_version
+	)
+
+func get_cached_effective_status_contexts_for_unit(
+	target_id: int,
+	unit_status_version: int
+) -> Array[SimStatusContext]:
+	return _effective_status_context_cache_store.get_contexts(
+		target_id,
+		unit_status_version
+	)
+
+func set_cached_effective_status_contexts_for_unit(
+	target_id: int,
+	unit_status_version: int,
+	contexts: Array[SimStatusContext]
+) -> void:
+	_effective_status_context_cache_store.set_contexts(
+		target_id,
+		unit_status_version,
+		contexts
+	)
+
+func invalidate_effective_status_context_cache() -> void:
+	_effective_status_context_cache_store.invalidate()
+
+func invalidate_owned_any_death_listener_cache() -> void:
+	_owned_any_death_listener_cache_dirty = true
+
+func get_owned_any_death_listener_owner_ids_for_group(group_index: int) -> Array[int]:
+	_ensure_owned_any_death_listener_cache()
+	var gi := clampi(int(group_index), 0, 1)
+	var cached: Array = _owned_any_death_listener_owner_ids_by_group.get(gi, [])
+	var out: Array[int] = []
+	for raw_id in cached:
+		out.append(int(raw_id))
+	return out
+
+func _ensure_owned_any_death_listener_cache() -> void:
+	if !_owned_any_death_listener_cache_dirty:
+		return
+
+	var rebuilt := {
+		FRIENDLY: [],
+		ENEMY: [],
+	}
+	if status_catalog == null:
+		_owned_any_death_listener_owner_ids_by_group = rebuilt
+		_owned_any_death_listener_cache_dirty = false
+		return
+
+	for gi in [FRIENDLY, ENEMY]:
+		var listeners: Array[int] = []
+		for raw_id in groups[int(gi)].order:
+			var owner_id := int(raw_id)
+			var u: CombatantState = get_unit(owner_id)
+			if u == null or !u.is_alive() or u.statuses == null:
+				continue
+
+			var has_listener := false
+			for token: StatusToken in u.statuses.get_all_tokens(true):
+				if token == null:
+					continue
+				var proto := status_catalog.get_proto(StringName(token.id))
+				if proto == null or !proto.listens_for_any_death():
+					continue
+				has_listener = true
+				break
+
+			if has_listener:
+				listeners.append(owner_id)
+
+		rebuilt[int(gi)] = listeners
+
+	_owned_any_death_listener_owner_ids_by_group = rebuilt
+	_owned_any_death_listener_cache_dirty = false
+
 func get_front_id(group_index: int) -> int:
 	group_index = clampi(group_index, 0, 1)
 	return groups[group_index].front_id(units)
@@ -132,6 +227,8 @@ func clone() -> BattleState:
 	var b := BattleState.new()
 	b.battle_seed = battle_seed
 	b.run_seed = run_seed
+	b.status_catalog = status_catalog
+	b.arcana_catalog = arcana_catalog
 	b.summon_card_ap_bonus = summon_card_ap_bonus.duplicate(true)
 	b.summon_card_max_health_bonus = summon_card_max_health_bonus.duplicate(true)
 
@@ -149,6 +246,10 @@ func clone() -> BattleState:
 	b.arcana = arcana.clone() if arcana != null else ArcanaState.new()
 	b.projection_bank = projection_bank.clone() if projection_bank != null else ProjectionBank.new()
 	b.resource = resource.clone()
+	# Effective status contexts carry API references, so clones start with a fresh store.
+	b._effective_status_context_cache_store = EffectiveStatusContextCacheStore.new()
+	b._owned_any_death_listener_owner_ids_by_group = _owned_any_death_listener_owner_ids_by_group.duplicate(true)
+	b._owned_any_death_listener_cache_dirty = bool(_owned_any_death_listener_cache_dirty)
 
 	# Policy: preview clones start with a fresh empty event log.
 	b.events = BattleEventLog.new()

@@ -1,12 +1,12 @@
 [gd_resource type="Resource" script_class="GrowingFervorStatus" format=3 uid="uid://nnor45w1kk5c"]
 
-[ext_resource type="Texture2D" uid="uid://cytppmfrdmnxn" path="res://_assets/sprites/card_elements/wrathful_intent/wrath_icon.png" id="1_2s5rg"]
+[ext_resource type="Texture2D" uid="uid://b651e6iw5br8d" path="res://_assets/sprites/assorted/burning-passion_2.png" id="1_cwbun"]
 [ext_resource type="Script" uid="uid://megrskhfwgop" path="res://statuses/growing_fervor.gd" id="2_pyaau"]
 
 [resource]
 script = ExtResource("2_pyaau")
 status_name = "Growing Fervor"
 number_display_type = 1
-icon = ExtResource("1_2s5rg")
+icon = ExtResource("1_cwbun")
 tooltip = "Allies deal more damage."
 metadata/_custom_type_script = "uid://cueedkb1u8vxy"

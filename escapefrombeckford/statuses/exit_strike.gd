@@ -9,7 +9,7 @@ func get_id() -> StringName:
 
 
 func get_tooltip(intensity: int = 0, _duration: int = 0) -> String:
-	return "Exit Strike: On Death, deal %s damage to the front enemy." % intensity
+	return "Exit Strike: On death, deal %s damage." % intensity
 
 
 func on_removal(ctx: SimStatusContext, removal_ctx) -> void:
