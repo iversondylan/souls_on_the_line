@@ -8,7 +8,8 @@ static func get_valid_targets(card_data: CardData, actor_id: int, api: SimBattle
 
 	# Serialized card assets currently rely on enum ordinal mapping:
 	# Allies == CardData.TargetType.ALLY == 3
-	assert(int(CardData.TargetType.ALLY) == 3, "CardData.TargetType.ALLY enum value changed; serialized target_type mappings must be updated.")
+	if OS.is_debug_build():
+		assert(int(CardData.TargetType.ALLY) == 3, "CardData.TargetType.ALLY enum value changed; serialized target_type mappings must be updated.")
 
 	match int(card_data.target_type):
 		CardData.TargetType.SELF:
@@ -77,11 +78,12 @@ static func resolve(api: SimBattleAPI, card: CardData, req: CardPlayRequest) -> 
 
 static func _filter_non_player_targets(target_ids: Array[int], player_id: int) -> Array[int]:
 	var out: Array[int] = []
+	var pid := int(player_id)
 	for id in target_ids:
 		var cid := int(id)
 		if cid <= 0:
 			continue
-		if cid == int(player_id):
+		if cid == pid:
 			continue
 		out.append(cid)
 	return out

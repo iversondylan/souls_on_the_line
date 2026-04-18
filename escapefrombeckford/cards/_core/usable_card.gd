@@ -309,7 +309,7 @@ func resolve_targets(new_targets: Array[Node]) -> CardResolvedTargetView:
 				return result
 			if new_targets[0] is CombatantTargetArea:
 				var ta := new_targets[0] as CombatantTargetArea
-				if ta.combatant_view != null and ta.cid > 0 and valid_ids.has(int(ta.cid)):
+				if ta.combatant_view != null and valid_ids.has(int(ta.cid)):
 					result.views = [ta.combatant_view]
 					result.target_ids = PackedInt32Array([int(ta.cid)])
 
