@@ -86,6 +86,19 @@ texture = ExtResource("3_uqa2w")
 expand_mode = 1
 stretch_mode = 5
 
+[node name="Stacks" type="Label" parent="." unique_id=728441106]
+visible = false
+layout_mode = 0
+offset_left = 42.0
+offset_top = 42.0
+offset_right = 62.0
+offset_bottom = 62.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 18
+horizontal_alignment = 2
+vertical_alignment = 2
+
 [node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=294840151]
 libraries/ = SubResource("AnimationLibrary_3dch0")
 

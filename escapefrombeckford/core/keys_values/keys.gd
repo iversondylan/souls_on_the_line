@@ -80,6 +80,9 @@ const DISCARD_CONTEXT := &"discard_context"
 
 # Arcana
 const ARCANUM_ID := &"arcanum_id"
+const BEFORE_STACKS := &"before_stacks"
+const AFTER_STACKS := &"after_stacks"
+const DELTA_STACKS := &"delta_stacks"
 const PROC := &"proc"
 const PROC_LABEL := &"proc_label"
 

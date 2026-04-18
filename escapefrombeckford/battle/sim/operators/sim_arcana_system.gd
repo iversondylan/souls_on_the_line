@@ -2,6 +2,8 @@
 
 class_name SimArcanaSystem extends RefCounted
 
+const ArcanumEntry := preload("res://battle/sim/containers/arcanum_entry.gd")
+
 static func get_contexts(api: SimBattleAPI) -> Array:
 	var out: Array = []
 	if api == null or api.state == null or api.state.arcana == null or api.state.arcana_catalog == null:
@@ -11,7 +13,7 @@ static func get_contexts(api: SimBattleAPI) -> Array:
 	if owner_id <= 0:
 		return out
 
-	for entry: ArcanaState.ArcanumEntry in api.state.arcana.list:
+	for entry: ArcanumEntry in api.state.arcana.list:
 		if entry == null or entry.id == &"":
 			continue
 
@@ -30,6 +32,34 @@ static func get_contexts(api: SimBattleAPI) -> Array:
 			out.append(ctx)
 
 	return out
+
+
+static func get_context(api: SimBattleAPI, arcanum_id: StringName) -> SimArcanumContext:
+	if api == null or api.state == null or api.state.arcana == null or api.state.arcana_catalog == null:
+		return null
+	if arcanum_id == &"":
+		return null
+
+	var owner_id := int(api.get_player_id())
+	if owner_id <= 0:
+		return null
+
+	var entry := api.state.arcana.get_entry(arcanum_id)
+	if entry == null:
+		return null
+
+	var proto: Arcanum = api.state.arcana_catalog.get_proto(arcanum_id)
+	if proto == null:
+		return null
+
+	var ctx := SimArcanumContext.new(
+		api,
+		owner_id,
+		SimBattleAPI.FRIENDLY,
+		entry,
+		proto
+	)
+	return ctx if ctx != null and ctx.is_valid() else null
 
 
 static func on_battle_start(api: SimBattleAPI) -> void:

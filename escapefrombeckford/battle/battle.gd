@@ -2,6 +2,8 @@
 
 class_name Battle extends Node
 
+const ArcanumEntry := preload("res://battle/sim/containers/arcanum_entry.gd")
+
 # -------------------------
 # Inspector
 # -------------------------
@@ -224,6 +226,7 @@ func start_battle() -> void:
 	_apply_player_card_flow_rules()
 
 	sim_host.seed_arcana_from_ids(my_arcana)
+	_sync_arcanum_display_state()
 
 	transport_session = _build_transport_session()
 	battle_view.bind_transport_session(transport_session)
@@ -252,6 +255,15 @@ func start_battle() -> void:
 	var runtime := _runtime()
 	if runtime != null:
 		runtime.begin_group_turn_flow(SimBattleAPI.FRIENDLY, true)
+
+
+func _sync_arcanum_display_state() -> void:
+	if sim_host == null or !sim_host.has_main() or sim_host.main.state == null or sim_host.main.state.arcana == null:
+		return
+	for entry: ArcanumEntry in sim_host.main.state.arcana.list:
+		if entry == null or entry.id == &"":
+			continue
+		Events.arcanum_stacks_changed.emit(entry.id, int(entry.stacks))
 
 
 func pause_for_menu() -> void:

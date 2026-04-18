@@ -11,11 +11,14 @@ var system: ArcanaSystem = ArcanaSystem.new()
 func _ready() -> void:
 	arcana_row.child_exiting_tree.connect(_on_arcanum_display_exiting_tree)
 	Events.arcanum_view_activated.connect(_on_arcanum_view_activated)
+	Events.arcanum_stacks_changed.connect(_on_arcanum_stacks_changed)
 
 
 func _exit_tree() -> void:
 	if Events.arcanum_view_activated.is_connected(_on_arcanum_view_activated):
 		Events.arcanum_view_activated.disconnect(_on_arcanum_view_activated)
+	if Events.arcanum_stacks_changed.is_connected(_on_arcanum_stacks_changed):
+		Events.arcanum_stacks_changed.disconnect(_on_arcanum_stacks_changed)
 
 
 func get_modifier_tokens_for(target: Node) -> Array[ModifierToken]:
@@ -61,6 +64,10 @@ func get_all_arcana() -> Array[Arcanum]:
 	return system.get_all_arcana()
 
 
+func reset_display_stacks() -> void:
+	system.reset_display_stacks()
+
+
 func _on_arcanum_display_exiting_tree(node: Node) -> void:
 	var display := node as ArcanumDisplay
 	if !display:
@@ -72,3 +79,7 @@ func _on_arcanum_display_exiting_tree(node: Node) -> void:
 
 func _on_arcanum_view_activated(arcanum_id: StringName, proc: int, source_id: int) -> void:
 	system.play_view_activation(arcanum_id, proc, source_id)
+
+
+func _on_arcanum_stacks_changed(arcanum_id: StringName, stacks: int) -> void:
+	system.set_display_stacks(arcanum_id, stacks)

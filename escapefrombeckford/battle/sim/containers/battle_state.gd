@@ -3,6 +3,9 @@
 class_name BattleState extends RefCounted
 
 const EffectiveStatusContextCacheStore := preload("res://battle/sim/containers/effective_status_context_cache_store.gd")
+const Interceptor := preload("res://battle/sim/interceptors/interceptor.gd")
+const InterceptorBank := preload("res://battle/sim/containers/interceptor_bank.gd")
+const ArcanumEntry := preload("res://battle/sim/containers/arcanum_entry.gd")
 const StatusToken := preload("res://battle/sim/containers/status_token.gd")
 
 const FRIENDLY := 0
@@ -48,11 +51,7 @@ var resource: ResourceState = ResourceState.new()
 # Derived caches live on the state object so cloned battle states carry their
 # own cache containers instead of sharing API-bound runtime data.
 var _effective_status_context_cache_store: EffectiveStatusContextCacheStore = EffectiveStatusContextCacheStore.new()
-var _owned_any_death_listener_owner_ids_by_group := {
-	FRIENDLY: [],
-	ENEMY: [],
-}
-var _owned_any_death_listener_cache_dirty: bool = true
+var interceptor_bank: InterceptorBank = InterceptorBank.new()
 
 func init(_battle_seed: int, _run_seed: int) -> void:
 	battle_seed = _battle_seed
@@ -70,7 +69,7 @@ func init(_battle_seed: int, _run_seed: int) -> void:
 	resource.hand_mode = ResourceState.HandMode.DISCARD
 	resource.shuffle_mode = ResourceState.ShuffleMode.NORMAL
 	invalidate_effective_status_context_cache()
-	invalidate_owned_any_death_listener_cache()
+	mark_interceptors_dirty(Interceptor.HOOK_ON_ANY_DEATH)
 
 func has_terminal_outcome() -> bool:
 	return int(outcome) != int(Outcome.NONE)
@@ -167,56 +166,16 @@ func set_cached_effective_status_contexts_for_unit(
 func invalidate_effective_status_context_cache() -> void:
 	_effective_status_context_cache_store.invalidate()
 
-func invalidate_owned_any_death_listener_cache() -> void:
-	_owned_any_death_listener_cache_dirty = true
-
-func get_owned_any_death_listener_owner_ids_for_group(group_index: int) -> Array[int]:
-	_ensure_owned_any_death_listener_cache()
-	var gi := clampi(int(group_index), 0, 1)
-	var cached: Array = _owned_any_death_listener_owner_ids_by_group.get(gi, [])
-	var out: Array[int] = []
-	for raw_id in cached:
-		out.append(int(raw_id))
-	return out
-
-func _ensure_owned_any_death_listener_cache() -> void:
-	if !_owned_any_death_listener_cache_dirty:
+func mark_interceptors_dirty(hook_kind: StringName) -> void:
+	if interceptor_bank == null:
 		return
+	interceptor_bank.mark_dirty(hook_kind)
 
-	var rebuilt := {
-		FRIENDLY: [],
-		ENEMY: [],
-	}
-	if status_catalog == null:
-		_owned_any_death_listener_owner_ids_by_group = rebuilt
-		_owned_any_death_listener_cache_dirty = false
-		return
 
-	for gi in [FRIENDLY, ENEMY]:
-		var listeners: Array[int] = []
-		for raw_id in groups[int(gi)].order:
-			var owner_id := int(raw_id)
-			var u: CombatantState = get_unit(owner_id)
-			if u == null or !u.is_alive() or u.statuses == null:
-				continue
-
-			var has_listener := false
-			for token: StatusToken in u.statuses.get_all_tokens(true):
-				if token == null:
-					continue
-				var proto := status_catalog.get_proto(StringName(token.id))
-				if proto == null or !proto.listens_for_any_death():
-					continue
-				has_listener = true
-				break
-
-			if has_listener:
-				listeners.append(owner_id)
-
-		rebuilt[int(gi)] = listeners
-
-	_owned_any_death_listener_owner_ids_by_group = rebuilt
-	_owned_any_death_listener_cache_dirty = false
+func get_interceptors_for_hook_and_group(hook_kind: StringName, group_index: int) -> Array[Interceptor]:
+	if interceptor_bank == null:
+		return []
+	return interceptor_bank.get_interceptors_for_hook_and_group(self, hook_kind, group_index)
 
 func get_front_id(group_index: int) -> int:
 	group_index = clampi(group_index, 0, 1)
@@ -248,8 +207,7 @@ func clone() -> BattleState:
 	b.resource = resource.clone()
 	# Effective status contexts carry API references, so clones start with a fresh store.
 	b._effective_status_context_cache_store = EffectiveStatusContextCacheStore.new()
-	b._owned_any_death_listener_owner_ids_by_group = _owned_any_death_listener_owner_ids_by_group.duplicate(true)
-	b._owned_any_death_listener_cache_dirty = bool(_owned_any_death_listener_cache_dirty)
+	b.interceptor_bank = interceptor_bank.clone() if interceptor_bank != null else InterceptorBank.new()
 
 	# Policy: preview clones start with a fresh empty event log.
 	b.events = BattleEventLog.new()
@@ -352,15 +310,13 @@ func _debug_arcana_summary() -> String:
 		return "[]"
 
 	var parts: Array[String] = []
-	for entry: ArcanaState.ArcanumEntry in arcana.list:
+	for entry: ArcanumEntry in arcana.list:
 		if entry == null:
 			continue
 
 		var extra: Array[String] = []
-		if int(entry.charges) != 0:
-			extra.append("charges=%d" % int(entry.charges))
-		if int(entry.cooldown) != 0:
-			extra.append("cooldown=%d" % int(entry.cooldown))
+		if int(entry.stacks) >= 0:
+			extra.append("stacks=%d" % int(entry.stacks))
 		if !entry.data.is_empty():
 			extra.append("data=%s" % str(entry.data))
 

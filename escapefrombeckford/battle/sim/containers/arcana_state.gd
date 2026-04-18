@@ -1,23 +1,7 @@
 # arcana_state.gd
 class_name ArcanaState extends RefCounted
 
-# Headless ownership + per-arcana runtime fields.
-# Keep it light: no Resources, no Nodes.
-#
-# Store either:
-# - arcana_id: StringName (preferred)
-# - proto_path: String (if you author them as .tres and want to load in Live only)
-#
-# In headless, you typically want arcana_id + a catalog outside the state.
-
-class ArcanumEntry extends RefCounted:
-	var id: StringName
-	var charges: int = 0
-	var cooldown: int = 0
-	var data: Dictionary = {} # arbitrary per-arcanum state (intensity, flags, etc.)
-
-	func _init(_id: StringName = &"") -> void:
-		id = _id
+const ArcanumEntry := preload("res://battle/sim/containers/arcanum_entry.gd")
 
 # Ordered list = deterministic activation order
 var list: Array[ArcanumEntry] = []
@@ -62,10 +46,7 @@ func clone() -> ArcanaState:
 		if entry == null:
 			continue
 
-		var entry_clone := ArcanumEntry.new(entry.id)
-		entry_clone.charges = entry.charges
-		entry_clone.cooldown = entry.cooldown
-		entry_clone.data = entry.data.duplicate(true)
+		var entry_clone := entry.clone() as ArcanumEntry
 
 		c.list.append(entry_clone)
 		c.by_id[entry_clone.id] = entry_clone

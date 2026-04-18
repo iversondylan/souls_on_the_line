@@ -207,6 +207,22 @@ func emit_arcanum_proc(source_id: int, arcanum_id: StringName, proc: int, proc_l
 		data[k] = extra[k]
 	return _append(BattleEvent.Type.ARCANUM_PROC, data)
 
+func emit_arcanum_state_changed(
+	source_id: int,
+	arcanum_id: StringName,
+	before_stacks: int,
+	after_stacks: int,
+	reason: String = ""
+) -> int:
+	return _append(BattleEvent.Type.ARCANUM_STATE_CHANGED, {
+		Keys.SOURCE_ID: int(source_id),
+		Keys.ARCANUM_ID: arcanum_id,
+		Keys.BEFORE_STACKS: int(before_stacks),
+		Keys.AFTER_STACKS: int(after_stacks),
+		Keys.DELTA_STACKS: int(after_stacks) - int(before_stacks),
+		Keys.REASON: String(reason),
+	})
+
 func emit_card_played_ctx(ctx: CardContext) -> int:
 	if ctx == null or ctx.card_data == null:
 		return 0

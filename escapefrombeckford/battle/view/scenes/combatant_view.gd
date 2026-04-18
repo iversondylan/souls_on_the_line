@@ -241,7 +241,7 @@ func _on_target_area_area_entered(area: Area2D) -> void:
 	if area is not CardTargetSelectorArea:
 		return
 
-	var selector := area.card_target_selector
+	var selector := area.card_target_selector as CardTargetSelectorArea
 	if selector == null or selector.current_card == null or selector.current_card.card_data == null:
 		return
 	if selector.current_card.api == null:

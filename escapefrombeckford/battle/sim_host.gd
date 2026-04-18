@@ -2,6 +2,8 @@
 
 class_name SimHost extends Node
 
+const Interceptor := preload("res://battle/sim/interceptors/interceptor.gd")
+
 # SimHost is the structural owner of:
 # - the main Sim
 # - the preview Sim
@@ -191,6 +193,8 @@ func seed_arcana_from_ids(ids: Array[StringName]) -> void:
 	main.state.arcana.clear()
 	if main.state.projection_bank != null:
 		main.state.projection_bank.clear_arcanum_entries()
+	if main.state.interceptor_bank != null:
+		main.state.interceptor_bank.mark_dirty(Interceptor.HOOK_ON_ANY_DEATH)
 
 	for id in ids:
 		var proto := arcana_catalog.get_proto(id)
@@ -200,6 +204,8 @@ func seed_arcana_from_ids(ids: Array[StringName]) -> void:
 		var entry := main.state.arcana.add_arcanum(id)
 		if entry != null:
 			proto.seed_battle_entry(entry)
+
+	main.state.interceptor_bank.mark_dirty(Interceptor.HOOK_ON_ANY_DEATH)
 
 	_refresh_main_arcanum_projection_entries()
 

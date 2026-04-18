@@ -3,6 +3,8 @@
 class_name SimBattleAPI extends RefCounted
 
 const StatusToken := preload("res://battle/sim/containers/status_token.gd")
+const Interceptor := preload("res://battle/sim/interceptors/interceptor.gd")
+const OnAnyDeathInterceptor := preload("res://battle/sim/interceptors/on_any_death_interceptor.gd")
 
 # ============================================================================
 # SimBattleAPI
@@ -346,16 +348,54 @@ func _invalidate_effective_status_context_cache() -> void:
 	state.invalidate_effective_status_context_cache()
 
 
-func _invalidate_owned_any_death_listener_cache() -> void:
+func _mark_interceptors_dirty(hook_kind: StringName) -> void:
 	if state == null:
 		return
-	state.invalidate_owned_any_death_listener_cache()
+	state.mark_interceptors_dirty(hook_kind)
 
 
-func get_owned_any_death_listener_owner_ids_for_group(group_index: int) -> Array[int]:
+func get_interceptors_for_hook_and_group(hook_kind: StringName, group_index: int) -> Array[Interceptor]:
 	if state == null:
 		return []
-	return state.get_owned_any_death_listener_owner_ids_for_group(group_index)
+	return state.get_interceptors_for_hook_and_group(hook_kind, group_index)
+
+
+func _dispatch_on_any_death_interceptor(interceptor: OnAnyDeathInterceptor, removal_ctx: RemovalContext) -> void:
+	if interceptor == null or removal_ctx == null or state == null:
+		return
+
+	match interceptor.source_kind:
+		Interceptor.SOURCE_KIND_STATUS_TOKEN:
+			var owner = state.get_unit(int(interceptor.source_owner_id))
+			if owner == null or !owner.is_alive() or owner.statuses == null or state.status_catalog == null:
+				return
+
+			var token: StatusToken = owner.statuses.get_status_token(interceptor.source_id, false)
+			if token == null:
+				return
+
+			var proto := state.status_catalog.get_proto(interceptor.source_id)
+			if proto == null or !proto.listens_for_any_death():
+				return
+
+			var ctx := SimStatusSystem.make_context(self, int(interceptor.source_owner_id), token)
+			if ctx == null or !ctx.is_valid():
+				return
+
+			proto.on_any_death(ctx, removal_ctx)
+
+		Interceptor.SOURCE_KIND_ARCANUM_ENTRY:
+			var owner = state.get_unit(int(interceptor.source_owner_id))
+			if owner == null or !owner.is_alive() or state.arcana == null or state.arcana_catalog == null:
+				return
+
+			var ctx := SimArcanaSystem.get_context(self, interceptor.source_id)
+			if ctx == null or !ctx.is_valid() or ctx.proto == null:
+				return
+			if !ctx.proto.listens_for_any_death():
+				return
+
+			ctx.proto.on_any_death(ctx, removal_ctx)
 
 
 func get_non_status_modifier_tokens_for_target(target_id: int, mod_type: Modifier.Type) -> Array[ModifierToken]:
@@ -854,7 +894,7 @@ func resolve_removal(ctx) -> void:
 		state.groups[g].remove(int(ctx.target_id))
 
 	_untrack_auras_for_removed_combatant(int(ctx.target_id))
-	_invalidate_owned_any_death_listener_cache()
+	_mark_interceptors_dirty(Interceptor.HOOK_ON_ANY_DEATH)
 
 	ctx.after_order_ids = PackedInt32Array(state.groups[g].order) if g != -1 else PackedInt32Array()
 	_request_group_layout_changed(
@@ -886,6 +926,10 @@ func resolve_removal(ctx) -> void:
 	if runtime != null:
 		var reaction = RemovalDelayedReaction.new()
 		reaction.removal_ctx = ctx
+		reaction.any_death_interceptors = get_interceptors_for_hook_and_group(
+			Interceptor.HOOK_ON_ANY_DEATH,
+			int(ctx.group_index)
+		)
 		reaction.source_reason = String(ctx.reason)
 		reaction.origin_card_uid = String(ctx.origin_card_uid)
 		reaction.origin_arcanum_id = ctx.origin_arcanum_id
@@ -893,10 +937,16 @@ func resolve_removal(ctx) -> void:
 		if !runtime.is_in_strike_resolution():
 			runtime.drain_delayed_reactions(DelayedReaction.Timing.AFTER_STRIKE)
 	else:
-		var any_death_listener_owner_ids := get_owned_any_death_listener_owner_ids_for_group(int(ctx.group_index))
+		var any_death_interceptors := get_interceptors_for_hook_and_group(
+			Interceptor.HOOK_ON_ANY_DEATH,
+			int(ctx.group_index)
+		)
 		SimStatusSystem.on_removal(self, ctx)
 		SimArcanaSystem.on_removal(self, ctx)
-		SimStatusSystem.on_any_death(self, ctx, any_death_listener_owner_ids)
+		for interceptor_variant in any_death_interceptors:
+			var interceptor := interceptor_variant as OnAnyDeathInterceptor
+			if interceptor != null:
+				interceptor.dispatch(self, ctx)
 
 
 func resolve_move(ctx: MoveContext) -> void:
@@ -1017,7 +1067,7 @@ func apply_status(ctx: StatusContext) -> void:
 		# No effective mutation means no projection, status-hook, or intent side effects.
 		return
 	_invalidate_effective_status_context_cache()
-	_invalidate_owned_any_death_listener_cache()
+	_mark_interceptors_dirty(Interceptor.HOOK_ON_ANY_DEATH)
 
 	var status_ctx := SimStatusSystem.make_context(
 		self,
@@ -1067,7 +1117,7 @@ func remove_status(ctx: StatusContext) -> void:
 	var status_ctx := SimStatusSystem.make_context(self, int(ctx.target_id), old_token)
 	u.statuses.remove_ctx(ctx)
 	_invalidate_effective_status_context_cache()
-	_invalidate_owned_any_death_listener_cache()
+	_mark_interceptors_dirty(Interceptor.HOOK_ON_ANY_DEATH)
 	
 	if writer != null:
 		writer.emit_status(
@@ -1126,7 +1176,7 @@ func spawn_from_data(
 	
 	var u := _make_unit_from_combatant_data(combatant_data, id, g, is_player, int(current_health_override))
 	state.add_unit(u, g, int(insert_index))
-	_invalidate_owned_any_death_listener_cache()
+	_mark_interceptors_dirty(Interceptor.HOOK_ON_ANY_DEATH)
 	_refresh_projected_status_cache_for(id, [], true)
 	_request_turn_order_rebuild()
 	var after_order_ids := PackedInt32Array(state.groups[g].order)
@@ -1170,7 +1220,7 @@ func summon(ctx: SummonContext) -> void:
 	u.type = CombatantView.Type.ALLY if g == 0 else CombatantView.Type.ENEMY
 	
 	state.add_unit(u, g, int(ctx.insert_index))
-	_invalidate_owned_any_death_listener_cache()
+	_mark_interceptors_dirty(Interceptor.HOOK_ON_ANY_DEATH)
 	_refresh_projected_status_cache_for(id, [], true)
 	_request_turn_order_rebuild()
 	

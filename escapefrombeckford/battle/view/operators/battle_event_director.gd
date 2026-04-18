@@ -340,6 +340,8 @@ func on_event(e: EventPackage) -> void:
 			_on_turn_status(e)
 		BattleEvent.Type.ARCANUM_PROC:
 			_on_arcanum_proc(e)
+		BattleEvent.Type.ARCANUM_STATE_CHANGED:
+			_on_arcanum_state_changed(e)
 		BattleEvent.Type.PLAYER_INPUT_REACHED:
 			var actor_id := int(e.event.data.get(Keys.ACTOR_ID, 0)) if e.event.data != null else 0
 			#print("[TRACE battle_event_director] PLAYER_INPUT_REACHED actor_id=%d seq=%d" % [actor_id, int(e.event.seq)])
@@ -824,6 +826,17 @@ func _on_arcanum_proc(e: EventPackage) -> void:
 	if arcanum_id == &"":
 		return
 	Events.arcanum_view_activated.emit(arcanum_id, proc, source_id)
+
+
+func _on_arcanum_state_changed(e: EventPackage) -> void:
+	if e == null:
+		return
+	var d := _data(e)
+	var arcanum_id: StringName = d.get(Keys.ARCANUM_ID, &"")
+	if arcanum_id == &"":
+		return
+	var stacks := int(d.get(Keys.AFTER_STACKS, -1))
+	Events.arcanum_stacks_changed.emit(arcanum_id, stacks)
 
 
 func _on_formation_set(e: EventPackage) -> void:

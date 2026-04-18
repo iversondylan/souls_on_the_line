@@ -54,6 +54,7 @@ signal player_input_view_reached(player_id: int)
 signal card_scope_view_started(scope_id: int, actor_id: int)
 signal card_scope_view_finished(scope_id: int, actor_id: int)
 signal arcanum_view_activated(arcanum_id: StringName, proc: int, source_id: int)
+signal arcanum_stacks_changed(arcanum_id: StringName, stacks: int)
 signal encounter_observed_event(ev)
 
 ## battle transition events

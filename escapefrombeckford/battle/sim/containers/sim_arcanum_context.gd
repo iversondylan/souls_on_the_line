@@ -2,10 +2,12 @@
 
 class_name SimArcanumContext extends RefCounted
 
+const ArcanumEntry := preload("res://battle/sim/containers/arcanum_entry.gd")
+
 var api: SimBattleAPI
 var owner_id: int = 0
 var owner_group_index: int = SimBattleAPI.FRIENDLY
-var entry: ArcanaState.ArcanumEntry = null
+var entry: ArcanumEntry = null
 var proto: Arcanum = null
 
 
@@ -13,7 +15,7 @@ func _init(
 	_api: SimBattleAPI = null,
 	_owner_id: int = 0,
 	_owner_group_index: int = SimBattleAPI.FRIENDLY,
-	_entry: ArcanaState.ArcanumEntry = null,
+	_entry: ArcanumEntry = null,
 	_proto: Arcanum = null
 ) -> void:
 	api = _api
@@ -39,16 +41,10 @@ func get_duration(default_value := 0) -> int:
 	return get_data_int(Keys.DURATION, default_value)
 
 
-func get_charges(default_value := 0) -> int:
+func get_stacks(default_value := -1) -> int:
 	if entry == null:
 		return int(default_value)
-	return int(entry.charges)
-
-
-func get_cooldown(default_value := 0) -> int:
-	if entry == null:
-		return int(default_value)
-	return int(entry.cooldown)
+	return int(entry.stacks)
 
 
 func get_data_int(key, default_value := 0) -> int:
@@ -93,6 +89,30 @@ func change_duration(delta: int) -> int:
 	var next_value := get_duration(0) + int(delta)
 	set_duration(next_value)
 	return next_value
+
+
+func set_stacks(value: int, reason: String = "") -> void:
+	if entry == null:
+		return
+
+	var before_stacks := int(entry.stacks)
+	var after_stacks := int(value)
+	entry.stacks = after_stacks
+
+	if api != null and api.writer != null and before_stacks != after_stacks:
+		api.writer.emit_arcanum_state_changed(
+			int(owner_id),
+			get_arcanum_id(),
+			before_stacks,
+			after_stacks,
+			reason
+		)
+
+
+func change_stacks(delta: int, reason: String = "") -> int:
+	var next_value := get_stacks(-1) + int(delta)
+	set_stacks(next_value, reason)
+	return get_stacks(-1)
 
 
 func make_token_ctx(owner_override: int = -1) -> StatusTokenContext:

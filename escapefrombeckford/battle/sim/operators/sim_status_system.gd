@@ -2,7 +2,9 @@
 
 class_name SimStatusSystem extends RefCounted
 
+const Interceptor := preload("res://battle/sim/interceptors/interceptor.gd")
 const StatusToken := preload("res://battle/sim/containers/status_token.gd")
+const ArcanumEntry := preload("res://battle/sim/containers/arcanum_entry.gd")
 const Removal = preload("res://core/keys_values/removal_values.gd")
 
 # Owns status lifecycle and event dispatch.
@@ -359,7 +361,7 @@ static func realize_pending_statuses(
 		return
 
 	api._refresh_projected_status_cache_for(int(target_id))
-	api._invalidate_owned_any_death_listener_cache()
+	api._mark_interceptors_dirty(Interceptor.HOOK_ON_ANY_DEATH)
 	for aura_status_id in changed_aura_ids:
 		api._refresh_status_aura_projection(int(target_id), aura_status_id)
 
@@ -730,7 +732,7 @@ static func _append_arcanum_projected_tokens(
 	if arcanum_owner_id <= 0 or arcanum_id == &"":
 		return
 
-	var arcanum_entry: ArcanaState.ArcanumEntry = api.state.arcana.get_entry(arcanum_id)
+	var arcanum_entry: ArcanumEntry = api.state.arcana.get_entry(arcanum_id)
 	if arcanum_entry == null:
 		return
 	var arcanum_proto: Arcanum = api.state.arcana_catalog.get_proto(arcanum_id)

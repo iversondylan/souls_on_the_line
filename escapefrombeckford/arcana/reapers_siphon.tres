@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ReapersSiphonArcanum" format=3 uid="uid://dscocnwv6h1v5"]
+
+[ext_resource type="Texture2D" uid="uid://bx0nucatkcfyp" path="res://_assets/sprites/assorted/skull-signet.png" id="1_icon"]
+[ext_resource type="Script" uid="uid://cueedkb1u8vxy" path="res://statuses/_core/status.gd" id="2_rg2ec"]
+[ext_resource type="Script" path="res://arcana/reapers_siphon.gd" id="2_script"]
+
+[resource]
+script = ExtResource("2_script")
+arcanum_name = "Reaper's Siphon"
+starter_arcanum = true
+icon = ExtResource("1_icon")
+tooltip_description = "Reaper's Siphon: Starts each battle with 3 stacks. Whenever a friendly unit dies, lose 1 stack. When this reaches 0, draw 1 card and reset it to 3."
+flavor_text = "Every ending leaves something behind."
+metadata/_custom_type_script = "uid://cnmucv1qsei4i"

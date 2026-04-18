@@ -150,6 +150,7 @@ func _prepare_run_runtime() -> void:
 
 func _change_view(scene: PackedScene) -> Node:
 	_force_close_pause_menu()
+	arcana_system_container.reset_display_stacks()
 	if current_view.get_child_count() > 0:
 		current_view.get_child(0).queue_free()
 	
@@ -164,6 +165,7 @@ func _change_view(scene: PackedScene) -> Node:
 
 func _show_map() -> void:
 	_force_close_pause_menu()
+	arcana_system_container.reset_display_stacks()
 	if current_view.get_child_count() > 0:
 		current_view.get_child(0).queue_free()
 	

@@ -4,6 +4,7 @@ class_name ProjectionBank extends RefCounted
 
 const ProjectionImpactInfo := preload("res://battle/sim/containers/projection_impact_info.gd")
 const ProjectionSourceEntry := preload("res://battle/sim/containers/projection_source_entry.gd")
+const ArcanumEntry := preload("res://battle/sim/containers/arcanum_entry.gd")
 
 const SOURCE_KIND_STATUS_AURA := &"status_aura"
 const SOURCE_KIND_ARCANUM := &"arcanum"
@@ -73,7 +74,7 @@ func rebuild_arcanum_entries(state: BattleState, owner_id: int) -> void:
 	if state == null or state.arcana == null or state.arcana_catalog == null or owner_id <= 0:
 		return
 
-	for arcanum_entry: ArcanaState.ArcanumEntry in state.arcana.list:
+	for arcanum_entry: ArcanumEntry in state.arcana.list:
 		if arcanum_entry == null or arcanum_entry.id == &"":
 			continue
 

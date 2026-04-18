@@ -249,6 +249,9 @@ static func print_event_log(
 
 		Keys.PROC,
 		Keys.ARCANUM_ID,
+		Keys.BEFORE_STACKS,
+		Keys.AFTER_STACKS,
+		Keys.DELTA_STACKS,
 
 		Keys.REASON,
 		Keys.REMOVAL_TYPE,

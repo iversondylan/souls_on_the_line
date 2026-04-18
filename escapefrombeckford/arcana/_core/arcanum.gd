@@ -2,6 +2,8 @@
 
 class_name Arcanum extends Resource
 
+const ArcanumEntry := preload("res://battle/sim/containers/arcanum_entry.gd")
+
 enum Beats {NONE, IN, OUT, IN_OUT}
 enum TimedProc {
 	NONE = 0,
@@ -44,7 +46,7 @@ func get_timed_proc_flags() -> int:
 func _has_timed_proc(proc_flag: TimedProc) -> bool:
 	return (int(get_timed_proc_flags()) & int(proc_flag)) != 0
 
-func seed_battle_entry(_entry: ArcanaState.ArcanumEntry) -> void:
+func seed_battle_entry(_entry: ArcanumEntry) -> void:
 	pass
 
 func on_battle_start(ctx: SimArcanumContext) -> void:
@@ -72,6 +74,12 @@ func on_damage_taken(_ctx, _damage_ctx: DamageContext) -> void:
 	pass
 
 func on_removal(_ctx, _removal_ctx) -> void:
+	pass
+
+func listens_for_any_death() -> bool:
+	return false
+
+func on_any_death(_ctx: SimArcanumContext, _removal_ctx: RemovalContext) -> void:
 	pass
 
 func on_battle_started(_api: SimBattleAPI) -> void:

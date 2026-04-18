@@ -11,6 +11,7 @@ var _by_id: Dictionary = {}
 
 # id -> WeakRef(ArcanumDisplay)
 var _display_by_id: Dictionary = {}
+var _display_stacks_by_id: Dictionary = {}
 
 #func set_api(new_api: LiveBattleAPI) -> void:
 	#api = new_api
@@ -19,6 +20,9 @@ func bind_display(arcanum_id: StringName, display: Node) -> void:
 	if arcanum_id == &"" or display == null:
 		return
 	_display_by_id[arcanum_id] = weakref(display)
+	var d := display as ArcanumDisplay
+	if d != null:
+		d.set_stacks(get_display_stacks(arcanum_id))
 
 func unbind_display(arcanum_id: StringName) -> void:
 	_display_by_id.erase(arcanum_id)
@@ -42,6 +46,28 @@ func play_view_activation(arcanum_id: StringName, _proc: int, _source_id: int) -
 		return
 
 	d.flash()
+
+
+func get_display_stacks(arcanum_id: StringName) -> int:
+	return int(_display_stacks_by_id.get(arcanum_id, -1))
+
+
+func set_display_stacks(arcanum_id: StringName, stacks: int) -> void:
+	if arcanum_id == &"" or !_by_id.has(arcanum_id):
+		return
+	_display_stacks_by_id[arcanum_id] = int(stacks)
+	var d := _get_display(arcanum_id)
+	if d != null:
+		d.set_stacks(int(stacks))
+
+
+func reset_display_stacks() -> void:
+	for arcanum_id_variant in _by_id.keys():
+		var arcanum_id := StringName(arcanum_id_variant)
+		_display_stacks_by_id[arcanum_id] = -1
+		var d := _get_display(arcanum_id)
+		if d != null:
+			d.set_stacks(-1)
 
 func on_reward_context_started(ctx: RewardContext) -> void:
 	if ctx == null:
@@ -77,6 +103,7 @@ func add_arcanum(arcanum: Arcanum) -> void:
 
 	_arcana.push_back(arcanum)
 	_by_id[arcanum.get_id()] = arcanum
+	_display_stacks_by_id[arcanum.get_id()] = -1
 
 func remove_arcanum(id: StringName) -> void:
 	if id == &"" or !_by_id.has(id):
@@ -84,6 +111,7 @@ func remove_arcanum(id: StringName) -> void:
 
 	var arcanum: Arcanum = _by_id[id]
 	_by_id.erase(id)
+	_display_stacks_by_id.erase(id)
 	_arcana = _arcana.filter(func(a: Arcanum) -> bool: return a != arcanum)
 
 	# Let event-based arcana detach from the Events bus.

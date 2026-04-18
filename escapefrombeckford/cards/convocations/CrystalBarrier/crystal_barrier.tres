@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="CardData" format=3]
+[gd_resource type="Resource" script_class="CardData" format=3 uid="uid://dbs6t748gp5ig"]
 
 [ext_resource type="Script" uid="uid://wtk5v77fcqvn" path="res://cards/_core/card_action.gd" id="1_action"]
 [ext_resource type="Resource" uid="uid://c71a7e78wqfvy" path="res://cards/convocations/PressureBarrier/pressure_barrier_action.tres" id="2_pressure_barrier"]
