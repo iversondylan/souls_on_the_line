@@ -3,6 +3,7 @@
 class_name SimStatusSystem extends RefCounted
 
 const StatusToken := preload("res://battle/sim/containers/status_token.gd")
+const Removal = preload("res://core/keys_values/removal_values.gd")
 
 # Owns status lifecycle and event dispatch.
 # Turn progression belongs to SimRuntime.
@@ -160,6 +161,31 @@ static func on_removal(api: SimBattleAPI, removal_ctx) -> void:
 			ctx.proto.on_removal(ctx, removal_ctx)
 
 	_for_each_effective_status_on_unit(api, removed_id, fn)
+
+static func on_any_death(
+	api: SimBattleAPI,
+	removal_ctx: RemovalContext,
+	listener_owner_ids: Array[int]
+) -> void:
+	if api == null or api.state == null or removal_ctx == null or api.state.has_terminal_outcome():
+		return
+	if int(removal_ctx.removal_type) != int(Removal.Type.DEATH):
+		return
+	if listener_owner_ids.is_empty():
+		return
+
+	for raw_id in listener_owner_ids:
+		var owner_id := int(raw_id)
+		if owner_id <= 0 or !api.is_alive(owner_id):
+			continue
+
+		_for_each_status_on_unit(api, owner_id, func(ctx: SimStatusContext) -> void:
+			if ctx == null or !ctx.is_valid() or ctx.proto == null:
+				return
+			if !ctx.proto.listens_for_any_death():
+				return
+			ctx.proto.on_any_death(ctx, removal_ctx)
+		)
 
 static func should_skip_npc_action(api: SimBattleAPI, actor_id: int) -> bool:
 	if api == null or api.state == null or api.state.has_terminal_outcome():
@@ -333,6 +359,7 @@ static func realize_pending_statuses(
 		return
 
 	api._refresh_projected_status_cache_for(int(target_id))
+	api._invalidate_owned_any_death_listener_cache()
 	for aura_status_id in changed_aura_ids:
 		api._refresh_status_aura_projection(int(target_id), aura_status_id)
 

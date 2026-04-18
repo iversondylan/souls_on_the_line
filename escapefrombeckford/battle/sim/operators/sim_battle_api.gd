@@ -40,6 +40,11 @@ signal unit_removed(id: int, g: int, removal_type: int, reason: String)
 var scopes: BattleScopeManager
 var writer: BattleEventWriter
 var _effective_status_context_cache_store: EffectiveStatusContextCacheStore = EffectiveStatusContextCacheStore.new()
+var _owned_any_death_listener_owner_ids_by_group := {
+	FRIENDLY: [],
+	ENEMY: [],
+}
+var _owned_any_death_listener_cache_dirty: bool = true
 
 
 # ============================================================================
@@ -335,6 +340,60 @@ func _set_cached_effective_status_contexts_for_unit(
 
 func _invalidate_effective_status_context_cache() -> void:
 	_effective_status_context_cache_store.invalidate()
+
+
+func _invalidate_owned_any_death_listener_cache() -> void:
+	_owned_any_death_listener_cache_dirty = true
+
+
+func get_owned_any_death_listener_owner_ids_for_group(group_index: int) -> Array[int]:
+	_ensure_owned_any_death_listener_cache()
+	var gi := clampi(int(group_index), 0, 1)
+	var cached: Array = _owned_any_death_listener_owner_ids_by_group.get(gi, [])
+	var out: Array[int] = []
+	for raw_id in cached:
+		out.append(int(raw_id))
+	return out
+
+
+func _ensure_owned_any_death_listener_cache() -> void:
+	if !_owned_any_death_listener_cache_dirty:
+		return
+
+	var rebuilt := {
+		FRIENDLY: [],
+		ENEMY: [],
+	}
+	if state == null or state.status_catalog == null:
+		_owned_any_death_listener_owner_ids_by_group = rebuilt
+		_owned_any_death_listener_cache_dirty = false
+		return
+
+	for gi in [FRIENDLY, ENEMY]:
+		var listeners: Array[int] = []
+		for raw_id in state.groups[int(gi)].order:
+			var owner_id := int(raw_id)
+			var u: CombatantState = state.get_unit(owner_id)
+			if u == null or !u.is_alive() or u.statuses == null:
+				continue
+
+			var has_listener := false
+			for token: StatusToken in u.statuses.get_all_tokens(true):
+				if token == null:
+					continue
+				var proto := SimStatusSystem.get_proto(self, StringName(token.id))
+				if proto == null or !proto.listens_for_any_death():
+					continue
+				has_listener = true
+				break
+
+			if has_listener:
+				listeners.append(owner_id)
+
+		rebuilt[int(gi)] = listeners
+
+	_owned_any_death_listener_owner_ids_by_group = rebuilt
+	_owned_any_death_listener_cache_dirty = false
 
 
 func get_non_status_modifier_tokens_for_target(target_id: int, mod_type: Modifier.Type) -> Array[ModifierToken]:
@@ -833,6 +892,7 @@ func resolve_removal(ctx) -> void:
 		state.groups[g].remove(int(ctx.target_id))
 
 	_untrack_auras_for_removed_combatant(int(ctx.target_id))
+	_invalidate_owned_any_death_listener_cache()
 
 	ctx.after_order_ids = PackedInt32Array(state.groups[g].order) if g != -1 else PackedInt32Array()
 	_request_group_layout_changed(
@@ -871,8 +931,10 @@ func resolve_removal(ctx) -> void:
 		if !runtime.is_in_strike_resolution():
 			runtime.drain_delayed_reactions(DelayedReaction.Timing.AFTER_STRIKE)
 	else:
+		var any_death_listener_owner_ids := get_owned_any_death_listener_owner_ids_for_group(int(ctx.group_index))
 		SimStatusSystem.on_removal(self, ctx)
 		SimArcanaSystem.on_removal(self, ctx)
+		SimStatusSystem.on_any_death(self, ctx, any_death_listener_owner_ids)
 
 
 func resolve_move(ctx: MoveContext) -> void:
@@ -993,6 +1055,7 @@ func apply_status(ctx: StatusContext) -> void:
 		# No effective mutation means no projection, status-hook, or intent side effects.
 		return
 	_invalidate_effective_status_context_cache()
+	_invalidate_owned_any_death_listener_cache()
 
 	var status_ctx := SimStatusSystem.make_context(
 		self,
@@ -1042,6 +1105,7 @@ func remove_status(ctx: StatusContext) -> void:
 	var status_ctx := SimStatusSystem.make_context(self, int(ctx.target_id), old_token)
 	u.statuses.remove_ctx(ctx)
 	_invalidate_effective_status_context_cache()
+	_invalidate_owned_any_death_listener_cache()
 	
 	if writer != null:
 		writer.emit_status(
@@ -1100,6 +1164,7 @@ func spawn_from_data(
 	
 	var u := _make_unit_from_combatant_data(combatant_data, id, g, is_player, int(current_health_override))
 	state.add_unit(u, g, int(insert_index))
+	_invalidate_owned_any_death_listener_cache()
 	_refresh_projected_status_cache_for(id, [], true)
 	_request_turn_order_rebuild()
 	var after_order_ids := PackedInt32Array(state.groups[g].order)
@@ -1143,6 +1208,7 @@ func summon(ctx: SummonContext) -> void:
 	u.type = CombatantView.Type.ALLY if g == 0 else CombatantView.Type.ENEMY
 	
 	state.add_unit(u, g, int(ctx.insert_index))
+	_invalidate_owned_any_death_listener_cache()
 	_refresh_projected_status_cache_for(id, [], true)
 	_request_turn_order_rebuild()
 	
