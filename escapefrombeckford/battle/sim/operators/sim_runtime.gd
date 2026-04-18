@@ -1619,6 +1619,8 @@ func _validate_card_targets(ctx: CardContext) -> bool:
 			return true
 
 		CardData.TargetType.ALLY, CardData.TargetType.ALLY_OR_SELF, CardData.TargetType.SINGLE_ENEMY:
+			# Single-target cards require an explicit selected target from the caller.
+			# We only accept it when it is still valid under the centralized target rules.
 			for id in ctx.target_ids:
 				var cid := int(id)
 				if valid_ids.has(cid):

@@ -8,6 +8,8 @@ static func get_valid_targets(card_data: CardData, actor_id: int, api: SimBattle
 
 	# Serialized card assets currently rely on enum ordinal mapping:
 	# Allies == CardData.TargetType.ALLY == 3
+	if int(CardData.TargetType.ALLY) != 3:
+		push_error("CardData.TargetType.ALLY enum value changed; serialized target_type mappings must be updated.")
 	if OS.is_debug_build():
 		assert(int(CardData.TargetType.ALLY) == 3, "CardData.TargetType.ALLY enum value changed; serialized target_type mappings must be updated.")
 
