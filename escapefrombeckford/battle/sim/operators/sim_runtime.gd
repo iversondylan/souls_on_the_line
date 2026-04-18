@@ -1572,6 +1572,8 @@ func begin_card_execution(ctx: CardContext) -> bool:
 		return false
 	if ctx.card_data == null:
 		return false
+	if !_validate_card_targets(ctx):
+		return false
 
 	ctx.action_states.clear()
 	ctx.next_action_index = 0
@@ -1603,6 +1605,39 @@ func begin_card_execution(ctx: CardContext) -> bool:
 		ctx.action_states.append(st)
 
 	return continue_card_execution(ctx)
+
+func _validate_card_targets(ctx: CardContext) -> bool:
+	if ctx == null or ctx.card_data == null or ctx.api == null:
+		return false
+
+	var card := ctx.card_data
+	var valid_ids := CardTargeting.get_valid_targets(card, int(ctx.source_id), ctx.api)
+
+	match int(card.target_type):
+		CardData.TargetType.SELF, CardData.TargetType.ALL_ENEMIES, CardData.TargetType.EVERYONE:
+			ctx.target_ids = PackedInt32Array(valid_ids)
+			return true
+
+		CardData.TargetType.ALLY, CardData.TargetType.ALLY_OR_SELF, CardData.TargetType.SINGLE_ENEMY:
+			# Single-target cards require an explicit selected target from the caller.
+			# We only accept it when it is still valid under the centralized target rules.
+			for id in ctx.target_ids:
+				var cid := int(id)
+				if valid_ids.has(cid):
+					ctx.target_ids = PackedInt32Array([cid])
+					return true
+			push_warning("Card target validation rejected %s with source_id=%d requested=%s valid=%s" % [
+				String(card.id),
+				int(ctx.source_id),
+				var_to_str(ctx.target_ids),
+				var_to_str(valid_ids),
+			])
+			return false
+
+		CardData.TargetType.BATTLEFIELD:
+			return true
+
+	return false
 
 #func begin_card_execution(ctx: CardContext) -> bool:
 	#if ctx == null:

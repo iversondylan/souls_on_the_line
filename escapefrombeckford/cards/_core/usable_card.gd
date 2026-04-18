@@ -279,20 +279,24 @@ func is_mouse_over() -> bool:
 
 func resolve_targets(new_targets: Array[Node]) -> CardResolvedTargetView:
 	var result := CardResolvedTargetView.new()
-	if new_targets == null or new_targets.is_empty() or card_data == null or api == null:
+	if card_data == null or api == null:
 		return result
 
 	var player_id := _player_id()
+	var valid_ids := CardTargeting.get_valid_targets(card_data, player_id, api)
 
 	match card_data.target_type:
 		CardData.TargetType.SELF:
-			if player_id > 0:
-				result.target_ids.append(player_id)
-				var pv = battle_view.get_combatant(player_id) if battle_view != null else null
+			for id in valid_ids:
+				var cid := int(id)
+				result.target_ids.append(cid)
+				var pv = battle_view.get_combatant(cid) if battle_view != null else null
 				if pv != null:
 					result.views.append(pv)
 
 		CardData.TargetType.BATTLEFIELD:
+			if new_targets == null or new_targets.is_empty():
+				return result
 			result.areas.clear()
 			for t in new_targets:
 				if t is CombatantAreaLeft or t is BattleSceneAreaLeft:
@@ -301,15 +305,16 @@ func resolve_targets(new_targets: Array[Node]) -> CardResolvedTargetView:
 			result.insert_index = new_targets.size() - 1
 
 		CardData.TargetType.ALLY_OR_SELF, CardData.TargetType.ALLY, CardData.TargetType.SINGLE_ENEMY:
+			if new_targets == null or new_targets.is_empty():
+				return result
 			if new_targets[0] is CombatantTargetArea:
 				var ta := new_targets[0] as CombatantTargetArea
-				if ta.combatant_view != null and ta.cid > 0:
+				if ta.combatant_view != null and valid_ids.has(int(ta.cid)):
 					result.views = [ta.combatant_view]
 					result.target_ids = PackedInt32Array([int(ta.cid)])
 
 		CardData.TargetType.ALL_ENEMIES:
-			var ids := api.get_combatants_in_group(1, false)
-			for id in ids:
+			for id in valid_ids:
 				var cid := int(id)
 				result.target_ids.append(cid)
 				var v = battle_view.get_combatant(cid) if battle_view != null else null
@@ -317,22 +322,12 @@ func resolve_targets(new_targets: Array[Node]) -> CardResolvedTargetView:
 					result.views.append(v)
 
 		CardData.TargetType.EVERYONE:
-			var ids0 := api.get_combatants_in_group(0, false)
-			var ids1 := api.get_combatants_in_group(1, false)
-
-			for id in ids0:
+			for id in valid_ids:
 				var cid := int(id)
 				result.target_ids.append(cid)
-				var v0 = battle_view.get_combatant(cid) if battle_view != null else null
-				if v0 != null:
-					result.views.append(v0)
-
-			for id in ids1:
-				var cid := int(id)
-				result.target_ids.append(cid)
-				var v1 = battle_view.get_combatant(cid) if battle_view != null else null
-				if v1 != null:
-					result.views.append(v1)
+				var v = battle_view.get_combatant(cid) if battle_view != null else null
+				if v != null:
+					result.views.append(v)
 
 	return result
 
