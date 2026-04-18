@@ -13,7 +13,7 @@ enum TargetType {
 	SELF,
 	BATTLEFIELD,
 	ALLY_OR_SELF,
-	ALLY,
+	ALLY, # Serialized value 3 in .tres files (e.g. Crystal Barrier target_type = 3)
 	SINGLE_ENEMY,
 	ALL_ENEMIES,
 	EVERYONE

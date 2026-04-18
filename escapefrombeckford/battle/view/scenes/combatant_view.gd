@@ -241,16 +241,14 @@ func _on_target_area_area_entered(area: Area2D) -> void:
 	if area is not CardTargetSelectorArea:
 		return
 
-	match area.card_target_selector.current_card.card_data.target_type:
-		CardData.TargetType.ALLY_OR_SELF:
-			if type == Type.ALLY or type == Type.PLAYER:
-				show_targeted_arrow(true)
-		CardData.TargetType.ALLY:
-			if type == Type.ALLY:
-				show_targeted_arrow(true)
-		CardData.TargetType.SINGLE_ENEMY:
-			if type == Type.ENEMY:
-				show_targeted_arrow(true)
+	var selector := area.card_target_selector
+	if selector == null or selector.current_card == null or selector.current_card.card_data == null:
+		return
+	if selector.current_card.api == null:
+		return
+
+	var actor_id := int(selector.current_card.api.get_player_id())
+	show_targeted_arrow(CardTargeting.is_valid_target(selector.current_card.card_data, actor_id, int(cid), selector.current_card.api))
 
 
 func _on_target_area_area_exited(_area: Area2D) -> void:

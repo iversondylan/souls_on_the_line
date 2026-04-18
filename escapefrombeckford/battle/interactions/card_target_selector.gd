@@ -75,6 +75,8 @@ func _on_area_2d_area_entered(area: Area2D) -> void:
 	#print("card_target_selector.gd _on_area_2d_area_entered()")
 	if !current_card or !targeting:
 		return
+	if !_is_valid_target_area(area):
+		return
 	
 	if not current_card.targets.has(area):
 		
@@ -123,3 +125,19 @@ func _update_battlefield_arrow():
 	var insert_index := slot_targets.size() - 1
 	var pos := current_card.battle_view.get_summon_slot_position(0, insert_index)
 	current_card.battle_view.target_arrow.show_at(pos)
+
+func _is_valid_target_area(area: Area2D) -> bool:
+	if current_card == null or current_card.card_data == null:
+		return false
+
+	if current_card.card_data.target_type == CardData.TargetType.BATTLEFIELD:
+		return area is CombatantAreaLeft or area is BattleSceneAreaLeft
+
+	if area is not CombatantTargetArea:
+		return false
+	if current_card.api == null:
+		return false
+
+	var actor_id := int(current_card.api.get_player_id())
+	var target_id := int((area as CombatantTargetArea).cid)
+	return CardTargeting.is_valid_target(current_card.card_data, actor_id, target_id, current_card.api)
