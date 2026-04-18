@@ -5,7 +5,6 @@ class_name StatusDisplay extends Control
 @export var status: Status : set = _set_status
 
 @onready var icon: TextureRect = $Icon
-@onready var duration: Label = $Duration
 @onready var stacks: Label = $Stacks
 
 var intensity: int = 0
@@ -39,16 +38,15 @@ func _refresh_display() -> void:
 		return
 
 	icon.texture = status.icon
-	duration.visible = status.number_display_type == Status.NumberDisplayType.DURATION
-	stacks.visible = status.number_display_type == Status.NumberDisplayType.INTENSITY
+	stacks.visible = status.number_display_type != Status.NumberDisplayType.NONE
 	custom_minimum_size = icon.size
 
-	duration.text = str(turns_duration)
-	stacks.text = str(intensity)
+	if status.number_display_type == Status.NumberDisplayType.DURATION:
+		stacks.text = str(turns_duration)
+	elif status.number_display_type == Status.NumberDisplayType.INTENSITY:
+		stacks.text = str(intensity)
 
-	if duration.visible:
-		custom_minimum_size = duration.size + duration.position
-	elif stacks.visible:
+	if stacks.visible:
 		custom_minimum_size = stacks.size + stacks.position
 
 	_refresh_pending_pulse()
@@ -73,16 +71,16 @@ func _set_status_parent(new_status_parent: CombatantView) -> void:
 	if status != null:
 		status.status_parent = status_parent
 
-func _on_mouse_entered() -> void:
+func _on_icon_mouse_entered() -> void:
 	if status == null:
 		return
 
 	var request := TooltipRequest.new()
-	request.anchor_rect = get_global_rect()
+	request.anchor_rect = icon.get_global_rect()
 	request.icon_uid = status.icon.resource_path if status.icon != null else ""
 	request.text_bbcode = status.get_tooltip(intensity, turns_duration)
 	request.preferred_side = TooltipRequest.PreferredSide.ABOVE
 	Events.tooltip_show_requested.emit(request)
 
-func _on_mouse_exited() -> void:
+func _on_icon_mouse_exited() -> void:
 	Events.tooltip_hide_requested.emit()
