@@ -4,12 +4,11 @@ class_name StatusViewGrid extends VBoxContainer
 
 const STATUS_DISPLAY_SCN := preload("uid://cd15ukicbp7fj")
 const STATUS_ROW_SCN := preload("res://battle/view/scenes/status_view_row.tscn")
-const MAX_PER_ROW := 6
-const STATUS_SLOT_WIDTH := 68.0
-const STATUS_ROW_HEIGHT := 68.0
+const MAX_PER_ROW := 4
 const ROW_H_SEPARATION := 4
 const ROW_V_SEPARATION := 2
-const FIXED_ROW_WIDTH := (STATUS_SLOT_WIDTH * MAX_PER_ROW) + (ROW_H_SEPARATION * (MAX_PER_ROW - 1))
+
+@export var icon_size: float = 50.0 : set = _set_icon_size, get = _get_icon_size
 
 # lane-key -> StatusDisplay
 var _displays_by_id: Dictionary = {}
@@ -20,15 +19,32 @@ var _states_by_id: Dictionary = {}
 var _rows: Array[HBoxContainer] = []
 var _owner_cid: int = 0
 var _catalog: StatusCatalog = null
+var _icon_size: float = 50.0
 
 func _ready() -> void:
 	add_theme_constant_override("separation", ROW_V_SEPARATION)
+	_apply_icon_size_to_displays()
 	_ensure_min_row_count(1)
 	_rebuild_rows()
 
 func bind(owner_cid: int, catalog: StatusCatalog) -> void:
 	_owner_cid = owner_cid
 	_catalog = catalog
+
+func _set_icon_size(new_icon_size: float) -> void:
+	_icon_size = maxf(new_icon_size, 1.0)
+	if !is_node_ready():
+		return
+
+	_apply_icon_size_to_displays()
+	for row in _rows:
+		if row == null or !is_instance_valid(row):
+			continue
+		_configure_row(row)
+	_rebuild_rows()
+
+func _get_icon_size() -> float:
+	return _icon_size
 
 func apply_status(order: StatusAppliedOrder) -> void:
 	if order == null:
@@ -138,6 +154,7 @@ func _add_or_update_display_from_state(st: Dictionary, _duration: float) -> void
 
 	var intensity := int(st.get("intensity", 1))
 	var dur := int(st.get("duration", 0))
+	d.set_icon_size(icon_size)
 	d.set_status_state(proto, intensity, dur, pending)
 
 func _remove_display(id: String, duration: float) -> void:
@@ -219,7 +236,7 @@ func _trim_row_count(count: int) -> void:
 		row.queue_free()
 
 func _configure_row(row: HBoxContainer) -> void:
-	row.custom_minimum_size = Vector2(FIXED_ROW_WIDTH, STATUS_ROW_HEIGHT)
+	row.custom_minimum_size = Vector2(_get_fixed_row_width(), _get_row_height())
 	row.size_flags_horizontal = Control.SIZE_FILL
 	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	row.alignment = BoxContainer.ALIGNMENT_CENTER
@@ -227,10 +244,22 @@ func _configure_row(row: HBoxContainer) -> void:
 
 func _update_visuals(row_count: int) -> void:
 	var visual_rows := maxi(row_count, 1)
-	var total_height := (STATUS_ROW_HEIGHT * visual_rows) + (ROW_V_SEPARATION * maxi(visual_rows - 1, 0))
-	custom_minimum_size = Vector2(FIXED_ROW_WIDTH, total_height)
+	var total_height := (_get_row_height() * visual_rows) + (ROW_V_SEPARATION * maxi(visual_rows - 1, 0))
+	custom_minimum_size = Vector2(_get_fixed_row_width(), total_height)
 	size = custom_minimum_size
 	position.x = -0.5 * size.x
+
+func _apply_icon_size_to_displays() -> void:
+	for d in _displays_by_id.values():
+		if d == null or !is_instance_valid(d):
+			continue
+		d.set_icon_size(icon_size)
+
+func _get_row_height() -> float:
+	return icon_size
+
+func _get_fixed_row_width() -> float:
+	return (icon_size * MAX_PER_ROW) + (ROW_H_SEPARATION * (MAX_PER_ROW - 1))
 
 func get_all_statuses() -> Array[StatusDisplay]:
 	var out: Array[StatusDisplay] = []
