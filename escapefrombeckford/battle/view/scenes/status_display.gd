@@ -45,8 +45,6 @@ func _refresh_display() -> void:
 		stacks.text = str(turns_duration)
 	elif status.number_display_type == Status.NumberDisplayType.INTENSITY:
 		stacks.text = str(intensity)
-	else:
-		stacks.text = ""
 
 	if stacks.visible:
 		custom_minimum_size = stacks.size + stacks.position
