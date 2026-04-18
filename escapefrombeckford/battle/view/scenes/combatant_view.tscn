@@ -8,7 +8,7 @@
 [ext_resource type="Texture2D" uid="uid://wmwqkwmui7i4" path="res://_assets/sprites/assorted/scythe.png" id="6_a06qq"]
 [ext_resource type="PackedScene" uid="uid://dmw6560cffget" path="res://battle/ui/intent_container.tscn" id="7_jjk4u"]
 [ext_resource type="Script" uid="uid://c0eafxkkyruv0" path="res://battle/view/scenes/combatant_area_left.gd" id="8_c8m2s"]
-[ext_resource type="PackedScene" uid="uid://b5kimimy0ccq0" path="res://ui/health_bar.tscn" id="9_lwd22"]
+[ext_resource type="PackedScene" path="res://battle/ui/combatant_health_bar.tscn" id="9_lwd22"]
 [ext_resource type="Script" uid="uid://dvv1xhy7j1pvq" path="res://battle/view/operators/status_view_grid.gd" id="12_rluy7"]
 [ext_resource type="PackedScene" uid="uid://irmwnd5ss87g" path="res://battle/view/scenes/combat_preview_overlay.tscn" id="13_odn20"]
 

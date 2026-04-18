@@ -4,13 +4,14 @@ class_name SoulSlotButton extends Button
 @export var caption_text: String = "" : set = set_caption_text
 @export var button_minimum_size: Vector2 = Vector2(275, 426) : set = set_button_minimum_size
 @export var card_size: Vector2 = Vector2(275, 370) : set = set_card_size
-@export_range(0, 128, 1) var label_min_height: int = 28 : set = set_label_min_height
-@export_range(0, 64, 1) var content_separation: int = 6 : set = set_content_separation
-@export_range(0, 64, 1) var label_font_size: int = 24 : set = set_label_font_size
-@export_range(0, 64, 1) var content_margin_left: int = 0 : set = set_content_margin_left
-@export_range(0, 64, 1) var content_margin_top: int = 8 : set = set_content_margin_top
-@export_range(0, 64, 1) var content_margin_right: int = 0 : set = set_content_margin_right
-@export_range(0, 64, 1) var content_margin_bottom: int = 14 : set = set_content_margin_bottom
+
+#@export_range(0, 128, 1) var label_min_height: int = 28 : set = set_label_min_height
+#@export_range(0, 64, 1) var content_separation: int = 6 : set = set_content_separation
+#@export_range(0, 64, 1) var label_font_size: int = 24 : set = set_label_font_size
+#@export_range(0, 64, 1) var content_margin_left: int = 0 : set = set_content_margin_left
+#@export_range(0, 64, 1) var content_margin_top: int = 8 : set = set_content_margin_top
+#@export_range(0, 64, 1) var content_margin_right: int = 0 : set = set_content_margin_right
+#@export_range(0, 64, 1) var content_margin_bottom: int = 14 : set = set_content_margin_bottom
 
 @onready var margin_container: MarginContainer = $MarginContainer
 @onready var content: VBoxContainer = $MarginContainer/Content
@@ -56,58 +57,58 @@ func set_card_size(new_size: Vector2) -> void:
 		_apply_layout()
 
 
-func set_label_min_height(new_height: int) -> void:
-	label_min_height = maxi(new_height, 0)
-	if is_node_ready():
-		_apply_layout()
-
-
-func set_content_separation(new_separation: int) -> void:
-	content_separation = maxi(new_separation, 0)
-	if is_node_ready():
-		_apply_layout()
-
-
-func set_label_font_size(new_font_size: int) -> void:
-	label_font_size = maxi(new_font_size, 1)
-	if is_node_ready():
-		_apply_layout()
-
-
-func set_content_margin_left(new_margin: int) -> void:
-	content_margin_left = maxi(new_margin, 0)
-	if is_node_ready():
-		_apply_layout()
-
-
-func set_content_margin_top(new_margin: int) -> void:
-	content_margin_top = maxi(new_margin, 0)
-	if is_node_ready():
-		_apply_layout()
-
-
-func set_content_margin_right(new_margin: int) -> void:
-	content_margin_right = maxi(new_margin, 0)
-	if is_node_ready():
-		_apply_layout()
-
-
-func set_content_margin_bottom(new_margin: int) -> void:
-	content_margin_bottom = maxi(new_margin, 0)
-	if is_node_ready():
-		_apply_layout()
+#func set_label_min_height(new_height: int) -> void:
+	#label_min_height = maxi(new_height, 0)
+	#if is_node_ready():
+		#_apply_layout()
+#
+#
+#func set_content_separation(new_separation: int) -> void:
+	#content_separation = maxi(new_separation, 0)
+	#if is_node_ready():
+		#_apply_layout()
+#
+#
+#func set_label_font_size(new_font_size: int) -> void:
+	#label_font_size = maxi(new_font_size, 1)
+	#if is_node_ready():
+		#_apply_layout()
+#
+#
+#func set_content_margin_left(new_margin: int) -> void:
+	#content_margin_left = maxi(new_margin, 0)
+	#if is_node_ready():
+		#_apply_layout()
+#
+#
+#func set_content_margin_top(new_margin: int) -> void:
+	#content_margin_top = maxi(new_margin, 0)
+	#if is_node_ready():
+		#_apply_layout()
+#
+#
+#func set_content_margin_right(new_margin: int) -> void:
+	#content_margin_right = maxi(new_margin, 0)
+	#if is_node_ready():
+		#_apply_layout()
+#
+#
+#func set_content_margin_bottom(new_margin: int) -> void:
+	#content_margin_bottom = maxi(new_margin, 0)
+	#if is_node_ready():
+		#_apply_layout()
 
 
 func _apply_layout() -> void:
 	custom_minimum_size = button_minimum_size
-	card_wrapper.custom_minimum_size = card_size #Invalid assignment of property or key 'custom_minimum_size' with value of type 'Vector2' on a base object of type 'null instance'.
-	caption_label.custom_minimum_size = Vector2(0, label_min_height)
-	caption_label.add_theme_font_size_override("font_size", label_font_size)
-	content.add_theme_constant_override("separation", content_separation)
-	margin_container.add_theme_constant_override("margin_left", content_margin_left)
-	margin_container.add_theme_constant_override("margin_top", content_margin_top)
-	margin_container.add_theme_constant_override("margin_right", content_margin_right)
-	margin_container.add_theme_constant_override("margin_bottom", content_margin_bottom)
+	card_wrapper.custom_minimum_size = card_size
+	#caption_label.custom_minimum_size = Vector2(0, label_min_height)
+	#caption_label.add_theme_font_size_override("font_size", label_font_size)
+	#content.add_theme_constant_override("separation", content_separation)
+	#margin_container.add_theme_constant_override("margin_left", content_margin_left)
+	#margin_container.add_theme_constant_override("margin_top", content_margin_top)
+	#margin_container.add_theme_constant_override("margin_right", content_margin_right)
+	#margin_container.add_theme_constant_override("margin_bottom", content_margin_bottom)
 
 
 func _apply_content() -> void:

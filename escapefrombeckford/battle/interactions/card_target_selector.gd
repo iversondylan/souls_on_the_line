@@ -26,7 +26,7 @@ func _process(_delta: float) -> void:
 
 func _get_points() -> Array:
 	var points := []
-	var start := current_card.global_position
+	var start := current_card.global_position #Invalid access to property or key 'global_position' on a base object of type 'previously freed'.
 	#start.x += (current_card.size.x /2)
 	var target := get_local_mouse_position()
 	var distance := (target - start)

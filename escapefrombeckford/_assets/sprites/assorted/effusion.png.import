@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bkxkseqjc0dl0"
-path="res://.godot/imported/soul.png-915d402d7e73bf0a2a2fd7fd6082add4.ctex"
+uid="uid://6wrtxisfr522"
+path="res://.godot/imported/effusion.png-f592b0dced63f17d65430c2dabab5358.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://_assets/sprites/assorted/soul.png"
-dest_files=["res://.godot/imported/soul.png-915d402d7e73bf0a2a2fd7fd6082add4.ctex"]
+source_file="res://_assets/sprites/assorted/effusion.png"
+dest_files=["res://.godot/imported/effusion.png-f592b0dced63f17d65430c2dabab5358.ctex"]
 
 [params]
 

@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="CombatantData" format=3]
+
+[ext_resource type="Script" uid="uid://cfatj0ryn8uv3" path="res://combatants/combatant_data.gd" id="1_data_script"]
+[ext_resource type="Resource" uid="uid://dueva43wmh3no" path="res://combatants/souls/BasicClone/basic_clone_ai_profile.tres" id="2_ai"]
+
+[resource]
+script = ExtResource("1_data_script")
+name = "Acidic Ooze"
+description = "4/3 ally with Exit Strike 4."
+character_art_uid = "res://_assets/sprites/assorted/grasping-slug.png"
+portrait_art_uid = "res://_assets/sprites/assorted/grasping-slug.png"
+height = 140
+max_health = 3
+ap = 4
+ai = ExtResource("2_ai")
+metadata/_custom_type_script = "uid://cfatj0ryn8uv3"

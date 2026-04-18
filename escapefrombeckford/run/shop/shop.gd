@@ -4,6 +4,7 @@ const SHOP_CARD_SCN = preload("uid://bsiw7kxq3vytd")
 const SHOP_ARCANUM_SCN = preload("uid://6rwtjllgr66t")
 const CARD_SELECTION_OVERLAY := preload("res://run/ui/card_selection_overlay.tscn")
 const CONFIRMATION_PROMPT_SCN := preload("res://ui/confirmation_prompt.tscn")
+const SHOP_GRID_COLUMNS := 3
 
 @export var shop_arcana: Arcana
 @export var player_data: PlayerData
@@ -11,8 +12,9 @@ const CONFIRMATION_PROMPT_SCN := preload("res://ui/confirmation_prompt.tscn")
 var arcana_system: ArcanaSystem
 var arcana_system_container: ArcanaSystemContainer
 
-@onready var card_container: HBoxContainer = %Cards
-@onready var arcanum_container: HBoxContainer = %Arcana
+@onready var ui_layer: CanvasLayer = %UILayer
+@onready var card_container: GridContainer = %Cards
+@onready var arcanum_container: GridContainer = %Arcana
 @onready var shopkeeper_animation: AnimationPlayer = %ShopkeeperAnimation
 @onready var blink_timer: Timer = %BlinkTimer
 @onready var card_tooltip_popup: CardTooltipPopup = %CardTooltipPopup
@@ -106,9 +108,8 @@ func _build_shop_card_offers() -> Array[CardData]:
 	return shop_cards
 
 func _populate_shop_cards(shop_cards: Array[CardData], costs: Array[int] = [], claimed_indices: Array[int] = []) -> void:
+	card_container.columns = SHOP_GRID_COLUMNS
 	for i in range(shop_cards.size()):
-		if claimed_indices.has(i):
-			continue
 		var card_data: CardData = shop_cards[i]
 		var new_shop_card := SHOP_CARD_SCN.instantiate() as ShopCard
 		card_container.add_child(new_shop_card)
@@ -117,7 +118,9 @@ func _populate_shop_cards(shop_cards: Array[CardData], costs: Array[int] = [], c
 		var cost := costs[i] if i < costs.size() else 100
 		new_shop_card.original_gold_cost = cost
 		new_shop_card.gold_cost = cost
-		new_shop_card.current_menu_card.tooltip_requested.connect(card_tooltip_popup.show_tooltip)
+		new_shop_card.set_claimed(claimed_indices.has(i))
+		if new_shop_card.current_menu_card != null:
+			new_shop_card.current_menu_card.tooltip_requested.connect(card_tooltip_popup.show_tooltip)
 		new_shop_card.update(run_state)
 
 func _build_shop_arcanum_offers() -> Array[Arcanum]:
@@ -137,9 +140,8 @@ func _build_shop_arcanum_offers() -> Array[Arcanum]:
 	return eligible_arcana.slice(0, 3)
 
 func _populate_shop_arcana(shop_arcana: Array[Arcanum], costs: Array[int] = [], claimed_indices: Array[int] = []) -> void:
+	arcanum_container.columns = SHOP_GRID_COLUMNS
 	for i in range(shop_arcana.size()):
-		if claimed_indices.has(i):
-			continue
 		var arcanum: Arcanum = shop_arcana[i]
 		var shop_arcanum := SHOP_ARCANUM_SCN.instantiate() as ShopArcanum
 		arcanum_container.add_child(shop_arcanum)
@@ -148,12 +150,15 @@ func _populate_shop_arcana(shop_arcana: Array[Arcanum], costs: Array[int] = [], 
 		var cost := costs[i] if i < costs.size() else 100
 		shop_arcanum.original_gold_cost = cost
 		shop_arcanum.gold_cost = cost
+		shop_arcanum.set_claimed(claimed_indices.has(i))
 		shop_arcanum.update(run_state)
 
 func _update_items() -> void:
 	for shop_arcanum: ShopArcanum in arcanum_container.get_children():
+		shop_arcanum.set_claimed(_is_arcanum_offer_claimed(shop_arcanum.offer_index))
 		shop_arcanum.update(run_state)
 	for shop_card: ShopCard in card_container.get_children():
+		shop_card.set_claimed(_is_card_offer_claimed(shop_card.offer_index))
 		shop_card.update(run_state)
 
 func _on_back_button_pressed() -> void:
@@ -162,7 +167,10 @@ func _on_back_button_pressed() -> void:
 func _on_shop_card_bought(card_data: CardData, gold_cost: int, offer_index: int) -> void:
 	if card_data == null or run_state == null or run_state.run_deck == null:
 		return
+	if _is_card_offer_claimed(offer_index):
+		return
 	if card_data.is_soulbound_slot_card() and run_state.run_deck.has_soulbound_roster_enabled():
+		_pending_shop_slot_index = -1
 		_pending_shop_card = card_data
 		_pending_shop_gold_cost = gold_cost
 		_pending_shop_offer_index = offer_index
@@ -177,7 +185,7 @@ func _on_shop_card_bought(card_data: CardData, gold_cost: int, offer_index: int)
 		run._persist_active_run()
 
 func _on_shop_arcanum_bought(arcanum: Arcanum, gold_cost: int, offer_index: int) -> void:
-	if arcana_system_container == null:
+	if arcana_system_container == null or run_state == null or _is_arcanum_offer_claimed(offer_index):
 		return
 	arcana_system_container.add_arcanum(arcanum)
 	run_state.gold -= gold_cost
@@ -210,7 +218,7 @@ func _build_confirm_dialog() -> void:
 		return
 	_confirm_dialog.confirmed.connect(_confirm_shop_soulbound_purchase)
 	_confirm_dialog.canceled.connect(_clear_pending_shop_purchase)
-	add_child(_confirm_dialog)
+	_get_modal_parent().add_child(_confirm_dialog)
 
 
 func _show_soulbound_slot_overlay() -> void:
@@ -219,7 +227,7 @@ func _show_soulbound_slot_overlay() -> void:
 	if is_instance_valid(_slot_replace_overlay):
 		_slot_replace_overlay.queue_free()
 	_slot_replace_overlay = CARD_SELECTION_OVERLAY.instantiate() as CardSelectionOverlay
-	add_child(_slot_replace_overlay)
+	_get_modal_parent().add_child(_slot_replace_overlay)
 	_slot_replace_overlay.selection_confirmed.connect(_on_shop_slot_selected)
 	_slot_replace_overlay.selection_canceled.connect(_on_shop_slot_selection_canceled)
 	_slot_replace_overlay.tree_exited.connect(_on_shop_slot_overlay_exited)
@@ -259,6 +267,7 @@ func _confirm_shop_soulbound_purchase() -> void:
 	if run_state == null or run_state.run_deck == null or _pending_shop_card == null or _pending_shop_slot_index < 0:
 		return
 	if !run_state.run_deck.replace_soulbound_slot(_pending_shop_slot_index, _pending_shop_card):
+		_clear_pending_shop_purchase()
 		return
 	run_state.gold -= _pending_shop_gold_cost
 	if !run_state.pending_shop_claimed_card_offer_indices.has(_pending_shop_offer_index):
@@ -289,3 +298,15 @@ func _find_soulbound_slot_index(slot_card: CardData) -> int:
 		if String(current.uid) == String(slot_card.uid):
 			return slot_index
 	return -1
+
+
+func _is_card_offer_claimed(offer_index: int) -> bool:
+	return run_state != null and run_state.pending_shop_claimed_card_offer_indices.has(offer_index)
+
+
+func _is_arcanum_offer_claimed(offer_index: int) -> bool:
+	return run_state != null and run_state.pending_shop_claimed_arcanum_offer_indices.has(offer_index)
+
+
+func _get_modal_parent() -> Node:
+	return ui_layer if ui_layer != null else self

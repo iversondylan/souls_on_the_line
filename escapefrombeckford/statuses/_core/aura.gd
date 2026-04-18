@@ -23,6 +23,8 @@ func affects_target(state: BattleState, source_id: int, target_id: int) -> bool:
 	var target := state.get_unit(target_id)
 	if source == null or target == null:
 		return false
+	if int(target.mortality) == int(CombatantState.Mortality.HOLLOW):
+		return false
 
 	match int(aura_type):
 		AuraType.ALLIES:

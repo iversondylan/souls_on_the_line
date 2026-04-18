@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="CreativePotencyStatus" format=3 uid="uid://ccdod2y1rngoo"]
 
 [ext_resource type="Script" uid="uid://bmf4r7n4ul1ot" path="res://statuses/creative_potency.gd" id="1_creative_potency_script"]
-[ext_resource type="Texture2D" uid="uid://bkxkseqjc0dl0" path="res://_assets/sprites/assorted/soul.png" id="2_creative_potency_icon"]
+[ext_resource type="Texture2D" uid="uid://bkxkseqjc0dl0" path="res://_assets/sprites/assorted/soul_bound.png" id="2_creative_potency_icon"]
 
 [resource]
 script = ExtResource("1_creative_potency_script")

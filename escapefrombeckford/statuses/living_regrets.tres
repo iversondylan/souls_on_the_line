@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="LivingRegretsStatus" format=3]
+
+[ext_resource type="Texture2D" path="res://_assets/sprites/card_elements/wrathful_intent/reaper1.png" id="1_living_regrets_icon"]
+[ext_resource type="Script" path="res://statuses/living_regrets.gd" id="2_living_regrets_script"]
+[ext_resource type="Script" uid="uid://cueedkb1u8vxy" path="res://statuses/_core/status.gd" id="3_status"]
+[ext_resource type="Resource" path="res://statuses/regretful_shade.tres" id="4_regretful_shade"]
+
+[resource]
+script = ExtResource("2_living_regrets_script")
+projected_statuses = Array[ExtResource("3_status")]([ExtResource("4_regretful_shade")])
+status_name = "Living Regrets"
+number_display_type = 1
+icon = ExtResource("1_living_regrets_icon")
+tooltip = "Other allies gain On Death: summon a Small, Fleeting 1/1 Regretful Shade."
+metadata/_custom_type_script = "uid://cueedkb1u8vxy"

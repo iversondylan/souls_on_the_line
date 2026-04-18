@@ -225,6 +225,8 @@ func _on_battle_entered(room: Room) -> void:
 
 
 func _on_battle_entered_with_seed(room: Room, existing_battle_seed: int = -1) -> void:
+	if !_ensure_room_entry_allowed(room, "_on_battle_entered_with_seed"):
+		return
 	_assign_battle_to_room_if_needed(room)
 	var label := "room:%d:%d:battle_seed" % [room.row, room.column]
 	var battle_seed := int(existing_battle_seed)
@@ -264,6 +266,8 @@ func _start_direct_battle(selected_battle_data: BattleData, seed_label: String) 
 	battle_scn.start_battle()
 
 func _on_rest_site_entered(room: Room = map.last_room) -> void:
+	if !_ensure_room_entry_allowed(room, "_on_rest_site_entered"):
+		return
 	map.set_active_room(room)
 	_set_location_for_room(room)
 	if int(run_state.pending_room_seed) == 0:
@@ -273,6 +277,8 @@ func _on_rest_site_entered(room: Room = map.last_room) -> void:
 	campfire.configure(run_state, profile_data, run_deck)
 
 func _on_shop_entered(room: Room = map.last_room) -> void:
+	if !_ensure_room_entry_allowed(room, "_on_shop_entered"):
+		return
 	map.set_active_room(room)
 	_set_location_for_room(room)
 	_build_pending_shop_checkpoint(room)
@@ -298,6 +304,8 @@ func _on_battle_won() -> void:
 	_open_pending_reward_screen()
 
 func _on_treasure_room_entered(room: Room = map.last_room) -> void:
+	if !_ensure_room_entry_allowed(room, "_on_treasure_room_entered"):
+		return
 	map.set_active_room(room)
 	_set_location_for_room(room)
 	_build_pending_treasure_checkpoint(room)
@@ -314,6 +322,8 @@ func _on_treasure_room_exited(arcanum: Arcanum) -> void:
 	_open_pending_reward_screen()
 
 func _on_map_exited(room: Room) -> void:
+	if !_ensure_room_entry_allowed(room, "_on_map_exited"):
+		return
 	match room.type:
 		Room.RoomType.BATTLE:
 			_on_battle_entered(room)
@@ -852,6 +862,38 @@ func _record_cleared_room(room: Room) -> void:
 	if run_state.cleared_room_coords.has(coord):
 		return
 	run_state.cleared_room_coords.append(coord)
+
+
+func _get_room_coord(room: Room) -> Vector2i:
+	if room == null:
+		return Vector2i(-1, -1)
+	return Vector2i(int(room.column), int(room.row))
+
+
+func _is_room_cleared(room: Room) -> bool:
+	if run_state == null or room == null:
+		return false
+	return run_state.cleared_room_coords.has(_get_room_coord(room))
+
+
+func _is_pending_room_resume(room: Room) -> bool:
+	if run_state == null or room == null:
+		return false
+	if int(run_state.location_kind) == int(RunState.LocationKind.MAP):
+		return false
+	return run_state.pending_room_coord == _get_room_coord(room)
+
+
+func _ensure_room_entry_allowed(room: Room, source: String) -> bool:
+	if room == null:
+		push_warning("Run.%s(): attempted to enter a null room." % source)
+		_show_map()
+		return false
+	if _is_room_cleared(room) and !_is_pending_room_resume(room):
+		push_warning("Run.%s(): rejected re-entry into cleared room at (%d,%d)." % [source, room.column, room.row])
+		_show_map()
+		return false
+	return true
 
 
 func _complete_pending_room_if_any() -> void:

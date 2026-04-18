@@ -21,7 +21,7 @@ func open(dialogue_text: String, confirm_text: String = "Confirm", cancel_text: 
 	cancel_button.text = cancel_text
 	_set_buttons_enabled(true)
 	visible = true
-	call_deferred("_focus_confirm_button")
+	#call_deferred("_focus_confirm_button")
 
 
 func hide_prompt() -> void:
@@ -37,9 +37,9 @@ func _unhandled_input(event: InputEvent) -> void:
 		_on_cancel_pressed()
 
 
-func _focus_confirm_button() -> void:
-	if visible:
-		confirm_button.grab_focus()
+#func _focus_confirm_button() -> void:
+	#if visible:
+		#confirm_button.grab_focus()
 
 
 func _set_buttons_enabled(enabled: bool) -> void:

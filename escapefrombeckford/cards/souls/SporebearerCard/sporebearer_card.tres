@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="CardData" format=3]
+
+[ext_resource type="Script" uid="uid://wtk5v77fcqvn" path="res://cards/_core/card_action.gd" id="1_card_action"]
+[ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://cards/_core/card_data.gd" id="2_card_data"]
+[ext_resource type="Resource" path="res://cards/souls/SporebearerCard/summon_sporebearer.tres" id="3_summon"]
+[ext_resource type="Resource" path="res://cards/souls/SporebearerCard/explosive_departure_on_summoned_action.tres" id="4_on_summoned"]
+[ext_resource type="Texture2D" path="res://_assets/sprites/assorted/shambling-mound.png" id="5_card_texture"]
+
+[resource]
+script = ExtResource("2_card_data")
+id = &"sporebearer"
+card_type = 1
+target_type = 1
+rarity = 0
+name = "Sporebearer"
+summon_release_overload = 1
+description = "Summon a 3/4 Sporebearer with 3 Explosive Departure."
+cost = 1
+texture = ExtResource("5_card_texture")
+actions = Array[ExtResource("1_card_action")]([ExtResource("3_summon"), ExtResource("4_on_summoned")])
+metadata/_custom_type_script = "uid://d2f0qepe047dc"

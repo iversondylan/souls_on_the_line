@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b1i3rxto6mwol"
-path="res://.godot/imported/soul-vessel.png-a322438fa4c0c076a8f99726a9505f89.ctex"
+uid="uid://bm8kcsb8yv786"
+path="res://.godot/imported/beckford_insig_3.png-f04f519cf42bb27b6194c433751bb560.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://_assets/sprites/assorted/soul-vessel.png"
-dest_files=["res://.godot/imported/soul-vessel.png-a322438fa4c0c076a8f99726a9505f89.ctex"]
+source_file="res://_assets/sprites/card_elements/beckford_insig_3.png"
+dest_files=["res://.godot/imported/beckford_insig_3.png-f04f519cf42bb27b6194c433751bb560.ctex"]
 
 [params]
 

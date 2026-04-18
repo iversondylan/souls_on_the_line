@@ -71,7 +71,7 @@ func _set_font_size(new_size: int) -> void:
 	health_number.add_theme_font_size_override("font_size", font_size)
 	max_health_number.add_theme_font_size_override("font_size", font_size)
 	reset_size()
-	static_height = ceili(size.y)
+	static_height = ceili(size.y + 3)
 	_update_visuals()
 
 func _update_visuals() -> void:

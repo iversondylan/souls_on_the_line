@@ -11,7 +11,8 @@ class_name CardVisuals extends Control
 @onready var name_label: Label = %NameLabel
 @onready var card_art_rect: TextureRect = %CardArtRect
 @onready var description: RichTextLabel = %Description
-@onready var rarity: TextureRect = %Rarity
+@onready var rarity_icon: TextureRect = %RarityIcon
+@onready var card_type_icon: TextureRect = %CardTypeIcon
 @onready var card_strictly_visuals: Node2D = $CardStrictlyVisuals
 @onready var cost_label: Label = $CardStrictlyVisuals/CornerMan/CostDisplay/CostLabel
 @onready var cost_display: Node2D = %CostDisplay
@@ -21,7 +22,7 @@ class_name CardVisuals extends Control
 
 @export var card_name_base_font_size: int = 20
 @export var card_name_min_font_size: int = 6
-@export var card_name_h_padding: float = 0.0
+@export var card_name_h_padding: float = 30
 @export var card_name_use_ellipsis_at_min_size: bool = false
 
 const OVERLOAD_PIP := preload("uid://pe4lgl2dwu32")
@@ -29,6 +30,23 @@ const OVERLOAD_1_COLOR := Color(1.0, 0.88, 0.22, 1.0)
 const OVERLOAD_2_COLOR := Color(1.0, 0.56, 0.12, 1.0)
 const OVERLOAD_3_COLOR := Color(0.9, 0.18, 0.18, 1.0)
 const OVERLOAD_4_PLUS_COLOR := Color(0.45, 0.06, 0.06, 1.0)
+const CARD_TYPE_TEXTURES := {
+	CardData.CardType.CONVOCATION: preload("res://_assets/sprites/assorted/convocation_white.png"),
+	CardData.CardType.SOULBOUND: preload("res://_assets/sprites/assorted/soul_bound_white.png"),
+	CardData.CardType.ENCHANTMENT: preload("res://_assets/sprites/assorted/enchantment_white.png"),
+	CardData.CardType.EFFUSION: preload("res://_assets/sprites/assorted/effusion_white.png"),
+	CardData.CardType.SOULWILD: preload("res://_assets/sprites/assorted/soul_wild_white.png"),
+}
+const RARITY_TEXTURES := {
+	CardData.Rarity.COMMON: preload("res://_assets/sprites/card_elements/beckford_insig_1.png"),
+	CardData.Rarity.UNCOMMON: preload("res://_assets/sprites/card_elements/beckford_insig_2.png"),
+	CardData.Rarity.RARE: preload("res://_assets/sprites/card_elements/beckford_insig_3.png"),
+}
+const RARITY_TINTS := {
+	CardData.Rarity.COMMON: Color(0.338, 0.36, 0.358, 1.0),
+	CardData.Rarity.UNCOMMON: Color(0.049, 0.264, 0.61, 1.0),
+	CardData.Rarity.RARE: Color(0.492, 0.088, 0.562, 1.0),
+}
 
 @export var card_data: CardData : set = _set_card_data
 var cost_red: int = 0 : set = set_cost_red
@@ -74,7 +92,6 @@ func _set_card_data(value: CardData) -> void:
 	_fit_name_label_text()
 	refresh_from_card_data()
 	card_art_rect.texture = value.texture
-	rarity.modulate = CardData.RARITY_COLORS[value.rarity]
 
 func refresh_from_card_data() -> void:
 	if !is_node_ready():
@@ -85,11 +102,18 @@ func refresh_from_card_data() -> void:
 		cost_label.modulate = _default_cost_label_modulate
 		name_label.text = ""
 		_fit_name_label_text()
+		_set_card_type_icon(null)
+		_set_rarity_icon(null, Color.WHITE)
 		return
 
 	_fit_name_label_text()
 	set_overload(int(_card_data_internal.overload))
 	set_total_cost()
+	_set_card_type_icon(CARD_TYPE_TEXTURES.get(_card_data_internal.card_type))
+	_set_rarity_icon(
+		RARITY_TEXTURES.get(_card_data_internal.rarity),
+		RARITY_TINTS.get(_card_data_internal.rarity, Color.WHITE)
+	)
 
 func set_description(new_description: String) -> void:
 	description.set_text(new_description)
@@ -198,6 +222,19 @@ func _refresh_cost_label_color() -> void:
 			cost_label.modulate = OVERLOAD_3_COLOR
 		_:
 			cost_label.modulate = OVERLOAD_4_PLUS_COLOR
+
+func _set_card_type_icon(texture: Texture2D) -> void:
+	if card_type_icon == null:
+		return
+	card_type_icon.texture = texture
+	card_type_icon.visible = texture != null
+
+func _set_rarity_icon(texture: Texture2D, tint: Color) -> void:
+	if rarity_icon == null:
+		return
+	rarity_icon.texture = texture
+	rarity_icon.modulate = tint
+	rarity_icon.visible = texture != null
 
 func _fit_name_label_text() -> void:
 	if name_label == null:

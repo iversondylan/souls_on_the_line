@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="RegretfulShadeStatus" format=3]
+
+[ext_resource type="Script" path="res://statuses/regretful_shade.gd" id="1_regretful_shade_script"]
+[ext_resource type="Texture2D" path="res://_assets/sprites/card_elements/wrathful_intent/shadow.png" id="2_regretful_shade_icon"]
+
+[resource]
+script = ExtResource("1_regretful_shade_script")
+status_name = "Regretful Shade"
+reapply_type = 3
+icon = ExtResource("2_regretful_shade_icon")
+tooltip = "On Death, summon a Small, Fleeting 1/1 Regretful Shade here."

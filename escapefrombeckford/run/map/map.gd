@@ -51,13 +51,15 @@ func create_map() -> void:
 
 func unlock_encounter_column(column_number: int = n_encounters_finished) -> void:
 	for usable_room: UsableRoom in rooms.get_children():
-		if usable_room.room.column == column_number:
-			usable_room.room_available = true
+		if usable_room == null or usable_room.room == null:
+			continue
+		usable_room.room_available = column_number == 0 and is_room_selectable(usable_room.room)
 
 func unlock_next_rooms() -> void:
 	for usable_room: UsableRoom in rooms.get_children():
-		if last_room.next_rooms.has(usable_room.room):
-			usable_room.room_available = true
+		if usable_room == null or usable_room.room == null:
+			continue
+		usable_room.room_available = is_room_selectable(usable_room.room)
 
 func show_map() -> void:
 	show()
@@ -88,12 +90,21 @@ func _draw_lines(room: Room) -> void:
 		lines.add_child(new_map_line)
 
 func _on_usable_room_selected(room: Room) -> void:
+	if !is_room_selectable(room):
+		push_warning("Map._on_usable_room_selected(): rejected invalid room selection at (%d,%d)." % [room.column if room != null else -1, room.row if room != null else -1])
+		if last_room == null or n_encounters_finished <= 0:
+			unlock_encounter_column(0)
+		else:
+			unlock_next_rooms()
+		return
+
 	for usable_room: UsableRoom in rooms.get_children():
-		if usable_room.room.column == room.column:
-			usable_room.room_available = false
+		if usable_room == null:
+			continue
+		usable_room.room_available = false
 	
 	last_room = room
-	n_encounters_finished += 1
+	n_encounters_finished = maxi(n_encounters_finished, int(room.column) + 1)
 	Events.map_exited.emit(room)
 
 
@@ -104,6 +115,18 @@ func get_room_at(column: int, row: int) -> Room:
 	if row < 0 or row >= column_rooms.size():
 		return null
 	return column_rooms[row] as Room
+
+
+func is_room_selectable(room: Room) -> bool:
+	if room == null:
+		return false
+	if int(room.column) < n_encounters_finished:
+		return false
+	if n_encounters_finished <= 0 or last_room == null:
+		return int(room.column) == 0
+	if int(room.column) != int(last_room.column) + 1:
+		return false
+	return last_room.next_rooms.has(room)
 
 
 func set_active_room(room: Room) -> void:
@@ -129,8 +152,9 @@ func restore_progress(cleared_room_coords: Array[Vector2i]) -> void:
 		if room == null:
 			continue
 		room.selected = true
-		last_room = room
-		n_encounters_finished += 1
+		n_encounters_finished = maxi(n_encounters_finished, int(room.column) + 1)
+		if last_room == null or int(room.column) > int(last_room.column):
+			last_room = room
 
 	for usable_room: UsableRoom in rooms.get_children():
 		if usable_room == null or usable_room.room == null:

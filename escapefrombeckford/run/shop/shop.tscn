@@ -97,6 +97,7 @@ unique_name_in_owner = true
 one_shot = true
 
 [node name="UILayer" type="CanvasLayer" parent="." unique_id=1097062020]
+unique_name_in_owner = true
 layer = 2
 
 [node name="Title" type="Label" parent="UILayer" unique_id=1155926028]
@@ -158,10 +159,12 @@ offset_bottom = 396.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="Cards" type="HBoxContainer" parent="UILayer/ShopContent" unique_id=900793701]
+[node name="Cards" type="GridContainer" parent="UILayer/ShopContent" unique_id=900793701]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_constants/separation = 32
+theme_override_constants/h_separation = 32
+theme_override_constants/v_separation = 32
+columns = 3
 
 [node name="ShopCard" parent="UILayer/ShopContent/Cards" unique_id=1034828080 instance=ExtResource("4_ctpgp")]
 layout_mode = 2
@@ -172,10 +175,12 @@ layout_mode = 2
 [node name="ShopCard3" parent="UILayer/ShopContent/Cards" unique_id=1504204823 instance=ExtResource("4_ctpgp")]
 layout_mode = 2
 
-[node name="Arcana" type="HBoxContainer" parent="UILayer/ShopContent" unique_id=517248850]
+[node name="Arcana" type="GridContainer" parent="UILayer/ShopContent" unique_id=517248850]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_constants/separation = 32
+theme_override_constants/h_separation = 32
+theme_override_constants/v_separation = 32
+columns = 3
 
 [node name="ShopArcanum" parent="UILayer/ShopContent/Arcana" unique_id=1391630768 instance=ExtResource("5_ptf86")]
 layout_mode = 2
