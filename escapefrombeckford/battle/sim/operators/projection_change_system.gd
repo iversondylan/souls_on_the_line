@@ -239,6 +239,8 @@ static func _get_arcanum_projection_impact_info(
 
 	var entry: ArcanumEntry = api.state.arcana.get_entry(arcanum_id)
 	var proto: Arcanum = api.state.arcana_catalog.get_proto(arcanum_id)
+	# Arcana only participate in projection cache work when they explicitly project
+	# statuses; interceptor-only arcana are handled by registry interceptor sync alone.
 	if entry == null or proto == null or !proto.affects_others():
 		return ProjectionImpactInfo.new(false, target_ids)
 
