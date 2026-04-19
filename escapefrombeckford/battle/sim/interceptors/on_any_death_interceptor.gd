@@ -1,8 +1,5 @@
 class_name OnAnyDeathInterceptor
-extends "res://battle/sim/interceptors/interceptor.gd"
-
-const InterceptorScript := preload("res://battle/sim/interceptors/interceptor.gd")
-
+extends Interceptor
 
 func _init(
 	_source_kind: StringName = &"",
@@ -12,7 +9,7 @@ func _init(
 	_tid: int = 0,
 	_priority: int = 1
 ) -> void:
-	hook_kind = InterceptorScript.HOOK_ON_ANY_DEATH
+	hook_kind = Interceptor.HOOK_ON_ANY_DEATH
 	source_kind = StringName(_source_kind)
 	source_owner_id = int(_source_owner_id)
 	source_group_index = int(_source_group_index)

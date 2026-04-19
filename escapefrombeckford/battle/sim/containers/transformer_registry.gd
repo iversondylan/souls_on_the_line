@@ -105,7 +105,8 @@ func get_interceptors_for_hook(state, hook_kind: StringName) -> Array[Intercepto
 	# removed per-read cloning here to reduce hot-path allocation pressure. If a caller
 	# must mutate, clone first (for example: interceptors = interceptors.duplicate();
 	# for i in range(interceptors.size()): interceptors[i] = interceptors[i].clone()).
-	var ordered: Array[Interceptor] = _interceptors_by_hook.get(hook_kind, [])
+	var ordered: Array[Interceptor] = [] 
+	ordered.assign(_interceptors_by_hook.get(hook_kind, []))
 	return ordered
 
 
