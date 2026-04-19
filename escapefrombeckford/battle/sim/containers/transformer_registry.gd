@@ -89,6 +89,7 @@ func get_projection_records() -> Array[TransformerRecord]:
 	if !_ordered_projection_cache_valid:
 		_rebuild_projection_cache()
 	# Read-only contract: callers must not mutate this array or contained records.
+	# Mutation here includes replacing elements in the array or editing any record fields.
 	# Violating this contract can corrupt shared cache state. We intentionally removed
 	# per-read cloning here to reduce hot-path allocation pressure. If a caller must
 	# mutate, clone first (for example: records = records.duplicate(); for i in
@@ -99,6 +100,7 @@ func get_projection_records() -> Array[TransformerRecord]:
 func get_interceptors_for_hook(state, hook_kind: StringName) -> Array[Interceptor]:
 	_ensure_interceptor_hook(state, hook_kind)
 	# Read-only contract: callers must not mutate this array or contained interceptors.
+	# Mutation here includes replacing elements in the array or editing interceptor fields.
 	# Violating this contract can corrupt shared hook cache state. We intentionally
 	# removed per-read cloning here to reduce hot-path allocation pressure. If a caller
 	# must mutate, clone first (for example: interceptors = interceptors.duplicate();
