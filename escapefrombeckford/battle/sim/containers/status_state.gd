@@ -98,8 +98,8 @@ func get_projected_dependency_status_ids(source_key: String) -> Array[StringName
 	return _projected_contribution_index.get_dependency_status_ids(source_key)
 
 
-func upsert_projected_source(source_key: String, projected_tokens: Array[StatusToken]) -> Array[StringName]:
-	var affected_ids: Array[StringName] = _projected_contribution_index.replace_source(source_key, projected_tokens)
+func upsert_projected_source(source_key: String, projected_tokens: Array[StatusToken], order_info := {}) -> Array[StringName]:
+	var affected_ids: Array[StringName] = _projected_contribution_index.replace_source(source_key, projected_tokens, order_info)
 	_recompute_projected_bins_for_ids(affected_ids)
 	_projected_cache_ready = true
 	_bump_effective_context_version()

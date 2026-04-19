@@ -4,7 +4,7 @@ class_name BattleState extends RefCounted
 
 const EffectiveStatusContextCacheStore := preload("res://battle/sim/containers/effective_status_context_cache_store.gd")
 const Interceptor := preload("res://battle/sim/interceptors/interceptor.gd")
-const InterceptorBank := preload("res://battle/sim/containers/interceptor_bank.gd")
+const TransformerRegistry := preload("res://battle/sim/containers/transformer_registry.gd")
 const ArcanumEntry := preload("res://battle/sim/containers/arcanum_entry.gd")
 const StatusToken := preload("res://battle/sim/containers/status_token.gd")
 
@@ -21,7 +21,7 @@ var outcome: int = Outcome.NONE
 
 var status_catalog: StatusCatalog
 var arcana_catalog: ArcanaCatalog
-var projection_bank = ProjectionBank.new()
+var transformer_registry: TransformerRegistry = TransformerRegistry.new()
 
 var events: BattleEventLog = BattleEventLog.new()
 
@@ -51,7 +51,7 @@ var resource: ResourceState = ResourceState.new()
 # Derived caches live on the state object so cloned battle states carry their
 # own cache containers instead of sharing API-bound runtime data.
 var _effective_status_context_cache_store: EffectiveStatusContextCacheStore = EffectiveStatusContextCacheStore.new()
-var interceptor_bank: InterceptorBank = InterceptorBank.new()
+
 
 func init(_battle_seed: int, _run_seed: int) -> void:
 	battle_seed = _battle_seed
@@ -69,7 +69,7 @@ func init(_battle_seed: int, _run_seed: int) -> void:
 	resource.hand_mode = ResourceState.HandMode.DISCARD
 	resource.shuffle_mode = ResourceState.ShuffleMode.NORMAL
 	invalidate_effective_status_context_cache()
-	mark_interceptors_dirty(Interceptor.HOOK_ON_ANY_DEATH)
+
 
 func has_terminal_outcome() -> bool:
 	return int(outcome) != int(Outcome.NONE)
@@ -167,15 +167,15 @@ func invalidate_effective_status_context_cache() -> void:
 	_effective_status_context_cache_store.invalidate()
 
 func mark_interceptors_dirty(hook_kind: StringName) -> void:
-	if interceptor_bank == null:
+	if transformer_registry == null:
 		return
-	interceptor_bank.mark_dirty(hook_kind)
+	transformer_registry.mark_interceptor_hook_dirty(hook_kind)
 
 
-func get_interceptors_for_hook_and_group(hook_kind: StringName, group_index: int) -> Array[Interceptor]:
-	if interceptor_bank == null:
+func get_interceptors_for_hook(hook_kind: StringName) -> Array[Interceptor]:
+	if transformer_registry == null:
 		return []
-	return interceptor_bank.get_interceptors_for_hook_and_group(self, hook_kind, group_index)
+	return transformer_registry.get_interceptors_for_hook(self, hook_kind)
 
 func get_front_id(group_index: int) -> int:
 	group_index = clampi(group_index, 0, 1)
@@ -203,11 +203,10 @@ func clone() -> BattleState:
 	b.groups = [groups[0].clone(), groups[1].clone()]
 	b.turn = turn.clone()
 	b.arcana = arcana.clone() if arcana != null else ArcanaState.new()
-	b.projection_bank = projection_bank.clone() if projection_bank != null else ProjectionBank.new()
+	b.transformer_registry = transformer_registry.clone() if transformer_registry != null else TransformerRegistry.new()
 	b.resource = resource.clone()
 	# Effective status contexts carry API references, so clones start with a fresh store.
 	b._effective_status_context_cache_store = EffectiveStatusContextCacheStore.new()
-	b.interceptor_bank = interceptor_bank.clone() if interceptor_bank != null else InterceptorBank.new()
 
 	# Policy: preview clones start with a fresh empty event log.
 	b.events = BattleEventLog.new()

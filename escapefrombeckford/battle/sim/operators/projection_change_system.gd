@@ -4,77 +4,54 @@ class_name ProjectionChangeSystem
 extends RefCounted
 
 const ProjectionImpactInfo := preload("res://battle/sim/containers/projection_impact_info.gd")
-const ProjectionSourceEntry := preload("res://battle/sim/containers/projection_source_entry.gd")
+const TransformerRecord := preload("res://battle/sim/containers/transformer_record.gd")
 
 
-static func untrack_status_aura(
+static func sync_status_source(
 	api: SimBattleAPI,
 	source_owner_id: int,
 	status_id: StringName
 ) -> void:
-	if !_can_use_status_aura_projection_bank(api, source_owner_id, status_id):
+	if !_can_use_transformer_registry(api, source_owner_id, status_id):
 		return
 
-	var bank: ProjectionBank = api.state.projection_bank
-	var impact_info := bank.get_status_aura_impact_info(api.state, source_owner_id, status_id)
-	if !bool(bank.untrack_status_aura(source_owner_id, status_id)):
-		return
+	var registry := api.state.transformer_registry
+	var impact_info := registry.get_projection_impact_info(api.state, source_owner_id, status_id)
+	var should_track := _source_has_live_aura_stack(api, source_owner_id, status_id)
+	var had_projection := bool(
+		registry.has_projection_transformer(
+			TransformerRecord.SOURCE_KIND_STATUS_TOKEN,
+			source_owner_id,
+			status_id
+		)
+	)
+	registry.sync_status_source_transformers(api.state, source_owner_id, status_id)
+	registry.mark_source_dirty(TransformerRecord.SOURCE_KIND_STATUS_TOKEN, source_owner_id, status_id)
 
 	_handle_status_aura_projection_change(
 		api,
 		source_owner_id,
 		impact_info,
-		true,
+		had_projection or should_track or (impact_info != null and impact_info.known),
 		[_make_status_aura_source_key(source_owner_id, status_id)]
 	)
 
 
 static func untrack_auras_from_removed_combatant(api: SimBattleAPI, removed_id: int) -> void:
-	if api == null or api.state == null or api.state.projection_bank == null:
+	if api == null or api.state == null or api.state.transformer_registry == null:
 		return
 	if removed_id <= 0:
 		return
 
-	var bank: ProjectionBank = api.state.projection_bank
-	for entry: ProjectionSourceEntry in bank.get_entries():
-		if entry.source_kind == ProjectionBank.SOURCE_KIND_STATUS_AURA \
-				and int(entry.source_owner_id) == removed_id:
-			untrack_status_aura(
-				api,
-				int(entry.source_owner_id),
-				StringName(entry.source_id)
-			)
+	var source_keys := api.state.transformer_registry.get_projection_source_keys_for_owner(removed_id)
+	for source_key in source_keys:
+		var parts := String(source_key).split("::")
+		if parts.size() < 3:
+			continue
+		sync_status_source(api, removed_id, StringName(parts[2]))
 
 
-static func refresh_status_aura(
-	api: SimBattleAPI,
-	source_owner_id: int,
-	status_id: StringName
-) -> void:
-	if !_can_use_status_aura_projection_bank(api, source_owner_id, status_id):
-		return
-
-	var bank: ProjectionBank = api.state.projection_bank
-	var impact_info := bank.get_status_aura_impact_info(api.state, source_owner_id, status_id)
-	var should_track := _source_has_live_aura_stack(api, source_owner_id, status_id)
-	var had_entry := bool(bank.has_status_aura(source_owner_id, status_id))
-	var changed := false
-
-	if should_track and !had_entry:
-		changed = bool(bank.track_status_aura(source_owner_id, status_id))
-	elif !should_track and had_entry:
-		changed = bool(bank.untrack_status_aura(source_owner_id, status_id))
-
-	_handle_status_aura_projection_change(
-		api,
-		source_owner_id,
-		impact_info,
-		changed or (should_track and impact_info.known),
-		[_make_status_aura_source_key(source_owner_id, status_id)]
-	)
-
-
-static func _can_use_status_aura_projection_bank(
+static func _can_use_transformer_registry(
 	api: SimBattleAPI,
 	source_owner_id: int,
 	status_id: StringName
@@ -82,7 +59,7 @@ static func _can_use_status_aura_projection_bank(
 	return (
 		api != null
 		and api.state != null
-		and api.state.projection_bank != null
+		and api.state.transformer_registry != null
 		and source_owner_id > 0
 		and status_id != &""
 	)
@@ -203,8 +180,8 @@ static func _refresh_projection_source_for_all_units(
 
 
 static func _make_status_aura_source_key(source_owner_id: int, status_id: StringName) -> String:
-	return ProjectionSourceEntry.make_source_key(
-		ProjectionBank.SOURCE_KIND_STATUS_AURA,
+	return TransformerRecord.make_source_key(
+		TransformerRecord.SOURCE_KIND_STATUS_TOKEN,
 		source_owner_id,
 		status_id
 	)

@@ -69,6 +69,8 @@ func set_data(key, value) -> void:
 	if entry == null:
 		return
 	entry.data[key] = value
+	if api != null:
+		api._sync_arcanum_source_transformers(get_arcanum_id())
 
 
 func set_intensity(value: int) -> void:
@@ -107,6 +109,8 @@ func set_stacks(value: int, reason: String = "") -> void:
 			after_stacks,
 			reason
 		)
+	if api != null and before_stacks != after_stacks:
+		api._sync_arcanum_source_transformers(get_arcanum_id())
 
 
 func change_stacks(delta: int, reason: String = "") -> int:

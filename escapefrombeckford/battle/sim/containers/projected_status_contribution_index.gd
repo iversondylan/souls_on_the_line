@@ -4,12 +4,14 @@ class_name ProjectedStatusContributionIndex extends RefCounted
 var _stacks_by_source_key: Dictionary = {}
 var _status_ids_by_source_key: Dictionary = {}
 var _source_keys_by_status_id: Dictionary = {}
+var _order_by_source_key: Dictionary = {}
 
 
 func clear() -> void:
 	_stacks_by_source_key.clear()
 	_status_ids_by_source_key.clear()
 	_source_keys_by_status_id.clear()
+	_order_by_source_key.clear()
 
 
 func clone():
@@ -25,6 +27,7 @@ func clone():
 		copied._stacks_by_source_key[source_key] = cloned_source_map
 	copied._status_ids_by_source_key = _status_ids_by_source_key.duplicate(true)
 	copied._source_keys_by_status_id = _source_keys_by_status_id.duplicate(true)
+	copied._order_by_source_key = _order_by_source_key.duplicate(true)
 	return copied
 
 
@@ -55,7 +58,7 @@ func get_source_keys_for_status(status_id: StringName) -> Array[String]:
 	return out
 
 
-func replace_source(source_key: String, projected_tokens: Array[StatusToken]) -> Array[StringName]:
+func replace_source(source_key: String, projected_tokens: Array[StatusToken], order_info := {}) -> Array[StringName]:
 	var affected_ids := {}
 	if source_key.is_empty():
 		return []
@@ -75,6 +78,7 @@ func replace_source(source_key: String, projected_tokens: Array[StatusToken]) ->
 
 	_stacks_by_source_key[source_key] = next_map
 	_status_ids_by_source_key[source_key] = _make_status_set(next_map)
+	_order_by_source_key[source_key] = order_info.duplicate(true) if order_info is Dictionary else {}
 	_rebuild_status_source_index(source_key, affected_ids)
 	return _to_sorted_status_id_array(affected_ids)
 
@@ -90,6 +94,7 @@ func remove_source(source_key: String) -> Array[StringName]:
 
 	_stacks_by_source_key.erase(source_key)
 	_status_ids_by_source_key.erase(source_key)
+	_order_by_source_key.erase(source_key)
 	_rebuild_status_source_index(source_key, affected_ids)
 	return _to_sorted_status_id_array(affected_ids)
 
@@ -106,8 +111,24 @@ func build_projected_token(status_id: StringName) -> StatusToken:
 
 	var total_intensity := 0
 	var max_duration := 0
+	var ordered_source_keys: Array[String] = []
 	for source_key_variant in source_keys.keys():
-		var source_key := String(source_key_variant)
+		ordered_source_keys.append(String(source_key_variant))
+	ordered_source_keys.sort_custom(func(a: String, b: String) -> bool:
+		var a_info: Dictionary = _order_by_source_key.get(a, {})
+		var b_info: Dictionary = _order_by_source_key.get(b, {})
+		var a_priority := int(a_info.get("priority", 0))
+		var b_priority := int(b_info.get("priority", 0))
+		if a_priority != b_priority:
+			return a_priority < b_priority
+		var a_tid := int(a_info.get("tid", 0))
+		var b_tid := int(b_info.get("tid", 0))
+		if a_tid != b_tid:
+			return a_tid < b_tid
+		return a < b
+	)
+
+	for source_key in ordered_source_keys:
 		var source_map := _get_source_map(source_key)
 		if !source_map.has(status_id):
 			continue

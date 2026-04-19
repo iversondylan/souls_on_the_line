@@ -21,6 +21,7 @@ enum OP { APPLY, REMOVE, CHANGE }
 @export var number_display_type: NumberDisplayType
 @export var reapply_type: ReapplyType
 @export var expiration_policy: ExpirationPolicy = ExpirationPolicy.EVENT_OR_NEVER
+@export var transformer_priority: int = 1
 
 @export_group("Status Visuals")
 @export var icon: Texture

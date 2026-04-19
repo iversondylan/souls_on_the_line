@@ -2,11 +2,6 @@
 
 class_name SimStatusSystem extends RefCounted
 
-const Interceptor := preload("res://battle/sim/interceptors/interceptor.gd")
-const StatusToken := preload("res://battle/sim/containers/status_token.gd")
-const ArcanumEntry := preload("res://battle/sim/containers/arcanum_entry.gd")
-const Removal = preload("res://core/keys_values/removal_values.gd")
-
 # Owns status lifecycle and event dispatch.
 # Turn progression belongs to SimRuntime.
 # Atomistic mutations belong to SimBattleAPI.
@@ -311,7 +306,7 @@ static func realize_pending_statuses(
 
 	var any_changed := false
 	var src_id := int(source_id if source_id > 0 else target_id)
-	var changed_aura_ids: Array[StringName] = []
+	var changed_status_ids: Array[StringName] = []
 
 	for status_id in pending_ids:
 		var proto := get_proto(api, status_id)
@@ -354,16 +349,14 @@ static func realize_pending_statuses(
 		if proto == null:
 			continue
 
-		if is_aura_proto(proto):
-			changed_aura_ids.append(status_id)
+		changed_status_ids.append(status_id)
 
 	if !any_changed:
 		return
 
 	api._refresh_projected_status_cache_for(int(target_id))
-	api._mark_interceptors_dirty(Interceptor.HOOK_ON_ANY_DEATH)
-	for aura_status_id in changed_aura_ids:
-		api._refresh_status_aura_projection(int(target_id), aura_status_id)
+	for changed_status_id in changed_status_ids:
+		api._sync_status_source_transformers(int(target_id), changed_status_id)
 
 
 # -------------------------------------------------------------------
@@ -615,8 +608,15 @@ static func refresh_cached_projected_statuses_for_unit(
 	if full_rebuild:
 		target.statuses.clear_projected()
 		for source_key in entries_by_key.get_source_keys():
-			var entry := entries_by_key.get_entry(source_key)
-			target.statuses.upsert_projected_source(source_key, _build_projected_tokens_for_entry(api, target_id, entry))
+			var record := entries_by_key.get_record(source_key)
+			target.statuses.upsert_projected_source(
+				source_key,
+				_build_projected_tokens_for_entry(api, target_id, record),
+				{
+					"priority": int(record.priority) if record != null else 0,
+					"tid": int(record.tid) if record != null else 0,
+				}
+			)
 		target.statuses.set_projected_cache_ready(true)
 		return
 
@@ -633,41 +633,45 @@ static func refresh_cached_projected_statuses_for_unit(
 
 	for source_key_variant in unique_source_keys.keys():
 		var source_key := String(source_key_variant)
-		if !entries_by_key.has_entry(source_key):
+		if !entries_by_key.has_record(source_key):
 			target.statuses.remove_projected_source(source_key)
 			continue
-		var entry := entries_by_key.get_entry(source_key)
+		var record := entries_by_key.get_record(source_key)
 		target.statuses.upsert_projected_source(
 			source_key,
-			_build_projected_tokens_for_entry(api, target_id, entry)
+			_build_projected_tokens_for_entry(api, target_id, record),
+			{
+				"priority": int(record.priority) if record != null else 0,
+				"tid": int(record.tid) if record != null else 0,
+			}
 		)
 	target.statuses.set_projected_cache_ready(true)
 
-static func _collect_projection_entries_by_source_key(api: SimBattleAPI) -> ProjectionSourceEntryLookup:
-	var out := ProjectionSourceEntryLookup.new()
-	if api == null or api.state == null or api.state.projection_bank == null:
+static func _collect_projection_entries_by_source_key(api: SimBattleAPI) -> TransformerRecordLookup:
+	var out := TransformerRecordLookup.new()
+	if api == null or api.state == null or api.state.transformer_registry == null:
 		return out
 
-	# This is a source-keyed lookup over the full projection bank.
+	# This is a source-keyed lookup over the full projection transformer slice.
 	# Per-target relevance is checked later when each source is materialized.
-	for entry: ProjectionSourceEntry in api.state.projection_bank.get_entries():
-		out.set_entry(entry)
+	for record: TransformerRecord in api.state.transformer_registry.get_projection_records():
+		out.set_record(record)
 	return out
 
 static func _build_projected_tokens_for_entry(
 	api: SimBattleAPI,
 	target_id: int,
-	entry: ProjectionSourceEntry
+	record: TransformerRecord
 ) -> Array[StatusToken]:
 	var out: Array[StatusToken] = []
-	if entry == null:
+	if record == null:
 		return out
-	var source_kind := entry.source_kind
+	var source_kind := record.source_kind
 	match source_kind:
-		ProjectionBank.SOURCE_KIND_STATUS_AURA:
-			_append_status_aura_projected_tokens(out, api, target_id, entry)
-		ProjectionBank.SOURCE_KIND_ARCANUM:
-			_append_arcanum_projected_tokens(out, api, target_id, entry)
+		TransformerRecord.SOURCE_KIND_STATUS_TOKEN:
+			_append_status_aura_projected_tokens(out, api, target_id, record)
+		TransformerRecord.SOURCE_KIND_ARCANUM_ENTRY:
+			_append_arcanum_projected_tokens(out, api, target_id, record)
 		_:
 			return out
 	return out
@@ -676,19 +680,19 @@ static func _append_status_aura_projected_tokens(
 	out: Array[StatusToken],
 	api: SimBattleAPI,
 	target_id: int,
-	entry: ProjectionSourceEntry
+	record: TransformerRecord
 ) -> void:
 	if api == null or api.state == null:
 		return
 
-	var source_id := int(entry.source_owner_id)
+	var source_id := int(record.source_owner_id)
 	if source_id <= 0:
 		return
 	var source: CombatantState = api.state.get_unit(source_id)
 	if source == null or !source.is_alive():
 		return
 
-	var aura_status_id := StringName(entry.source_id)
+	var aura_status_id := StringName(record.source_id)
 	var aura_proto := get_proto(api, aura_status_id) as Aura
 	if aura_proto == null:
 		return
@@ -723,12 +727,12 @@ static func _append_arcanum_projected_tokens(
 	out: Array[StatusToken],
 	api: SimBattleAPI,
 	target_id: int,
-	entry: ProjectionSourceEntry
+	record: TransformerRecord
 ) -> void:
 	if api == null or api.state == null or api.state.arcana == null or api.state.arcana_catalog == null:
 		return
-	var arcanum_owner_id := int(entry.source_owner_id)
-	var arcanum_id := StringName(entry.source_id)
+	var arcanum_owner_id := int(record.source_owner_id)
+	var arcanum_id := StringName(record.source_id)
 	if arcanum_owner_id <= 0 or arcanum_id == &"":
 		return
 

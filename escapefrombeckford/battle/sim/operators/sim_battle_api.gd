@@ -5,6 +5,7 @@ class_name SimBattleAPI extends RefCounted
 const StatusToken := preload("res://battle/sim/containers/status_token.gd")
 const Interceptor := preload("res://battle/sim/interceptors/interceptor.gd")
 const OnAnyDeathInterceptor := preload("res://battle/sim/interceptors/on_any_death_interceptor.gd")
+const TransformerRecord := preload("res://battle/sim/containers/transformer_record.gd")
 
 # ============================================================================
 # SimBattleAPI
@@ -354,10 +355,76 @@ func _mark_interceptors_dirty(hook_kind: StringName) -> void:
 	state.mark_interceptors_dirty(hook_kind)
 
 
-func get_interceptors_for_hook_and_group(hook_kind: StringName, group_index: int) -> Array[Interceptor]:
+func _sync_status_source_transformers(source_owner_id: int, status_id: StringName) -> void:
+	if state == null:
+		return
+	ProjectionChangeSystem.sync_status_source(self, source_owner_id, status_id)
+
+
+func _sync_all_status_source_transformers(source_owner_id: int) -> void:
+	if state == null or source_owner_id <= 0:
+		return
+	var owner: CombatantState = state.get_unit(source_owner_id)
+	if owner == null or owner.statuses == null:
+		return
+	for status_id in owner.statuses.get_status_ids(true):
+		_sync_status_source_transformers(source_owner_id, status_id)
+
+
+func _sync_arcanum_source_transformers(arcanum_id: StringName) -> void:
+	if state == null or state.transformer_registry == null or arcanum_id == &"":
+		return
+	var owner_id := int(get_player_id())
+	if owner_id <= 0:
+		return
+	state.transformer_registry.sync_arcanum_source_transformers(
+		state,
+		owner_id,
+		FRIENDLY,
+		arcanum_id
+	)
+	state.transformer_registry.mark_source_dirty(
+		TransformerRecord.SOURCE_KIND_ARCANUM_ENTRY,
+		owner_id,
+		arcanum_id
+	)
+	var source_key := TransformerRecord.make_source_key(
+		TransformerRecord.SOURCE_KIND_ARCANUM_ENTRY,
+		owner_id,
+		arcanum_id
+	)
+	var dirty_ids := {}
+	var proto: Arcanum = state.arcana_catalog.get_proto(arcanum_id) if state.arcana_catalog != null else null
+	for cid_variant in state.units.keys():
+		var cid := int(cid_variant)
+		_refresh_projected_status_cache_for(cid, [source_key])
+		var unit: CombatantState = state.get_unit(cid)
+		if unit == null or !unit.is_alive():
+			continue
+		if unit.combatant_data == null or unit.combatant_data.ai == null:
+			continue
+		if proto != null and proto.affects_others():
+			dirty_ids[cid] = true
+			continue
+		if proto == null or !proto.affects_target(state, owner_id, cid):
+			continue
+		dirty_ids[cid] = true
+	for cid_variant in dirty_ids.keys():
+		var cid := int(cid_variant)
+		_request_replan(cid)
+		_request_intent_refresh(cid)
+		_cancel_invalid_plan_immediately_if_needed(cid)
+	if proto != null and proto.affects_others() and !dirty_ids.is_empty():
+		if runtime != null and bool(is_main) and checkpoint_processor != null:
+			var cp := checkpoint_processor
+			if cp.has_dirty_planning() or cp.has_dirty_turn_order() or cp.has_dirty_outcome():
+				runtime.request_projection_cleanup_flush()
+
+
+func get_interceptors_for_hook(hook_kind: StringName) -> Array[Interceptor]:
 	if state == null:
 		return []
-	return state.get_interceptors_for_hook_and_group(hook_kind, group_index)
+	return state.get_interceptors_for_hook(hook_kind)
 
 
 func _dispatch_on_any_death_interceptor(interceptor: OnAnyDeathInterceptor, removal_ctx: RemovalContext) -> void:
@@ -675,7 +742,7 @@ func _untrack_auras_for_removed_combatant(removed_id: int) -> void:
 	ProjectionChangeSystem.untrack_auras_from_removed_combatant(self, removed_id)
 
 func _refresh_status_aura_projection(source_owner_id: int, status_id: StringName) -> void:
-	ProjectionChangeSystem.refresh_status_aura(self, source_owner_id, status_id)
+	ProjectionChangeSystem.sync_status_source(self, source_owner_id, status_id)
 
 
 
@@ -893,8 +960,7 @@ func resolve_removal(ctx) -> void:
 	if g != -1:
 		state.groups[g].remove(int(ctx.target_id))
 
-	_untrack_auras_for_removed_combatant(int(ctx.target_id))
-	_mark_interceptors_dirty(Interceptor.HOOK_ON_ANY_DEATH)
+	_sync_all_status_source_transformers(int(ctx.target_id))
 
 	ctx.after_order_ids = PackedInt32Array(state.groups[g].order) if g != -1 else PackedInt32Array()
 	_request_group_layout_changed(
@@ -926,10 +992,7 @@ func resolve_removal(ctx) -> void:
 	if runtime != null:
 		var reaction = RemovalDelayedReaction.new()
 		reaction.removal_ctx = ctx
-		reaction.any_death_interceptors = get_interceptors_for_hook_and_group(
-			Interceptor.HOOK_ON_ANY_DEATH,
-			int(ctx.group_index)
-		)
+		reaction.any_death_interceptors = get_interceptors_for_hook(Interceptor.HOOK_ON_ANY_DEATH)
 		reaction.source_reason = String(ctx.reason)
 		reaction.origin_card_uid = String(ctx.origin_card_uid)
 		reaction.origin_arcanum_id = ctx.origin_arcanum_id
@@ -937,10 +1000,7 @@ func resolve_removal(ctx) -> void:
 		if !runtime.is_in_strike_resolution():
 			runtime.drain_delayed_reactions(DelayedReaction.Timing.AFTER_STRIKE)
 	else:
-		var any_death_interceptors := get_interceptors_for_hook_and_group(
-			Interceptor.HOOK_ON_ANY_DEATH,
-			int(ctx.group_index)
-		)
+		var any_death_interceptors := get_interceptors_for_hook(Interceptor.HOOK_ON_ANY_DEATH)
 		SimStatusSystem.on_removal(self, ctx)
 		SimArcanaSystem.on_removal(self, ctx)
 		for interceptor_variant in any_death_interceptors:
@@ -1067,7 +1127,7 @@ func apply_status(ctx: StatusContext) -> void:
 		# No effective mutation means no projection, status-hook, or intent side effects.
 		return
 	_invalidate_effective_status_context_cache()
-	_mark_interceptors_dirty(Interceptor.HOOK_ON_ANY_DEATH)
+	_sync_status_source_transformers(int(ctx.target_id), ctx.status_id)
 
 	var status_ctx := SimStatusSystem.make_context(
 		self,
@@ -1076,11 +1136,6 @@ func apply_status(ctx: StatusContext) -> void:
 	)
 	if status_ctx != null and status_ctx.proto != null:
 		status_ctx.proto.on_apply(status_ctx, ctx)
-
-	if SimStatusSystem.is_aura_proto(proto):
-		# Pending aura tokens are fully live and must project immediately, but the
-		# projected cache collapses all aura lanes into one combined projected token.
-		_refresh_status_aura_projection(int(ctx.target_id), ctx.status_id)
 
 	if !SimStatusSystem.is_aura_proto(proto):
 		_request_intent_refresh(int(ctx.target_id))
@@ -1117,7 +1172,7 @@ func remove_status(ctx: StatusContext) -> void:
 	var status_ctx := SimStatusSystem.make_context(self, int(ctx.target_id), old_token)
 	u.statuses.remove_ctx(ctx)
 	_invalidate_effective_status_context_cache()
-	_mark_interceptors_dirty(Interceptor.HOOK_ON_ANY_DEATH)
+	_sync_status_source_transformers(int(ctx.target_id), ctx.status_id)
 	
 	if writer != null:
 		writer.emit_status(
@@ -1142,9 +1197,6 @@ func remove_status(ctx: StatusContext) -> void:
 	
 	if status_ctx != null and status_ctx.proto != null:
 		status_ctx.proto.on_remove(status_ctx, ctx)
-
-	if SimStatusSystem.is_aura_proto(proto):
-		_refresh_status_aura_projection(int(ctx.target_id), ctx.status_id)
 	
 	if !SimStatusSystem.is_aura_proto(proto):
 		_request_intent_refresh(int(ctx.target_id))
@@ -1176,7 +1228,7 @@ func spawn_from_data(
 	
 	var u := _make_unit_from_combatant_data(combatant_data, id, g, is_player, int(current_health_override))
 	state.add_unit(u, g, int(insert_index))
-	_mark_interceptors_dirty(Interceptor.HOOK_ON_ANY_DEATH)
+	_sync_all_status_source_transformers(id)
 	_refresh_projected_status_cache_for(id, [], true)
 	_request_turn_order_rebuild()
 	var after_order_ids := PackedInt32Array(state.groups[g].order)
@@ -1220,7 +1272,7 @@ func summon(ctx: SummonContext) -> void:
 	u.type = CombatantView.Type.ALLY if g == 0 else CombatantView.Type.ENEMY
 	
 	state.add_unit(u, g, int(ctx.insert_index))
-	_mark_interceptors_dirty(Interceptor.HOOK_ON_ANY_DEATH)
+	_sync_all_status_source_transformers(id)
 	_refresh_projected_status_cache_for(id, [], true)
 	_request_turn_order_rebuild()
 	

@@ -42,4 +42,4 @@ func on_any_death(ctx: SimStatusContext, removal_ctx: RemovalContext) -> void:
 
 
 func get_tooltip(intensity: int = 0, _duration: int = 0) -> String:
-	return "Cold Revenge: whenever another SoulBound ally dies, gain %s Might." % maxi(intensity, 1)
+	return "Cold Revenge: whenever a SoulBound ally dies, gain %s Might." % maxi(intensity, 1)

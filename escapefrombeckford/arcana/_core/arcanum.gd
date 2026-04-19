@@ -20,6 +20,7 @@ enum TimedProc {
 @export_multiline var flavor_text: String
 @export_multiline var lore: String
 @export var projected_statuses: Array[Status] = []
+@export var transformer_priority: int = 1
 
 # Legacy convenience for older live/run-only paths.
 # Battle sim should not depend on this mutable reference.

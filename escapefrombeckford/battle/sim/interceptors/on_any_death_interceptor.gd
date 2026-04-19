@@ -8,13 +8,17 @@ func _init(
 	_source_kind: StringName = &"",
 	_source_owner_id: int = 0,
 	_source_group_index: int = -1,
-	_source_id: StringName = &""
+	_source_id: StringName = &"",
+	_tid: int = 0,
+	_priority: int = 1
 ) -> void:
 	hook_kind = InterceptorScript.HOOK_ON_ANY_DEATH
 	source_kind = StringName(_source_kind)
 	source_owner_id = int(_source_owner_id)
 	source_group_index = int(_source_group_index)
 	source_id = StringName(_source_id)
+	tid = int(_tid)
+	priority = int(_priority)
 
 
 func clone():
@@ -22,7 +26,9 @@ func clone():
 		source_kind,
 		source_owner_id,
 		source_group_index,
-		source_id
+		source_id,
+		tid,
+		priority
 	)
 
 

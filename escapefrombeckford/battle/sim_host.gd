@@ -2,8 +2,6 @@
 
 class_name SimHost extends Node
 
-const Interceptor := preload("res://battle/sim/interceptors/interceptor.gd")
-
 # SimHost is the structural owner of:
 # - the main Sim
 # - the preview Sim
@@ -48,14 +46,14 @@ func get_main_runtime() -> SimRuntime:
 
 
 func _refresh_main_arcanum_projection_entries() -> void:
-	if !has_main() or main.state.projection_bank == null:
+	if !has_main() or main.state.transformer_registry == null:
 		return
 
 	var player_id := int(main.api.get_player_id())
 	if player_id <= 0:
 		return
 
-	main.state.projection_bank.rebuild_arcanum_entries(main.state, player_id)
+	main.state.transformer_registry.sync_all_arcanum_transformers(main.state, player_id, SimBattleAPI.FRIENDLY)
 	main.api._refresh_all_projected_status_caches()
 
 
@@ -191,10 +189,6 @@ func seed_arcana_from_ids(ids: Array[StringName]) -> void:
 		return
 
 	main.state.arcana.clear()
-	if main.state.projection_bank != null:
-		main.state.projection_bank.clear_arcanum_entries()
-	if main.state.interceptor_bank != null:
-		main.state.interceptor_bank.mark_dirty(Interceptor.HOOK_ON_ANY_DEATH)
 
 	for id in ids:
 		var proto := arcana_catalog.get_proto(id)
@@ -204,8 +198,6 @@ func seed_arcana_from_ids(ids: Array[StringName]) -> void:
 		var entry := main.state.arcana.add_arcanum(id)
 		if entry != null:
 			proto.seed_battle_entry(entry)
-
-	main.state.interceptor_bank.mark_dirty(Interceptor.HOOK_ON_ANY_DEATH)
 
 	_refresh_main_arcanum_projection_entries()
 
