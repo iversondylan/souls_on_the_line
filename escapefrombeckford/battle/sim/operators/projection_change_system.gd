@@ -71,6 +71,9 @@ static func sync_arcanum_source(
 			arcanum_id
 		)
 	)
+	# Only mark dirty while the source is still projection-tracked. When a projection
+	# source is removed, cache invalidation is handled via targeted/full refresh with
+	# the source key (which removes stale projected contributions).
 	if has_projection:
 		registry.mark_source_dirty(TransformerRecord.SOURCE_KIND_ARCANUM_ENTRY, source_owner_id, arcanum_id)
 
