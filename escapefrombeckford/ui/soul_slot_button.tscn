@@ -1,13 +1,11 @@
 [gd_scene format=3 uid="uid://cildro5wi2av5"]
 
-[ext_resource type="Script" path="res://ui/soul_slot_button.gd" id="1_mq6gl"]
 [ext_resource type="PackedScene" uid="uid://d4g7iin5x7648" path="res://cards/_core/menu_card.tscn" id="2_7tb2m"]
 
 [node name="SoulSlotButton" type="Button" unique_id=1333011361]
 custom_minimum_size = Vector2(275, 426)
 offset_right = 275.0
 offset_bottom = 426.0
-script = ExtResource("1_mq6gl")
 
 [node name="MarginContainer" type="MarginContainer" parent="." unique_id=1738455049]
 layout_mode = 1

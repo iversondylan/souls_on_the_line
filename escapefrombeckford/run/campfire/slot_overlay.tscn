@@ -29,8 +29,17 @@ theme_override_constants/separation = 24
 layout_mode = 2
 theme = ExtResource("2_theme")
 theme_override_font_sizes/font_size = 48
-text = "Choose an Attuned Soul"
+text = "Choose an Attuned Soul to Replace"
 horizontal_alignment = 1
+
+[node name="Instructions" type="Label" parent="CenterContainer/VBoxContainer" unique_id=2038965913]
+custom_minimum_size = Vector2(800, 0)
+layout_mode = 2
+theme = ExtResource("2_theme")
+theme_override_font_sizes/font_size = 26
+text = "Attuned souls can be chosen as your signature soul in future runs. Here, you may replace attuned souls with souls in your current run's collection."
+horizontal_alignment = 1
+autowrap_mode = 2
 
 [node name="Slots" type="HBoxContainer" parent="CenterContainer/VBoxContainer" unique_id=130621246]
 unique_name_in_owner = true

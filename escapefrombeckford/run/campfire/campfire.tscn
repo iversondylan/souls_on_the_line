@@ -181,14 +181,14 @@ custom_minimum_size = Vector2(190, 60)
 layout_mode = 2
 size_flags_horizontal = 4
 theme = ExtResource("2_5yci7")
-text = "Rest"
+text = "Rest and leave"
 
 [node name="Description" type="Label" parent="UILayer/UI" unique_id=805841688]
 layout_mode = 2
 theme = ExtResource("2_5yci7")
 theme_override_fonts/font = ExtResource("5_auago")
 theme_override_font_sizes/font_size = 26
-text = "Restore 30% of max HP"
+text = "Restore 30% of max HP and then return to the map."
 
 [node name="AttuneButton" type="Button" parent="UILayer/UI" unique_id=2010341332]
 unique_name_in_owner = true
@@ -204,7 +204,7 @@ layout_mode = 2
 theme = ExtResource("2_5yci7")
 theme_override_fonts/font = ExtResource("5_auago")
 theme_override_font_sizes/font_size = 26
-text = "Attune SoulBound cards from your collection into signature soul options for future runs."
+text = "Attune Soulbound cards from your collection for future runs."
 
 [node name="ModalLayer" type="CanvasLayer" parent="." unique_id=2037518281]
 unique_name_in_owner = true
