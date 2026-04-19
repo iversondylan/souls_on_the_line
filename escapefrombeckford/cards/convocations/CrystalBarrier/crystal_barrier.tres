@@ -10,8 +10,9 @@
 script = ExtResource("3_card_data")
 id = &"crystal_barrier"
 target_type = 3
+rarity = 1
 name = "Crystal Barrier"
-description = "An ally takes %s less damage per strike until your next turn and gains Absorb."
+description = "An ally gains Absorb, and hits on them have their damage reduced by %s until your next turn."
 cost = 1
 texture = ExtResource("5_texture")
 actions = Array[ExtResource("1_action")]([ExtResource("2_pressure_barrier"), ExtResource("4_absorb")])

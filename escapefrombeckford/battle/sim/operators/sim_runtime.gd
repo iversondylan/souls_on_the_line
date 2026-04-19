@@ -156,7 +156,7 @@ func _apply_inline_self_recoil_for_strike(
 	recoil.deal_modifier_type = Modifier.Type.NO_MODIFIER
 	recoil.take_modifier_type = Modifier.Type.DMG_TAKEN
 	recoil.params = {}
-	recoil.tags = ctx.tags.duplicate()
+	recoil.tags.assign(ctx.tags)
 	recoil.tags.append(&"self_recoil")
 	recoil.reason = "double_edge"
 	recoil.origin_card_uid = ctx.origin_card_uid
@@ -180,20 +180,38 @@ func _should_apply_cleave(
 	next_target_id: int,
 	damage_ctx: DamageContext
 ) -> bool:
+	return bool(_get_cleave_resolution(api, ctx, targeting, target_ids, primary_target_id, next_target_id, damage_ctx).get("allowed", false))
+
+
+func _get_cleave_resolution(
+	api: SimBattleAPI,
+	ctx: AttackContext,
+	targeting: int,
+	target_ids: Array[int],
+	primary_target_id: int,
+	next_target_id: int,
+	damage_ctx: DamageContext
+) -> Dictionary:
+	var resolution := {
+		"allowed": false,
+		"attack_enabled": false,
+		"target_enabled": false,
+	}
 	if api == null or ctx == null or damage_ctx == null:
-		return false
+		return resolution
 	var supports := _supports_single_target_cleave(targeting, target_ids)
 	var ids_ok := int(primary_target_id) > 0 and int(next_target_id) > 0
 	var lethal := bool(damage_ctx.was_lethal)
 	var overflow := int(damage_ctx.overflow_amount)
 	var next_alive := bool(api.is_alive(int(next_target_id))) if int(next_target_id) > 0 else false
-	var attack_enabled := false
-	var target_enabled := false
 	if supports and ids_ok and lethal and overflow > 0 and next_alive:
-		attack_enabled = SimStatusSystem.unit_grants_attack_cleave(api, int(ctx.attacker_id))
-		target_enabled = SimStatusSystem.unit_grants_received_cleave(api, int(primary_target_id))
-	var allowed := supports and ids_ok and lethal and overflow > 0 and next_alive and (attack_enabled or target_enabled)
-	return allowed
+		resolution["attack_enabled"] = SimStatusSystem.unit_grants_attack_cleave(api, int(ctx.attacker_id))
+		resolution["target_enabled"] = SimStatusSystem.unit_grants_received_cleave(api, int(primary_target_id))
+	var allowed := supports and ids_ok and lethal and overflow > 0 and next_alive and (
+		bool(resolution.get("attack_enabled", false)) or bool(resolution.get("target_enabled", false))
+	)
+	resolution["allowed"] = allowed
+	return resolution
 
 
 func has_runtime_initialized() -> bool:
@@ -219,7 +237,8 @@ func enqueue_delayed_reaction(reaction: DelayedReaction) -> void:
 		return
 
 	var timing := int(reaction.timing)
-	var bucket: Array = _delayed_reactions_by_timing.get(timing, [])
+	var bucket: Array[DelayedReaction] = []
+	bucket.assign(_delayed_reactions_by_timing.get(timing, []))
 	bucket.append(reaction)
 	_delayed_reactions_by_timing[timing] = bucket
 
@@ -232,7 +251,8 @@ func drain_delayed_reactions(timing: int) -> void:
 	_active_delayed_reaction_drains[timing_key] = true
 
 	while true:
-		var bucket: Array = _delayed_reactions_by_timing.get(timing_key, [])
+		var bucket: Array[DelayedReaction] = []
+		bucket.assign(_delayed_reactions_by_timing.get(timing_key, []))
 		if bucket.is_empty():
 			_delayed_reactions_by_timing.erase(timing_key)
 			break
@@ -794,7 +814,7 @@ func run_attack(ctx: AttackContext) -> bool:
 			return int(id) > 0 and api.is_alive(int(id))
 		)
 		ctx.current_strike_index = s
-		ctx.current_primary_target_ids = target_ids.duplicate()
+		ctx.current_primary_target_ids.assign(target_ids)
 		ctx.current_cleave_target_id = 0
 		ctx.current_cleave_damage = 0
 		ctx.current_resolution_kind = int(AttackContext.ResolutionKind.PRIMARY_STRIKE)
@@ -851,7 +871,7 @@ func run_attack(ctx: AttackContext) -> bool:
 			d.deal_modifier_type = deal_mod
 			d.take_modifier_type = take_mod
 			d.params = params
-			d.tags = ctx.tags.duplicate()
+			d.tags.assign(ctx.tags)
 			d.reason = ctx.reason
 			d.origin_card_uid = ctx.origin_card_uid
 			d.origin_arcanum_id = ctx.origin_arcanum_id
@@ -866,13 +886,15 @@ func run_attack(ctx: AttackContext) -> bool:
 
 			_end_scope(hit_scope)
 
-			if !_should_apply_cleave(api, ctx, targeting, target_ids, int(tid), cleave_target_id, d):
+			var cleave_resolution := _get_cleave_resolution(api, ctx, targeting, target_ids, int(tid), cleave_target_id, d)
+			if !bool(cleave_resolution.get("allowed", false)):
 				continue
 			pending_cleave = {
 				"primary_target_id": int(tid),
 				"cleave_target_id": int(cleave_target_id),
 				"overflow_amount": int(d.overflow_amount),
 				"overflow_banish_amount": int(d.overflow_banish_amount),
+				"allow_chain_continuation": bool(cleave_resolution.get("attack_enabled", false)),
 			}
 
 		# Trigger strike-based statuses before recoil so lethal self-damage still keeps the strike reward.
@@ -889,6 +911,7 @@ func run_attack(ctx: AttackContext) -> bool:
 			var prior_target_id := int(pending_cleave.get("primary_target_id", 0))
 			var overflow_amount := int(pending_cleave.get("overflow_amount", 0))
 			var overflow_banish_amount := int(pending_cleave.get("overflow_banish_amount", 0))
+			var allow_chain_continuation := bool(pending_cleave.get("allow_chain_continuation", false))
 
 			while cleave_target_id > 0 and overflow_amount > 0 and api.is_alive(cleave_target_id):
 				var cleave_extra := {
@@ -950,7 +973,7 @@ func run_attack(ctx: AttackContext) -> bool:
 				cleave_damage.take_modifier_type = take_mod
 				cleave_damage.modifier_policy = int(DamageContext.ModifierPolicy.SKIP_DEAL_MODIFIERS)
 				cleave_damage.params = params
-				cleave_damage.tags = ctx.tags.duplicate()
+				cleave_damage.tags.assign(ctx.tags)
 				cleave_damage.reason = ctx.reason
 				cleave_damage.origin_card_uid = ctx.origin_card_uid
 				cleave_damage.origin_arcanum_id = ctx.origin_arcanum_id
@@ -963,6 +986,9 @@ func run_attack(ctx: AttackContext) -> bool:
 
 				_end_scope(cleave_hit_scope)
 				_end_scope(cleave_scope)
+
+				if !allow_chain_continuation:
+					break
 
 				var next_target_id := int(AttackTargeting.get_next_target_id_after_in_order(targeting_ctx, int(cleave_target_id), cleave_order_ids))
 				prior_target_id = int(cleave_target_id)
@@ -1052,7 +1078,7 @@ func run_status_action(ctx: StatusContext) -> void:
 		target_ctx.after_duration = int(ctx.after_duration)
 		target_ctx.before_pending = bool(ctx.before_pending)
 		target_ctx.after_pending = bool(ctx.after_pending)
-		target_ctx.tags = ctx.tags.duplicate()
+		target_ctx.tags.assign(ctx.tags)
 		target_ctx.reason = String(ctx.reason)
 		target_ctx.presentation_hint = ctx.presentation_hint
 		target_ctx.origin_card_uid = String(ctx.origin_card_uid)
@@ -1361,7 +1387,7 @@ func apply_attack_now(spec: SimAttackSpec) -> bool:
 	attack_ctx.targeting = int(attack_ctx.params.get(Keys.TARGET_TYPE, Attack.Targeting.STANDARD))
 	attack_ctx.projectile_scene = String(attack_ctx.params.get(Keys.PROJECTILE_SCENE, ""))
 	attack_ctx.reason = "attack_now"
-	attack_ctx.tags = spec.tags.duplicate()
+	attack_ctx.tags.assign(spec.tags)
 	attack_ctx.targeting_ctx = TargetingContext.new()
 	attack_ctx.targeting_ctx.api = api
 	attack_ctx.targeting_ctx.source_id = int(spec.attacker_id)
@@ -1369,7 +1395,7 @@ func apply_attack_now(spec: SimAttackSpec) -> bool:
 	attack_ctx.targeting_ctx.target_type = int(attack_ctx.targeting)
 	attack_ctx.targeting_ctx.attack_mode = int(attack_ctx.attack_mode)
 	attack_ctx.targeting_ctx.params = attack_ctx.params
-	attack_ctx.targeting_ctx.explicit_target_ids = spec.explicit_target_ids.duplicate()
+	attack_ctx.targeting_ctx.explicit_target_ids.assign(spec.explicit_target_ids)
 	if int(spec.base_damage) > 0:
 		attack_ctx.base_damage = int(spec.base_damage)
 		attack_ctx.base_damage_melee = int(spec.base_damage)

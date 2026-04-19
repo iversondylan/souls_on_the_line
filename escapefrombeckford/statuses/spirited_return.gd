@@ -1,8 +1,6 @@
 class_name SpiritedReturnStatus extends Status
 
 const ID := &"spirited_return"
-const Removal = preload("res://core/keys_values/removal_values.gd")
-
 
 func get_id() -> StringName:
 	return ID

@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="NPCAIProfile" format=3 uid="uid://bnuvrx00ghv"]
+
+[ext_resource type="Script" uid="uid://bcih413oy6v73" path="res://npc_ai/_core/npc_action.gd" id="1_slkse"]
+[ext_resource type="Resource" uid="uid://c37usc0kpgf2s" path="res://combatants/enemies/BeckfordValedictorian/shaky_attack_action.tres" id="2_o8qvm"]
+[ext_resource type="Resource" uid="uid://is66ocmth6xa" path="res://combatants/enemies/BeckfordValedictorian/resonant_attack_action.tres" id="3_pnk44"]
+[ext_resource type="Script" uid="uid://bdsvca1cpka5s" path="res://npc_ai/_core/npc_ai_profile.gd" id="4_rr5pf"]
+
+[resource]
+script = ExtResource("4_rr5pf")
+actions = Array[ExtResource("1_slkse")]([ExtResource("2_o8qvm"), ExtResource("3_pnk44")])
+metadata/_custom_type_script = "uid://bdsvca1cpka5s"

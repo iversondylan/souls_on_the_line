@@ -12,6 +12,6 @@ portrait_art_uid = "uid://cdacow6h5xebq"
 facing_right = false
 height = 300
 max_health = 44
-ap = 1
+ap = 2
 ai = ExtResource("2_groundskeeper_ai")
 metadata/_custom_type_script = "uid://cfatj0ryn8uv3"

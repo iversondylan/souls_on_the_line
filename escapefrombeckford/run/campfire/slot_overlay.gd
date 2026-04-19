@@ -3,7 +3,7 @@ class_name CampfireSlotOverlay extends ColorRect
 signal slot_selected(slot_index: int, slot_uid: String)
 signal canceled()
 
-const SOUL_SLOT_BUTTON := preload("res://ui/soul_slot_button.tscn")
+const CARD_BUTTON := preload("res://ui/card_button.tscn")
 
 @onready var slots: HBoxContainer = %Slots
 @onready var cancel_button: Button = %CancelButton
@@ -28,7 +28,7 @@ func show_slots(recess: SoulRecessState) -> void:
 			continue
 		card_data.ensure_uid()
 
-		var button := SOUL_SLOT_BUTTON.instantiate() as Button
+		var button := CARD_BUTTON.instantiate() as Button
 		button.pressed.connect(_on_slot_pressed.bind(slot_index, String(card_data.uid)))
 		button.set("card_data", card_data)
 		button.set("caption_text", recess.get_attuned_soul_slot_label(slot_index))

@@ -8,7 +8,7 @@
 script = ExtResource("1_rqov5")
 encounter_name = "Two-face Calabash"
 battle_tier = 1
-gold_reward_min = 65
-gold_reward_max = 76
+gold_reward_min = 60
+gold_reward_max = 100
 enemies = Array[ExtResource("1_aew35")]([ExtResource("2_cjal5")])
 metadata/_custom_type_script = "uid://be1v8qevmc2xw"

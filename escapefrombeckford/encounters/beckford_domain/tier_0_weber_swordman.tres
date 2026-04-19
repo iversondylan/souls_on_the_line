@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="BattleData" format=3 uid="uid://b2depn4mdc7fm"]
+
+[ext_resource type="Script" uid="uid://cfatj0ryn8uv3" path="res://combatants/combatant_data.gd" id="1_p8kh4"]
+[ext_resource type="Resource" uid="uid://mt02xj2dgfe7" path="res://combatants/enemies/WeberPatrolSwordsman/weber_patrol_swordsman_data.tres" id="2_22ood"]
+[ext_resource type="Resource" uid="uid://crh6yx2uv3odp" path="res://combatants/critters/BlastingMite/blasting_mite_data.tres" id="3_p8kh4"]
+[ext_resource type="Script" uid="uid://be1v8qevmc2xw" path="res://encounters/battle_data.gd" id="4_xsxg0"]
+
+[resource]
+script = ExtResource("4_xsxg0")
+encounter_name = "Weber Swordman"
+gold_reward_min = 50
+gold_reward_max = 75
+enemies = Array[ExtResource("1_p8kh4")]([ExtResource("2_22ood"), ExtResource("3_p8kh4")])
+metadata/_custom_type_script = "uid://be1v8qevmc2xw"

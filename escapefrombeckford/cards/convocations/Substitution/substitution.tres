@@ -5,7 +5,7 @@
 [ext_resource type="Resource" uid="uid://4a3dreaffu56" path="res://cards/_generic_actions/sacrifice_action.tres" id="3_sacrifice"]
 [ext_resource type="Resource" uid="uid://cion5hbe2e3hd" path="res://cards/convocations/Substitution/creative_flow_action.tres" id="4_0wye3"]
 [ext_resource type="Resource" path="res://cards/convocations/Substitution/creative_potency_action.tres" id="4_creative_potency_action"]
-[ext_resource type="Texture2D" uid="uid://b1i3rxto6mwol" path="res://_assets/sprites/assorted/soul_wild.png" id="5_texture"]
+[ext_resource type="Texture2D" uid="uid://dmui4idfmmeva" path="res://_assets/sprites/assorted/shadow-follower.png" id="6_0wye3"]
 
 [resource]
 script = ExtResource("2_card_data")
@@ -15,6 +15,6 @@ rarity = 1
 name = "Substitution"
 description = "Sacrifice an ally. Your next Soul this turn enters with [color=\"008000\"]+%s/+%s[/color] and costs 1 less."
 cost = 1
-texture = ExtResource("5_texture")
+texture = ExtResource("6_0wye3")
 actions = Array[ExtResource("1_action")]([ExtResource("3_sacrifice"), ExtResource("4_creative_potency_action"), ExtResource("4_0wye3")])
 metadata/_custom_type_script = "uid://d2f0qepe047dc"

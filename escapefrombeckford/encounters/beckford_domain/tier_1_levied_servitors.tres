@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="BattleData" format=3 uid="uid://cdev0ybyn2i3o"]
+
+[ext_resource type="Script" uid="uid://cfatj0ryn8uv3" path="res://combatants/combatant_data.gd" id="1_7qmtw"]
+[ext_resource type="Resource" uid="uid://1rdbn0xail7n" path="res://combatants/enemies/GroundskeeperConstruct/groundskeeper_data.tres" id="2_eqfei"]
+[ext_resource type="Resource" uid="uid://bseko2jnj35gi" path="res://combatants/enemies/ButlerConstruct/butler_data.tres" id="3_r0ac0"]
+[ext_resource type="Script" uid="uid://be1v8qevmc2xw" path="res://encounters/battle_data.gd" id="4_gkdj8"]
+
+[resource]
+script = ExtResource("4_gkdj8")
+encounter_name = "Levied Servitors"
+battle_tier = 1
+gold_reward_min = 60
+gold_reward_max = 100
+enemies = Array[ExtResource("1_7qmtw")]([ExtResource("2_eqfei"), ExtResource("3_r0ac0")])
+metadata/_custom_type_script = "uid://be1v8qevmc2xw"

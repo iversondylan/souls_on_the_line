@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="NPCAIProfile" format=3 uid="uid://b0v3i3typpmmn"]
+
+[ext_resource type="Script" uid="uid://bcih413oy6v73" path="res://npc_ai/_core/npc_action.gd" id="1_13rfo"]
+[ext_resource type="Resource" uid="uid://cpbnslkrb4arh" path="res://combatants/enemies/BeckfordOverachiever/shaky_attack_action.tres" id="2_38uki"]
+[ext_resource type="Resource" uid="uid://j02tc8qwg6wc" path="res://combatants/enemies/BeckfordOverachiever/resonant_summon_action.tres" id="3_f01x7"]
+[ext_resource type="Script" uid="uid://bdsvca1cpka5s" path="res://npc_ai/_core/npc_ai_profile.gd" id="4_kmft7"]
+
+[resource]
+script = ExtResource("4_kmft7")
+actions = Array[ExtResource("1_13rfo")]([ExtResource("2_38uki"), ExtResource("3_f01x7")])
+metadata/_custom_type_script = "uid://bdsvca1cpka5s"

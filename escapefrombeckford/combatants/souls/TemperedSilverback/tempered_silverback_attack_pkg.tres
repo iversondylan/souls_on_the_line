@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="NPCEffectPackage" format=3 uid="uid://c6xt32oed2dqt"]
 
 [ext_resource type="Resource" uid="uid://bnqqhpu1itcb3" path="res://npc_ai/npc_attack_sequence.tres" id="1_attack"]
-[ext_resource type="Resource" uid="uid://b6vgjaovptslx" path="res://combatants/souls/BasicClone/ap_plus_0_damage.tres" id="3_4fkx0"]
+[ext_resource type="Resource" uid="uid://b6vgjaovptslx" path="res://combatants/souls/SpectralClone/ap_plus_0_damage.tres" id="3_4fkx0"]
 [ext_resource type="Script" uid="uid://b8d5j6ne4mt88" path="res://npc_ai/_core/param_model.gd" id="4_t3srw"]
 [ext_resource type="Script" uid="uid://3jde7uhq2yho" path="res://npc_ai/_core/npc_effect_package.gd" id="7_mthr8"]
 [ext_resource type="Script" uid="uid://cuj4qvyx6dedj" path="res://npc_ai/_core/state_model.gd" id="8_486kc"]

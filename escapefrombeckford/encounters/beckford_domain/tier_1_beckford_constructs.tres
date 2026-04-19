@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="BattleData" format=3 uid="uid://dhsripdllldnw"]
+
+[ext_resource type="Script" uid="uid://cfatj0ryn8uv3" path="res://combatants/combatant_data.gd" id="1_h6h6o"]
+[ext_resource type="Resource" uid="uid://dpfk805icoy7m" path="res://combatants/enemies/SlabConstruct/slab_construct_data.tres" id="2_b4vg4"]
+[ext_resource type="Resource" uid="uid://crh6yx2uv3odp" path="res://combatants/critters/BlastingMite/blasting_mite_data.tres" id="3_h2ioo"]
+[ext_resource type="Script" uid="uid://be1v8qevmc2xw" path="res://encounters/battle_data.gd" id="4_hr5rl"]
+
+[resource]
+script = ExtResource("4_hr5rl")
+encounter_name = "Beckford Security Constructs"
+battle_tier = 1
+gold_reward_min = 60
+gold_reward_max = 100
+enemies = Array[ExtResource("1_h6h6o")]([ExtResource("2_b4vg4"), ExtResource("3_h2ioo")])
+metadata/_custom_type_script = "uid://be1v8qevmc2xw"

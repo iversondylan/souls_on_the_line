@@ -10,7 +10,7 @@
 script = ExtResource("1_241b1")
 id = &"berserkers_fury"
 target_type = 3
-rarity = 2
+rarity = 1
 name = "Berserker's Fury"
 description = "An ally deals their attack damage [color=\"ff0000\"]+%s[/color] to all enemies, then dies."
 texture = ExtResource("3_65r7g")

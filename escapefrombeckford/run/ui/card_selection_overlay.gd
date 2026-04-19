@@ -4,7 +4,6 @@ signal selection_confirmed(card_data: CardData)
 signal selection_canceled()
 
 const MENU_CARD := preload("uid://d4g7iin5x7648")
-const BUTTON_STYLE_PANEL_THEME := preload("res://ui/elements/button_style_panel_theme.tres")
 
 @onready var title_label: Label = %Title
 @onready var card_choice_container: HBoxContainer = %CardChoiceContainer
@@ -17,6 +16,7 @@ var card_filter: Callable
 var max_cards_to_show: int = 5
 var selected_card: CardData = null
 var _card_wrappers_by_uid: Dictionary = {}
+var _card_button_group := ButtonGroup.new()
 
 
 func _ready() -> void:
@@ -67,17 +67,19 @@ func _refresh() -> void:
 	for child in card_choice_container.get_children():
 		child.queue_free()
 	_card_wrappers_by_uid.clear()
+	_card_button_group = ButtonGroup.new()
 	selected_card = null
 
 	no_cards_label.visible = card_choices.is_empty()
 	for card_data in card_choices:
 		var wrapper := Button.new()
-		wrapper.theme = BUTTON_STYLE_PANEL_THEME
+		wrapper.theme = cancel_button.theme
 		wrapper.custom_minimum_size = Vector2(275, 370)
 		wrapper.mouse_filter = Control.MOUSE_FILTER_STOP
+		wrapper.toggle_mode = true
+		wrapper.button_group = _card_button_group
 		wrapper.pressed.connect(_on_card_chosen.bind(card_data))
 		card_choice_container.add_child(wrapper)
-		wrapper.self_modulate = Color(0.72, 0.72, 0.72, 1.0)
 
 		var menu_card := MENU_CARD.instantiate() as MenuCard
 		menu_card.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -109,10 +111,10 @@ func _refresh_selection_highlight() -> void:
 		selected_uid = String(selected_card.uid)
 
 	for uid in _card_wrappers_by_uid.keys():
-		var wrapper := _card_wrappers_by_uid.get(uid, null) as CanvasItem
+		var wrapper := _card_wrappers_by_uid.get(uid, null) as BaseButton
 		if wrapper == null:
 			continue
-		wrapper.self_modulate = Color.WHITE if uid == selected_uid else Color(0.72, 0.72, 0.72, 1.0)
+		wrapper.button_pressed = uid == selected_uid
 
 
 func _confirm_selection() -> void:

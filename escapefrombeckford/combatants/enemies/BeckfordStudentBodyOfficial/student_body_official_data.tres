@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="CombatantData" format=3 uid="uid://dviwwraaqsvh3"]
+
+[ext_resource type="Script" uid="uid://cfatj0ryn8uv3" path="res://combatants/combatant_data.gd" id="1_data"]
+[ext_resource type="Resource" uid="uid://cfm8635movccg" path="res://combatants/enemies/BeckfordStudentBodyOfficial/student_body_official_ai.tres" id="2_ai"]
+
+[resource]
+script = ExtResource("1_data")
+name = "Student Body Official"
+description = "Support enemy. Moves allies, heals, shields, and rallies the group."
+character_art_uid = "uid://dtvvequ1w1dlu"
+portrait_art_uid = "uid://dtvvequ1w1dlu"
+facing_right = false
+height = 310
+color_tint = Color(0.95, 0.8075, 0.52, 1)
+max_health = 26
+ap = 1
+ai = ExtResource("2_ai")

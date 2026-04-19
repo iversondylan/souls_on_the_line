@@ -2,7 +2,7 @@ extends Control
 
 const DEFAULT_PROFILE_ID := "cole"
 const MAIN_MENU_SCENE_PATH := "res://main_menu/main_menu.tscn"
-const SOUL_SLOT_BUTTON := preload("res://ui/soul_slot_button.tscn")
+const CARD_BUTTON := preload("res://ui/card_button.tscn")
 
 @export var player_catalog: PlayerCatalog = preload("uid://b2ewfy12rhm0l")
 
@@ -88,7 +88,7 @@ func _refresh_soul_buttons() -> void:
 func _add_soul_button(card_data: CardData, card_uid: String, slot_label: String, is_selected: bool) -> void:
 	if card_data == null:
 		return
-	var button := SOUL_SLOT_BUTTON.instantiate() as Button
+	var button := CARD_BUTTON.instantiate() as Button
 	button.toggle_mode = true
 	button.button_group = _soul_button_group
 	button.button_pressed = is_selected

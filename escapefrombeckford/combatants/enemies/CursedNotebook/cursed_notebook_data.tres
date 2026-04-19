@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="CombatantData" format=3 uid="uid://bax5hhkpt6vgf"]
+
+[ext_resource type="Resource" uid="uid://b8ekfg8gpu3to" path="res://combatants/enemies/CursedNotebook/cursed_notebook_ai.tres" id="1_ovglh"]
+[ext_resource type="Script" uid="uid://cfatj0ryn8uv3" path="res://combatants/combatant_data.gd" id="2_o70m2"]
+
+[resource]
+script = ExtResource("2_o70m2")
+name = "Cursed Ledger"
+description = "Summoner enemy. Drafts documents and attacks with stored power."
+character_art_uid = "uid://dl7lv3pq1jkot"
+portrait_art_uid = "uid://dl7lv3pq1jkot"
+facing_right = false
+height = 200
+max_health = 42
+ap = 5
+ai = ExtResource("1_ovglh")
+metadata/_custom_type_script = "uid://cfatj0ryn8uv3"

@@ -106,7 +106,7 @@ func compile_actor_turn(turn_events: Array[BattleEvent]) -> TurnTimeline:
 	var packaged_turn := _build_scope_driven_package_turn(turn_events)
 	if !packaged_turn.is_empty():
 		timeline.action_kind = packaged_turn.get("action_kind", &"generic")
-		beats = packaged_turn.get("beats", [])
+		beats.assign(packaged_turn.get("beats", []))
 	else:
 		timeline.action_kind = &"generic"
 		beats = _build_generic_beats(turn_events)
@@ -144,8 +144,10 @@ func _build_scope_driven_package_turn(turn_events: Array[BattleEvent]) -> Dictio
 
 	var group_index := _find_group_index(turn_events)
 	var external_events := _collect_top_level_package_external_events(turn_events, scope_ranges, compiled_turn_scope_id, child_scope_ids)
-	var leading: Array[BattleEvent] = external_events.get("leading", [])
-	var trailing: Array[BattleEvent] = external_events.get("trailing", [])
+	var leading: Array[BattleEvent] = []
+	leading.assign(external_events.get("leading", []))
+	var trailing: Array[BattleEvent] = []
+	trailing.assign(external_events.get("trailing", []))
 	var beats: Array[TurnBeat] = []
 	var focus_targets := _collect_eventual_focus_targets_from_top_level_segments(segments)
 
@@ -187,7 +189,8 @@ func _build_scope_driven_package_turn(turn_events: Array[BattleEvent]) -> Dictio
 					turn_events,
 					current_q
 				)
-				var attack_beats: Array[TurnBeat] = built.get("beats", [])
+				var attack_beats: Array[TurnBeat] = []
+				attack_beats.assign(built.get("beats", []))
 				for beat in attack_beats:
 					beats.append(beat)
 				previous_followthrough_beat = built.get("followthrough_beat", null)
@@ -205,7 +208,8 @@ func _build_scope_driven_package_turn(turn_events: Array[BattleEvent]) -> Dictio
 				current_q += 2.0
 			_:
 				var nonattack := _build_effect_sequence_package_beats(current_q, segment)
-				var nonattack_beats: Array[TurnBeat] = nonattack.get("beats", [])
+				var nonattack_beats: Array[TurnBeat] = []
+				nonattack_beats.assign(nonattack.get("beats", []))
 				for beat in nonattack_beats:
 					beats.append(beat)
 				previous_followthrough_beat = nonattack.get("followthrough_beat", null)
@@ -281,7 +285,7 @@ func _build_top_level_package_segment(
 		segment.kind = &"attack"
 		segment.parsed_attack = _parse_scope_driven_attack_scope(events, scope_ranges, scope_id, group_index)
 		if segment.parsed_attack != null:
-			segment.target_ids = segment.parsed_attack.focus_target_ids.duplicate()
+			segment.target_ids.assign(segment.parsed_attack.focus_target_ids)
 
 	for idx in range(begin_idx + 1, end_idx):
 		var event: BattleEvent = events[idx]
@@ -578,7 +582,8 @@ func _build_scope_driven_attack_package_beats(
 # windup -> followthrough shape so mixed turns stay easy to read.
 func _build_effect_sequence_package_beats(beat_q: float, segment: TopLevelTurnSegment) -> Dictionary:
 	var beats: Array[TurnBeat] = []
-	var targets := segment.target_ids.duplicate()
+	var targets: Array[int] = []
+	targets.assign(segment.target_ids)
 	var windup := _make_effect_sequence_windup_beat(beat_q, segment.actor_id, targets)
 	var followthrough := _make_effect_sequence_followthrough_beat(
 		beat_q + 1.0,
@@ -630,7 +635,8 @@ func _make_effect_sequence_followthrough_beat(
 		for event in pop.events:
 			beat.events.append(event)
 	else:
-		var safe_targets := target_ids.duplicate()
+		var safe_targets: Array[int] = []
+		safe_targets.assign(target_ids)
 		if safe_targets.is_empty() and actor_id > 0:
 			safe_targets.append(actor_id)
 		for target_id in safe_targets:
@@ -731,7 +737,8 @@ func _parse_scope_driven_attack_scope(
 	parsed.projectile_scene_path = analysis.projectile_scene_path
 	parsed.analysis = analysis
 
-	var direct_infos: Array = legacy.get("direct_infos", [])
+	var direct_infos: Array[StrikePresentationInfo] = []
+	direct_infos.assign(legacy.get("direct_infos", []))
 	var direct_events_by_step: Array = legacy.get("direct_events_by_step", [])
 	var reactions_by_step: Array = legacy.get("reactions_by_step", [])
 
@@ -745,10 +752,12 @@ func _parse_scope_driven_attack_scope(
 			if strike.info.is_cleave and strike.info.origin_strike_index >= 0
 			else strike.info.strike_index
 		)
-		strike.target_ids = strike.info.target_ids.duplicate()
+		strike.target_ids.assign(strike.info.target_ids)
 
-		var direct_events: Array[BattleEvent] = direct_events_by_step[i] if i < direct_events_by_step.size() else []
-		strike.direct_events = direct_events.duplicate()
+		var direct_events: Array[BattleEvent] = []
+		if i < direct_events_by_step.size():
+			direct_events.assign(direct_events_by_step[i])
+		strike.direct_events.assign(direct_events)
 
 		var reaction_groups: Array = reactions_by_step[i] if i < reactions_by_step.size() else []
 		strike.reactions = _build_delayed_reaction_nodes(
@@ -782,8 +791,9 @@ func _build_delayed_reaction_nodes(
 		var reaction := DelayedReactionNode.new()
 		reaction.source_strike_index = source_strike_index
 		reaction.scope_id = int(reaction_group.get("scope_id", 0))
-		var reaction_events: Array[BattleEvent] = reaction_group.get("events", [])
-		reaction.events = reaction_events.duplicate()
+		var reaction_events: Array[BattleEvent] = []
+		reaction_events.assign(reaction_group.get("events", []))
+		reaction.events.assign(reaction_events)
 
 		var has_summon := false
 		var has_status := false
@@ -882,14 +892,14 @@ func _build_target_windows_for_strikes(strikes: Array[ParsedDirectStrike]) -> Ar
 			starts_new_window = _strike_introduces_new_targets(retarget_reference_targets, strike.target_ids)
 		if starts_new_window:
 			var window := TargetWindow.new()
-			window.target_ids = strike.target_ids.duplicate()
+			window.target_ids.assign(strike.target_ids)
 			window.retarget_from_previous = !windows.is_empty()
 			windows.append(window)
 
 		var current_window := windows[windows.size() - 1]
 		current_window.strikes.append(strike)
 		if strike.info == null or !strike.info.chained_from_previous:
-			retarget_reference_targets = strike.target_ids.duplicate()
+			retarget_reference_targets.assign(strike.target_ids)
 
 	for window in windows:
 		window.window_span_beats = _window_span_beats(window.strikes.size())
@@ -1111,7 +1121,8 @@ func _parse_attack_scope(
 		var strike_scope_id := int(direct_scope_ids[i])
 		var parsed_strike := _parse_attack_strike(events, scope_ranges, strike_scope_id)
 		var marker: BattleEvent = parsed_strike.get("marker", null)
-		var direct_events: Array[BattleEvent] = parsed_strike.get("direct_events", [])
+		var direct_events: Array[BattleEvent] = []
+		direct_events.assign(parsed_strike.get("direct_events", []))
 		var reactions: Array = parsed_strike.get("reactions", [])
 		if i < top_level_reactions_by_strike.size():
 			reactions.append_array(top_level_reactions_by_strike[i])
@@ -1664,7 +1675,10 @@ func _make_melee_strike_order_from_info(
 	var o := MeleeStrikePresentationOrder.new()
 	o.kind = PresentationOrder.Kind.MELEE_STRIKE
 	o.actor_id = analysis.attacker_id
-	o.target_ids = override_targets.duplicate() if !override_targets.is_empty() else strike.target_ids.duplicate()
+	if !override_targets.is_empty():
+		o.target_ids.assign(override_targets)
+	else:
+		o.target_ids.assign(strike.target_ids)
 	o.visual_sec = 0.22
 	o.strike_index = strike_index
 	o.strikes_total = analysis.strike_count
@@ -1856,8 +1870,10 @@ func _build_generic_beats(events: Array[BattleEvent]) -> Array[TurnBeat]:
 	var actor_id := _find_actor_id(events)
 	var group_index := _find_group_index(events)
 	var split := _split_generic_events(events)
-	var removal_events: Array[BattleEvent] = split["removal_events"]
-	var trailing: Array[BattleEvent] = split["trailing"]
+	var removal_events: Array[BattleEvent] = []
+	removal_events.assign(split["removal_events"])
+	var trailing: Array[BattleEvent] = []
+	trailing.assign(split["trailing"])
 
 	var layout_orders := _find_post_action_group_layouts(events, group_index)
 
@@ -2153,7 +2169,7 @@ func _make_focus_order(actor_id: int, target_ids: Array[int], visual_sec: float 
 	var o := FocusPresentationOrder.new()
 	o.kind = PresentationOrder.Kind.FOCUS
 	o.actor_id = actor_id
-	o.target_ids = target_ids.duplicate()
+	o.target_ids.assign(target_ids)
 	o.visual_sec = visual_sec
 	return o
 

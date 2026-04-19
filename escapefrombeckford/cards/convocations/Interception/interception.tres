@@ -6,8 +6,7 @@
 [ext_resource type="Resource" uid="uid://dcsacn6ycr1yp" path="res://cards/convocations/Interception/pressure_barrier_on_frontmost_ally_action.tres" id="4_5xl5h"]
 [ext_resource type="Resource" uid="uid://ds1puc6yesfie" path="res://cards/convocations/Interception/absorb_on_frontmost_ally_action.tres" id="4_absorb_frontmost"]
 [ext_resource type="Resource" uid="uid://ewarv7heh4i4" path="res://cards/convocations/Interception/move_frontmost_npc_ally_to_front.tres" id="4_move_frontmost"]
-[ext_resource type="Texture2D" uid="uid://c2l2ccbal0fiq" path="res://_assets/sprites/assorted/bolt-shield.png" id="5_texture"]
-[ext_resource type="Resource" uid="uid://cwsantdi8vmes" path="res://cards/_generic_actions/draw_1_action.tres" id="6_t30tk"]
+[ext_resource type="Texture2D" uid="uid://b88j1411cpg8f" path="res://_assets/sprites/assorted/shield-bash.png" id="7_64lio"]
 
 [resource]
 script = ExtResource("2_card")
@@ -15,8 +14,8 @@ id = &"interception"
 target_type = 3
 rarity = 1
 name = "Interception"
-description = "Sacrifice an ally. Move the frontmost remaining ally to the front. They negate the next hit and take 2 less damage per strike until your next turn."
+description = "Sacrifice an ally. Move the frontmost remaining ally to the front. They negate the next hit, and hits on them have their damage reduced by 2 until your next turn."
 cost = 1
-texture = ExtResource("5_texture")
-actions = Array[ExtResource("1_action")]([ExtResource("3_sacrifice"), ExtResource("4_move_frontmost"), ExtResource("4_absorb_frontmost"), ExtResource("4_5xl5h"), ExtResource("6_t30tk")])
+texture = ExtResource("7_64lio")
+actions = Array[ExtResource("1_action")]([ExtResource("3_sacrifice"), ExtResource("4_move_frontmost"), ExtResource("4_absorb_frontmost"), ExtResource("4_5xl5h")])
 metadata/_custom_type_script = "uid://d2f0qepe047dc"

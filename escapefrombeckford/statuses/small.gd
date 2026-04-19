@@ -14,4 +14,4 @@ func grants_received_cleave(_ctx: SimStatusContext) -> bool:
 
 
 func get_tooltip(_intensity: int = 0, _duration: int = 0) -> String:
-	return "Small: excess damage dealt here spills into the next combatant."
+	return "Small: excess damage continues to the next target."

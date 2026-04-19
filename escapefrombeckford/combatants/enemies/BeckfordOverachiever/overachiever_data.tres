@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="CombatantData" format=3 uid="uid://cec4md1nfylw5"]
+
+[ext_resource type="Resource" uid="uid://b0v3i3typpmmn" path="res://combatants/enemies/BeckfordOverachiever/overachiever_ai.tres" id="1_uuug3"]
+[ext_resource type="Script" uid="uid://cfatj0ryn8uv3" path="res://combatants/combatant_data.gd" id="2_du3i2"]
+
+[resource]
+script = ExtResource("2_du3i2")
+name = "Beckford Overachiever"
+description = "Inexperienced but eager, the Beckford Overachiever seeks accolades wherever possible. His Convocation skills are proven only in controlled training scenarios. It should be easy to disrupt his focus by damaging him before he acts."
+character_art_uid = "uid://dtvvequ1w1dlu"
+facing_right = false
+height = 270
+max_health = 30
+ai = ExtResource("1_uuug3")
+metadata/_custom_type_script = "uid://cfatj0ryn8uv3"

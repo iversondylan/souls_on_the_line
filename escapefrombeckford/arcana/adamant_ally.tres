@@ -3,7 +3,7 @@
 [ext_resource type="Texture2D" uid="uid://dqw3vrvo72rls" path="res://_assets/sprites/arcana_placeholders/clone.png" id="1_ga55l"]
 [ext_resource type="Script" uid="uid://lpr1x3npsid" path="res://arcana/adamant_ally.gd" id="1_gjwtx"]
 [ext_resource type="Script" uid="uid://cueedkb1u8vxy" path="res://statuses/_core/status.gd" id="2_quj4w"]
-[ext_resource type="Resource" uid="uid://dwy6ym7cfiix7" path="res://combatants/souls/BasicClone/basic_clone_data.tres" id="3_cia6o"]
+[ext_resource type="Resource" uid="uid://dwy6ym7cfiix7" path="res://combatants/souls/SpectralClone/spectral_clone_data.tres" id="3_cia6o"]
 
 [resource]
 script = ExtResource("1_gjwtx")

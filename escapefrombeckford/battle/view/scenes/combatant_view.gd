@@ -241,14 +241,10 @@ func _on_target_area_area_entered(area: Area2D) -> void:
 	if area is not CardTargetSelectorArea:
 		return
 
-	var selector := area.card_target_selector as CardTargetSelectorArea
-	if selector == null or selector.current_card == null or selector.current_card.card_data == null:
+	var selector := area.card_target_selector as CardTargetSelector
+	if selector == null:
 		return
-	if selector.current_card.api == null:
-		return
-
-	var actor_id := int(selector.current_card.api.get_player_id())
-	show_targeted_arrow(CardTargeting.is_valid_target(selector.current_card.card_data, actor_id, int(cid), selector.current_card.api))
+	show_targeted_arrow(selector.can_target_area(target_area))
 
 
 func _on_target_area_area_exited(_area: Area2D) -> void:

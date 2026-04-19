@@ -10,7 +10,6 @@
 script = ExtResource("2_s8x2x")
 id = &"boiling_blood"
 target_type = 3
-rarity = 1
 name = "Boiling Blood"
 description = "An ally gains On Death: deal %s damage to all enemies. Draw %s."
 cost = 1

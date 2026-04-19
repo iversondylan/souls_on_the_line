@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="CombatantData" format=3 uid="uid://cdmyfenehv67g"]
+
+[ext_resource type="Resource" uid="uid://6st7qsavadsd" path="res://combatants/enemies/BeckfordBacklineBlaster/backline_blaster_ai.tres" id="1_pjlw7"]
+[ext_resource type="Script" uid="uid://cfatj0ryn8uv3" path="res://combatants/combatant_data.gd" id="2_oqejc"]
+
+[resource]
+script = ExtResource("2_oqejc")
+name = "Backline Blaster"
+description = "This Beckford student follows his friend into battle despite bringing little Convocation skill himself. He's handy with a blasting rod and is able to fire it twice in quick succession."
+character_art_uid = "uid://dtvvequ1w1dlu"
+facing_right = false
+height = 270
+color_tint = Color(0.34310004, 0.73, 0.37534165, 1)
+max_health = 12
+ai = ExtResource("1_pjlw7")
+metadata/_custom_type_script = "uid://cfatj0ryn8uv3"

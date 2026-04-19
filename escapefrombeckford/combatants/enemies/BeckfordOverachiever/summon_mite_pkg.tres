@@ -1,0 +1,29 @@
+[gd_resource type="Resource" script_class="NPCEffectPackage" format=3 uid="uid://wskiu6n50sfv"]
+
+[ext_resource type="Resource" uid="uid://du8wdjobmyvle" path="res://npc_ai/npc_summon_sequence.tres" id="1_fille"]
+[ext_resource type="Script" uid="uid://b8d5j6ne4mt88" path="res://npc_ai/_core/param_model.gd" id="2_54j78"]
+[ext_resource type="Script" uid="uid://d33ubednd8prd" path="res://npc_ai/insert_index/before_me_insert_index_model.gd" id="3_7gntc"]
+[ext_resource type="Script" uid="uid://daetdpivni6jk" path="res://npc_ai/group_index/my_group_index_model.gd" id="4_gh6la"]
+[ext_resource type="Resource" uid="uid://jtnxxy8mq8s4" path="res://combatants/critters/ShieldMite/shield_mite_data.tres" id="5_nttbp"]
+[ext_resource type="Script" uid="uid://d2aej6kx1gp63" path="res://npc_ai/summon_data/export_combatant_data_summon_model.gd" id="6_31wym"]
+[ext_resource type="Script" uid="uid://3jde7uhq2yho" path="res://npc_ai/_core/npc_effect_package.gd" id="7_3mxp2"]
+[ext_resource type="Script" uid="uid://cuj4qvyx6dedj" path="res://npc_ai/_core/state_model.gd" id="8_qcpgq"]
+
+[sub_resource type="Resource" id="Resource_1wblk"]
+script = ExtResource("3_7gntc")
+metadata/_custom_type_script = "uid://d33ubednd8prd"
+
+[sub_resource type="Resource" id="Resource_0lk5y"]
+script = ExtResource("4_gh6la")
+metadata/_custom_type_script = "uid://daetdpivni6jk"
+
+[sub_resource type="Resource" id="Resource_ocbqs"]
+script = ExtResource("6_31wym")
+combatant_data = ExtResource("5_nttbp")
+metadata/_custom_type_script = "uid://d2aej6kx1gp63"
+
+[resource]
+script = ExtResource("7_3mxp2")
+effect = ExtResource("1_fille")
+param_models = Array[ExtResource("2_54j78")]([SubResource("Resource_1wblk"), SubResource("Resource_0lk5y"), SubResource("Resource_ocbqs")])
+metadata/_custom_type_script = "uid://3jde7uhq2yho"

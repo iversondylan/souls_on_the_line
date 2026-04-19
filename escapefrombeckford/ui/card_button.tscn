@@ -1,0 +1,49 @@
+[gd_scene format=3 uid="uid://cxars4d3cbvb8"]
+
+[ext_resource type="Script" path="res://ui/card_button.gd" id="1_mq6gl"]
+[ext_resource type="PackedScene" uid="uid://d4g7iin5x7648" path="res://cards/_core/menu_card.tscn" id="2_7tb2m"]
+
+[node name="CardButton" type="Button" unique_id=1333011361]
+custom_minimum_size = Vector2(275, 426)
+offset_right = 275.0
+offset_bottom = 426.0
+script = ExtResource("1_mq6gl")
+
+[node name="MarginContainer" type="MarginContainer" parent="." unique_id=1738455049]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Content" type="VBoxContainer" parent="MarginContainer" unique_id=1736199471]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 6
+alignment = 1
+
+[node name="CardWrapper" type="Control" parent="MarginContainer/Content" unique_id=1883658305]
+custom_minimum_size = Vector2(250.58, 346.53)
+layout_mode = 2
+size_flags_horizontal = 4
+mouse_filter = 2
+
+[node name="MenuCard" parent="MarginContainer/Content/CardWrapper" unique_id=1911422849 instance=ExtResource("2_7tb2m")]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = 0.0
+offset_bottom = 0.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="CaptionLabel" type="Label" parent="MarginContainer/Content" unique_id=1141023826]
+custom_minimum_size = Vector2(0, 28)
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "Default Soul"
+horizontal_alignment = 1
+vertical_alignment = 1

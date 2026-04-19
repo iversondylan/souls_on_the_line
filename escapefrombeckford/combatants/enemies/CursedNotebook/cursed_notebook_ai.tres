@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="NPCAIProfile" format=3 uid="uid://b8ekfg8gpu3to"]
+
+[ext_resource type="Script" uid="uid://bcih413oy6v73" path="res://npc_ai/_core/npc_action.gd" id="1_chipx"]
+[ext_resource type="Resource" uid="uid://g7uqfhfstefu" path="res://combatants/enemies/CursedNotebook/summon_docs_action.tres" id="2_uwy06"]
+[ext_resource type="Resource" uid="uid://du524beirr3t" path="res://combatants/enemies/CursedNotebook/resonant_attack_action.tres" id="3_bw32t"]
+[ext_resource type="Script" uid="uid://bdsvca1cpka5s" path="res://npc_ai/_core/npc_ai_profile.gd" id="4_d5206"]
+
+[resource]
+script = ExtResource("4_d5206")
+actions = Array[ExtResource("1_chipx")]([ExtResource("2_uwy06"), ExtResource("3_bw32t")])
+metadata/_custom_type_script = "uid://bdsvca1cpka5s"

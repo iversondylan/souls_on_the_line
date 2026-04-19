@@ -2,18 +2,18 @@
 
 [ext_resource type="Script" uid="uid://wtk5v77fcqvn" path="res://cards/_core/card_action.gd" id="1_6prab"]
 [ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://cards/_core/card_data.gd" id="1_numeo"]
-[ext_resource type="Resource" uid="uid://casfotob5kfol" path="res://cards/convocations/MarkCard/mark_action.tres" id="2_1owkf"]
-[ext_resource type="Resource" uid="uid://ce1lg5k4uob75" path="res://cards/convocations/PinpointCard/pinpoint_action.tres" id="3_unp7j"]
+[ext_resource type="Resource" uid="uid://c1e8deqfu1xaq" path="res://cards/convocations/FocusFireCard/focus_fire_mark_action.tres" id="2_qrtj1"]
+[ext_resource type="Resource" uid="uid://cmvwyh48c1ok0" path="res://cards/convocations/FocusFireCard/focus_fire_pinpoint_action.tres" id="3_wlj4u"]
 [ext_resource type="Texture2D" uid="uid://c0yql2msvjvmi" path="res://_assets/sprites/assorted/target_reticule.png" id="4_n8er5"]
 
 [resource]
 script = ExtResource("1_numeo")
 id = &"focus_fire"
 target_type = 4
-rarity = 1
+rarity = 2
 name = "Focus Fire"
-description = "Ranged attacks prioritize an enemy for %s turns. It takes %s{percent} more damage for [color=\"008000\"]%s[/color] turns."
+description = "Ranged attacks prioritize an enemy for %s turns. It takes %s{percent} more damage for %s turns."
 cost = 1
 texture = ExtResource("4_n8er5")
-actions = Array[ExtResource("1_6prab")]([ExtResource("2_1owkf"), ExtResource("3_unp7j")])
+actions = Array[ExtResource("1_6prab")]([ExtResource("2_qrtj1"), ExtResource("3_wlj4u")])
 metadata/_custom_type_script = "uid://d2f0qepe047dc"

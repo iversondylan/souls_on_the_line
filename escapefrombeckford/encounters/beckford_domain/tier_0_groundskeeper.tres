@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="BattleData" format=3 uid="uid://dqfr6a6r3153l"]
+
+[ext_resource type="Script" uid="uid://cfatj0ryn8uv3" path="res://combatants/combatant_data.gd" id="1_576js"]
+[ext_resource type="Resource" uid="uid://1rdbn0xail7n" path="res://combatants/enemies/GroundskeeperConstruct/groundskeeper_data.tres" id="2_jjfcf"]
+[ext_resource type="Script" uid="uid://be1v8qevmc2xw" path="res://encounters/battle_data.gd" id="4_lve8t"]
+
+[resource]
+script = ExtResource("4_lve8t")
+encounter_name = "Beckford Groundskeeper"
+gold_reward_min = 50
+gold_reward_max = 75
+enemies = Array[ExtResource("1_576js")]([ExtResource("2_jjfcf")])
+metadata/_custom_type_script = "uid://be1v8qevmc2xw"

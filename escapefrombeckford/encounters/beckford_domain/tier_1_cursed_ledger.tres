@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="BattleData" format=3 uid="uid://dj0hn3ipistat"]
+
+[ext_resource type="Script" uid="uid://cfatj0ryn8uv3" path="res://combatants/combatant_data.gd" id="1_px64y"]
+[ext_resource type="Resource" uid="uid://c2yo7152wx0l7" path="res://combatants/enemies/CursedLedger/cursed_ledger_data.tres" id="2_3m1v0"]
+[ext_resource type="Script" uid="uid://be1v8qevmc2xw" path="res://encounters/battle_data.gd" id="3_628oh"]
+
+[resource]
+script = ExtResource("3_628oh")
+encounter_name = "Cursed Ledger"
+battle_tier = 1
+gold_reward_min = 60
+gold_reward_max = 100
+enemies = Array[ExtResource("1_px64y")]([ExtResource("2_3m1v0")])
+metadata/_custom_type_script = "uid://be1v8qevmc2xw"

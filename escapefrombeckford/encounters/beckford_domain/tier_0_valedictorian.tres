@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="BattleData" format=3 uid="uid://cloe37pet1i23"]
+
+[ext_resource type="Script" uid="uid://cfatj0ryn8uv3" path="res://combatants/combatant_data.gd" id="1_vc11n"]
+[ext_resource type="Script" uid="uid://be1v8qevmc2xw" path="res://encounters/battle_data.gd" id="2_oi70o"]
+[ext_resource type="Resource" uid="uid://cyoj8vcxd7rxl" path="res://combatants/enemies/BeckfordValedictorian/valedictorian_data.tres" id="2_vkx56"]
+[ext_resource type="Resource" uid="uid://cdmyfenehv67g" path="res://combatants/enemies/BeckfordBacklineBlaster/backline_blaster_data.tres" id="3_ssbbk"]
+
+[resource]
+script = ExtResource("2_oi70o")
+encounter_name = "Beckford Valedictorian"
+gold_reward_min = 50
+gold_reward_max = 75
+enemies = Array[ExtResource("1_vc11n")]([ExtResource("2_vkx56"), ExtResource("3_ssbbk")])
+metadata/_custom_type_script = "uid://be1v8qevmc2xw"

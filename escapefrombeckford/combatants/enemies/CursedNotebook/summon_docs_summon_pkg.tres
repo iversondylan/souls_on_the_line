@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="NPCEffectPackage" format=3 uid="uid://c4g333gn4s34h"]
+
+[ext_resource type="Resource" uid="uid://du8wdjobmyvle" path="res://npc_ai/npc_summon_sequence.tres" id="1_wat8y"]
+[ext_resource type="Script" uid="uid://b8d5j6ne4mt88" path="res://npc_ai/_core/param_model.gd" id="2_kec6n"]
+[ext_resource type="Resource" uid="uid://btd0tpwujmjd" path="res://combatants/enemies/CursedNotebook/summon_docs_param_model.tres" id="4_2s46v"]
+[ext_resource type="Script" uid="uid://3jde7uhq2yho" path="res://npc_ai/_core/npc_effect_package.gd" id="5_5q0ap"]
+[ext_resource type="Script" uid="uid://cuj4qvyx6dedj" path="res://npc_ai/_core/state_model.gd" id="6_5m5ot"]
+
+[resource]
+script = ExtResource("5_5q0ap")
+effect = ExtResource("1_wat8y")
+param_models = Array[ExtResource("2_kec6n")]([ExtResource("4_2s46v")])
+metadata/_custom_type_script = "uid://3jde7uhq2yho"

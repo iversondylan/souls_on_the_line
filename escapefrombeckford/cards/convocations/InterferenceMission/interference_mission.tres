@@ -9,11 +9,9 @@
 [resource]
 script = ExtResource("2_card")
 id = &"interference_mission"
-card_type = 3
 target_type = 3
-rarity = 1
 name = "Interference Mission"
-description = "Sacrifice an ally. If they were in front, enemies take 30% more damage this turn. If they were behind, enemies deal 30% less damage this turn."
+description = "Sacrifice an ally. If they were in front, enemies take 30% more for a turn. If they were behind, enemies deal 30% less damage for a turn."
 cost = 1
 texture = ExtResource("5_texture")
 actions = Array[ExtResource("1_action")]([ExtResource("3_sacrifice"), ExtResource("4_interference")])

@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="ApplyStatusToTargetsAction" format=3 uid="uid://cmvwyh48c1ok0"]
+
+[ext_resource type="Script" uid="uid://bw3gskunin2ql" path="res://cards/_generic_actions/apply_status_to_targets_action.gd" id="1_13o5m"]
+[ext_resource type="Resource" uid="uid://dg4xayxef851q" path="res://audio/pinpoint_buzz.tres" id="2_qsny8"]
+[ext_resource type="Resource" uid="uid://bh05r8var8mj3" path="res://statuses/pinpoint.tres" id="3_xma0u"]
+
+[resource]
+script = ExtResource("1_13o5m")
+status = ExtResource("3_xma0u")
+intensity = 1
+duration = 2
+sound = ExtResource("2_qsny8")
+metadata/_custom_type_script = "uid://wtk5v77fcqvn"

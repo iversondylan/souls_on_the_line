@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="ExportCombatantDataSummonModel" format=3 uid="uid://btd0tpwujmjd"]
+
+[ext_resource type="Resource" uid="uid://d0biiyu4fmutq" path="res://combatants/critters/CursedDocument/cursed_document_data.tres" id="1_l57qo"]
+[ext_resource type="Script" uid="uid://d2aej6kx1gp63" path="res://npc_ai/summon_data/export_combatant_data_summon_model.gd" id="2_kgogs"]
+
+[resource]
+script = ExtResource("2_kgogs")
+combatant_data = ExtResource("1_l57qo")
+metadata/_custom_type_script = "uid://d2aej6kx1gp63"
