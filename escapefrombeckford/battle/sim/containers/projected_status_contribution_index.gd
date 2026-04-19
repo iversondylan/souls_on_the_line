@@ -111,24 +111,10 @@ func build_projected_token(status_id: StringName) -> StatusToken:
 
 	var total_intensity := 0
 	var max_duration := 0
-	var ordered_source_keys: Array[String] = []
+	# BEFORE: sorted contributors every read.
+	# AFTER: aggregate directly; sum/max is commutative so ordering does not change output.
 	for source_key_variant in source_keys.keys():
-		ordered_source_keys.append(String(source_key_variant))
-	ordered_source_keys.sort_custom(func(a: String, b: String) -> bool:
-		var a_info: Dictionary = _order_by_source_key.get(a, {})
-		var b_info: Dictionary = _order_by_source_key.get(b, {})
-		var a_priority := int(a_info.get("priority", 0))
-		var b_priority := int(b_info.get("priority", 0))
-		if a_priority != b_priority:
-			return a_priority < b_priority
-		var a_tid := int(a_info.get("tid", 0))
-		var b_tid := int(b_info.get("tid", 0))
-		if a_tid != b_tid:
-			return a_tid < b_tid
-		return a < b
-	)
-
-	for source_key in ordered_source_keys:
+		var source_key := String(source_key_variant)
 		var source_map := _get_source_map(source_key)
 		if !source_map.has(status_id):
 			continue

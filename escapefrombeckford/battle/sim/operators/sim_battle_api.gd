@@ -334,48 +334,9 @@ func _sync_arcanum_source_transformers(arcanum_id: StringName) -> void:
 	var owner_id := int(get_player_id())
 	if owner_id <= 0:
 		return
-	state.transformer_registry.sync_arcanum_source_transformers(
-		state,
-		owner_id,
-		FRIENDLY,
-		arcanum_id
-	)
-	state.transformer_registry.mark_source_dirty(
-		TransformerRecord.SOURCE_KIND_ARCANUM_ENTRY,
-		owner_id,
-		arcanum_id
-	)
-	var source_key := TransformerRecord.make_source_key(
-		TransformerRecord.SOURCE_KIND_ARCANUM_ENTRY,
-		owner_id,
-		arcanum_id
-	)
-	var dirty_ids := {}
-	var proto: Arcanum = state.arcana_catalog.get_proto(arcanum_id) if state.arcana_catalog != null else null
-	for cid_variant in state.units.keys():
-		var cid := int(cid_variant)
-		_refresh_projected_status_cache_for(cid, [source_key])
-		var unit: CombatantState = state.get_unit(cid)
-		if unit == null or !unit.is_alive():
-			continue
-		if unit.combatant_data == null or unit.combatant_data.ai == null:
-			continue
-		if proto != null and proto.affects_others():
-			dirty_ids[cid] = true
-			continue
-		if proto == null or !proto.affects_target(state, owner_id, cid):
-			continue
-		dirty_ids[cid] = true
-	for cid_variant in dirty_ids.keys():
-		var cid := int(cid_variant)
-		_request_replan(cid)
-		_request_intent_refresh(cid)
-		_cancel_invalid_plan_immediately_if_needed(cid)
-	if proto != null and proto.affects_others() and !dirty_ids.is_empty():
-		if runtime != null and bool(is_main) and checkpoint_processor != null:
-			var cp := checkpoint_processor
-			if cp.has_dirty_planning() or cp.has_dirty_turn_order() or cp.has_dirty_outcome():
-				runtime.request_projection_cleanup_flush()
+	# BEFORE: arcanum sync always dirtied source + refreshed all projected caches + scanned all units.
+	# AFTER: arcanum sync shares targeted projection-change handling with status sources.
+	ProjectionChangeSystem.sync_arcanum_source(self, owner_id, FRIENDLY, arcanum_id)
 
 
 func get_interceptors_for_hook(hook_kind: StringName) -> Array[Interceptor]:
@@ -694,9 +655,6 @@ func _request_outcome_check() -> void:
 
 func _on_status_changed(cid: int) -> void:
 	_request_replan(int(cid))
-
-func _untrack_auras_for_removed_combatant(removed_id: int) -> void:
-	ProjectionChangeSystem.untrack_auras_from_removed_combatant(self, removed_id)
 
 func _refresh_status_aura_projection(source_owner_id: int, status_id: StringName) -> void:
 	ProjectionChangeSystem.sync_status_source(self, source_owner_id, status_id)

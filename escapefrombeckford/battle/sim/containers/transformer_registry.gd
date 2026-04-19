@@ -88,20 +88,17 @@ func mark_source_dirty(source_kind: StringName, source_owner_id: int, source_id:
 func get_projection_records() -> Array[TransformerRecord]:
 	if !_ordered_projection_cache_valid:
 		_rebuild_projection_cache()
-	var copied: Array[TransformerRecord] = []
-	for record: TransformerRecord in _ordered_projection_cache:
-		copied.append(record.clone())
-	return copied
+	# BEFORE: cloned every record on each read.
+	# AFTER: return the cached ordered record refs (treat as read-only).
+	return _ordered_projection_cache
 
 
 func get_interceptors_for_hook(state, hook_kind: StringName) -> Array[Interceptor]:
 	_ensure_interceptor_hook(state, hook_kind)
-	var ordered: Array = _interceptors_by_hook.get(hook_kind, [])
-	var out: Array[Interceptor] = []
-	for interceptor in ordered:
-		if interceptor != null and interceptor is Interceptor:
-			out.append(interceptor.clone())
-	return out
+	# BEFORE: cloned every interceptor on each read.
+	# AFTER: return cached interceptor refs (treat as read-only).
+	var ordered: Array[Interceptor] = _interceptors_by_hook.get(hook_kind, [])
+	return ordered
 
 
 func get_projection_impact_info(
