@@ -305,49 +305,6 @@ func get_effective_status_contexts_for_unit(
 		target_id
 	)
 
-func has_cached_effective_status_contexts_for_unit(
-	target_id: int,
-	unit_status_version: int
-) -> bool:
-	if state == null:
-		return false
-	return state.has_cached_effective_status_contexts_for_unit(
-		target_id,
-		unit_status_version
-	)
-
-
-func _get_cached_effective_status_contexts_for_unit(
-	target_id: int,
-	unit_status_version: int
-) -> Array[SimStatusContext]:
-	if state == null:
-		return []
-	return state.get_cached_effective_status_contexts_for_unit(
-		target_id,
-		unit_status_version
-	)
-
-
-func _set_cached_effective_status_contexts_for_unit(
-	target_id: int,
-	unit_status_version: int,
-	contexts: Array[SimStatusContext]
-) -> void:
-	if state == null:
-		return
-	state.set_cached_effective_status_contexts_for_unit(
-		target_id,
-		unit_status_version,
-		contexts
-	)
-
-
-func _invalidate_effective_status_context_cache() -> void:
-	if state == null:
-		return
-	state.invalidate_effective_status_context_cache()
-
 
 func _mark_interceptors_dirty(hook_kind: StringName) -> void:
 	if state == null:
@@ -1126,7 +1083,6 @@ func apply_status(ctx: StatusContext) -> void:
 	if !changed and !first_apply:
 		# No effective mutation means no projection, status-hook, or intent side effects.
 		return
-	_invalidate_effective_status_context_cache()
 	_sync_status_source_transformers(int(ctx.target_id), ctx.status_id)
 
 	var status_ctx := SimStatusSystem.make_context(
@@ -1171,7 +1127,6 @@ func remove_status(ctx: StatusContext) -> void:
 	
 	var status_ctx := SimStatusSystem.make_context(self, int(ctx.target_id), old_token)
 	u.statuses.remove_ctx(ctx)
-	_invalidate_effective_status_context_cache()
 	_sync_status_source_transformers(int(ctx.target_id), ctx.status_id)
 	
 	if writer != null:
@@ -1772,7 +1727,6 @@ func _refresh_projected_status_cache_for(
 	source_keys: Array[String] = [],
 	full_rebuild := false
 ) -> void:
-	_invalidate_effective_status_context_cache()
 	SimStatusSystem.refresh_cached_projected_statuses_for_unit(
 		self,
 		int(id),

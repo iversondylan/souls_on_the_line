@@ -6,6 +6,9 @@ var by_id_projected: Dictionary = {} # StringName -> StatusToken
 var _projected_contribution_index: ProjectedStatusContributionIndex = ProjectedStatusContributionIndex.new()
 var _projected_cache_ready: bool = false
 var _effective_context_version: int = 1
+var _has_cached_effective_contexts: bool = false
+var _cached_effective_context_version: int = 0
+var _cached_effective_contexts: Array[SimStatusContext] = []
 
 
 func has(id: StringName, pending := false) -> bool:
@@ -92,6 +95,32 @@ func set_projected_cache_ready(ready: bool) -> void:
 
 func get_effective_context_version() -> int:
 	return int(_effective_context_version)
+
+
+func has_cached_effective_contexts(version: int) -> bool:
+	return (
+		bool(_has_cached_effective_contexts)
+		and
+		int(version) == int(_cached_effective_context_version)
+	)
+
+
+func get_cached_effective_contexts(version: int) -> Array[SimStatusContext]:
+	if !has_cached_effective_contexts(version):
+		return []
+	return _copy_effective_contexts(_cached_effective_contexts)
+
+
+func set_cached_effective_contexts(version: int, contexts: Array[SimStatusContext]) -> void:
+	_has_cached_effective_contexts = true
+	_cached_effective_context_version = int(version)
+	_cached_effective_contexts = _copy_effective_contexts(contexts)
+
+
+func invalidate_effective_context_cache() -> void:
+	_has_cached_effective_contexts = false
+	_cached_effective_context_version = 0
+	_cached_effective_contexts.clear()
 
 
 func get_projected_dependency_status_ids(source_key: String) -> Array[StringName]:
@@ -305,6 +334,7 @@ func clone() -> StatusState:
 
 
 func _bump_effective_context_version() -> void:
+	invalidate_effective_context_cache()
 	_effective_context_version += 1
 
 
@@ -344,6 +374,13 @@ func _recompute_projected_bins_for_ids(affected_ids: Array[StringName]) -> void:
 			by_id_projected.erase(status_id)
 			continue
 		by_id_projected[status_id] = projected_token
+
+
+func _copy_effective_contexts(source_contexts: Array[SimStatusContext]) -> Array[SimStatusContext]:
+	var copied: Array[SimStatusContext] = []
+	for ctx: SimStatusContext in source_contexts:
+		copied.append(ctx)
+	return copied
 
 
 func debug_projected_snapshot() -> Dictionary:

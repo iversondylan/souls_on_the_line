@@ -42,10 +42,6 @@ var arcana: ArcanaState = ArcanaState.new()
 # Resource(s)
 var resource: ResourceState = ResourceState.new() 
 
-# Derived caches live on the state object so cloned battle states carry their
-# own cache containers instead of sharing API-bound runtime data.
-var _effective_status_context_cache_store: EffectiveStatusContextCacheStore = EffectiveStatusContextCacheStore.new()
-
 
 func init(_battle_seed: int, _run_seed: int) -> void:
 	battle_seed = _battle_seed
@@ -62,7 +58,6 @@ func init(_battle_seed: int, _run_seed: int) -> void:
 	resource.player_turn_use_soulbound_guarantee = true
 	resource.hand_mode = ResourceState.HandMode.DISCARD
 	resource.shuffle_mode = ResourceState.ShuffleMode.NORMAL
-	invalidate_effective_status_context_cache()
 
 
 func has_terminal_outcome() -> bool:
@@ -128,38 +123,6 @@ func is_alive(id: int) -> bool:
 	var u: CombatantState = units.get(id, null)
 	return u != null and u.alive and u.health > 0
 
-func has_cached_effective_status_contexts_for_unit(
-	target_id: int,
-	unit_status_version: int
-) -> bool:
-	return _effective_status_context_cache_store.has_contexts(
-		target_id,
-		unit_status_version
-	)
-
-func get_cached_effective_status_contexts_for_unit(
-	target_id: int,
-	unit_status_version: int
-) -> Array[SimStatusContext]:
-	return _effective_status_context_cache_store.get_contexts(
-		target_id,
-		unit_status_version
-	)
-
-func set_cached_effective_status_contexts_for_unit(
-	target_id: int,
-	unit_status_version: int,
-	contexts: Array[SimStatusContext]
-) -> void:
-	_effective_status_context_cache_store.set_contexts(
-		target_id,
-		unit_status_version,
-		contexts
-	)
-
-func invalidate_effective_status_context_cache() -> void:
-	_effective_status_context_cache_store.invalidate()
-
 func mark_interceptors_dirty(hook_kind: StringName) -> void:
 	if transformer_registry == null:
 		return
@@ -199,8 +162,6 @@ func clone() -> BattleState:
 	b.arcana = arcana.clone() if arcana != null else ArcanaState.new()
 	b.transformer_registry = transformer_registry.clone() if transformer_registry != null else TransformerRegistry.new()
 	b.resource = resource.clone()
-	# Effective status contexts carry API references, so clones start with a fresh store.
-	b._effective_status_context_cache_store = EffectiveStatusContextCacheStore.new()
 
 	# Policy: preview clones start with a fresh empty event log.
 	b.events = BattleEventLog.new()

@@ -264,14 +264,10 @@ static func get_effective_status_contexts_for_unit(
 	var unit_status_version := 0
 	if target != null and target.statuses != null:
 		unit_status_version = int(target.statuses.get_effective_context_version())
-	if api.has_cached_effective_status_contexts_for_unit(
-		int(target_id),
+	if target != null and target.statuses != null and target.statuses.has_cached_effective_contexts(
 		unit_status_version
 	):
-		return api._get_cached_effective_status_contexts_for_unit(
-			int(target_id),
-			unit_status_version
-		)
+		return target.statuses.get_cached_effective_contexts(unit_status_version)
 
 	# Pending owned tokens are fully live, so effective status queries always
 	# report both owned lanes and the collapsed projected cache with no preview-only
@@ -280,11 +276,8 @@ static func get_effective_status_contexts_for_unit(
 	refresh_cached_projected_statuses_for_unit(api, target_id)
 	_append_cached_projected_status_contexts(projected, api, target_id)
 	var merged := _merge_owned_and_projected_contexts(owned, projected)
-	api._set_cached_effective_status_contexts_for_unit(
-		int(target_id),
-		unit_status_version,
-		merged
-	)
+	if target != null and target.statuses != null:
+		target.statuses.set_cached_effective_contexts(unit_status_version, merged)
 	return merged
 
 static func realize_pending_statuses(
