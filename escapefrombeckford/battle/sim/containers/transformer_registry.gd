@@ -1,8 +1,5 @@
 class_name TransformerRegistry extends RefCounted
 
-const TransformerRecord := preload("res://battle/sim/containers/transformer_record.gd")
-const InterceptorScript := preload("res://battle/sim/interceptors/interceptor.gd")
-const OnAnyDeathInterceptorScript := preload("res://battle/sim/interceptors/on_any_death_interceptor.gd")
 
 const FRIENDLY := 0
 const ENEMY := 1
@@ -172,7 +169,7 @@ func sync_status_source_transformers(
 	)
 	_sync_interceptor_record(
 		wants_interceptor,
-		InterceptorScript.HOOK_ON_ANY_DEATH,
+		Interceptor.HOOK_ON_ANY_DEATH,
 		TransformerRecord.SOURCE_KIND_STATUS_TOKEN,
 		source_owner_id,
 		group_index,
@@ -206,7 +203,7 @@ func sync_arcanum_source_transformers(
 	)
 	_sync_interceptor_record(
 		wants_interceptor,
-		InterceptorScript.HOOK_ON_ANY_DEATH,
+		Interceptor.HOOK_ON_ANY_DEATH,
 		TransformerRecord.SOURCE_KIND_ARCANUM_ENTRY,
 		source_owner_id,
 		source_group_index,
@@ -419,7 +416,7 @@ func _rebuild_projection_cache() -> void:
 	_ordered_projection_cache_valid = true
 
 
-func _ensure_interceptor_hook(state, hook_kind: StringName) -> void:
+func _ensure_interceptor_hook(_state, hook_kind: StringName) -> void:
 	if hook_kind == &"":
 		return
 	if !_dirty_interceptor_hooks.get(hook_kind, true):
@@ -452,8 +449,8 @@ func _build_interceptor(record: TransformerRecord):
 	if record == null:
 		return null
 	match record.hook_kind:
-		InterceptorScript.HOOK_ON_ANY_DEATH:
-			return OnAnyDeathInterceptorScript.new(
+		Interceptor.HOOK_ON_ANY_DEATH:
+			return OnAnyDeathInterceptor.new(
 				record.source_kind,
 				record.source_owner_id,
 				record.source_group_index,

@@ -2,12 +2,6 @@
 
 class_name BattleState extends RefCounted
 
-const EffectiveStatusContextCacheStore := preload("res://battle/sim/containers/effective_status_context_cache_store.gd")
-const Interceptor := preload("res://battle/sim/interceptors/interceptor.gd")
-const TransformerRegistry := preload("res://battle/sim/containers/transformer_registry.gd")
-const ArcanumEntry := preload("res://battle/sim/containers/arcanum_entry.gd")
-const StatusToken := preload("res://battle/sim/containers/status_token.gd")
-
 const FRIENDLY := 0
 const ENEMY := 1
 
