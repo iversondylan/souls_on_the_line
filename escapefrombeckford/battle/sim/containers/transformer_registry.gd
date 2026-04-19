@@ -88,20 +88,25 @@ func mark_source_dirty(source_kind: StringName, source_owner_id: int, source_id:
 func get_projection_records() -> Array[TransformerRecord]:
 	if !_ordered_projection_cache_valid:
 		_rebuild_projection_cache()
-	var copied: Array[TransformerRecord] = []
-	for record: TransformerRecord in _ordered_projection_cache:
-		copied.append(record.clone())
-	return copied
+	# Read-only contract: callers must not mutate this array or contained records.
+	# Mutation here includes replacing elements in the array or editing any record fields.
+	# Violating this contract can corrupt shared cache state. We intentionally removed
+	# per-read cloning here to reduce hot-path allocation pressure. If a caller must
+	# mutate, clone first (for example: records = records.duplicate(); for i in
+	# range(records.size()): records[i] = records[i].clone()).
+	return _ordered_projection_cache
 
 
 func get_interceptors_for_hook(state, hook_kind: StringName) -> Array[Interceptor]:
 	_ensure_interceptor_hook(state, hook_kind)
-	var ordered: Array = _interceptors_by_hook.get(hook_kind, [])
-	var out: Array[Interceptor] = []
-	for interceptor in ordered:
-		if interceptor != null and interceptor is Interceptor:
-			out.append(interceptor.clone())
-	return out
+	# Read-only contract: callers must not mutate this array or contained interceptors.
+	# Mutation here includes replacing elements in the array or editing interceptor fields.
+	# Violating this contract can corrupt shared hook cache state. We intentionally
+	# removed per-read cloning here to reduce hot-path allocation pressure. If a caller
+	# must mutate, clone first (for example: interceptors = interceptors.duplicate();
+	# for i in range(interceptors.size()): interceptors[i] = interceptors[i].clone()).
+	var ordered: Array[Interceptor] = _interceptors_by_hook.get(hook_kind, [])
+	return ordered
 
 
 func get_projection_impact_info(

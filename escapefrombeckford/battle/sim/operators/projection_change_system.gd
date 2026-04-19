@@ -5,6 +5,7 @@ extends RefCounted
 
 const ProjectionImpactInfo := preload("res://battle/sim/containers/projection_impact_info.gd")
 const TransformerRecord := preload("res://battle/sim/containers/transformer_record.gd")
+const ArcanumEntry := preload("res://battle/sim/containers/arcanum_entry.gd")
 
 
 static func sync_status_source(
@@ -28,27 +29,72 @@ static func sync_status_source(
 	registry.sync_status_source_transformers(api.state, source_owner_id, status_id)
 	registry.mark_source_dirty(TransformerRecord.SOURCE_KIND_STATUS_TOKEN, source_owner_id, status_id)
 
-	_handle_status_aura_projection_change(
+	# BEFORE: status-sync and arcanum-sync used different projection dirty/refresh paths.
+	# AFTER: both feed the same targeted projection-change handler.
+	_handle_projection_source_change(
 		api,
 		source_owner_id,
-		impact_info,
+		impact_info.target_ids if impact_info != null and impact_info.known else PackedInt32Array(),
+		impact_info != null and impact_info.known,
 		had_projection or should_track or (impact_info != null and impact_info.known),
 		[_make_status_aura_source_key(source_owner_id, status_id)]
 	)
 
 
-static func untrack_auras_from_removed_combatant(api: SimBattleAPI, removed_id: int) -> void:
+static func sync_arcanum_source(
+	api: SimBattleAPI,
+	source_owner_id: int,
+	source_group_index: int,
+	arcanum_id: StringName
+) -> void:
 	if api == null or api.state == null or api.state.transformer_registry == null:
 		return
-	if removed_id <= 0:
+	if source_owner_id <= 0 or arcanum_id == &"":
 		return
 
-	var source_keys := api.state.transformer_registry.get_projection_source_keys_for_owner(removed_id)
-	for source_key in source_keys:
-		var parts := String(source_key).split("::")
-		if parts.size() < 3:
-			continue
-		sync_status_source(api, removed_id, StringName(parts[2]))
+	var registry := api.state.transformer_registry
+	var had_projection := bool(
+		registry.has_projection_transformer(
+			TransformerRecord.SOURCE_KIND_ARCANUM_ENTRY,
+			source_owner_id,
+			arcanum_id
+		)
+	)
+	var impact_before := _get_arcanum_projection_impact_info(api, source_owner_id, arcanum_id)
+
+	registry.sync_arcanum_source_transformers(api.state, source_owner_id, source_group_index, arcanum_id)
+
+	var has_projection := bool(
+		registry.has_projection_transformer(
+			TransformerRecord.SOURCE_KIND_ARCANUM_ENTRY,
+			source_owner_id,
+			arcanum_id
+		)
+	)
+	# Only mark dirty while the source is still projection-tracked. When a projection
+	# source is removed, cache invalidation is handled via targeted/full refresh with
+	# the source key (which removes stale projected contributions).
+	if has_projection:
+		registry.mark_source_dirty(TransformerRecord.SOURCE_KIND_ARCANUM_ENTRY, source_owner_id, arcanum_id)
+
+	var impact_after := _get_arcanum_projection_impact_info(api, source_owner_id, arcanum_id)
+	var merged_impacted_ids := _merge_target_ids(impact_before, impact_after)
+	var merged_known := (impact_before != null and impact_before.known) or (impact_after != null and impact_after.known)
+
+	_handle_projection_source_change(
+		api,
+		source_owner_id,
+		merged_impacted_ids,
+		merged_known,
+		had_projection or has_projection or merged_known,
+		[
+			TransformerRecord.make_source_key(
+				TransformerRecord.SOURCE_KIND_ARCANUM_ENTRY,
+				source_owner_id,
+				arcanum_id
+			)
+		]
+	)
 
 
 static func _can_use_transformer_registry(
@@ -83,20 +129,16 @@ static func _source_has_live_aura_stack(
 	return source.statuses.has(status_id, false) or source.statuses.has(status_id, true)
 
 
-static func _handle_status_aura_projection_change(
+static func _handle_projection_source_change(
 	api: SimBattleAPI,
 	source_owner_id: int,
-	impact_info: ProjectionImpactInfo,
+	impacted_ids: PackedInt32Array,
+	known: bool,
 	should_process: bool,
 	source_keys: Array[String] = []
 ) -> void:
 	if api == null or api.state == null or !should_process:
 		return
-
-	var impacted_ids := PackedInt32Array()
-	var known := impact_info != null and impact_info.known
-	if known:
-		impacted_ids = impact_info.target_ids
 
 	var applied_targeted := _request_targeted_projection_dirtying(api, source_owner_id, impacted_ids, known)
 	if !applied_targeted:
@@ -185,3 +227,57 @@ static func _make_status_aura_source_key(source_owner_id: int, status_id: String
 		source_owner_id,
 		status_id
 	)
+
+
+static func _get_arcanum_projection_impact_info(
+	api: SimBattleAPI,
+	source_owner_id: int,
+	arcanum_id: StringName
+) -> ProjectionImpactInfo:
+	var target_ids := PackedInt32Array()
+	if api == null or api.state == null or source_owner_id <= 0 or arcanum_id == &"":
+		return ProjectionImpactInfo.new(false, target_ids)
+	if api.state.arcana_catalog == null or api.state.arcana == null:
+		return ProjectionImpactInfo.new(false, target_ids)
+
+	var entry: ArcanumEntry = api.state.arcana.get_entry(arcanum_id)
+	var proto: Arcanum = api.state.arcana_catalog.get_proto(arcanum_id)
+	# Arcanum sources only participate in projection cache work when they explicitly
+	# project statuses; interceptor-only arcana are handled by interceptor sync alone.
+	if entry == null or proto == null or !proto.affects_others():
+		return ProjectionImpactInfo.new(false, target_ids)
+
+	var seen := {}
+	for unit_value in api.state.units.values():
+		var unit: CombatantState = unit_value as CombatantState
+		if unit == null or !unit.is_alive():
+			continue
+		var target_id := int(unit.id)
+		if target_id <= 0 or seen.has(target_id):
+			continue
+		if !proto.affects_target(api.state, int(source_owner_id), target_id):
+			continue
+		seen[target_id] = true
+		target_ids.append(target_id)
+
+	return ProjectionImpactInfo.new(true, target_ids)
+
+
+static func _merge_target_ids(first: ProjectionImpactInfo, second: ProjectionImpactInfo) -> PackedInt32Array:
+	var out := PackedInt32Array()
+	var seen := {}
+	if first != null and first.known:
+		for raw_id in first.target_ids:
+			var cid := int(raw_id)
+			if cid <= 0 or seen.has(cid):
+				continue
+			seen[cid] = true
+			out.append(cid)
+	if second != null and second.known:
+		for raw_id in second.target_ids:
+			var cid := int(raw_id)
+			if cid <= 0 or seen.has(cid):
+				continue
+			seen[cid] = true
+			out.append(cid)
+	return out
