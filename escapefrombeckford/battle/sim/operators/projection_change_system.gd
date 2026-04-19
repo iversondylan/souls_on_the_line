@@ -75,13 +75,13 @@ static func sync_arcanum_source(
 		registry.mark_source_dirty(TransformerRecord.SOURCE_KIND_ARCANUM_ENTRY, source_owner_id, arcanum_id)
 
 	var impact_after := _get_arcanum_projection_impact_info(api, source_owner_id, arcanum_id)
-	var merged_impacted := _merge_target_ids(impact_before, impact_after)
+	var merged_impacted_ids := _merge_target_ids(impact_before, impact_after)
 	var merged_known := (impact_before != null and impact_before.known) or (impact_after != null and impact_after.known)
 
 	_handle_projection_source_change(
 		api,
 		source_owner_id,
-		merged_impacted,
+		merged_impacted_ids,
 		merged_known,
 		had_projection or has_projection or merged_known,
 		[
