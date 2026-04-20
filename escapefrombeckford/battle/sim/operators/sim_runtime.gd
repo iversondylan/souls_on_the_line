@@ -1924,6 +1924,7 @@ func _commit_card_play_if_needed(ctx: CardContext) -> bool:
 		if !ctx.api.spend_mana_for_card(mana_ctx, ctx.card_data):
 			return false
 		ctx.mana_spent = true
+		SimStatusSystem.on_card_played(ctx.api, int(ctx.source_id), ctx.card_data)
 
 	ctx.card_play_committed = true
 	if !ctx.activation_committed_to_view and ctx.source_card != null and is_instance_valid(ctx.source_card):

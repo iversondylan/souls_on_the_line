@@ -86,6 +86,9 @@ func on_summon_will_resolve(
 ) -> void:
 	pass
 
+func on_card_played(_ctx: SimStatusContext, _source_id: int, _card: CardData) -> void:
+	pass
+
 func should_skip_npc_action(_ctx: SimStatusContext) -> bool:
 	return false
 
@@ -115,6 +118,10 @@ func listens_for_targeting_retarget() -> bool:
 
 
 func listens_for_targeting_interpose() -> bool:
+	return false
+
+
+func listens_for_card_played() -> bool:
 	return false
 
 

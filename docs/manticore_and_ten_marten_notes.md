@@ -1,0 +1,6 @@
+- **Grounding Accord (status)**: listens to successful card-play commits and tracks the friendly player's Convocation count per round; on that round's second Convocation, it grants Absorb once.
+- **Awase (status)**: reacts to the Absorb prevention event marker and grants +1 max health when Absorb on the same unit prevents damage.
+- **other_side_of_player_insert_index_model**: computes move insert index only when the acting unit is adjacent to the player and switches sides using these rules:
+  - actor at `player_index - 1` -> move to `player_index + 1`
+  - actor at `player_index + 1` -> move to `player_index`
+  - any other position -> skip move execution
