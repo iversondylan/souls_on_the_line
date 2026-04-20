@@ -313,9 +313,23 @@ func get_effective_status_contexts_for_unit(
 
 
 func _sync_status_source_transformers(source_owner_id: int, status_id: StringName) -> void:
-	if state == null:
+	if state == null or source_owner_id <= 0 or status_id == &"":
 		return
-	ProjectionChangeSystem.sync_status_source(self, source_owner_id, status_id)
+	var owner: CombatantState = state.get_unit(source_owner_id)
+	if owner == null or owner.statuses == null:
+		return
+	var group_index := int(owner.team)
+	for token: StatusToken in owner.statuses.get_all_tokens(true):
+		if token == null or StringName(token.id) != status_id:
+			continue
+		_sync_transformer_source(
+			TransformerSourceRef.for_status_token(
+				source_owner_id,
+				group_index,
+				status_id,
+				int(token.token_id)
+			)
+		)
 
 
 func _sync_all_status_source_transformers(source_owner_id: int) -> void:
@@ -324,8 +338,17 @@ func _sync_all_status_source_transformers(source_owner_id: int) -> void:
 	var owner: CombatantState = state.get_unit(source_owner_id)
 	if owner == null or owner.statuses == null:
 		return
-	for status_id in owner.statuses.get_status_ids(true):
-		_sync_status_source_transformers(source_owner_id, status_id)
+	for token: StatusToken in owner.statuses.get_all_tokens(true):
+		if token == null:
+			continue
+		_sync_transformer_source(
+			TransformerSourceRef.for_status_token(
+				source_owner_id,
+				int(owner.team),
+				StringName(token.id),
+				int(token.token_id)
+			)
+		)
 
 
 func _sync_arcanum_source_transformers(arcanum_id: StringName) -> void:
@@ -334,9 +357,45 @@ func _sync_arcanum_source_transformers(arcanum_id: StringName) -> void:
 	var owner_id := int(get_player_id())
 	if owner_id <= 0:
 		return
-	# BEFORE: arcanum sync always dirtied source + refreshed all projected caches + scanned all units.
-	# AFTER: arcanum sync shares targeted projection-change handling with status sources.
-	ProjectionChangeSystem.sync_arcanum_source(self, owner_id, FRIENDLY, arcanum_id)
+	_sync_transformer_source(TransformerSourceRef.for_arcanum_entry(owner_id, FRIENDLY, arcanum_id))
+
+
+func _sync_transformer_source(source_ref: TransformerSourceRef) -> void:
+	if state == null or state.transformer_registry == null or source_ref == null:
+		return
+	state.transformer_registry.sync_source_change(self, source_ref)
+
+
+func _sync_status_transformers_from_mutation(
+	source_owner_id: int,
+	status_id: StringName,
+	before_token_id: int,
+	after_token_id: int
+) -> void:
+	if state == null or state.transformer_registry == null:
+		return
+	if source_owner_id <= 0 or status_id == &"":
+		return
+	var owner: CombatantState = state.get_unit(source_owner_id)
+	var group_index := int(owner.team) if owner != null else -1
+	if before_token_id > 0:
+		_sync_transformer_source(
+			TransformerSourceRef.for_status_token(
+				source_owner_id,
+				group_index,
+				status_id,
+				before_token_id
+			)
+		)
+	if after_token_id > 0 and after_token_id != before_token_id:
+		_sync_transformer_source(
+			TransformerSourceRef.for_status_token(
+				source_owner_id,
+				group_index,
+				status_id,
+				after_token_id
+			)
+		)
 
 
 func get_interceptors_for_hook(hook_kind: StringName) -> Array[Interceptor]:
@@ -355,8 +414,8 @@ func _dispatch_on_any_death_interceptor(interceptor: OnAnyDeathInterceptor, remo
 			if owner == null or !owner.is_alive() or owner.statuses == null or state.status_catalog == null:
 				return
 
-			var token: StatusToken = owner.statuses.get_status_token(interceptor.source_id, false)
-			if token == null:
+			var token: StatusToken = owner.statuses.get_status_token_by_token_id(int(interceptor.source_instance_id), true)
+			if token == null or bool(token.pending):
 				return
 
 			var proto := state.status_catalog.get_proto(interceptor.source_id)
@@ -657,7 +716,7 @@ func _on_status_changed(cid: int) -> void:
 	_request_replan(int(cid))
 
 func _refresh_status_aura_projection(source_owner_id: int, status_id: StringName) -> void:
-	ProjectionChangeSystem.sync_status_source(self, source_owner_id, status_id)
+	_sync_status_source_transformers(source_owner_id, status_id)
 
 
 
@@ -1007,10 +1066,13 @@ func apply_status(ctx: StatusContext) -> void:
 	if int(ctx.intensity) == 0:
 		ctx.intensity = 1
 	
-	var changed := u.statuses.add_or_reapply_ctx(
+	var mutation := u.statuses.add_or_reapply_ctx(
 		ctx,
-		int(proto.get_max_intensity()) if proto != null else 0
+		int(proto.get_max_intensity()) if proto != null else 0,
+		Callable(state, "alloc_status_token_id")
 	)
+	mutation.apply_to_status_context(ctx)
+	var changed := bool(mutation.changed)
 	var first_apply := int(ctx.op) == int(Status.OP.APPLY)
 	ctx.applied = changed or (ctx.op == Status.OP.APPLY)
 	
@@ -1022,31 +1084,38 @@ func apply_status(ctx: StatusContext) -> void:
 			int(ctx.op),
 			int(ctx.intensity),
 			int(ctx.duration),
-			{
-				Keys.STATUS_PENDING: bool(ctx.pending),
-				Keys.REASON: String(ctx.reason),
-				Keys.TARGET_IDS: PackedInt32Array([int(ctx.target_id)]),
-				Keys.STATUS_PRESENTATION_HINT: ctx.presentation_hint,
-				Keys.DELTA_INTENSITY: int(ctx.delta_intensity),
-				Keys.DELTA_DURATION: int(ctx.delta_duration),
-				Keys.BEFORE_PENDING: bool(ctx.before_pending),
-				Keys.AFTER_PENDING: bool(ctx.after_pending),
-				Keys.BEFORE_INTENSITY: int(ctx.before_intensity),
-				Keys.BEFORE_DURATION: int(ctx.before_duration),
-				Keys.AFTER_INTENSITY: int(ctx.after_intensity),
-				Keys.AFTER_DURATION: int(ctx.after_duration),
-			}
-		)
+				{
+					Keys.STATUS_PENDING: bool(ctx.pending),
+					Keys.REASON: String(ctx.reason),
+					Keys.TARGET_IDS: PackedInt32Array([int(ctx.target_id)]),
+					Keys.STATUS_PRESENTATION_HINT: ctx.presentation_hint,
+					Keys.DELTA_INTENSITY: int(ctx.delta_intensity),
+					Keys.DELTA_DURATION: int(ctx.delta_duration),
+					Keys.BEFORE_PENDING: bool(ctx.before_pending),
+					Keys.AFTER_PENDING: bool(ctx.after_pending),
+					Keys.BEFORE_TOKEN_ID: int(ctx.before_token_id),
+					Keys.AFTER_TOKEN_ID: int(ctx.after_token_id),
+					Keys.BEFORE_INTENSITY: int(ctx.before_intensity),
+					Keys.BEFORE_DURATION: int(ctx.before_duration),
+					Keys.AFTER_INTENSITY: int(ctx.after_intensity),
+					Keys.AFTER_DURATION: int(ctx.after_duration),
+				}
+			)
 
 	if !changed and !first_apply:
 		# No effective mutation means no projection, status-hook, or intent side effects.
 		return
-	_sync_status_source_transformers(int(ctx.target_id), ctx.status_id)
+	_sync_status_transformers_from_mutation(
+		int(ctx.target_id),
+		ctx.status_id,
+		int(ctx.before_token_id),
+		int(ctx.after_token_id)
+	)
 
 	var status_ctx := SimStatusSystem.make_context(
 		self,
 		int(ctx.target_id),
-		u.statuses.get_status_token(ctx.status_id, bool(ctx.pending))
+		u.statuses.get_status_token_by_token_id(int(ctx.after_token_id), true)
 	)
 	if status_ctx != null and status_ctx.proto != null:
 		status_ctx.proto.on_apply(status_ctx, ctx)
@@ -1084,26 +1153,34 @@ func remove_status(ctx: StatusContext) -> void:
 	var before_d := int(old_token.duration)
 	
 	var status_ctx := SimStatusSystem.make_context(self, int(ctx.target_id), old_token)
-	u.statuses.remove_ctx(ctx)
-	_sync_status_source_transformers(int(ctx.target_id), ctx.status_id)
+	var mutation := u.statuses.remove_ctx(ctx)
+	mutation.apply_to_status_context(ctx)
+	_sync_status_transformers_from_mutation(
+		int(ctx.target_id),
+		ctx.status_id,
+		int(ctx.before_token_id),
+		int(ctx.after_token_id)
+	)
 	
 	if writer != null:
 		writer.emit_status(
 			int(ctx.source_id),
 			int(ctx.target_id),
 			ctx.status_id,
-			int(Status.OP.REMOVE),
-			0,
-			0,
-			{
-				Keys.STATUS_PENDING: bool(ctx.pending),
-				Keys.BEFORE_PENDING: bool(ctx.before_pending),
-				Keys.AFTER_PENDING: bool(ctx.after_pending),
-				Keys.BEFORE_INTENSITY: before_i,
-				Keys.BEFORE_DURATION: before_d,
-				Keys.AFTER_INTENSITY: 0,
-				Keys.AFTER_DURATION: 0,
-				Keys.DELTA_INTENSITY: -before_i,
+				int(Status.OP.REMOVE),
+				0,
+				0,
+				{
+					Keys.STATUS_PENDING: bool(ctx.pending),
+					Keys.BEFORE_PENDING: bool(ctx.before_pending),
+					Keys.AFTER_PENDING: bool(ctx.after_pending),
+					Keys.BEFORE_TOKEN_ID: int(ctx.before_token_id),
+					Keys.AFTER_TOKEN_ID: int(ctx.after_token_id),
+					Keys.BEFORE_INTENSITY: before_i,
+					Keys.BEFORE_DURATION: before_d,
+					Keys.AFTER_INTENSITY: 0,
+					Keys.AFTER_DURATION: 0,
+					Keys.DELTA_INTENSITY: -before_i,
 				Keys.DELTA_DURATION: -before_d,
 			}
 		)

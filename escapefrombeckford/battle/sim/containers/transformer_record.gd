@@ -13,6 +13,7 @@ var source_kind: StringName = &""
 var source_owner_id: int = 0
 var source_group_index: int = -1
 var source_id: StringName = &""
+var source_instance_id: int = 0
 var priority: int = 1
 
 
@@ -24,6 +25,7 @@ func _init(
 	_source_owner_id: int = 0,
 	_source_group_index: int = -1,
 	_source_id: StringName = &"",
+	_source_instance_id: int = 0,
 	_priority: int = 1
 ) -> void:
 	tid = int(_tid)
@@ -33,6 +35,7 @@ func _init(
 	source_owner_id = int(_source_owner_id)
 	source_group_index = int(_source_group_index)
 	source_id = StringName(_source_id)
+	source_instance_id = int(_source_instance_id)
 	priority = int(_priority)
 
 
@@ -57,7 +60,7 @@ func is_interceptor() -> bool:
 func get_source_key() -> String:
 	if source_kind == &"" or source_owner_id <= 0 or source_id == &"":
 		return ""
-	return make_source_key(source_kind, source_owner_id, source_id)
+	return make_source_key(source_kind, source_owner_id, source_id, source_instance_id)
 
 
 func get_transformer_key() -> String:
@@ -68,7 +71,8 @@ func get_transformer_key() -> String:
 		hook_kind,
 		source_kind,
 		source_owner_id,
-		source_id
+		source_id,
+		source_instance_id
 	)
 
 
@@ -81,6 +85,7 @@ func clone():
 		source_owner_id,
 		source_group_index,
 		source_id,
+		source_instance_id,
 		priority
 	)
 
@@ -88,14 +93,15 @@ func clone():
 static func make_source_key(
 	_source_kind: StringName,
 	_source_owner_id: int,
-	_source_id: StringName
+	_source_id: StringName,
+	_source_instance_id: int = 0
 ) -> String:
 	if _source_kind == &"" or int(_source_owner_id) <= 0 or _source_id == &"":
 		return ""
 	return "%s::%s::%s" % [
 		String(_source_kind),
 		str(int(_source_owner_id)),
-		String(_source_id),
+		"%s::%s" % [String(_source_id), str(int(_source_instance_id))],
 	]
 
 
@@ -104,9 +110,10 @@ static func make_transformer_key(
 	_hook_kind: StringName,
 	_source_kind: StringName,
 	_source_owner_id: int,
-	_source_id: StringName
+	_source_id: StringName,
+	_source_instance_id: int = 0
 ) -> String:
-	var source_key := make_source_key(_source_kind, _source_owner_id, _source_id)
+	var source_key := make_source_key(_source_kind, _source_owner_id, _source_id, _source_instance_id)
 	if _transformer_kind == &"" or source_key.is_empty():
 		return ""
 	return "%s::%s::%s" % [

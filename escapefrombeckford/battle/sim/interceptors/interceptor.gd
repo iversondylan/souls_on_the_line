@@ -10,6 +10,7 @@ var source_kind: StringName = &""
 var source_owner_id: int = 0
 var source_group_index: int = -1
 var source_id: StringName = &""
+var source_instance_id: int = 0
 var tid: int = 0
 var priority: int = 1
 
@@ -20,6 +21,7 @@ func _init(
 	_source_owner_id: int = 0,
 	_source_group_index: int = -1,
 	_source_id: StringName = &"",
+	_source_instance_id: int = 0,
 	_tid: int = 0,
 	_priority: int = 1
 ) -> void:
@@ -28,6 +30,7 @@ func _init(
 	source_owner_id = int(_source_owner_id)
 	source_group_index = int(_source_group_index)
 	source_id = StringName(_source_id)
+	source_instance_id = int(_source_instance_id)
 	tid = int(_tid)
 	priority = int(_priority)
 
@@ -50,7 +53,7 @@ func get_source_key() -> String:
 		String(source_kind),
 		str(int(source_owner_id)),
 		str(int(source_group_index)),
-		String(source_id),
+		"%s::%s" % [String(source_id), str(int(source_instance_id))],
 	]
 
 
@@ -61,6 +64,7 @@ func clone():
 		source_owner_id,
 		source_group_index,
 		source_id,
+		source_instance_id,
 		tid,
 		priority
 	)

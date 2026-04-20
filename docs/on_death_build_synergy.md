@@ -12,7 +12,7 @@ Crone Puppeteer - 0/3 Soulbound. Does not attack; summons a Small Fleeting 3/3 P
 
 Aye-Aye Ascetic - Soulbound — 1/7. The first time each round this survives damage while below half health, gain Absorb and +2 max health.
 
-Entangled Votary - Soulbound — 2/10. The first time each round this would die, prevent that death, set its health to 1. If this survived damage at player turn gain +1 max health.
+Entangled Votary - Soulbound — 2/10. The firstYea time each round this would die, prevent that death, set its health to 1. If this survived damage at player turn gain +1 max health.
 
 Nemean Catechist - Soulbound — 2/8. Text: The first time each turn this takes strike damage, gain 50% reduced damage for the rest of that round. At end of round, if it survived 2 or more strikes, gain +2 max health.
 

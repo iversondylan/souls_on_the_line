@@ -80,7 +80,8 @@ func change_intensity(delta: int, reason: String = "") -> void:
 	var before_d := int(token.duration)
 	var after_i := before_i + int(delta)
 
-	token.intensity = after_i
+	if owner != null and owner.statuses != null:
+		owner.statuses.set_token(get_status_id(), after_i, before_d, is_pending())
 
 	if api.writer != null:
 		api.writer.emit_status(
@@ -95,6 +96,8 @@ func change_intensity(delta: int, reason: String = "") -> void:
 				Keys.DELTA_DURATION: 0,
 				Keys.BEFORE_INTENSITY: before_i,
 				Keys.BEFORE_DURATION: before_d,
+				Keys.BEFORE_TOKEN_ID: int(token.token_id),
+				Keys.AFTER_TOKEN_ID: int(token.token_id),
 				Keys.AFTER_INTENSITY: int(token.intensity),
 				Keys.AFTER_DURATION: int(token.duration),
 				Keys.STATUS_PENDING: bool(is_pending()),
@@ -102,6 +105,15 @@ func change_intensity(delta: int, reason: String = "") -> void:
 				Keys.AFTER_PENDING: bool(is_pending()),
 				Keys.REASON: String(reason),
 			}
+		)
+	if api != null and owner != null:
+		api._sync_transformer_source(
+			TransformerSourceRef.for_status_token(
+				owner_id,
+				int(owner.team),
+				get_status_id(),
+				int(token.token_id)
+			)
 		)
 
 
@@ -115,7 +127,8 @@ func change_duration(delta: int, reason: String = "") -> void:
 	var before_d := int(token.duration)
 	var after_d := before_d + int(delta)
 
-	token.duration = after_d
+	if owner != null and owner.statuses != null:
+		owner.statuses.set_token(get_status_id(), before_i, after_d, is_pending())
 
 	if api.writer != null:
 		api.writer.emit_status(
@@ -130,6 +143,8 @@ func change_duration(delta: int, reason: String = "") -> void:
 				Keys.DELTA_DURATION: int(delta),
 				Keys.BEFORE_INTENSITY: before_i,
 				Keys.BEFORE_DURATION: before_d,
+				Keys.BEFORE_TOKEN_ID: int(token.token_id),
+				Keys.AFTER_TOKEN_ID: int(token.token_id),
 				Keys.AFTER_INTENSITY: int(token.intensity),
 				Keys.AFTER_DURATION: int(token.duration),
 				Keys.STATUS_PENDING: bool(is_pending()),
@@ -137,6 +152,15 @@ func change_duration(delta: int, reason: String = "") -> void:
 				Keys.AFTER_PENDING: bool(is_pending()),
 				Keys.REASON: String(reason),
 			}
+		)
+	if api != null and owner != null:
+		api._sync_transformer_source(
+			TransformerSourceRef.for_status_token(
+				owner_id,
+				int(owner.team),
+				get_status_id(),
+				int(token.token_id)
+			)
 		)
 
 

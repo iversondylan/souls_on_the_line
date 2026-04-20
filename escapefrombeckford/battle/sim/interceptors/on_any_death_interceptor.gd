@@ -6,6 +6,7 @@ func _init(
 	_source_owner_id: int = 0,
 	_source_group_index: int = -1,
 	_source_id: StringName = &"",
+	_source_instance_id: int = 0,
 	_tid: int = 0,
 	_priority: int = 1
 ) -> void:
@@ -14,6 +15,7 @@ func _init(
 	source_owner_id = int(_source_owner_id)
 	source_group_index = int(_source_group_index)
 	source_id = StringName(_source_id)
+	source_instance_id = int(_source_instance_id)
 	tid = int(_tid)
 	priority = int(_priority)
 
@@ -21,12 +23,13 @@ func _init(
 func clone():
 	return get_script().new(
 		source_kind,
-		source_owner_id,
-		source_group_index,
-		source_id,
-		tid,
-		priority
-	)
+			source_owner_id,
+			source_group_index,
+			source_id,
+			source_instance_id,
+			tid,
+			priority
+		)
 
 
 func dispatch(api, removal_ctx: RemovalContext) -> void:

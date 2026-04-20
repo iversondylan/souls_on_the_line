@@ -30,6 +30,8 @@ var after_intensity := 0
 var after_duration := 0
 var before_pending: bool = false
 var after_pending: bool = false
+var before_token_id: int = 0
+var after_token_id: int = 0
 
 # optional tags
 var tags: Array[StringName] = []

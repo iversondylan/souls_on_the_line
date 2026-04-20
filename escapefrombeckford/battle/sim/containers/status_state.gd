@@ -28,6 +28,15 @@ func get_status_token(id: StringName, pending := false) -> StatusToken:
 	return bucket.get_status_token(bool(pending))
 
 
+func get_status_token_by_token_id(token_id: int, include_pending := true) -> StatusToken:
+	if token_id <= 0:
+		return null
+	for token: StatusToken in get_all_tokens(include_pending):
+		if token != null and int(token.token_id) == int(token_id):
+			return token
+	return null
+
+
 func get_status_ids(include_pending := true, pending_only := false) -> Array[StringName]:
 	var out: Array[StringName] = []
 	for id_key in by_id.keys():
@@ -143,30 +152,34 @@ func remove_projected_source(source_key: String) -> Array[StringName]:
 	return affected_ids
 
 
-func realize_pending_ctx(ctx: StatusContext, max_intensity: int = 0) -> bool:
+func realize_pending_ctx(ctx: StatusContext, max_intensity: int = 0) -> StatusMutationResult:
+	var result := StatusMutationResult.new()
 	if ctx == null:
-		return false
+		return result
 	var id := ctx.status_id
 	if id == &"":
-		return false
+		return result
 
 	var bucket: StatusTokenBucket = _get_bucket(id, false)
 	if bucket == null:
-		return false
+		return result
 
 	var pending_token: StatusToken = bucket.get_status_token(true)
 	if pending_token == null:
-		return false
+		return result
 
 	var realized_token: StatusToken = bucket.get_status_token(false)
 	var had_realized := realized_token != null
 	var pending_i := int(pending_token.intensity)
 	var pending_d := int(pending_token.duration)
+	var pending_token_id := int(pending_token.token_id)
 	var realized_before_i := int(realized_token.intensity) if had_realized else 0
 	var realized_before_d := int(realized_token.duration) if had_realized else 0
+	var realized_token_id := int(realized_token.token_id) if had_realized else 0
 
 	if !had_realized:
 		realized_token = StatusToken.new(id)
+		realized_token.token_id = pending_token_id
 		realized_token.pending = false
 		realized_token.intensity = _clamp_intensity_total(pending_i, max_intensity)
 		realized_token.duration = pending_d
@@ -186,6 +199,8 @@ func realize_pending_ctx(ctx: StatusContext, max_intensity: int = 0) -> bool:
 	ctx.op = Status.OP.CHANGE
 	ctx.before_pending = true
 	ctx.after_pending = false
+	ctx.before_token_id = pending_token_id
+	ctx.after_token_id = int(realized_token.token_id)
 	ctx.before_intensity = pending_i
 	ctx.before_duration = pending_d
 	ctx.after_intensity = int(realized_token.intensity)
@@ -194,24 +209,43 @@ func realize_pending_ctx(ctx: StatusContext, max_intensity: int = 0) -> bool:
 	ctx.delta_duration = int(realized_token.duration) - realized_before_d
 	ctx.intensity = ctx.delta_intensity
 	ctx.duration = ctx.delta_duration
+
+	result.changed = true
+	result.status_id = id
+	result.op = int(ctx.op)
+	result.before_pending = true
+	result.after_pending = false
+	result.before_token_id = pending_token_id
+	result.after_token_id = int(realized_token.token_id)
+	result.before_intensity = pending_i
+	result.before_duration = pending_d
+	result.after_intensity = int(realized_token.intensity)
+	result.after_duration = int(realized_token.duration)
+	result.delta_intensity = int(ctx.delta_intensity)
+	result.delta_duration = int(ctx.delta_duration)
 	_bump_effective_context_version()
-	return true
+	return result
 
 
-func add_or_reapply(id: StringName, intensity: int, duration: int = 0) -> void:
+func add_or_reapply(id: StringName, intensity: int, duration: int = 0, allocate_token_id: Callable = Callable()) -> void:
 	var ctx := StatusContext.new()
 	ctx.status_id = id
 	ctx.intensity = intensity
 	ctx.duration = duration
-	add_or_reapply_ctx(ctx)
+	add_or_reapply_ctx(ctx, 0, allocate_token_id)
 
 
-func add_or_reapply_ctx(ctx: StatusContext, max_intensity: int = 0) -> bool:
+func add_or_reapply_ctx(
+	ctx: StatusContext,
+	max_intensity: int = 0,
+	allocate_token_id: Callable = Callable()
+) -> StatusMutationResult:
+	var result := StatusMutationResult.new()
 	if ctx == null:
-		return false
+		return result
 	var id := ctx.status_id
 	if id == &"":
-		return false
+		return result
 
 	var lane_pending := bool(ctx.pending)
 	var req_i := int(ctx.intensity)
@@ -223,16 +257,20 @@ func add_or_reapply_ctx(ctx: StatusContext, max_intensity: int = 0) -> bool:
 
 	var before_i := 0
 	var before_d := 0
+	var before_token_id := 0
 
 	if token == null:
 		token = StatusToken.new(id)
+		token.token_id = int(allocate_token_id.call()) if allocate_token_id.is_valid() else 0
 		token.pending = lane_pending
 	else:
 		before_i = int(token.intensity)
 		before_d = int(token.duration)
+		before_token_id = int(token.token_id)
 
 	ctx.before_pending = lane_pending
 	ctx.after_pending = lane_pending
+	ctx.before_token_id = before_token_id
 	ctx.before_intensity = before_i
 	ctx.before_duration = before_d
 
@@ -247,14 +285,29 @@ func add_or_reapply_ctx(ctx: StatusContext, max_intensity: int = 0) -> bool:
 		by_id[id] = bucket
 
 		ctx.op = Status.OP.APPLY
+		ctx.after_token_id = int(token.token_id)
 		ctx.delta_intensity = new_i - before_i
 		ctx.delta_duration = new_d - before_d
 		ctx.after_intensity = int(token.intensity)
 		ctx.after_duration = int(token.duration)
 		ctx.intensity = int(token.intensity)
 		ctx.duration = int(token.duration)
+
+		result.changed = true
+		result.status_id = id
+		result.op = int(ctx.op)
+		result.before_pending = lane_pending
+		result.after_pending = lane_pending
+		result.before_token_id = 0
+		result.after_token_id = int(token.token_id)
+		result.before_intensity = before_i
+		result.before_duration = before_d
+		result.after_intensity = int(token.intensity)
+		result.after_duration = int(token.duration)
+		result.delta_intensity = int(ctx.delta_intensity)
+		result.delta_duration = int(ctx.delta_duration)
 		_bump_effective_context_version()
-		return true
+		return result
 
 	var new_intensity := _clamp_intensity_total(before_i + req_i, max_intensity)
 	token.intensity = new_intensity
@@ -268,33 +321,51 @@ func add_or_reapply_ctx(ctx: StatusContext, max_intensity: int = 0) -> bool:
 	var dd := int(token.duration) - before_d
 
 	ctx.op = Status.OP.CHANGE
+	ctx.after_token_id = int(token.token_id)
 	ctx.delta_intensity = di
 	ctx.delta_duration = dd
 	ctx.after_intensity = int(token.intensity)
 	ctx.after_duration = int(token.duration)
 	ctx.intensity = di
 	ctx.duration = dd
+
+	result.changed = (di != 0) or (dd != 0)
+	result.status_id = id
+	result.op = int(ctx.op)
+	result.before_pending = lane_pending
+	result.after_pending = lane_pending
+	result.before_token_id = before_token_id
+	result.after_token_id = int(token.token_id)
+	result.before_intensity = before_i
+	result.before_duration = before_d
+	result.after_intensity = int(token.intensity)
+	result.after_duration = int(token.duration)
+	result.delta_intensity = di
+	result.delta_duration = dd
 	if (di != 0) or (dd != 0):
 		_bump_effective_context_version()
 
-	return (di != 0) or (dd != 0)
+	return result
 
 
-func remove_ctx(ctx: StatusContext) -> void:
+func remove_ctx(ctx: StatusContext) -> StatusMutationResult:
+	var result := StatusMutationResult.new()
 	if ctx == null:
-		return
+		return result
 
 	var bucket: StatusTokenBucket = _get_bucket(ctx.status_id, false)
 	if bucket == null:
-		return
+		return result
 
 	var lane_pending := bool(ctx.pending)
 	var token: StatusToken = bucket.get_status_token(lane_pending)
 	if token == null:
-		return
+		return result
 
 	ctx.before_pending = lane_pending
 	ctx.after_pending = lane_pending
+	ctx.before_token_id = int(token.token_id)
+	ctx.after_token_id = 0
 	ctx.before_intensity = int(token.intensity)
 	ctx.before_duration = int(token.duration)
 	ctx.after_intensity = 0
@@ -306,7 +377,22 @@ func remove_ctx(ctx: StatusContext) -> void:
 		by_id.erase(ctx.status_id)
 	else:
 		by_id[ctx.status_id] = bucket
+
+	result.changed = true
+	result.status_id = ctx.status_id
+	result.op = int(ctx.op)
+	result.before_pending = lane_pending
+	result.after_pending = lane_pending
+	result.before_token_id = int(ctx.before_token_id)
+	result.after_token_id = 0
+	result.before_intensity = int(ctx.before_intensity)
+	result.before_duration = int(ctx.before_duration)
+	result.after_intensity = 0
+	result.after_duration = 0
+	result.delta_intensity = -int(ctx.before_intensity)
+	result.delta_duration = -int(ctx.before_duration)
 	_bump_effective_context_version()
+	return result
 
 
 func remove(id: StringName) -> void:

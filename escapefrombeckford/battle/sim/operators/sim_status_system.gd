@@ -299,7 +299,7 @@ static func realize_pending_statuses(
 
 	var any_changed := false
 	var src_id := int(source_id if source_id > 0 else target_id)
-	var changed_status_ids: Array[StringName] = []
+	var mutation_results: Array[StatusMutationResult] = []
 
 	for status_id in pending_ids:
 		var proto := get_proto(api, status_id)
@@ -313,10 +313,13 @@ static func realize_pending_statuses(
 		ctx.pending = true
 		ctx.reason = reason
 
-		if !u.statuses.realize_pending_ctx(ctx, status_max_intensity):
+		var mutation := u.statuses.realize_pending_ctx(ctx, status_max_intensity)
+		mutation.apply_to_status_context(ctx)
+		if !mutation.changed:
 			continue
 
 		any_changed = true
+		mutation_results.append(mutation)
 		if api.writer != null:
 			api.writer.emit_status(
 				int(ctx.source_id),
@@ -331,6 +334,8 @@ static func realize_pending_statuses(
 					Keys.DELTA_DURATION: int(ctx.delta_duration),
 					Keys.BEFORE_PENDING: bool(ctx.before_pending),
 					Keys.AFTER_PENDING: bool(ctx.after_pending),
+					Keys.BEFORE_TOKEN_ID: int(ctx.before_token_id),
+					Keys.AFTER_TOKEN_ID: int(ctx.after_token_id),
 					Keys.BEFORE_INTENSITY: int(ctx.before_intensity),
 					Keys.BEFORE_DURATION: int(ctx.before_duration),
 					Keys.AFTER_INTENSITY: int(ctx.after_intensity),
@@ -339,17 +344,17 @@ static func realize_pending_statuses(
 				}
 			)
 
-		if proto == null:
-			continue
-
-		changed_status_ids.append(status_id)
-
 	if !any_changed:
 		return
 
 	api._refresh_projected_status_cache_for(int(target_id))
-	for changed_status_id in changed_status_ids:
-		api._sync_status_source_transformers(int(target_id), changed_status_id)
+	for mutation: StatusMutationResult in mutation_results:
+		api._sync_status_transformers_from_mutation(
+			int(target_id),
+			mutation.status_id,
+			int(mutation.before_token_id),
+			int(mutation.after_token_id)
+		)
 
 
 # -------------------------------------------------------------------
@@ -692,15 +697,14 @@ static func _append_status_aura_projected_tokens(
 	if !aura_proto.affects_target(api.state, source_id, target_id):
 		return
 
-	var total_intensity := 0
-	var max_duration := 0
-	for aura_token: StatusToken in source.statuses.get_all_tokens(true):
-		if aura_token == null or StringName(aura_token.id) != aura_status_id:
-			continue
-		if int(aura_proto.expiration_policy) == int(Status.ExpirationPolicy.DURATION) and int(aura_token.duration) <= 0:
-			continue
-		total_intensity += maxi(int(aura_token.intensity), 0)
-		max_duration = maxi(max_duration, int(aura_token.duration))
+	var aura_token := source.statuses.get_status_token_by_token_id(int(record.source_instance_id), true)
+	if aura_token == null or StringName(aura_token.id) != aura_status_id:
+		return
+	if int(aura_proto.expiration_policy) == int(Status.ExpirationPolicy.DURATION) and int(aura_token.duration) <= 0:
+		return
+
+	var total_intensity := maxi(int(aura_token.intensity), 0)
+	var max_duration := int(aura_token.duration)
 
 	if total_intensity <= 0:
 		return

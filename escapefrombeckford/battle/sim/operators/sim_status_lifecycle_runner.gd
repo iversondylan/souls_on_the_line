@@ -72,25 +72,27 @@ static func _tick_duration_statuses_for_owner_turn_end(api: SimBattleAPI, actor_
 		if int(proto.expiration_policy) != Status.ExpirationPolicy.DURATION:
 			continue
 
-		var before_i := int(token.intensity)
-		var before_d := int(token.duration)
+			var before_i := int(token.intensity)
+			var before_d := int(token.duration)
+			var token_id := int(token.token_id)
 
-		if before_d <= 0:
-			expired.append(sid)
-			continue
+			if before_d <= 0:
+				expired.append(sid)
+				continue
 
-		var after_d := before_d - 1
-		token.duration = after_d
+			var after_d := before_d - 1
+			u.statuses.set_token(sid, before_i, after_d, false)
 
-		if after_d <= 0:
-			expired.append(sid)
-		else:
-			changed.append({
-				"sid": sid,
-				"before_intensity": before_i,
-				"before_duration": before_d,
-				"after_intensity": before_i,
-				"after_duration": after_d,
+			if after_d <= 0:
+				expired.append(sid)
+			else:
+				changed.append({
+					"sid": sid,
+					"token_id": token_id,
+					"before_intensity": before_i,
+					"before_duration": before_d,
+					"after_intensity": before_i,
+					"after_duration": after_d,
 				"delta_intensity": 0,
 				"delta_duration": -1,
 			})
@@ -105,14 +107,24 @@ static func _tick_duration_statuses_for_owner_turn_end(api: SimBattleAPI, actor_
 				int(item.delta_intensity),
 				int(item.delta_duration),
 				{
-					Keys.BEFORE_INTENSITY: int(item.before_intensity),
-					Keys.BEFORE_DURATION: int(item.before_duration),
-					Keys.AFTER_INTENSITY: int(item.after_intensity),
-					Keys.AFTER_DURATION: int(item.after_duration),
-					Keys.DELTA_INTENSITY: int(item.delta_intensity),
+						Keys.BEFORE_INTENSITY: int(item.before_intensity),
+						Keys.BEFORE_DURATION: int(item.before_duration),
+						Keys.BEFORE_TOKEN_ID: int(item.token_id),
+						Keys.AFTER_TOKEN_ID: int(item.token_id),
+						Keys.AFTER_INTENSITY: int(item.after_intensity),
+						Keys.AFTER_DURATION: int(item.after_duration),
+						Keys.DELTA_INTENSITY: int(item.delta_intensity),
 					Keys.DELTA_DURATION: int(item.delta_duration),
 					Keys.REASON: "duration_tick",
 				}
+				)
+
+		for item in changed:
+			api._sync_status_transformers_from_mutation(
+				int(actor_id),
+				StringName(item.sid),
+				int(item.token_id),
+				int(item.token_id)
 			)
 
 	for sid in expired:

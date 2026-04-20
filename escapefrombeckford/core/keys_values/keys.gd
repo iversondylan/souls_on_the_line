@@ -162,6 +162,8 @@ const BEFORE_DURATION := &"before_duration"
 const AFTER_DURATION := &"after_duration"
 const BEFORE_PENDING := &"before_pending"
 const AFTER_PENDING := &"after_pending"
+const BEFORE_TOKEN_ID := &"before_token_id"
+const AFTER_TOKEN_ID := &"after_token_id"
 
 # Move (formation)
 const MOVE_TYPE := &"move_type"

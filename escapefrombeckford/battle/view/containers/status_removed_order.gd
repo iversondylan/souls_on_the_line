@@ -8,5 +8,7 @@ var source_id: int = 0
 var target_id: int = 0
 var status_id: StringName = &""
 var pending: bool = false
+var before_token_id: int = 0
+var after_token_id: int = 0
 var intensity: int = 1
 var removed_all: bool = false

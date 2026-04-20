@@ -13,7 +13,7 @@ const ROW_V_SEPARATION := 2
 # lane-key -> StatusDisplay
 var _displays_by_id: Dictionary = {}
 
-# lane-key -> Dictionary state {id, pending, intensity, duration, proto}
+# token-key -> Dictionary state {id, pending, token_id, intensity, duration, proto}
 var _states_by_id: Dictionary = {}
 
 var _rows: Array[HBoxContainer] = []
@@ -62,10 +62,10 @@ func apply_status(order: StatusAppliedOrder) -> void:
 		push_warning("StatusViewGrid: missing status proto for id=%s" % String(order.status_id))
 		return
 
-	var before_key := _make_state_key(order.status_id, order.before_pending)
-	var after_key := _make_state_key(order.status_id, order.after_pending)
+	var before_key := _make_state_key(order.before_token_id, order.status_id, order.before_pending)
+	var after_key := _make_state_key(order.after_token_id, order.status_id, order.after_pending)
 
-	if order.before_pending != order.after_pending:
+	if !before_key.is_empty() and before_key != after_key:
 		_states_by_id.erase(before_key)
 		_remove_display(before_key, 0.0)
 
@@ -76,6 +76,7 @@ func apply_status(order: StatusAppliedOrder) -> void:
 		st = {
 			"id": order.status_id,
 			"pending": bool(order.after_pending),
+			"token_id": int(order.after_token_id),
 			"intensity": maxi(int(order.intensity), 1),
 			"duration": maxi(int(order.turns_duration), 0), # <-- was 1
 			"proto": proto,
@@ -83,6 +84,7 @@ func apply_status(order: StatusAppliedOrder) -> void:
 	else:
 		st["id"] = order.status_id
 		st["pending"] = bool(order.after_pending)
+		st["token_id"] = int(order.after_token_id)
 		st["intensity"] = maxi(int(order.intensity), 1)
 		st["duration"] = maxi(int(order.turns_duration), 0) # <-- was 1
 		st["proto"] = proto
@@ -99,7 +101,7 @@ func remove_status(order: StatusRemovedOrder) -> void:
 	if order.status_id == &"":
 		return
 
-	var id := _make_state_key(order.status_id, order.pending)
+	var id := _make_state_key(order.before_token_id, order.status_id, order.pending)
 	if !_states_by_id.has(id):
 		return
 
@@ -137,7 +139,8 @@ func clear_all(duration: float = 0.0) -> void:
 func _add_or_update_display_from_state(st: Dictionary, _duration: float) -> void:
 	var status_id: StringName = st.get("id", &"")
 	var pending := bool(st.get("pending", false))
-	var id := _make_state_key(status_id, pending)
+	var token_id := int(st.get("token_id", 0))
+	var id := _make_state_key(token_id, status_id, pending)
 	if status_id == &"":
 		return
 
@@ -285,13 +288,15 @@ func _get_ordered_state_ids() -> Array:
 	ids.sort_custom(func(a, b):
 		var a_state: Dictionary = _states_by_id.get(String(a), {})
 		var b_state: Dictionary = _states_by_id.get(String(b), {})
-		var a_id := String(a_state.get("id", ""))
-		var b_id := String(b_state.get("id", ""))
-		if a_id == b_id:
+		var a_token_id := int(a_state.get("token_id", 0))
+		var b_token_id := int(b_state.get("token_id", 0))
+		if a_token_id == b_token_id:
 			return int(a_state.get("pending", false)) < int(b_state.get("pending", false))
-		return a_id < b_id
+		return a_token_id < b_token_id
 	)
 	return ids
 
-func _make_state_key(status_id: StringName, pending: bool) -> String:
-	return "%s::%s" % [String(status_id), "pending" if pending else "realized"]
+func _make_state_key(token_id: int, status_id: StringName, pending: bool) -> String:
+	if token_id <= 0 or status_id == &"":
+		return ""
+	return "%s::%s::%s" % [str(int(token_id)), String(status_id), "pending" if pending else "realized"]

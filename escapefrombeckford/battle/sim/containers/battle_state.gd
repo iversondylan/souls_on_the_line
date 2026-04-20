@@ -27,6 +27,7 @@ var summon_card_max_health_bonus: Dictionary = {} # String(card_uid) -> int
 # combat_id -> CombatantState
 var units: Dictionary = {}  # int -> CombatantState
 var _next_sim_id: int = 1
+var _next_status_token_id: int = 1
 # group index -> GroupState
 var groups: Array[GroupState] = [GroupState.new(), GroupState.new()]
 
@@ -101,6 +102,16 @@ func alloc_id() -> int:
 	_next_sim_id += 1
 	return id
 
+
+func alloc_status_token_id() -> int:
+	var id := _next_status_token_id
+	_next_status_token_id += 1
+	return id
+
+
+func sync_next_status_token_id_at_least(min_next: int) -> void:
+	_next_status_token_id = maxi(_next_status_token_id, int(min_next))
+
 func sync_next_id_at_least(min_next: int) -> void:
 	_next_sim_id = maxi(_next_sim_id, int(min_next))
 
@@ -151,6 +162,7 @@ func clone() -> BattleState:
 	b.rng = RNG.new()
 	b.rng.rng_seed = rng.rng_seed
 	b._next_sim_id = _next_sim_id
+	b._next_status_token_id = _next_status_token_id
 
 	for id in units.keys():
 		var u: CombatantState = units[id]
