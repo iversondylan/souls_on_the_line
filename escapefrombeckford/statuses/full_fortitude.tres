@@ -1,11 +1,10 @@
-[gd_resource type="Resource" script_class="FullFortitudeStatus" format=3]
+[gd_resource type="Resource" script_class="FullFortitudeStatus" format=3 uid="uid://bsh4ohfj5dqo2"]
 
-[ext_resource type="Texture2D" path="res://_assets/sprites/assorted/heal-sky-2.png" id="1_icon"]
-[ext_resource type="Script" path="res://statuses/full_fortitude.gd" id="2_script"]
+[ext_resource type="Texture2D" uid="uid://bju3r3hsma7o1" path="res://_assets/sprites/assorted/meat.png" id="1_blmag"]
+[ext_resource type="Script" uid="uid://b4xm4eqg5jyqt" path="res://statuses/full_fortitude.gd" id="2_script"]
 
 [resource]
 script = ExtResource("2_script")
 status_name = "Full Fortitude"
 number_display_type = 1
-icon = ExtResource("1_icon")
-
+icon = ExtResource("1_blmag")

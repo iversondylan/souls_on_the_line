@@ -5,8 +5,8 @@
 [ext_resource type="Resource" uid="uid://bhqq2dr8db5pn" path="res://cards/convocations/ResonanceSpikeCard/resonance_spike_card.tres" id="3_2g061"]
 [ext_resource type="Resource" uid="uid://btlvkb0pdixka" path="res://cards/convocations/PressureBarrier/pressure_barrier_data.tres" id="4_k21vg"]
 [ext_resource type="Resource" uid="uid://dhlr0v7pv8gdf" path="res://cards/convocations/Substitution/substitution.tres" id="4_oc100"]
-[ext_resource type="Resource" path="res://cards/souls/YggdrasilHartCard/yggdrasil_hart_card.tres" id="5_2g061"]
-[ext_resource type="Resource" path="res://cards/souls/MosslingBulwarkCard/mossling_bulwark_card.tres" id="6_l1rsi"]
+[ext_resource type="Resource" path="res://cards/souls/TenMartenCard/ten_marten_card.tres" id="5_2g061"]
+[ext_resource type="Resource" path="res://cards/souls/ManticoreOfTheMeanCard/manticore_of_the_mean_card.tres" id="6_l1rsi"]
 
 [resource]
 script = ExtResource("2_uoadt")

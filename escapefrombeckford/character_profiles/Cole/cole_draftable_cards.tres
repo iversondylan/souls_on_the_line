@@ -30,7 +30,7 @@
 [ext_resource type="Resource" uid="uid://c5dtic064buhl" path="res://cards/convocations/BoilingBlood/boiling_blood.tres" id="21_lom3f"]
 [ext_resource type="Resource" uid="uid://dhlr0v7pv8gdf" path="res://cards/convocations/Substitution/substitution.tres" id="22_creative_potency"]
 [ext_resource type="Resource" uid="uid://dbs6t748gp5ig" path="res://cards/convocations/CrystalBarrier/crystal_barrier.tres" id="23_crystal_barrier"]
-[ext_resource type="Resource" path="res://cards/souls/MosslingBulwarkCard/mossling_bulwark_card.tres" id="24_mossling_bulwark"]
+[ext_resource type="Resource" uid="uid://dksfiqj7wt2jm" path="res://cards/souls/MosslingBulwarkCard/mossling_bulwark_card.tres" id="24_mossling_bulwark"]
 [ext_resource type="Resource" path="res://cards/souls/YggdrasilHartCard/yggdrasil_hart_card.tres" id="25_yggdrasil_hart"]
 [ext_resource type="Resource" path="res://cards/souls/ManticoreOfTheMeanCard/manticore_of_the_mean_card.tres" id="26_manticore_of_the_mean"]
 [ext_resource type="Resource" path="res://cards/souls/TenMartenCard/ten_marten_card.tres" id="27_ten_marten"]
