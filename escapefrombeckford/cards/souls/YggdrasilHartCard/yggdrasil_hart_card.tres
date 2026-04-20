@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="CardData" format=3]
+
+[ext_resource type="Script" path="res://cards/_core/card_action.gd" id="1_card_action"]
+[ext_resource type="Script" path="res://cards/_core/card_data.gd" id="2_card_data"]
+[ext_resource type="Resource" path="res://cards/souls/YggdrasilHartCard/summon_yggdrasil_hart.tres" id="3_summon"]
+[ext_resource type="Resource" path="res://cards/souls/YggdrasilHartCard/yggdrasil_guard_on_summoned_action.tres" id="4_on_summoned"]
+[ext_resource type="Texture2D" path="res://_assets/sprites/assorted/forest_48_w.png" id="5_texture"]
+
+[resource]
+script = ExtResource("2_card_data")
+id = &"yggdrasil_hart"
+card_type = 1
+target_type = 1
+rarity = 1
+name = "Yggdrasil Hart"
+summon_release_overload = 1
+description = "Summon a %s/%s %s. The first time each round this would take strike damage, reduce it by 2. If it survives, gain +2 max health."
+cost = 2
+texture = ExtResource("5_texture")
+actions = Array[ExtResource("1_card_action")]([ExtResource("3_summon"), ExtResource("4_on_summoned")])
+

@@ -1,0 +1,50 @@
+[gd_resource type="Resource" script_class="CardData" format=3 uid="uid://dksfiqj7wt2jm"]
+
+[ext_resource type="Script" uid="uid://wtk5v77fcqvn" path="res://cards/_core/card_action.gd" id="1_card_action"]
+[ext_resource type="Script" uid="uid://buhtw3540mbls" path="res://cards/_generic_actions/summon_action.gd" id="2_summon_script"]
+[ext_resource type="Resource" uid="uid://c0cllss7w30rn" path="res://audio/summon_zap.tres" id="3_summon_sound"]
+[ext_resource type="Script" uid="uid://bdsvca1cpka5s" path="res://npc_ai/_core/npc_ai_profile.gd" id="4_ai_script"]
+[ext_resource type="Script" uid="uid://bcih413oy6v73" path="res://npc_ai/_core/npc_action.gd" id="4_y4qm7"]
+[ext_resource type="Script" uid="uid://cfatj0ryn8uv3" path="res://combatants/combatant_data.gd" id="5_data_script"]
+[ext_resource type="Script" uid="uid://jie78uegvh3j" path="res://cards/_generic_actions/apply_status_to_summoned_action.gd" id="6_status_action"]
+[ext_resource type="Resource" path="res://statuses/mossling_bulwark.tres" id="7_status"]
+[ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://cards/_core/card_data.gd" id="8_card_data_script"]
+[ext_resource type="Texture2D" uid="uid://op0kqefc6x4v" path="res://_assets/sprites/assorted/shambling-mound.png" id="9_texture"]
+
+[sub_resource type="Resource" id="Resource_ai"]
+script = ExtResource("4_ai_script")
+
+[sub_resource type="Resource" id="Resource_summon_data"]
+script = ExtResource("5_data_script")
+name = "Mossling Bulwark"
+description = "0/3 ally. On summon, your frontmost ally gains +2 full max health. On death, heal your most damaged ally 4."
+character_art_uid = "res://_assets/sprites/assorted/shambling-mound.png"
+portrait_art_uid = "res://_assets/sprites/assorted/shambling-mound.png"
+height = 120
+max_health = 3
+max_mana = 0
+ai = SubResource("Resource_ai")
+
+[sub_resource type="Resource" id="Resource_summon_action"]
+script = ExtResource("2_summon_script")
+summon_data = SubResource("Resource_summon_data")
+mortality = 2
+reserves_card = true
+sound = ExtResource("3_summon_sound")
+
+[sub_resource type="Resource" id="Resource_on_summoned"]
+script = ExtResource("6_status_action")
+status = ExtResource("7_status")
+
+[resource]
+script = ExtResource("8_card_data_script")
+id = &"mossling_bulwark"
+card_type = 4
+target_type = 1
+name = "Mossling Bulwark"
+deplete = true
+summon_release_overload = 1
+description = "Summon a %s/%s %s. Deplete. On summon: your frontmost ally gains +2 max health (full). On death: heal your most damaged ally 4."
+cost = 1
+texture = ExtResource("9_texture")
+actions = Array[ExtResource("1_card_action")]([SubResource("Resource_summon_action"), SubResource("Resource_on_summoned")])

@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="EmptyFortitudeStatus" format=3]
+
+[ext_resource type="Texture2D" path="res://_assets/sprites/assorted/armor-upgrade.png" id="1_icon"]
+[ext_resource type="Script" path="res://statuses/empty_fortitude.gd" id="2_script"]
+
+[resource]
+script = ExtResource("2_script")
+status_name = "Empty Fortitude"
+number_display_type = 1
+icon = ExtResource("1_icon")
+

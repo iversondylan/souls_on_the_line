@@ -5,7 +5,7 @@
 [ext_resource type="Resource" uid="uid://ds3np5rpek8ot" path="res://cards/convocations/BerserkersFury/berserkers_fury.tres" id="3_8eqlo"]
 [ext_resource type="Resource" uid="uid://qoedpmaije5m" path="res://cards/enchantments/GrowingFervor/growing_fervor.tres" id="4_h6k4i"]
 [ext_resource type="Resource" uid="uid://cblwy6nabti7c" path="res://cards/convocations/HealingSurge/healing_surge.tres" id="6_ytsqa"]
-[ext_resource type="Resource" path="res://cards/souls/AcidicOozeCard/acidic_ooze_card.tres" id="6_yw6aj"]
+[ext_resource type="Resource" uid="uid://cm30jm46st4qx" path="res://cards/souls/AcidicOozeCard/acidic_ooze_card.tres" id="6_yw6aj"]
 [ext_resource type="Resource" uid="uid://iv5lrhm4b60n" path="res://cards/convocations/SpacetimeWarp/spacetime_warp_data.tres" id="7_h10r8"]
 [ext_resource type="Resource" path="res://cards/souls/SporebearerCard/sporebearer_card.tres" id="8_ya4hp"]
 [ext_resource type="Resource" uid="uid://dqmjfqr0ijgwh" path="res://cards/souls/TemperedSilverbackCard/tempered_silverback_card.tres" id="10_tqeyv"]
@@ -15,13 +15,13 @@
 [ext_resource type="Resource" uid="uid://wgpfged0xtw3" path="res://cards/souls/ShrapnelOysterCard/shrapnel_oyster_card.tres" id="13_h6k4i"]
 [ext_resource type="Resource" uid="uid://d0oumqc77h2hc" path="res://cards/souls/ImpatientDjinn/impatient_djinn.tres" id="13_ky7r7"]
 [ext_resource type="Resource" uid="uid://cupg0p00oc5dv" path="res://cards/souls/LavaFuelGorgerCard/lava_fuel_gorger.tres" id="14_lava_fuel_gorger"]
-[ext_resource type="Resource" path="res://cards/souls/RagingMinionCard/raging_minion_card.tres" id="14_raging_minion"]
+[ext_resource type="Resource" uid="uid://c1xa677e5a2uy" path="res://cards/souls/RagingMinionCard/raging_minion_card.tres" id="14_raging_minion"]
 [ext_resource type="Resource" uid="uid://bayn0pa8nkx10" path="res://cards/souls/GlassPeccaryCard/glass_peccary_card.tres" id="14_sbe0n"]
 [ext_resource type="Resource" uid="uid://btdar0q5ek8di" path="res://cards/souls/FormicDrone/formic_drone.tres" id="14_w7ewq"]
-[ext_resource type="Resource" path="res://cards/souls/WatchfulSphinxCard/watchful_sphinx_card.tres" id="14_watchful_sphinx"]
+[ext_resource type="Resource" uid="uid://uvvhvloxia2x" path="res://cards/souls/WatchfulSphinxCard/watchful_sphinx_card.tres" id="14_watchful_sphinx"]
 [ext_resource type="Resource" uid="uid://bbmoxyo3717yg" path="res://cards/effusions/DecisiveChoice/decisive_choice_data.tres" id="15_avo5p"]
 [ext_resource type="Resource" uid="uid://buses1nhfoe7d" path="res://cards/enchantments/BurningAmbition/burning_ambition.tres" id="15_burning_ambition"]
-[ext_resource type="Resource" path="res://cards/enchantments/LivingRegrets/living_regrets.tres" id="15_living_regrets"]
+[ext_resource type="Resource" uid="uid://e8gcdely1taj" path="res://cards/enchantments/LivingRegrets/living_regrets.tres" id="15_living_regrets"]
 [ext_resource type="Resource" uid="uid://btlvkb0pdixka" path="res://cards/convocations/PressureBarrier/pressure_barrier_data.tres" id="16_h6ubd"]
 [ext_resource type="Resource" uid="uid://ccevotl6l5gil" path="res://cards/convocations/PinpointCard/pinpoint_data.tres" id="17_kqfcr"]
 [ext_resource type="Resource" uid="uid://bc082chhiy0qh" path="res://cards/convocations/MarkCard/mark_data.tres" id="18_nlv8u"]
@@ -29,9 +29,11 @@
 [ext_resource type="Resource" uid="uid://sdnvejwfmf81" path="res://cards/convocations/ConvokedAssault/convoked_assault.tres" id="20_te347"]
 [ext_resource type="Resource" uid="uid://c5dtic064buhl" path="res://cards/convocations/BoilingBlood/boiling_blood.tres" id="21_lom3f"]
 [ext_resource type="Resource" uid="uid://dhlr0v7pv8gdf" path="res://cards/convocations/Substitution/substitution.tres" id="22_creative_potency"]
-[ext_resource type="Resource" path="res://cards/convocations/CrystalBarrier/crystal_barrier.tres" id="23_crystal_barrier"]
+[ext_resource type="Resource" uid="uid://dbs6t748gp5ig" path="res://cards/convocations/CrystalBarrier/crystal_barrier.tres" id="23_crystal_barrier"]
+[ext_resource type="Resource" path="res://cards/souls/MosslingBulwarkCard/mossling_bulwark_card.tres" id="24_mossling_bulwark"]
+[ext_resource type="Resource" path="res://cards/souls/YggdrasilHartCard/yggdrasil_hart_card.tres" id="25_yggdrasil_hart"]
 
 [resource]
 script = ExtResource("2_a8mjb")
-cards = Array[ExtResource("1_fen0u")]([ExtResource("3_8eqlo"), ExtResource("4_h6k4i"), ExtResource("6_ytsqa"), ExtResource("6_yw6aj"), ExtResource("7_h10r8"), ExtResource("8_ya4hp"), ExtResource("10_tqeyv"), ExtResource("11_8ihx4"), ExtResource("12_3bcm6"), ExtResource("13_h6k4i"), ExtResource("14_sbe0n"), ExtResource("15_burning_ambition"), ExtResource("15_living_regrets"), ExtResource("12_no6fn"), ExtResource("13_ky7r7"), ExtResource("14_w7ewq"), ExtResource("14_raging_minion"), ExtResource("14_lava_fuel_gorger"), ExtResource("14_watchful_sphinx"), ExtResource("15_avo5p"), ExtResource("16_h6ubd"), ExtResource("17_kqfcr"), ExtResource("18_nlv8u"), ExtResource("19_a0f4y"), ExtResource("20_te347"), ExtResource("21_lom3f"), ExtResource("22_creative_potency"), ExtResource("23_crystal_barrier")])
+cards = Array[ExtResource("1_fen0u")]([ExtResource("3_8eqlo"), ExtResource("4_h6k4i"), ExtResource("6_ytsqa"), ExtResource("6_yw6aj"), ExtResource("7_h10r8"), ExtResource("8_ya4hp"), ExtResource("10_tqeyv"), ExtResource("11_8ihx4"), ExtResource("12_3bcm6"), ExtResource("13_h6k4i"), ExtResource("14_sbe0n"), ExtResource("15_burning_ambition"), ExtResource("15_living_regrets"), ExtResource("12_no6fn"), ExtResource("13_ky7r7"), ExtResource("14_w7ewq"), ExtResource("14_raging_minion"), ExtResource("14_lava_fuel_gorger"), ExtResource("14_watchful_sphinx"), ExtResource("15_avo5p"), ExtResource("16_h6ubd"), ExtResource("17_kqfcr"), ExtResource("18_nlv8u"), ExtResource("19_a0f4y"), ExtResource("20_te347"), ExtResource("21_lom3f"), ExtResource("22_creative_potency"), ExtResource("23_crystal_barrier"), ExtResource("24_mossling_bulwark"), ExtResource("25_yggdrasil_hart")])
 metadata/_custom_type_script = "uid://dnybrgm0o6gjj"

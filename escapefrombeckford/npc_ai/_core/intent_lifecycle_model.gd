@@ -19,6 +19,9 @@ func on_my_group_end(_ctx: NPCAIContext) -> void:
 func on_ability_started(_ctx: NPCAIContext) -> void:
 	pass
 
+func on_player_turn_started(_ctx: NPCAIContext, _player_id: int) -> void:
+	pass
+
 func on_group_layout_changed(
 	_ctx: NPCAIContext,
 	_changed_group_index: int,

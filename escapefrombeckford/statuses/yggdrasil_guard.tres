@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="YggdrasilGuardStatus" format=3]
+
+[ext_resource type="Texture2D" path="res://_assets/sprites/assorted/bolt-shield.png" id="1_icon"]
+[ext_resource type="Script" path="res://statuses/yggdrasil_guard.gd" id="2_script"]
+
+[resource]
+script = ExtResource("2_script")
+status_name = "Yggdrasil Guard"
+number_display_type = 1
+reapply_type = 3
+icon = ExtResource("1_icon")
+

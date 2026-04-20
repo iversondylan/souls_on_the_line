@@ -64,6 +64,34 @@ static func on_group_turn_end(api: SimBattleAPI, group_index: int) -> void:
 		if u2 != null and u2.ai_state != null:
 			u2.ai_state[&"telegraph_committed"] = false
 
+static func on_player_turn_begin(api: SimBattleAPI, player_id: int) -> void:
+	if api == null or api.state == null or api.state.has_terminal_outcome():
+		return
+	if int(player_id) <= 0:
+		return
+
+	for cid in api.state.units.keys():
+		var u: CombatantState = api.state.get_unit(int(cid))
+		if u == null or !u.is_alive():
+			continue
+		if u.combatant_data == null or u.combatant_data.ai == null:
+			continue
+
+		ActionPlanner.ensure_ai_state_initialized(u)
+		if !bool(u.ai_state.get(Keys.FIRST_INTENTS_READY, false)):
+			continue
+		if bool(u.ai_state.get(Keys.IS_ACTING, false)):
+			continue
+
+		var action := _get_planned_action_for_unit(u)
+		if action == null:
+			continue
+
+		var ctx := ActionPlanner.make_context(api, u)
+		for m: IntentLifecycleModel in action.intent_lifecycle_models:
+			if m != null:
+				m.on_player_turn_started(ctx, int(player_id))
+
 static func on_action_execution_started(ctx: NPCAIContext) -> void:
 	if ctx == null or ctx.api == null or ctx.combatant_data == null or ctx.combatant_data.ai == null:
 		return

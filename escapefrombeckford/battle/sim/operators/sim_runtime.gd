@@ -554,6 +554,9 @@ func _service_player_begin() -> void:
 		SimStatusSystem.on_player_turn_begin(api, player_id)
 		_apply_checkpoint_boundary(CheckpointProcessor.Kind.AFTER_ACTOR_TURN, true)
 
+		ActionLifecycleSystem.on_player_turn_begin(api, player_id)
+		_apply_checkpoint_boundary(CheckpointProcessor.Kind.AFTER_ACTOR_TURN, true)
+
 		SimStatusSystem.on_actor_turn_begin(api, player_id)
 		SimArcanaSystem.on_actor_turn_begin(api, player_id)
 		_apply_checkpoint_boundary(CheckpointProcessor.Kind.AFTER_ACTOR_TURN, true)
@@ -872,6 +875,7 @@ func run_attack(ctx: AttackContext) -> bool:
 			d.take_modifier_type = take_mod
 			d.params = params
 			d.tags.assign(ctx.tags)
+			d.tags.append(&"strike_damage")
 			d.reason = ctx.reason
 			d.origin_card_uid = ctx.origin_card_uid
 			d.origin_arcanum_id = ctx.origin_arcanum_id
@@ -974,6 +978,7 @@ func run_attack(ctx: AttackContext) -> bool:
 				cleave_damage.modifier_policy = int(DamageContext.ModifierPolicy.SKIP_DEAL_MODIFIERS)
 				cleave_damage.params = params
 				cleave_damage.tags.assign(ctx.tags)
+				cleave_damage.tags.append(&"cleave_damage")
 				cleave_damage.reason = ctx.reason
 				cleave_damage.origin_card_uid = ctx.origin_card_uid
 				cleave_damage.origin_arcanum_id = ctx.origin_arcanum_id
