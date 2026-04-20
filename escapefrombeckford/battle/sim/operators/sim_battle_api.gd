@@ -306,10 +306,10 @@ func get_effective_status_contexts_for_unit(
 	)
 
 
-func _mark_interceptors_dirty(hook_kind: StringName) -> void:
-	if state == null:
-		return
-	state.mark_interceptors_dirty(hook_kind)
+#func _mark_interceptors_dirty(hook_kind: StringName) -> void:
+	#if state == null:
+		#return
+	#state.mark_interceptors_dirty(hook_kind)
 
 
 func _sync_status_source_transformers(source_owner_id: int, status_id: StringName) -> void:

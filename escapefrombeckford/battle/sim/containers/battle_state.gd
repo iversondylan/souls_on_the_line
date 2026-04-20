@@ -123,10 +123,10 @@ func is_alive(id: int) -> bool:
 	var u: CombatantState = units.get(id, null)
 	return u != null and u.alive and u.health > 0
 
-func mark_interceptors_dirty(hook_kind: StringName) -> void:
-	if transformer_registry == null:
-		return
-	transformer_registry.mark_interceptor_hook_dirty(hook_kind)
+#func mark_interceptors_dirty(hook_kind: StringName) -> void:
+	#if transformer_registry == null:
+		#return
+	#transformer_registry.mark_interceptor_hook_dirty(hook_kind)
 
 
 func get_interceptors_for_hook(hook_kind: StringName) -> Array[Interceptor]:

@@ -70,10 +70,10 @@ func mark_transformer_dirty(transformer_key: String) -> void:
 	_invalidate_record(record)
 
 
-func mark_interceptor_hook_dirty(hook_kind: StringName) -> void:
-	if hook_kind == &"":
-		return
-	_dirty_interceptor_hooks[hook_kind] = true
+#func mark_interceptor_hook_dirty(hook_kind: StringName) -> void:
+	#if hook_kind == &"":
+		#return
+	#_dirty_interceptor_hooks[hook_kind] = true
 
 
 func mark_source_dirty(source_kind: StringName, source_owner_id: int, source_id: StringName) -> void:

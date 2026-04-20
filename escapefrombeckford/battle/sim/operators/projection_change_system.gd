@@ -3,11 +3,6 @@
 class_name ProjectionChangeSystem
 extends RefCounted
 
-const ProjectionImpactInfo := preload("res://battle/sim/containers/projection_impact_info.gd")
-const TransformerRecord := preload("res://battle/sim/containers/transformer_record.gd")
-const ArcanumEntry := preload("res://battle/sim/containers/arcanum_entry.gd")
-
-
 static func sync_status_source(
 	api: SimBattleAPI,
 	source_owner_id: int,
