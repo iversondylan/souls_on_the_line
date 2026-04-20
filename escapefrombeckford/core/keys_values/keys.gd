@@ -172,6 +172,7 @@ const AFTER_ORDER_IDS := &"after_order_ids"
 const SWAP_A := &"swap_a"
 const SWAP_B := &"swap_b"
 const TO_INDEX := &"to_index"
+const CAN_RESTORE_TURN := &"can_restore_turn"
 
 # -------------------------
 # Status ids you’ve used so far

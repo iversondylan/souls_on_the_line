@@ -36,6 +36,7 @@ func execute(ctx: NPCAIContext) -> void:
 	move.target_id = swap_b if swap_b > 0 else target_id
 	move.index = int(params.get(Keys.TO_INDEX, -1))
 	move.reason = String(params.get(Keys.REASON, "npc_move"))
+	move.can_restore_turn = bool(params.get(Keys.CAN_RESTORE_TURN, false))
 
 	runtime.run_move(move)
 

@@ -140,6 +140,30 @@ static func on_summon_will_resolve(
 			ctx.proto.on_summon_will_resolve(ctx, summon_ctx, summoned)
 	)
 
+static func on_card_played(
+	api: SimBattleAPI,
+	source_id: int,
+	card: CardData
+) -> void:
+	if api == null or api.state == null or api.state.has_terminal_outcome():
+		return
+	if int(source_id) <= 0 or card == null:
+		return
+
+	for unit_id in api.state.units.keys():
+		var owner_id := int(unit_id)
+		var owner := api.state.get_unit(owner_id)
+		if owner == null or !owner.is_alive():
+			continue
+
+		_for_each_effective_status_on_unit(api, owner_id, func(ctx: SimStatusContext) -> void:
+			if ctx.proto == null:
+				return
+			if !ctx.proto.listens_for_card_played():
+				return
+			ctx.proto.on_card_played(ctx, int(source_id), card)
+		)
+
 static func on_removal(api: SimBattleAPI, removal_ctx) -> void:
 	if api == null or api.state == null or removal_ctx == null or api.state.has_terminal_outcome():
 		return

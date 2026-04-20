@@ -3,6 +3,7 @@
 class_name AbsorbStatus extends Status
 
 const ID := &"absorb"
+const PREVENTED_EVENT_KEY := &"absorb_prevented_damage"
 
 func get_id() -> StringName:
 	return ID
@@ -17,8 +18,14 @@ func on_damage_will_be_taken(ctx: SimStatusContext, damage_ctx: DamageContext) -
 	if intensity <= 0:
 		return
 
+	var prevented_amount := maxi(int(damage_ctx.amount), 0)
+
 	# Absorb is keyed to the next incoming hit, even if mitigation reduces that hit to 0.
 	damage_ctx.amount = 0
+	if prevented_amount > 0:
+		if damage_ctx.event_extra == null:
+			damage_ctx.event_extra = {}
+		damage_ctx.event_extra[PREVENTED_EVENT_KEY] = prevented_amount
 	if intensity <= 1:
 		ctx.remove_self("absorb_consumed")
 	else:
