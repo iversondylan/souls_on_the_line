@@ -12,7 +12,7 @@ signal discard_animation_completed()
 @onready var draw_anchor: Control = get_node_or_null(draw_anchor_path)
 
 @export var card_angle: float = 0
-@export var card_angle_limit_flt: float = 35
+@export var card_angle_limit_flt: float = 23
 @export var max_card_spread_angle_flt: float = 5
 
 @onready var hand_cards_node: Node2D = $HandCardsNode
@@ -68,6 +68,10 @@ func _process(_delta: float) -> void:
 	if _is_discarding:
 		return
 	if _modal_selecting:
+		var modal_top_card := _get_top_hovered_card()
+		_top_hover_card = modal_top_card
+		_apply_z_order()
+		_apply_modal_selection_visuals(modal_top_card)
 		return
 	# Always keep z order correct
 	_apply_z_order()
@@ -76,18 +80,11 @@ func _process(_delta: float) -> void:
 	if is_instance_valid(_top_locked_card):
 		_clear_hover_visuals()
 		_top_hover_card = null
+		_apply_z_order()
 		return
 
 	# Normal hover logic
-	var hovered_cards: Array[UsableCard] = []
-	for card in _get_hand_cards():
-		if card.is_mouse_over():
-			hovered_cards.append(card)
-
-	var top_card: UsableCard = null
-	if hovered_cards.size() > 0:
-		top_card = _pick_top_by_tree_order(hovered_cards)
-
+	var top_card := _get_top_hovered_card()
 	_top_hover_card = top_card
 	_apply_z_order()
 	_apply_hover_visuals(top_card)
@@ -465,6 +462,15 @@ func _pick_top_by_tree_order(cards: Array[UsableCard]) -> UsableCard:
 			best = c
 	return best
 
+func _get_top_hovered_card() -> UsableCard:
+	var hovered_cards: Array[UsableCard] = []
+	for card in _get_hand_cards():
+		if card.is_mouse_over():
+			hovered_cards.append(card)
+	if hovered_cards.is_empty():
+		return null
+	return _pick_top_by_tree_order(hovered_cards)
+
 func _apply_hover_visuals(top_card: UsableCard) -> void:
 	# reset selection visuals
 	for card in _get_hand_cards():
@@ -479,6 +485,27 @@ func _apply_hover_visuals(top_card: UsableCard) -> void:
 		currently_selected_card_index = _get_hand_cards().find(top_card)
 	else:
 		currently_selected_card_index = -1
+
+func _apply_modal_selection_visuals(top_card: UsableCard) -> void:
+	for card in _get_hand_cards():
+		var is_marked_for_discard := (
+			card.card_state_machine != null
+			and card.card_state_machine.is_in_state(CardState.State.SELECTED)
+		)
+		card.selected = is_marked_for_discard
+		card.reset_visuals()
+		if is_marked_for_discard:
+			card.card_visuals.glow.show()
+		else:
+			card.card_visuals.glow.hide()
+
+	if is_instance_valid(top_card):
+		top_card.enlarge_visuals()
+		if (
+			top_card.card_state_machine != null
+			and top_card.card_state_machine.is_in_state(CardState.State.SELECTED)
+		):
+			top_card.card_visuals.glow.show()
 
 func _apply_z_order() -> void:
 	var cards := _get_hand_cards()
@@ -500,6 +527,7 @@ func _apply_z_order() -> void:
 
 func _clear_hover_visuals() -> void:
 	for card in _get_hand_cards():
+		card.z_index = Z_BASE
 		card.unhighlight()
 		card.selected = false
 		card.reset_visuals()

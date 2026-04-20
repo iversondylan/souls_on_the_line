@@ -2,7 +2,7 @@
 
 [ext_resource type="Texture2D" uid="uid://c73rgxbvcwveo" path="res://_assets/sprites/assorted/death-skull.png" id="1_b60qy"]
 [ext_resource type="Script" uid="uid://bhv8ixnp8xqgv" path="res://battle/view/scenes/combat_preview_overlay.gd" id="1_glr07"]
-[ext_resource type="Theme" path="res://themes/battle_ui_theme.tres" id="2_glr07"]
+[ext_resource type="Theme" uid="uid://b585x04q3pfqf" path="res://themes/battle_ui_theme.tres" id="2_glr07"]
 
 [node name="CombatPreviewOverlay" type="Node2D" unique_id=326907784]
 script = ExtResource("1_glr07")
@@ -11,7 +11,7 @@ script = ExtResource("1_glr07")
 
 [node name="Icon" type="Sprite2D" parent="IconParent" unique_id=1612890124]
 position = Vector2(0, -2)
-scale = Vector2(0.5, 0.5)
+scale = Vector2(0.18, 0.18)
 texture = ExtResource("1_b60qy")
 
 [node name="TextParent" type="Node2D" parent="." unique_id=1089211324]

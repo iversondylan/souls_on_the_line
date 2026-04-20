@@ -3,8 +3,6 @@ class_name CardStateMachine extends Node
 
 const DRAG_MINIMUM_THRESHOLD := 0.05
 const MOUSE_Y_SNAPBACK_THRESHOLD := 1060
-const SELECTED_Z_INDEX := 10
-
 var current_state: int = -1
 var usable_card: UsableCard
 var player_data: PlayerData
@@ -103,7 +101,6 @@ func _enter_base() -> void:
 		return
 	if !usable_card.is_node_ready():
 		await usable_card.ready
-	usable_card.z_index = 0
 	usable_card.selected = false
 	usable_card.card_visuals.glow.hide()
 	usable_card.reset_visuals()
@@ -202,7 +199,6 @@ func _enter_selection() -> void:
 		return
 	if !usable_card.is_node_ready():
 		await usable_card.ready
-	usable_card.z_index = 0
 	usable_card.drop_point_detector.monitoring = false
 	usable_card.targets.clear()
 	usable_card.card_visuals.glow.hide()
@@ -222,12 +218,10 @@ func _enter_selected() -> void:
 		return
 	if !usable_card.is_node_ready():
 		await usable_card.ready
-	usable_card.z_index = SELECTED_Z_INDEX
 	usable_card.drop_point_detector.monitoring = false
 	usable_card.targets.clear()
 	usable_card.selected = true
 	usable_card.card_visuals.glow.show()
-	usable_card.enlarge_visuals()
 
 func _handle_selected_input(event: InputEvent) -> void:
 	if usable_card == null:

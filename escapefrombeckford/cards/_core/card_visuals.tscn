@@ -87,7 +87,6 @@ position = Vector2(-112.5, -157.5)
 [node name="Glow" type="Sprite2D" parent="CardStrictlyVisuals/CornerMan" unique_id=942930438]
 unique_name_in_owner = true
 visible = false
-z_index = -1
 position = Vector2(114.5, 159.9)
 scale = Vector2(1.85, 1.85)
 texture = ExtResource("1_w227c")
