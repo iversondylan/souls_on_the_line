@@ -36,6 +36,10 @@ func get_targeting_priority(stage: int) -> int:
 		return RETARGET_PRIORITY
 	return 1000
 
+func listens_for_targeting_retarget() -> bool:
+	return true
+
+
 func on_targeting_retarget(ctx: SimStatusContext, targeting_ctx: TargetingContext) -> void:
 	if ctx == null or !ctx.is_valid() or ctx.owner == null or targeting_ctx == null or targeting_ctx.api == null:
 		return

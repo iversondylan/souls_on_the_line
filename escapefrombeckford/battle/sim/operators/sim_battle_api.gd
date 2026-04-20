@@ -4,7 +4,6 @@ class_name SimBattleAPI extends RefCounted
 
 const StatusToken := preload("res://battle/sim/containers/status_token.gd")
 const Interceptor := preload("res://battle/sim/interceptors/interceptor.gd")
-const OnAnyDeathInterceptor := preload("res://battle/sim/interceptors/on_any_death_interceptor.gd")
 const TransformerRecord := preload("res://battle/sim/containers/transformer_record.gd")
 
 # ============================================================================
@@ -404,42 +403,191 @@ func get_interceptors_for_hook(hook_kind: StringName) -> Array[Interceptor]:
 	return state.get_interceptors_for_hook(hook_kind)
 
 
-func _dispatch_on_any_death_interceptor(interceptor: OnAnyDeathInterceptor, removal_ctx: RemovalContext) -> void:
-	if interceptor == null or removal_ctx == null or state == null:
+func _dispatch_interceptor(interceptor: Interceptor, payload = null) -> void:
+	if interceptor == null or state == null:
 		return
+	if interceptor.hook_kind == Interceptor.HOOK_ON_ANY_DEATH:
+		_dispatch_any_death_interceptor(interceptor, payload)
+		return
+	if interceptor.hook_kind == Interceptor.HOOK_ON_PLAYER_TURN_BEGIN:
+		_dispatch_player_turn_begin_interceptor(interceptor, int(payload))
+		return
+	if interceptor.hook_kind == Interceptor.HOOK_ON_GROUP_TURN_BEGIN:
+		_dispatch_group_turn_begin_interceptor(interceptor, int(payload))
+		return
+	if interceptor.hook_kind == Interceptor.HOOK_ON_GROUP_TURN_END:
+		_dispatch_group_turn_end_interceptor(interceptor, int(payload))
+		return
+	if interceptor.hook_kind == Interceptor.HOOK_ON_TARGETING_RETARGET:
+		_dispatch_targeting_interceptor(interceptor, payload)
+		return
+	if interceptor.hook_kind == Interceptor.HOOK_ON_TARGETING_INTERPOSE:
+		_dispatch_targeting_interceptor(interceptor, payload)
 
+
+func _dispatch_any_death_interceptor(interceptor: Interceptor, payload) -> void:
+	if interceptor == null or !(payload is RemovalContext):
+		return
+	var removal_ctx: RemovalContext = payload
+	match interceptor.source_kind:
+		Interceptor.SOURCE_KIND_ARCANUM_ENTRY:
+			var arcanum_ctx: SimArcanumContext = _get_arcanum_context_for_interceptor(interceptor)
+			if arcanum_ctx == null or arcanum_ctx.proto == null:
+				return
+			if !arcanum_ctx.proto.listens_for_any_death():
+				return
+			arcanum_ctx.proto.on_any_death(arcanum_ctx, removal_ctx)
+		_:
+			var status_ctx: SimStatusContext = _get_status_context_for_interceptor(interceptor)
+			if status_ctx == null or status_ctx.proto == null:
+				return
+			if !status_ctx.proto.listens_for_any_death():
+				return
+			status_ctx.proto.on_any_death(status_ctx, removal_ctx)
+
+
+func _dispatch_player_turn_begin_interceptor(interceptor: Interceptor, player_id: int) -> void:
+	if interceptor == null or player_id <= 0:
+		return
+	var status_ctx: SimStatusContext = _get_status_context_for_interceptor(interceptor)
+	if status_ctx == null or status_ctx.proto == null or !status_ctx.is_alive():
+		return
+	if !status_ctx.proto.listens_for_player_turn_begin():
+		return
+	status_ctx.proto.on_player_turn_begin(status_ctx, player_id)
+
+
+func _dispatch_group_turn_begin_interceptor(interceptor: Interceptor, group_index: int) -> void:
+	if interceptor == null or int(interceptor.source_group_index) != int(group_index):
+		return
+	var status_ctx: SimStatusContext = _get_status_context_for_interceptor(interceptor)
+	if status_ctx == null or status_ctx.proto == null or !status_ctx.is_alive():
+		return
+	if !status_ctx.proto.listens_for_group_turn_begin():
+		return
+	status_ctx.proto.on_group_turn_begin(status_ctx, int(group_index))
+
+
+func _dispatch_group_turn_end_interceptor(interceptor: Interceptor, group_index: int) -> void:
+	if interceptor == null or int(interceptor.source_group_index) != int(group_index):
+		return
+	var status_ctx: SimStatusContext = _get_status_context_for_interceptor(interceptor)
+	if status_ctx == null or status_ctx.proto == null or !status_ctx.is_alive():
+		return
+	if !status_ctx.proto.listens_for_group_turn_end():
+		return
+	status_ctx.proto.on_group_turn_end(status_ctx, int(group_index))
+
+
+func _dispatch_targeting_interceptor(interceptor: Interceptor, payload) -> void:
+	if interceptor == null or !(payload is TargetingContext):
+		return
+	var targeting_ctx: TargetingContext = payload
+	if !_interceptor_applies_to_targeting(interceptor, targeting_ctx):
+		return
+	match interceptor.source_kind:
+		Interceptor.SOURCE_KIND_ARCANUM_ENTRY:
+			var arcanum_ctx: SimArcanumContext = _get_arcanum_context_for_interceptor(interceptor)
+			if arcanum_ctx == null or arcanum_ctx.proto == null:
+				return
+			match interceptor.hook_kind:
+				Interceptor.HOOK_ON_TARGETING_RETARGET:
+					if !arcanum_ctx.proto.listens_for_targeting_retarget():
+						return
+					arcanum_ctx.proto.on_targeting_retarget(arcanum_ctx, targeting_ctx)
+				Interceptor.HOOK_ON_TARGETING_INTERPOSE:
+					if !arcanum_ctx.proto.listens_for_targeting_interpose():
+						return
+					arcanum_ctx.proto.on_targeting_interpose(arcanum_ctx, targeting_ctx)
+		_:
+			var status_ctx: SimStatusContext = _get_status_context_for_interceptor(interceptor)
+			if status_ctx == null or status_ctx.proto == null:
+				return
+			match interceptor.hook_kind:
+				Interceptor.HOOK_ON_TARGETING_RETARGET:
+					if !status_ctx.proto.listens_for_targeting_retarget():
+						return
+					status_ctx.proto.on_targeting_retarget(status_ctx, targeting_ctx)
+				Interceptor.HOOK_ON_TARGETING_INTERPOSE:
+					if !status_ctx.proto.listens_for_targeting_interpose():
+						return
+					status_ctx.proto.on_targeting_interpose(status_ctx, targeting_ctx)
+
+
+func _get_status_context_for_interceptor(interceptor: Interceptor):
+	if interceptor == null or state == null:
+		return null
+	var owner: CombatantState = state.get_unit(int(interceptor.source_owner_id))
+	if owner == null or !owner.is_alive() or owner.statuses == null or state.status_catalog == null:
+		return null
 	match interceptor.source_kind:
 		Interceptor.SOURCE_KIND_STATUS_TOKEN:
-			var owner = state.get_unit(int(interceptor.source_owner_id))
-			if owner == null or !owner.is_alive() or owner.statuses == null or state.status_catalog == null:
-				return
-
 			var token: StatusToken = owner.statuses.get_status_token_by_token_id(int(interceptor.source_instance_id), true)
 			if token == null or bool(token.pending):
-				return
+				return null
+			if owner.statuses.has_projected(interceptor.source_id):
+				var proto := state.status_catalog.get_proto(interceptor.source_id)
+				if proto != null and int(proto.reapply_type) == int(Status.ReapplyType.INTENSITY):
+					var effective_ctx: SimStatusContext = _get_effective_status_context_for_interceptor(
+						int(interceptor.source_owner_id),
+						interceptor.source_id,
+						false
+					)
+					if effective_ctx != null:
+						return effective_ctx
+			return SimStatusSystem.make_context(self, int(interceptor.source_owner_id), token)
+		Interceptor.SOURCE_KIND_PROJECTED_STATUS_EFFECTIVE:
+			var projected_token := owner.statuses.get_projected_status_token(interceptor.source_id)
+			if projected_token == null:
+				return null
+			return SimStatusSystem.make_projected_context(self, int(interceptor.source_owner_id), projected_token)
+		_:
+			return null
 
-			var proto := state.status_catalog.get_proto(interceptor.source_id)
-			if proto == null or !proto.listens_for_any_death():
-				return
 
-			var ctx := SimStatusSystem.make_context(self, int(interceptor.source_owner_id), token)
-			if ctx == null or !ctx.is_valid():
-				return
+func _get_effective_status_context_for_interceptor(
+	owner_id: int,
+	status_id: StringName,
+	pending: bool
+):
+	for ctx: SimStatusContext in get_effective_status_contexts_for_unit(int(owner_id)):
+		if ctx == null or !ctx.is_valid():
+			continue
+		if StringName(ctx.get_status_id()) != status_id:
+			continue
+		if bool(ctx.is_pending()) != bool(pending):
+			continue
+		return ctx
+	return null
 
-			proto.on_any_death(ctx, removal_ctx)
 
+func _get_arcanum_context_for_interceptor(interceptor: Interceptor):
+	if interceptor == null or state == null:
+		return null
+	var owner: CombatantState = state.get_unit(int(interceptor.source_owner_id))
+	if owner == null or !owner.is_alive() or state.arcana == null or state.arcana_catalog == null:
+		return null
+	return SimArcanaSystem.get_context(self, interceptor.source_id)
+
+
+func _interceptor_applies_to_targeting(interceptor: Interceptor, targeting_ctx: TargetingContext) -> bool:
+	if interceptor == null or targeting_ctx == null:
+		return false
+	match interceptor.source_kind:
 		Interceptor.SOURCE_KIND_ARCANUM_ENTRY:
-			var owner = state.get_unit(int(interceptor.source_owner_id))
-			if owner == null or !owner.is_alive() or state.arcana == null or state.arcana_catalog == null:
-				return
-
-			var ctx := SimArcanaSystem.get_context(self, interceptor.source_id)
-			if ctx == null or !ctx.is_valid() or ctx.proto == null:
-				return
-			if !ctx.proto.listens_for_any_death():
-				return
-
-			ctx.proto.on_any_death(ctx, removal_ctx)
+			return int(interceptor.source_group_index) == int(FRIENDLY)
+		Interceptor.SOURCE_KIND_STATUS_TOKEN:
+			return (
+				int(interceptor.source_owner_id) == int(targeting_ctx.source_id)
+				or int(interceptor.source_group_index) == int(targeting_ctx.defending_group_index)
+			)
+		Interceptor.SOURCE_KIND_PROJECTED_STATUS_EFFECTIVE:
+			return (
+				int(interceptor.source_owner_id) == int(targeting_ctx.source_id)
+				or int(interceptor.source_group_index) == int(targeting_ctx.defending_group_index)
+			)
+		_:
+			return false
 
 
 func get_non_status_modifier_tokens_for_target(target_id: int, mod_type: Modifier.Type) -> Array[ModifierToken]:
@@ -973,14 +1121,13 @@ func resolve_removal(ctx) -> void:
 		runtime.enqueue_delayed_reaction(reaction)
 		if !runtime.is_in_strike_resolution():
 			runtime.drain_delayed_reactions(DelayedReaction.Timing.AFTER_STRIKE)
-	else:
-		var any_death_interceptors := get_interceptors_for_hook(Interceptor.HOOK_ON_ANY_DEATH)
-		SimStatusSystem.on_removal(self, ctx)
-		SimArcanaSystem.on_removal(self, ctx)
-		for interceptor_variant in any_death_interceptors:
-			var interceptor := interceptor_variant as OnAnyDeathInterceptor
-			if interceptor != null:
-				interceptor.dispatch(self, ctx)
+		else:
+			var any_death_interceptors := get_interceptors_for_hook(Interceptor.HOOK_ON_ANY_DEATH)
+			SimStatusSystem.on_removal(self, ctx)
+			SimArcanaSystem.on_removal(self, ctx)
+			for interceptor: Interceptor in any_death_interceptors:
+				if interceptor != null:
+					interceptor.dispatch(self, ctx)
 
 
 func resolve_move(ctx: MoveContext) -> void:
@@ -1768,6 +1915,8 @@ func _refresh_projected_status_cache_for(
 		source_keys,
 		bool(full_rebuild)
 	)
+	if state != null and state.transformer_registry != null:
+		state.transformer_registry.sync_projected_interceptors_for_target(state, int(id))
 
 
 func _refresh_all_projected_status_caches() -> void:

@@ -1,8 +1,14 @@
 class_name Interceptor extends RefCounted
 
+const HOOK_ON_TARGETING_RETARGET := &"on_targeting_retarget"
+const HOOK_ON_TARGETING_INTERPOSE := &"on_targeting_interpose"
+const HOOK_ON_PLAYER_TURN_BEGIN := &"on_player_turn_begin"
+const HOOK_ON_GROUP_TURN_BEGIN := &"on_group_turn_begin"
+const HOOK_ON_GROUP_TURN_END := &"on_group_turn_end"
 const HOOK_ON_ANY_DEATH := &"on_any_death"
 
 const SOURCE_KIND_STATUS_TOKEN := &"status_token"
+const SOURCE_KIND_PROJECTED_STATUS_EFFECTIVE := &"projected_status_effective"
 const SOURCE_KIND_ARCANUM_ENTRY := &"arcanum_entry"
 
 var hook_kind: StringName = &""
@@ -68,3 +74,9 @@ func clone():
 		tid,
 		priority
 	)
+
+
+func dispatch(api, payload = null) -> void:
+	if api == null or !is_valid():
+		return
+	api._dispatch_interceptor(self, payload)

@@ -12,6 +12,7 @@ var owner_id: int = 0
 var owner: CombatantState
 var token: StatusToken
 var proto: Status
+var _read_only: bool = false
 
 
 func _init(
@@ -19,17 +20,23 @@ func _init(
 	_owner_id: int = 0,
 	_owner: CombatantState = null,
 	_token: StatusToken = null,
-	_proto: Status = null
+	_proto: Status = null,
+	_read_only_projected: bool = false
 ) -> void:
 	api = _api
 	owner_id = int(_owner_id)
 	owner = _owner
 	token = _token
 	proto = _proto
+	_read_only = bool(_read_only_projected)
 
 
 func is_valid() -> bool:
 	return api != null and owner != null and token != null and proto != null and owner_id > 0
+
+
+func is_read_only() -> bool:
+	return bool(_read_only)
 
 
 func get_status_id() -> StringName:
@@ -66,12 +73,16 @@ func make_token_ctx() -> StatusTokenContext:
 	return ctx
 
 
+func _can_mutate_self() -> bool:
+	return !_read_only
+
+
 # -------------------------------------------------------------------
 # Controlled mutation helpers
 # -------------------------------------------------------------------
 
 func change_intensity(delta: int, reason: String = "") -> void:
-	if !is_valid():
+	if !is_valid() or !_can_mutate_self():
 		return
 	if int(delta) == 0:
 		return
@@ -118,7 +129,7 @@ func change_intensity(delta: int, reason: String = "") -> void:
 
 
 func change_duration(delta: int, reason: String = "") -> void:
-	if !is_valid():
+	if !is_valid() or !_can_mutate_self():
 		return
 	if int(delta) == 0:
 		return
@@ -165,7 +176,7 @@ func change_duration(delta: int, reason: String = "") -> void:
 
 
 func remove_self(_reason: String = "") -> void:
-	if !is_valid():
+	if !is_valid() or !_can_mutate_self():
 		return
 
 	var rc := StatusContext.new()
@@ -183,7 +194,7 @@ func request_removal(
 	origin_card_uid: String = "",
 	origin_arcanum_id: StringName = &""
 ) -> void:
-	if !is_valid() or api == null or owner == null or !owner.is_alive():
+	if !is_valid() or !_can_mutate_self() or api == null or owner == null or !owner.is_alive():
 		return
 
 	var removal_ctx = RemovalContext.new()

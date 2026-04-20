@@ -10,10 +10,9 @@ static func on_group_turn_begin(api: SimBattleAPI, group_index: int) -> void:
 	if api == null or api.state == null or api.state.has_terminal_outcome():
 		return
 
-	_for_each_effective_status_on_group(api, group_index, func(ctx: SimStatusContext) -> void:
-		if ctx.proto != null:
-			ctx.proto.on_group_turn_begin(ctx, group_index)
-	)
+	for interceptor: Interceptor in api.get_interceptors_for_hook(Interceptor.HOOK_ON_GROUP_TURN_BEGIN):
+		if interceptor != null:
+			interceptor.dispatch(api, int(group_index))
 
 	_expire_by_policy(api, group_index, Status.ExpirationPolicy.GROUP_TURN_START)
 
@@ -21,10 +20,9 @@ static func on_group_turn_end(api: SimBattleAPI, group_index: int) -> void:
 	if api == null or api.state == null or api.state.has_terminal_outcome():
 		return
 
-	_for_each_effective_status_on_group(api, group_index, func(ctx: SimStatusContext) -> void:
-		if ctx.proto != null:
-			ctx.proto.on_group_turn_end(ctx, group_index)
-	)
+	for interceptor: Interceptor in api.get_interceptors_for_hook(Interceptor.HOOK_ON_GROUP_TURN_END):
+		if interceptor != null:
+			interceptor.dispatch(api, int(group_index))
 
 	_expire_by_policy(api, group_index, Status.ExpirationPolicy.GROUP_TURN_END)
 
@@ -43,12 +41,9 @@ static func on_player_turn_begin(api: SimBattleAPI, player_id: int) -> void:
 	if int(player_id) <= 0:
 		return
 
-	_for_each_effective_status_in_battle(api, func(ctx: SimStatusContext) -> void:
-		if ctx == null or !ctx.is_valid() or !ctx.is_alive():
-			return
-		if ctx.proto != null:
-			ctx.proto.on_player_turn_begin(ctx, player_id)
-	)
+	for interceptor: Interceptor in api.get_interceptors_for_hook(Interceptor.HOOK_ON_PLAYER_TURN_BEGIN):
+		if interceptor != null:
+			interceptor.dispatch(api, int(player_id))
 
 	_expire_all_by_policy(api, Status.ExpirationPolicy.PLAYER_TURN_START)
 
@@ -162,27 +157,15 @@ static func on_removal(api: SimBattleAPI, removal_ctx) -> void:
 static func on_any_death(
 	api: SimBattleAPI,
 	removal_ctx: RemovalContext,
-	listener_owner_ids: Array[int]
+	_listener_owner_ids: Array[int]
 ) -> void:
 	if api == null or api.state == null or removal_ctx == null or api.state.has_terminal_outcome():
 		return
 	if int(removal_ctx.removal_type) != int(Removal.Type.DEATH):
 		return
-	if listener_owner_ids.is_empty():
-		return
-
-	for raw_id in listener_owner_ids:
-		var owner_id := int(raw_id)
-		if owner_id <= 0 or !api.is_alive(owner_id):
-			continue
-
-		_for_each_status_on_unit(api, owner_id, func(ctx: SimStatusContext) -> void:
-			if ctx == null or !ctx.is_valid() or ctx.proto == null:
-				return
-			if !ctx.proto.listens_for_any_death():
-				return
-			ctx.proto.on_any_death(ctx, removal_ctx)
-		)
+	for interceptor: Interceptor in api.get_interceptors_for_hook(Interceptor.HOOK_ON_ANY_DEATH):
+		if interceptor != null:
+			interceptor.dispatch(api, removal_ctx)
 
 static func should_skip_npc_action(api: SimBattleAPI, actor_id: int) -> bool:
 	if api == null or api.state == null or api.state.has_terminal_outcome():
@@ -250,6 +233,21 @@ static func make_context(api: SimBattleAPI, owner_id: int, token: StatusToken) -
 		return null
 
 	return SimStatusContext.new(api, owner_id, owner, token, proto)
+
+
+static func make_projected_context(api: SimBattleAPI, owner_id: int, token: StatusToken) -> SimStatusContext:
+	if api == null or api.state == null or owner_id <= 0 or token == null:
+		return null
+
+	var owner: CombatantState = api.state.get_unit(owner_id)
+	if owner == null:
+		return null
+
+	var proto := get_proto(api, token.id)
+	if proto == null:
+		return null
+
+	return SimStatusContext.new(api, owner_id, owner, token, proto, true)
 
 # Daddy's favorite function
 static func get_effective_status_contexts_for_unit(
@@ -497,7 +495,7 @@ static func _append_cached_projected_status_contexts(
 	for projected_token: StatusToken in target.statuses.get_all_projected_tokens():
 		if projected_token == null:
 			continue
-		var projected_ctx := make_context(api, target_id, projected_token)
+		var projected_ctx := make_projected_context(api, target_id, projected_token)
 		if projected_ctx == null or !projected_ctx.is_valid():
 			continue
 		out.append(projected_ctx)

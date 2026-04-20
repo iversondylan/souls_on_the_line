@@ -35,4 +35,4 @@ func clone():
 func dispatch(api, removal_ctx: RemovalContext) -> void:
 	if api == null or removal_ctx == null or !is_valid():
 		return
-	api._dispatch_on_any_death_interceptor(self, removal_ctx)
+	api._dispatch_interceptor(self, removal_ctx)

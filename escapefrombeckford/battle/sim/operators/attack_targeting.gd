@@ -2,13 +2,6 @@
 
 class_name AttackTargeting extends RefCounted
 
-class TargetingParticipant extends RefCounted:
-	var priority: int = 100
-	var discovery_index: int = 0
-	var status_ctx: SimStatusContext = null
-	var status_proto: Status = null
-	var arcanum_ctx = null
-
 static func get_target_ids(ctx: TargetingContext) -> Array[int]:
 	if ctx == null or ctx.api == null:
 		return []
@@ -137,28 +130,12 @@ static func _run_stage(ctx: TargetingContext, stage: int) -> void:
 		return
 
 	ctx.current_stage = int(stage)
-	var participants := _collect_participants(ctx, stage)
-	participants.sort_custom(func(a, b) -> bool:
-		if int(a.priority) == int(b.priority):
-			return int(a.discovery_index) < int(b.discovery_index)
-		return int(a.priority) < int(b.priority)
-	)
-
-	for participant: TargetingParticipant in participants:
-		if participant == null:
-			continue
-		if participant.status_proto != null and participant.status_ctx != null:
-			match int(stage):
-				TargetingContext.Stage.RETARGET:
-					participant.status_proto.on_targeting_retarget(participant.status_ctx, ctx)
-				TargetingContext.Stage.INTERPOSE:
-					participant.status_proto.on_targeting_interpose(participant.status_ctx, ctx)
-		elif participant.arcanum_ctx != null and participant.arcanum_ctx.proto != null:
-			match int(stage):
-				TargetingContext.Stage.RETARGET:
-					participant.arcanum_ctx.proto.on_targeting_retarget(participant.arcanum_ctx, ctx)
-				TargetingContext.Stage.INTERPOSE:
-					participant.arcanum_ctx.proto.on_targeting_interpose(participant.arcanum_ctx, ctx)
+	var hook_kind := _get_stage_hook_kind(stage)
+	if hook_kind == &"":
+		return
+	for interceptor: Interceptor in ctx.api.get_interceptors_for_hook(hook_kind):
+		if interceptor != null:
+			interceptor.dispatch(ctx.api, ctx)
 
 
 static func _finalize_targets(ctx: TargetingContext) -> void:
@@ -174,69 +151,11 @@ static func _finalize_targets(ctx: TargetingContext) -> void:
 	ctx.final_target_ids = out
 
 
-static func _collect_participants(ctx: TargetingContext, stage: int) -> Array[TargetingParticipant]:
-	var out: Array[TargetingParticipant] = []
-	var discovery_index := 0
-
-	discovery_index = _append_status_participants(out, ctx, int(ctx.source_id), stage, discovery_index)
-	discovery_index = _append_arcana_participants(out, ctx, int(ctx.source_group_index), stage, discovery_index)
-
-	var defender_ids := ctx.api.get_combatants_in_group(int(ctx.defending_group_index), false)
-	for defender_id in defender_ids:
-		discovery_index = _append_status_participants(out, ctx, int(defender_id), stage, discovery_index)
-
-	discovery_index = _append_arcana_participants(out, ctx, int(ctx.defending_group_index), stage, discovery_index)
-	return out
-
-
-static func _append_status_participants(
-	out: Array[TargetingParticipant],
-	ctx: TargetingContext,
-	owner_id: int,
-	stage: int,
-	discovery_index: int
-) -> int:
-	if ctx.api == null or ctx.api.state == null:
-		return discovery_index
-
-	for status_ctx: SimStatusContext in SimStatusSystem.get_effective_status_contexts_for_unit(ctx.api, int(owner_id)):
-		if status_ctx == null or !status_ctx.is_valid():
-			continue
-		var proto := status_ctx.proto
-		if proto == null:
-			continue
-
-		var participant := TargetingParticipant.new()
-		participant.priority = int(proto.get_targeting_priority(stage))
-		participant.discovery_index = discovery_index
-		participant.status_ctx = status_ctx
-		participant.status_proto = proto
-		out.append(participant)
-		discovery_index += 1
-
-	return discovery_index
-
-
-static func _append_arcana_participants(
-	out: Array[TargetingParticipant],
-	ctx: TargetingContext,
-	side_group_index: int,
-	stage: int,
-	discovery_index: int
-) -> int:
-	if ctx.api == null or ctx.api.state == null or ctx.api.state.arcana == null or ctx.api.state.arcana_catalog == null:
-		return discovery_index
-	if int(side_group_index) != int(SimBattleAPI.FRIENDLY):
-		return discovery_index
-
-	for arcanum_ctx in SimArcanaSystem.get_contexts(ctx.api):
-		if arcanum_ctx == null or !arcanum_ctx.is_valid() or arcanum_ctx.proto == null:
-			continue
-		var participant := TargetingParticipant.new()
-		participant.priority = int(arcanum_ctx.proto.get_targeting_priority(stage))
-		participant.discovery_index = discovery_index
-		participant.arcanum_ctx = arcanum_ctx
-		out.append(participant)
-		discovery_index += 1
-
-	return discovery_index
+static func _get_stage_hook_kind(stage: int) -> StringName:
+	match int(stage):
+		TargetingContext.Stage.RETARGET:
+			return Interceptor.HOOK_ON_TARGETING_RETARGET
+		TargetingContext.Stage.INTERPOSE:
+			return Interceptor.HOOK_ON_TARGETING_INTERPOSE
+		_:
+			return &""

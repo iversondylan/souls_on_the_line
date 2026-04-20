@@ -92,14 +92,31 @@ func should_skip_npc_action(_ctx: SimStatusContext) -> bool:
 func on_removal(_ctx: SimStatusContext, _removal_ctx) -> void:
 	pass
 
-# This hook is intentionally owned-status-only. Projected statuses never
-# listen here so aura-style sources cannot multiply or retroactively fan out
-# when a death triggers followup mutations like summons or projections.
+func listens_for_player_turn_begin() -> bool:
+	return false
+
+
+func listens_for_group_turn_begin() -> bool:
+	return false
+
+
+func listens_for_group_turn_end() -> bool:
+	return false
+
+
 func listens_for_any_death() -> bool:
 	return false
 
 func on_any_death(_ctx: SimStatusContext, _removal_ctx: RemovalContext) -> void:
 	pass
+
+func listens_for_targeting_retarget() -> bool:
+	return false
+
+
+func listens_for_targeting_interpose() -> bool:
+	return false
+
 
 func get_targeting_priority(_stage: int) -> int:
 	return 100

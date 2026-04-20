@@ -1,7 +1,6 @@
 class_name RemovalDelayedReaction extends DelayedReaction
 
 const Interceptor := preload("res://battle/sim/interceptors/interceptor.gd")
-const OnAnyDeathInterceptor := preload("res://battle/sim/interceptors/on_any_death_interceptor.gd")
 
 var removal_ctx = null
 var any_death_interceptors: Array[Interceptor] = []
@@ -18,7 +17,6 @@ func execute(runtime: SimRuntime) -> void:
 	var api := runtime.sim.api
 	SimStatusSystem.on_removal(api, removal_ctx)
 	SimArcanaSystem.on_removal(api, removal_ctx)
-	for interceptor_variant in any_death_interceptors:
-		var interceptor := interceptor_variant as OnAnyDeathInterceptor
+	for interceptor: Interceptor in any_death_interceptors:
 		if interceptor != null:
 			interceptor.dispatch(api, removal_ctx)

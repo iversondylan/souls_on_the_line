@@ -4,6 +4,7 @@ const TRANSFORMER_KIND_PROJECTION := &"projection"
 const TRANSFORMER_KIND_INTERCEPTOR := &"interceptor"
 
 const SOURCE_KIND_STATUS_TOKEN := &"status_token"
+const SOURCE_KIND_PROJECTED_STATUS_EFFECTIVE := &"projected_status_effective"
 const SOURCE_KIND_ARCANUM_ENTRY := &"arcanum_entry"
 
 var tid: int = 0

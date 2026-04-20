@@ -80,6 +80,14 @@ func on_removal(_ctx, _removal_ctx) -> void:
 func listens_for_any_death() -> bool:
 	return false
 
+func listens_for_targeting_retarget() -> bool:
+	return false
+
+
+func listens_for_targeting_interpose() -> bool:
+	return false
+
+
 func on_any_death(_ctx: SimArcanumContext, _removal_ctx: RemovalContext) -> void:
 	pass
 

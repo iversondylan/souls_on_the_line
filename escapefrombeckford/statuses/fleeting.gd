@@ -14,6 +14,10 @@ func get_tooltip(_intensity: int = 0, _duration: int = 0) -> String:
 	return "Fleeting: dies at the start of your turn."
 
 
+func listens_for_player_turn_begin() -> bool:
+	return true
+
+
 func on_player_turn_begin(ctx: SimStatusContext, player_id: int) -> void:
 	if ctx == null or !ctx.is_valid() or !ctx.is_alive() or ctx.owner == null:
 		return

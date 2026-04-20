@@ -3,6 +3,8 @@ class_name TransformerRegistry extends RefCounted
 
 const FRIENDLY := 0
 const ENEMY := 1
+const TARGETING_STAGE_RETARGET := 1
+const TARGETING_STAGE_INTERPOSE := 2
 
 var _next_tid: int = 1
 var _records_by_transformer_key: Dictionary = {}
@@ -106,6 +108,44 @@ func get_interceptors_for_hook(_state, hook_kind: StringName) -> Array[Intercept
 	var ordered: Array[Interceptor] = []
 	ordered.assign(_interceptors_by_hook.get(hook_kind, []))
 	return ordered
+
+
+func sync_projected_interceptors_for_target(state: BattleState, target_id: int) -> void:
+	if state == null or target_id <= 0:
+		return
+	var target: CombatantState = state.get_unit(int(target_id))
+	var group_index := int(target.team) if target != null else -1
+	var desired_status_ids := {}
+	if target != null and target.is_alive() and target.statuses != null and state.status_catalog != null:
+		for token: StatusToken in target.statuses.get_all_projected_tokens():
+			if token == null or StringName(token.id) == &"":
+				continue
+			var status_id := StringName(token.id)
+			var proto: Status = state.status_catalog.get_proto(status_id)
+			if proto == null:
+				continue
+			if !_projected_status_wants_own_interceptor(target, status_id, proto):
+				continue
+			desired_status_ids[status_id] = true
+			_sync_projected_status_effective_records(int(target_id), group_index, status_id, proto)
+	var stale_status_ids := {}
+	for record_variant in _records_by_transformer_key.values():
+		var record := record_variant as TransformerRecord
+		if record == null:
+			continue
+		if record.source_kind != TransformerRecord.SOURCE_KIND_PROJECTED_STATUS_EFFECTIVE:
+			continue
+		if int(record.source_owner_id) != int(target_id):
+			continue
+		if desired_status_ids.has(record.source_id):
+			continue
+		stale_status_ids[record.source_id] = true
+	for status_id_variant in stale_status_ids.keys():
+		remove_transformers_for_source(
+			TransformerRecord.SOURCE_KIND_PROJECTED_STATUS_EFFECTIVE,
+			int(target_id),
+			StringName(status_id_variant)
+		)
 
 
 func sync_source_change(api, source_ref: TransformerSourceRef) -> void:
@@ -343,13 +383,13 @@ func _sync_status_source_records(state: BattleState, source_ref: TransformerSour
 	var proto: Status = state.status_catalog.get_proto(source_ref.source_id) if state.status_catalog != null else null
 	var token: StatusToken = null
 	var wants_projection := false
-	var wants_interceptor := false
+	var wants_interceptors := false
 
 	if owner != null and owner.is_alive() and owner.statuses != null and proto != null:
 		token = owner.statuses.get_status_token_by_token_id(int(source_ref.source_instance_id), true)
 		if token != null:
 			wants_projection = proto is Aura
-			wants_interceptor = !bool(token.pending) and bool(proto.listens_for_any_death())
+			wants_interceptors = !bool(token.pending)
 
 	_sync_projection_record(
 		wants_projection,
@@ -360,15 +400,14 @@ func _sync_status_source_records(state: BattleState, source_ref: TransformerSour
 		source_ref.source_instance_id,
 		int(proto.transformer_priority) if proto != null else 1
 	)
-	_sync_interceptor_record(
-		wants_interceptor,
-		Interceptor.HOOK_ON_ANY_DEATH,
+	_sync_status_interceptor_records(
+		wants_interceptors,
 		source_ref.source_kind,
 		source_ref.source_owner_id,
 		group_index,
 		source_ref.source_id,
 		source_ref.source_instance_id,
-		int(proto.transformer_priority) if proto != null else 1
+		proto
 	)
 
 
@@ -376,7 +415,7 @@ func _sync_arcanum_source_records(state: BattleState, source_ref: TransformerSou
 	var proto: Arcanum = state.arcana_catalog.get_proto(source_ref.source_id) if state.arcana_catalog != null else null
 	var entry: ArcanumEntry = state.arcana.get_entry(source_ref.source_id) if state.arcana != null else null
 	var wants_projection := proto != null and entry != null and bool(proto.affects_others())
-	var wants_interceptor := proto != null and entry != null and bool(proto.listens_for_any_death())
+	var wants_interceptors := proto != null and entry != null
 	var priority := int(proto.transformer_priority) if proto != null else 1
 
 	_sync_projection_record(
@@ -389,7 +428,7 @@ func _sync_arcanum_source_records(state: BattleState, source_ref: TransformerSou
 		priority
 	)
 	_sync_interceptor_record(
-		wants_interceptor,
+		wants_interceptors and bool(proto != null and proto.listens_for_any_death()),
 		Interceptor.HOOK_ON_ANY_DEATH,
 		source_ref.source_kind,
 		source_ref.source_owner_id,
@@ -397,6 +436,128 @@ func _sync_arcanum_source_records(state: BattleState, source_ref: TransformerSou
 		source_ref.source_id,
 		source_ref.source_instance_id,
 		priority
+	)
+	_sync_interceptor_record(
+		wants_interceptors and bool(proto != null and proto.listens_for_targeting_retarget()),
+		Interceptor.HOOK_ON_TARGETING_RETARGET,
+		source_ref.source_kind,
+		source_ref.source_owner_id,
+		source_ref.source_group_index,
+		source_ref.source_id,
+		source_ref.source_instance_id,
+		int(proto.get_targeting_priority(TARGETING_STAGE_RETARGET)) if proto != null else priority
+	)
+	_sync_interceptor_record(
+		wants_interceptors and bool(proto != null and proto.listens_for_targeting_interpose()),
+		Interceptor.HOOK_ON_TARGETING_INTERPOSE,
+		source_ref.source_kind,
+		source_ref.source_owner_id,
+		source_ref.source_group_index,
+		source_ref.source_id,
+		source_ref.source_instance_id,
+		int(proto.get_targeting_priority(TARGETING_STAGE_INTERPOSE)) if proto != null else priority
+	)
+
+
+func _sync_projected_status_effective_records(
+	target_id: int,
+	group_index: int,
+	status_id: StringName,
+	proto: Status
+) -> void:
+	var wants_interceptors := target_id > 0 and group_index >= 0 and proto != null
+	_sync_status_interceptor_records(
+		wants_interceptors,
+		TransformerRecord.SOURCE_KIND_PROJECTED_STATUS_EFFECTIVE,
+		target_id,
+		group_index,
+		status_id,
+		0,
+		proto
+	)
+
+
+func _projected_status_wants_own_interceptor(
+	target: CombatantState,
+	status_id: StringName,
+	proto: Status
+) -> bool:
+	if target == null or target.statuses == null or status_id == &"" or proto == null:
+		return false
+	if int(proto.reapply_type) != int(Status.ReapplyType.INTENSITY):
+		return true
+	return target.statuses.get_status_token(status_id, false) == null
+
+
+func _sync_status_interceptor_records(
+	wants_records: bool,
+	source_kind: StringName,
+	source_owner_id: int,
+	source_group_index: int,
+	source_id: StringName,
+	source_instance_id: int,
+	proto: Status
+) -> void:
+	var default_priority := int(proto.transformer_priority) if proto != null else 1
+	_sync_interceptor_record(
+		wants_records and bool(proto != null and proto.listens_for_any_death()),
+		Interceptor.HOOK_ON_ANY_DEATH,
+		source_kind,
+		source_owner_id,
+		source_group_index,
+		source_id,
+		source_instance_id,
+		default_priority
+	)
+	_sync_interceptor_record(
+		wants_records and bool(proto != null and proto.listens_for_player_turn_begin()),
+		Interceptor.HOOK_ON_PLAYER_TURN_BEGIN,
+		source_kind,
+		source_owner_id,
+		source_group_index,
+		source_id,
+		source_instance_id,
+		default_priority
+	)
+	_sync_interceptor_record(
+		wants_records and bool(proto != null and proto.listens_for_group_turn_begin()),
+		Interceptor.HOOK_ON_GROUP_TURN_BEGIN,
+		source_kind,
+		source_owner_id,
+		source_group_index,
+		source_id,
+		source_instance_id,
+		default_priority
+	)
+	_sync_interceptor_record(
+		wants_records and bool(proto != null and proto.listens_for_group_turn_end()),
+		Interceptor.HOOK_ON_GROUP_TURN_END,
+		source_kind,
+		source_owner_id,
+		source_group_index,
+		source_id,
+		source_instance_id,
+		default_priority
+	)
+	_sync_interceptor_record(
+		wants_records and bool(proto != null and proto.listens_for_targeting_retarget()),
+		Interceptor.HOOK_ON_TARGETING_RETARGET,
+		source_kind,
+		source_owner_id,
+		source_group_index,
+		source_id,
+		source_instance_id,
+		int(proto.get_targeting_priority(TARGETING_STAGE_RETARGET)) if proto != null else default_priority
+	)
+	_sync_interceptor_record(
+		wants_records and bool(proto != null and proto.listens_for_targeting_interpose()),
+		Interceptor.HOOK_ON_TARGETING_INTERPOSE,
+		source_kind,
+		source_owner_id,
+		source_group_index,
+		source_id,
+		source_instance_id,
+		int(proto.get_targeting_priority(TARGETING_STAGE_INTERPOSE)) if proto != null else default_priority
 	)
 
 
@@ -576,19 +737,16 @@ func _ensure_interceptor_hook(hook_kind: StringName) -> void:
 func _build_interceptor(record: TransformerRecord):
 	if record == null:
 		return null
-	match record.hook_kind:
-		Interceptor.HOOK_ON_ANY_DEATH:
-			return OnAnyDeathInterceptor.new(
-				record.source_kind,
-				record.source_owner_id,
-				record.source_group_index,
-				record.source_id,
-				record.source_instance_id,
-				record.tid,
-				record.priority
-			)
-		_:
-			return null
+	return Interceptor.new(
+		record.hook_kind,
+		record.source_kind,
+		record.source_owner_id,
+		record.source_group_index,
+		record.source_id,
+		record.source_instance_id,
+		record.tid,
+		record.priority
+	)
 
 
 func _handle_projection_source_change(
