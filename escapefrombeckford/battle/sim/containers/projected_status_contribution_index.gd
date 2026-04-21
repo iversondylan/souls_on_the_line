@@ -211,7 +211,8 @@ func _source_entry_sorts_before(a: Dictionary, b: Dictionary) -> bool:
 	var b_order := b.get("order", {}) if b != null else {}
 	var a_priority := int(a_order.get("priority", 0))
 	var b_priority := int(b_order.get("priority", 0))
-	# Lower priority runs earlier, and lower tid is older within the same priority.
+	# Lower priority runs earlier, and lower tid is older because TransformerRegistry
+	# allocates tids monotonically as records are created.
 	if a_priority != b_priority:
 		return a_priority < b_priority
 	return int(a_order.get("tid", 0)) < int(b_order.get("tid", 0))

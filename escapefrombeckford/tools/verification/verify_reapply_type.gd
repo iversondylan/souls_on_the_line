@@ -21,13 +21,17 @@ func _init() -> void:
 func _verify_owned_reapply(status_catalog: StatusCatalog) -> void:
 	_assert_owned_reapply(status_catalog, &"marked", 2, 3, 5)
 	_assert_owned_reapply(status_catalog, &"stability", 4, 1, 1)
+	# Numerical IGNORE should keep the first application.
 	_assert_owned_reapply(status_catalog, &"yggdrasil_guard", 5, 2, 5)
+	# Non-numerical statuses should behave as idempotent ignores.
 	_assert_owned_reapply(status_catalog, &"danger_zone", 1, 1, 1)
 
 func _verify_projected_merging(status_catalog: StatusCatalog) -> void:
 	_assert_projected_merge(status_catalog, &"marked", 2, 5, 7)
 	_assert_projected_merge(status_catalog, &"stability", 4, 9, 9)
+	# Numerical IGNORE should keep the oldest projected transformer.
 	_assert_projected_merge(status_catalog, &"yggdrasil_guard", 3, 8, 3)
+	# Non-numerical statuses should still collapse idempotently.
 	_assert_projected_merge(status_catalog, &"danger_zone", 1, 1, 1)
 
 func _assert_owned_reapply(

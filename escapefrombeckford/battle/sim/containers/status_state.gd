@@ -281,10 +281,13 @@ func add_or_reapply_ctx(
 	var new_total := before_stacks
 	match int(reapply_type):
 		int(Status.ReapplyType.REPLACE):
+			# Replace overwrites the existing stacks with the newest application.
 			new_total = _clamp_stacks_total(req_stacks, max_stacks)
 		int(Status.ReapplyType.IGNORE):
+			# Ignore preserves the existing stacks when the status is already present.
 			new_total = before_stacks
 		_:
+			# Add accumulates stacks across repeated applications.
 			new_total = _clamp_stacks_total(before_stacks + req_stacks, max_stacks)
 	token.stacks = new_total
 
