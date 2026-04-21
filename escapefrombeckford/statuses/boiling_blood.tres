@@ -6,7 +6,7 @@
 [resource]
 script = ExtResource("2_t35rc")
 status_name = "Boiling Blood"
-number_display_type = 1
-expiration_policy = 4
+numerical = true
+auto_remove = 3
 icon = ExtResource("1_cs1el")
 tooltip = "On Death, deal damage to all enemies. Expires at the start of the player's turn."

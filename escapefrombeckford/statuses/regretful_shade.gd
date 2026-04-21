@@ -11,7 +11,7 @@ func get_id() -> StringName:
 	return ID
 
 
-func get_tooltip(_intensity: int = 0, _duration: int = 0) -> String:
+func get_tooltip(_stacks: int = 0) -> String:
 	return "Regretful Shade: On Death, summon a Small, Fleeting 1/1 Regretful Shade here."
 
 

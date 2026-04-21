@@ -37,12 +37,12 @@ sound = ExtResource("3_daf2a")
 [sub_resource type="Resource" id="Resource_lkl38"]
 script = ExtResource("7_4al28")
 status = ExtResource("8_555su")
-intensity = 4
+stacks = 4
 
 [sub_resource type="Resource" id="Resource_galnm"]
 script = ExtResource("7_4al28")
 status = ExtResource("9_f4ijt")
-intensity = 1
+stacks = 1
 
 [resource]
 script = ExtResource("2_c2nov")

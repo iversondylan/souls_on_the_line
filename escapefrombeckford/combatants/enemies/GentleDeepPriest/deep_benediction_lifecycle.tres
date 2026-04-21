@@ -7,7 +7,7 @@
 [resource]
 script = ExtResource("1_lifecycle")
 status = ExtResource("2_might")
-intensity = 2
+stacks = 2
 pending = true
 target_model = ExtResource("3_target_model")
 state_key = &"deep_benediction_targets"

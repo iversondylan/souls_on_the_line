@@ -28,7 +28,7 @@ func on_any_death(ctx: SimStatusContext, removal_ctx: RemovalContext) -> void:
 	if int(removed_unit.mortality) != int(CombatantState.Mortality.BOUND):
 		return
 
-	var amount := maxi(int(ctx.get_intensity()), 1)
+	var amount := maxi(int(ctx.get_stacks()), 1)
 	if MIGHT == null:
 		return
 
@@ -36,10 +36,10 @@ func on_any_death(ctx: SimStatusContext, removal_ctx: RemovalContext) -> void:
 	status_ctx.source_id = int(ctx.owner_id)
 	status_ctx.target_id = int(ctx.owner_id)
 	status_ctx.status_id = MIGHT.get_id()
-	status_ctx.intensity = amount
+	status_ctx.stacks = amount
 	status_ctx.reason = "cold_revenge"
 	ctx.api.apply_status(status_ctx)
 
 
-func get_tooltip(intensity: int = 0, _duration: int = 0) -> String:
-	return "Cold Revenge: whenever a SoulBound ally dies, gain %s Might." % maxi(intensity, 1)
+func get_tooltip(stacks: int = 0) -> String:
+	return "Cold Revenge: whenever a SoulBound ally dies, gain %s Might." % maxi(stacks, 1)

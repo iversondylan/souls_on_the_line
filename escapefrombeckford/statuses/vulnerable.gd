@@ -14,15 +14,13 @@ func contributes_modifier() -> bool:
 func get_contributed_modifier_types() -> Array[Modifier.Type]:
 	return [Modifier.Type.DMG_TAKEN]
 
-func get_max_intensity() -> int:
+func get_max_stacks() -> int:
 	return 1
 
 func get_modifier_tokens(ctx: StatusTokenContext) -> Array[ModifierToken]:
 	if !ctx:
 		return []
-	if expiration_policy == Status.ExpirationPolicy.DURATION and ctx.duration <= 0:
-		return []
-
+	
 	var token := ModifierToken.new()
 	token.type = Modifier.Type.DMG_TAKEN
 	token.mult_value = MULT_VALUE
@@ -35,7 +33,7 @@ func get_modifier_tokens(ctx: StatusTokenContext) -> Array[ModifierToken]:
 	Status.set_token_owner(token, ctx)
 	return [token]
 
-func get_tooltip(_intensity: int = 0, duration: int = 0) -> String:
-	if duration == 1:
+func get_tooltip(stacks: int = 0) -> String:
+	if stacks == 1:
 		return "Vulnerable: take %s%% more damage for 1 turn. Ticks down at end of turn." % floori(MULT_VALUE * 100)
-	return "Vulnerable: take %s%% more damage for %s turns. Ticks down at end of turn." % [floori(MULT_VALUE * 100), duration]
+	return "Vulnerable: take %s%% more damage for %s turns. Ticks down at end of turn." % [floori(MULT_VALUE * 100), stacks]

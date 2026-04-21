@@ -6,5 +6,5 @@
 [resource]
 script = ExtResource("1_action")
 status = ExtResource("2_status")
-intensity = 2
+stacks = 2
 

@@ -6,7 +6,7 @@
 [resource]
 script = ExtResource("1_thmm1")
 status_name = "Exit Strike"
-number_display_type = 1
+numerical = true
 icon = ExtResource("1_tisco")
 tooltip = "On Death, deal damage."
 metadata/_custom_type_script = "uid://iprujvq1hhyt"

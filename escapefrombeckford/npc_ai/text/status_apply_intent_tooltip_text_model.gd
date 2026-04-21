@@ -41,13 +41,9 @@ func _build_stacks_text(ctx: NPCAIContext, proto: Status) -> String:
 	if ctx == null or proto == null:
 		return ""
 
-	match int(proto.number_display_type):
-		Status.NumberDisplayType.INTENSITY:
-			return "%d " % _param_i(ctx, Keys.STATUS_INTENSITY, 0)
-		Status.NumberDisplayType.DURATION:
-			return "%d " % _param_i(ctx, Keys.STATUS_DURATION, 0)
-		_:
-			return ""
+	if !bool(proto.numerical):
+		return ""
+	return "%d " % _param_i(ctx, Keys.STATUS_STACKS, 0)
 
 func _build_target_text(ctx: NPCAIContext, actor_id: int) -> String:
 	var names := _resolved_target_names(ctx, actor_id)

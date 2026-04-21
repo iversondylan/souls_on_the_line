@@ -19,7 +19,7 @@ func get_modifier_tokens(ctx: StatusTokenContext) -> Array[ModifierToken]:
 
 	var token := ModifierToken.new()
 	token.type = Modifier.Type.DMG_DEALT
-	token.flat_value = -ctx.intensity
+	token.flat_value = -ctx.stacks
 	token.mult_value = 0.0
 	token.source_id = ID
 	token.scope = ModifierToken.ModScope.SELF
@@ -28,5 +28,5 @@ func get_modifier_tokens(ctx: StatusTokenContext) -> Array[ModifierToken]:
 	Status.set_token_owner(token, ctx)
 	return [token]
 
-func get_tooltip(intensity: int = 0, _duration: int = 0) -> String:
-	return "Despair: deal %s less damage." % intensity
+func get_tooltip(stacks: int = 0) -> String:
+	return "Despair: deal %s less damage." % stacks

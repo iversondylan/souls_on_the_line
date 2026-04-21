@@ -22,11 +22,11 @@ func on_damage_taken(ctx: SimStatusContext, damage_ctx: DamageContext) -> void:
 	status_ctx.source_id = int(ctx.owner_id)
 	status_ctx.target_id = int(ctx.owner_id)
 	status_ctx.status_id = BOLSTERED.get_id()
-	status_ctx.intensity = 50
+	status_ctx.stacks = 50
 	status_ctx.reason = "hexweb"
 	ctx.api.apply_status(status_ctx)
 
-func get_tooltip(_intensity: int = 0, _duration: int = 0) -> String:
+func get_tooltip(_stacks: int = 0) -> String:
 	return "Hexweb: the first time each round this takes strike damage, gain 50%% reduced damage for the rest of that round."
 
 func _is_eligible_strike_damage(damage_ctx: DamageContext) -> bool:

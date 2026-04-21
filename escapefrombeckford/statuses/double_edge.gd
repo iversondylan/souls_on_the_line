@@ -12,8 +12,8 @@ func get_id() -> StringName:
 func get_attack_self_damage_on_strike(ctx: SimStatusContext, _attack_ctx: AttackContext) -> int:
 	if ctx == null or !ctx.is_valid():
 		return 0
-	return maxi(int(ctx.get_intensity()), 0)
+	return maxi(int(ctx.get_stacks()), 0)
 
 
-func get_tooltip(intensity: int = 0, _duration: int = 0) -> String:
-	return "Double Edge: on each srike, takes %s damage." % intensity
+func get_tooltip(stacks: int = 0) -> String:
+	return "Double Edge: on each srike, takes %s damage." % stacks

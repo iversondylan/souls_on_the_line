@@ -3,13 +3,11 @@ extends CardAction
 class_name ApplyStatusToAllEnemiesBySacrificedPositionAction
 
 @export var status_if_in_front: Status
-@export var intensity_if_in_front: int = 0
-@export var duration_if_in_front: int = 0
+@export var stacks_if_in_front: int = 0
 @export var pending_if_in_front: bool = false
 
 @export var status_if_behind: Status
-@export var intensity_if_behind: int = 0
-@export var duration_if_behind: int = 0
+@export var stacks_if_behind: int = 0
 @export var pending_if_behind: bool = false
 
 func activate_sim(ctx: CardContext) -> bool:
@@ -28,8 +26,7 @@ func activate_sim(ctx: CardContext) -> bool:
 	if status_to_apply == null:
 		return false
 
-	var intensity := int(intensity_if_in_front) if pos_delta < 0 else int(intensity_if_behind)
-	var duration := int(duration_if_in_front) if pos_delta < 0 else int(duration_if_behind)
+	var stacks := int(stacks_if_in_front) if pos_delta < 0 else int(stacks_if_behind)
 	var pending := bool(pending_if_in_front) if pos_delta < 0 else bool(pending_if_behind)
 
 	var applied_any := false
@@ -42,8 +39,7 @@ func activate_sim(ctx: CardContext) -> bool:
 		sctx.source_id = int(ctx.source_id)
 		sctx.target_id = target_id
 		sctx.status_id = status_to_apply.get_id()
-		sctx.intensity = intensity
-		sctx.duration = duration
+		sctx.stacks = stacks
 		sctx.pending = pending
 		ctx.api.apply_status(sctx)
 		applied_any = true

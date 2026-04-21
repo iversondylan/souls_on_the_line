@@ -7,6 +7,6 @@
 [resource]
 script = ExtResource("1_action")
 status = ExtResource("3_status")
-intensity = 3
+stacks = 3
 sound = ExtResource("2_sound")
 play_sound_on_success = true

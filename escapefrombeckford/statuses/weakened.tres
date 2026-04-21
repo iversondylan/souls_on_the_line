@@ -6,6 +6,6 @@
 [resource]
 script = ExtResource("1_weakened_script")
 status_name = "Weakened"
-number_display_type = 2
-expiration_policy = 0
+numerical = true
+auto_tick_down = 1
 icon = ExtResource("2_weakened_icon")

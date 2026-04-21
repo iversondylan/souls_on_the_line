@@ -9,7 +9,7 @@ func on_apply(ctx: SimStatusContext, apply_ctx: StatusContext) -> void:
 	if ctx == null or !ctx.is_valid() or ctx.api == null or apply_ctx == null:
 		return
 
-	var amount := maxi(int(apply_ctx.delta_intensity), 0)
+	var amount := maxi(int(apply_ctx.delta_stacks), 0)
 	if amount <= 0:
 		return
 
@@ -19,11 +19,11 @@ func on_remove(ctx: SimStatusContext, _remove_ctx: StatusContext) -> void:
 	if ctx == null or !ctx.is_valid() or ctx.api == null:
 		return
 
-	var amount := maxi(int(ctx.get_intensity()), 0)
+	var amount := maxi(int(ctx.get_stacks()), 0)
 	if amount <= 0:
 		return
 
 	ctx.api.change_max_health(int(ctx.owner_id), -amount, true, "full_fortitude")
 
-func get_tooltip(intensity: int = 0, _duration: int = 0) -> String:
-	return "Full Fortitude: gain +%s max health and fill that added health." % intensity
+func get_tooltip(stacks: int = 0) -> String:
+	return "Full Fortitude: gain +%s max health and fill that added health." % stacks

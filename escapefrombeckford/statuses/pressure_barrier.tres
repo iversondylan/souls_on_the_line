@@ -6,7 +6,7 @@
 [resource]
 script = ExtResource("1_vs2ft")
 status_name = "Pressure Barrier"
-number_display_type = 1
-expiration_policy = 1
+numerical = true
+auto_remove = 1
 icon = ExtResource("1_vv6tp")
 metadata/_custom_type_script = "uid://cmlewd8t3t7rc"

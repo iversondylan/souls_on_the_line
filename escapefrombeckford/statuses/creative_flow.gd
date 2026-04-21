@@ -14,15 +14,15 @@ func affects_card_cost() -> bool:
 func get_card_cost_discount(ctx: SimStatusContext, card: CardData) -> int:
 	if ctx == null or !ctx.is_valid() or !_is_eligible_card(card):
 		return 0
-	return maxi(int(ctx.get_intensity()), 0)
+	return maxi(int(ctx.get_stacks()), 0)
 
 
 func consume_on_card_play(_ctx: SimStatusContext, card: CardData) -> bool:
 	return _is_eligible_card(card)
 
 
-func get_tooltip(intensity: int = 0, _duration: int = 0) -> String:
-	return "Creative Flow: the next Soul card you play costs %s less." % maxi(intensity, 0)
+func get_tooltip(stacks: int = 0) -> String:
+	return "Creative Flow: the next Soul card you play costs %s less." % maxi(stacks, 0)
 
 
 func _is_eligible_card(card: CardData) -> bool:

@@ -6,4 +6,4 @@
 [resource]
 script = ExtResource("1_novib")
 status = ExtResource("2_xywym")
-intensity = 1
+stacks = 1

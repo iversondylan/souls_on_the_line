@@ -109,8 +109,7 @@ func build_projected_token(status_id: StringName) -> StatusToken:
 	if source_keys.is_empty():
 		return null
 
-	var total_intensity := 0
-	var max_duration := 0
+	var total_stacks := 0
 	# BEFORE: sorted contributors every read.
 	# AFTER: aggregate directly; sum/max is commutative so ordering does not change output.
 	for source_key_variant in source_keys.keys():
@@ -121,16 +120,14 @@ func build_projected_token(status_id: StringName) -> StatusToken:
 		var token: StatusToken = source_map[status_id]
 		if token == null:
 			continue
-		total_intensity += int(token.intensity)
-		max_duration = maxi(max_duration, int(token.duration))
+		total_stacks += int(token.stacks)
 
-	if total_intensity <= 0:
+	if total_stacks <= 0:
 		return null
 
 	var out_token := StatusToken.new(status_id)
 	out_token.pending = false
-	out_token.intensity = total_intensity
-	out_token.duration = max_duration
+	out_token.stacks = total_stacks
 	return out_token
 
 

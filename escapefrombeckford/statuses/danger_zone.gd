@@ -76,5 +76,5 @@ func on_targeting_retarget(ctx: SimStatusContext, targeting_ctx: TargetingContex
 	targeting_ctx.redirect_target_id = owner_id
 	targeting_ctx.working_target_ids = retarget_ids
 
-func get_tooltip(_intensity: int = 0, _duration: int = 0) -> String:
+func get_tooltip(_stacks: int = 0) -> String:
 	return "Danger Zone: the next Danger Zone attack centers here and splashes adjacent allies."

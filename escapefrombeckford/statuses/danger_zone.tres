@@ -6,6 +6,7 @@
 [resource]
 script = ExtResource("1_status")
 status_name = "Danger Zone"
+numerical = false
 reapply_type = 2
 icon = ExtResource("1_gl81g")
 tooltip = "The next marked attack centers here and splashes adjacent allies."

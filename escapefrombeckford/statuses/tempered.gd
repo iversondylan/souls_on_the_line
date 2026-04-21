@@ -24,7 +24,7 @@ func on_damage_taken(ctx: SimStatusContext, damage_ctx: DamageContext) -> void:
 		return
 	if !ctx.owner.is_alive():
 		return
-	ctx.token.intensity += max_health_per_strike
+	ctx.token.stacks += max_health_per_strike
 	ctx.api.change_max_health(ctx.owner_id, max_health_per_strike, false, "tempered")
 	var bound_card_uid := String(ctx.owner.bound_card_uid) if ctx.owner != null else ""
 	if !bound_card_uid.is_empty():
@@ -37,8 +37,8 @@ func on_damage_taken(ctx: SimStatusContext, damage_ctx: DamageContext) -> void:
 				"tempered"
 			)
 
-func get_tooltip(intensity: int = 0, _duration: int = 0) -> String:
+func get_tooltip(stacks: int = 0) -> String:
 	return "Tempered: gain %s max health whenever this unit survives strike damage. Current bonus: +%s max health." % [
 		max_health_per_strike,
-		intensity
+		stacks
 	]

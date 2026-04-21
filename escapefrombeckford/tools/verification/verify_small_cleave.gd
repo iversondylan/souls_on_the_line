@@ -105,12 +105,12 @@ func _make_attack_context(api: SimBattleAPI, attacker_id: int, base_damage: int)
 	return attack_ctx
 
 
-func _apply_status(api: SimBattleAPI, target_id: int, status_id: StringName, intensity: int) -> void:
+func _apply_status(api: SimBattleAPI, target_id: int, status_id: StringName, stacks: int) -> void:
 	var ctx := StatusContext.new()
 	ctx.source_id = target_id
 	ctx.target_id = target_id
 	ctx.status_id = status_id
-	ctx.intensity = intensity
+	ctx.stacks = stacks
 	api.apply_status(ctx)
 
 

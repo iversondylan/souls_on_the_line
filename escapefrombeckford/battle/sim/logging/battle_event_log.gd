@@ -219,8 +219,7 @@ static func print_event_log(
 
 		Keys.STATUS_ID,
 		Keys.OP,
-		Keys.INTENSITY,
-		Keys.DURATION,
+		Keys.STACKS,
 
 		Keys.PLANNED_IDX,
 		Keys.INTENT_TEXT,
@@ -415,8 +414,7 @@ static func _fmt_special_event_data(
 			var target_id := int(d.get(Keys.TARGET_ID, 0))
 			var status_id := String(d.get(Keys.STATUS_ID, ""))
 			var op := int(d.get(Keys.OP, 0))
-			var intensity := int(d.get(Keys.INTENSITY, 0))
-			var duration := int(d.get(Keys.DURATION, 0))
+			var stacks := int(d.get(Keys.AFTER_STACKS, d.get(Keys.STACKS, 0)))
 
 			var op_name := str(op)
 			if Status.OP.values().has(op):
@@ -430,8 +428,7 @@ static func _fmt_special_event_data(
 			if status_id != "":
 				bits.append("status=%s" % status_id)
 			bits.append("op=%s" % op_name)
-			bits.append("int=%d" % intensity)
-			bits.append("dur=%d" % duration)
+			bits.append("stk=%d" % stacks)
 			return " ".join(bits)
 
 		_:
@@ -453,8 +450,7 @@ static func _skip_key_because_specialized(event_type: int, k: StringName) -> boo
 				or k == Keys.TARGET_ID \
 				or k == Keys.STATUS_ID \
 				or k == Keys.OP \
-				or k == Keys.INTENSITY \
-				or k == Keys.DURATION
+				or k == Keys.STACKS
 
 		_:
 			return false

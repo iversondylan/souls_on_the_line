@@ -6,5 +6,5 @@
 [resource]
 script = ExtResource("1_0hsvt")
 status = ExtResource("2_fr5w2")
-duration = 0
+stacks = 0
 metadata/_custom_type_script = "uid://cccygrstrra8t"

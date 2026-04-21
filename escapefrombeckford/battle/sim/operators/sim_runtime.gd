@@ -1056,8 +1056,7 @@ func run_status_action(ctx: StatusContext) -> void:
 			Keys.TARGET_IDS: target_ids,
 			Keys.STATUS_ID: ctx.status_id,
 			Keys.STATUS_PENDING: bool(ctx.pending),
-			Keys.INTENSITY: int(ctx.intensity),
-			Keys.DURATION: int(ctx.duration),
+			Keys.STACKS: int(ctx.stacks),
 		})
 	)
 	if status_scope == null:
@@ -1071,16 +1070,12 @@ func run_status_action(ctx: StatusContext) -> void:
 		target_ctx.target_id = int(target_id)
 		target_ctx.target_ids = target_ids
 		target_ctx.status_id = ctx.status_id
-		target_ctx.duration = int(ctx.duration)
-		target_ctx.intensity = int(ctx.intensity)
+		target_ctx.stacks = int(ctx.stacks)
 		target_ctx.pending = bool(ctx.pending)
 		target_ctx.op = int(ctx.op)
-		target_ctx.delta_intensity = int(ctx.delta_intensity)
-		target_ctx.delta_duration = int(ctx.delta_duration)
-		target_ctx.before_intensity = int(ctx.before_intensity)
-		target_ctx.before_duration = int(ctx.before_duration)
-		target_ctx.after_intensity = int(ctx.after_intensity)
-		target_ctx.after_duration = int(ctx.after_duration)
+		target_ctx.delta_stacks = int(ctx.delta_stacks)
+		target_ctx.before_stacks = int(ctx.before_stacks)
+		target_ctx.after_stacks = int(ctx.after_stacks)
 		target_ctx.before_pending = bool(ctx.before_pending)
 		target_ctx.after_pending = bool(ctx.after_pending)
 		target_ctx.tags.assign(ctx.tags)

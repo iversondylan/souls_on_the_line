@@ -14,8 +14,8 @@ func on_damage_will_be_taken(ctx: SimStatusContext, damage_ctx: DamageContext) -
 	if int(damage_ctx.target_id) != int(ctx.owner_id):
 		return
 
-	var intensity := int(ctx.get_intensity())
-	if intensity <= 0:
+	var stacks := int(ctx.get_stacks())
+	if stacks <= 0:
 		return
 
 	var prevented_amount := maxi(int(damage_ctx.amount), 0)
@@ -26,13 +26,13 @@ func on_damage_will_be_taken(ctx: SimStatusContext, damage_ctx: DamageContext) -
 		if damage_ctx.event_extra == null:
 			damage_ctx.event_extra = {}
 		damage_ctx.event_extra[PREVENTED_EVENT_KEY] = prevented_amount
-	if intensity <= 1:
+	if stacks <= 1:
 		ctx.remove_self("absorb_consumed")
 	else:
-		ctx.change_intensity(-1, "absorb_consumed")
+		ctx.change_stacks(-1, "absorb_consumed")
 
-func get_tooltip(intensity: int = 0, _duration: int = 0) -> String:
+func get_tooltip(stacks: int = 0) -> String:
 	return "Absorb: negate the next %s hit%s. Clears at the start of the player's turn." % [
-		intensity,
-		"" if intensity == 1 else "s"
+		stacks,
+		"" if stacks == 1 else "s"
 	]

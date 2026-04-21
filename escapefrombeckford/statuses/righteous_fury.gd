@@ -22,7 +22,7 @@ func on_any_death(ctx: SimStatusContext, removal_ctx: RemovalContext) -> void:
 	if int(removal_ctx.target_id) == int(ctx.owner_id):
 		return
 
-	var amount := maxi(int(ctx.get_intensity()), 0)
+	var amount := maxi(int(ctx.get_stacks()), 0)
 	if amount <= 0 or RAGE == null:
 		return
 
@@ -30,10 +30,10 @@ func on_any_death(ctx: SimStatusContext, removal_ctx: RemovalContext) -> void:
 	status_ctx.source_id = int(ctx.owner_id)
 	status_ctx.target_id = int(ctx.owner_id)
 	status_ctx.status_id = RAGE.get_id()
-	status_ctx.intensity = amount
+	status_ctx.stacks = amount
 	status_ctx.reason = "righteous_fury"
 	ctx.api.apply_status(status_ctx)
 
 
-func get_tooltip(intensity: int = 0, _duration: int = 0) -> String:
-	return "Righteous Fury: whenever another ally dies, gain %s Rage." % intensity
+func get_tooltip(stacks: int = 0) -> String:
+	return "Righteous Fury: whenever another ally dies, gain %s Rage." % stacks

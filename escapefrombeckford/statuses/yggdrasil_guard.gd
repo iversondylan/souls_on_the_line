@@ -15,7 +15,7 @@ func on_damage_will_be_taken(ctx: SimStatusContext, damage_ctx: DamageContext) -
 	if !_is_eligible_strike_damage(damage_ctx):
 		return
 
-	var amount := maxi(int(ctx.get_intensity()), 0)
+	var amount := maxi(int(ctx.get_stacks()), 0)
 	if amount <= 0:
 		return
 
@@ -46,12 +46,12 @@ func on_remove(ctx: SimStatusContext, _remove_ctx: StatusContext) -> void:
 	status_ctx.source_id = int(ctx.owner_id)
 	status_ctx.target_id = int(ctx.owner_id)
 	status_ctx.status_id = EMPTY_FORTITUDE.get_id()
-	status_ctx.intensity = 2
+	status_ctx.stacks = 2
 	status_ctx.reason = "yggdrasil_guard"
 	ctx.api.apply_status(status_ctx)
 
-func get_tooltip(intensity: int = 0, _duration: int = 0) -> String:
-	return "Yggdrasil Guard: the first strike each round against this unit is reduced by %s. If it survives, gain +2 empty max health." % intensity
+func get_tooltip(stacks: int = 0) -> String:
+	return "Yggdrasil Guard: the first strike each round against this unit is reduced by %s. If it survives, gain +2 empty max health." % stacks
 
 func _is_eligible_strike_damage(damage_ctx: DamageContext) -> bool:
 	if damage_ctx == null:

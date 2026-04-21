@@ -155,17 +155,17 @@ func _verify_yggdrasil_guard_behavior() -> bool:
 	_assert_equal(hart.health, 6, "hart first strike damage reduced by guard")
 	_assert_equal(hart.max_health, 10, "hart gains empty fortitude max health after surviving")
 	_assert(!api.has_status(hart_id, YGGDRASIL_GUARD.get_id()), "hart guard removes itself after surviving hit")
-	_assert_equal(api.get_status_intensity(hart_id, EMPTY_FORTITUDE.get_id()), 2, "hart gains empty fortitude after guard removal")
+	_assert_equal(api.get_status_stacks(hart_id, EMPTY_FORTITUDE.get_id()), 2, "hart gains empty fortitude after guard removal")
 
 	_run_attack(api, enemy_id, 4)
 	_assert_equal(hart.health, 2, "hart second hit in same round is not reduced")
-	_assert_equal(api.get_status_intensity(hart_id, EMPTY_FORTITUDE.get_id()), 2, "hart does not gain a second fortitude stack in same round")
+	_assert_equal(api.get_status_stacks(hart_id, EMPTY_FORTITUDE.get_id()), 2, "hart does not gain a second fortitude stack in same round")
 
 	api.plan_intent(hart_id)
 	_assert(api.has_status(hart_id, EMPTY_FORTITUDE.get_id()), "hart still has empty fortitude before rearm")
 	hart.statuses.set_token(YGGDRASIL_GUARD.get_id(), 1, 0, false)
 	ActionLifecycleSystem.on_player_turn_begin(api, player_id)
-	_assert_equal(api.get_status_intensity(hart_id, YGGDRASIL_GUARD.get_id()), 2, "hart guard normalizes back to 2 on player turn start")
+	_assert_equal(api.get_status_stacks(hart_id, YGGDRASIL_GUARD.get_id()), 2, "hart guard normalizes back to 2 on player turn start")
 
 	var lethal_host := _make_host()
 	var lethal_runtime := lethal_host.get_main_runtime()
@@ -202,12 +202,12 @@ func _make_unit_data(unit_name: String, health: int, ap: int = 0, ai_profile: NP
 	return data
 
 
-func _apply_status(api: SimBattleAPI, target_id: int, status_id: StringName, intensity: int) -> void:
+func _apply_status(api: SimBattleAPI, target_id: int, status_id: StringName, stacks: int) -> void:
 	var ctx := StatusContext.new()
 	ctx.source_id = target_id
 	ctx.target_id = target_id
 	ctx.status_id = status_id
-	ctx.intensity = intensity
+	ctx.stacks = stacks
 	api.apply_status(ctx)
 
 

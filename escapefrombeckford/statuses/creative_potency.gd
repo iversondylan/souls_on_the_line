@@ -19,7 +19,7 @@ func on_summon_will_resolve(
 	if int(summon_ctx.source_id) != int(ctx.owner_id):
 		return
 
-	var bonus := maxi(int(ctx.get_intensity()), 0)
+	var bonus := maxi(int(ctx.get_stacks()), 0)
 	if bonus <= 0:
 		return
 
@@ -30,8 +30,8 @@ func on_summon_will_resolve(
 	ctx.remove_self("creative_potency_consumed")
 
 
-func get_tooltip(intensity: int = 0, _duration: int = 0) -> String:
+func get_tooltip(stacks: int = 0) -> String:
 	return "Creative Potency: the next Soul you summon this turn enters with +%s/+%s." % [
-		intensity,
-		intensity,
+		stacks,
+		stacks,
 	]

@@ -11,7 +11,7 @@
 [sub_resource type="Resource" id="CalmingInsenseSleep"]
 script = ExtResource("5_status_model_script")
 status = ExtResource("6_sleep")
-duration = 2
+stacks = 2
 
 [resource]
 script = ExtResource("3_pkg")

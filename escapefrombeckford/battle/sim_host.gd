@@ -382,8 +382,7 @@ func _format_sim_statuses(u: CombatantState) -> String:
 			continue
 
 		var sid := String(token.id)
-		var intensity := int(token.intensity)
-		var dur := int(token.duration)
+		var stacks := int(token.stacks)
 		var pending := bool(token.pending)
 
 		var show_bits: Array[String] = []

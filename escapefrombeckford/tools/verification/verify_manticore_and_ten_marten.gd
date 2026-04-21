@@ -63,19 +63,19 @@ func _verify_grounding_accord_and_awase() -> bool:
 	_apply_status(api, manticore_id, AWASE.get_id(), 1)
 
 	_play_convocation(api, player_id)
-	_assert_equal(api.get_status_intensity(manticore_id, ABSORB.get_id()), 0, "first convocation does not grant absorb")
+	_assert_equal(api.get_status_stacks(manticore_id, ABSORB.get_id()), 0, "first convocation does not grant absorb")
 
 	_play_convocation(api, player_id)
-	_assert_equal(api.get_status_intensity(manticore_id, ABSORB.get_id()), 1, "second convocation grants absorb")
+	_assert_equal(api.get_status_stacks(manticore_id, ABSORB.get_id()), 1, "second convocation grants absorb")
 
 	_play_convocation(api, player_id)
-	_assert_equal(api.get_status_intensity(manticore_id, ABSORB.get_id()), 1, "third convocation does not add extra absorb")
+	_assert_equal(api.get_status_stacks(manticore_id, ABSORB.get_id()), 1, "third convocation does not add extra absorb")
 
 	var manticore := host.get_main_state().get_unit(manticore_id)
 	_assert(manticore != null, "manticore unit should exist")
 	_assert_equal(manticore.max_health, 8, "manticore max health baseline")
 	_assert_equal(manticore.health, 8, "manticore health baseline")
-	_assert_equal(api.get_status_intensity(manticore_id, FULL_FORTITUDE.get_id()), 0, "manticore does not start with full fortitude")
+	_assert_equal(api.get_status_stacks(manticore_id, FULL_FORTITUDE.get_id()), 0, "manticore does not start with full fortitude")
 
 	var blocked_hit := DamageContext.new()
 	blocked_hit.source_id = enemy_id
@@ -84,8 +84,8 @@ func _verify_grounding_accord_and_awase() -> bool:
 	blocked_hit.tags.append(&"strike_damage")
 	api.resolve_damage_immediate(blocked_hit)
 
-	_assert_equal(api.get_status_intensity(manticore_id, ABSORB.get_id()), 0, "absorb is consumed after preventing damage")
-	_assert_equal(api.get_status_intensity(manticore_id, FULL_FORTITUDE.get_id()), 1, "awase grants full fortitude when absorb prevents damage")
+	_assert_equal(api.get_status_stacks(manticore_id, ABSORB.get_id()), 0, "absorb is consumed after preventing damage")
+	_assert_equal(api.get_status_stacks(manticore_id, FULL_FORTITUDE.get_id()), 1, "awase grants full fortitude when absorb prevents damage")
 	_assert_equal(manticore.health, 9, "full fortitude fills the added health")
 	_assert_equal(manticore.max_health, 9, "full fortitude adds max health when absorb prevents damage")
 
@@ -96,13 +96,13 @@ func _verify_grounding_accord_and_awase() -> bool:
 	normal_hit.tags.append(&"strike_damage")
 	api.resolve_damage_immediate(normal_hit)
 	_assert_equal(manticore.health, 6, "normal strike damage applies without absorb")
-	_assert_equal(api.get_status_intensity(manticore_id, FULL_FORTITUDE.get_id()), 1, "normal damage without absorb does not add fortitude")
+	_assert_equal(api.get_status_stacks(manticore_id, FULL_FORTITUDE.get_id()), 1, "normal damage without absorb does not add fortitude")
 
 	api.state.turn.round = 2
 	SimStatusSystem.on_player_turn_begin(api, player_id)
 	_play_convocation(api, player_id)
 	_play_convocation(api, player_id)
-	_assert_equal(api.get_status_intensity(manticore_id, ABSORB.get_id()), 1, "grounding accord can trigger again next round")
+	_assert_equal(api.get_status_stacks(manticore_id, ABSORB.get_id()), 1, "grounding accord can trigger again next round")
 	return true
 
 
@@ -211,12 +211,12 @@ func _make_unit_data(unit_name: String, health: int, ap: int = 0) -> CombatantDa
 	return data
 
 
-func _apply_status(api: SimBattleAPI, target_id: int, status_id: StringName, intensity: int) -> void:
+func _apply_status(api: SimBattleAPI, target_id: int, status_id: StringName, stacks: int) -> void:
 	var ctx := StatusContext.new()
 	ctx.source_id = target_id
 	ctx.target_id = target_id
 	ctx.status_id = status_id
-	ctx.intensity = intensity
+	ctx.stacks = stacks
 	api.apply_status(ctx)
 
 

@@ -6,6 +6,7 @@
 [resource]
 script = ExtResource("2_nf0w8")
 status_name = "Terminal Glory"
+numerical = false
 icon = ExtResource("1_l30sl")
 tooltip = "A final burst of power."
 metadata/_custom_type_script = "uid://cueedkb1u8vxy"

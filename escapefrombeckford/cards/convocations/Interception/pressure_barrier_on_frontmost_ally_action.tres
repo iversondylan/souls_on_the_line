@@ -6,4 +6,4 @@
 [resource]
 script = ExtResource("1_xvcxt")
 status = ExtResource("2_xvcxt")
-intensity = 2
+stacks = 2

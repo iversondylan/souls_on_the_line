@@ -2103,8 +2103,7 @@ func _make_status_pop_beat(
 		o.status_id = e.data.get(Keys.STATUS_ID, &"")
 		o.pending = bool(e.data.get(Keys.AFTER_PENDING, e.data.get(Keys.STATUS_PENDING, false)))
 		o.op = int(e.data.get(Keys.OP, 0))
-		o.intensity = int(e.data.get(Keys.AFTER_INTENSITY, e.data.get(Keys.INTENSITY, 0)))
-		o.turns_duration = int(e.data.get(Keys.AFTER_DURATION, e.data.get(Keys.DURATION, 0)))
+		o.stacks = int(e.data.get(Keys.AFTER_STACKS, e.data.get(Keys.STACKS, 0)))
 		o.presentation_mode = presentation_mode
 		o.embedded_in_summon = embedded_in_summon
 

@@ -8,5 +8,5 @@ func get_id() -> StringName:
 	return ID
 
 
-func get_tooltip(intensity: int = 0, _duration: int = 0) -> String:
-	return "Shared Fervor: allies deal +%s damage." % intensity
+func get_tooltip(stacks: int = 0) -> String:
+	return "Shared Fervor: allies deal +%s damage." % stacks

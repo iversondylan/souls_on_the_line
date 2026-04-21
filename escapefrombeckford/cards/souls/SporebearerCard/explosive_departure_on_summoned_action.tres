@@ -6,5 +6,5 @@
 [resource]
 script = ExtResource("1_apply_status")
 status = ExtResource("2_explosive_departure")
-intensity = 3
+stacks = 3
 metadata/_custom_type_script = "uid://jie78uegvh3j"

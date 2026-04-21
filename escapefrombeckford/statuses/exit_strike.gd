@@ -8,8 +8,8 @@ func get_id() -> StringName:
 	return ID
 
 
-func get_tooltip(intensity: int = 0, _duration: int = 0) -> String:
-	return "Exit Strike: On death, deal %s damage." % intensity
+func get_tooltip(stacks: int = 0) -> String:
+	return "Exit Strike: On death, deal %s damage." % stacks
 
 
 func on_removal(ctx: SimStatusContext, removal_ctx) -> void:
@@ -24,8 +24,8 @@ func _trigger_removal_burst(ctx: SimStatusContext, removal_ctx, attack_reason: S
 	if int(removal_ctx.target_id) != int(ctx.owner_id):
 		return
 
-	var intensity := maxi(int(ctx.get_intensity()), 0)
-	if intensity <= 0:
+	var stacks := maxi(int(ctx.get_stacks()), 0)
+	if stacks <= 0:
 		return
 
 	var attack_ctx := AttackContext.new()
@@ -37,9 +37,9 @@ func _trigger_removal_burst(ctx: SimStatusContext, removal_ctx, attack_reason: S
 	attack_ctx.strikes = 1
 	attack_ctx.attack_mode = int(Attack.Mode.MELEE)
 	attack_ctx.targeting = int(Attack.Targeting.STANDARD)
-	attack_ctx.base_damage = intensity
-	attack_ctx.base_damage_melee = intensity
-	attack_ctx.base_damage_ranged = intensity
+	attack_ctx.base_damage = stacks
+	attack_ctx.base_damage_melee = stacks
+	attack_ctx.base_damage_ranged = stacks
 	attack_ctx.deal_modifier_type = int(Modifier.Type.DMG_DEALT)
 	attack_ctx.take_modifier_type = int(Modifier.Type.DMG_TAKEN)
 	attack_ctx.reason = attack_reason

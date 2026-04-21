@@ -20,7 +20,7 @@ func on_apply(ctx: SimStatusContext, _apply_ctx: StatusContext) -> void:
 	status_ctx.source_id = int(ctx.owner_id)
 	status_ctx.target_id = target_id
 	status_ctx.status_id = FULL_FORTITUDE.get_id()
-	status_ctx.intensity = 2
+	status_ctx.stacks = 2
 	status_ctx.reason = "mossling_bulwark"
 	ctx.api.apply_status(status_ctx)
 
@@ -39,7 +39,7 @@ func on_removal(ctx: SimStatusContext, removal_ctx) -> void:
 	var heal_ctx := HealContext.new(int(ctx.owner_id), target_id, 4, 0.0, 0.0)
 	ctx.api.heal(heal_ctx)
 
-func get_tooltip(_intensity: int = 0, _duration: int = 0) -> String:
+func get_tooltip(_stacks: int = 0) -> String:
 	return "Mossling Bulwark: On summon, your frontmost ally gains +2 full max health. On death, heal your most damaged ally 4."
 
 func _find_frontmost_ally(ctx: SimStatusContext) -> int:

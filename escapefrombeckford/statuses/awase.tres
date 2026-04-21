@@ -6,4 +6,5 @@
 [resource]
 script = ExtResource("2_script")
 status_name = "Awase"
+numerical = false
 icon = ExtResource("1_weyu3")

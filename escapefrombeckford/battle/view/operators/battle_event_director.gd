@@ -727,8 +727,7 @@ func _make_status_applied_order(e: EventPackage) -> StatusAppliedOrder:
 	o.after_pending = bool(d.get(Keys.AFTER_PENDING, o.pending))
 	o.before_token_id = int(d.get(Keys.BEFORE_TOKEN_ID, 0))
 	o.after_token_id = int(d.get(Keys.AFTER_TOKEN_ID, 0))
-	o.intensity = int(d.get(Keys.AFTER_INTENSITY, d.get(Keys.INTENSITY, 1)))
-	o.turns_duration = int(d.get(Keys.AFTER_DURATION, d.get(Keys.DURATION, 0)))
+	o.stacks = int(d.get(Keys.AFTER_STACKS, d.get(Keys.STACKS, 1)))
 
 	return o
 
@@ -744,7 +743,7 @@ func _make_status_removed_order(e: EventPackage) -> StatusRemovedOrder:
 	o.pending = bool(d.get(Keys.STATUS_PENDING, false))
 	o.before_token_id = int(d.get(Keys.BEFORE_TOKEN_ID, 0))
 	o.after_token_id = int(d.get(Keys.AFTER_TOKEN_ID, 0))
-	o.intensity = int(d.get(Keys.INTENSITY, 1))
+	o.stacks = int(d.get(Keys.BEFORE_STACKS, d.get(Keys.STACKS, 1)))
 	o.removed_all = true
 
 	return o
@@ -1693,8 +1692,7 @@ func _debug_order_payload(order: PresentationOrder) -> String:
 				bits.append("t=%d" % int(o8.target_id))
 				bits.append("status=%s" % String(o8.status_id))
 				bits.append("op=%d" % int(o8.op))
-				bits.append("int=%d" % int(o8.intensity))
-				bits.append("dur=%d" % int(o8.turns_duration))
+				bits.append("stk=%d" % int(o8.stacks))
 
 		PresentationOrder.Kind.REMOVAL:
 			var o9 = order

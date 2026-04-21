@@ -5,8 +5,7 @@ class_name StatusApplyAction
 const CREATIVE_POTENCY_STATUS_ID := &"creative_potency"
 
 @export var status: Status
-@export var intensity: int = 0
-@export var duration: int = 0
+@export var stacks: int = 0
 @export var pending: bool = false
 @export var sound: Sound = null
 @export var play_sound_on_success: bool = false
@@ -24,8 +23,7 @@ func _apply_status_to_target(ctx: CardContext, target_id: int) -> bool:
 	sctx.source_id = int(ctx.source_id)
 	sctx.target_id = int(target_id)
 	sctx.status_id = status.get_id()
-	sctx.intensity = int(intensity)
-	sctx.duration = int(duration)
+	sctx.stacks = int(stacks)
 	sctx.pending = bool(pending)
 
 	ctx.api.apply_status(sctx)
@@ -57,20 +55,16 @@ func get_description_values(_ctx: CardActionContext) -> Array:
 
 	var status_id := status.get_id()
 	if status_id == AmplifyStatus.ID:
-		return [floori(float(AmplifyStatus.MULT_VALUE) * 100.0), int(duration)]
+		return [floori(float(AmplifyStatus.MULT_VALUE) * 100.0), int(stacks)]
 	if status_id == PinpointStatus.ID:
-		return [floori(float(PinpointStatus.MULT_VALUE) * 100.0), int(duration)]
+		return [floori(float(PinpointStatus.MULT_VALUE) * 100.0), int(stacks)]
 	if status_id == MarkedStatus.ID:
-		return [int(duration)]
+		return [int(stacks)]
 	if status_id == CREATIVE_POTENCY_STATUS_ID:
-		return [int(intensity), int(intensity)]
+		return [int(stacks), int(stacks)]
 
-	if int(duration) > 0 and int(intensity) > 0:
-		return [int(intensity), int(duration)]
-	if int(intensity) > 0:
-		return [int(intensity)]
-	if int(duration) > 0:
-		return [int(duration)]
+	if status.numerical and int(stacks) > 0:
+		return [int(stacks)]
 
 	return []
 

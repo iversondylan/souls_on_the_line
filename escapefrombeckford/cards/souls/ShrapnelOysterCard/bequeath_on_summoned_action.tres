@@ -6,4 +6,4 @@
 [resource]
 script = ExtResource("1_k443v")
 status = ExtResource("2_qsfty")
-intensity = 1
+stacks = 1

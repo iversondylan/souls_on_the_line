@@ -6,6 +6,7 @@
 [resource]
 script = ExtResource("1_regretful_shade_script")
 status_name = "Regretful Shade"
+numerical = false
 reapply_type = 3
 icon = ExtResource("2_regretful_shade_icon")
 tooltip = "On Death, summon a Small, Fleeting 1/1 Regretful Shade here."
