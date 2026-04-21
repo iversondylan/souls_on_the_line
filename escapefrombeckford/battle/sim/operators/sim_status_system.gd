@@ -883,6 +883,7 @@ static func _tick_down_unit(api: SimBattleAPI, owner_id: int, policy: int, reaso
 			changed.append({
 				"sid": sid,
 				"pending": pending,
+				"token_id": int(token.token_id),
 				"before_stacks": before_stacks,
 				"after_stacks": after_stacks,
 				"delta_stacks": -1,
@@ -900,6 +901,8 @@ static func _tick_down_unit(api: SimBattleAPI, owner_id: int, policy: int, reaso
 					Keys.STATUS_PENDING: bool(item.pending),
 					Keys.BEFORE_PENDING: bool(item.pending),
 					Keys.AFTER_PENDING: bool(item.pending),
+					Keys.BEFORE_TOKEN_ID: int(item.token_id),
+					Keys.AFTER_TOKEN_ID: int(item.token_id),
 					Keys.BEFORE_STACKS: int(item.before_stacks),
 					Keys.AFTER_STACKS: int(item.after_stacks),
 					Keys.DELTA_STACKS: int(item.delta_stacks),

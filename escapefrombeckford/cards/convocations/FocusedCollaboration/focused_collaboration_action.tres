@@ -1,0 +1,7 @@
+[gd_resource type="Resource" format=3 uid="uid://cpq0m84hntk6b"]
+
+[ext_resource type="Script" uid="uid://bfdal1r3bxq2n" path="res://cards/convocations/FocusedCollaboration/focused_collaboration_action.gd" id="1_collab"]
+
+[resource]
+script = ExtResource("1_collab")
+metadata/_custom_type_script = "uid://bfc9l1r3bxq2n"

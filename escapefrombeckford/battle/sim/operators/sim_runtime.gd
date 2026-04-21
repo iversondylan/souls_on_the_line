@@ -432,6 +432,10 @@ func handle_group_turn_started(group_index: int) -> void:
 	if api == null or engine == null:
 		return
 
+	if api.state != null and api.state.turn != null:
+		api.state.turn.card_ids_played_this_turn.clear()
+		api.state.turn.card_types_played_this_turn.clear()
+
 	var writer := api.writer
 	if writer != null:
 		writer.set_turn_context(engine.turn_token, group_index, 0)
@@ -1911,6 +1915,9 @@ func _commit_card_play_if_needed(ctx: CardContext) -> bool:
 	if !ctx.emitted_card_played:
 		ctx.api.writer.emit_card_played_ctx(ctx)
 		ctx.emitted_card_played = true
+		if ctx.card_data != null and ctx.api.state != null and ctx.api.state.turn != null:
+			ctx.api.state.turn.card_ids_played_this_turn.append(ctx.card_data.id)
+			ctx.api.state.turn.card_types_played_this_turn.append(int(ctx.card_data.card_type))
 
 	if !ctx.mana_spent:
 		var mana_ctx := ManaContext.new()

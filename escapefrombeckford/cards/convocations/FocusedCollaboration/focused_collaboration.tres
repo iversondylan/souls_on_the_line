@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="CardData" format=3 uid="uid://dwj5y7ven3k8r"]
+
+[ext_resource type="Script" uid="uid://wtk5v77fcqvn" path="res://cards/_core/card_action.gd" id="1_base_action"]
+[ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://cards/_core/card_data.gd" id="2_card_data"]
+[ext_resource type="Resource" uid="uid://cpq0m84hntk6b" path="res://cards/convocations/FocusedCollaboration/focused_collaboration_action.tres" id="3_action"]
+[ext_resource type="Texture2D" uid="uid://cyotlwnhvdv5w" path="res://_assets/sprites/assorted/team-upgrade.png" id="4_tp58q"]
+
+[resource]
+script = ExtResource("2_card_data")
+id = &"focused_collaboration"
+rarity = 1
+name = "Focused Collaboration"
+description = "Draw 1. If you have not played a Soulbound or Soulwild card this turn, your Soulbound allies gain +1/+1 and heal 2."
+cost = 1
+texture = ExtResource("4_tp58q")
+actions = Array[ExtResource("1_base_action")]([ExtResource("3_action")])
+metadata/_custom_type_script = "uid://d2f0qepe047dc"

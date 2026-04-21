@@ -1,17 +1,20 @@
-[gd_resource type="Resource" script_class="NPCAction" format=3]
+[gd_resource type="Resource" script_class="NPCAction" format=3 uid="uid://c4vkjgrm368w2"]
 
-[ext_resource type="Script" path="res://npc_ai/_core/npc_action.gd" id="1_action_script"]
-[ext_resource type="Resource" path="res://combatants/souls/SmolderingMascot/smoldering_mascot_attack_friendlies_pkg.tres" id="2_friendlies_pkg"]
-[ext_resource type="Resource" path="res://combatants/souls/SmolderingMascot/smoldering_mascot_apply_amplify_pkg.tres" id="3_amplify_pkg"]
-[ext_resource type="Resource" path="res://combatants/souls/SmolderingMascot/smoldering_mascot_attack_enemies_pkg.tres" id="4_enemies_pkg"]
-[ext_resource type="Texture2D" path="res://_assets/sprites/assorted/egg-eye.png" id="5_icon"]
+[ext_resource type="Script" uid="uid://bcih413oy6v73" path="res://npc_ai/_core/npc_action.gd" id="1_action_script"]
+[ext_resource type="Resource" uid="uid://cq5dgaei172yi" path="res://combatants/souls/SmolderingMascot/smoldering_mascot_attack_friendlies_pkg.tres" id="2_friendlies_pkg"]
+[ext_resource type="Resource" uid="uid://nmpnewwou712" path="res://combatants/souls/SmolderingMascot/smoldering_mascot_apply_amplify_pkg.tres" id="3_amplify_pkg"]
+[ext_resource type="Resource" uid="uid://c3xe6er7xea5n" path="res://combatants/souls/SmolderingMascot/smoldering_mascot_attack_enemies_pkg.tres" id="4_enemies_pkg"]
+[ext_resource type="Texture2D" uid="uid://dnor2pbb0nhu" path="res://_assets/sprites/assorted/egg-eye.png" id="5_icon"]
+[ext_resource type="Script" uid="uid://dtwuyctovqk5r" path="res://npc_ai/_core/intent_lifecycle_model.gd" id="6_ni5au"]
 [ext_resource type="Resource" path="res://combatants/souls/SmolderingMascot/smoldering_mascot_intent_text_model.tres" id="6_text_model"]
 [ext_resource type="Resource" path="res://combatants/souls/SmolderingMascot/smoldering_mascot_intent_tooltip_model.tres" id="7_tooltip_model"]
-[ext_resource type="Script" path="res://npc_ai/_core/npc_effect_package.gd" id="8_effect_package_script"]
+[ext_resource type="Script" uid="uid://q408gy2b4q6a" path="res://npc_ai/_core/performable_model.gd" id="8_6lrc5"]
+[ext_resource type="Script" uid="uid://3jde7uhq2yho" path="res://npc_ai/_core/npc_effect_package.gd" id="8_effect_package_script"]
+[ext_resource type="Script" uid="uid://cuj4qvyx6dedj" path="res://npc_ai/_core/state_model.gd" id="10_ydavx"]
 
 [resource]
 script = ExtResource("1_action_script")
-effect_packages = Array[ExtResource("8_effect_package_script")]([ExtResource("2_friendlies_pkg"), ExtResource("3_amplify_pkg"), ExtResource("4_enemies_pkg")])
+effect_packages = Array[ExtResource("8_effect_package_script")]([ExtResource("3_amplify_pkg"), ExtResource("2_friendlies_pkg"), ExtResource("4_enemies_pkg")])
 action_name = "Mascot Routine"
 intent_icon = ExtResource("5_icon")
 intent_text_model = ExtResource("6_text_model")

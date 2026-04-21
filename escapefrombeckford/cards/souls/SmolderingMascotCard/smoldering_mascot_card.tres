@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://wtk5v77fcqvn" path="res://cards/_core/card_action.gd" id="1_card_action"]
 [ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://cards/_core/card_data.gd" id="2_card_data"]
 [ext_resource type="Resource" path="res://cards/souls/SmolderingMascotCard/summon_smoldering_mascot.tres" id="3_summon"]
-[ext_resource type="Texture2D" uid="uid://d3bjsmssrm65" path="res://_assets/sprites/assorted/gooey-daemon.png" id="4_texture"]
+[ext_resource type="Texture2D" uid="uid://bpbtfrmiqeqqy" path="res://_assets/sprites/assorted/sensuousness.png" id="4_b4a4k"]
 
 [resource]
 script = ExtResource("2_card_data")
@@ -15,5 +15,5 @@ name = "Smoldering Mascot"
 summon_release_overload = 1
 description = "Summon a %s/%s %s. Deals 1 damage to all targets, applying 1 Amplify to allies."
 cost = 1
-texture = ExtResource("4_texture")
+texture = ExtResource("4_b4a4k")
 actions = Array[ExtResource("1_card_action")]([ExtResource("3_summon")])

@@ -3,7 +3,6 @@ class_name MosslingBulwarkStatus extends Status
 const ID := &"mossling_bulwark"
 const FULL_FORTITUDE := preload("res://statuses/full_fortitude.tres")
 const MOST_DAMAGED_ALLY_TARGET_MODEL := preload("res://npc_ai/status/most_damaged_ally_status_target_model.gd")
-const Removal = preload("res://core/keys_values/removal_values.gd")
 
 func get_id() -> StringName:
 	return ID

@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="CombatantData" format=3 uid="uid://dmqie32dbswxn"]
+
+[ext_resource type="Script" uid="uid://cfatj0ryn8uv3" path="res://combatants/combatant_data.gd" id="1_h1smx"]
+
+[resource]
+script = ExtResource("1_h1smx")
+name = "Mossling Bulwark"
+description = "0/3 ally. On summon, your frontmost ally gains +2 full max health. On death, heal your most damaged ally 4."
+character_art_uid = "uid://bfbo1sxun3kcw"
+portrait_art_uid = "uid://bfbo1sxun3kcw"
+height = 120
+max_health = 3
+max_mana = 0

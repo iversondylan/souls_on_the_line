@@ -14,10 +14,16 @@ var actions_this_group_turn: Dictionary = {} # int -> int
 # If anything should ever modify the turn "budget", it should not be tracked
 # by this variable: but something like "bonus_actions"
 
+# card play history for the current group turn (resets each group turn)
+var card_ids_played_this_turn: Array[StringName] = []
+var card_types_played_this_turn: Array[int] = []
+
 func reset_group_turn() -> void:
 	queue = PackedInt32Array()
 	active_id = 0
 	actions_this_group_turn.clear()
+	card_ids_played_this_turn.clear()
+	card_types_played_this_turn.clear()
 
 func get_actions_taken(id: int) -> int:
 	return int(actions_this_group_turn.get(id, 0))
@@ -44,4 +50,6 @@ func clone() -> TurnState:
 	t.queue = queue.duplicate()
 	t.active_id = active_id
 	t.actions_this_group_turn = actions_this_group_turn.duplicate(true)
+	t.card_ids_played_this_turn = card_ids_played_this_turn.duplicate()
+	t.card_types_played_this_turn = card_types_played_this_turn.duplicate()
 	return t

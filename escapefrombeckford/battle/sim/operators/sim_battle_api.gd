@@ -679,6 +679,18 @@ func get_targets_for_attack_sequence(ai_ctx) -> Array:
 # ============================================================================
 
 
+func has_played_card_type_this_turn(type: CardData.CardType) -> bool:
+	if state == null or state.turn == null:
+		return false
+	return int(type) in state.turn.card_types_played_this_turn
+
+
+func has_played_card_id_this_turn(id: StringName) -> bool:
+	if state == null or state.turn == null:
+		return false
+	return id in state.turn.card_ids_played_this_turn
+
+
 func can_pay_cost(cost: int) -> bool:
 	if state == null or state.resource == null:
 		return false
