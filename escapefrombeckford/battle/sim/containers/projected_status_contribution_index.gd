@@ -141,11 +141,11 @@ func build_projected_token(status_id: StringName, proto: Status = null) -> Statu
 	var total_stacks := 0
 	match effective_reapply_type:
 		int(Status.ReapplyType.REPLACE):
-			# Replace keeps the newest transformer contribution after priority/tid ordering.
+			# Contributors are sorted oldest->newest, so .back() is the newest projection.
 			var latest := contributors.back().get("token", null) as StatusToken
 			total_stacks = int(latest.stacks) if latest != null else 0
 		int(Status.ReapplyType.IGNORE):
-			# Ignore keeps the oldest transformer contribution after priority/tid ordering.
+			# Contributors are sorted oldest->newest, so .front() is the oldest projection.
 			var earliest := contributors.front().get("token", null) as StatusToken
 			total_stacks = int(earliest.stacks) if earliest != null else 0
 		_:
@@ -211,6 +211,7 @@ func _source_entry_sorts_before(a: Dictionary, b: Dictionary) -> bool:
 	var b_order := b.get("order", {}) if b != null else {}
 	var a_priority := int(a_order.get("priority", 0))
 	var b_priority := int(b_order.get("priority", 0))
+	# Lower priority runs earlier, and lower tid is older within the same priority.
 	if a_priority != b_priority:
 		return a_priority < b_priority
 	return int(a_order.get("tid", 0)) < int(b_order.get("tid", 0))
