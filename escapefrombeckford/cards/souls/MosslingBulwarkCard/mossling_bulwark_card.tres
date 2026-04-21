@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://wtk5v77fcqvn" path="res://cards/_core/card_action.gd" id="1_card_action"]
 [ext_resource type="Resource" uid="uid://c5su647bvsd14" path="res://cards/souls/MosslingBulwarkCard/summon_mossling_bulwark.tres" id="2_yvpi3"]
-[ext_resource type="Script" path="res://cards/souls/MosslingBulwarkCard/status_on_frontmost_ally.gd" id="3_frontmost_action"]
+[ext_resource type="Script" uid="uid://c13mbndvy6elh" path="res://cards/souls/MosslingBulwarkCard/status_on_frontmost_ally.gd" id="3_frontmost_action"]
 [ext_resource type="Resource" uid="uid://bsh4ohfj5dqo2" path="res://statuses/full_fortitude.tres" id="4_full_fortitude"]
 [ext_resource type="Texture2D" uid="uid://bfbo1sxun3kcw" path="res://_assets/sprites/assorted/alien-egg.png" id="6_djrhy"]
 [ext_resource type="Script" uid="uid://jie78uegvh3j" path="res://cards/_generic_actions/apply_status_to_summoned_action.gd" id="6_status_action"]

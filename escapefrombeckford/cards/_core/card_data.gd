@@ -152,7 +152,7 @@ func is_wild_soul_card() -> bool:
 
 
 func should_exhaust_on_play() -> bool:
-	return bool(deplete) and !is_wild_soul_card()
+	return bool(deplete)
 
 
 func _has_summon_with_mortality(mortality_value: int) -> bool:

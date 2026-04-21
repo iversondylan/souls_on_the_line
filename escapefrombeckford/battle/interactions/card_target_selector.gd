@@ -21,15 +21,17 @@ func _ready() -> void:
 func _process(_delta: float) -> void:
 	if not targeting:
 		return
-	area_2d.position = get_local_mouse_position()
-	#print("card_target_selector.gd _process() position: ", )
+	if not is_instance_valid(current_card):
+		_end_targeting()
+		return
+
+	area_2d.global_position = get_global_mouse_position()
 	card_arc.points = _get_points()
 
-func _get_points() -> Array:
-	var points := []
-	var start := current_card.global_position #Invalid access to property or key 'global_position' on a base object of type 'previously freed'.
-	#start.x += (current_card.size.x /2)
-	var target := get_local_mouse_position()
+func _get_points() -> Array[Vector2]:
+	var points: Array[Vector2] = []
+	var start := _world_to_arc_local(current_card.global_position)
+	var target := _viewport_to_arc_local(get_viewport().get_mouse_position())
 	var distance := (target - start)
 	
 	for i in range(ARC_POINTS):
@@ -41,6 +43,13 @@ func _get_points() -> Array:
 	points.append(target)
 	
 	return points
+
+func _world_to_arc_local(point: Vector2) -> Vector2:
+	var viewport_point := get_global_transform_with_canvas() * to_local(point)
+	return _viewport_to_arc_local(viewport_point)
+
+func _viewport_to_arc_local(point: Vector2) -> Vector2:
+	return card_arc.get_global_transform_with_canvas().affine_inverse() * point
 
 func ease_out_cubic(number : float) -> float:
 	return 1.0 - pow(1.0 - number, 3.0)
