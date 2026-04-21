@@ -22,7 +22,7 @@ func on_player_turn_begin(ctx: SimStatusContext, player_id: int) -> void:
 	status_ctx.target_id = int(ctx.owner_id)
 	status_ctx.status_id = FULL_FORTITUDE.get_id()
 	status_ctx.stacks = 2
-	status_ctx.reason = "phalanx_round_fortitude"
+	status_ctx.reason = "spirit_keeper"
 	ctx.api.apply_status(status_ctx)
 
 func get_tooltip(_stacks: int = 0) -> String:
