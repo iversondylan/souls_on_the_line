@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="NormalizeStatusOnPlayerTurnLifecycleModel" format=3 uid="uid://clw5gdi88u8c2"]
+
+[ext_resource type="Script" uid="uid://ffhesutx22nq" path="res://npc_ai/intent_lifecycle/normalize_status_on_player_turn_lifecycle_model.gd" id="1_b8das"]
+[ext_resource type="Resource" uid="uid://dfomjdsy6a2ca" path="res://statuses/hexweb.tres" id="2_kn5g5"]
+
+[resource]
+script = ExtResource("1_b8das")
+status = ExtResource("2_kn5g5")
+status_id = &"hexweb"
+stacks = 1
