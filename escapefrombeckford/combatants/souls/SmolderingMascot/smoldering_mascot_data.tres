@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="CombatantData" format=3]
+
+[ext_resource type="Script" path="res://combatants/combatant_data.gd" id="1_data_script"]
+[ext_resource type="Resource" path="res://combatants/souls/SmolderingMascot/smoldering_mascot_ai_profile.tres" id="2_ai"]
+
+[resource]
+script = ExtResource("1_data_script")
+name = "Smoldering Mascot"
+description = "1/3 ally. Deals 1 damage to all targets, applying 1 Amplify to allies."
+character_art_uid = "res://_assets/sprites/assorted/gooey-daemon.png"
+portrait_art_uid = "res://_assets/sprites/assorted/gooey-daemon.png"
+height = 160
+max_health = 3
+ap = 1
+max_mana = 0
+ai = ExtResource("2_ai")

@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="NPCAction" format=3]
+
+[ext_resource type="Script" path="res://npc_ai/_core/npc_action.gd" id="1_action_script"]
+[ext_resource type="Resource" path="res://combatants/souls/CronePuppeteer/crone_puppeteer_summon_pkg.tres" id="2_summon_pkg"]
+[ext_resource type="Resource" path="res://combatants/souls/CronePuppeteer/apply_small_to_summoned_pkg.tres" id="3_small_pkg"]
+[ext_resource type="Resource" path="res://combatants/souls/CronePuppeteer/apply_fleeting_to_summoned_pkg.tres" id="4_fleeting_pkg"]
+[ext_resource type="Texture2D" path="res://_assets/sprites/assorted/egg-eye.png" id="5_icon"]
+[ext_resource type="Resource" path="res://npc_ai/text/summon_ap_intent_text_model.tres" id="6_text_model"]
+[ext_resource type="Resource" path="res://combatants/souls/CronePuppeteer/patchwork_puppet_intent_tooltip_model.tres" id="7_tooltip_model"]
+[ext_resource type="Script" path="res://npc_ai/_core/npc_effect_package.gd" id="8_effect_package_script"]
+
+[resource]
+script = ExtResource("1_action_script")
+effect_packages = Array[ExtResource("8_effect_package_script")]([ExtResource("2_summon_pkg"), ExtResource("3_small_pkg"), ExtResource("4_fleeting_pkg")])
+action_name = "Stitch Puppet"
+intent_icon = ExtResource("5_icon")
+intent_text_model = ExtResource("6_text_model")
+tooltip_model = ExtResource("7_tooltip_model")

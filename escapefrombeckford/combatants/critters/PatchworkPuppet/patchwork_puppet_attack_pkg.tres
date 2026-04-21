@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="NPCEffectPackage" format=3]
+
+[ext_resource type="Resource" path="res://npc_ai/npc_attack_sequence.tres" id="1_attack"]
+[ext_resource type="Script" path="res://npc_ai/_core/npc_effect_package.gd" id="2_pkg_script"]
+[ext_resource type="Resource" path="res://combatants/souls/SpectralClone/ap_plus_0_damage.tres" id="3_damage_model"]
+[ext_resource type="Script" path="res://npc_ai/_core/param_model.gd" id="4_param_script"]
+
+[resource]
+script = ExtResource("2_pkg_script")
+effect = ExtResource("1_attack")
+param_models = Array[ExtResource("4_param_script")]([ExtResource("3_damage_model")])

@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="CombatantData" format=3]
+
+[ext_resource type="Script" path="res://combatants/combatant_data.gd" id="1_data_script"]
+[ext_resource type="Resource" path="res://combatants/souls/Phalanx/phalanx_ai_profile.tres" id="2_ai"]
+
+[resource]
+script = ExtResource("1_data_script")
+name = "Phalanx"
+description = "2/8 ally. The first time each round this takes strike damage, gain 50% reduced damage for the rest of that round. At end of round, gain +2 full max health."
+character_art_uid = "res://_assets/sprites/assorted/forest_48_w.png"
+portrait_art_uid = "res://_assets/sprites/assorted/forest_48_w.png"
+height = 140
+max_health = 8
+ap = 2
+max_mana = 0
+ai = ExtResource("2_ai")

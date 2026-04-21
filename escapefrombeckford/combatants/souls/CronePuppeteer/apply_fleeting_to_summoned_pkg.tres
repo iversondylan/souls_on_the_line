@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="NPCEffectPackage" format=3 uid="uid://bqdy2o0s6ukn2"]
+
+[ext_resource type="Resource" uid="uid://br5dox5m0ph6v" path="res://npc_ai/npc_status_sequence.tres" id="1_status"]
+[ext_resource type="Script" uid="uid://b8d5j6ne4mt88" path="res://npc_ai/_core/param_model.gd" id="2_param"]
+[ext_resource type="Resource" uid="uid://bsvdd8jvaco0n" path="res://npc_ai/status/summoned_status_target_model.tres" id="3_target_model"]
+[ext_resource type="Script" uid="uid://cccygrstrra8t" path="res://npc_ai/status/status_model.gd" id="4_status_model_script"]
+[ext_resource type="Resource" uid="uid://dx5u1ohri7h0t" path="res://statuses/fleeting.tres" id="5_fleeting"]
+[ext_resource type="Script" uid="uid://3jde7uhq2yho" path="res://npc_ai/_core/npc_effect_package.gd" id="6_pkg_script"]
+[ext_resource type="Script" uid="uid://cuj4qvyx6dedj" path="res://npc_ai/_core/state_model.gd" id="7_23gn5"]
+
+[sub_resource type="Resource" id="Resource_fleeting_status"]
+script = ExtResource("4_status_model_script")
+status = ExtResource("5_fleeting")
+
+[resource]
+script = ExtResource("6_pkg_script")
+effect = ExtResource("1_status")
+param_models = Array[ExtResource("2_param")]([SubResource("Resource_fleeting_status"), ExtResource("3_target_model")])
+compact_to_previous = true

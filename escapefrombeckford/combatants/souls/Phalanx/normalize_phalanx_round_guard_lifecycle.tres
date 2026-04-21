@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="NormalizeStatusOnPlayerTurnLifecycleModel" format=3]
+
+[ext_resource type="Script" path="res://npc_ai/intent_lifecycle/normalize_status_on_player_turn_lifecycle_model.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+status_id = &"phalanx_round_guard"
+intensity = 1

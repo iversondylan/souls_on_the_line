@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="CardData" format=3 uid="uid://d1sva348os2ka"]
+
+[ext_resource type="Script" uid="uid://wtk5v77fcqvn" path="res://cards/_core/card_action.gd" id="1_card_action"]
+[ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://cards/_core/card_data.gd" id="2_card_data"]
+[ext_resource type="Resource" path="res://cards/souls/PhalanxCard/summon_phalanx.tres" id="3_summon"]
+[ext_resource type="Resource" path="res://cards/souls/PhalanxCard/phalanx_round_guard_on_summoned_action.tres" id="4_guard"]
+[ext_resource type="Resource" path="res://cards/souls/PhalanxCard/phalanx_round_fortitude_on_summoned_action.tres" id="5_fortitude"]
+[ext_resource type="Texture2D" uid="uid://6dajiq4c6b1w" path="res://_assets/sprites/assorted/forest_48_w.png" id="6_texture"]
+
+[resource]
+script = ExtResource("2_card_data")
+id = &"phalanx"
+card_type = 1
+target_type = 1
+rarity = 1
+name = "Phalanx"
+summon_release_overload = 1
+description = "Summon a %s/%s %s. The first time each round this takes strike damage, gain 50% reduced damage for the rest of that round. At end of round, gain +2 max health (full)."
+cost = 2
+texture = ExtResource("6_texture")
+actions = Array[ExtResource("1_card_action")]([ExtResource("3_summon"), ExtResource("4_guard"), ExtResource("5_fortitude")])

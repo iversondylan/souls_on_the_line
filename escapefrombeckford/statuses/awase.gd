@@ -1,6 +1,7 @@
 class_name AwaseStatus extends Status
 
 const ID := &"awase"
+const FULL_FORTITUDE := preload("res://statuses/full_fortitude.tres")
 
 func get_id() -> StringName:
 	return ID
@@ -17,7 +18,16 @@ func on_damage_taken(ctx: SimStatusContext, damage_ctx: DamageContext) -> void:
 	if prevented_amount <= 0:
 		return
 
-	ctx.api.change_max_health(int(ctx.owner_id), 1, false, "awase_absorb_prevented")
+	if FULL_FORTITUDE == null:
+		return
+
+	var status_ctx := StatusContext.new()
+	status_ctx.source_id = int(ctx.owner_id)
+	status_ctx.target_id = int(ctx.owner_id)
+	status_ctx.status_id = FULL_FORTITUDE.get_id()
+	status_ctx.intensity = 1
+	status_ctx.reason = "awase_absorb_prevented"
+	ctx.api.apply_status(status_ctx)
 
 func get_tooltip(_intensity: int = 0, _duration: int = 0) -> String:
-	return "Awase: whenever Absorb on this prevents damage, gain +1 max health."
+	return "Awase: whenever Absorb on this prevents damage, gain Full Fortitude."

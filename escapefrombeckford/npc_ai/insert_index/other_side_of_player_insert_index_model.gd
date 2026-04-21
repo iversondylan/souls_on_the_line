@@ -27,9 +27,9 @@ func _apply(ctx: NPCAIContext) -> NPCAIContext:
 		return ctx
 
 	var to_index := -1
-	if my_rank == player_rank - 1:
-		to_index = player_rank + 1
-	elif my_rank == player_rank + 1:
+	if my_rank < player_rank:
+		to_index = player_rank
+	elif my_rank > player_rank:
 		to_index = player_rank
 	else:
 		ctx.params[Keys.SEQUENCE_EXECUTABLE] = false

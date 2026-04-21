@@ -1,0 +1,7 @@
+[gd_resource type="Resource" script_class="SmolderingMascotTextModel" format=3]
+
+[ext_resource type="Script" path="res://combatants/souls/SmolderingMascot/smoldering_mascot_text_model.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+text_template = "1+A+1"

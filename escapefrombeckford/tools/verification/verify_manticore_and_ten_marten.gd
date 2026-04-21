@@ -4,6 +4,7 @@ const STATUS_CATALOG := preload("res://statuses/_core/status_catalog.tres")
 const GROUNDING_ACCORD := preload("res://statuses/grounding_accord.tres")
 const AWASE := preload("res://statuses/awase.tres")
 const ABSORB := preload("res://statuses/absorb.tres")
+const FULL_FORTITUDE := preload("res://statuses/full_fortitude.tres")
 const OTHER_SIDE_MODEL := preload("res://npc_ai/insert_index/other_side_of_player_insert_index_model.tres")
 const MOVE_SEQUENCE := preload("res://npc_ai/npc_move_sequence.tres")
 
@@ -36,7 +37,7 @@ func _verify_card_text() -> bool:
 	_assert(!manticore_card_text.is_empty(), "manticore card text should load")
 	_assert(!ten_marten_card_text.is_empty(), "ten-marten card text should load")
 	_assert_equal(
-		manticore_card_text.contains("description = \"Summon a %s/%s %s. Full Fortitude. The first time each round you play your second Convocation, this gains Absorb. Whenever Absorb on this prevents damage, gain +1 max health.\""),
+		manticore_card_text.contains("description = \"Summon a %s/%s %s. The first time each round you play your second Convocation, this gains Absorb. Whenever Absorb on this prevents damage, gain Full Fortitude.\""),
 		true,
 		"manticore card description text"
 	)
@@ -74,6 +75,7 @@ func _verify_grounding_accord_and_awase() -> bool:
 	_assert(manticore != null, "manticore unit should exist")
 	_assert_equal(manticore.max_health, 8, "manticore max health baseline")
 	_assert_equal(manticore.health, 8, "manticore health baseline")
+	_assert_equal(api.get_status_intensity(manticore_id, FULL_FORTITUDE.get_id()), 0, "manticore does not start with full fortitude")
 
 	var blocked_hit := DamageContext.new()
 	blocked_hit.source_id = enemy_id
@@ -83,8 +85,9 @@ func _verify_grounding_accord_and_awase() -> bool:
 	api.resolve_damage_immediate(blocked_hit)
 
 	_assert_equal(api.get_status_intensity(manticore_id, ABSORB.get_id()), 0, "absorb is consumed after preventing damage")
-	_assert_equal(manticore.health, 8, "absorb prevented health damage")
-	_assert_equal(manticore.max_health, 9, "awase grants +1 max health when absorb prevents damage")
+	_assert_equal(api.get_status_intensity(manticore_id, FULL_FORTITUDE.get_id()), 1, "awase grants full fortitude when absorb prevents damage")
+	_assert_equal(manticore.health, 9, "full fortitude fills the added health")
+	_assert_equal(manticore.max_health, 9, "full fortitude adds max health when absorb prevents damage")
 
 	var normal_hit := DamageContext.new()
 	normal_hit.source_id = enemy_id
@@ -92,7 +95,8 @@ func _verify_grounding_accord_and_awase() -> bool:
 	normal_hit.base_amount = 3
 	normal_hit.tags.append(&"strike_damage")
 	api.resolve_damage_immediate(normal_hit)
-	_assert_equal(manticore.health, 5, "normal strike damage applies without absorb")
+	_assert_equal(manticore.health, 6, "normal strike damage applies without absorb")
+	_assert_equal(api.get_status_intensity(manticore_id, FULL_FORTITUDE.get_id()), 1, "normal damage without absorb does not add fortitude")
 
 	api.state.turn.round = 2
 	SimStatusSystem.on_player_turn_begin(api, player_id)
@@ -114,9 +118,9 @@ func _verify_other_side_of_player_move_model() -> bool:
 
 	var ctx_behind := _build_ai_ctx(api, runtime, behind_id)
 	OTHER_SIDE_MODEL.change_params_sim(ctx_behind)
-	_assert_equal(int(ctx_behind.params.get(Keys.TO_INDEX, -1)), int(api.get_rank_in_group(player_id)) + 1, "behind side target index")
+	_assert_equal(int(ctx_behind.params.get(Keys.TO_INDEX, -1)), int(api.get_rank_in_group(player_id)), "front side target index from ahead of player")
 	MOVE_SEQUENCE.execute(ctx_behind)
-	_assert_equal(int(api.get_rank_in_group(behind_id)), int(api.get_rank_in_group(player_id)) + 1, "behind case crosses to player+1")
+	_assert_equal(int(api.get_rank_in_group(behind_id)), int(api.get_rank_in_group(player_id)) + 1, "front-side unit moves to immediately behind player")
 
 	var front_id := runtime.add_combatant_from_data(_make_unit_data("Front Ten-Marten", 3, 3), SimBattleAPI.FRIENDLY, -1, false, 3)
 	_assert(front_id > 0, "front move model spawn")
@@ -134,7 +138,7 @@ func _verify_other_side_of_player_move_model() -> bool:
 	OTHER_SIDE_MODEL.change_params_sim(ctx_front)
 	_assert_equal(int(ctx_front.params.get(Keys.TO_INDEX, -1)), int(api.get_rank_in_group(player_id)), "front side target index")
 	MOVE_SEQUENCE.execute(ctx_front)
-	_assert_equal(int(api.get_rank_in_group(front_id)), int(api.get_rank_in_group(player_id)), "front case moves to player index")
+	_assert_equal(int(api.get_rank_in_group(front_id)), int(api.get_rank_in_group(player_id)) - 1, "behind-side unit moves to immediately in front of player")
 
 	var far_id := runtime.add_combatant_from_data(_make_unit_data("Far Ten-Marten", 3, 3), SimBattleAPI.FRIENDLY, -1, false, 3)
 	_assert(far_id > 0, "far move model spawn")
@@ -145,12 +149,30 @@ func _verify_other_side_of_player_move_model() -> bool:
 	move_far.index = 0
 	move_far.reason = "test_far_case_setup"
 	runtime.run_move(move_far)
-	var before_rank := int(api.get_rank_in_group(far_id))
 	var ctx_far := _build_ai_ctx(api, runtime, far_id)
 	OTHER_SIDE_MODEL.change_params_sim(ctx_far)
-	_assert_equal(bool(ctx_far.params.get(Keys.SEQUENCE_EXECUTABLE, true)), false, "non-adjacent case is not executable")
+	_assert_equal(bool(ctx_far.params.get(Keys.SEQUENCE_EXECUTABLE, false)), true, "non-adjacent front-side case is executable")
+	_assert_equal(int(ctx_far.params.get(Keys.TO_INDEX, -1)), int(api.get_rank_in_group(player_id)), "non-adjacent front-side case targets the player's far side")
 	MOVE_SEQUENCE.execute(ctx_far)
-	_assert_equal(int(api.get_rank_in_group(far_id)), before_rank, "non-adjacent case does not move")
+
+	var player_rank_after_far := int(api.get_rank_in_group(player_id))
+	_assert_equal(int(api.get_rank_in_group(far_id)), player_rank_after_far + 1, "non-adjacent front-side case moves to immediately behind player")
+
+	var rear_id := runtime.add_combatant_from_data(_make_unit_data("Rear Ten-Marten", 3, 3), SimBattleAPI.FRIENDLY, -1, false, 3)
+	_assert(rear_id > 0, "rear move model spawn")
+	var move_rear := MoveContext.new()
+	move_rear.actor_id = rear_id
+	move_rear.target_id = rear_id
+	move_rear.move_type = MoveContext.MoveType.INSERT_AT_INDEX
+	move_rear.index = 999
+	move_rear.reason = "test_rear_case_setup"
+	runtime.run_move(move_rear)
+	var ctx_rear := _build_ai_ctx(api, runtime, rear_id)
+	OTHER_SIDE_MODEL.change_params_sim(ctx_rear)
+	_assert_equal(bool(ctx_rear.params.get(Keys.SEQUENCE_EXECUTABLE, false)), true, "non-adjacent behind-side case is executable")
+	_assert_equal(int(ctx_rear.params.get(Keys.TO_INDEX, -1)), int(api.get_rank_in_group(player_id)), "non-adjacent behind-side case targets the player's front side")
+	MOVE_SEQUENCE.execute(ctx_rear)
+	_assert_equal(int(api.get_rank_in_group(rear_id)), int(api.get_rank_in_group(player_id)) - 1, "non-adjacent behind-side case moves to immediately in front of player")
 	return true
 
 

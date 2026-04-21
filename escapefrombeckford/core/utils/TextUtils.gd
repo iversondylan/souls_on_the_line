@@ -49,7 +49,8 @@ static func _build_card_description_internal(card_data: CardData, api: SimBattle
 		for _i in range(total_slots - apply_n):
 			args.append("%s")
 
-		text = text % args
+		text = _escape_bare_percents(text) % args
+
 
 	text = text.replace("{percent}", "%")
 	text = percent_to_symbol(text)
@@ -99,6 +100,23 @@ static func _description_values_for_action(
 		return [int(action.get("base_draw"))]
 
 	return []
+
+static func _escape_bare_percents(text: String) -> String:
+	var result := ""
+	var i := 0
+	while i < text.length():
+		var c := text[i]
+		if c == "%":
+			var next := text[i + 1] if i + 1 < text.length() else ""
+			if next == "s" or next == "%":
+				result += c
+			else:
+				result += "%%"
+		else:
+			result += c
+		i += 1
+	return result
+
 
 static func _has_property(obj: Object, prop_name: String) -> bool:
 	if obj == null:

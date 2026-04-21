@@ -39,6 +39,16 @@ func execute(ctx: NPCAIContext) -> void:
 	attack_ctx.targeting_ctx.target_type = int(attack_ctx.targeting)
 	attack_ctx.targeting_ctx.attack_mode = int(attack_ctx.attack_mode)
 	attack_ctx.targeting_ctx.params = attack_ctx.params
+	var explicit_targets: Array[int] = []
+	if attack_ctx.params.has(Keys.TARGET_IDS):
+		var raw_targets = attack_ctx.params.get(Keys.TARGET_IDS, PackedInt32Array())
+		if raw_targets is PackedInt32Array:
+			for target_id in raw_targets:
+				explicit_targets.append(int(target_id))
+		elif raw_targets is Array:
+			for target_id in raw_targets:
+				explicit_targets.append(int(target_id))
+	attack_ctx.targeting_ctx.explicit_target_ids = explicit_targets
 
 	runtime.run_attack(attack_ctx)
 	_store_killed_target_ids(ctx, attack_ctx.killed_target_ids)

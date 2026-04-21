@@ -1,10 +1,9 @@
-[gd_resource type="Resource" script_class="AwaseStatus" format=3]
+[gd_resource type="Resource" script_class="AwaseStatus" format=3 uid="uid://cxbnwphft1y2j"]
 
-[ext_resource type="Texture2D" path="res://_assets/sprites/assorted/heal-sky-2.png" id="1_icon"]
-[ext_resource type="Script" path="res://statuses/awase.gd" id="2_script"]
+[ext_resource type="Texture2D" uid="uid://b7npor7hmmxkc" path="res://_assets/sprites/assorted/atomic-slashes.png" id="1_weyu3"]
+[ext_resource type="Script" uid="uid://dmcgx2prkjydy" path="res://statuses/awase.gd" id="2_script"]
 
 [resource]
 script = ExtResource("2_script")
 status_name = "Awase"
-icon = ExtResource("1_icon")
-
+icon = ExtResource("1_weyu3")

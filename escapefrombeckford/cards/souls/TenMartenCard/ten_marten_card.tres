@@ -1,9 +1,9 @@
-[gd_resource type="Resource" script_class="CardData" format=3]
+[gd_resource type="Resource" script_class="CardData" format=3 uid="uid://7umetpmnu6og"]
 
-[ext_resource type="Script" path="res://cards/_core/card_action.gd" id="1_card_action"]
-[ext_resource type="Script" path="res://cards/_core/card_data.gd" id="2_card_data"]
+[ext_resource type="Script" uid="uid://wtk5v77fcqvn" path="res://cards/_core/card_action.gd" id="1_card_action"]
+[ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://cards/_core/card_data.gd" id="2_card_data"]
 [ext_resource type="Resource" path="res://cards/souls/TenMartenCard/summon_ten_marten.tres" id="3_summon"]
-[ext_resource type="Texture2D" path="res://_assets/character_visuals/placeholder_shapes/IMG_0243.PNG" id="4_texture"]
+[ext_resource type="Texture2D" uid="uid://cqjh2y77fsbri" path="res://_assets/sprites/assorted/sea-serpent.png" id="4_7gncv"]
 
 [resource]
 script = ExtResource("2_card_data")
@@ -14,6 +14,5 @@ name = "Ten-Marten"
 summon_release_overload = 1
 description = "Summon a %s/%s %s. On attack: move to the other side of the player."
 cost = 1
-texture = ExtResource("4_texture")
+texture = ExtResource("4_7gncv")
 actions = Array[ExtResource("1_card_action")]([ExtResource("3_summon")])
-

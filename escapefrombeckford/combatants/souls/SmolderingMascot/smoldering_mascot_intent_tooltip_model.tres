@@ -1,0 +1,7 @@
+[gd_resource type="Resource" script_class="SmolderingMascotTextModel" format=3]
+
+[ext_resource type="Script" path="res://combatants/souls/SmolderingMascot/smoldering_mascot_text_model.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+text_template = "[b]{action_name}[/b]: deal 1 to all friendlies, then apply 1 Amplify to all friendlies, then deal 1 to all enemies."

@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="NPCAction" format=3]
+
+[ext_resource type="Script" path="res://npc_ai/_core/npc_action.gd" id="1_action_script"]
+[ext_resource type="Resource" path="res://combatants/souls/Phalanx/phalanx_attack_pkg.tres" id="2_attack_pkg"]
+[ext_resource type="Texture2D" path="res://_assets/sprites/assorted/attack.PNG" id="3_attack_icon"]
+[ext_resource type="Resource" path="res://npc_ai/text/attack_intent_text_model.tres" id="4_text_model"]
+[ext_resource type="Resource" path="res://npc_ai/text/attack_intent_tooltip_text_model.tres" id="5_tooltip_model"]
+[ext_resource type="Resource" path="res://combatants/souls/Phalanx/normalize_phalanx_round_guard_lifecycle.tres" id="6_lifecycle"]
+[ext_resource type="Script" path="res://npc_ai/_core/intent_lifecycle_model.gd" id="7_lifecycle_script"]
+[ext_resource type="Script" path="res://npc_ai/_core/npc_effect_package.gd" id="8_effect_package_script"]
+
+[resource]
+script = ExtResource("1_action_script")
+effect_packages = Array[ExtResource("8_effect_package_script")]([ExtResource("2_attack_pkg")])
+intent_lifecycle_models = Array[ExtResource("7_lifecycle_script")]([ExtResource("6_lifecycle")])
+action_name = "Phalanx Strike"
+intent_icon = ExtResource("3_attack_icon")
+intent_text_model = ExtResource("4_text_model")
+tooltip_model = ExtResource("5_tooltip_model")

@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="NPCAction" format=3]
+
+[ext_resource type="Script" path="res://npc_ai/_core/npc_action.gd" id="1_action_script"]
+[ext_resource type="Resource" path="res://combatants/critters/PatchworkPuppet/patchwork_puppet_attack_pkg.tres" id="2_attack_pkg"]
+[ext_resource type="Texture2D" path="res://_assets/sprites/assorted/attack.PNG" id="3_attack_icon"]
+[ext_resource type="Resource" path="res://npc_ai/text/attack_intent_text_model.tres" id="4_text_model"]
+[ext_resource type="Resource" path="res://npc_ai/text/attack_intent_tooltip_text_model.tres" id="5_tooltip_model"]
+[ext_resource type="Script" path="res://npc_ai/_core/npc_effect_package.gd" id="6_effect_package_script"]
+
+[resource]
+script = ExtResource("1_action_script")
+effect_packages = Array[ExtResource("6_effect_package_script")]([ExtResource("2_attack_pkg")])
+action_name = "Stitched Swipe"
+intent_icon = ExtResource("3_attack_icon")
+intent_text_model = ExtResource("4_text_model")
+tooltip_model = ExtResource("5_tooltip_model")

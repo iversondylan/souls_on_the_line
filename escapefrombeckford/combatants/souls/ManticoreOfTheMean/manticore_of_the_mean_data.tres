@@ -1,17 +1,15 @@
-[gd_resource type="Resource" script_class="CombatantData" format=3]
+[gd_resource type="Resource" script_class="CombatantData" format=3 uid="uid://cnhv6oqc12iht"]
 
-[ext_resource type="Script" path="res://combatants/combatant_data.gd" id="1_data_script"]
-[ext_resource type="Resource" path="res://combatants/souls/SpectralClone/spectral_clone_ai_profile.tres" id="2_ai"]
+[ext_resource type="Script" uid="uid://cfatj0ryn8uv3" path="res://combatants/combatant_data.gd" id="1_data_script"]
+[ext_resource type="Resource" uid="uid://dueva43wmh3no" path="res://combatants/souls/SpectralClone/spectral_clone_ai_profile.tres" id="2_ai"]
 
 [resource]
 script = ExtResource("1_data_script")
 name = "Manticore of the Mean"
-description = "3/8 ally. The first time each round you play your second Convocation, this gains Absorb. Whenever Absorb on this prevents damage, gain +1 max health."
+description = "3/8 ally. The first time each round you play your second Convocation, this gains Absorb. Whenever Absorb on this prevents damage, gain Full Fortitude."
 character_art_uid = "res://_assets/sprites/assorted/forest_48_w.png"
 portrait_art_uid = "res://_assets/sprites/assorted/forest_48_w.png"
 height = 140
 max_health = 8
-ap = 3
 max_mana = 0
 ai = ExtResource("2_ai")
-

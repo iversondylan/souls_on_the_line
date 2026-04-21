@@ -1,12 +1,11 @@
-[gd_resource type="Resource" script_class="CardData" format=3]
+[gd_resource type="Resource" script_class="CardData" format=3 uid="uid://c3wpo230s3hgt"]
 
-[ext_resource type="Script" path="res://cards/_core/card_action.gd" id="1_card_action"]
-[ext_resource type="Script" path="res://cards/_core/card_data.gd" id="2_card_data"]
+[ext_resource type="Script" uid="uid://wtk5v77fcqvn" path="res://cards/_core/card_action.gd" id="1_card_action"]
+[ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://cards/_core/card_data.gd" id="2_card_data"]
 [ext_resource type="Resource" path="res://cards/souls/ManticoreOfTheMeanCard/summon_manticore_of_the_mean.tres" id="3_summon"]
 [ext_resource type="Resource" path="res://cards/souls/ManticoreOfTheMeanCard/grounding_accord_on_summoned_action.tres" id="4_grounding"]
 [ext_resource type="Resource" path="res://cards/souls/ManticoreOfTheMeanCard/awase_on_summoned_action.tres" id="5_awase"]
-[ext_resource type="Resource" path="res://cards/souls/ManticoreOfTheMeanCard/full_fortitude_on_summoned_action.tres" id="6_full_fortitude"]
-[ext_resource type="Texture2D" path="res://_assets/sprites/assorted/forest_48_w.png" id="7_texture"]
+[ext_resource type="Texture2D" uid="uid://qpfuxl30kvbu" path="res://_assets/sprites/assorted/hydra.png" id="6_ciuvu"]
 
 [resource]
 script = ExtResource("2_card_data")
@@ -16,8 +15,7 @@ target_type = 1
 rarity = 2
 name = "Manticore of the Mean"
 summon_release_overload = 1
-description = "Summon a %s/%s %s. Full Fortitude. The first time each round you play your second Convocation, this gains Absorb. Whenever Absorb on this prevents damage, gain +1 max health."
+description = "Summon a %s/%s %s. The first time each round you play your second Convocation, this gains Absorb. Whenever Absorb on this prevents damage, gain Full Fortitude."
 cost = 2
-texture = ExtResource("7_texture")
-actions = Array[ExtResource("1_card_action")]([ExtResource("3_summon"), ExtResource("4_grounding"), ExtResource("5_awase"), ExtResource("6_full_fortitude")])
-
+texture = ExtResource("6_ciuvu")
+actions = Array[ExtResource("1_card_action")]([ExtResource("3_summon"), ExtResource("4_grounding"), ExtResource("5_awase")])
