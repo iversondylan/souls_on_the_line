@@ -18,8 +18,14 @@ func activate_sim(ctx: CardContext) -> bool:
 		var ally_id := int(cid)
 		if ally_id <= 0 or ally_id == player_id or summoned_ids.has(ally_id):
 			continue
+		var ally := ctx.api.state.get_unit(ally_id)
+		if ally == null or !ally.is_alive():
+			continue
 		target_id = ally_id
 		break
+
+	if target_id <= 0:
+		return false
 
 	var applied_any := _apply_status_to_target(ctx, target_id)
 	_play_success_sound(ctx, applied_any)
