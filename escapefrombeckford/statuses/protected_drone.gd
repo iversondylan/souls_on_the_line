@@ -11,7 +11,7 @@ func get_id() -> StringName:
 	return ID
 
 
-func get_tooltip(_intensity: int = 0, _duration: int = 0) -> String:
+func get_tooltip(_stacks: int = 0) -> String:
 	return "Protected Drone: On Death, summon a Fire Ant here. It has On Death: deal 3 damage to all enemies."
 
 
@@ -44,7 +44,7 @@ func on_removal(ctx: SimStatusContext, removal_ctx) -> void:
 	status_ctx.source_id = int(ctx.owner_id)
 	status_ctx.target_id = int(summon_ctx.summoned_id)
 	status_ctx.status_id = EXPLOSIVE_DEPARTURE.get_id()
-	status_ctx.intensity = 3
+	status_ctx.stacks = 3
 	ctx.api.apply_status(status_ctx)
 	
 	status_ctx = StatusContext.new()

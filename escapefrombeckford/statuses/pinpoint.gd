@@ -13,9 +13,7 @@ func get_modifier_tokens(ctx: StatusTokenContext) -> Array[ModifierToken]:
 	if !ctx:
 		return []
 
-	if expiration_policy == Status.ExpirationPolicy.DURATION and ctx.duration <= 0:
-		return []
-
+	
 	var token := ModifierToken.new()
 	token.type = Modifier.Type.DMG_TAKEN
 	token.mult_value = MULT_VALUE
@@ -38,10 +36,10 @@ func get_contributed_modifier_types() -> Array[Modifier.Type]:
 	return [Modifier.Type.DMG_TAKEN]
 
 #func _on_status_changed(dmg_taken_modifier: Modifier) -> void:
-	#if duration <= 0 and dmg_taken_modifier:
+	#if stacks <= 0 and dmg_taken_modifier:
 		#dmg_taken_modifier.remove_value(ID)
 	#
-func get_tooltip(_intensity: int = 0, duration: int = 0) -> String:
-	if duration == 1:
+func get_tooltip(stacks: int = 0) -> String:
+	if stacks == 1:
 		return "Pinpoint: take %s%% more damage for 1 turn." % floori(MULT_VALUE * 100)
-	return "Pinpoint: take %s%% more damage for %s turns." % [floori(MULT_VALUE * 100), duration]
+	return "Pinpoint: take %s%% more damage for %s turns." % [floori(MULT_VALUE * 100), stacks]

@@ -14,7 +14,7 @@ script = ExtResource("3_targets_script")
 [sub_resource type="Resource" id="Resource_amplify"]
 script = ExtResource("4_status_model_script")
 status = ExtResource("5_amplify")
-duration = 2
+stacks = 2
 
 [resource]
 script = ExtResource("6_pkg_script")

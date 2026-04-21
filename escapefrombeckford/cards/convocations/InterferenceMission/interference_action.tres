@@ -7,7 +7,7 @@
 [resource]
 script = ExtResource("1_interference")
 status_if_in_front = ExtResource("2_sundered")
-intensity_if_in_front = 30
+stacks_if_in_front = 30
 status_if_behind = ExtResource("3_suppressed")
-intensity_if_behind = 30
+stacks_if_behind = 30
 metadata/_custom_type_script = "uid://b82pm4ymbnp2n"

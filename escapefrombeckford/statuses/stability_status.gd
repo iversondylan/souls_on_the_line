@@ -1,8 +1,8 @@
 # stability_status.gd
 class_name StabilityStatus extends Status
 
-## Remaining stability is represented by intensity.
-## When intensity reaches 0, stability is broken.
+## Remaining stability is represented by stacks.
+## When stacks reaches 0, stability is broken.
 
 const ID := &"stability"
 
@@ -15,14 +15,14 @@ func affects_intent_legality() -> bool:
 	return true
 
 
-func get_tooltip(intensity: int = 0, _duration: int = 0) -> String:
-	return "Stability: %s remaining. Break it to interrupt this unit's action." % intensity
+func get_tooltip(stacks: int = 0) -> String:
+	return "Stability: %s remaining. Break it to interrupt this unit's action." % stacks
 
 
 func get_tooltip_sim(ctx: SimStatusContext) -> String:
 	if ctx == null or !ctx.is_valid():
 		return get_tooltip()
-	return get_tooltip(ctx.get_intensity(), ctx.get_duration())
+	return get_tooltip(ctx.get_stacks())
 
 
 func on_damage_taken(ctx: SimStatusContext, damage_ctx: DamageContext) -> void:
@@ -36,9 +36,9 @@ func on_damage_taken(ctx: SimStatusContext, damage_ctx: DamageContext) -> void:
 	if hp_dmg <= 0:
 		return
 
-	ctx.change_intensity(-hp_dmg, "damage_taken")
+	ctx.change_stacks(-hp_dmg, "damage_taken")
 
-	if ctx.get_intensity() > 0:
+	if ctx.get_stacks() > 0:
 		return
 
 	ctx.ensure_ai_state()

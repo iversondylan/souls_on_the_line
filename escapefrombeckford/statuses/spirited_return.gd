@@ -18,7 +18,7 @@ func on_removal(ctx: SimStatusContext, removal_ctx) -> void:
 	if released_card_uid.is_empty():
 		return
 
-	var amount := maxi(int(ctx.get_intensity()), 0)
+	var amount := maxi(int(ctx.get_stacks()), 0)
 	if amount <= 0:
 		return
 
@@ -34,8 +34,8 @@ func on_removal(ctx: SimStatusContext, removal_ctx) -> void:
 	)
 
 
-func get_tooltip(intensity: int = 0, _duration: int = 0) -> String:
+func get_tooltip(stacks: int = 0) -> String:
 	return "Spirited Return: On Death, if this unit has a summon reserve card, that card gains +%s AP and +%s max health." % [
-		intensity,
-		intensity,
+		stacks,
+		stacks,
 	]

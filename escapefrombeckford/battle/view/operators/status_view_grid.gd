@@ -13,7 +13,7 @@ const ROW_V_SEPARATION := 2
 # lane-key -> StatusDisplay
 var _displays_by_id: Dictionary = {}
 
-# token-key -> Dictionary state {id, pending, token_id, intensity, duration, proto}
+# token-key -> Dictionary state {id, pending, token_id, stacks, proto}
 var _states_by_id: Dictionary = {}
 
 var _rows: Array[HBoxContainer] = []
@@ -77,16 +77,14 @@ func apply_status(order: StatusAppliedOrder) -> void:
 			"id": order.status_id,
 			"pending": bool(order.after_pending),
 			"token_id": int(order.after_token_id),
-			"intensity": maxi(int(order.intensity), 1),
-			"duration": maxi(int(order.turns_duration), 0), # <-- was 1
+			"stacks": maxi(int(order.stacks), 0),
 			"proto": proto,
 		}
 	else:
 		st["id"] = order.status_id
 		st["pending"] = bool(order.after_pending)
 		st["token_id"] = int(order.after_token_id)
-		st["intensity"] = maxi(int(order.intensity), 1)
-		st["duration"] = maxi(int(order.turns_duration), 0) # <-- was 1
+		st["stacks"] = maxi(int(order.stacks), 0)
 		st["proto"] = proto
 
 	_states_by_id[id] = st
@@ -112,15 +110,15 @@ func remove_status(order: StatusRemovedOrder) -> void:
 		return
 
 	var st: Dictionary = _states_by_id[id]
-	var cur := maxi(int(st.get("intensity", 1)), 1)
-	var dec := maxi(int(order.intensity), 1)
+	var cur := maxi(int(st.get("stacks", 0)), 0)
+	var dec := maxi(int(order.stacks), 0)
 	var next := cur - dec
 
 	if next <= 0:
 		_states_by_id.erase(id)
 		_remove_display(id, order.duration)
 	else:
-		st["intensity"] = next
+		st["stacks"] = next
 		_states_by_id[id] = st
 		_add_or_update_display_from_state(st, order.duration)
 
@@ -155,17 +153,15 @@ func _add_or_update_display_from_state(st: Dictionary, _duration: float) -> void
 	if proto == null:
 		return
 
-	var intensity := int(st.get("intensity", 1))
-	var dur := int(st.get("duration", 0))
 	d.set_icon_size(icon_size)
-	d.set_status_state(proto, intensity, dur, pending)
+	d.set_status_state(proto, int(st.get("stacks", 0)), pending)
 
 func _remove_display(id: String, duration: float) -> void:
 	if !_displays_by_id.has(id):
 		return
 	var d: StatusDisplay = _displays_by_id[id]
 	if d != null and is_instance_valid(d):
-		d.set_status_state(d.status, 0, 0, false)
+		d.set_status_state(d.status, 0, false)
 	_displays_by_id.erase(id)
 
 	if d == null or !is_instance_valid(d):

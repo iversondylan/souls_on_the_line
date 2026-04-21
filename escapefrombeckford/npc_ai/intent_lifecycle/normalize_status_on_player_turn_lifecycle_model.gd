@@ -19,20 +19,19 @@ func _normalize_self_status_sim(ctx: NPCAIContext) -> void:
 	if sid == &"":
 		return
 
-	var desired_intensity := maxi(int(intensity), 0)
-	var desired_duration := maxi(int(duration), 0)
+	var desired_stacks := maxi(int(stacks), 0)
 	var desired_pending := bool(pending)
 	var current_token: StatusToken = owner.statuses.get_status_token(sid, desired_pending)
 	var other_token: StatusToken = owner.statuses.get_status_token(sid, !desired_pending)
 	var proto := SimStatusSystem.get_proto(ctx.api, sid)
-	var max_intensity := int(proto.get_max_intensity()) if proto != null else 0
-	if max_intensity > 0:
-		desired_intensity = mini(desired_intensity, max_intensity)
+	var max_stacks := int(proto.get_max_stacks()) if proto != null else 0
+	if max_stacks > 0:
+		desired_stacks = mini(desired_stacks, max_stacks)
 
 	if other_token != null:
 		_remove_status_from_self_sim(ctx, sid, !desired_pending)
 
-	if desired_intensity <= 0:
+	if desired_stacks <= 0:
 		if current_token != null:
 			_remove_status_from_self_sim(ctx, sid, desired_pending)
 		return
@@ -41,18 +40,17 @@ func _normalize_self_status_sim(ctx: NPCAIContext) -> void:
 		_apply_to_self_sim(ctx)
 		return
 
-	var before_i := int(current_token.intensity)
-	var before_d := int(current_token.duration)
-	if before_i == desired_intensity and before_d == desired_duration:
+	var before_stacks := int(current_token.stacks)
+	if before_stacks == desired_stacks:
 		return
 
-	if before_i < desired_intensity and before_d == desired_duration:
+	if before_stacks < desired_stacks:
 		var apply_ctx := StatusContext.new()
 		apply_ctx.source_id = actor_id
 		apply_ctx.target_id = actor_id
 		apply_ctx.status_id = sid
 		apply_ctx.pending = desired_pending
-		apply_ctx.intensity = desired_intensity - before_i
+		apply_ctx.stacks = desired_stacks - before_stacks
 		apply_ctx.reason = "normalize_status_on_player_turn"
 		ctx.api.apply_status(apply_ctx)
 		return

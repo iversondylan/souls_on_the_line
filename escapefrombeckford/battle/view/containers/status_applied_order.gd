@@ -12,5 +12,4 @@ var before_pending: bool = false
 var after_pending: bool = false
 var before_token_id: int = 0
 var after_token_id: int = 0
-var intensity: int = 1
-var turns_duration: int = 0
+var stacks: int = 1

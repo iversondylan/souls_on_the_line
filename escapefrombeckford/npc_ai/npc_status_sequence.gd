@@ -59,8 +59,7 @@ func execute(ctx: NPCAIContext) -> void:
 		return
 
 	var source_id := int(params.get(Keys.SOURCE_ID, actor_id))
-	var intensity := int(params.get(Keys.STATUS_INTENSITY, 0))
-	var duration := int(params.get(Keys.STATUS_DURATION, 0))
+	var stacks := int(params.get(Keys.STATUS_STACKS, 0))
 	var pending := bool(params.get(Keys.STATUS_PENDING, false))
 	var status_ctx := StatusContext.new()
 	status_ctx.actor_id = actor_id
@@ -68,8 +67,7 @@ func execute(ctx: NPCAIContext) -> void:
 	status_ctx.target_id = int(resolved_target_ids[0])
 	status_ctx.target_ids = resolved_target_ids
 	status_ctx.status_id = status_id
-	status_ctx.intensity = intensity
-	status_ctx.duration = duration
+	status_ctx.stacks = stacks
 	status_ctx.pending = pending
 	status_ctx.reason = "npc_status_action"
 	status_ctx.presentation_hint = (

@@ -7,7 +7,6 @@
 [resource]
 script = ExtResource("1_w6qt6")
 status = ExtResource("3_ub2o6")
-intensity = 1
-duration = 2
+stacks = 2
 sound = ExtResource("2_lkasw")
 metadata/_custom_type_script = "uid://wtk5v77fcqvn"

@@ -8,7 +8,7 @@
 script = ExtResource("1_6rwdf")
 fallback_to_source_if_no_targets = true
 status = ExtResource("3_status")
-intensity = 1
+stacks = 1
 sound = ExtResource("2_4kqeb")
 play_sound_on_success = true
 metadata/_custom_type_script = "uid://wtk5v77fcqvn"

@@ -6,7 +6,7 @@
 [resource]
 script = ExtResource("2_adcuq")
 status_name = "Tempered"
-number_display_type = 1
+numerical = true
 reapply_type = 3
 icon = ExtResource("1_3fj7w")
 metadata/_custom_type_script = "uid://dt5n6oivqq012"

@@ -6,6 +6,6 @@
 [resource]
 script = ExtResource("1_vulnerable_script")
 status_name = "Vulnerable"
-number_display_type = 2
-expiration_policy = 0
+numerical = true
+auto_tick_down = 1
 icon = ExtResource("2_vulnerable_icon")

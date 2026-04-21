@@ -462,8 +462,7 @@ func emit_status(
 	target_id: int,
 	status_id: StringName,
 	op: int,
-	intensity: int = 0,
-	duration: int = 0,
+	stacks: int = 0,
 	extra := {},
 ) -> int:
 	
@@ -482,8 +481,7 @@ func emit_status(
 		Keys.TARGET_IDS: PackedInt32Array([int(target_id)]),
 		Keys.STATUS_ID: status_id,
 		Keys.OP: status_op,
-		Keys.INTENSITY: int(intensity),
-		Keys.DURATION: int(duration),
+		Keys.STACKS: int(stacks),
 		Keys.STATUS_PENDING: bool(extra.get(Keys.STATUS_PENDING, false)),
 		Keys.REASON: String(extra.get(Keys.REASON, "")),
 		Keys.STATUS_PRESENTATION_HINT: StringName(extra.get(Keys.STATUS_PRESENTATION_HINT, &"standalone")),
@@ -497,21 +495,19 @@ func emit_status_apply(
 	source_id: int,
 	target_id: int,
 	status_id: StringName,
-	intensity: int,
-	duration: int,
+	stacks: int,
 	extra := {}
 ) -> int:
-	return emit_status(source_id, target_id, status_id, int(Status.OP.APPLY), intensity, duration, extra)
+	return emit_status(source_id, target_id, status_id, int(Status.OP.APPLY), stacks, extra)
 
 func emit_status_change(
 	source_id: int,
 	target_id: int,
 	status_id: StringName,
-	delta_intensity: int,
-	delta_duration: int,
+	delta_stacks: int,
 	extra := {}
 ) -> int:
-	return emit_status(source_id, target_id, status_id, int(Status.OP.CHANGE), delta_intensity, delta_duration, extra)
+	return emit_status(source_id, target_id, status_id, int(Status.OP.CHANGE), delta_stacks, extra)
 
 func emit_status_remove(
 	source_id: int,

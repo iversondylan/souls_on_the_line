@@ -6,6 +6,5 @@
 [resource]
 script = ExtResource("1_status_model")
 status = ExtResource("2_despair")
-intensity = 3
-duration = 0
+stacks = 3
 metadata/_custom_type_script = "uid://cccygrstrra8t"

@@ -6,6 +6,7 @@
 [resource]
 script = ExtResource("1_heavy_attack_script")
 status_name = "Heavy Attack"
+numerical = false
 reapply_type = 3
 icon = ExtResource("1_c23fj")
 tooltip = "Excess damage chains through the next combatants."

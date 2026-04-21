@@ -7,4 +7,4 @@
 script = ExtResource("1_0xr5x")
 status = ExtResource("2_t3sgm")
 status_id = &"stability"
-intensity = 3
+stacks = 3

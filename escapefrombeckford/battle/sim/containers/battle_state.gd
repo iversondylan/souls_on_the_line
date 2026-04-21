@@ -337,10 +337,9 @@ func _debug_status_summary(unit: CombatantState) -> String:
 	for token: StatusToken in unit.statuses.get_all_tokens(true):
 		if token == null:
 			continue
-		parts.append("%s(i=%d,d=%d)" % [
+		parts.append("%s(stk=%d)" % [
 			("%s[p]" % String(token.id)) if bool(token.pending) else String(token.id),
-			int(token.intensity),
-			int(token.duration),
+			int(token.stacks),
 		])
 
 	parts.sort()

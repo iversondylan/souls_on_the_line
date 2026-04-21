@@ -14,7 +14,8 @@ static func on_group_turn_begin(api: SimBattleAPI, group_index: int) -> void:
 		if interceptor != null:
 			interceptor.dispatch(api, int(group_index))
 
-	_expire_by_policy(api, group_index, Status.ExpirationPolicy.GROUP_TURN_START)
+	_auto_remove_for_group(api, group_index, Status.AutoRemove.GROUP_TURN_START)
+	_tick_down_for_group(api, group_index, Status.AutoTickDown.GROUP_TURN_START)
 
 static func on_group_turn_end(api: SimBattleAPI, group_index: int) -> void:
 	if api == null or api.state == null or api.state.has_terminal_outcome():
@@ -24,7 +25,8 @@ static func on_group_turn_end(api: SimBattleAPI, group_index: int) -> void:
 		if interceptor != null:
 			interceptor.dispatch(api, int(group_index))
 
-	_expire_by_policy(api, group_index, Status.ExpirationPolicy.GROUP_TURN_END)
+	_auto_remove_for_group(api, group_index, Status.AutoRemove.GROUP_TURN_END)
+	_tick_down_for_group(api, group_index, Status.AutoTickDown.GROUP_TURN_END)
 
 static func on_actor_turn_begin(api: SimBattleAPI, actor_id: int) -> void:
 	if api == null or api.state == null or api.state.has_terminal_outcome():
@@ -45,7 +47,8 @@ static func on_player_turn_begin(api: SimBattleAPI, player_id: int) -> void:
 		if interceptor != null:
 			interceptor.dispatch(api, int(player_id))
 
-	_expire_all_by_policy(api, Status.ExpirationPolicy.PLAYER_TURN_START)
+	_auto_remove_all(api, Status.AutoRemove.PLAYER_TURN_START)
+	_tick_down_all(api, Status.AutoTickDown.PLAYER_TURN_START)
 
 static func on_draw_context(_api: SimBattleAPI, _ctx: DrawContext) -> void:
 	return
@@ -62,7 +65,7 @@ static func on_actor_turn_end(api: SimBattleAPI, actor_id: int) -> void:
 			ctx.proto.on_actor_turn_end(ctx)
 	)
 
-	_tick_duration_statuses_for_owner_turn_end(api, actor_id)
+	_tick_down_for_actor_turn_end(api, actor_id)
 
 static func on_damage_taken(api: SimBattleAPI, damage_ctx: DamageContext) -> void:
 	if api == null or api.state == null or damage_ctx == null or api.state.has_terminal_outcome():
@@ -325,7 +328,7 @@ static func realize_pending_statuses(
 
 	for status_id in pending_ids:
 		var proto := get_proto(api, status_id)
-		var status_max_intensity := int(proto.get_max_intensity()) if proto != null else 0
+		var status_max_stacks := int(proto.get_max_stacks()) if proto != null else 0
 
 		var ctx := StatusContext.new()
 		ctx.actor_id = int(target_id)
@@ -335,7 +338,7 @@ static func realize_pending_statuses(
 		ctx.pending = true
 		ctx.reason = reason
 
-		var mutation := u.statuses.realize_pending_ctx(ctx, status_max_intensity)
+		var mutation := u.statuses.realize_pending_ctx(ctx, status_max_stacks)
 		mutation.apply_to_status_context(ctx)
 		if !mutation.changed:
 			continue
@@ -348,20 +351,16 @@ static func realize_pending_statuses(
 				int(ctx.target_id),
 				ctx.status_id,
 				int(ctx.op),
-				int(ctx.intensity),
-				int(ctx.duration),
+				int(ctx.stacks),
 				{
 					Keys.STATUS_PENDING: bool(ctx.after_pending),
-					Keys.DELTA_INTENSITY: int(ctx.delta_intensity),
-					Keys.DELTA_DURATION: int(ctx.delta_duration),
+					Keys.DELTA_STACKS: int(ctx.delta_stacks),
 					Keys.BEFORE_PENDING: bool(ctx.before_pending),
 					Keys.AFTER_PENDING: bool(ctx.after_pending),
 					Keys.BEFORE_TOKEN_ID: int(ctx.before_token_id),
 					Keys.AFTER_TOKEN_ID: int(ctx.after_token_id),
-					Keys.BEFORE_INTENSITY: int(ctx.before_intensity),
-					Keys.BEFORE_DURATION: int(ctx.before_duration),
-					Keys.AFTER_INTENSITY: int(ctx.after_intensity),
-					Keys.AFTER_DURATION: int(ctx.after_duration),
+					Keys.BEFORE_STACKS: int(ctx.before_stacks),
+					Keys.AFTER_STACKS: int(ctx.after_stacks),
 					Keys.REASON: String(reason),
 				}
 			)
@@ -541,7 +540,7 @@ static func _merge_owned_and_projected_contexts(
 		if ctx == null or !ctx.is_valid() or ctx.proto == null:
 			continue
 		var key := _make_effective_status_merge_key(ctx.get_status_id(), ctx.is_pending())
-		projected_totals_by_key[key] = int(projected_totals_by_key.get(key, 0)) + int(ctx.get_intensity())
+		projected_totals_by_key[key] = int(projected_totals_by_key.get(key, 0)) + int(ctx.get_stacks())
 
 	if projected_totals_by_key.is_empty():
 		var passthrough: Array[SimStatusContext] = []
@@ -722,13 +721,9 @@ static func _append_status_aura_projected_tokens(
 	var aura_token := source.statuses.get_status_token_by_token_id(int(record.source_instance_id), true)
 	if aura_token == null or StringName(aura_token.id) != aura_status_id:
 		return
-	if int(aura_proto.expiration_policy) == int(Status.ExpirationPolicy.DURATION) and int(aura_token.duration) <= 0:
-		return
+	var aura_stacks := maxi(int(aura_token.stacks), 0)
 
-	var total_intensity := maxi(int(aura_token.intensity), 0)
-	var max_duration := int(aura_token.duration)
-
-	if total_intensity <= 0:
+	if aura_stacks <= 0 and bool(aura_proto.numerical):
 		return
 
 	for projected_proto: Status in aura_proto.get_projected_statuses():
@@ -738,8 +733,7 @@ static func _append_status_aura_projected_tokens(
 		# projected result as a single non-pending token.
 		var projected_token := StatusToken.new(StringName(projected_proto.get_id()))
 		projected_token.pending = false
-		projected_token.intensity = total_intensity
-		projected_token.duration = max_duration
+		projected_token.stacks = aura_stacks
 		out.append(projected_token)
 
 static func _append_arcanum_projected_tokens(
@@ -776,21 +770,15 @@ static func _append_arcanum_projected_tokens(
 
 	var projection_intensity := maxi(int(arcanum_proto.get_projection_intensity(arcanum_ctx)), 0)
 	var projection_duration := maxi(int(arcanum_proto.get_projection_duration(arcanum_ctx)), 0)
-	if projection_intensity <= 0:
-		return
 
 	for projected_proto: Status in arcanum_proto.get_projected_statuses():
 		if projected_proto == null:
 			continue
-		if (
-			int(projected_proto.expiration_policy) == int(Status.ExpirationPolicy.DURATION)
-			and projection_duration <= 0
-		):
-			continue
 		var projected_token := StatusToken.new(StringName(projected_proto.get_id()))
 		projected_token.pending = false
-		projected_token.intensity = projection_intensity
-		projected_token.duration = projection_duration
+		projected_token.stacks = _resolve_projected_stacks(projected_proto, projection_intensity, projection_duration)
+		if projected_proto != null and bool(projected_proto.numerical) and int(projected_token.stacks) <= 0:
+			continue
 		out.append(projected_token)
 
 static func _make_effective_status_merge_key(status_id: StringName, pending: bool) -> String:
@@ -801,27 +789,32 @@ static func _make_effective_status_merge_key(status_id: StringName, pending: boo
 # Generic expiration / ticking
 # -------------------------------------------------------------------
 
-static func _expire_by_policy(api: SimBattleAPI, group_index: int, policy: int) -> void:
+static func _resolve_projected_stacks(projected_proto: Status, projection_intensity: int, projection_duration: int) -> int:
+	if projected_proto == null:
+		return 0
+	if int(projected_proto.auto_tick_down) != int(Status.AutoTickDown.NEVER):
+		return projection_duration
+	if !bool(projected_proto.numerical):
+		return 1 if projection_intensity > 0 or projection_duration > 0 else 0
+	return projection_intensity
+
+static func _auto_remove_for_group(api: SimBattleAPI, group_index: int, policy: int) -> void:
 	var ids := api.get_combatants_in_group(group_index, true)
 	for cid in ids:
-		_expire_unit_by_policy(api, int(cid), policy)
+		_auto_remove_unit(api, int(cid), policy)
 
-static func _expire_all_by_policy(api: SimBattleAPI, policy: int) -> void:
+static func _auto_remove_all(api: SimBattleAPI, policy: int) -> void:
 	if api == null or api.state == null:
 		return
-
 	for group_index in [SimBattleAPI.FRIENDLY, SimBattleAPI.ENEMY]:
-		_expire_by_policy(api, int(group_index), policy)
+		_auto_remove_for_group(api, int(group_index), policy)
 
-static func _expire_unit_by_policy(api: SimBattleAPI, cid: int, policy: int) -> void:
+static func _auto_remove_unit(api: SimBattleAPI, cid: int, policy: int) -> void:
 	var u: CombatantState = api.state.get_unit(cid)
-	if u == null:
-		return
-	if u.statuses.by_id.is_empty():
+	if u == null or u.statuses.by_id.is_empty():
 		return
 
 	var to_remove: Array[Dictionary] = []
-
 	for token: StatusToken in u.statuses.get_all_tokens(true):
 		if token == null:
 			continue
@@ -829,7 +822,7 @@ static func _expire_unit_by_policy(api: SimBattleAPI, cid: int, policy: int) -> 
 		var proto := get_proto(api, sid)
 		if proto == null:
 			continue
-		if int(proto.expiration_policy) == policy:
+		if int(proto.auto_remove) == policy:
 			to_remove.append({
 				"status_id": sid,
 				"pending": bool(token.pending),
@@ -843,86 +836,77 @@ static func _expire_unit_by_policy(api: SimBattleAPI, cid: int, policy: int) -> 
 		rc.pending = bool(item.pending)
 		api.remove_status(rc)
 
-static func _tick_duration_statuses_for_owner_turn_end(api: SimBattleAPI, actor_id: int) -> void:
-	var u: CombatantState = api.state.get_unit(actor_id)
-	if u == null:
+static func _tick_down_for_actor_turn_end(api: SimBattleAPI, actor_id: int) -> void:
+	_tick_down_unit(api, actor_id, Status.AutoTickDown.ACTOR_TURN_END, "auto_tick_down")
+
+static func _tick_down_for_group(api: SimBattleAPI, group_index: int, policy: int) -> void:
+	var ids := api.get_combatants_in_group(group_index, true)
+	for cid in ids:
+		_tick_down_unit(api, int(cid), policy, "auto_tick_down")
+
+static func _tick_down_all(api: SimBattleAPI, policy: int) -> void:
+	if api == null or api.state == null:
 		return
-	if u.statuses.by_id.is_empty():
+	for group_index in [SimBattleAPI.FRIENDLY, SimBattleAPI.ENEMY]:
+		_tick_down_for_group(api, int(group_index), policy)
+
+static func _tick_down_unit(api: SimBattleAPI, owner_id: int, policy: int, reason: String) -> void:
+	var u: CombatantState = api.state.get_unit(owner_id)
+	if u == null or u.statuses.by_id.is_empty():
 		return
 
 	var changed: Array[Dictionary] = []
-	var expired: Array[Dictionary] = []
+	var removed: Array[Dictionary] = []
 
 	for token: StatusToken in u.statuses.get_all_tokens(true):
 		if token == null:
 			continue
-
 		var sid := StringName(token.id)
 		var proto := get_proto(api, sid)
 		if proto == null:
 			continue
-
-		if int(proto.expiration_policy) != Status.ExpirationPolicy.DURATION:
+		if int(proto.auto_tick_down) != policy:
 			continue
 
-		var before_i := int(token.intensity)
-		var before_d := int(token.duration)
+		var before_stacks := int(token.stacks)
 		var pending := bool(token.pending)
+		var after_stacks := before_stacks - 1
+		u.statuses.set_token(sid, after_stacks, pending)
 
-		if before_d <= 0:
-			expired.append({
-				"sid": StringName(sid),
-				"pending": pending,
-			})
-			continue
-
-		var after_d := before_d - 1
-		u.statuses.set_token(sid, before_i, after_d, pending)
-
-		if after_d <= 0:
-			expired.append({
-				"sid": StringName(sid),
-				"pending": pending,
-			})
+		if bool(proto.numerical) and after_stacks <= 0:
+			removed.append({"sid": sid, "pending": pending})
 		else:
 			changed.append({
-				"sid": StringName(sid),
+				"sid": sid,
 				"pending": pending,
-				"before_intensity": before_i,
-				"before_duration": before_d,
-				"after_intensity": before_i,
-				"after_duration": after_d,
-				"delta_intensity": 0,
-				"delta_duration": -1,
+				"before_stacks": before_stacks,
+				"after_stacks": after_stacks,
+				"delta_stacks": -1,
 			})
 
 	if api.writer != null:
 		for item in changed:
 			api.writer.emit_status(
-				actor_id,
-				actor_id,
+				owner_id,
+				owner_id,
 				item.sid,
 				int(Status.OP.CHANGE),
-				int(item.delta_intensity),
-				int(item.delta_duration),
+				int(item.delta_stacks),
 				{
 					Keys.STATUS_PENDING: bool(item.pending),
 					Keys.BEFORE_PENDING: bool(item.pending),
 					Keys.AFTER_PENDING: bool(item.pending),
-					Keys.BEFORE_INTENSITY: int(item.before_intensity),
-					Keys.BEFORE_DURATION: int(item.before_duration),
-					Keys.AFTER_INTENSITY: int(item.after_intensity),
-					Keys.AFTER_DURATION: int(item.after_duration),
-					Keys.DELTA_INTENSITY: int(item.delta_intensity),
-					Keys.DELTA_DURATION: int(item.delta_duration),
-					Keys.REASON: "duration_tick",
+					Keys.BEFORE_STACKS: int(item.before_stacks),
+					Keys.AFTER_STACKS: int(item.after_stacks),
+					Keys.DELTA_STACKS: int(item.delta_stacks),
+					Keys.REASON: reason,
 				}
 			)
 
-	for item in expired:
+	for item in removed:
 		var rc := StatusContext.new()
-		rc.source_id = actor_id
-		rc.target_id = actor_id
+		rc.source_id = owner_id
+		rc.target_id = owner_id
 		rc.status_id = StringName(item.sid)
 		rc.pending = bool(item.pending)
 		api.remove_status(rc)

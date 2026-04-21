@@ -7,7 +7,7 @@
 [resource]
 script = ExtResource("1_action")
 status = ExtResource("3_status")
-intensity = 2
+stacks = 2
 sound = ExtResource("2_sound")
 play_sound_on_success = true
 metadata/_custom_type_script = "uid://bnww04vabnac4"

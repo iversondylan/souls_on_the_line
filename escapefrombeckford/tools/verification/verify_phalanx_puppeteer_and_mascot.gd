@@ -80,7 +80,7 @@ func _verify_phalanx_behavior() -> bool:
 	var phalanx := host.get_main_state().get_unit(phalanx_id)
 	_assert(phalanx != null, "phalanx should exist")
 	_assert_equal(phalanx.health, 4, "first strike is not reduced")
-	_assert_equal(api.get_status_intensity(phalanx_id, BOLSTERED.get_id()), 50, "phalanx gains bolstered after first strike")
+	_assert_equal(api.get_status_stacks(phalanx_id, BOLSTERED.get_id()), 50, "phalanx gains bolstered after first strike")
 	_assert(!api.has_status(phalanx_id, PHALANX_GUARD.get_id()), "phalanx guard is consumed after triggering")
 
 	_run_attack(api, enemy_id, 4)
@@ -89,15 +89,15 @@ func _verify_phalanx_behavior() -> bool:
 	SimStatusSystem.on_group_turn_begin(api, SimBattleAPI.FRIENDLY)
 	SimStatusSystem.on_player_turn_begin(api, player_id)
 	ActionLifecycleSystem.on_player_turn_begin(api, player_id)
-	_assert_equal(api.get_status_intensity(phalanx_id, FULL_FORTITUDE.get_id()), 2, "phalanx gains full fortitude at round end boundary")
+	_assert_equal(api.get_status_stacks(phalanx_id, FULL_FORTITUDE.get_id()), 2, "phalanx gains full fortitude at round end boundary")
 	_assert_equal(phalanx.max_health, 10, "phalanx gains max health from full fortitude")
 	_assert_equal(phalanx.health, 4, "phalanx gains full health with the fortitude")
-	_assert_equal(api.get_status_intensity(phalanx_id, PHALANX_GUARD.get_id()), 1, "phalanx guard rearms on player turn start")
-	_assert_equal(api.get_status_intensity(phalanx_id, BOLSTERED.get_id()), 0, "bolstered clears on the next round boundary")
+	_assert_equal(api.get_status_stacks(phalanx_id, PHALANX_GUARD.get_id()), 1, "phalanx guard rearms on player turn start")
+	_assert_equal(api.get_status_stacks(phalanx_id, BOLSTERED.get_id()), 0, "bolstered clears on the next round boundary")
 
 	SimStatusSystem.on_group_turn_begin(api, SimBattleAPI.FRIENDLY)
 	SimStatusSystem.on_player_turn_begin(api, player_id)
-	_assert_equal(api.get_status_intensity(phalanx_id, FULL_FORTITUDE.get_id()), 4, "phalanx gains another full fortitude stack next round")
+	_assert_equal(api.get_status_stacks(phalanx_id, FULL_FORTITUDE.get_id()), 4, "phalanx gains another full fortitude stack next round")
 	return true
 
 func _verify_crone_puppeteer_behavior() -> bool:
@@ -156,9 +156,9 @@ func _verify_smoldering_mascot_behavior() -> bool:
 	_assert_equal(ally.health, 5, "friendly ally takes 1 unmodified friendly-fire damage")
 	_assert_equal(player.health, 19, "player takes 1 unmodified friendly-fire damage")
 	_assert_equal(mascot.health, 2, "mascot takes 1 unmodified self damage")
-	_assert_equal(api.get_status_intensity(ally_id, AMPLIFY.get_id()), 1, "friendly ally gains amplify")
-	_assert_equal(api.get_status_intensity(player_id, AMPLIFY.get_id()), 1, "player gains amplify")
-	_assert_equal(api.get_status_intensity(mascot_id, AMPLIFY.get_id()), 1, "mascot gains amplify")
+	_assert_equal(api.get_status_stacks(ally_id, AMPLIFY.get_id()), 1, "friendly ally gains amplify")
+	_assert_equal(api.get_status_stacks(player_id, AMPLIFY.get_id()), 1, "player gains amplify")
+	_assert_equal(api.get_status_stacks(mascot_id, AMPLIFY.get_id()), 1, "mascot gains amplify")
 	_assert_equal(enemy_a.health, 7, "enemy hit uses normal modifiers after amplify")
 	_assert_equal(enemy_b.health, 7, "all enemies are hit after amplify")
 
@@ -221,13 +221,13 @@ func _make_unit_data(unit_name: String, health: int, ap: int = 0, ai_profile: NP
 	data.ai = ai_profile
 	return data
 
-func _apply_status(api: SimBattleAPI, target_id: int, status_id: StringName, intensity: int, duration: int = 0) -> void:
+func _apply_status(api: SimBattleAPI, target_id: int, status_id: StringName, stacks: int, duration: int = 0) -> void:
 	var ctx := StatusContext.new()
 	ctx.source_id = target_id
 	ctx.target_id = target_id
 	ctx.status_id = status_id
-	ctx.intensity = intensity
-	ctx.duration = duration
+	ctx.stacks = stacks
+	ctx.stacks = duration
 	api.apply_status(ctx)
 
 func _run_attack(api: SimBattleAPI, attacker_id: int, damage: int) -> void:

@@ -15,7 +15,7 @@ state_key = &"commendation_target"
 [sub_resource type="Resource" id="CommendationAbsorbStatus"]
 script = ExtResource("4_status_model_script")
 status = ExtResource("6_absorb")
-duration = 0
+stacks = 0
 
 [resource]
 script = ExtResource("3_pkg")

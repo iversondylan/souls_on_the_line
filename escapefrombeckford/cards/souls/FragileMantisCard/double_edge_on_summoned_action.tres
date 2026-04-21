@@ -6,5 +6,5 @@
 [resource]
 script = ExtResource("1_apply_status_to_summoned")
 status = ExtResource("2_double_edge_status")
-intensity = 4
+stacks = 4
 metadata/_custom_type_script = "uid://wtk5v77fcqvn"

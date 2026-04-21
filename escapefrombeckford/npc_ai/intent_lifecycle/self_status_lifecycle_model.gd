@@ -4,8 +4,7 @@ extends IntentLifecycleModel
 
 @export var status: Status
 @export var status_id: StringName
-@export var intensity := 0
-@export var duration := 0
+@export var stacks := 0
 @export var pending: bool = false
 
 func _status_id() -> StringName:
@@ -31,8 +30,7 @@ func _apply_to_self_sim(ctx: NPCAIContext) -> void:
 	sc.source_id = actor_id
 	sc.target_id = actor_id
 	sc.status_id = _status_id()
-	sc.duration = duration
-	sc.intensity = intensity
+	sc.stacks = stacks
 	sc.pending = bool(pending)
 	ctx.api.apply_status(sc)
 

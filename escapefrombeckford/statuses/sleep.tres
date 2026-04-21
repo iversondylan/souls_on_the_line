@@ -6,7 +6,7 @@
 [resource]
 script = ExtResource("1_sleep_script")
 status_name = "Sleep"
-number_display_type = 2
+numerical = true
+auto_tick_down = 1
 reapply_type = 1
-expiration_policy = 0
 icon = ExtResource("1_t2tmk")

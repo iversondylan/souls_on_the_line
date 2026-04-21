@@ -8,8 +8,7 @@ class_name StatusDisplay extends Control
 @onready var stacks: Label = $Stacks
 
 var _icon_size: float = 50.0
-var intensity: int = 0
-var turns_duration: int = 0
+var stacks_count: int = 0
 var pending: bool = false
 var status_parent: CombatantView : set = _set_status_parent
 var _pending_tween: Tween = null
@@ -36,10 +35,9 @@ func set_icon_size(new_icon_size: float) -> void:
 	_apply_icon_layout()
 	_refresh_display()
 
-func set_status_state(new_status: Status, new_intensity: int, new_duration: int, new_pending := false) -> void:
+func set_status_state(new_status: Status, new_stacks: int, new_pending := false) -> void:
 	status = new_status
-	intensity = maxi(int(new_intensity), 0)
-	turns_duration = maxi(int(new_duration), 0)
+	stacks_count = maxi(int(new_stacks), 0)
 	pending = bool(new_pending)
 	if !is_node_ready():
 		return
@@ -56,12 +54,9 @@ func _refresh_display() -> void:
 		return
 
 	icon.texture = status.icon
-	stacks.visible = status.number_display_type != Status.NumberDisplayType.NONE
-
-	if status.number_display_type == Status.NumberDisplayType.DURATION:
-		stacks.text = str(turns_duration)
-	elif status.number_display_type == Status.NumberDisplayType.INTENSITY:
-		stacks.text = str(intensity)
+	stacks.visible = bool(status.numerical)
+	if stacks.visible:
+		stacks.text = str(stacks_count)
 
 	_position_stacks()
 
@@ -122,6 +117,6 @@ func _build_tooltip_request() -> TooltipRequest:
 	request.anchor_control = self
 	request.anchor_rect = get_global_rect()
 	request.icon_uid = status.icon.resource_path if status.icon != null else ""
-	request.text_bbcode = status.get_tooltip(intensity, turns_duration)
+	request.text_bbcode = status.get_tooltip(stacks_count)
 	request.preferred_side = TooltipRequest.PreferredSide.ABOVE
 	return request

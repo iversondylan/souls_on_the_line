@@ -6,6 +6,6 @@
 [resource]
 script = ExtResource("1_lifecycle")
 status = ExtResource("2_status")
-intensity = 1
+stacks = 1
 pending = true
 metadata/_custom_type_script = "uid://dbd3fjfn7d3ah"

@@ -17,7 +17,7 @@ func on_strike_resolved(
 	if ctx == null or !ctx.is_valid() or ctx.api == null:
 		return
 
-	var amount := maxi(int(ctx.get_intensity()), 0)
+	var amount := maxi(int(ctx.get_stacks()), 0)
 	if amount <= 0:
 		return
 
@@ -25,10 +25,10 @@ func on_strike_resolved(
 	status_ctx.source_id = int(ctx.owner_id)
 	status_ctx.target_id = int(ctx.owner_id)
 	status_ctx.status_id = SPIRITED_RETURN_STATUS.get_id()
-	status_ctx.intensity = amount
+	status_ctx.stacks = amount
 	status_ctx.reason = "fighters_spirit"
 	ctx.api.apply_status(status_ctx)
 
 
-func get_tooltip(intensity: int = 0, _duration: int = 0) -> String:
-	return "Fighter's Spirit: whenever this unit strikes, gain %s Spirited Return." % intensity
+func get_tooltip(stacks: int = 0) -> String:
+	return "Fighter's Spirit: whenever this unit strikes, gain %s Spirited Return." % stacks

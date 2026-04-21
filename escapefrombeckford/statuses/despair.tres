@@ -6,6 +6,6 @@
 [resource]
 script = ExtResource("2_despair")
 status_name = "Despair"
-number_display_type = 1
+numerical = true
 icon = ExtResource("1_ivq05")
 metadata/_custom_type_script = "uid://cueedkb1u8vxy"

@@ -6,6 +6,6 @@
 [resource]
 script = ExtResource("2_8h1dg")
 status_name = "Bequeath"
-number_display_type = 1
+numerical = true
 icon = ExtResource("1_rbers")
 tooltip = "On Death, Draw cards."

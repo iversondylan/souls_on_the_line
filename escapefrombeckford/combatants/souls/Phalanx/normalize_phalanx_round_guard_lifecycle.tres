@@ -5,4 +5,4 @@
 [resource]
 script = ExtResource("1_script")
 status_id = &"phalanx_round_guard"
-intensity = 1
+stacks = 1

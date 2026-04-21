@@ -6,4 +6,4 @@
 [resource]
 script = ExtResource("1_ksvc5")
 status = ExtResource("2_fg7of")
-intensity = 4
+stacks = 4

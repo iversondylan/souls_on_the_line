@@ -9,7 +9,7 @@
 script = ExtResource("2_hvh50")
 projected_statuses = Array[ExtResource("2_status")]([ExtResource("3_departure")])
 status_name = "Burning Ambition"
-number_display_type = 1
+numerical = true
 icon = ExtResource("1_hn6ng")
 tooltip = "Other allies gain On Death, deal damage to all enemies."
 metadata/_custom_type_script = "uid://cueedkb1u8vxy"

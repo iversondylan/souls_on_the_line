@@ -271,7 +271,7 @@ func has_status(combat_id: int, status_id: StringName) -> bool:
 	return u.statuses.has_any(status_id)
 
 
-func get_status_intensity(combat_id: int, status_id: StringName) -> int:
+func get_status_stacks(combat_id: int, status_id: StringName) -> int:
 	if state == null:
 		return -1
 
@@ -284,7 +284,7 @@ func get_status_intensity(combat_id: int, status_id: StringName) -> int:
 	for token: StatusToken in u.statuses.get_all_tokens(true):
 		if token == null or StringName(token.id) != status_id:
 			continue
-		total += int(token.intensity)
+		total += int(token.stacks)
 		found = true
 	if !found:
 		return -1
@@ -1210,12 +1210,12 @@ func apply_status(ctx: StatusContext) -> void:
 
 	var proto := SimStatusSystem.get_proto(self, ctx.status_id)
 	
-	if int(ctx.intensity) == 0:
-		ctx.intensity = 1
+	if int(ctx.stacks) == 0:
+		ctx.stacks = 1
 	
 	var mutation := u.statuses.add_or_reapply_ctx(
 		ctx,
-		int(proto.get_max_intensity()) if proto != null else 0,
+		int(proto.get_max_stacks()) if proto != null else 0,
 		Callable(state, "alloc_status_token_id")
 	)
 	mutation.apply_to_status_context(ctx)
@@ -1229,25 +1229,21 @@ func apply_status(ctx: StatusContext) -> void:
 			int(ctx.target_id),
 			ctx.status_id,
 			int(ctx.op),
-			int(ctx.intensity),
-			int(ctx.duration),
-				{
-					Keys.STATUS_PENDING: bool(ctx.pending),
-					Keys.REASON: String(ctx.reason),
-					Keys.TARGET_IDS: PackedInt32Array([int(ctx.target_id)]),
-					Keys.STATUS_PRESENTATION_HINT: ctx.presentation_hint,
-					Keys.DELTA_INTENSITY: int(ctx.delta_intensity),
-					Keys.DELTA_DURATION: int(ctx.delta_duration),
-					Keys.BEFORE_PENDING: bool(ctx.before_pending),
-					Keys.AFTER_PENDING: bool(ctx.after_pending),
-					Keys.BEFORE_TOKEN_ID: int(ctx.before_token_id),
-					Keys.AFTER_TOKEN_ID: int(ctx.after_token_id),
-					Keys.BEFORE_INTENSITY: int(ctx.before_intensity),
-					Keys.BEFORE_DURATION: int(ctx.before_duration),
-					Keys.AFTER_INTENSITY: int(ctx.after_intensity),
-					Keys.AFTER_DURATION: int(ctx.after_duration),
-				}
-			)
+			int(ctx.stacks),
+			{
+				Keys.STATUS_PENDING: bool(ctx.pending),
+				Keys.REASON: String(ctx.reason),
+				Keys.TARGET_IDS: PackedInt32Array([int(ctx.target_id)]),
+				Keys.STATUS_PRESENTATION_HINT: ctx.presentation_hint,
+				Keys.DELTA_STACKS: int(ctx.delta_stacks),
+				Keys.BEFORE_PENDING: bool(ctx.before_pending),
+				Keys.AFTER_PENDING: bool(ctx.after_pending),
+				Keys.BEFORE_TOKEN_ID: int(ctx.before_token_id),
+				Keys.AFTER_TOKEN_ID: int(ctx.after_token_id),
+				Keys.BEFORE_STACKS: int(ctx.before_stacks),
+				Keys.AFTER_STACKS: int(ctx.after_stacks),
+			}
+		)
 
 	if !changed and !first_apply:
 		# No effective mutation means no projection, status-hook, or intent side effects.
@@ -1296,8 +1292,7 @@ func remove_status(ctx: StatusContext) -> void:
 	
 	var proto := SimStatusSystem.get_proto(self, ctx.status_id)
 	
-	var before_i := int(old_token.intensity)
-	var before_d := int(old_token.duration)
+	var before_stacks := int(old_token.stacks)
 	
 	var status_ctx := SimStatusSystem.make_context(self, int(ctx.target_id), old_token)
 	var mutation := u.statuses.remove_ctx(ctx)
@@ -1314,21 +1309,17 @@ func remove_status(ctx: StatusContext) -> void:
 			int(ctx.source_id),
 			int(ctx.target_id),
 			ctx.status_id,
-				int(Status.OP.REMOVE),
-				0,
-				0,
-				{
-					Keys.STATUS_PENDING: bool(ctx.pending),
-					Keys.BEFORE_PENDING: bool(ctx.before_pending),
-					Keys.AFTER_PENDING: bool(ctx.after_pending),
-					Keys.BEFORE_TOKEN_ID: int(ctx.before_token_id),
-					Keys.AFTER_TOKEN_ID: int(ctx.after_token_id),
-					Keys.BEFORE_INTENSITY: before_i,
-					Keys.BEFORE_DURATION: before_d,
-					Keys.AFTER_INTENSITY: 0,
-					Keys.AFTER_DURATION: 0,
-					Keys.DELTA_INTENSITY: -before_i,
-				Keys.DELTA_DURATION: -before_d,
+			int(Status.OP.REMOVE),
+			0,
+			{
+				Keys.STATUS_PENDING: bool(ctx.pending),
+				Keys.BEFORE_PENDING: bool(ctx.before_pending),
+				Keys.AFTER_PENDING: bool(ctx.after_pending),
+				Keys.BEFORE_TOKEN_ID: int(ctx.before_token_id),
+				Keys.AFTER_TOKEN_ID: int(ctx.after_token_id),
+				Keys.BEFORE_STACKS: before_stacks,
+				Keys.AFTER_STACKS: 0,
+				Keys.DELTA_STACKS: -before_stacks,
 			}
 		)
 	

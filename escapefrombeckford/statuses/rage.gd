@@ -21,7 +21,7 @@ func get_modifier_tokens(ctx: StatusTokenContext) -> Array[ModifierToken]:
 
 	var token := ModifierToken.new()
 	token.type = Modifier.Type.DMG_DEALT
-	token.flat_value = int(ctx.intensity)
+	token.flat_value = int(ctx.stacks)
 	token.mult_value = 0.0
 	token.source_id = ID
 	token.scope = ModifierToken.ModScope.SELF
@@ -37,5 +37,5 @@ func on_actor_turn_end(ctx: SimStatusContext) -> void:
 	ctx.remove_self("rage_turn_end")
 
 
-func get_tooltip(intensity: int = 0, _duration: int = 0) -> String:
-	return "Rage: deal +%s damage this turn." % intensity
+func get_tooltip(stacks: int = 0) -> String:
+	return "Rage: deal +%s damage this turn." % stacks

@@ -58,12 +58,12 @@ func on_targeting_retarget(ctx: SimStatusContext, targeting_ctx: TargetingContex
 	targeting_ctx.redirect_target_id = owner_id
 	targeting_ctx.working_target_ids = [owner_id]
 
-func get_tooltip(_intensity: int = 0, duration: int = 0) -> String:
-	if duration == 1:
+func get_tooltip(stacks: int = 0) -> String:
+	if stacks == 1:
 		return "Marked: ranged attacks prioritize this target for 1 turn."
-	return "Marked: ranged attacks prioritize this target for %s turns." % duration
+	return "Marked: ranged attacks prioritize this target for %s turns." % stacks
 
 func get_tooltip_sim(ctx: SimStatusContext) -> String:
 	if ctx == null or !ctx.is_valid():
 		return get_tooltip()
-	return get_tooltip(ctx.get_intensity(), ctx.get_duration())
+	return get_tooltip(ctx.get_stacks())

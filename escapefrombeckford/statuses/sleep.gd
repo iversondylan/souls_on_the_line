@@ -14,9 +14,9 @@ func should_skip_npc_action(ctx: SimStatusContext) -> bool:
 		return false
 	if int(ctx.owner_id) == int(ctx.api.get_player_id()):
 		return false
-	return int(ctx.get_duration()) > 0
+	return int(ctx.get_stacks()) > 0
 
-func get_tooltip(_intensity: int = 0, duration: int = 0) -> String:
-	if duration == 1:
+func get_tooltip(stacks: int = 0) -> String:
+	if stacks == 1:
 		return "Sleep: this NPC skips its next action. No effect on the player."
-	return "Sleep: this NPC skips actions for %s turns. No effect on the player." % duration
+	return "Sleep: this NPC skips actions for %s turns. No effect on the player." % stacks
