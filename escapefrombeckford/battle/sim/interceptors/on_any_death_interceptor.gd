@@ -31,8 +31,8 @@ func clone():
 			priority
 		)
 
-
-func dispatch(api, removal_ctx: RemovalContext) -> void:
+# variant arguments here bugs me
+func dispatch(api, removal_ctx = null) -> void:
 	if api == null or removal_ctx == null or !is_valid():
 		return
 	api._dispatch_interceptor(self, removal_ctx)

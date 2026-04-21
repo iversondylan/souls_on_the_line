@@ -386,10 +386,8 @@ func _format_sim_statuses(u: CombatantState) -> String:
 		var pending := bool(token.pending)
 
 		var show_bits: Array[String] = []
-		if dur > 0:
-			show_bits.append("dur=%d" % dur)
-		if intensity != 1 and intensity != 0:
-			show_bits.append("stk=%d" % intensity)
+		if stacks > 0:
+			show_bits.append("stacks=%d" % stacks)
 		if pending:
 			show_bits.append("pending")
 

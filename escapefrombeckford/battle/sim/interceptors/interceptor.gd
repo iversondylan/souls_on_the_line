@@ -75,8 +75,8 @@ func clone():
 		priority
 	)
 
-
-func dispatch(api, payload = null) -> void:
+# variant arguments here bugs me
+func dispatch(api: SimBattleAPI, payload = null) -> void:
 	if api == null or !is_valid():
 		return
 	api._dispatch_interceptor(self, payload)

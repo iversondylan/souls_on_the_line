@@ -515,7 +515,7 @@ func emit_status_remove(
 	status_id: StringName,
 	extra := {}
 ) -> int:
-	return emit_status(source_id, target_id, status_id, int(Status.OP.REMOVE), 0, 0, extra)
+	return emit_status(source_id, target_id, status_id, int(Status.OP.REMOVE), 0, extra) 
 
 func emit_removed(
 	killer_id: int,

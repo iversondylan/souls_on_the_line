@@ -15,13 +15,13 @@ var after_stacks: int = 0
 var delta_stacks: int = 0
 
 func apply_to_status_context(ctx: StatusContext) -> void:
-if ctx == null:
-return
-ctx.op = int(op)
-ctx.before_pending = bool(before_pending)
-ctx.after_pending = bool(after_pending)
-ctx.before_token_id = int(before_token_id)
-ctx.after_token_id = int(after_token_id)
-ctx.before_stacks = int(before_stacks)
-ctx.after_stacks = int(after_stacks)
-ctx.delta_stacks = int(delta_stacks)
+	if ctx == null:
+		return
+	ctx.op = int(op)
+	ctx.before_pending = bool(before_pending)
+	ctx.after_pending = bool(after_pending)
+	ctx.before_token_id = int(before_token_id)
+	ctx.after_token_id = int(after_token_id)
+	ctx.before_stacks = int(before_stacks)
+	ctx.after_stacks = int(after_stacks)
+	ctx.delta_stacks = int(delta_stacks)
