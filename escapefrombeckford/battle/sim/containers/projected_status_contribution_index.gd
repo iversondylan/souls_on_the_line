@@ -141,9 +141,11 @@ func build_projected_token(status_id: StringName, proto: Status = null) -> Statu
 	var total_stacks := 0
 	match effective_reapply_type:
 		int(Status.ReapplyType.REPLACE):
+			# Replace keeps the newest transformer contribution after priority/tid ordering.
 			var latest := contributors.back().get("token", null) as StatusToken
 			total_stacks = int(latest.stacks) if latest != null else 0
 		int(Status.ReapplyType.IGNORE):
+			# Ignore keeps the oldest transformer contribution after priority/tid ordering.
 			var earliest := contributors.front().get("token", null) as StatusToken
 			total_stacks = int(earliest.stacks) if earliest != null else 0
 		_:
