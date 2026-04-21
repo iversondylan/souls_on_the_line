@@ -7,6 +7,6 @@
 script = ExtResource("2_adcuq")
 status_name = "Tempered"
 numerical = true
-reapply_type = 3
+reapply_type = 2
 icon = ExtResource("1_3fj7w")
 metadata/_custom_type_script = "uid://dt5n6oivqq012"

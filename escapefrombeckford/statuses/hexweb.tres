@@ -7,6 +7,6 @@
 script = ExtResource("2_bxek2")
 status_name = "Hexweb"
 numerical = false
-reapply_type = 3
+reapply_type = 2
 icon = ExtResource("1_acql6")
 tooltip = "The first time each round this takes strike damage, gain 50% reduced damage for the rest of that round."

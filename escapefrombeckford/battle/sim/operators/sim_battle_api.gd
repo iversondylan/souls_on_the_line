@@ -527,7 +527,7 @@ func _get_status_context_for_interceptor(interceptor: Interceptor):
 				return null
 			if owner.statuses.has_projected(interceptor.source_id):
 				var proto := state.status_catalog.get_proto(interceptor.source_id)
-				if proto != null and int(proto.reapply_type) == int(Status.ReapplyType.INTENSITY):
+				if proto != null and int(proto.get_effective_reapply_type()) == int(Status.ReapplyType.ADD):
 					var effective_ctx: SimStatusContext = _get_effective_status_context_for_interceptor(
 						int(interceptor.source_owner_id),
 						interceptor.source_id,
@@ -1216,6 +1216,7 @@ func apply_status(ctx: StatusContext) -> void:
 	var mutation := u.statuses.add_or_reapply_ctx(
 		ctx,
 		int(proto.get_max_stacks()) if proto != null else 0,
+		int(proto.get_effective_reapply_type()) if proto != null else int(Status.ReapplyType.ADD),
 		Callable(state, "alloc_status_token_id")
 	)
 	mutation.apply_to_status_context(ctx)

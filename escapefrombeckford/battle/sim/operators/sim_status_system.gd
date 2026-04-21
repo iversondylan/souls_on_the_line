@@ -555,7 +555,7 @@ static func _merge_owned_and_projected_contexts(
 			continue
 
 		var key := _make_effective_status_merge_key(ctx.get_status_id(), ctx.is_pending())
-		if int(ctx.proto.reapply_type) != int(Status.ReapplyType.INTENSITY):
+		if int(ctx.proto.get_effective_reapply_type()) != int(Status.ReapplyType.ADD):
 			continue
 
 		owned_by_key[key] = {
@@ -636,6 +636,9 @@ static func refresh_cached_projected_statuses_for_unit(
 					"tid": int(record.tid) if record != null else 0,
 				}
 			)
+		target.statuses.rebuild_projected_tokens(func(status_id: StringName) -> Status:
+			return get_proto(api, status_id)
+		)
 		target.statuses.set_projected_cache_ready(true)
 		return
 
@@ -664,6 +667,9 @@ static func refresh_cached_projected_statuses_for_unit(
 				"tid": int(record.tid) if record != null else 0,
 			}
 		)
+	target.statuses.rebuild_projected_tokens(func(status_id: StringName) -> Status:
+		return get_proto(api, status_id)
+	)
 	target.statuses.set_projected_cache_ready(true)
 
 static func _collect_projection_entries_by_source_key(api: SimBattleAPI) -> TransformerRecordLookup:

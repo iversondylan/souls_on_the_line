@@ -112,6 +112,16 @@ func invalidate_effective_context_cache() -> void:
 func get_projected_dependency_status_ids(source_key: String) -> Array[StringName]:
 	return _projected_contribution_index.get_dependency_status_ids(source_key)
 
+func rebuild_projected_tokens(proto_resolver: Callable = Callable()) -> void:
+	by_id_projected.clear()
+	for status_id in _projected_contribution_index.get_all_status_ids():
+		var proto: Status = null
+		if proto_resolver.is_valid():
+			proto = proto_resolver.call(status_id) as Status
+		var projected_token := _projected_contribution_index.build_projected_token(status_id, proto)
+		if projected_token != null:
+			by_id_projected[status_id] = projected_token
+
 func upsert_projected_source(source_key: String, projected_tokens: Array[StatusToken], order_info := {}) -> Array[StringName]:
 	var affected_ids: Array[StringName] = _projected_contribution_index.replace_source(source_key, projected_tokens, order_info)
 	_recompute_projected_bins_for_ids(affected_ids)
@@ -191,11 +201,12 @@ func add_or_reapply(id: StringName, stacks: int = 1, allocate_token_id: Callable
 	var ctx := StatusContext.new()
 	ctx.status_id = id
 	ctx.stacks = stacks
-	add_or_reapply_ctx(ctx, 0, allocate_token_id)
+	add_or_reapply_ctx(ctx, 0, Status.ReapplyType.ADD, allocate_token_id)
 
 func add_or_reapply_ctx(
 	ctx: StatusContext,
 	max_stacks: int = 0,
+	reapply_type: int = Status.ReapplyType.ADD,
 	allocate_token_id: Callable = Callable()
 ) -> StatusMutationResult:
 	var result := StatusMutationResult.new()
@@ -257,7 +268,14 @@ func add_or_reapply_ctx(
 		_bump_effective_context_version()
 		return result
 
-	var new_total := _clamp_stacks_total(before_stacks + req_stacks, max_stacks)
+	var new_total := before_stacks
+	match int(reapply_type):
+		int(Status.ReapplyType.REPLACE):
+			new_total = _clamp_stacks_total(req_stacks, max_stacks)
+		int(Status.ReapplyType.IGNORE):
+			new_total = before_stacks
+		_:
+			new_total = _clamp_stacks_total(before_stacks + req_stacks, max_stacks)
 	token.stacks = new_total
 
 	var ds := int(token.stacks) - before_stacks
