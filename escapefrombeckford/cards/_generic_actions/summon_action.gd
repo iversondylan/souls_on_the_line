@@ -80,7 +80,7 @@ func activate_sim(ctx: CardContext) -> bool:
 	sctx.insert_index = insert_index
 	sctx.source_id = int(ctx.source_id)
 	sctx.summon_data = _build_clone_data_sim()
-	sctx.mortality = mortality
+	sctx.mortality = _resolve_summon_mortality(ctx.card_data)
 	sctx.reason = "card_summon"
 
 	if ctx.card_data != null:
@@ -117,6 +117,18 @@ func activate_sim(ctx: CardContext) -> bool:
 			ctx.reserved_summoned_id = int(sctx.summoned_id)
 
 	return true
+
+
+func _resolve_summon_mortality(card_data: CardData) -> CombatantState.Mortality:
+	if card_data == null:
+		return mortality
+	match int(card_data.card_type):
+		int(CardData.CardType.SOULBOUND):
+			return CombatantState.Mortality.BOUND
+		int(CardData.CardType.SOULWILD):
+			return CombatantState.Mortality.WILD
+		_:
+			return mortality
 
 
 func _build_clone_data_sim() -> CombatantData:
