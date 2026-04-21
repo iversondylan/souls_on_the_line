@@ -5,7 +5,8 @@ class_name Status extends Resource
 signal status_applied(status: Status)
 signal status_changed()
 
-enum ReapplyType { INTENSITY, DURATION, REPLACE, IGNORE }
+# ADD accumulates stacks, REPLACE keeps the newest application, IGNORE keeps the existing stacks.
+enum ReapplyType { ADD, REPLACE, IGNORE }
 enum AutoRemove {
 	NEVER,
 	GROUP_TURN_START,
@@ -160,6 +161,12 @@ func get_contributed_modifier_types() -> Array[Modifier.Type]:
 
 func get_max_stacks() -> int:
 	return 0
+
+# Non-numerical statuses are always idempotent, so they effectively behave like IGNORE.
+func get_effective_reapply_type() -> ReapplyType:
+	if !bool(numerical):
+		return ReapplyType.IGNORE
+	return reapply_type
 
 # -------------------------------------------------------------------
 # Query helpers

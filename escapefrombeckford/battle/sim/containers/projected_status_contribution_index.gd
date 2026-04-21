@@ -47,6 +47,13 @@ func get_all_source_keys() -> Array[String]:
 		out.append(String(source_key_variant))
 	return out
 
+func get_all_status_ids() -> Array[StringName]:
+	var out: Array[StringName] = []
+	for status_id_key in _source_keys_by_status_id.keys():
+		out.append(StringName(status_id_key))
+	out.sort()
+	return out
+
 
 func get_source_keys_for_status(status_id: StringName) -> Array[String]:
 	var out: Array[String] = []
@@ -99,7 +106,7 @@ func remove_source(source_key: String) -> Array[StringName]:
 	return _to_sorted_status_id_array(affected_ids)
 
 
-func build_projected_token(status_id: StringName) -> StatusToken:
+func build_projected_token(status_id: StringName, proto: Status = null) -> StatusToken:
 	if status_id == &"":
 		return null
 	if !_source_keys_by_status_id.has(status_id):
@@ -109,9 +116,7 @@ func build_projected_token(status_id: StringName) -> StatusToken:
 	if source_keys.is_empty():
 		return null
 
-	var total_stacks := 0
-	# BEFORE: sorted contributors every read.
-	# AFTER: aggregate directly; sum/max is commutative so ordering does not change output.
+	var contributors: Array[Dictionary] = []
 	for source_key_variant in source_keys.keys():
 		var source_key := String(source_key_variant)
 		var source_map := _get_source_map(source_key)
@@ -120,7 +125,35 @@ func build_projected_token(status_id: StringName) -> StatusToken:
 		var token: StatusToken = source_map[status_id]
 		if token == null:
 			continue
-		total_stacks += int(token.stacks)
+		contributors.append({
+			"token": token,
+			"order": _order_by_source_key.get(source_key, {}),
+		})
+
+	if contributors.is_empty():
+		return null
+
+	contributors.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		return _source_entry_sorts_before(a, b)
+	)
+
+	var effective_reapply_type := int(proto.get_effective_reapply_type()) if proto != null else int(Status.ReapplyType.ADD)
+	var total_stacks := 0
+	match effective_reapply_type:
+		int(Status.ReapplyType.REPLACE):
+			# Contributors are sorted oldest->newest, so .back() is the newest projection.
+			var latest := contributors.back().get("token", null) as StatusToken
+			total_stacks = int(latest.stacks) if latest != null else 0
+		int(Status.ReapplyType.IGNORE):
+			# Contributors are sorted oldest->newest, so .front() is the oldest projection.
+			var earliest := contributors.front().get("token", null) as StatusToken
+			total_stacks = int(earliest.stacks) if earliest != null else 0
+		_:
+			for contributor in contributors:
+				var contributor_token := contributor.get("token", null) as StatusToken
+				if contributor_token == null:
+					continue
+				total_stacks += int(contributor_token.stacks)
 
 	if total_stacks <= 0:
 		return null
@@ -172,3 +205,14 @@ func _to_sorted_status_id_array(source_ids: Dictionary) -> Array[StringName]:
 		out.append(StringName(status_id_key))
 	out.sort()
 	return out
+
+func _source_entry_sorts_before(a: Dictionary, b: Dictionary) -> bool:
+	var a_order := a.get("order", {}) if a != null else {}
+	var b_order := b.get("order", {}) if b != null else {}
+	var a_priority := int(a_order.get("priority", 0))
+	var b_priority := int(b_order.get("priority", 0))
+	# Lower priority sorts earlier, and lower tid is older because TransformerRegistry
+	# allocates tids monotonically as records are created.
+	if a_priority != b_priority:
+		return a_priority < b_priority
+	return int(a_order.get("tid", 0)) < int(b_order.get("tid", 0))

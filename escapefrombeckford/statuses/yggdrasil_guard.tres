@@ -7,6 +7,6 @@
 script = ExtResource("2_script")
 status_name = "Yggdrasil Guard"
 numerical = true
-reapply_type = 3
+reapply_type = 2
 icon = ExtResource("1_icon")
 

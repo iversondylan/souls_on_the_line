@@ -555,7 +555,7 @@ static func _merge_owned_and_projected_contexts(
 			continue
 
 		var key := _make_effective_status_merge_key(ctx.get_status_id(), ctx.is_pending())
-		if int(ctx.proto.reapply_type) != int(Status.ReapplyType.INTENSITY):
+		if int(ctx.proto.get_effective_reapply_type()) != int(Status.ReapplyType.ADD):
 			continue
 
 		owned_by_key[key] = {
@@ -623,6 +623,8 @@ static func refresh_cached_projected_statuses_for_unit(
 	if target == null:
 		return
 
+	var proto_resolver := func(status_id: StringName):
+		return get_proto(api, status_id)
 	var entries_by_key := _collect_projection_entries_by_source_key(api)
 	if full_rebuild:
 		target.statuses.clear_projected()
@@ -634,7 +636,8 @@ static func refresh_cached_projected_statuses_for_unit(
 				{
 					"priority": int(record.priority) if record != null else 0,
 					"tid": int(record.tid) if record != null else 0,
-				}
+				},
+				proto_resolver
 			)
 		target.statuses.set_projected_cache_ready(true)
 		return
@@ -653,7 +656,7 @@ static func refresh_cached_projected_statuses_for_unit(
 	for source_key_variant in unique_source_keys.keys():
 		var source_key := String(source_key_variant)
 		if !entries_by_key.has_record(source_key):
-			target.statuses.remove_projected_source(source_key)
+			target.statuses.remove_projected_source(source_key, proto_resolver)
 			continue
 		var record := entries_by_key.get_record(source_key)
 		target.statuses.upsert_projected_source(
@@ -662,7 +665,8 @@ static func refresh_cached_projected_statuses_for_unit(
 			{
 				"priority": int(record.priority) if record != null else 0,
 				"tid": int(record.tid) if record != null else 0,
-			}
+			},
+			proto_resolver
 		)
 	target.statuses.set_projected_cache_ready(true)
 

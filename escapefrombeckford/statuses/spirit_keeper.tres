@@ -7,6 +7,6 @@
 script = ExtResource("2_m7xb2")
 status_name = "Spirit Keeper"
 numerical = false
-reapply_type = 3
+reapply_type = 2
 icon = ExtResource("1_bo4gd")
 tooltip = "At the end of each round, gain +2 full max health."

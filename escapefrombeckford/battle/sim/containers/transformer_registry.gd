@@ -484,7 +484,7 @@ func _projected_status_wants_own_interceptor(
 ) -> bool:
 	if target == null or target.statuses == null or status_id == &"" or proto == null:
 		return false
-	if int(proto.reapply_type) != int(Status.ReapplyType.INTENSITY):
+	if int(proto.get_effective_reapply_type()) != int(Status.ReapplyType.ADD):
 		return true
 	return target.statuses.get_status_token(status_id, false) == null
 

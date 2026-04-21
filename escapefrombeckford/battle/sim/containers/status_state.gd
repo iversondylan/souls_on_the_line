@@ -112,16 +112,31 @@ func invalidate_effective_context_cache() -> void:
 func get_projected_dependency_status_ids(source_key: String) -> Array[StringName]:
 	return _projected_contribution_index.get_dependency_status_ids(source_key)
 
-func upsert_projected_source(source_key: String, projected_tokens: Array[StatusToken], order_info := {}) -> Array[StringName]:
+func rebuild_projected_tokens(proto_resolver: Callable = Callable()) -> void:
+	by_id_projected.clear()
+	for status_id in _projected_contribution_index.get_all_status_ids():
+		var proto: Status = null
+		if proto_resolver.is_valid():
+			proto = proto_resolver.call(status_id) as Status
+		var projected_token := _projected_contribution_index.build_projected_token(status_id, proto)
+		if projected_token != null:
+			by_id_projected[status_id] = projected_token
+
+func upsert_projected_source(
+	source_key: String,
+	projected_tokens: Array[StatusToken],
+	order_info := {},
+	proto_resolver: Callable = Callable()
+) -> Array[StringName]:
 	var affected_ids: Array[StringName] = _projected_contribution_index.replace_source(source_key, projected_tokens, order_info)
-	_recompute_projected_bins_for_ids(affected_ids)
+	_recompute_projected_bins_for_ids(affected_ids, proto_resolver)
 	_projected_cache_ready = true
 	_bump_effective_context_version()
 	return affected_ids
 
-func remove_projected_source(source_key: String) -> Array[StringName]:
+func remove_projected_source(source_key: String, proto_resolver: Callable = Callable()) -> Array[StringName]:
 	var affected_ids: Array[StringName] = _projected_contribution_index.remove_source(source_key)
-	_recompute_projected_bins_for_ids(affected_ids)
+	_recompute_projected_bins_for_ids(affected_ids, proto_resolver)
 	_projected_cache_ready = true
 	_bump_effective_context_version()
 	return affected_ids
@@ -187,15 +202,22 @@ func realize_pending_ctx(ctx: StatusContext, max_stacks: int = 0) -> StatusMutat
 	_bump_effective_context_version()
 	return result
 
-func add_or_reapply(id: StringName, stacks: int = 1, allocate_token_id: Callable = Callable()) -> void:
+func add_or_reapply(
+	id: StringName,
+	stacks: int = 1,
+	reapply_type: int,
+	allocate_token_id: Callable = Callable()
+) -> void:
+	# reapply_type should be a Status.ReapplyType enum value.
 	var ctx := StatusContext.new()
 	ctx.status_id = id
 	ctx.stacks = stacks
-	add_or_reapply_ctx(ctx, 0, allocate_token_id)
+	add_or_reapply_ctx(ctx, 0, reapply_type, allocate_token_id)
 
 func add_or_reapply_ctx(
 	ctx: StatusContext,
 	max_stacks: int = 0,
+	reapply_type: int = Status.ReapplyType.ADD,
 	allocate_token_id: Callable = Callable()
 ) -> StatusMutationResult:
 	var result := StatusMutationResult.new()
@@ -257,7 +279,17 @@ func add_or_reapply_ctx(
 		_bump_effective_context_version()
 		return result
 
-	var new_total := _clamp_stacks_total(before_stacks + req_stacks, max_stacks)
+	var new_total := before_stacks
+	match int(reapply_type):
+		int(Status.ReapplyType.REPLACE):
+			# Replace overwrites the existing stacks with the newest application.
+			new_total = _clamp_stacks_total(req_stacks, max_stacks)
+		int(Status.ReapplyType.IGNORE):
+			# Ignore preserves the existing stacks when the status is already present.
+			new_total = before_stacks
+		_:
+			# Add accumulates stacks across repeated applications.
+			new_total = _clamp_stacks_total(before_stacks + req_stacks, max_stacks)
 	token.stacks = new_total
 
 	var ds := int(token.stacks) - before_stacks
@@ -375,9 +407,15 @@ func _clamp_stacks_total(value: int, max_stacks: int) -> int:
 		out = mini(out, int(max_stacks))
 	return out
 
-func _recompute_projected_bins_for_ids(affected_ids: Array[StringName]) -> void:
+func _recompute_projected_bins_for_ids(
+	affected_ids: Array[StringName],
+	proto_resolver: Callable = Callable()
+) -> void:
 	for status_id in affected_ids:
-		var projected_token: StatusToken = _projected_contribution_index.build_projected_token(status_id)
+		var proto: Status = null
+		if proto_resolver.is_valid():
+			proto = proto_resolver.call(status_id) as Status
+		var projected_token: StatusToken = _projected_contribution_index.build_projected_token(status_id, proto)
 		if projected_token == null:
 			by_id_projected.erase(status_id)
 			continue
