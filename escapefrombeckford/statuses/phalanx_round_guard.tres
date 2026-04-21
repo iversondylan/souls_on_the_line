@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="HexwebStatus" format=3 uid="uid://dfomjdsy6a2ca"]
+[gd_resource type="Resource" script_class="HexwebStatus" format=3]
 
 [ext_resource type="Texture2D" uid="uid://cygsilkshq48y" path="res://_assets/sprites/assorted/shieldcomb.png" id="1_acql6"]
 [ext_resource type="Script" uid="uid://caj12crhketyp" path="res://statuses/hexweb.gd" id="2_bxek2"]
