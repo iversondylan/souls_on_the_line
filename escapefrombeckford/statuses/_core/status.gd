@@ -162,6 +162,7 @@ func get_contributed_modifier_types() -> Array[Modifier.Type]:
 func get_max_stacks() -> int:
 	return 0
 
+# Non-numerical statuses are always idempotent, so they effectively behave like IGNORE.
 func get_effective_reapply_type() -> ReapplyType:
 	if !bool(numerical):
 		return ReapplyType.IGNORE

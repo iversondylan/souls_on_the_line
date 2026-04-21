@@ -208,6 +208,7 @@ func add_or_reapply(
 	reapply_type: int,
 	allocate_token_id: Callable = Callable()
 ) -> void:
+	# reapply_type should be a Status.ReapplyType enum value.
 	var ctx := StatusContext.new()
 	ctx.status_id = id
 	ctx.stacks = stacks
