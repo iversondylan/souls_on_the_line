@@ -48,8 +48,8 @@
 [ext_resource type="Resource" path="res://statuses/mossling_bulwark.tres" id="36_mossling_bulwark"]
 [ext_resource type="Resource" uid="uid://ck43fsca55rb7" path="res://statuses/grounding_accord.tres" id="37_grounding_accord"]
 [ext_resource type="Resource" uid="uid://cxbnwphft1y2j" path="res://statuses/awase.tres" id="38_awase"]
-[ext_resource type="Resource" path="res://statuses/phalanx_round_guard.tres" id="39_phalanx_round_guard"]
-[ext_resource type="Resource" path="res://statuses/phalanx_round_fortitude.tres" id="40_phalanx_round_fortitude"]
+[ext_resource type="Resource" path="res://statuses/hexweb.tres" id="39_phalanx_round_guard"]
+[ext_resource type="Resource" path="res://statuses/spirit_keeper.tres" id="40_phalanx_round_fortitude"]
 
 [resource]
 script = ExtResource("1_2sbnh")

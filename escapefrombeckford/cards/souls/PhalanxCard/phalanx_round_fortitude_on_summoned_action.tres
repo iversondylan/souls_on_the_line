@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="ApplyStatusToSummonedAction" format=3]
 
-[ext_resource type="Script" path="res://cards/_generic_actions/apply_status_to_summoned_action.gd" id="1_action"]
-[ext_resource type="Resource" path="res://statuses/phalanx_round_fortitude.tres" id="2_status"]
+[ext_resource type="Script" uid="uid://jie78uegvh3j" path="res://cards/_generic_actions/apply_status_to_summoned_action.gd" id="1_action"]
+[ext_resource type="Resource" path="res://statuses/spirit_keeper.tres" id="2_status"]
 
 [resource]
 script = ExtResource("1_action")

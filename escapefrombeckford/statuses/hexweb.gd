@@ -1,6 +1,6 @@
-class_name PhalanxRoundGuardStatus extends Status
+class_name HexwebStatus extends Status
 
-const ID := &"phalanx_round_guard"
+const ID := &"hexweb"
 const BOLSTERED := preload("res://statuses/bolstered.tres")
 
 func get_id() -> StringName:
@@ -14,7 +14,7 @@ func on_damage_taken(ctx: SimStatusContext, damage_ctx: DamageContext) -> void:
 	if !_is_eligible_strike_damage(damage_ctx):
 		return
 
-	ctx.remove_self("phalanx_round_guard_triggered")
+	ctx.remove_self("hexweb_guard_triggered")
 	if ctx.owner == null or !ctx.owner.is_alive() or BOLSTERED == null:
 		return
 
@@ -23,11 +23,11 @@ func on_damage_taken(ctx: SimStatusContext, damage_ctx: DamageContext) -> void:
 	status_ctx.target_id = int(ctx.owner_id)
 	status_ctx.status_id = BOLSTERED.get_id()
 	status_ctx.intensity = 50
-	status_ctx.reason = "phalanx_round_guard"
+	status_ctx.reason = "hexweb"
 	ctx.api.apply_status(status_ctx)
 
 func get_tooltip(_intensity: int = 0, _duration: int = 0) -> String:
-	return "Phalanx Guard: the first time each round this takes strike damage, gain 50%% reduced damage for the rest of that round."
+	return "Hexweb: the first time each round this takes strike damage, gain 50%% reduced damage for the rest of that round."
 
 func _is_eligible_strike_damage(damage_ctx: DamageContext) -> bool:
 	if damage_ctx == null:
