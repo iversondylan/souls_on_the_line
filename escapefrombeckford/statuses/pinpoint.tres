@@ -6,9 +6,7 @@
 [resource]
 script = ExtResource("2_6hpfl")
 status_name = "Pinpoint"
-numerical = true
 auto_tick_down = 1
-reapply_type = 0
 icon = ExtResource("1_6hpfl")
 tooltip = "Take 50% more damage. Ticks down at end of turn."
 metadata/_custom_type_script = "uid://cueedkb1u8vxy"

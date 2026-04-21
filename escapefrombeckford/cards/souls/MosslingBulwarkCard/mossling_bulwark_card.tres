@@ -7,7 +7,7 @@
 [ext_resource type="Script" uid="uid://bcih413oy6v73" path="res://npc_ai/_core/npc_action.gd" id="4_y4qm7"]
 [ext_resource type="Script" uid="uid://cfatj0ryn8uv3" path="res://combatants/combatant_data.gd" id="5_data_script"]
 [ext_resource type="Script" uid="uid://jie78uegvh3j" path="res://cards/_generic_actions/apply_status_to_summoned_action.gd" id="6_status_action"]
-[ext_resource type="Resource" path="res://statuses/mossling_bulwark.tres" id="7_status"]
+[ext_resource type="Resource" uid="uid://dvt0bc0fr4ed6" path="res://statuses/mossling_bulwark.tres" id="7_status"]
 [ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://cards/_core/card_data.gd" id="8_card_data_script"]
 [ext_resource type="Texture2D" uid="uid://op0kqefc6x4v" path="res://_assets/sprites/assorted/shambling-mound.png" id="9_texture"]
 

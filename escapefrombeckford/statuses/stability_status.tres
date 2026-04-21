@@ -6,8 +6,7 @@
 [resource]
 script = ExtResource("1_lontd")
 status_name = "Stability"
-numerical = true
-auto_remove = 2
 reapply_type = 1
+auto_remove = 2
 icon = ExtResource("1_x1brp")
 metadata/_custom_type_script = "uid://dijsb75uy608c"

@@ -207,8 +207,10 @@ func _to_sorted_status_id_array(source_ids: Dictionary) -> Array[StringName]:
 	return out
 
 func _source_entry_sorts_before(a: Dictionary, b: Dictionary) -> bool:
-	var a_order := a.get("order", {}) if a != null else {}
-	var b_order := b.get("order", {}) if b != null else {}
+	var a_order := {}
+	a_order.assign(a.get("order", {}) if a != null else {})
+	var b_order := {}
+	b_order.assign(b.get("order", {}) if b != null else {})
 	var a_priority := int(a_order.get("priority", 0))
 	var b_priority := int(b_order.get("priority", 0))
 	# Lower priority sorts earlier, and lower tid is older because TransformerRegistry

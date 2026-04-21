@@ -6,5 +6,5 @@
 [resource]
 script = ExtResource("1_absorb_script")
 status_name = "Absorb"
-numerical = true
+auto_remove = 3
 icon = ExtResource("2_absorb_icon")

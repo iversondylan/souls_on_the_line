@@ -1,7 +1,7 @@
-[gd_resource type="Resource" script_class="RegretfulShadeStatus" format=3]
+[gd_resource type="Resource" script_class="RegretfulShadeStatus" format=3 uid="uid://xdikp36nmfj6"]
 
-[ext_resource type="Script" path="res://statuses/regretful_shade.gd" id="1_regretful_shade_script"]
-[ext_resource type="Texture2D" path="res://_assets/sprites/card_elements/wrathful_intent/shadow.png" id="2_regretful_shade_icon"]
+[ext_resource type="Script" uid="uid://dsfcbvq6pcui8" path="res://statuses/regretful_shade.gd" id="1_regretful_shade_script"]
+[ext_resource type="Texture2D" uid="uid://cwl6v4fdaiv58" path="res://_assets/sprites/card_elements/wrathful_intent/shadow.png" id="2_regretful_shade_icon"]
 
 [resource]
 script = ExtResource("1_regretful_shade_script")

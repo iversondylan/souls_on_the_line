@@ -1,7 +1,7 @@
-[gd_resource type="Resource" script_class="MosslingBulwarkStatus" format=3]
+[gd_resource type="Resource" script_class="MosslingBulwarkStatus" format=3 uid="uid://dvt0bc0fr4ed6"]
 
-[ext_resource type="Texture2D" path="res://_assets/sprites/assorted/shambling-mound.png" id="1_icon"]
-[ext_resource type="Script" path="res://statuses/mossling_bulwark.gd" id="2_script"]
+[ext_resource type="Texture2D" uid="uid://op0kqefc6x4v" path="res://_assets/sprites/assorted/shambling-mound.png" id="1_icon"]
+[ext_resource type="Script" uid="uid://dtyo6cbhisb7e" path="res://statuses/mossling_bulwark.gd" id="2_script"]
 
 [resource]
 script = ExtResource("2_script")
@@ -9,4 +9,3 @@ status_name = "Mossling Bulwark"
 numerical = false
 reapply_type = 2
 icon = ExtResource("1_icon")
-

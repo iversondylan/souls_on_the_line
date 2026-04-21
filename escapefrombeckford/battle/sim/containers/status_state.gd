@@ -205,7 +205,7 @@ func realize_pending_ctx(ctx: StatusContext, max_stacks: int = 0) -> StatusMutat
 func add_or_reapply(
 	id: StringName,
 	stacks: int = 1,
-	reapply_type: int,
+	reapply_type: Status.ReapplyType = Status.ReapplyType.ADD,
 	allocate_token_id: Callable = Callable()
 ) -> void:
 	# reapply_type should be a Status.ReapplyType enum value.
