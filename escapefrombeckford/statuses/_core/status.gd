@@ -5,6 +5,7 @@ class_name Status extends Resource
 signal status_applied(status: Status)
 signal status_changed()
 
+# ADD accumulates stacks, REPLACE keeps the newest application, IGNORE keeps the existing stacks.
 enum ReapplyType { ADD, REPLACE, IGNORE }
 enum AutoRemove {
 	NEVER,

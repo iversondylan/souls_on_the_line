@@ -205,7 +205,7 @@ func realize_pending_ctx(ctx: StatusContext, max_stacks: int = 0) -> StatusMutat
 func add_or_reapply(
 	id: StringName,
 	stacks: int = 1,
-	reapply_type: int = Status.ReapplyType.ADD,
+	reapply_type: int,
 	allocate_token_id: Callable = Callable()
 ) -> void:
 	var ctx := StatusContext.new()
