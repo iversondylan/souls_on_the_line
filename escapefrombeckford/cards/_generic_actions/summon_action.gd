@@ -11,7 +11,8 @@ func get_interaction_mode(ctx: CardContext) -> int:
 		#print("summon_action.gd get_interaction_mode() returning NONE")
 		return InteractionMode.NONE
 
-	if int(mortality) != int(CombatantState.Mortality.BOUND):
+	var summon_mortality := _resolve_summon_mortality(ctx.card_data)
+	if int(summon_mortality) != int(CombatantState.Mortality.BOUND):
 		return InteractionMode.NONE
 	
 	var player_id := int(ctx.api.get_player_id())
