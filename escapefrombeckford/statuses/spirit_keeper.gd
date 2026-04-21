@@ -1,6 +1,6 @@
-class_name PhalanxRoundFortitudeStatus extends Status
+class_name SpiritKeeperStatus extends Status
 
-const ID := &"phalanx_round_fortitude"
+const ID := &"spirit_keeper"
 const FULL_FORTITUDE := preload("res://statuses/full_fortitude.tres")
 
 func get_id() -> StringName:

@@ -4,5 +4,5 @@
 
 [resource]
 script = ExtResource("1_script")
-status_id = &"phalanx_round_guard"
+status_id = &"hexweb"
 stacks = 1

@@ -1,6 +1,6 @@
-class_name PhalanxRoundGuardStatus extends Status
+class_name HexwebStatus extends Status
 
-const ID := &"phalanx_round_guard"
+const ID := &"hexweb"
 const BOLSTERED := preload("res://statuses/bolstered.tres")
 
 func get_id() -> StringName:
