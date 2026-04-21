@@ -1,6 +1,6 @@
-class_name HexwebStatus extends Status
+class_name PhalanxRoundGuardStatus extends Status
 
-const ID := &"hexweb"
+const ID := &"phalanx_round_guard"
 const BOLSTERED := preload("res://statuses/bolstered.tres")
 
 func get_id() -> StringName:
@@ -23,7 +23,7 @@ func on_damage_taken(ctx: SimStatusContext, damage_ctx: DamageContext) -> void:
 	status_ctx.target_id = int(ctx.owner_id)
 	status_ctx.status_id = BOLSTERED.get_id()
 	status_ctx.stacks = 50
-	status_ctx.reason = "hexweb"
+	status_ctx.reason = "phalanx_round_guard"
 	ctx.api.apply_status(status_ctx)
 
 func get_tooltip(_stacks: int = 0) -> String:
