@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="CardData" format=3]
+
+[ext_resource type="Script" path="res://cards/_core/card_action.gd" id="1_base_action"]
+[ext_resource type="Resource" path="res://cards/convocations/RendingRepair/rending_repair_heal_action.tres" id="2_heal_action"]
+[ext_resource type="Resource" path="res://cards/convocations/RendingRepair/rending_repair_attack_action.tres" id="3_attack_action"]
+[ext_resource type="Script" path="res://cards/_core/card_data.gd" id="4_card_data"]
+[ext_resource type="Texture2D" path="res://_assets/sprites/assorted/attack_and_defend.png" id="5_texture"]
+
+[resource]
+script = ExtResource("4_card_data")
+id = &"rending_repair"
+card_type = 0
+target_type = 3
+rarity = 2
+name = "Rending Repair"
+description = "Heal target ally 3. It attacks immediately with bonus damage equal to the amount healed."
+cost = 1
+texture = ExtResource("5_texture")
+actions = Array[ExtResource("1_base_action")]([ExtResource("2_heal_action"), ExtResource("3_attack_action")])

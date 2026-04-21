@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="CardPile" format=3 uid="uid://dkyj5i4eeqs1l"]
+
+[ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://cards/_core/card_data.gd" id="1_pvryl"]
+[ext_resource type="Resource" path="res://cards/convocations/BarkboundBond/barkbound_bond.tres" id="2_65kx8"]
+[ext_resource type="Script" uid="uid://dnybrgm0o6gjj" path="res://cards/_core/card_pile.gd" id="2_x7lxf"]
+[ext_resource type="Resource" path="res://cards/convocations/DiamondHeart/diamond_heart.tres" id="3_0psb5"]
+[ext_resource type="Resource" path="res://cards/convocations/Momentum/momentum.tres" id="4_hhmfu"]
+[ext_resource type="Resource" path="res://cards/convocations/PulseWave/pulse_wave.tres" id="5_5fpjr"]
+[ext_resource type="Resource" path="res://cards/convocations/RendingRepair/rending_repair.tres" id="6_0jy5l"]
+[ext_resource type="Resource" path="res://cards/convocations/StandFirm/stand_firm.tres" id="7_6h261"]
+
+[resource]
+script = ExtResource("2_x7lxf")
+cards = Array[ExtResource("1_pvryl")]([ExtResource("2_65kx8"), ExtResource("3_0psb5"), ExtResource("4_hhmfu"), ExtResource("5_5fpjr"), ExtResource("6_0jy5l"), ExtResource("7_6h261")])
+metadata/_custom_type_script = "uid://dnybrgm0o6gjj"

@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="CardData" format=3]
+
+[ext_resource type="Script" path="res://cards/_core/card_action.gd" id="1_base_action"]
+[ext_resource type="Resource" path="res://cards/convocations/BarkboundBond/barkbound_bond_status_action.tres" id="2_status_action"]
+[ext_resource type="Resource" path="res://cards/_generic_actions/draw_1_action.tres" id="3_draw_action"]
+[ext_resource type="Script" path="res://cards/_core/card_data.gd" id="4_card_data"]
+[ext_resource type="Texture2D" path="res://_assets/sprites/assorted/team-upgrade.png" id="5_texture"]
+
+[resource]
+script = ExtResource("4_card_data")
+id = &"barkbound_bond"
+card_type = 0
+target_type = 3
+rarity = 1
+name = "Barkbound Bond"
+description = "Choose an ally. The next 2 times it survives damage, it gains +1/+2. Draw 1."
+cost = 1
+texture = ExtResource("5_texture")
+actions = Array[ExtResource("1_base_action")]([ExtResource("2_status_action"), ExtResource("3_draw_action")])

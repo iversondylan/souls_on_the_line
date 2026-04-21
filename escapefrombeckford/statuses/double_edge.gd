@@ -2,7 +2,7 @@
 
 class_name DoubleEdgeStatus extends Status
 
-const ID := Keys.STATUS_DOUBLE_EDGE
+const ID := &"double_edge"
 
 
 func get_id() -> StringName:

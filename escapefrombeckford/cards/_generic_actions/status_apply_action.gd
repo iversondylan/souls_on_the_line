@@ -25,6 +25,9 @@ func _apply_status_to_target(ctx: CardContext, target_id: int) -> bool:
 	sctx.status_id = status.get_id()
 	sctx.stacks = int(stacks)
 	sctx.pending = bool(pending)
+	if ctx.card_data != null:
+		ctx.card_data.ensure_uid()
+		sctx.origin_card_uid = String(ctx.card_data.uid)
 
 	ctx.api.apply_status(sctx)
 	if !ctx.affected_ids.has(int(target_id)):

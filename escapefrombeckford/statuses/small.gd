@@ -2,7 +2,7 @@
 
 class_name SmallStatus extends Status
 
-const ID := Keys.STATUS_SMALL
+const ID := &"small"
 
 
 func get_id() -> StringName:

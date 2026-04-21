@@ -23,6 +23,7 @@ const PENDING_IDS := &"pending_ids"
 const PRIMARY_ACTION_KIND := &"primary_action_kind"
 # for single instances of damage and HITS:
 const TARGET_ID := &"target_id"
+const TARGET_IS_DAMAGED := &"target_is_damaged"
 # an attacker's STRIKE may result in multiple HITS on its targets.
 const STRIKE_COUNT := &"strike_count"
 const TOTAL_HIT_COUNT := &"total_hit_count"

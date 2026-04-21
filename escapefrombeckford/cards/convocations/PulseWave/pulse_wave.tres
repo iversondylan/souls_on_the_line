@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="CardData" format=3]
+
+[ext_resource type="Script" path="res://cards/_core/card_action.gd" id="1_base_action"]
+[ext_resource type="Resource" path="res://cards/convocations/PulseWave/pulse_wave_action.tres" id="2_action"]
+[ext_resource type="Script" path="res://cards/_core/card_data.gd" id="3_card_data"]
+[ext_resource type="Texture2D" path="res://_assets/sprites/assorted/heal-sky-2.png" id="4_texture"]
+
+[resource]
+script = ExtResource("3_card_data")
+id = &"pulse_wave"
+card_type = 0
+target_type = 3
+rarity = 1
+name = "Pulse Wave"
+description = "Heal an ally 4. If it was at half HP or below, also give it +2 full max health and draw 1."
+cost = 1
+texture = ExtResource("4_texture")
+actions = Array[ExtResource("1_base_action")]([ExtResource("2_action")])

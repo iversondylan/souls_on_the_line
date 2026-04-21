@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="ArcanaCatalog" format=3 uid="uid://cd45rlmihsfvb"]
+[gd_resource type="Resource" script_class="ArcanaCatalog" format=3 uid="uid://b4e00si7msi7j"]
 
 [ext_resource type="Script" uid="uid://cnmucv1qsei4i" path="res://arcana/_core/arcanum.gd" id="1_bbx47"]
 [ext_resource type="Resource" uid="uid://clmmoar1fhh44" path="res://arcana/adamant_ally.tres" id="2_olok1"]
@@ -7,10 +7,10 @@
 [ext_resource type="Resource" uid="uid://bj2ud7b8ci4bm" path="res://arcana/thales_flask.tres" id="5_bkuek"]
 [ext_resource type="Resource" uid="uid://d2cxx7uv2q7ab" path="res://arcana/thorned_vines.tres" id="5_thorned_vines"]
 [ext_resource type="Resource" uid="uid://dohwwwoux6ubx" path="res://arcana/unruly_pyric_wraps.tres" id="6_2iw6k"]
-[ext_resource type="Resource" path="res://arcana/reapers_siphon.tres" id="7_reapers_siphon"]
+[ext_resource type="Resource" uid="uid://dscocnwv6h1v5" path="res://arcana/reapers_siphon.tres" id="7_reapers_siphon"]
 [ext_resource type="Script" uid="uid://nhrsub22p0y3" path="res://arcana/_core/arcana_catalog.gd" id="8_h2fcd"]
 
 [resource]
 script = ExtResource("8_h2fcd")
-arcana = Array[ExtResource("1_bbx47")]([ExtResource("2_olok1"), ExtResource("3_e5e74"), ExtResource("4_ymgt8"), ExtResource("5_bkuek"), ExtResource("5_thorned_vines"), ExtResource("6_2iw6k"), ExtResource("7_reapers_siphon")])
+arcana = Array[ExtResource("1_bbx47")]([ExtResource("2_olok1"), ExtResource("3_e5e74"), ExtResource("7_reapers_siphon"), ExtResource("4_ymgt8"), ExtResource("5_bkuek"), ExtResource("5_thorned_vines"), ExtResource("6_2iw6k")])
 metadata/_custom_type_script = "uid://nhrsub22p0y3"

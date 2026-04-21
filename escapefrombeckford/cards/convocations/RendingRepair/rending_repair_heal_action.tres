@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="HealAction" format=3]
+
+[ext_resource type="Script" path="res://cards/_generic_actions/heal_action.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+flat_amount = 3
+store_healed_amount_key = &"healed_amount"

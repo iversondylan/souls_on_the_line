@@ -2,7 +2,7 @@
 
 class_name HeavyAttackStatus extends Status
 
-const ID := Keys.STATUS_HEAVY_ATTACK
+const ID := &"heavy_attack"
 
 
 func get_id() -> StringName:

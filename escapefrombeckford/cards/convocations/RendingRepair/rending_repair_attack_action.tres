@@ -1,0 +1,14 @@
+[gd_resource type="Resource" format=3 uid="uid://bxyj3jvq0mgxh"]
+
+[ext_resource type="Resource" uid="uid://b6vgjaovptslx" path="res://combatants/souls/SpectralClone/ap_plus_0_damage.tres" id="1_damage_model"]
+[ext_resource type="Script" uid="uid://b8d5j6ne4mt88" path="res://npc_ai/_core/param_model.gd" id="1_param_model"]
+[ext_resource type="Script" uid="uid://ciectlejwqbj" path="res://npc_ai/attack_mode/ranged_behind_player_model.gd" id="2_ranged_mode"]
+[ext_resource type="Script" uid="uid://7g1t05kmo4hm" path="res://cards/_generic_actions/attack_now_action.gd" id="3_script"]
+
+[sub_resource type="Resource" id="Resource_ranged"]
+script = ExtResource("2_ranged_mode")
+
+[resource]
+script = ExtResource("3_script")
+param_models = Array[ExtResource("1_param_model")]([ExtResource("1_damage_model"), SubResource("Resource_ranged")])
+bonus_damage_context_key = &"healed_amount"

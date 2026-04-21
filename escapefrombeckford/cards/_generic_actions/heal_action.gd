@@ -5,6 +5,7 @@ class_name HealAction extends CardAction
 @export var flat_amount : int = 0
 @export var of_total : float = 0.0
 @export var of_missing : float = 0.0
+@export var store_healed_amount_key: StringName = &""
 
 func activate_sim(ctx: CardContext) -> bool:
 	if ctx == null or ctx.api == null:
@@ -15,11 +16,15 @@ func activate_sim(ctx: CardContext) -> bool:
 		return false
 
 	var any_applied := false
+	var any_target_processed := false
+	if StringName(store_healed_amount_key) != &"":
+		ctx.params[store_healed_amount_key] = 0
 
 	for target_id in ctx.target_ids:
 		var tid := int(target_id)
 		if tid <= 0:
 			continue
+		any_target_processed = true
 
 		var hctx := HealContext.new(
 			int(ctx.source_id),
@@ -34,8 +39,10 @@ func activate_sim(ctx: CardContext) -> bool:
 			hctx.tags.append(StringName(ctx.card_data.name))
 
 		var healed := ctx.api.heal(hctx)
+		if StringName(store_healed_amount_key) != &"":
+			ctx.params[store_healed_amount_key] = int(healed)
 		if healed > 0:
 			any_applied = true
 			ctx.runtime.append_affected_id(ctx, tid)
 
-	return any_applied
+	return any_applied or any_target_processed

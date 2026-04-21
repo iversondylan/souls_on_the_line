@@ -3,6 +3,8 @@ extends CardAction
 
 @export var attacks: int = 1
 @export var param_models: Array[ParamModel]
+@export var set_damage_to_attacker_max_health: bool = false
+@export var bonus_damage_context_key: StringName = &""
 
 func description_arity() -> int:
 	return 0
@@ -40,6 +42,8 @@ func activate_sim(ctx: CardContext) -> bool:
 		for pm: ParamModel in param_models:
 			if pm != null:
 				pm.change_params_sim(ai_ctx)
+
+	_apply_optional_damage_overrides(ctx, attacker_state, ai_ctx.params)
 
 	var attack_ctx := AttackContext.new()
 	attack_ctx.api = ctx.api
@@ -92,3 +96,27 @@ func activate_sim(ctx: CardContext) -> bool:
 			ctx.affected_ids.append(target_id)
 
 	return any
+
+func _apply_optional_damage_overrides(
+	ctx: CardContext,
+	attacker_state: CombatantState,
+	params: Dictionary
+) -> void:
+	if params == null:
+		return
+
+	var has_bonus_key := StringName(bonus_damage_context_key) != &""
+	if !bool(set_damage_to_attacker_max_health) and !has_bonus_key:
+		return
+
+	var base_damage := int(params.get(Keys.DAMAGE_MELEE, params.get(Keys.DAMAGE, 0)))
+	if bool(set_damage_to_attacker_max_health) and attacker_state != null:
+		base_damage = int(attacker_state.max_health)
+
+	if has_bonus_key and ctx != null:
+		base_damage += int(ctx.params.get(bonus_damage_context_key, 0))
+
+	base_damage = maxi(base_damage, 0)
+	params[Keys.DAMAGE] = base_damage
+	params[Keys.DAMAGE_MELEE] = base_damage
+	params[Keys.DAMAGE_RANGED] = base_damage

@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="ArcanaRewardPool" format=3 uid="uid://c8kt337vs6465"]
+[gd_resource type="Resource" script_class="ArcanaRewardPool" format=3 uid="uid://o5uq22orgwhv"]
 
 [ext_resource type="Script" uid="uid://l5htcqf6312n" path="res://arcana/_core/arcana_reward_pool.gd" id="1_taipw"]
 
