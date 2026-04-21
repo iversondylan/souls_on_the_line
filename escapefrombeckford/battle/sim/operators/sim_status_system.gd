@@ -636,7 +636,7 @@ static func refresh_cached_projected_statuses_for_unit(
 					"tid": int(record.tid) if record != null else 0,
 				}
 			)
-		target.statuses.rebuild_projected_tokens(func(status_id: StringName) -> Status:
+		target.statuses.rebuild_projected_tokens(func(status_id: StringName):
 			return get_proto(api, status_id)
 		)
 		target.statuses.set_projected_cache_ready(true)
@@ -667,7 +667,7 @@ static func refresh_cached_projected_statuses_for_unit(
 				"tid": int(record.tid) if record != null else 0,
 			}
 		)
-	target.statuses.rebuild_projected_tokens(func(status_id: StringName) -> Status:
+	target.statuses.rebuild_projected_tokens(func(status_id: StringName):
 		return get_proto(api, status_id)
 	)
 	target.statuses.set_projected_cache_ready(true)
