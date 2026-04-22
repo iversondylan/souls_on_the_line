@@ -1239,7 +1239,7 @@ func apply_status(ctx: StatusContext) -> void:
 	var applied_token: StatusToken = u.statuses.get_status_token_by_token_id(int(ctx.after_token_id), true)
 	
 	if writer != null and (ctx.op == Status.OP.APPLY or changed):
-		writer.emit_status(
+		_emit_status_event(
 			int(ctx.source_id),
 			int(ctx.target_id),
 			ctx.status_id,
@@ -1321,7 +1321,7 @@ func remove_status(ctx: StatusContext) -> void:
 	)
 	
 	if writer != null:
-		writer.emit_status(
+		_emit_status_event(
 			int(ctx.source_id),
 			int(ctx.target_id),
 			ctx.status_id,
@@ -1918,6 +1918,7 @@ func _refresh_projected_status_cache_for(
 	source_keys: Array[String] = [],
 	full_rebuild := false
 ) -> void:
+	var before_visible := _capture_visible_projected_status_tokens(int(id))
 	SimStatusSystem.refresh_cached_projected_statuses_for_unit(
 		self,
 		int(id),
@@ -1926,6 +1927,7 @@ func _refresh_projected_status_cache_for(
 	)
 	if state != null and state.transformer_registry != null:
 		state.transformer_registry.sync_projected_interceptors_for_target(state, int(id))
+	_emit_projected_status_display_diffs(int(id), before_visible, _capture_visible_projected_status_tokens(int(id)))
 
 
 func _refresh_all_projected_status_caches() -> void:
@@ -1933,6 +1935,138 @@ func _refresh_all_projected_status_caches() -> void:
 		return
 	for cid in state.units.keys():
 		_refresh_projected_status_cache_for(int(cid), [], true)
+
+
+func _emit_status_event(
+	source_id: int,
+	target_id: int,
+	status_id: StringName,
+	op: int,
+	stacks: int = 0,
+	extra := {}
+) -> void:
+	if writer == null:
+		return
+	if !_should_emit_status_event(status_id, extra):
+		return
+	writer.emit_status(source_id, target_id, status_id, op, stacks, extra)
+
+
+func _should_emit_status_event(status_id: StringName, extra := {}) -> bool:
+	if bool(extra.get(Keys.IS_PROJECTED, false)):
+		return true
+	var proto := SimStatusSystem.get_proto(self, status_id)
+	var aura := proto as Aura
+	if aura != null and !bool(aura.display_source):
+		return false
+	return true
+
+
+func _capture_visible_projected_status_tokens(target_id: int) -> Dictionary:
+	var out := {}
+	if state == null or target_id <= 0:
+		return out
+	var target := state.get_unit(int(target_id))
+	if target == null or target.statuses == null:
+		return out
+	for status_id in target.statuses.get_projected_status_ids():
+		var token := target.statuses.get_projected_status_token(status_id)
+		if token == null or !bool(token.data.get(Keys.PROJECTION_VISIBLE, false)):
+			continue
+		out[StringName(status_id)] = token.clone()
+	return out
+
+
+func _emit_projected_status_display_diffs(target_id: int, before_visible: Dictionary, after_visible: Dictionary) -> void:
+	var status_ids := {}
+	for status_id_variant in before_visible.keys():
+		status_ids[StringName(status_id_variant)] = true
+	for status_id_variant in after_visible.keys():
+		status_ids[StringName(status_id_variant)] = true
+
+	for status_id_variant in status_ids.keys():
+		var status_id := StringName(status_id_variant)
+		var before_token := before_visible.get(status_id, null) as StatusToken
+		var after_token := after_visible.get(status_id, null) as StatusToken
+		if before_token == null and after_token == null:
+			continue
+
+		var source_owner_id := 0
+		var status_data := {}
+		if after_token != null:
+			source_owner_id = int(after_token.data.get(Keys.PROJECTION_SOURCE_OWNER_ID, 0))
+			status_data = after_token.data.duplicate(true)
+		elif before_token != null:
+			source_owner_id = int(before_token.data.get(Keys.PROJECTION_SOURCE_OWNER_ID, 0))
+			status_data = before_token.data.duplicate(true)
+
+		if before_token == null and after_token != null:
+			_emit_status_event(
+				source_owner_id,
+				target_id,
+				status_id,
+				int(Status.OP.APPLY),
+				int(after_token.stacks),
+				{
+					Keys.STATUS_PENDING: false,
+					Keys.BEFORE_PENDING: false,
+					Keys.AFTER_PENDING: false,
+					Keys.BEFORE_TOKEN_ID: 0,
+					Keys.AFTER_TOKEN_ID: int(after_token.token_id),
+					Keys.BEFORE_STACKS: 0,
+					Keys.AFTER_STACKS: int(after_token.stacks),
+					Keys.DELTA_STACKS: int(after_token.stacks),
+					Keys.STATUS_DATA: status_data,
+					Keys.IS_PROJECTED: true,
+				}
+			)
+			continue
+
+		if before_token != null and after_token == null:
+			_emit_status_event(
+				source_owner_id,
+				target_id,
+				status_id,
+				int(Status.OP.REMOVE),
+				0,
+				{
+					Keys.STATUS_PENDING: false,
+					Keys.BEFORE_PENDING: false,
+					Keys.AFTER_PENDING: false,
+					Keys.BEFORE_TOKEN_ID: int(before_token.token_id),
+					Keys.AFTER_TOKEN_ID: 0,
+					Keys.BEFORE_STACKS: int(before_token.stacks),
+					Keys.AFTER_STACKS: 0,
+					Keys.DELTA_STACKS: -int(before_token.stacks),
+					Keys.STATUS_DATA: status_data,
+					Keys.IS_PROJECTED: true,
+				}
+			)
+			continue
+
+		var data_changed := before_token.data != after_token.data
+		if int(before_token.stacks) == int(after_token.stacks) and !data_changed:
+			continue
+
+		_emit_status_event(
+			source_owner_id,
+			target_id,
+			status_id,
+			int(Status.OP.CHANGE),
+			int(after_token.stacks) - int(before_token.stacks),
+			{
+				Keys.STATUS_PENDING: false,
+				Keys.BEFORE_PENDING: false,
+				Keys.AFTER_PENDING: false,
+				Keys.BEFORE_TOKEN_ID: int(before_token.token_id),
+				Keys.AFTER_TOKEN_ID: int(after_token.token_id),
+				Keys.BEFORE_STACKS: int(before_token.stacks),
+				Keys.AFTER_STACKS: int(after_token.stacks),
+				Keys.DELTA_STACKS: int(after_token.stacks) - int(before_token.stacks),
+				Keys.STATUS_DATA: status_data,
+				Keys.IS_PROJECTED: true,
+			}
+		)
 
 
 # ============================================================================

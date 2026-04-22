@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="NPCAction" format=3 uid="uid://c3s2vcfwebrub"]
+
+[ext_resource type="Script" uid="uid://3jde7uhq2yho" path="res://npc_ai/_core/npc_effect_package.gd" id="1_pkg"]
+[ext_resource type="Resource" uid="uid://dilry8ugywdpa" path="res://combatants/enemies/AwakenedSubject/twin_theory_attack_pkg.tres" id="2_attack_pkg"]
+[ext_resource type="Texture2D" uid="uid://c54dbo8n7r3g" path="res://_assets/sprites/assorted/attack.PNG" id="3_icon"]
+[ext_resource type="Script" uid="uid://bcih413oy6v73" path="res://npc_ai/_core/npc_action.gd" id="4_action"]
+[ext_resource type="Script" uid="uid://dtwuyctovqk5r" path="res://npc_ai/_core/intent_lifecycle_model.gd" id="4_tg3id"]
+[ext_resource type="Resource" uid="uid://7gggk4mmejsq" path="res://npc_ai/text/attack_intent_text_model.tres" id="5_text_model"]
+[ext_resource type="Script" uid="uid://q408gy2b4q6a" path="res://npc_ai/_core/performable_model.gd" id="6_351lk"]
+[ext_resource type="Resource" path="res://combatants/enemies/AwakenedSubject/twin_theory_tooltip_model.tres" id="6_tooltip_model"]
+[ext_resource type="Resource" uid="uid://btgtvs6ab0nsg" path="res://npc_ai/chance/half_exponential_spree_chance_state_model.tres" id="7_half_exp"]
+[ext_resource type="Script" uid="uid://cuj4qvyx6dedj" path="res://npc_ai/_core/state_model.gd" id="8_state"]
+
+[resource]
+script = ExtResource("4_action")
+effect_packages = Array[ExtResource("1_pkg")]([ExtResource("2_attack_pkg")])
+state_models = Array[ExtResource("8_state")]([ExtResource("7_half_exp")])
+action_name = "Filament Lash"
+intent_icon = ExtResource("3_icon")
+intent_text_model = ExtResource("5_text_model")
+tooltip_model = ExtResource("6_tooltip_model")

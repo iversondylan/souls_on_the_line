@@ -4,4 +4,4 @@
 
 [resource]
 script = ExtResource("1_tooltip_model")
-text_template = "[b]{action_name}[/b]: {strikes}{damage} damage and then all opponents deal 50% less damage and take 50% more damage for 1 turn."
+text_template = "[b]{action_name}[/b]: {strikes}{damage} damage, then all opponents gain 1 Weakened and become Vulnerable through this unit's next turn."

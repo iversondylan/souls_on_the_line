@@ -79,7 +79,7 @@ func change_stacks(delta: int, reason: String = "") -> void:
 		owner.statuses.set_token(get_status_id(), after_stacks, is_pending())
 
 	if api.writer != null:
-		api.writer.emit_status(
+		api._emit_status_event(
 			owner_id,
 			owner_id,
 			get_status_id(),
@@ -203,7 +203,7 @@ func _emit_token_data_changed(reason: String) -> void:
 		return
 
 	if api.writer != null:
-		api.writer.emit_status(
+		api._emit_status_event(
 			owner_id,
 			owner_id,
 			get_status_id(),

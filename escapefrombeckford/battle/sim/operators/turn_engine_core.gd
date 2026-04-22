@@ -292,14 +292,14 @@ func notify_summon_added(ctx: SummonContext) -> void:
 	if summoned_id <= 0:
 		_queue_dirty = true
 		return
+	if after_order.find(summoned_id) == -1:
+		_queue_dirty = true
+		return
 
-	# If no actor is currently active, use the natural seed rule for this phase.
+	# If no actor is currently active, the summoned unit joins the continuous
+	# group queue as long as it exists in the post-summon order.
 	if !_running_actor or current_actor_id <= 0:
-		if _summon_belongs_to_natural_phase_seed(summoned_id, after_order):
-			_pending_members[summoned_id] = true
-		else:
-			_pending_members.erase(summoned_id)
-
+		_pending_members[summoned_id] = true
 		_queue_dirty = true
 		return
 
@@ -530,21 +530,6 @@ func _seed_pending_members_for_phase() -> void:
 		if id > 0:
 			_pending_members[id] = true
 
-
-func _summon_belongs_to_natural_phase_seed(summoned_id: int, order: PackedInt32Array) -> bool:
-	if summoned_id <= 0:
-		return false
-
-	var idx := order.find(summoned_id)
-	if idx == -1:
-		return false
-
-	if active_group_index != 0:
-		return true
-
-	return true
-
-
 func _grant_pending_turn(combat_id: int) -> void:
 	if combat_id <= 0:
 		return
@@ -585,23 +570,9 @@ func _can_grant_restore_to(combat_id: int) -> bool:
 	if int(_turns_taken.get(combat_id, 0)) <= 0:
 		return false
 	return int(_restores_granted.get(combat_id, 0)) < MAX_RESTORES_PER_FIGHTER_PER_GROUP_TURN
+
+
 func _get_current_group_order() -> PackedInt32Array:
 	if active_group_index < 0:
 		return PackedInt32Array()
 	return host.get_group_order_ids(active_group_index)
-
-
-func _collect_relevant_ids_from_orders(before_order: PackedInt32Array, after_order: PackedInt32Array) -> PackedInt32Array:
-	var out := PackedInt32Array()
-
-	for value in before_order:
-		var id := int(value)
-		if id > 0 and !out.has(id):
-			out.append(id)
-
-	for value in after_order:
-		var id := int(value)
-		if id > 0 and !out.has(id):
-			out.append(id)
-
-	return out

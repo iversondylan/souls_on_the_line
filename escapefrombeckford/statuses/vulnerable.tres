@@ -6,6 +6,6 @@
 [resource]
 script = ExtResource("1_vulnerable_script")
 status_name = "Vulnerable"
-numerical = true
-auto_tick_down = 1
+numerical = false
 icon = ExtResource("2_vulnerable_icon")
+metadata/_custom_type_script = "uid://bsdr00152afcj"

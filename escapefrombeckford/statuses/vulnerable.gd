@@ -33,7 +33,5 @@ func get_modifier_tokens(ctx: StatusTokenContext) -> Array[ModifierToken]:
 	Status.set_token_owner(token, ctx)
 	return [token]
 
-func get_tooltip(stacks: int = 0) -> String:
-	if stacks == 1:
-		return "Vulnerable: take %s%% more damage for 1 turn. Ticks down at end of turn." % floori(MULT_VALUE * 100)
-	return "Vulnerable: take %s%% more damage for %s turns. Ticks down at end of turn." % [floori(MULT_VALUE * 100), stacks]
+func get_tooltip(_stacks: int = 0) -> String:
+	return "Vulnerable: take %s%% more damage." % floori(MULT_VALUE * 100)

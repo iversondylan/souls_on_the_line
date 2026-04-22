@@ -61,6 +61,9 @@ func apply_status(order: StatusAppliedOrder) -> void:
 	if proto == null:
 		push_warning("StatusViewGrid: missing status proto for id=%s" % String(order.status_id))
 		return
+	var aura := proto as Aura
+	if aura != null and !bool(aura.display_source) and !bool(order.data.get(Keys.IS_PROJECTED, false)):
+		return
 
 	var before_key := _make_state_key(order.before_token_id, order.status_id, order.before_pending)
 	var after_key := _make_state_key(order.after_token_id, order.status_id, order.after_pending)

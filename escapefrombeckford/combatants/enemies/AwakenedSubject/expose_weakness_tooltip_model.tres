@@ -1,0 +1,7 @@
+[gd_resource type="Resource" script_class="IntentTooltipTextModel" format=3]
+
+[ext_resource type="Script" path="res://npc_ai/text/intent_tooltip_text_model.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+text_template = "[b]{action_name}[/b]: all opponents gain 1 Weakened and become Vulnerable through this unit's next turn."

@@ -367,7 +367,7 @@ static func realize_pending_statuses(
 		any_changed = true
 		mutation_results.append(mutation)
 		if api.writer != null:
-			api.writer.emit_status(
+			api._emit_status_event(
 				int(ctx.source_id),
 				int(ctx.target_id),
 				ctx.status_id,
@@ -657,9 +657,13 @@ static func refresh_cached_projected_statuses_for_unit(
 				{
 					"priority": int(record.priority) if record != null else 0,
 					"tid": int(record.tid) if record != null else 0,
+					Keys.PROJECTION_SOURCE_OWNER_ID: int(record.source_owner_id) if record != null else 0,
+					Keys.PROJECTION_SOURCE_STATUS_ID: StringName(record.source_id) if record != null else &"",
+					Keys.PROJECTION_VISIBLE: _record_displays_projection(api, record),
 				},
 				proto_resolver
 			)
+		_assign_projected_token_identity(target, target_id)
 		target.statuses.set_projected_cache_ready(true)
 		return
 
@@ -686,9 +690,13 @@ static func refresh_cached_projected_statuses_for_unit(
 			{
 				"priority": int(record.priority) if record != null else 0,
 				"tid": int(record.tid) if record != null else 0,
+				Keys.PROJECTION_SOURCE_OWNER_ID: int(record.source_owner_id) if record != null else 0,
+				Keys.PROJECTION_SOURCE_STATUS_ID: StringName(record.source_id) if record != null else &"",
+				Keys.PROJECTION_VISIBLE: _record_displays_projection(api, record),
 			},
 			proto_resolver
 		)
+	_assign_projected_token_identity(target, target_id)
 	target.statuses.set_projected_cache_ready(true)
 
 static func _collect_projection_entries_by_source_key(api: SimBattleAPI) -> TransformerRecordLookup:
@@ -823,6 +831,31 @@ static func _resolve_projected_stacks(projected_proto: Status, projection_intens
 		return 1 if projection_intensity > 0 or projection_duration > 0 else 0
 	return projection_intensity
 
+static func _record_displays_projection(api: SimBattleAPI, record: TransformerRecord) -> bool:
+	if api == null or record == null:
+		return false
+	if record.source_kind != TransformerRecord.SOURCE_KIND_STATUS_TOKEN:
+		return false
+	var proto := get_proto(api, StringName(record.source_id)) as Aura
+	return proto != null and bool(proto.display_projection)
+
+static func _assign_projected_token_identity(target: CombatantState, target_id: int) -> void:
+	if target == null or target.statuses == null or target_id <= 0:
+		return
+	for status_id in target.statuses.get_projected_status_ids():
+		var projected_token := target.statuses.get_projected_status_token(status_id)
+		if projected_token == null:
+			continue
+		projected_token.pending = false
+		projected_token.token_id = _make_projected_token_id(target_id, status_id)
+		if projected_token.data == null:
+			projected_token.data = {}
+		projected_token.data[Keys.IS_PROJECTED] = true
+
+static func _make_projected_token_id(target_id: int, status_id: StringName) -> int:
+	var raw: int = abs(int(hash("%s::%s::projected" % [str(target_id), String(status_id)])))
+	return maxi(raw, 1)
+
 static func _auto_remove_for_group(api: SimBattleAPI, group_index: int, policy: int) -> void:
 	var ids := api.get_combatants_in_group(group_index, true)
 	for cid in ids:
@@ -912,7 +945,7 @@ static func _tick_down_unit(api: SimBattleAPI, owner_id: int, policy: int, reaso
 
 	if api.writer != null:
 		for item in changed:
-			api.writer.emit_status(
+			api._emit_status_event(
 				owner_id,
 				owner_id,
 				item.sid,
@@ -929,6 +962,14 @@ static func _tick_down_unit(api: SimBattleAPI, owner_id: int, policy: int, reaso
 					Keys.DELTA_STACKS: int(item.delta_stacks),
 					Keys.REASON: reason,
 				}
+			)
+			api._sync_transformer_source(
+				TransformerSourceRef.for_status_token(
+					owner_id,
+					int(u.team),
+					StringName(item.sid),
+					int(item.token_id)
+				)
 			)
 
 	for item in removed:

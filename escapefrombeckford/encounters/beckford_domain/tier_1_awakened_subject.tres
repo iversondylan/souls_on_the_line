@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="BattleData" format=3]
+
+[ext_resource type="Script" path="res://combatants/combatant_data.gd" id="1_combatant_data"]
+[ext_resource type="Resource" path="res://combatants/enemies/AwakenedSubject/awakened_subject_data.tres" id="2_subject"]
+[ext_resource type="Script" path="res://encounters/battle_data.gd" id="3_battle_data"]
+
+[resource]
+script = ExtResource("3_battle_data")
+encounter_name = "Awakened Subject"
+battle_tier = 1
+gold_reward_min = 70
+gold_reward_max = 110
+enemies = Array[ExtResource("1_combatant_data")]([ExtResource("2_subject")])

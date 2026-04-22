@@ -16,8 +16,9 @@
 [ext_resource type="Resource" uid="uid://dqfr6a6r3153l" path="res://encounters/beckford_domain/tier_0_groundskeeper.tres" id="13_ps7vb"]
 [ext_resource type="Resource" uid="uid://cloe37pet1i23" path="res://encounters/beckford_domain/tier_0_valedictorian.tres" id="14_mut5w"]
 [ext_resource type="Resource" uid="uid://b2depn4mdc7fm" path="res://encounters/beckford_domain/tier_0_weber_swordman.tres" id="15_x4vl4"]
+[ext_resource type="Resource" path="res://encounters/beckford_domain/tier_1_awakened_subject.tres" id="16_awakened_subject"]
 
 [resource]
 script = ExtResource("2_coyo0")
-pool = Array[ExtResource("1_c5yi3")]([ExtResource("2_aqbw1"), ExtResource("2_5mnow"), ExtResource("4_fkffm"), ExtResource("5_n1tbg"), ExtResource("6_y2t0r"), ExtResource("6b_duplex"), ExtResource("9_gentle_deep"), ExtResource("10_rowan"), ExtResource("7_sumc2"), ExtResource("8_mneoi"), ExtResource("11_scrap_detail"), ExtResource("13_ps7vb"), ExtResource("14_mut5w"), ExtResource("15_x4vl4")])
+pool = Array[ExtResource("1_c5yi3")]([ExtResource("2_aqbw1"), ExtResource("2_5mnow"), ExtResource("4_fkffm"), ExtResource("5_n1tbg"), ExtResource("6_y2t0r"), ExtResource("6b_duplex"), ExtResource("9_gentle_deep"), ExtResource("10_rowan"), ExtResource("7_sumc2"), ExtResource("8_mneoi"), ExtResource("11_scrap_detail"), ExtResource("13_ps7vb"), ExtResource("14_mut5w"), ExtResource("15_x4vl4"), ExtResource("16_awakened_subject")])
 metadata/_custom_type_script = "uid://b203gsihy5ttn"

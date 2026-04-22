@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="NPCAIProfile" format=3]
+
+[ext_resource type="Script" path="res://npc_ai/_core/npc_action.gd" id="1_action"]
+[ext_resource type="Resource" path="res://combatants/critters/ShieldIdeation/shield_ideation_attack_action.tres" id="2_attack_action"]
+[ext_resource type="Script" path="res://npc_ai/_core/npc_ai_profile.gd" id="3_ai_script"]
+
+[resource]
+script = ExtResource("3_ai_script")
+actions = Array[ExtResource("1_action")]([ExtResource("2_attack_action")])

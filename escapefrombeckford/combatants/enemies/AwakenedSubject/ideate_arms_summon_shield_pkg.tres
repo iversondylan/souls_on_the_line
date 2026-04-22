@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="NPCEffectPackage" format=3]
+
+[ext_resource type="Resource" path="res://npc_ai/npc_summon_sequence.tres" id="1_summon"]
+[ext_resource type="Script" path="res://npc_ai/_core/param_model.gd" id="2_param"]
+[ext_resource type="Script" path="res://npc_ai/_core/npc_effect_package.gd" id="3_pkg"]
+[ext_resource type="Resource" path="res://combatants/enemies/AwakenedSubject/shield_ideation_summon_model.tres" id="4_summon_model"]
+
+[resource]
+script = ExtResource("3_pkg")
+effect = ExtResource("1_summon")
+param_models = Array[ExtResource("2_param")]([ExtResource("4_summon_model")])

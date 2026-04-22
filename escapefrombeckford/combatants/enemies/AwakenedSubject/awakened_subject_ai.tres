@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="NPCAIProfile" format=3]
+
+[ext_resource type="Script" path="res://npc_ai/_core/npc_action.gd" id="1_action"]
+[ext_resource type="Resource" path="res://combatants/enemies/AwakenedSubject/ideate_arms_action.tres" id="2_ideate_arms"]
+[ext_resource type="Resource" path="res://combatants/enemies/AwakenedSubject/twin_theory_action.tres" id="3_twin_theory"]
+[ext_resource type="Resource" path="res://combatants/enemies/AwakenedSubject/expose_weakness_action.tres" id="4_expose_weakness"]
+[ext_resource type="Script" path="res://npc_ai/_core/npc_ai_profile.gd" id="5_ai_script"]
+
+[resource]
+script = ExtResource("5_ai_script")
+actions = Array[ExtResource("1_action")]([ExtResource("2_ideate_arms"), ExtResource("3_twin_theory"), ExtResource("4_expose_weakness")])

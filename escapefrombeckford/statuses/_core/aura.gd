@@ -4,6 +4,8 @@ class_name Aura extends Status
 enum AuraType {ALLIES, ENEMIES}
 @export var aura_type: AuraType
 @export var projected_statuses: Array[Status] = []
+@export var display_source: bool = true
+@export var display_projection: bool = false
 
 func affects_others() -> bool:
 	return true

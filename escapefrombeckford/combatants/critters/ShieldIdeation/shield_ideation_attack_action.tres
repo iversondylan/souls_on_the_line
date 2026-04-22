@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="NPCAction" format=3]
+
+[ext_resource type="Script" path="res://npc_ai/_core/npc_effect_package.gd" id="1_pkg"]
+[ext_resource type="Resource" path="res://combatants/critters/ShieldIdeation/shield_ideation_attack_pkg.tres" id="2_attack_pkg"]
+[ext_resource type="Texture2D" path="res://_assets/sprites/assorted/attack.PNG" id="3_icon"]
+[ext_resource type="Script" path="res://npc_ai/_core/npc_action.gd" id="4_action"]
+[ext_resource type="Resource" path="res://npc_ai/text/attack_intent_text_model.tres" id="5_text_model"]
+[ext_resource type="Resource" path="res://npc_ai/text/attack_intent_tooltip_text_model.tres" id="6_tooltip_model"]
+
+[resource]
+script = ExtResource("4_action")
+effect_packages = Array[ExtResource("1_pkg")]([ExtResource("2_attack_pkg")])
+action_name = "Shield Bash"
+intent_icon = ExtResource("3_icon")
+intent_text_model = ExtResource("5_text_model")
+tooltip_model = ExtResource("6_tooltip_model")

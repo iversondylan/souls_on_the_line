@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="StatusModel" format=3]
+
+[ext_resource type="Script" path="res://npc_ai/status/status_model.gd" id="1_status_model"]
+[ext_resource type="Resource" path="res://statuses/absorb.tres" id="2_absorb"]
+
+[resource]
+script = ExtResource("1_status_model")
+status = ExtResource("2_absorb")

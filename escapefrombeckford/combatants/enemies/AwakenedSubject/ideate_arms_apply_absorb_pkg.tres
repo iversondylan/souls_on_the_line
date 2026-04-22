@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="NPCEffectPackage" format=3]
+
+[ext_resource type="Resource" path="res://npc_ai/npc_status_sequence.tres" id="1_status_effect"]
+[ext_resource type="Script" path="res://npc_ai/_core/param_model.gd" id="2_param"]
+[ext_resource type="Script" path="res://npc_ai/_core/npc_effect_package.gd" id="3_pkg"]
+[ext_resource type="Resource" path="res://combatants/enemies/AwakenedSubject/absorb_status_model.tres" id="4_status_model"]
+[ext_resource type="Resource" path="res://npc_ai/status/summoned_status_target_model.tres" id="5_target_model"]
+
+[resource]
+script = ExtResource("3_pkg")
+effect = ExtResource("1_status_effect")
+param_models = Array[ExtResource("2_param")]([ExtResource("4_status_model"), ExtResource("5_target_model")])
+compact_to_previous = true

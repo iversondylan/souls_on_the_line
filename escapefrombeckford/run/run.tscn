@@ -2,9 +2,9 @@
 
 [ext_resource type="Script" uid="uid://c0e8h833ypklr" path="res://run/run.gd" id="1_l7o68"]
 [ext_resource type="PackedScene" uid="uid://6p15tduy6cd2" path="res://run/map/map.tscn" id="2_wdonh"]
-[ext_resource type="Resource" uid="uid://okdejvbs611" path="res://statuses/_core/status_catalog.tres" id="3_7yo0l"]
-[ext_resource type="Resource" uid="uid://dnbh3khf1qewe" path="res://arcana/_core/arcanum_catalog.tres" id="4_fo0ly"]
-[ext_resource type="Resource" uid="uid://hkw3l5xa63gq" path="res://encounters/battle_pool_1.tres" id="4_nnxm5"]
+[ext_resource type="Resource" uid="uid://3l0hbwenj5kw" path="res://statuses/_core/status_catalog.tres" id="3_7yo0l"]
+[ext_resource type="Resource" uid="uid://dlh60bysqnt4f" path="res://arcana/_core/arcanum_catalog.tres" id="4_fo0ly"]
+[ext_resource type="Resource" uid="uid://dq3n87o7cuyxg" path="res://encounters/battle_pool_test.tres" id="4_nnxm5"]
 [ext_resource type="PackedScene" uid="uid://bxtf6la07t0t5" path="res://ui/card_pile_opener.tscn" id="5_0tt4g"]
 [ext_resource type="Resource" uid="uid://trlxaybf7coq" path="res://encounters/tutorial/tutorial_encounter.tres" id="5_5phry"]
 [ext_resource type="PackedScene" uid="uid://b5kimimy0ccq0" path="res://ui/health_bar.tscn" id="5_ux63y"]

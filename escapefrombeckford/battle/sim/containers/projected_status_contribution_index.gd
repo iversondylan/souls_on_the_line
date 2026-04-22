@@ -139,21 +139,27 @@ func build_projected_token(status_id: StringName, proto: Status = null) -> Statu
 
 	var effective_reapply_type := int(proto.get_effective_reapply_type()) if proto != null else int(Status.ReapplyType.ADD)
 	var total_stacks := 0
+	var representative_order: Dictionary = {}
 	match effective_reapply_type:
 		int(Status.ReapplyType.REPLACE):
 			# Contributors are sorted oldest->newest, so .back() is the newest projection.
-			var latest := contributors.back().get("token", null) as StatusToken
+			var latest_contributor: Dictionary = contributors.back()
+			var latest := latest_contributor.get("token", null) as StatusToken
 			total_stacks = int(latest.stacks) if latest != null else 0
+			representative_order = latest_contributor.get("order", {})
 		int(Status.ReapplyType.IGNORE):
 			# Contributors are sorted oldest->newest, so .front() is the oldest projection.
-			var earliest := contributors.front().get("token", null) as StatusToken
+			var earliest_contributor: Dictionary = contributors.front()
+			var earliest := earliest_contributor.get("token", null) as StatusToken
 			total_stacks = int(earliest.stacks) if earliest != null else 0
+			representative_order = earliest_contributor.get("order", {})
 		_:
 			for contributor in contributors:
 				var contributor_token := contributor.get("token", null) as StatusToken
 				if contributor_token == null:
 					continue
 				total_stacks += int(contributor_token.stacks)
+			representative_order = contributors.front().get("order", {})
 
 	if total_stacks <= 0:
 		return null
@@ -161,7 +167,32 @@ func build_projected_token(status_id: StringName, proto: Status = null) -> Statu
 	var out_token := StatusToken.new(status_id)
 	out_token.pending = false
 	out_token.stacks = total_stacks
+	_write_projection_metadata(out_token, contributors, representative_order)
 	return out_token
+
+
+func _write_projection_metadata(
+	out_token: StatusToken,
+	contributors: Array[Dictionary],
+	representative_order: Dictionary
+) -> void:
+	if out_token == null:
+		return
+
+	var visible_contributor: Dictionary = {}
+	for contributor in contributors:
+		var order: Dictionary = contributor.get("order", {})
+		if bool(order.get(Keys.PROJECTION_VISIBLE, false)):
+			visible_contributor = order
+			break
+
+	var chosen_order := visible_contributor if !visible_contributor.is_empty() else representative_order
+	out_token.data = {
+		Keys.IS_PROJECTED: true,
+		Keys.PROJECTION_VISIBLE: !visible_contributor.is_empty(),
+		Keys.PROJECTION_SOURCE_OWNER_ID: int(chosen_order.get(Keys.PROJECTION_SOURCE_OWNER_ID, 0)),
+		Keys.PROJECTION_SOURCE_STATUS_ID: StringName(chosen_order.get(Keys.PROJECTION_SOURCE_STATUS_ID, &"")),
+	}
 
 
 func _get_source_map(source_key: String) -> Dictionary:

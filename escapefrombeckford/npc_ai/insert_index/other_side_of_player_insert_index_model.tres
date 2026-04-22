@@ -1,7 +1,6 @@
-[gd_resource type="Resource" script_class="OtherSideOfPlayerInsertIndexModel" format=3]
+[gd_resource type="Resource" script_class="OtherSideOfPlayerInsertIndexModel" format=3 uid="uid://crl43rkhtygax"]
 
-[ext_resource type="Script" path="res://npc_ai/insert_index/other_side_of_player_insert_index_model.gd" id="1_script"]
+[ext_resource type="Script" uid="uid://db8j1rdmjst2w" path="res://npc_ai/insert_index/other_side_of_player_insert_index_model.gd" id="1_script"]
 
 [resource]
 script = ExtResource("1_script")
-

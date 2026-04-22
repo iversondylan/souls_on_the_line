@@ -112,13 +112,16 @@ func invalidate_effective_context_cache() -> void:
 func get_projected_dependency_status_ids(source_key: String) -> Array[StringName]:
 	return _projected_contribution_index.get_dependency_status_ids(source_key)
 
+func get_projected_source_keys_for_status(status_id: StringName) -> Array[String]:
+	return _projected_contribution_index.get_source_keys_for_status(status_id)
+
 func rebuild_projected_tokens(proto_resolver: Callable = Callable()) -> void:
 	by_id_projected.clear()
 	for status_id in _projected_contribution_index.get_all_status_ids():
 		var proto: Status = null
 		if proto_resolver.is_valid():
 			proto = proto_resolver.call(status_id) as Status
-		var projected_token := _projected_contribution_index.build_projected_token(status_id, proto)
+		var projected_token: StatusToken = _projected_contribution_index.build_projected_token(status_id, proto)
 		if projected_token != null:
 			by_id_projected[status_id] = projected_token
 

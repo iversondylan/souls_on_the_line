@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="ArcanaCatalog" format=3 uid="uid://dnbh3khf1qewe"]
+[gd_resource type="Resource" script_class="ArcanaCatalog" format=3 uid="uid://dlh60bysqnt4f"]
 
 [ext_resource type="Script" uid="uid://cnmucv1qsei4i" path="res://arcana/_core/arcanum.gd" id="1_bbx47"]
 [ext_resource type="Resource" uid="uid://clmmoar1fhh44" path="res://arcana/adamant_ally.tres" id="2_olok1"]
