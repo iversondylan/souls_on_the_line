@@ -1517,7 +1517,7 @@ func _populate_strike_info_from_marker_and_events(
 	s.has_lethal_hit = removal_confirms_lethal
 	if !s.has_lethal_hit:
 		for h in s.hits:
-			if h != null and bool(h.was_lethal):
+			if h != null and h.was_lethal:
 				s.has_lethal_hit = true
 				break
 
