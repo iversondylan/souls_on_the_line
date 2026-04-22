@@ -1419,6 +1419,7 @@ func _is_attack_direct_event(event: BattleEvent) -> bool:
 		return false
 	match int(event.type):
 		BattleEvent.Type.DAMAGE_APPLIED, \
+		BattleEvent.Type.HEAL_APPLIED, \
 		BattleEvent.Type.CHANGE_MAX_HEALTH, \
 		BattleEvent.Type.MODIFY_BATTLE_CARD, \
 		BattleEvent.Type.STATUS, \

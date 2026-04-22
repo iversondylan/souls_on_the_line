@@ -1,12 +1,11 @@
-[gd_resource type="Resource" script_class="PhoenixBroochStatus" format=3]
+[gd_resource type="Resource" script_class="PhoenixBroochStatus" format=3 uid="uid://dtc2lpqlt31m8"]
 
-[ext_resource type="Texture2D" path="res://_assets/sprites/assorted/fire-iris.png" id="1_icon"]
-[ext_resource type="Script" path="res://statuses/phoenix_brooch.gd" id="2_script"]
+[ext_resource type="Texture2D" uid="uid://ep4forsrgiol" path="res://_assets/sprites/assorted/hawk-emblem.png" id="1_ggdkm"]
+[ext_resource type="Script" uid="uid://cqeadsuhhd4vh" path="res://statuses/phoenix_brooch.gd" id="2_script"]
 
 [resource]
 script = ExtResource("2_script")
 status_name = "Phoenix Brooch"
 numerical = false
-icon = ExtResource("1_icon")
+icon = ExtResource("1_ggdkm")
 tooltip = "The next time this unit would die, heal it to full instead and remove this status."
-

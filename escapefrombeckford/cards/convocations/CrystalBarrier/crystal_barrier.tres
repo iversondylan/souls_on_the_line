@@ -4,7 +4,7 @@
 [ext_resource type="Resource" uid="uid://c71a7e78wqfvy" path="res://cards/convocations/PressureBarrier/pressure_barrier_action.tres" id="2_pressure_barrier"]
 [ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://cards/_core/card_data.gd" id="3_card_data"]
 [ext_resource type="Resource" path="res://cards/convocations/CrystalBarrier/crystal_barrier_absorb_action.tres" id="4_absorb"]
-[ext_resource type="Texture2D" uid="uid://jblyb3q37s5g" path="res://_assets/sprites/assorted/bell-shield.png" id="5_texture"]
+[ext_resource type="Texture2D" uid="uid://dnnha15u8uufk" path="res://_assets/sprites/assorted/crystal-bars.png" id="5_j0c3a"]
 
 [resource]
 script = ExtResource("3_card_data")
@@ -14,6 +14,6 @@ rarity = 1
 name = "Crystal Barrier"
 description = "An ally gains Absorb, and hits on them have their damage reduced by %s until your next turn."
 cost = 1
-texture = ExtResource("5_texture")
+texture = ExtResource("5_j0c3a")
 actions = Array[ExtResource("1_action")]([ExtResource("2_pressure_barrier"), ExtResource("4_absorb")])
 metadata/_custom_type_script = "uid://d2f0qepe047dc"

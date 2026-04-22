@@ -1,19 +1,17 @@
-[gd_resource type="Resource" script_class="CardData" format=3]
+[gd_resource type="Resource" script_class="CardData" format=3 uid="uid://cjaej0janfnmn"]
 
-[ext_resource type="Script" path="res://cards/_core/card_action.gd" id="1_action"]
+[ext_resource type="Script" uid="uid://wtk5v77fcqvn" path="res://cards/_core/card_action.gd" id="1_action"]
 [ext_resource type="Resource" path="res://cards/enchantments/PocketSilkstitchers/pocket_silkstitchers_action.tres" id="2_action_res"]
-[ext_resource type="Script" path="res://cards/_core/card_data.gd" id="3_card_data"]
-[ext_resource type="Texture2D" path="res://_assets/sprites/assorted/backup.png" id="4_texture"]
+[ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://cards/_core/card_data.gd" id="3_card_data"]
+[ext_resource type="Texture2D" uid="uid://dplnbbk0jjblk" path="res://_assets/sprites/assorted/web-spit.png" id="4_ib2bp"]
 
 [resource]
 script = ExtResource("3_card_data")
 id = &"pocket_silkstitchers"
 card_type = 2
-rarity = 0
 name = "Pocket Silkstitchers"
 deplete = true
 description = "Deplete. Once each round, the first time an ally survives attack damage, it gains +1/+2."
 cost = 2
-texture = ExtResource("4_texture")
+texture = ExtResource("4_ib2bp")
 actions = Array[ExtResource("1_action")]([ExtResource("2_action_res")])
-

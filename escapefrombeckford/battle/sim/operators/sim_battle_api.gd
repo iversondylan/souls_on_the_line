@@ -1154,13 +1154,6 @@ func resolve_removal(ctx) -> void:
 		runtime.enqueue_delayed_reaction(reaction)
 		if !runtime.is_in_strike_resolution():
 			runtime.drain_delayed_reactions(DelayedReaction.Timing.AFTER_STRIKE)
-		else:
-			var any_death_interceptors := get_interceptors_for_hook(Interceptor.HOOK_ON_ANY_DEATH)
-			SimStatusSystem.on_removal(self, ctx)
-			SimArcanaSystem.on_removal(self, ctx)
-			for interceptor: Interceptor in any_death_interceptors:
-				if interceptor != null:
-					interceptor.dispatch(self, ctx)
 
 
 func resolve_move(ctx: MoveContext) -> void:

@@ -1,10 +1,11 @@
-[gd_resource type="Resource" script_class="ShieldTransmissionStatus" format=3]
+[gd_resource type="Resource" script_class="ShieldTransmissionStatus" format=3 uid="uid://csi4jqnq74dr8"]
 
-[ext_resource type="Script" path="res://statuses/shield_transmission.gd" id="1_script"]
-[ext_resource type="Texture2D" path="res://_assets/sprites/assorted/backup.png" id="2_icon"]
+[ext_resource type="Script" uid="uid://btdk6fp6yvfny" path="res://statuses/shield_transmission.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://cwjfwwru2of7i" path="res://_assets/sprites/assorted/resonance.png" id="1_u70mj"]
 
 [resource]
 script = ExtResource("1_script")
 status_name = "Shield Transmission"
 numerical = false
-icon = ExtResource("2_icon")
+auto_remove = 3
+icon = ExtResource("1_u70mj")

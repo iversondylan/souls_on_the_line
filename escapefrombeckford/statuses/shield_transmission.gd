@@ -1,7 +1,6 @@
 class_name ShieldTransmissionStatus extends Status
 
 const ID := &"shield_transmission"
-const SHIELD_TRANSMISSION_GUARD := preload("res://statuses/shield_transmission_guard.tres")
 
 func get_id() -> StringName:
 	return ID
@@ -16,13 +15,13 @@ func on_card_played(ctx: SimStatusContext, source_id: int, card: CardData) -> vo
 		return
 	if int(card.card_type) != int(CardData.CardType.CONVOCATION):
 		return
-	if SHIELD_TRANSMISSION_GUARD == null or !ctx.owner.is_alive():
+	if !ctx.owner.is_alive():
 		return
 
 	var status_ctx := StatusContext.new()
 	status_ctx.source_id = int(ctx.owner_id)
 	status_ctx.target_id = int(ctx.owner_id)
-	status_ctx.status_id = SHIELD_TRANSMISSION_GUARD.get_id()
+	status_ctx.status_id = BulwarkStatus.ID
 	status_ctx.stacks = 25
 	status_ctx.reason = "shield_transmission"
 	ctx.api.apply_status(status_ctx)

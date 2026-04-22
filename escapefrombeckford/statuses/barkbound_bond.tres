@@ -1,10 +1,9 @@
-[gd_resource type="Resource" script_class="BarkboundBondStatus" format=3]
+[gd_resource type="Resource" script_class="BarkboundBondStatus" format=3 uid="uid://cqrg6576shqsw"]
 
-[ext_resource type="Script" path="res://statuses/barkbound_bond.gd" id="1_script"]
-[ext_resource type="Texture2D" path="res://_assets/sprites/assorted/team-upgrade.png" id="2_icon"]
+[ext_resource type="Texture2D" uid="uid://dng4vlijjabi4" path="res://_assets/sprites/assorted/tree-roots.png" id="1_5grxb"]
+[ext_resource type="Script" uid="uid://d1t4tulsdkhtb" path="res://statuses/barkbound_bond.gd" id="1_script"]
 
 [resource]
 script = ExtResource("1_script")
 status_name = "Barkbound Bond"
-numerical = true
-icon = ExtResource("2_icon")
+icon = ExtResource("1_5grxb")

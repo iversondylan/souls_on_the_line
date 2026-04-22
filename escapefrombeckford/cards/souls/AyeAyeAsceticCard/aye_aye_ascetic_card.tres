@@ -1,10 +1,10 @@
-[gd_resource type="Resource" script_class="CardData" format=3]
+[gd_resource type="Resource" script_class="CardData" format=3 uid="uid://biqodd5dbpmup"]
 
-[ext_resource type="Script" path="res://cards/_core/card_action.gd" id="1_card_action"]
-[ext_resource type="Script" path="res://cards/_core/card_data.gd" id="2_card_data"]
+[ext_resource type="Script" uid="uid://wtk5v77fcqvn" path="res://cards/_core/card_action.gd" id="1_card_action"]
+[ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://cards/_core/card_data.gd" id="2_card_data"]
 [ext_resource type="Resource" path="res://cards/souls/AyeAyeAsceticCard/summon_aye_aye_ascetic.tres" id="3_summon"]
 [ext_resource type="Resource" path="res://cards/souls/AyeAyeAsceticCard/aye_aye_threshold_on_summoned_action.tres" id="4_threshold"]
-[ext_resource type="Texture2D" path="res://_assets/sprites/assorted/prayer.png" id="5_texture"]
+[ext_resource type="Texture2D" uid="uid://c8856cirhro4x" path="res://_assets/sprites/assorted/axolotl.png" id="5_518s3"]
 
 [resource]
 script = ExtResource("2_card_data")
@@ -16,6 +16,5 @@ name = "Aye-Aye Ascetic"
 summon_release_overload = 1
 description = "Summon a %s/%s %s. The first time each round that damage leaves this below 50% health, gain Absorb and +2 full max health."
 cost = 2
-texture = ExtResource("5_texture")
+texture = ExtResource("5_518s3")
 actions = Array[ExtResource("1_card_action")]([ExtResource("3_summon"), ExtResource("4_threshold")])
-

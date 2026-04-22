@@ -1,12 +1,11 @@
-[gd_resource type="Resource" script_class="DominionRosterStatus" format=3]
+[gd_resource type="Resource" script_class="DominionRosterStatus" format=3 uid="uid://inel4nvvxknv"]
 
-[ext_resource type="Texture2D" path="res://_assets/sprites/assorted/burning-book.png" id="1_icon"]
-[ext_resource type="Script" path="res://statuses/dominion_roster.gd" id="2_script"]
+[ext_resource type="Texture2D" uid="uid://u4xtefb8ni11" path="res://_assets/sprites/assorted/book-aura.png" id="1_ko4t0"]
+[ext_resource type="Script" uid="uid://bdmpqjyhfsu1u" path="res://statuses/dominion_roster.gd" id="2_script"]
 
 [resource]
 script = ExtResource("2_script")
 status_name = "Dominion Roster"
 numerical = false
-icon = ExtResource("1_icon")
+icon = ExtResource("1_ko4t0")
 tooltip = "At end of your turn, if you played no Soulbound or Soulwild cards this turn, your Soulbound and Soulwild allies gain +2 Might."
-

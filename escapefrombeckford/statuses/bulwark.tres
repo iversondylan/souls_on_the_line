@@ -1,13 +1,11 @@
-[gd_resource type="Resource" script_class="BulwarkStatus" format=3]
+[gd_resource type="Resource" script_class="BulwarkStatus" format=3 uid="uid://d3cj2xpkl6c4h"]
 
-[ext_resource type="Texture2D" path="res://_assets/sprites/assorted/armor-upgrade.png" id="1_icon"]
-[ext_resource type="Script" path="res://statuses/bulwark.gd" id="2_script"]
+[ext_resource type="Texture2D" uid="uid://cn6n3ajliylxk" path="res://_assets/sprites/assorted/rempart.png" id="1_187hj"]
+[ext_resource type="Script" uid="uid://bgdu5x8kxigne" path="res://statuses/bulwark.gd" id="2_script"]
 
 [resource]
 script = ExtResource("2_script")
 status_name = "Bulwark"
-numerical = true
 auto_remove = 3
-icon = ExtResource("1_icon")
+icon = ExtResource("1_187hj")
 tooltip = "Take reduced damage until your next turn."
-

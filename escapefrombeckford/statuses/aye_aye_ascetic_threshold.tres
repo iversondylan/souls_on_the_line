@@ -1,7 +1,7 @@
-[gd_resource type="Resource" script_class="AyeAyeAsceticThresholdStatus" format=3]
+[gd_resource type="Resource" script_class="AyeAyeAsceticThresholdStatus" format=3 uid="uid://bvfqtlsrlcxos"]
 
-[ext_resource type="Texture2D" path="res://_assets/sprites/assorted/prayer.png" id="1_icon"]
-[ext_resource type="Script" path="res://statuses/aye_aye_ascetic_threshold.gd" id="2_script"]
+[ext_resource type="Texture2D" uid="uid://g3txk232bff5" path="res://_assets/sprites/assorted/prayer.png" id="1_icon"]
+[ext_resource type="Script" uid="uid://7vk1un2u1atu" path="res://statuses/aye_aye_ascetic_threshold.gd" id="2_script"]
 
 [resource]
 script = ExtResource("2_script")
@@ -9,4 +9,3 @@ status_name = "Ascetic Threshold"
 numerical = false
 icon = ExtResource("1_icon")
 tooltip = "The first time each round damage leaves this below 50% health, gain Absorb and 2 full max health."
-

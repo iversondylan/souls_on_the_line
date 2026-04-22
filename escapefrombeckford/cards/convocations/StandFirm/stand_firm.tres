@@ -1,20 +1,18 @@
-[gd_resource type="Resource" script_class="CardData" format=3]
+[gd_resource type="Resource" script_class="CardData" format=3 uid="uid://tpuj58tbc1bo"]
 
-[ext_resource type="Script" path="res://cards/_core/card_action.gd" id="1_base_action"]
+[ext_resource type="Script" uid="uid://wtk5v77fcqvn" path="res://cards/_core/card_action.gd" id="1_base_action"]
 [ext_resource type="Resource" path="res://cards/convocations/StandFirm/stand_firm_fortitude_action.tres" id="2_fortitude_action"]
 [ext_resource type="Resource" path="res://cards/convocations/StandFirm/stand_firm_absorb_if_damaged_action.tres" id="3_absorb_action"]
 [ext_resource type="Resource" path="res://cards/convocations/StandFirm/stand_firm_draw_if_undamaged_action.tres" id="4_draw_action"]
-[ext_resource type="Script" path="res://cards/_core/card_data.gd" id="5_card_data"]
-[ext_resource type="Texture2D" path="res://_assets/sprites/assorted/bell-shield.png" id="6_texture"]
+[ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://cards/_core/card_data.gd" id="5_card_data"]
+[ext_resource type="Texture2D" uid="uid://c5ui7eiuwagem" path="res://_assets/sprites/assorted/knight-banner.png" id="6_uq1ku"]
 
 [resource]
 script = ExtResource("5_card_data")
 id = &"stand_firm"
-card_type = 0
 target_type = 3
-rarity = 0
 name = "Stand Firm"
 description = "Target ally gets 2 full max health. If it is damaged it gains Absorb, otherwise draw 1."
 cost = 1
-texture = ExtResource("6_texture")
+texture = ExtResource("6_uq1ku")
 actions = Array[ExtResource("1_base_action")]([ExtResource("2_fortitude_action"), ExtResource("3_absorb_action"), ExtResource("4_draw_action")])

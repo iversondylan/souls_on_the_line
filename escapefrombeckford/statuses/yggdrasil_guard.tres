@@ -1,10 +1,10 @@
 [gd_resource type="Resource" script_class="YggdrasilGuardStatus" format=3 uid="uid://dx0afnmaroc5m"]
 
-[ext_resource type="Texture2D" uid="uid://c2l2ccbal0fiq" path="res://_assets/sprites/assorted/bolt-shield.png" id="1_icon"]
+[ext_resource type="Texture2D" uid="uid://cdiurgg01uqu2" path="res://_assets/sprites/assorted/sprout-disc.png" id="1_snxeg"]
 [ext_resource type="Script" uid="uid://c1bqss88c483c" path="res://statuses/yggdrasil_guard.gd" id="2_script"]
 
 [resource]
 script = ExtResource("2_script")
 status_name = "Yggdrasil Guard"
 reapply_type = 2
-icon = ExtResource("1_icon")
+icon = ExtResource("1_snxeg")

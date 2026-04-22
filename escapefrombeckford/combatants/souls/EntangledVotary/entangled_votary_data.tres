@@ -1,17 +1,15 @@
-[gd_resource type="Resource" script_class="CombatantData" format=3]
+[gd_resource type="Resource" script_class="CombatantData" format=3 uid="uid://bgm8fwb8pnywy"]
 
-[ext_resource type="Script" path="res://combatants/combatant_data.gd" id="1_data_script"]
+[ext_resource type="Script" uid="uid://cfatj0ryn8uv3" path="res://combatants/combatant_data.gd" id="1_data_script"]
 [ext_resource type="Resource" path="res://combatants/souls/EntangledVotary/entangled_votary_ai_profile.tres" id="2_ai"]
 
 [resource]
 script = ExtResource("1_data_script")
 name = "Entangled Votary"
 description = "2/10 ally. Gain +2 empty max health at the end of each round."
-character_art_uid = "res://_assets/sprites/assorted/forest_48_w.png"
-portrait_art_uid = "res://_assets/sprites/assorted/forest_48_w.png"
+character_art_uid = "uid://dxe3m32v2p84b"
+portrait_art_uid = "uid://dxe3m32v2p84b"
 height = 140
-max_health = 10
 ap = 2
 max_mana = 0
 ai = ExtResource("2_ai")
-

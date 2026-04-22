@@ -2,7 +2,6 @@
 
 [ext_resource type="Script" uid="uid://besvbjgt2xtix" path="res://cards/_core/menu_card.gd" id="1_f806l"]
 [ext_resource type="PackedScene" uid="uid://dlpbxdm81neil" path="res://cards/_core/card_visuals.tscn" id="2_atmdt"]
-[ext_resource type="Resource" uid="uid://dfgkvy2yw1a3e" path="res://cards/effusions/AttackCard/attack_card.tres" id="2_fdvp4"]
 
 [node name="MenuCard" type="CenterContainer" unique_id=718095327]
 offset_right = 126.0
@@ -26,7 +25,6 @@ offset_left = -225.0
 offset_top = -315.0
 grow_horizontal = 0
 grow_vertical = 0
-card_data = ExtResource("2_fdvp4")
 
 [connection signal="gui_input" from="OuterControl/Visuals" to="." method="_on_visuals_gui_input"]
 [connection signal="mouse_entered" from="OuterControl/Visuals" to="." method="_on_visuals_mouse_entered"]

@@ -1,10 +1,10 @@
-[gd_resource type="Resource" script_class="CardData" format=3]
+[gd_resource type="Resource" script_class="CardData" format=3 uid="uid://cq1drjsevrpv5"]
 
-[ext_resource type="Script" path="res://cards/_core/card_action.gd" id="1_card_action"]
-[ext_resource type="Script" path="res://cards/_core/card_data.gd" id="2_card_data"]
+[ext_resource type="Script" uid="uid://wtk5v77fcqvn" path="res://cards/_core/card_action.gd" id="1_card_action"]
+[ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://cards/_core/card_data.gd" id="2_card_data"]
 [ext_resource type="Resource" path="res://cards/souls/EntangledVotaryCard/summon_entangled_votary.tres" id="3_summon"]
 [ext_resource type="Resource" path="res://cards/souls/EntangledVotaryCard/entangled_votary_growth_on_summoned_action.tres" id="4_growth"]
-[ext_resource type="Texture2D" path="res://_assets/sprites/assorted/forest_48_w.png" id="5_texture"]
+[ext_resource type="Texture2D" uid="uid://dxe3m32v2p84b" path="res://_assets/sprites/assorted/octoman.png" id="5_u4kor"]
 
 [resource]
 script = ExtResource("2_card_data")
@@ -16,6 +16,5 @@ name = "Entangled Votary"
 summon_release_overload = 1
 description = "Summon a %s/%s %s. At the end of each round, gain +2 empty max health."
 cost = 2
-texture = ExtResource("5_texture")
+texture = ExtResource("5_u4kor")
 actions = Array[ExtResource("1_card_action")]([ExtResource("3_summon"), ExtResource("4_growth")])
-

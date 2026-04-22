@@ -1,8 +1,0 @@
-[gd_resource type="Resource" script_class="DamageTargetsAction" format=3 uid="uid://bo4i2gqxgp3ek"]
-
-[ext_resource type="Script" uid="uid://hyt3lledmhft" path="res://cards/_generic_actions/damage_targets_action.gd" id="1_tdme7"]
-[ext_resource type="Resource" uid="uid://c6myiupet7ros" path="res://audio/fireball_impact.tres" id="2_uii4m"]
-
-[resource]
-script = ExtResource("1_tdme7")
-metadata/_custom_type_script = "uid://wtk5v77fcqvn"
