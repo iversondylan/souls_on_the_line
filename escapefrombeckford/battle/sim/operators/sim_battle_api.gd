@@ -2,10 +2,6 @@
 
 class_name SimBattleAPI extends RefCounted
 
-const StatusToken := preload("res://battle/sim/containers/status_token.gd")
-const Interceptor := preload("res://battle/sim/interceptors/interceptor.gd")
-const TransformerRecord := preload("res://battle/sim/containers/transformer_record.gd")
-
 # ============================================================================
 # SimBattleAPI
 # ----------------------------------------------------------------------------
@@ -1159,21 +1155,11 @@ func resolve_removal(ctx) -> void:
 func resolve_move(ctx: MoveContext) -> void:
 	if ctx == null or state == null:
 		return
-	if int(ctx.actor_id) <= 0:
+	if int(ctx.actor_id) == 0 or int(ctx.move_unit_id) <= 0:
 		return
 
-	# Determine which unit is physically repositioned.
-	# Preferred pattern for new callers: set actor_id = initiating unit, target_id = unit to move.
-	# Legacy pattern (backward compat): set actor_id = unit to move, leave target_id unset (0).
-	# For positional moves (MOVE_TO_FRONT, MOVE_TO_BACK, INSERT_AT_INDEX):
-	#   - if target_id is set, it is the unit to reposition (actor is the initiator)
-	#   - otherwise fall back to actor_id for legacy callers that set actor_id = unit to move
-	# For SWAP_WITH_TARGET, actor_id and target_id both participate in their own roles.
 	var is_swap := int(ctx.move_type) == MoveContext.MoveType.SWAP_WITH_TARGET
-	var move_unit_id := int(ctx.actor_id)
-	if !is_swap and int(ctx.target_id) > 0:
-		move_unit_id = int(ctx.target_id)
-
+	var move_unit_id := int(ctx.move_unit_id)
 	var u := state.get_unit(move_unit_id)
 	if u == null or !u.is_alive():
 		return
@@ -1192,7 +1178,7 @@ func resolve_move(ctx: MoveContext) -> void:
 			_move_id_to_index(g, move_unit_id, int(ctx.index))
 		MoveContext.MoveType.SWAP_WITH_TARGET:
 			if int(ctx.target_id) > 0:
-				_swap_ids(g, int(ctx.actor_id), int(ctx.target_id))
+				_swap_ids(g, move_unit_id, int(ctx.target_id))
 		_:
 			pass
 
@@ -1207,7 +1193,7 @@ func resolve_move(ctx: MoveContext) -> void:
 
 	if writer != null:
 		var extra := {}
-		if int(ctx.target_id) > 0:
+		if is_swap and int(ctx.target_id) > 0:
 			extra[Keys.TARGET_ID] = int(ctx.target_id)
 		if int(ctx.index) >= 0:
 			extra[Keys.TO_INDEX] = int(ctx.index)
@@ -1215,6 +1201,7 @@ func resolve_move(ctx: MoveContext) -> void:
 
 		writer.emit_moved(
 			int(ctx.actor_id),
+			move_unit_id,
 			int(ctx.move_type),
 			ctx.before_order_ids,
 			ctx.after_order_ids,

@@ -564,9 +564,10 @@ func emit_defeat(source_id: int = 0, reason: String = "") -> int:
 		Keys.GROUP_INDEX: int(group_index),
 	})
 
-func emit_moved(actor_id: int, move_type: int, before_order: PackedInt32Array, after_order: PackedInt32Array, extra: Dictionary = {}) -> int:
+func emit_moved(actor_id: int, move_unit_id: int, move_type: int, before_order: PackedInt32Array, after_order: PackedInt32Array, extra: Dictionary = {}) -> int:
 	var data := {
 		Keys.ACTOR_ID: int(actor_id),
+		Keys.MOVE_UNIT_ID: int(move_unit_id),
 		Keys.MOVE_TYPE: int(move_type),
 		Keys.BEFORE_ORDER_IDS: before_order,
 		Keys.AFTER_ORDER_IDS: after_order,

@@ -1215,22 +1215,26 @@ func run_summon_action(ctx: SummonContext) -> void:
 
 func run_move(ctx: MoveContext) -> void:
 	var api := _api()
-	if api == null or api.state == null or ctx == null or int(ctx.actor_id) <= 0:
+	if api == null or api.state == null or ctx == null:
+		return
+	if int(ctx.actor_id) == 0 or int(ctx.move_unit_id) <= 0:
 		return
 
-	var u := api.state.get_unit(int(ctx.actor_id))
+	var u := api.state.get_unit(int(ctx.move_unit_id))
 	if u == null or !u.is_alive():
 		return
 
-	var extra := {}
-	if int(ctx.target_id) > 0:
+	var extra := {
+		Keys.MOVE_UNIT_ID: int(ctx.move_unit_id),
+	}
+	if int(ctx.move_type) == int(MoveContext.MoveType.SWAP_WITH_TARGET) and int(ctx.target_id) > 0:
 		extra[Keys.TARGET_ID] = int(ctx.target_id)
 	if int(ctx.index) >= 0:
 		extra[Keys.TO_INDEX] = int(ctx.index)
 
 	var move_scope := _begin_scope(
 		Scope.Kind.MOVE,
-		"actor=%d" % int(ctx.actor_id),
+		"actor=%d move=%d" % [int(ctx.actor_id), int(ctx.move_unit_id)],
 		int(ctx.actor_id),
 		_with_active_effect_package_scope_metadata(extra)
 	)

@@ -27,7 +27,8 @@ func activate_sim(ctx: CardContext) -> bool:
 
 	var move := MoveContext.new()
 	move.move_type = MoveContext.MoveType.MOVE_TO_FRONT
-	move.actor_id = target_id
+	move.actor_id = int(ctx.source_id)
+	move.move_unit_id = target_id
 	move.reason = "card_move_frontmost_npc_ally_to_front"
 	if ctx.card_data != null:
 		ctx.card_data.ensure_uid()

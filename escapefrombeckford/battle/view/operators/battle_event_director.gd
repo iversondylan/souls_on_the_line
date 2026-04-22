@@ -384,6 +384,7 @@ func _emit_encounter_observed_event(e: EventPackage) -> void:
 	observed.battle_event_type = int(e.event.type)
 	observed.seq = int(e.event.seq)
 	observed.actor_id = int(d.get(Keys.ACTOR_ID, 0))
+	observed.move_unit_id = int(d.get(Keys.MOVE_UNIT_ID, 0))
 	observed.source_id = int(d.get(Keys.SOURCE_ID, 0))
 	observed.target_id = int(d.get(Keys.TARGET_ID, 0))
 	observed.group_index = int(d.get(Keys.GROUP_INDEX, e.event.group_index))

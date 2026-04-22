@@ -142,8 +142,8 @@ func _confirm(chosen: CombatantView) -> void:
 		before[i] = int(before_ids_arr[i])
 
 	var payload := {
-		Keys.SWAP_A: card_ctx.target_ids[0],
-		Keys.SWAP_B: target_id,
+		Keys.MOVE_UNIT_ID: card_ctx.target_ids[0],
+		Keys.TARGET_ID: target_id,
 		Keys.WINDUP_ORDER_IDS: before,
 	}
 

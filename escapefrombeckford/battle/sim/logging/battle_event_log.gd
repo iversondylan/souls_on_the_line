@@ -251,6 +251,7 @@ static func print_event_log(
 
 		Keys.BEFORE_ORDER_IDS,
 		Keys.AFTER_ORDER_IDS,
+		Keys.MOVE_UNIT_ID,
 		Keys.MOVE_TYPE,
 
 		Keys.PROC,

@@ -37,7 +37,7 @@ func _apply(ctx: NPCAIContext) -> NPCAIContext:
 
 	ctx.params[Keys.SEQUENCE_EXECUTABLE] = true
 	ctx.params[Keys.MOVE_TYPE] = int(MoveContext.MoveType.INSERT_AT_INDEX)
-	ctx.params[Keys.TARGET_ID] = actor_id
+	ctx.params[Keys.MOVE_UNIT_ID] = actor_id
 	ctx.params[Keys.TO_INDEX] = maxi(to_index, 0)
 	ctx.params[Keys.CAN_RESTORE_TURN] = true
 	ctx.params[Keys.REASON] = "other_side_of_player"

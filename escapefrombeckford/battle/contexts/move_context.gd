@@ -13,10 +13,13 @@ enum MoveType {
 
 var move_type: int = MoveType.MOVE_TO_FRONT
 
-#var actor: Fighter = null
+# Initiator of the move: acting unit, card player, or -1 for arcanum-driven moves.
 var actor_id: int = 0
 
-#var target: Fighter = null
+# Primary unit being repositioned.
+var move_unit_id: int = 0
+
+# Optional swap partner.
 var target_id: int = 0
 
 # for INSERT_AT_INDEX
