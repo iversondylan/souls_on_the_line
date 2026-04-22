@@ -41,7 +41,9 @@ func execute(ctx: NPCAIContext) -> void:
 	move.target_id = target_id
 	move.index = int(params.get(Keys.TO_INDEX, -1))
 	move.reason = String(params.get(Keys.REASON, "npc_move"))
-	move.can_restore_turn = bool(params.get(Keys.CAN_RESTORE_TURN, false))
+	move.mover_reenters_queue = bool(params.get(Keys.MOVER_REENTERS_QUEUE, false))
+	move.grant_turns = _coerce_packed_int_array(params.get(Keys.GRANT_TURNS, PackedInt32Array()))
+	move.revoke_turns = _coerce_packed_int_array(params.get(Keys.REVOKE_TURNS, PackedInt32Array()))
 
 	runtime.run_move(move)
 
@@ -56,3 +58,15 @@ func _append_unique_affected_id(ctx: NPCAIContext, unit_id: int) -> void:
 		if int(existing_id) == unit_id:
 			return
 	ctx.affected_ids.append(unit_id)
+
+func _coerce_packed_int_array(raw_value: Variant) -> PackedInt32Array:
+	if raw_value is PackedInt32Array:
+		return PackedInt32Array(raw_value)
+	if raw_value is Array:
+		var out := PackedInt32Array()
+		for value in raw_value:
+			var id := int(value)
+			if id > 0:
+				out.append(id)
+		return out
+	return PackedInt32Array()

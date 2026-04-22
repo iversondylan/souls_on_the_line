@@ -20,10 +20,9 @@ class_name TurnEngineCore extends RefCounted
 #
 # Current conceptual model
 # - Pending membership is the primary source of truth.
-# - While an actor is active, that actor is treated as the present pivot.
-# - Units later than the pivot can remain or become pending depending on
-#   can_restore_turn.
-# - Units earlier than the pivot are treated as passed and lose pending status.
+# - Construction sites describe move-time queue mutations explicitly.
+# - TurnEngineCore applies those instructions without inferring from formation
+#   snapshots or a pivot position.
 # ============================================================================
 
 
@@ -96,19 +95,10 @@ var _restores_granted: Dictionary = {}		# int combat_id -> int
 var _queue_dirty: bool = false
 
 var _start_at_player: bool = false
-var _player_id: int = 0
 
 var _player_start_of_turn_fired: bool = false
 var _start_of_combat_fired: bool = false
-
-# Compatibility with SimRuntime scheduling.
-# Semantic meaning:
-#	false -> post-player friendly phase
-#	true  -> pre-player friendly phase
-var _pre_player_friendly: bool = false
-
-# Set when a friendly phase ends so runtime scheduling can choose the next phase.
-var ended_pre_player_friendly: bool = false
+var _deferred_current_actor_grant: bool = false
 
 
 # -------------------------
@@ -151,12 +141,10 @@ func clone_for_host(new_host: TurnFlowQueryHost) -> TurnEngineCore:
 	c._queue_dirty = _queue_dirty
 
 	c._start_at_player = _start_at_player
-	c._player_id = _player_id
 
 	c._player_start_of_turn_fired = _player_start_of_turn_fired
 	c._start_of_combat_fired = _start_of_combat_fired
-	c._pre_player_friendly = _pre_player_friendly
-	c.ended_pre_player_friendly = ended_pre_player_friendly
+	c._deferred_current_actor_grant = _deferred_current_actor_grant
 
 	c._pending_members = _pending_members.duplicate(true)
 
@@ -171,17 +159,15 @@ func clone_for_host(new_host: TurnFlowQueryHost) -> TurnEngineCore:
 	return c
 
 
-func begin_group_turn_state(group_index: int, start_at_player := false, pre_player_friendly := false) -> void:
+func begin_group_turn_state(group_index: int, start_at_player := false) -> void:
 	if dbg:
 		print(
-			"TurnEngineCore.begin_group_turn_state() group=%s start_at_player=%s pre_player_friendlies=%s"
-			% [group_index, start_at_player, pre_player_friendly]
+			"TurnEngineCore.begin_group_turn_state() group=%s start_at_player=%s"
+			% [group_index, start_at_player]
 		)
 
 	active_group_index = int(group_index)
 	_start_at_player = bool(start_at_player)
-	_pre_player_friendly = bool(pre_player_friendly)
-	ended_pre_player_friendly = false
 
 	turn_token += 1
 
@@ -196,11 +182,8 @@ func begin_group_turn_state(group_index: int, start_at_player := false, pre_play
 	_pending_members.clear()
 	_queue_dirty = true
 
-	if active_group_index == 0:
-		_player_id = host.get_player_id()
-		_player_start_of_turn_fired = false
-	else:
-		_player_id = 0
+	_player_start_of_turn_fired = false
+	_deferred_current_actor_grant = false
 
 	_seed_pending_members_for_phase()
 
@@ -235,10 +218,6 @@ func advance() -> TurnFlowDirective:
 
 	if _queue.is_empty():
 		var ended_group := active_group_index
-		if ended_group == 0:
-			ended_pre_player_friendly = bool(_pre_player_friendly)
-		else:
-			ended_pre_player_friendly = false
 		_reset()
 		return TurnFlowDirective.group_turn_ended(ended_group)
 
@@ -268,7 +247,11 @@ func complete_actor(combat_id: int) -> void:
 
 	_running_actor = false
 	_mark_turn_taken(int(combat_id))
-	_restore_allowed.erase(int(combat_id))
+	if _deferred_current_actor_grant and int(combat_id) == current_actor_id:
+		_deferred_current_actor_grant = false
+		_grant_pending_turn(int(combat_id))
+	else:
+		_restore_allowed.erase(int(combat_id))
 	_queue_dirty = true
 	phase = Phase.IDLE
 
@@ -286,6 +269,8 @@ func notify_actor_removed(combat_id: int) -> void:
 	_restore_allowed.erase(removed_id)
 	_restores_granted.erase(removed_id)
 	_turns_taken.erase(removed_id)
+	if removed_id == current_actor_id:
+		_deferred_current_actor_grant = false
 
 	_queue_dirty = true
 
@@ -343,16 +328,21 @@ func notify_move_executed(ctx: MoveContext) -> void:
 		return
 	if active_group_index < 0:
 		return
-	if current_actor_id <= 0:
-		return
-	if !host.is_alive(current_actor_id):
-		return
-	if host.get_group_index_of(current_actor_id) != active_group_index:
-		return
-	if ctx.after_order_ids.is_empty():
+	if host.get_group_index_of(int(ctx.move_unit_id)) != active_group_index:
 		return
 
-	_apply_pivot_pending_update_from_order(ctx.after_order_ids, bool(ctx.can_restore_turn))
+	for value in ctx.revoke_turns:
+		var revoke_id := int(value)
+		_pending_members.erase(revoke_id)
+		if _running_actor and revoke_id == current_actor_id:
+			_deferred_current_actor_grant = false
+
+	for value in ctx.grant_turns:
+		_grant_pending_turn(int(value))
+
+	if bool(ctx.mover_reenters_queue):
+		_grant_pending_turn(int(ctx.move_unit_id))
+
 	_queue_dirty = true
 
 
@@ -436,6 +426,7 @@ func _reset() -> void:
 	_restores_granted.clear()
 	_pending_members.clear()
 	_queue_dirty = false
+	_deferred_current_actor_grant = false
 
 	_running_actor = false
 
@@ -533,31 +524,11 @@ func _seed_pending_members_for_phase() -> void:
 	if order.is_empty():
 		return
 
-	if active_group_index != 0:
-		# Enemy or non-friendly group phase: everyone starts in the future.
-		for id_value in order:
-			var id := int(id_value)
-			if id > 0:
-				_pending_members[id] = true
-		return
-
-	var player_idx := _find_player_index_in_order(order)
-	if player_idx == -1:
-		return
-
-	if bool(_pre_player_friendly):
-		# Pre-player friendlies: units in front of the player.
-		for i in range(0, player_idx):
-			var id_pre := int(order[i])
-			if id_pre > 0:
-				_pending_members[id_pre] = true
-		return
-
-	# Post-player friendlies: player and units behind the player.
-	for i in range(player_idx, order.size()):
-		var id_post := int(order[i])
-		if id_post > 0:
-			_pending_members[id_post] = true
+	# Enemy and friendly turns now both seed one continuous group queue.
+	for id_value in order:
+		var id := int(id_value)
+		if id > 0:
+			_pending_members[id] = true
 
 
 func _summon_belongs_to_natural_phase_seed(summoned_id: int, order: PackedInt32Array) -> bool:
@@ -571,59 +542,35 @@ func _summon_belongs_to_natural_phase_seed(summoned_id: int, order: PackedInt32A
 	if active_group_index != 0:
 		return true
 
-	var player_idx := _find_player_index_in_order(order)
-	if player_idx == -1:
-		return false
-
-	if bool(_pre_player_friendly):
-		return idx < player_idx
-
-	return idx >= player_idx
+	return true
 
 
-func _apply_pivot_pending_update_from_order(order: PackedInt32Array, can_restore_turn: bool) -> void:
-	if order.is_empty():
-		_pending_members.clear()
+func _grant_pending_turn(combat_id: int) -> void:
+	if combat_id <= 0:
+		return
+	if host.get_group_index_of(combat_id) != active_group_index:
+		return
+	if !host.is_alive(combat_id):
+		return
+	if !_unit_can_take_any_more_turns(combat_id):
 		return
 
-	var pivot_idx := order.find(current_actor_id)
-	if pivot_idx == -1:
-		# If the active actor vanished from order, leave membership alone.
-		# Removal callback will already have pruned the removed actor itself.
+	if _running_actor and combat_id == current_actor_id:
+		_deferred_current_actor_grant = true
 		return
 
-	var new_pending: Dictionary = {}
+	var taken := int(_turns_taken.get(combat_id, 0))
+	_pending_members[combat_id] = true
+	if taken <= 0:
+		return
+	if bool(_restore_allowed.get(combat_id, false)):
+		return
+	if !_can_grant_restore_to(combat_id):
+		_pending_members.erase(combat_id)
+		return
 
-	for i in range(order.size()):
-		var id := int(order[i])
-		if id <= 0:
-			continue
-		if id == current_actor_id:
-			continue
-		if host.get_group_index_of(id) != active_group_index:
-			continue
-		if !host.is_alive(id):
-			continue
-
-		# Earlier than the pivot means passed.
-		if i < pivot_idx:
-			continue
-
-		# Later than the pivot means future.
-		# If restore is allowed, later units can become pending.
-		# If restore is not allowed, only already-pending units stay pending.
-		if can_restore_turn:
-			if int(_turns_taken.get(id, 0)) <= 0:
-				new_pending[id] = true
-			else:
-				if _can_grant_restore_to(id) or bool(_restore_allowed.get(id, false)) or bool(_pending_members.get(id, false)):
-					new_pending[id] = true
-					_restore_allowed[id] = true
-		else:
-			if bool(_pending_members.get(id, false)):
-				new_pending[id] = true
-
-	_pending_members = new_pending
+	_restore_allowed[combat_id] = true
+	_restores_granted[combat_id] = int(_restores_granted.get(combat_id, 0)) + 1
 
 
 func _can_grant_restore_to(combat_id: int) -> bool:
@@ -638,16 +585,6 @@ func _can_grant_restore_to(combat_id: int) -> bool:
 	if int(_turns_taken.get(combat_id, 0)) <= 0:
 		return false
 	return int(_restores_granted.get(combat_id, 0)) < MAX_RESTORES_PER_FIGHTER_PER_GROUP_TURN
-
-
-func _find_player_index_in_order(order: PackedInt32Array) -> int:
-	var p := _player_id
-	if p == 0:
-		p = host.get_player_id()
-		_player_id = p
-	return order.find(p)
-
-
 func _get_current_group_order() -> PackedInt32Array:
 	if active_group_index < 0:
 		return PackedInt32Array()

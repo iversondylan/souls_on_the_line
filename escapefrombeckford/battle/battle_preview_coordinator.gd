@@ -92,14 +92,15 @@ func recompute_preview_if_needed() -> void:
 	var preview_runtime := sim_host.get_preview_runtime()
 	if preview_runtime != null:
 		# Preview from "player presses end turn" forward:
-		# 1) finish POST-player friendly phase (player, then friendlies behind player)
-		# 2) enemy phase
-		# 3) stop when the next player input point is reached
+		# 1) finish the current player actor turn
+		# 2) continue draining the same friendly queue
+		# 3) run enemy turn
+		# 4) stop when the next player input point is reached
 		var resumed_from_live_turn := false
 		if main_runtime != null and main_runtime.has_runtime_initialized():
 			resumed_from_live_turn = preview_runtime.clone_turn_flow_from(main_runtime)
 		if !resumed_from_live_turn:
-			preview_runtime.begin_group_turn_flow(SimBattleAPI.FRIENDLY, false, false)
+			preview_runtime.begin_group_turn_flow(SimBattleAPI.FRIENDLY, false)
 		preview_runtime.confirm_player_end_ready()
 
 	var preview_state := sim_host.get_preview_state()

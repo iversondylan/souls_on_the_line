@@ -25,10 +25,12 @@ var target_id: int = 0
 # for INSERT_AT_INDEX
 var index: int = -1
 
-# turn-queue rule
-var can_restore_turn: bool = false
-var before_order_ids: PackedInt32Array = []
-var after_order_ids: PackedInt32Array = []
+# explicit turn-queue instructions
+var mover_reenters_queue: bool = false
+var grant_turns: PackedInt32Array = PackedInt32Array()
+var revoke_turns: PackedInt32Array = PackedInt32Array()
+var before_order_ids: PackedInt32Array = PackedInt32Array()
+var after_order_ids: PackedInt32Array = PackedInt32Array()
 
 # optional
 var sound: Sound = null

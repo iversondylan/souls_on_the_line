@@ -253,6 +253,9 @@ static func print_event_log(
 		Keys.AFTER_ORDER_IDS,
 		Keys.MOVE_UNIT_ID,
 		Keys.MOVE_TYPE,
+		Keys.MOVER_REENTERS_QUEUE,
+		Keys.GRANT_TURNS,
+		Keys.REVOKE_TURNS,
 
 		Keys.PROC,
 		Keys.ARCANUM_ID,

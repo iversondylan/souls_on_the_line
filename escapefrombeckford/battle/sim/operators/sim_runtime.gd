@@ -298,7 +298,7 @@ func _apply_checkpoint_boundary(kind: int, allow_hooks := true) -> void:
 # Public runtime-facing API
 # ============================================================================
 
-func begin_group_turn_flow(group_index: int, start_at_player := false, pre_player_friendly := false) -> void:
+func begin_group_turn_flow(group_index: int, start_at_player := false) -> void:
 	if !_can_run():
 		return
 	var api := _api()
@@ -313,7 +313,7 @@ func begin_group_turn_flow(group_index: int, start_at_player := false, pre_playe
 	if start_at_player:
 		engine.reset_for_new_battle()
 
-	engine.begin_group_turn_state(group_index, start_at_player, pre_player_friendly)
+	engine.begin_group_turn_state(group_index, start_at_player)
 	handle_group_turn_started(group_index)
 	_publish_turn_status()
 	_drive_turn_flow_until_blocked()
@@ -586,21 +586,12 @@ func _schedule_next_group_turn(group_index: int) -> void:
 	var api := _api()
 	if api == null or api.state == null or api.state.has_terminal_outcome():
 		return
-	
-	var engine := _engine()
-	if engine == null:
-		return
 
 	if group_index == 0:
-		var finished_pre_player_friendly := bool(engine.ended_pre_player_friendly)
-
-		if !finished_pre_player_friendly:
-			begin_group_turn_flow(1, false)
-		else:
-			begin_group_turn_flow(0, false, false)
+		begin_group_turn_flow(1, false)
 		return
 
-	begin_group_turn_flow(0, false, true)
+	begin_group_turn_flow(0, false)
 
 
 func _complete_actor_turn(cid: int) -> void:
@@ -1226,6 +1217,9 @@ func run_move(ctx: MoveContext) -> void:
 
 	var extra := {
 		Keys.MOVE_UNIT_ID: int(ctx.move_unit_id),
+		Keys.MOVER_REENTERS_QUEUE: bool(ctx.mover_reenters_queue),
+		Keys.GRANT_TURNS: PackedInt32Array(ctx.grant_turns),
+		Keys.REVOKE_TURNS: PackedInt32Array(ctx.revoke_turns),
 	}
 	if int(ctx.move_type) == int(MoveContext.MoveType.SWAP_WITH_TARGET) and int(ctx.target_id) > 0:
 		extra[Keys.TARGET_ID] = int(ctx.target_id)
@@ -1234,7 +1228,7 @@ func run_move(ctx: MoveContext) -> void:
 
 	var move_scope := _begin_scope(
 		Scope.Kind.MOVE,
-		"actor=%d move=%d" % [int(ctx.actor_id), int(ctx.move_unit_id)],
+		"actor=%d mover=%d" % [int(ctx.actor_id), int(ctx.move_unit_id)],
 		int(ctx.actor_id),
 		_with_active_effect_package_scope_metadata(extra)
 	)

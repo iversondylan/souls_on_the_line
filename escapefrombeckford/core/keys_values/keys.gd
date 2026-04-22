@@ -174,10 +174,12 @@ const MOVE_TYPE := &"move_type"
 const MOVE_UNIT_ID := &"move_unit_id"
 const BEFORE_ORDER_IDS := &"before_order_ids"
 const AFTER_ORDER_IDS := &"after_order_ids"
+const MOVER_REENTERS_QUEUE := &"mover_reenters_queue"
+const GRANT_TURNS := &"grant_turns"
+const REVOKE_TURNS := &"revoke_turns"
 const SWAP_A := &"swap_a"
 const SWAP_B := &"swap_b"
 const TO_INDEX := &"to_index"
-const CAN_RESTORE_TURN := &"can_restore_turn"
 
 # -------------------------
 # Status ids you’ve used so far
