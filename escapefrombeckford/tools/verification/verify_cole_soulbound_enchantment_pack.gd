@@ -2,6 +2,7 @@ extends SceneTree
 
 const ActionLifecycleSystem := preload("res://battle/sim/operators/action_lifecycle_system.gd")
 const BattleEvent := preload("res://battle/sim/containers/battle_event.gd")
+const BattleEventLog := preload("res://battle/sim/logging/battle_event_log.gd")
 const BattleState := preload("res://battle/sim/containers/battle_state.gd")
 const CardContext := preload("res://cards/_core/card_context.gd")
 const CardData := preload("res://cards/_core/card_data.gd")
@@ -9,11 +10,15 @@ const CombatantState := preload("res://battle/sim/containers/combatant_state.gd"
 const CombatantView := preload("res://battle/view/scenes/combatant_view.gd")
 const DamageContext := preload("res://battle/contexts/damage_context.gd")
 const Keys := preload("res://core/keys_values/keys.gd")
+const PresentationOrder := preload("res://battle/view/containers/presenation_order.gd")
+const Scope := preload("res://core/keys_values/scope_values.gd")
 const Sim := preload("res://battle/sim/operators/sim.gd")
 const SimStatusSystem := preload("res://battle/sim/operators/sim_status_system.gd")
+const Status := preload("res://statuses/_core/status.gd")
 const StatusCatalog := preload("res://statuses/_core/status_catalog.gd")
 const StatusCatalogResource := preload("res://statuses/_core/status_catalog.tres")
 const StatusTokenContext := preload("res://battle/contexts/status_token_context.gd")
+const TurnTimelineCompiler := preload("res://battle/view/operators/turn_timeline_compiler.gd")
 
 const AYE_AYE_ASCETIC := preload("res://cards/souls/AyeAyeAsceticCard/aye_aye_ascetic_card.tres")
 const ENTANGLED_VOTARY := preload("res://cards/souls/EntangledVotaryCard/entangled_votary_card.tres")
@@ -40,6 +45,8 @@ func _init() -> void:
 	_verify_aye_aye_ascetic()
 	_verify_entangled_votary()
 	_verify_phoenix_brooch()
+	_verify_phoenix_brooch_timeline_sync()
+	_verify_battle_event_log_debug_printer()
 	_verify_pocket_silkstitchers()
 	_verify_dominion_roster()
 	_verify_jabber_collector()
@@ -109,6 +116,54 @@ func _verify_phoenix_brooch() -> void:
 
 	_apply_direct_damage(sim, int(setup.get("enemy_1_id", 0)), ally_id, 20, true)
 	assert(!sim.api.is_alive(ally_id), "Phoenix Brooch should only prevent death once.")
+
+func _verify_phoenix_brooch_timeline_sync() -> void:
+	var compiler := TurnTimelineCompiler.new()
+	var timeline := compiler.compile_actor_turn(_make_phoenix_brooch_resurrection_turn())
+	var impact_order = null
+	var removal_count := 0
+	var saw_heal_event := false
+
+	for beat in timeline.beats:
+		if beat == null:
+			continue
+		for order in beat.orders:
+			if order == null:
+				continue
+			if int(order.kind) == int(PresentationOrder.Kind.IMPACT) and impact_order == null:
+				impact_order = order
+			elif int(order.kind) == int(PresentationOrder.Kind.REMOVAL):
+				removal_count += 1
+		for event in beat.events:
+			if event != null and int(event.type) == int(BattleEvent.Type.HEAL_APPLIED):
+				saw_heal_event = true
+
+	assert(impact_order != null, "Phoenix Brooch resurrection turn should still emit an impact order.")
+	assert(int(impact_order.after_health) == 3, "Impact order should reflect the resurrected final health.")
+	assert(!bool(impact_order.was_lethal), "Phoenix Brooch resurrection should clear lethal impact presentation.")
+	assert(removal_count == 0, "Phoenix Brooch resurrection should not emit a removal presentation order.")
+	assert(saw_heal_event, "Phoenix Brooch resurrection timeline should keep the heal event assigned to a beat.")
+
+func _verify_battle_event_log_debug_printer() -> void:
+	var heal_event := BattleEvent.new(BattleEvent.Type.HEAL_APPLIED)
+	heal_event.data = {
+		Keys.SOURCE_ID: 5,
+		Keys.TARGET_ID: 5,
+		Keys.BEFORE_HEALTH: 0,
+		Keys.AFTER_HEALTH: 3,
+		Keys.FLAT_AMOUNT: 3,
+		Keys.OF_TOTAL: 0.0,
+		Keys.OF_MISSING: 0.0,
+		Keys.HEALED_AMOUNT: 3,
+	}
+	var summary := BattleEventLog._fmt_special_event_data(heal_event, heal_event.data, 10, 80)
+	assert(summary.contains("hp=0->3"), "Heal debug summary should include the health transition.")
+	assert(summary.contains("healed=3"), "Heal debug summary should include healed_amount.")
+	assert(summary.contains("flat=3"), "Heal debug summary should include flat heal input.")
+
+	var debug_log := BattleEventLog.new()
+	debug_log.append(heal_event)
+	BattleEventLog.print_event_log(debug_log, 1, 0, 0.0, true, false, [], true, true, true, false, 10, 80, false)
 
 func _verify_pocket_silkstitchers() -> void:
 	var setup := _make_sim(30)
@@ -328,3 +383,116 @@ func _status_data_bool(sim: Sim, target_id: int, status_id: StringName, key: Str
 	if token == null or token.data == null:
 		return false
 	return bool(token.data.get(key, false))
+
+func _make_phoenix_brooch_resurrection_turn() -> Array[BattleEvent]:
+	var events: Array[BattleEvent] = []
+	events.append(_make_scope_event(BattleEvent.Type.SCOPE_BEGIN, 1, 0, Scope.Kind.ACTOR_TURN, {
+		Keys.SCOPE_LABEL: "actor=3",
+		Keys.ACTOR_ID: 3,
+		Keys.GROUP_INDEX: 1,
+		Keys.TURN_ID: 2,
+	}))
+	events.append(_make_scope_event(BattleEvent.Type.SCOPE_BEGIN, 2, 1, Scope.Kind.ATTACK, {
+		Keys.SCOPE_LABEL: "attacker=3",
+		Keys.ACTOR_ID: 3,
+		Keys.GROUP_INDEX: 1,
+		Keys.TURN_ID: 2,
+	}))
+	events.append(_make_scope_event(BattleEvent.Type.SCOPE_BEGIN, 3, 2, Scope.Kind.STRIKE, {
+		Keys.SCOPE_LABEL: "i=0",
+		Keys.ACTOR_ID: 3,
+		Keys.GROUP_INDEX: 1,
+		Keys.TURN_ID: 2,
+	}))
+	var strike_event := _make_event(BattleEvent.Type.STRIKE, {
+		Keys.SOURCE_ID: 3,
+		Keys.TARGET_IDS: PackedInt32Array([5]),
+	}, Scope.Kind.STRIKE, 3, 2)
+	strike_event.defines_beat = true
+	events.append(strike_event)
+	events.append(_make_scope_event(BattleEvent.Type.SCOPE_BEGIN, 4, 3, Scope.Kind.HIT, {
+		Keys.SCOPE_LABEL: "t=5",
+		Keys.ACTOR_ID: 3,
+		Keys.TARGET_ID: 5,
+		Keys.GROUP_INDEX: 1,
+		Keys.TURN_ID: 2,
+	}))
+	events.append(_make_event(BattleEvent.Type.DAMAGE_APPLIED, {
+		Keys.SOURCE_ID: 3,
+		Keys.TARGET_ID: 5,
+		Keys.BEFORE_HEALTH: 2,
+		Keys.AFTER_HEALTH: 0,
+		Keys.BASE_AMOUNT: 2,
+		Keys.BASE_BANISH_AMOUNT: 0,
+		Keys.FINAL_AMOUNT: 2,
+		Keys.DISPLAY_AMOUNT: 2,
+		Keys.BANISH_AMOUNT: 0,
+		Keys.APPLIED_BANISH_AMOUNT: 0,
+		Keys.HEALTH_DAMAGE: 2,
+		Keys.WAS_LETHAL: true,
+	}, Scope.Kind.HIT, 4, 3))
+	events.append(_make_event(BattleEvent.Type.HEAL_APPLIED, {
+		Keys.SOURCE_ID: 5,
+		Keys.TARGET_ID: 5,
+		Keys.BEFORE_HEALTH: 0,
+		Keys.AFTER_HEALTH: 3,
+		Keys.FLAT_AMOUNT: 3,
+		Keys.OF_TOTAL: 0.0,
+		Keys.OF_MISSING: 0.0,
+		Keys.HEALED_AMOUNT: 3,
+	}, Scope.Kind.HIT, 4, 3))
+	events.append(_make_event(BattleEvent.Type.STATUS, {
+		Keys.SOURCE_ID: 5,
+		Keys.TARGET_ID: 5,
+		Keys.TARGET_IDS: PackedInt32Array([5]),
+		Keys.STATUS_ID: PHOENIX_BROOCH_ID,
+		Keys.OP: Status.OP.REMOVE,
+		Keys.STACKS: 0,
+		Keys.BEFORE_STACKS: 1,
+		Keys.AFTER_STACKS: 0,
+		Keys.DELTA_STACKS: -1,
+	}, Scope.Kind.HIT, 4, 3))
+	events.append(_make_scope_event(BattleEvent.Type.SCOPE_END, 4, 3, Scope.Kind.HIT, {
+		Keys.SCOPE_LABEL: "t=5",
+		Keys.ACTOR_ID: 3,
+	}))
+	events.append(_make_scope_event(BattleEvent.Type.SCOPE_END, 3, 2, Scope.Kind.STRIKE, {
+		Keys.SCOPE_LABEL: "i=0",
+		Keys.ACTOR_ID: 3,
+	}))
+	events.append(_make_scope_event(BattleEvent.Type.SCOPE_END, 2, 1, Scope.Kind.ATTACK, {
+		Keys.SCOPE_LABEL: "attacker=3",
+		Keys.ACTOR_ID: 3,
+	}))
+	events.append(_make_scope_event(BattleEvent.Type.SCOPE_END, 1, 0, Scope.Kind.ACTOR_TURN, {
+		Keys.SCOPE_LABEL: "actor=3",
+		Keys.ACTOR_ID: 3,
+	}))
+	return _assign_debug_seq(events)
+
+func _make_scope_event(type: int, scope_id: int, parent_scope_id: int, scope_kind: int, data: Dictionary) -> BattleEvent:
+	var event := _make_event(type, data, scope_kind, scope_id, parent_scope_id)
+	event.data[Keys.SCOPE_ID] = scope_id
+	event.data[Keys.PARENT_SCOPE_ID] = parent_scope_id
+	event.data[Keys.SCOPE_KIND] = scope_kind
+	return event
+
+func _make_event(type: int, data: Dictionary, scope_kind: int = -1, scope_id: int = 0, parent_scope_id: int = 0) -> BattleEvent:
+	var event := BattleEvent.new(type)
+	event.scope_kind = scope_kind
+	event.scope_id = scope_id
+	event.parent_scope_id = parent_scope_id
+	event.group_index = int(data.get(Keys.GROUP_INDEX, -1))
+	event.turn_id = int(data.get(Keys.TURN_ID, 0))
+	event.active_actor_id = int(data.get(Keys.ACTOR_ID, 0))
+	event.data = data.duplicate(true)
+	return event
+
+func _assign_debug_seq(events: Array[BattleEvent]) -> Array[BattleEvent]:
+	for i in range(events.size()):
+		var event := events[i]
+		if event == null:
+			continue
+		event.seq = 1000 + i
+		event.battle_tick = 1000 + i
+	return events

@@ -1468,6 +1468,10 @@ func _populate_strike_info_from_marker_and_events(
 		if s.chained_from_previous and s.origin_strike_index < 0:
 			s.origin_strike_index = strike_index
 
+	var latest_hit_by_target := {}
+	var latest_recoil_hit_by_target := {}
+	var removal_confirms_lethal := false
+
 	for event in direct_events:
 		if event == null:
 			continue
@@ -1483,18 +1487,39 @@ func _populate_strike_info_from_marker_and_events(
 				if h.is_self_recoil:
 					s.recoil_hits.append(h)
 					s.has_self_recoil = true
+					latest_recoil_hit_by_target[int(h.target_id)] = h
 				else:
 					s.hits.append(h)
 					s.hit_count += 1
-				if h.was_lethal and !h.is_self_recoil:
-					s.has_lethal_hit = true
+					latest_hit_by_target[int(h.target_id)] = h
+			BattleEvent.Type.HEAL_APPLIED:
+				if event.data == null:
+					continue
+				var healed_target_id := int(event.data.get(Keys.TARGET_ID, 0))
+				if healed_target_id <= 0:
+					continue
+				var healed_hit: HitPresentationInfo = latest_hit_by_target.get(healed_target_id, null)
+				if healed_hit == null:
+					healed_hit = latest_recoil_hit_by_target.get(healed_target_id, null)
+				if healed_hit == null:
+					continue
+				healed_hit.after_health = int(event.data.get(Keys.AFTER_HEALTH, healed_hit.after_health))
+				if healed_hit.after_health > 0:
+					healed_hit.was_lethal = false
 			BattleEvent.Type.REMOVED:
 				var died_target_id := int(event.data.get(Keys.TARGET_ID, 0)) if event.data != null else 0
 				var is_self_recoil_death := bool(event.data.get(Keys.SELF_RECOIL, false)) if event.data != null else false
 				if marker != null and marker.data != null \
 					and _is_death_removal_event(event) and !is_self_recoil_death \
 					and died_target_id != int(marker.data.get(Keys.SOURCE_ID, 0)):
-					s.has_lethal_hit = true
+					removal_confirms_lethal = true
+
+	s.has_lethal_hit = removal_confirms_lethal
+	if !s.has_lethal_hit:
+		for h in s.hits:
+			if h != null and h.was_lethal:
+				s.has_lethal_hit = true
+				break
 
 
 func _build_strike_info_from_events(marker: BattleEvent, direct_events: Array[BattleEvent], strike_index: int) -> StrikePresentationInfo:

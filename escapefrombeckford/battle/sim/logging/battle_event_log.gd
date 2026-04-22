@@ -184,7 +184,7 @@ static func print_event_log(
 	abbrev_string_over: int = 80,
 	print_unknown_data_keys: bool = false
 ) -> void:
-	if log == null:
+	if be_log == null:
 		return
 
 	var total := be_log.size()
@@ -235,6 +235,13 @@ static func print_event_log(
 		Keys.APPLIED_BANISH_AMOUNT,
 		Keys.HEALTH_DAMAGE,
 		Keys.WAS_LETHAL,
+		Keys.FLAT_AMOUNT,
+		Keys.OF_TOTAL,
+		Keys.OF_MISSING,
+		Keys.HEALED_AMOUNT,
+		Keys.BEFORE_MAX_HEALTH,
+		Keys.AFTER_MAX_HEALTH,
+		Keys.CHANGE_HEALTH_RELATIVE,
 
 		# mana
 		Keys.BEFORE_MANA,
@@ -431,6 +438,58 @@ static func _fmt_special_event_data(
 			bits.append("stk=%d" % stacks)
 			return " ".join(bits)
 
+		BattleEvent.Type.HEAL_APPLIED:
+			var heal_source_id := int(d.get(Keys.SOURCE_ID, 0))
+			var heal_target_id := int(d.get(Keys.TARGET_ID, 0))
+			var before_health := int(d.get(Keys.BEFORE_HEALTH, 0))
+			var after_health := int(d.get(Keys.AFTER_HEALTH, 0))
+			var healed_amount := int(d.get(Keys.HEALED_AMOUNT, 0))
+			var flat_amount := int(d.get(Keys.FLAT_AMOUNT, 0))
+			var of_total := float(d.get(Keys.OF_TOTAL, 0.0))
+			var of_missing := float(d.get(Keys.OF_MISSING, 0.0))
+
+			var heal_bits: Array[String] = []
+			if heal_source_id != 0:
+				heal_bits.append("src=%d" % heal_source_id)
+			if heal_target_id != 0:
+				heal_bits.append("tgt=%d" % heal_target_id)
+			heal_bits.append("hp=%d->%d" % [before_health, after_health])
+			if healed_amount != 0:
+				heal_bits.append("healed=%d" % healed_amount)
+			if flat_amount != 0:
+				heal_bits.append("flat=%d" % flat_amount)
+			if !is_zero_approx(of_total):
+				heal_bits.append("total=%.3f" % of_total)
+			if !is_zero_approx(of_missing):
+				heal_bits.append("missing=%.3f" % of_missing)
+			return " ".join(heal_bits)
+
+		BattleEvent.Type.CHANGE_MAX_HEALTH:
+			var max_source_id := int(d.get(Keys.SOURCE_ID, 0))
+			var max_target_id := int(d.get(Keys.TARGET_ID, 0))
+			var before_max_health := int(d.get(Keys.BEFORE_MAX_HEALTH, 0))
+			var after_max_health := int(d.get(Keys.AFTER_MAX_HEALTH, 0))
+			var before_health := int(d.get(Keys.BEFORE_HEALTH, 0))
+			var after_health := int(d.get(Keys.AFTER_HEALTH, 0))
+			var delta_amount := int(d.get(Keys.FINAL_AMOUNT, 0))
+			var relative := bool(d.get(Keys.CHANGE_HEALTH_RELATIVE, false))
+			var reason := String(d.get(Keys.REASON, ""))
+
+			var max_bits: Array[String] = []
+			if max_source_id != 0:
+				max_bits.append("src=%d" % max_source_id)
+			if max_target_id != 0:
+				max_bits.append("tgt=%d" % max_target_id)
+			max_bits.append("max=%d->%d" % [before_max_health, after_max_health])
+			max_bits.append("hp=%d->%d" % [before_health, after_health])
+			if delta_amount != 0:
+				max_bits.append("Δ=%+d" % delta_amount)
+			if relative:
+				max_bits.append("relative=true")
+			if reason != "":
+				max_bits.append("reason=%s" % _fmt_value(reason, abbrev_arrays_over, abbrev_string_over))
+			return " ".join(max_bits)
+
 		_:
 			return ""
 
@@ -451,6 +510,27 @@ static func _skip_key_because_specialized(event_type: int, k: StringName) -> boo
 				or k == Keys.STATUS_ID \
 				or k == Keys.OP \
 				or k == Keys.STACKS
+
+		BattleEvent.Type.HEAL_APPLIED:
+			return k == Keys.SOURCE_ID \
+				or k == Keys.TARGET_ID \
+				or k == Keys.BEFORE_HEALTH \
+				or k == Keys.AFTER_HEALTH \
+				or k == Keys.FLAT_AMOUNT \
+				or k == Keys.OF_TOTAL \
+				or k == Keys.OF_MISSING \
+				or k == Keys.HEALED_AMOUNT
+
+		BattleEvent.Type.CHANGE_MAX_HEALTH:
+			return k == Keys.SOURCE_ID \
+				or k == Keys.TARGET_ID \
+				or k == Keys.BEFORE_MAX_HEALTH \
+				or k == Keys.AFTER_MAX_HEALTH \
+				or k == Keys.BEFORE_HEALTH \
+				or k == Keys.AFTER_HEALTH \
+				or k == Keys.FINAL_AMOUNT \
+				or k == Keys.CHANGE_HEALTH_RELATIVE \
+				or k == Keys.REASON
 
 		_:
 			return false
