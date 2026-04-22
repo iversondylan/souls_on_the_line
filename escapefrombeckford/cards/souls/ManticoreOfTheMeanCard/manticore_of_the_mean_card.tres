@@ -3,8 +3,8 @@
 [ext_resource type="Script" uid="uid://wtk5v77fcqvn" path="res://cards/_core/card_action.gd" id="1_card_action"]
 [ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://cards/_core/card_data.gd" id="2_card_data"]
 [ext_resource type="Resource" path="res://cards/souls/ManticoreOfTheMeanCard/summon_manticore_of_the_mean.tres" id="3_summon"]
-[ext_resource type="Resource" path="res://cards/souls/ManticoreOfTheMeanCard/grounding_accord_on_summoned_action.tres" id="4_grounding"]
-[ext_resource type="Resource" path="res://cards/souls/ManticoreOfTheMeanCard/awase_on_summoned_action.tres" id="5_awase"]
+[ext_resource type="Resource" uid="uid://debhqvkl6jpa2" path="res://cards/souls/ManticoreOfTheMeanCard/grounding_accord_on_summoned_action.tres" id="4_grounding"]
+[ext_resource type="Resource" uid="uid://bvxucphhvj16q" path="res://cards/souls/ManticoreOfTheMeanCard/awase_on_summoned_action.tres" id="5_awase"]
 [ext_resource type="Texture2D" uid="uid://qpfuxl30kvbu" path="res://_assets/sprites/assorted/hydra.png" id="6_ciuvu"]
 
 [resource]

@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="SummonApIntentTooltipTextModel" format=3]
+[gd_resource type="Resource" script_class="SummonApIntentTooltipTextModel" format=3 uid="uid://ch8yy4nys0h3b"]
 
 [ext_resource type="Script" path="res://npc_ai/text/summon_ap_intent_tooltip_text_model.gd" id="1_script"]
 

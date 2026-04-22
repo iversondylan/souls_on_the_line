@@ -1,10 +1,9 @@
 [gd_resource type="Resource" script_class="FightersSpiritStatus" format=3 uid="uid://d41e88w2vsfr"]
 
 [ext_resource type="Texture2D" uid="uid://n68fj3n8v6nl" path="res://_assets/sprites/assorted/burning-book.png" id="1_8qhwf"]
-[ext_resource type="Script" path="res://statuses/fighters_spirit.gd" id="2_script"]
+[ext_resource type="Script" uid="uid://c8skga0q3gc5a" path="res://statuses/fighters_spirit.gd" id="2_script"]
 
 [resource]
 script = ExtResource("2_script")
 status_name = "Fighter's Spirit"
-numerical = true
 icon = ExtResource("1_8qhwf")

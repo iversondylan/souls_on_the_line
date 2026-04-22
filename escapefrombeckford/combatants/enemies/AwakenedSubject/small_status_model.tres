@@ -1,7 +1,7 @@
-[gd_resource type="Resource" script_class="StatusModel" format=3]
+[gd_resource type="Resource" script_class="StatusModel" format=3 uid="uid://cq23ov56aw5ik"]
 
-[ext_resource type="Script" path="res://npc_ai/status/status_model.gd" id="1_status_model"]
-[ext_resource type="Resource" path="res://statuses/small.tres" id="2_small"]
+[ext_resource type="Script" uid="uid://cccygrstrra8t" path="res://npc_ai/status/status_model.gd" id="1_status_model"]
+[ext_resource type="Resource" uid="uid://bxp0xi26b7gmg" path="res://statuses/small.tres" id="2_small"]
 
 [resource]
 script = ExtResource("1_status_model")

@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="CombatantData" format=3 uid="uid://t6kljjuxbx43"]
 
-[ext_resource type="Resource" path="res://combatants/critters/ShieldIdeation/shield_ideation_ai.tres" id="1_ai"]
+[ext_resource type="Resource" uid="uid://18l27tm5ddx0" path="res://combatants/critters/ShieldIdeation/shield_ideation_ai.tres" id="1_ai"]
 [ext_resource type="Script" uid="uid://cfatj0ryn8uv3" path="res://combatants/combatant_data.gd" id="2_data"]
 
 [resource]
@@ -10,7 +10,7 @@ description = "A defensive concept made solid."
 character_art_uid = "uid://dxrv0lguddx5g"
 portrait_art_uid = "uid://dxrv0lguddx5g"
 facing_right = false
-height = 160
+height = 100
 max_health = 3
 ap = 1
 ai = ExtResource("1_ai")

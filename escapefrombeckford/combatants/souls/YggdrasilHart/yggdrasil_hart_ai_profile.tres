@@ -1,8 +1,8 @@
-[gd_resource type="Resource" script_class="NPCAIProfile" format=3]
+[gd_resource type="Resource" script_class="NPCAIProfile" format=3 uid="uid://cm0qk0572fri7"]
 
-[ext_resource type="Script" path="res://npc_ai/_core/npc_ai_profile.gd" id="1_ai_script"]
-[ext_resource type="Resource" path="res://combatants/souls/YggdrasilHart/yggdrasil_hart_attack_action.tres" id="2_attack_action"]
-[ext_resource type="Script" path="res://npc_ai/_core/npc_action.gd" id="3_action_script"]
+[ext_resource type="Script" uid="uid://bdsvca1cpka5s" path="res://npc_ai/_core/npc_ai_profile.gd" id="1_ai_script"]
+[ext_resource type="Resource" uid="uid://cknc10tu3gi21" path="res://combatants/souls/YggdrasilHart/yggdrasil_hart_attack_action.tres" id="2_attack_action"]
+[ext_resource type="Script" uid="uid://bcih413oy6v73" path="res://npc_ai/_core/npc_action.gd" id="3_action_script"]
 
 [resource]
 script = ExtResource("1_ai_script")

@@ -1,10 +1,9 @@
 [gd_resource type="Resource" script_class="SpiritedReturnStatus" format=3 uid="uid://b6t1x5n0rqv3m"]
 
 [ext_resource type="Texture2D" uid="uid://d06p36wgycjgb" path="res://_assets/sprites/assorted/spirited_return.png" id="1_qihy6"]
-[ext_resource type="Script" path="res://statuses/spirited_return.gd" id="2_script"]
+[ext_resource type="Script" uid="uid://bxjbrjut1ks8v" path="res://statuses/spirited_return.gd" id="2_script"]
 
 [resource]
 script = ExtResource("2_script")
 status_name = "Spirited Return"
-numerical = true
 icon = ExtResource("1_qihy6")

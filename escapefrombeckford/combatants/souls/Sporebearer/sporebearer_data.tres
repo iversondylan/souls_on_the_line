@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="CombatantData" format=3]
+[gd_resource type="Resource" script_class="CombatantData" format=3 uid="uid://bo1hmxfr0pp13"]
 
 [ext_resource type="Script" uid="uid://cfatj0ryn8uv3" path="res://combatants/combatant_data.gd" id="1_data_script"]
 [ext_resource type="Resource" uid="uid://dueva43wmh3no" path="res://combatants/souls/SpectralClone/spectral_clone_ai_profile.tres" id="2_ai"]
@@ -11,6 +11,5 @@ character_art_uid = "res://_assets/sprites/assorted/shambling-mound.png"
 portrait_art_uid = "res://_assets/sprites/assorted/shambling-mound.png"
 height = 140
 max_health = 4
-ap = 3
 ai = ExtResource("2_ai")
 metadata/_custom_type_script = "uid://cfatj0ryn8uv3"

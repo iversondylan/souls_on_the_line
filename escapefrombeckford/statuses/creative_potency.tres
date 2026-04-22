@@ -6,7 +6,6 @@
 [resource]
 script = ExtResource("1_creative_potency_script")
 status_name = "Creative Potency"
-numerical = true
 auto_remove = 2
 icon = ExtResource("1_4gtvp")
 tooltip = "The next Soul you summon this turn enters with bonus power and max health."

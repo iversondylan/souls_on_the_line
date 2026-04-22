@@ -2,8 +2,8 @@
 
 [ext_resource type="Script" uid="uid://wtk5v77fcqvn" path="res://cards/_core/card_action.gd" id="1_card_action"]
 [ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://cards/_core/card_data.gd" id="2_card_data"]
-[ext_resource type="Resource" path="res://cards/souls/WatchfulSphinxCard/summon_watchful_sphinx.tres" id="3_summon"]
-[ext_resource type="Resource" path="res://cards/souls/WatchfulSphinxCard/cold_revenge_on_summoned_action.tres" id="4_on_summoned"]
+[ext_resource type="Resource" uid="uid://clpjrggaigrfw" path="res://cards/souls/WatchfulSphinxCard/summon_watchful_sphinx.tres" id="3_summon"]
+[ext_resource type="Resource" uid="uid://vq4k4oe8mum1" path="res://cards/souls/WatchfulSphinxCard/cold_revenge_on_summoned_action.tres" id="4_on_summoned"]
 [ext_resource type="Texture2D" uid="uid://qq0urvtv85ub" path="res://_assets/sprites/assorted/greek-sphinx.png" id="5_u5o4p"]
 
 [resource]

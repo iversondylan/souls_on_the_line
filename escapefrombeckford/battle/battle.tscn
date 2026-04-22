@@ -8,7 +8,6 @@
 [ext_resource type="Script" uid="uid://chqthfo2t83me" path="res://battle/view/scenes/group_view.gd" id="5_eivww"]
 [ext_resource type="Resource" uid="uid://cgyjpqj83r2ln" path="res://audio/lil_click.tres" id="5_f0g0v"]
 [ext_resource type="Script" uid="uid://b4bb2s8x838ip" path="res://battle/view/scenes/battle_scene_area_left.gd" id="7_rgwlw"]
-[ext_resource type="Theme" uid="uid://c5t2luytfgc6b" path="res://ui/elements/brass_wood_chalkboard_theme.tres" id="8_2tyvl"]
 [ext_resource type="Texture2D" uid="uid://deopg8hjud5es" path="res://_assets/sprites/assorted/arrow_down.png" id="8_h4dll"]
 [ext_resource type="Script" uid="uid://ckq1sgjqlphh3" path="res://battle/ui/battle_ui.gd" id="9_jujjx"]
 [ext_resource type="Script" uid="uid://b0ws73jyx6b4c" path="res://battle/view/scenes/battlefield_target_arrow.gd" id="9_p0caf"]
@@ -18,7 +17,7 @@
 [ext_resource type="Theme" uid="uid://c5t2luytfgc6b" path="res://ui/elements/brass_wood_chalkboard_theme.tres" id="16_562sy"]
 [ext_resource type="PackedScene" uid="uid://bxtf6la07t0t5" path="res://ui/card_pile_opener.tscn" id="17_ariee"]
 [ext_resource type="PackedScene" uid="uid://bhps5rw0coka5" path="res://VFX/turn_order_spark_controller.tscn" id="17_saiin"]
-[ext_resource type="Theme" path="res://themes/battle_ui_theme.tres" id="18_s5alk"]
+[ext_resource type="Theme" uid="uid://b585x04q3pfqf" path="res://themes/battle_ui_theme.tres" id="18_s5alk"]
 [ext_resource type="PackedScene" uid="uid://d6f3t1qcn8bk" path="res://battle/ui/turn_phase_title.tscn" id="19_fpf3k"]
 [ext_resource type="PackedScene" uid="uid://ggbqqkmgvjb1" path="res://battle/ui/mana_panel.tscn" id="19_tgt58"]
 [ext_resource type="PackedScene" uid="uid://b0y800rpavgwc" path="res://ui/deck_view_window.tscn" id="20_3q5c2"]
@@ -108,19 +107,19 @@ offset_bottom = 175.0
 [node name="KillEnemiesButton" type="Button" parent="Debug_UI/VBoxContainer" unique_id=1437914900]
 unique_name_in_owner = true
 layout_mode = 2
-theme = ExtResource("8_2tyvl")
+theme = ExtResource("16_562sy")
 text = "kill enemies"
 
 [node name="DumpEventsButton" type="Button" parent="Debug_UI/VBoxContainer" unique_id=1250426177]
 unique_name_in_owner = true
 layout_mode = 2
-theme = ExtResource("8_2tyvl")
+theme = ExtResource("16_562sy")
 text = "dump events"
 
 [node name="ValidateScopeNesting" type="Button" parent="Debug_UI/VBoxContainer" unique_id=1257059472]
 unique_name_in_owner = true
 layout_mode = 2
-theme = ExtResource("8_2tyvl")
+theme = ExtResource("16_562sy")
 text = "validate nesting"
 
 [node name="Battle_UI" type="CanvasLayer" parent="." unique_id=82108263 groups=["ui_layer"]]

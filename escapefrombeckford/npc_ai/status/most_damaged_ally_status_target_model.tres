@@ -1,7 +1,6 @@
-[gd_resource type="Resource" script_class="MostDamagedAllyStatusTargetModel" format=3]
+[gd_resource type="Resource" script_class="MostDamagedAllyStatusTargetModel" format=3 uid="uid://dv8dqan3p400y"]
 
-[ext_resource type="Script" path="res://npc_ai/status/most_damaged_ally_status_target_model.gd" id="1_script"]
+[ext_resource type="Script" uid="uid://ctxl2kftt1713" path="res://npc_ai/status/most_damaged_ally_status_target_model.gd" id="1_script"]
 
 [resource]
 script = ExtResource("1_script")
-

@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://bcih413oy6v73" path="res://npc_ai/_core/npc_action.gd" id="1_action_script"]
 [ext_resource type="Resource" uid="uid://cyo61qn3r1qv4" path="res://combatants/souls/CronePuppeteer/crone_puppeteer_summon_pkg.tres" id="2_summon_pkg"]
-[ext_resource type="Resource" path="res://combatants/souls/CronePuppeteer/apply_small_to_summoned_pkg.tres" id="3_small_pkg"]
+[ext_resource type="Resource" uid="uid://bpf3jcw1mwiej" path="res://combatants/souls/CronePuppeteer/apply_small_to_summoned_pkg.tres" id="3_small_pkg"]
 [ext_resource type="Resource" uid="uid://bqdy2o0s6ukn2" path="res://combatants/souls/CronePuppeteer/apply_fleeting_to_summoned_pkg.tres" id="4_fleeting_pkg"]
 [ext_resource type="Texture2D" uid="uid://dnor2pbb0nhu" path="res://_assets/sprites/assorted/egg-eye.png" id="5_icon"]
 [ext_resource type="Script" uid="uid://dtwuyctovqk5r" path="res://npc_ai/_core/intent_lifecycle_model.gd" id="6_8hywi"]

@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://pykj00dleoho"]
 
 [ext_resource type="Script" uid="uid://llhk33f6c36n" path="res://battle/ui/turn_preview_number.gd" id="1_v1bf2"]
-[ext_resource type="Theme" path="res://themes/battle_ui_theme.tres" id="2_en4ek"]
+[ext_resource type="Theme" uid="uid://b585x04q3pfqf" path="res://themes/battle_ui_theme.tres" id="2_en4ek"]
 
 [node name="TurnPreviewNumber" type="Node2D" unique_id=142076321]
 script = ExtResource("1_v1bf2")

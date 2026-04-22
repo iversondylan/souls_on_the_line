@@ -1,20 +1,21 @@
 [gd_resource type="Resource" script_class="NPCAction" format=3 uid="uid://c3ho3k1056ap5"]
 
 [ext_resource type="Script" uid="uid://3jde7uhq2yho" path="res://npc_ai/_core/npc_effect_package.gd" id="1_pkg"]
-[ext_resource type="Resource" path="res://combatants/enemies/AwakenedSubject/expose_weakness_apply_weakened_pkg.tres" id="2_weakened_pkg"]
-[ext_resource type="Resource" path="res://combatants/enemies/AwakenedSubject/expose_weakness_apply_vulnerable_aura_pkg.tres" id="3_vulnerable_aura_pkg"]
+[ext_resource type="Resource" uid="uid://bgp3tmvsrkpyr" path="res://combatants/enemies/AwakenedSubject/expose_weakness_apply_weakened_pkg.tres" id="2_weakened_pkg"]
+[ext_resource type="Resource" uid="uid://wunr156s3uir" path="res://combatants/enemies/AwakenedSubject/expose_weakness_apply_vulnerable_aura_pkg.tres" id="3_vulnerable_aura_pkg"]
 [ext_resource type="Texture2D" uid="uid://c8ase1dvr32mj" path="res://_assets/sprites/assorted/broken-shield.png" id="4_icon"]
 [ext_resource type="Script" uid="uid://dtwuyctovqk5r" path="res://npc_ai/_core/intent_lifecycle_model.gd" id="5_6sugm"]
 [ext_resource type="Script" uid="uid://bcih413oy6v73" path="res://npc_ai/_core/npc_action.gd" id="5_action"]
 [ext_resource type="Script" uid="uid://q408gy2b4q6a" path="res://npc_ai/_core/performable_model.gd" id="6_wcrhc"]
-[ext_resource type="Resource" path="res://combatants/enemies/AwakenedSubject/expose_weakness_tooltip_model.tres" id="7_tooltip_model"]
-[ext_resource type="Resource" uid="uid://btgtvs6ab0nsg" path="res://npc_ai/chance/half_exponential_spree_chance_state_model.tres" id="8_half_exp"]
+[ext_resource type="Resource" uid="uid://ypv7aop44kke" path="res://combatants/enemies/AwakenedSubject/expose_weakness_tooltip_model.tres" id="7_tooltip_model"]
+[ext_resource type="Resource" uid="uid://xyvjdlil6nsb" path="res://npc_ai/chance/quarter_exponential_spree_chance_state_model.tres" id="9_6sugm"]
 [ext_resource type="Script" uid="uid://cuj4qvyx6dedj" path="res://npc_ai/_core/state_model.gd" id="9_state"]
 
 [resource]
 script = ExtResource("5_action")
 effect_packages = Array[ExtResource("1_pkg")]([ExtResource("2_weakened_pkg"), ExtResource("3_vulnerable_aura_pkg")])
-state_models = Array[ExtResource("9_state")]([ExtResource("8_half_exp")])
+state_models = Array[ExtResource("9_state")]([ExtResource("9_6sugm")])
 action_name = "Expose Weakness"
 intent_icon = ExtResource("4_icon")
+intent_icon_uid = "uid://c8ase1dvr32mj"
 tooltip_model = ExtResource("7_tooltip_model")

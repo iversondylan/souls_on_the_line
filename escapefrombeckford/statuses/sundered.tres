@@ -6,6 +6,5 @@
 [resource]
 script = ExtResource("1_sundered_script")
 status_name = "Sundered"
-numerical = true
 auto_remove = 2
 icon = ExtResource("2_sundered_icon")

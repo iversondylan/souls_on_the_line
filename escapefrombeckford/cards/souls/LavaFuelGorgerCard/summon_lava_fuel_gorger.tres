@@ -1,8 +1,8 @@
-[gd_resource type="Resource" script_class="SummonAction" format=3 uid="uid://d4t6q0aa1js0w"]
+[gd_resource type="Resource" script_class="SummonAction" format=3 uid="uid://gb5xc1hcw85"]
 
-[ext_resource type="Script" path="res://cards/_generic_actions/summon_action.gd" id="1_summon_action"]
-[ext_resource type="Resource" path="res://audio/summon_zap.tres" id="2_sound"]
-[ext_resource type="Resource" path="res://combatants/souls/LavaFuelGorger/lava_fuel_gorger_data.tres" id="3_data"]
+[ext_resource type="Script" uid="uid://buhtw3540mbls" path="res://cards/_generic_actions/summon_action.gd" id="1_summon_action"]
+[ext_resource type="Resource" uid="uid://c0cllss7w30rn" path="res://audio/summon_zap.tres" id="2_sound"]
+[ext_resource type="Resource" uid="uid://ba7edp5povvwc" path="res://combatants/souls/LavaFuelGorger/lava_fuel_gorger_data.tres" id="3_data"]
 
 [resource]
 script = ExtResource("1_summon_action")

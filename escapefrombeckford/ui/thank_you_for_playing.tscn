@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://x25ulb6i36lc"]
 
 [ext_resource type="Theme" uid="uid://c5t2luytfgc6b" path="res://ui/elements/brass_wood_chalkboard_theme.tres" id="2_qgbs3"]
-[ext_resource type="FontFile" path="res://_assets/fonts/Jim_Nightshade/JimNightshade-Regular.ttf" id="3_accent_font"]
+[ext_resource type="FontFile" uid="uid://djm1s0rli431d" path="res://_assets/fonts/Jim_Nightshade/JimNightshade-Regular.ttf" id="3_accent_font"]
 
 [node name="ThankYouBox" type="Node2D" unique_id=212376634]
 

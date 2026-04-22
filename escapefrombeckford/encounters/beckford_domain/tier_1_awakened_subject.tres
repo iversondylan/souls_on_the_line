@@ -1,8 +1,8 @@
-[gd_resource type="Resource" script_class="BattleData" format=3]
+[gd_resource type="Resource" script_class="BattleData" format=3 uid="uid://p8wywkxs0e5k"]
 
-[ext_resource type="Script" path="res://combatants/combatant_data.gd" id="1_combatant_data"]
-[ext_resource type="Resource" path="res://combatants/enemies/AwakenedSubject/awakened_subject_data.tres" id="2_subject"]
-[ext_resource type="Script" path="res://encounters/battle_data.gd" id="3_battle_data"]
+[ext_resource type="Script" uid="uid://cfatj0ryn8uv3" path="res://combatants/combatant_data.gd" id="1_combatant_data"]
+[ext_resource type="Resource" uid="uid://cu0o5saycyrbm" path="res://combatants/enemies/AwakenedSubject/awakened_subject_data.tres" id="2_subject"]
+[ext_resource type="Script" uid="uid://be1v8qevmc2xw" path="res://encounters/battle_data.gd" id="3_battle_data"]
 
 [resource]
 script = ExtResource("3_battle_data")

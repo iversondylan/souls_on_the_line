@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://wtk5v77fcqvn" path="res://cards/_core/card_action.gd" id="1_card_action"]
 [ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://cards/_core/card_data.gd" id="2_card_data"]
-[ext_resource type="Resource" path="res://cards/souls/TenMartenCard/summon_ten_marten.tres" id="3_summon"]
+[ext_resource type="Resource" uid="uid://b8jysgpwwwt2q" path="res://cards/souls/TenMartenCard/summon_ten_marten.tres" id="3_summon"]
 [ext_resource type="Texture2D" uid="uid://cqjh2y77fsbri" path="res://_assets/sprites/assorted/sea-serpent.png" id="4_7gncv"]
 
 [resource]

@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="CombatantData" format=3 uid="uid://b8dtfwsbjsr06"]
 
-[ext_resource type="Resource" path="res://combatants/critters/DaggerIdeation/dagger_ideation_ai.tres" id="1_ai"]
+[ext_resource type="Resource" uid="uid://cn8kfjas1a2w5" path="res://combatants/critters/DaggerIdeation/dagger_ideation_ai.tres" id="1_ai"]
 [ext_resource type="Script" uid="uid://cfatj0ryn8uv3" path="res://combatants/combatant_data.gd" id="2_data"]
 
 [resource]
@@ -9,7 +9,7 @@ name = "Dagger Ideation"
 description = "A dangerous thought made sharp."
 character_art_uid = "uid://u08gh6s3ndoa"
 portrait_art_uid = "uid://u08gh6s3ndoa"
-height = 140
+height = 100
 max_health = 3
 ap = 6
 ai = ExtResource("1_ai")

@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="ApplyStatusToTargetsAction" format=3]
+[gd_resource type="Resource" script_class="ApplyStatusToTargetsAction" format=3 uid="uid://bjm6mg0igi1pq"]
 
 [ext_resource type="Script" uid="uid://bw3gskunin2ql" path="res://cards/_generic_actions/apply_status_to_targets_action.gd" id="1_action"]
 [ext_resource type="Resource" uid="uid://bgyyborj1j54" path="res://statuses/absorb.tres" id="2_absorb"]

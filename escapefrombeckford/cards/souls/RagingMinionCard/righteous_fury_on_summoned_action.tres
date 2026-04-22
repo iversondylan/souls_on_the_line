@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="ApplyStatusToSummonedAction" format=3]
+[gd_resource type="Resource" script_class="ApplyStatusToSummonedAction" format=3 uid="uid://gp1hkihlf10r"]
 
 [ext_resource type="Script" uid="uid://jie78uegvh3j" path="res://cards/_generic_actions/apply_status_to_summoned_action.gd" id="1_action"]
 [ext_resource type="Resource" path="res://statuses/righteous_fury.tres" id="2_status"]

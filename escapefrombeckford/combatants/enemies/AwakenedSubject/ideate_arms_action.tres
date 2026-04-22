@@ -1,19 +1,19 @@
 [gd_resource type="Resource" script_class="NPCAction" format=3 uid="uid://c7authc3lp5ap"]
 
 [ext_resource type="Script" uid="uid://3jde7uhq2yho" path="res://npc_ai/_core/npc_effect_package.gd" id="1_pkg"]
-[ext_resource type="Resource" path="res://combatants/enemies/AwakenedSubject/ideate_arms_summon_shield_pkg.tres" id="2_shield_summon_pkg"]
-[ext_resource type="Resource" path="res://combatants/enemies/AwakenedSubject/ideate_arms_apply_absorb_pkg.tres" id="3_absorb_pkg"]
-[ext_resource type="Resource" path="res://combatants/enemies/AwakenedSubject/ideate_arms_apply_small_pkg.tres" id="4_small_pkg"]
-[ext_resource type="Resource" path="res://combatants/enemies/AwakenedSubject/ideate_arms_summon_dagger_pkg.tres" id="5_dagger_summon_pkg"]
+[ext_resource type="Resource" uid="uid://cy2mofdi21wf6" path="res://combatants/enemies/AwakenedSubject/ideate_arms_summon_shield_pkg.tres" id="2_shield_summon_pkg"]
+[ext_resource type="Resource" uid="uid://c14movvtabj3g" path="res://combatants/enemies/AwakenedSubject/ideate_arms_apply_absorb_pkg.tres" id="3_absorb_pkg"]
+[ext_resource type="Resource" uid="uid://84w5bjda5fs1" path="res://combatants/enemies/AwakenedSubject/ideate_arms_apply_small_pkg.tres" id="4_small_pkg"]
+[ext_resource type="Resource" uid="uid://707jubkg1vul" path="res://combatants/enemies/AwakenedSubject/ideate_arms_summon_dagger_pkg.tres" id="5_dagger_summon_pkg"]
 [ext_resource type="Texture2D" uid="uid://dnor2pbb0nhu" path="res://_assets/sprites/assorted/egg-eye.png" id="6_icon"]
 [ext_resource type="Script" uid="uid://bcih413oy6v73" path="res://npc_ai/_core/npc_action.gd" id="7_action"]
 [ext_resource type="Script" uid="uid://dtwuyctovqk5r" path="res://npc_ai/_core/intent_lifecycle_model.gd" id="7_semhl"]
 [ext_resource type="Resource" uid="uid://dlqm6r5csv7kp" path="res://combatants/enemies/AwakenedSubject/ideate_arms_intent_text_model.tres" id="8_text_model"]
 [ext_resource type="Script" uid="uid://q408gy2b4q6a" path="res://npc_ai/_core/performable_model.gd" id="9_flbs3"]
-[ext_resource type="Resource" path="res://combatants/enemies/AwakenedSubject/ideate_arms_tooltip_model.tres" id="9_tooltip_model"]
-[ext_resource type="Resource" path="res://combatants/enemies/AwakenedSubject/ideate_arms_first_turn_model.tres" id="10_first_turn"]
-[ext_resource type="Resource" path="res://combatants/enemies/AwakenedSubject/ideate_arms_party_size_gate_model.tres" id="11_party_gate"]
-[ext_resource type="Resource" path="res://npc_ai/chance/quarter_exponential_spree_chance_state_model.tres" id="12_quarter_exp"]
+[ext_resource type="Resource" uid="uid://drhbj4m7ore4f" path="res://combatants/enemies/AwakenedSubject/ideate_arms_tooltip_model.tres" id="9_tooltip_model"]
+[ext_resource type="Resource" uid="uid://2in5x15sj2xo" path="res://combatants/enemies/AwakenedSubject/ideate_arms_first_turn_model.tres" id="10_first_turn"]
+[ext_resource type="Resource" uid="uid://cxh3gfqkgydc1" path="res://combatants/enemies/AwakenedSubject/ideate_arms_party_size_gate_model.tres" id="11_party_gate"]
+[ext_resource type="Resource" uid="uid://xyvjdlil6nsb" path="res://npc_ai/chance/quarter_exponential_spree_chance_state_model.tres" id="12_quarter_exp"]
 [ext_resource type="Script" uid="uid://cuj4qvyx6dedj" path="res://npc_ai/_core/state_model.gd" id="13_state"]
 
 [resource]
@@ -23,5 +23,6 @@ chance_weight = 2.0
 state_models = Array[ExtResource("13_state")]([ExtResource("10_first_turn"), ExtResource("11_party_gate"), ExtResource("12_quarter_exp")])
 action_name = "Ideate Arms"
 intent_icon = ExtResource("6_icon")
+intent_icon_uid = "uid://dnor2pbb0nhu"
 intent_text_model = ExtResource("8_text_model")
 tooltip_model = ExtResource("9_tooltip_model")

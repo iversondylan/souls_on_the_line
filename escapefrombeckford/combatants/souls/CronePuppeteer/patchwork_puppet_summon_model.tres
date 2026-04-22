@@ -1,7 +1,7 @@
-[gd_resource type="Resource" script_class="ExportCombatantDataSummonModel" format=3]
+[gd_resource type="Resource" script_class="ExportCombatantDataSummonModel" format=3 uid="uid://cddu0ykdxfiu6"]
 
-[ext_resource type="Resource" path="res://combatants/critters/PatchworkPuppet/patchwork_puppet_data.tres" id="1_data"]
-[ext_resource type="Script" path="res://npc_ai/summon_data/export_combatant_data_summon_model.gd" id="2_script"]
+[ext_resource type="Resource" uid="uid://dosjuxadwkda5" path="res://combatants/critters/PatchworkPuppet/patchwork_puppet_data.tres" id="1_data"]
+[ext_resource type="Script" uid="uid://d2aej6kx1gp63" path="res://npc_ai/summon_data/export_combatant_data_summon_model.gd" id="2_script"]
 
 [resource]
 script = ExtResource("2_script")

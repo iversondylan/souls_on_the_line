@@ -6,5 +6,4 @@
 [resource]
 script = ExtResource("2_script")
 status_name = "Empty Fortitude"
-numerical = true
 icon = ExtResource("1_wnvvd")

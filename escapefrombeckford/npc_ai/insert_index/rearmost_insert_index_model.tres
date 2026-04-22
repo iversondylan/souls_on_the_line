@@ -1,6 +1,6 @@
-[gd_resource type="Resource" script_class="RearmostInsertIndexModel" format=3]
+[gd_resource type="Resource" script_class="RearmostInsertIndexModel" format=3 uid="uid://bc0p4rlkfyado"]
 
-[ext_resource type="Script" path="res://npc_ai/insert_index/rearmost_insert_index_model.gd" id="1_script"]
+[ext_resource type="Script" uid="uid://do8jbfring716" path="res://npc_ai/insert_index/rearmost_insert_index_model.gd" id="1_script"]
 
 [resource]
 script = ExtResource("1_script")

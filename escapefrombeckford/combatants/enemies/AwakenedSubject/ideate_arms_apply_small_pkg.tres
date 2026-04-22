@@ -1,10 +1,11 @@
-[gd_resource type="Resource" script_class="NPCEffectPackage" format=3]
+[gd_resource type="Resource" script_class="NPCEffectPackage" format=3 uid="uid://84w5bjda5fs1"]
 
-[ext_resource type="Resource" path="res://npc_ai/npc_status_sequence.tres" id="1_status_effect"]
-[ext_resource type="Script" path="res://npc_ai/_core/param_model.gd" id="2_param"]
-[ext_resource type="Script" path="res://npc_ai/_core/npc_effect_package.gd" id="3_pkg"]
+[ext_resource type="Resource" uid="uid://br5dox5m0ph6v" path="res://npc_ai/npc_status_sequence.tres" id="1_status_effect"]
+[ext_resource type="Script" uid="uid://b8d5j6ne4mt88" path="res://npc_ai/_core/param_model.gd" id="2_param"]
+[ext_resource type="Script" uid="uid://3jde7uhq2yho" path="res://npc_ai/_core/npc_effect_package.gd" id="3_pkg"]
 [ext_resource type="Resource" path="res://combatants/enemies/AwakenedSubject/small_status_model.tres" id="4_status_model"]
-[ext_resource type="Resource" path="res://npc_ai/status/summoned_status_target_model.tres" id="5_target_model"]
+[ext_resource type="Resource" uid="uid://bsvdd8jvaco0n" path="res://npc_ai/status/summoned_status_target_model.tres" id="5_target_model"]
+[ext_resource type="Script" uid="uid://cuj4qvyx6dedj" path="res://npc_ai/_core/state_model.gd" id="6_pc12m"]
 
 [resource]
 script = ExtResource("3_pkg")

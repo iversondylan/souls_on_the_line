@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="CombatantData" format=3 uid="uid://bgm8fwb8pnywy"]
 
 [ext_resource type="Script" uid="uid://cfatj0ryn8uv3" path="res://combatants/combatant_data.gd" id="1_data_script"]
-[ext_resource type="Resource" path="res://combatants/souls/EntangledVotary/entangled_votary_ai_profile.tres" id="2_ai"]
+[ext_resource type="Resource" uid="uid://cn3a6iwvlwpx7" path="res://combatants/souls/EntangledVotary/entangled_votary_ai_profile.tres" id="2_ai"]
 
 [resource]
 script = ExtResource("1_data_script")

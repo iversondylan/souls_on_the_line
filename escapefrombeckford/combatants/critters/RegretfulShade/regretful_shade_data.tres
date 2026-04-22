@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="CombatantData" format=3 uid="uid://cb5mal8skw80p"]
 
 [ext_resource type="Script" uid="uid://cfatj0ryn8uv3" path="res://combatants/combatant_data.gd" id="1_data_script"]
-[ext_resource type="Resource" path="res://combatants/critters/RegretfulShade/regretful_shade_ai.tres" id="2_regretful_shade_ai"]
+[ext_resource type="Resource" uid="uid://bvtnslyf2ps1g" path="res://combatants/critters/RegretfulShade/regretful_shade_ai.tres" id="2_regretful_shade_ai"]
 
 [resource]
 script = ExtResource("1_data_script")

@@ -43,4 +43,4 @@ func on_damage_taken(ctx: SimStatusContext, damage_ctx: DamageContext) -> void:
 		ctx.change_stacks(-1, "pressure_barrier_hit")
 
 func get_tooltip(stacks: int = 0) -> String:
-	return "Hits on this unit have their damage reduced by %s." % stacks
+	return "Hits on this unit have their damage reduced by %s, decreasing with each hit." % stacks

@@ -1,9 +1,8 @@
-[gd_resource type="Resource" script_class="DrawAction" format=3]
+[gd_resource type="Resource" script_class="DrawAction" format=3 uid="uid://cdsjqbxnfrjto"]
 
-[ext_resource type="Script" path="res://cards/_generic_actions/draw_action.gd" id="1_script"]
+[ext_resource type="Script" uid="uid://df5ktjqgtlp6o" path="res://cards/_generic_actions/draw_action.gd" id="1_script"]
 
 [resource]
 script = ExtResource("1_script")
-base_draw = 1
 conditional_key = &"target_is_damaged"
 invert_condition = true

@@ -1,14 +1,13 @@
-[gd_resource type="Resource" script_class="CardData" format=3]
+[gd_resource type="Resource" script_class="CardData" format=3 uid="uid://f5m0ia0j0550"]
 
-[ext_resource type="Script" path="res://cards/_core/card_action.gd" id="1_base_action"]
+[ext_resource type="Script" uid="uid://wtk5v77fcqvn" path="res://cards/_core/card_action.gd" id="1_base_action"]
 [ext_resource type="Resource" path="res://cards/convocations/PulseWave/pulse_wave_action.tres" id="2_action"]
-[ext_resource type="Script" path="res://cards/_core/card_data.gd" id="3_card_data"]
-[ext_resource type="Texture2D" path="res://_assets/sprites/assorted/heal-sky-2.png" id="4_texture"]
+[ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://cards/_core/card_data.gd" id="3_card_data"]
+[ext_resource type="Texture2D" uid="uid://ceu3xktqlv8ib" path="res://_assets/sprites/assorted/heal-sky-2.png" id="4_texture"]
 
 [resource]
 script = ExtResource("3_card_data")
 id = &"pulse_wave"
-card_type = 0
 target_type = 3
 rarity = 1
 name = "Pulse Wave"

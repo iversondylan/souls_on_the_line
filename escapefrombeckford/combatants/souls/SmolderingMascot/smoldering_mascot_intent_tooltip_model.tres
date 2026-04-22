@@ -1,6 +1,6 @@
-[gd_resource type="Resource" script_class="SmolderingMascotTextModel" format=3]
+[gd_resource type="Resource" script_class="SmolderingMascotTextModel" format=3 uid="uid://c1dnsdeifj6d8"]
 
-[ext_resource type="Script" path="res://combatants/souls/SmolderingMascot/smoldering_mascot_text_model.gd" id="1_script"]
+[ext_resource type="Script" uid="uid://dnk6ek7e4gdl" path="res://combatants/souls/SmolderingMascot/smoldering_mascot_text_model.gd" id="1_script"]
 
 [resource]
 script = ExtResource("1_script")

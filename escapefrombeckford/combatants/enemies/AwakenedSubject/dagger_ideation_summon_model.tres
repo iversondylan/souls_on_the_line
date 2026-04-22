@@ -1,7 +1,7 @@
-[gd_resource type="Resource" script_class="ExportCombatantDataSummonModel" format=3]
+[gd_resource type="Resource" script_class="ExportCombatantDataSummonModel" format=3 uid="uid://bejxdpeb78lm4"]
 
-[ext_resource type="Resource" path="res://combatants/critters/DaggerIdeation/dagger_ideation_data.tres" id="1_data"]
-[ext_resource type="Script" path="res://npc_ai/summon_data/export_combatant_data_summon_model.gd" id="2_script"]
+[ext_resource type="Resource" uid="uid://b8dtfwsbjsr06" path="res://combatants/critters/DaggerIdeation/dagger_ideation_data.tres" id="1_data"]
+[ext_resource type="Script" uid="uid://d2aej6kx1gp63" path="res://npc_ai/summon_data/export_combatant_data_summon_model.gd" id="2_script"]
 
 [resource]
 script = ExtResource("2_script")

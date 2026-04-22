@@ -1,6 +1,6 @@
-[gd_resource type="FontVariation" format=3]
+[gd_resource type="FontVariation" format=3 uid="uid://blqan8pi4kim1"]
 
-[ext_resource type="FontFile" path="res://_assets/fonts/Cormorant_Infant/CormorantInfant-Italic-VariableFont_wght.ttf" id="1_italic"]
+[ext_resource type="FontFile" uid="uid://c600rrmplfl4b" path="res://_assets/fonts/Cormorant_Infant/CormorantInfant-Italic-VariableFont_wght.ttf" id="1_italic"]
 
 [resource]
 base_font = ExtResource("1_italic")

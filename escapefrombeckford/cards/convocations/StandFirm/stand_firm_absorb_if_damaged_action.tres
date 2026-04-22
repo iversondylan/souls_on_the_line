@@ -1,7 +1,7 @@
-[gd_resource type="Resource" script_class="ApplyStatusIfTargetDamagedAction" format=3]
+[gd_resource type="Resource" script_class="ApplyStatusIfTargetDamagedAction" format=3 uid="uid://bo5vrrlots4ks"]
 
-[ext_resource type="Script" path="res://cards/_generic_actions/apply_status_if_target_damaged.gd" id="1_script"]
-[ext_resource type="Resource" path="res://statuses/absorb.tres" id="2_status"]
+[ext_resource type="Script" uid="uid://c78kqsd6enewy" path="res://cards/_generic_actions/apply_status_if_target_damaged.gd" id="1_script"]
+[ext_resource type="Resource" uid="uid://bgyyborj1j54" path="res://statuses/absorb.tres" id="2_status"]
 
 [resource]
 script = ExtResource("1_script")
