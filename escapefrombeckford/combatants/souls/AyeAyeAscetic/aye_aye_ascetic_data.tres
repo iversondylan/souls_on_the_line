@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="CombatantData" format=3]
+
+[ext_resource type="Script" path="res://combatants/combatant_data.gd" id="1_data_script"]
+[ext_resource type="Resource" path="res://combatants/souls/AyeAyeAscetic/aye_aye_ascetic_ai_profile.tres" id="2_ai"]
+
+[resource]
+script = ExtResource("1_data_script")
+name = "Aye-Aye Ascetic"
+description = "1/7 ally. The first time each round damage leaves this below 50% health, gain Absorb and +2 full max health."
+character_art_uid = "res://_assets/sprites/assorted/prayer.png"
+portrait_art_uid = "res://_assets/sprites/assorted/prayer.png"
+height = 140
+max_health = 7
+ap = 1
+max_mana = 0
+ai = ExtResource("2_ai")
+

@@ -72,6 +72,9 @@ func on_group_turn_end(_ctx: SimStatusContext, _ending_group_index: int) -> void
 func on_damage_taken(_ctx: SimStatusContext, _damage_ctx: DamageContext) -> void:
 	pass
 
+func on_any_damage_applied(_ctx: SimStatusContext, _damage_ctx: DamageContext) -> void:
+	pass
+
 func on_damage_will_be_taken(_ctx: SimStatusContext, _damage_ctx: DamageContext) -> void:
 	pass
 
@@ -102,6 +105,9 @@ func should_skip_npc_action(_ctx: SimStatusContext) -> bool:
 func on_removal(_ctx: SimStatusContext, _removal_ctx) -> void:
 	pass
 
+func on_removal_will_resolve(_ctx: SimStatusContext, _removal_ctx: RemovalContext) -> void:
+	pass
+
 func listens_for_player_turn_begin() -> bool:
 	return false
 
@@ -112,6 +118,9 @@ func listens_for_group_turn_end() -> bool:
 	return false
 
 func listens_for_any_death() -> bool:
+	return false
+
+func listens_for_any_damage_applied() -> bool:
 	return false
 
 func on_any_death(_ctx: SimStatusContext, _removal_ctx: RemovalContext) -> void:

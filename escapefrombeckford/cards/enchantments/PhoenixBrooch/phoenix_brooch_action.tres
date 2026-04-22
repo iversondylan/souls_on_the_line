@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="ApplyStatusToTargetsAction" format=3]
+
+[ext_resource type="Script" path="res://cards/_generic_actions/apply_status_to_targets_action.gd" id="1_action"]
+[ext_resource type="Resource" path="res://audio/haunting_gloom.tres" id="2_sound"]
+[ext_resource type="Resource" path="res://statuses/phoenix_brooch.tres" id="3_status"]
+
+[resource]
+script = ExtResource("1_action")
+status = ExtResource("3_status")
+stacks = 1
+sound = ExtResource("2_sound")
+play_sound_on_success = true
+

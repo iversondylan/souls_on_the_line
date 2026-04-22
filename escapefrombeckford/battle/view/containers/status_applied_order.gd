@@ -13,3 +13,4 @@ var after_pending: bool = false
 var before_token_id: int = 0
 var after_token_id: int = 0
 var stacks: int = 1
+var data: Dictionary = {}

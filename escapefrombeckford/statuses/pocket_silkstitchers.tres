@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="PocketSilkstitchersStatus" format=3]
+
+[ext_resource type="Texture2D" path="res://_assets/sprites/assorted/backup.png" id="1_icon"]
+[ext_resource type="Script" path="res://statuses/pocket_silkstitchers.gd" id="2_script"]
+
+[resource]
+script = ExtResource("2_script")
+status_name = "Pocket Silkstitchers"
+numerical = false
+icon = ExtResource("1_icon")
+tooltip = "Once each round, the first time an ally survives attack damage, it gains +1/+2."
+

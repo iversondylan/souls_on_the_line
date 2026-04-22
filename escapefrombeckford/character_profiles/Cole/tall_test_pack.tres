@@ -8,8 +8,14 @@
 [ext_resource type="Resource" path="res://cards/convocations/PulseWave/pulse_wave.tres" id="5_5fpjr"]
 [ext_resource type="Resource" path="res://cards/convocations/RendingRepair/rending_repair.tres" id="6_0jy5l"]
 [ext_resource type="Resource" path="res://cards/convocations/StandFirm/stand_firm.tres" id="7_6h261"]
+[ext_resource type="Resource" path="res://cards/enchantments/DominionRoster/dominion_roster.tres" id="8_hwttj"]
+[ext_resource type="Resource" uid="uid://ncii75q2ffcv" path="res://cards/enchantments/JabberCollector/jabber_collector.tres" id="9_e82xf"]
+[ext_resource type="Resource" path="res://cards/enchantments/PhoenixBrooch/phoenix_brooch.tres" id="10_k5onc"]
+[ext_resource type="Resource" path="res://cards/enchantments/PocketSilkstitchers/pocket_silkstitchers.tres" id="11_fmcco"]
+[ext_resource type="Resource" path="res://cards/souls/AyeAyeAsceticCard/aye_aye_ascetic_card.tres" id="12_rk6u7"]
+[ext_resource type="Resource" path="res://cards/souls/EntangledVotaryCard/entangled_votary_card.tres" id="13_msjky"]
 
 [resource]
 script = ExtResource("2_x7lxf")
-cards = Array[ExtResource("1_pvryl")]([ExtResource("2_65kx8"), ExtResource("3_0psb5"), ExtResource("4_hhmfu"), ExtResource("5_5fpjr"), ExtResource("6_0jy5l"), ExtResource("7_6h261")])
+cards = Array[ExtResource("1_pvryl")]([ExtResource("2_65kx8"), ExtResource("3_0psb5"), ExtResource("4_hhmfu"), ExtResource("5_5fpjr"), ExtResource("6_0jy5l"), ExtResource("7_6h261"), ExtResource("8_hwttj"), ExtResource("9_e82xf"), ExtResource("10_k5onc"), ExtResource("11_fmcco"), ExtResource("12_rk6u7"), ExtResource("13_msjky")])
 metadata/_custom_type_script = "uid://dnybrgm0o6gjj"

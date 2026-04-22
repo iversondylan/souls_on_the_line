@@ -92,6 +92,7 @@ func change_stacks(delta: int, reason: String = "") -> void:
 				Keys.AFTER_TOKEN_ID: int(token.token_id),
 				Keys.AFTER_STACKS: int(token.stacks),
 				Keys.STATUS_PENDING: bool(is_pending()),
+				Keys.STATUS_DATA: token.data.duplicate(true),
 				Keys.BEFORE_PENDING: bool(is_pending()),
 				Keys.AFTER_PENDING: bool(is_pending()),
 				Keys.REASON: String(reason),
@@ -169,3 +170,65 @@ func ensure_ai_state() -> void:
 	if owner == null:
 		return
 	ActionPlanner.ensure_ai_state_initialized(owner)
+
+func get_token_data_bool(key: StringName, default_value: bool = false) -> bool:
+	if token == null or token.data == null:
+		return default_value
+	return bool(token.data.get(key, default_value))
+
+func get_token_data_int(key: StringName, default_value: int = 0) -> int:
+	if token == null or token.data == null:
+		return default_value
+	return int(token.data.get(key, default_value))
+
+func set_token_data_value(key: StringName, value, reason: String = "") -> void:
+	if !is_valid() or !_can_mutate_self() or token == null:
+		return
+	if token.data == null:
+		token.data = {}
+	token.data[key] = value
+	_emit_token_data_changed(reason)
+
+func set_token_data_dict(values: Dictionary, reason: String = "") -> void:
+	if !is_valid() or !_can_mutate_self() or token == null or values == null:
+		return
+	if token.data == null:
+		token.data = {}
+	for key in values.keys():
+		token.data[key] = values[key]
+	_emit_token_data_changed(reason)
+
+func _emit_token_data_changed(reason: String) -> void:
+	if !is_valid() or token == null or api == null:
+		return
+
+	if api.writer != null:
+		api.writer.emit_status(
+			owner_id,
+			owner_id,
+			get_status_id(),
+			int(Status.OP.CHANGE),
+			0,
+			{
+				Keys.DELTA_STACKS: 0,
+				Keys.BEFORE_STACKS: int(token.stacks),
+				Keys.BEFORE_TOKEN_ID: int(token.token_id),
+				Keys.AFTER_TOKEN_ID: int(token.token_id),
+				Keys.AFTER_STACKS: int(token.stacks),
+				Keys.STATUS_PENDING: bool(is_pending()),
+				Keys.STATUS_DATA: token.data.duplicate(true),
+				Keys.BEFORE_PENDING: bool(is_pending()),
+				Keys.AFTER_PENDING: bool(is_pending()),
+				Keys.REASON: String(reason),
+			}
+		)
+	if api != null and owner != null:
+		api._sync_transformer_source(
+			TransformerSourceRef.for_status_token(
+				owner_id,
+				int(owner.team),
+				get_status_id(),
+				int(token.token_id)
+			)
+		)
+		api._on_status_changed(int(owner_id))

@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="CardData" format=3]
+
+[ext_resource type="Script" path="res://cards/_core/card_action.gd" id="1_action"]
+[ext_resource type="Resource" path="res://cards/enchantments/PhoenixBrooch/phoenix_brooch_action.tres" id="2_action_res"]
+[ext_resource type="Script" path="res://cards/_core/card_data.gd" id="3_card_data"]
+[ext_resource type="Texture2D" path="res://_assets/sprites/assorted/fire-iris.png" id="4_texture"]
+
+[resource]
+script = ExtResource("3_card_data")
+id = &"phoenix_brooch"
+card_type = 2
+target_type = 3
+rarity = 1
+name = "Phoenix Brooch"
+deplete = true
+description = "Deplete. Give an ally: \"The next time this unit would die, heal it to full instead and remove this status.\""
+cost = 1
+texture = ExtResource("4_texture")
+actions = Array[ExtResource("1_action")]([ExtResource("2_action_res")])
+

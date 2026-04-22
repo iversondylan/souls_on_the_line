@@ -10,6 +10,7 @@ class_name StatusDisplay extends Control
 var _icon_size: float = 50.0
 var stacks_count: int = 0
 var pending: bool = false
+var status_data: Dictionary = {}
 var status_parent: CombatantView : set = _set_status_parent
 var _pending_tween: Tween = null
 
@@ -35,10 +36,11 @@ func set_icon_size(new_icon_size: float) -> void:
 	_apply_icon_layout()
 	_refresh_display()
 
-func set_status_state(new_status: Status, new_stacks: int, new_pending := false) -> void:
+func set_status_state(new_status: Status, new_stacks: int, new_pending := false, new_status_data := {}) -> void:
 	status = new_status
 	stacks_count = maxi(int(new_stacks), 0)
 	pending = bool(new_pending)
+	status_data = new_status_data.duplicate(true) if new_status_data is Dictionary else {}
 	if !is_node_ready():
 		return
 	_refresh_display()
@@ -88,15 +90,21 @@ func _refresh_pending_pulse() -> void:
 		_pending_tween.kill()
 	_pending_tween = null
 
+	var base_alpha := _get_base_alpha()
 	if !pending:
-		modulate.a = 1.0
+		modulate.a = base_alpha
 		return
 
-	modulate.a = 1.0
+	modulate.a = base_alpha
 	_pending_tween = create_tween()
 	_pending_tween.set_loops()
-	_pending_tween.tween_property(self, "modulate:a", 0.45, 0.45)
-	_pending_tween.tween_property(self, "modulate:a", 1.0, 0.45)
+	_pending_tween.tween_property(self, "modulate:a", maxf(base_alpha * 0.45, 0.15), 0.45)
+	_pending_tween.tween_property(self, "modulate:a", base_alpha, 0.45)
+
+func _get_base_alpha() -> float:
+	if bool(status_data.get(Keys.ARMED, true)):
+		return 1.0
+	return 0.45
 
 func _set_status_parent(new_status_parent: CombatantView) -> void:
 	status_parent = new_status_parent

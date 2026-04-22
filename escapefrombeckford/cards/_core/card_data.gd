@@ -57,6 +57,9 @@ const RARITY_COLORS := {
 @export var texture: Texture2D
 @export var actions: Array[CardAction] = []
 
+@export_group("Flavor")
+@export_multiline var flavor_text: String = ""
+
 func ensure_uid() -> void:
 	if uid != "":
 		return

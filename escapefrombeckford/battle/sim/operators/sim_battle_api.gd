@@ -409,6 +409,9 @@ func _dispatch_interceptor(interceptor: Interceptor, payload = null) -> void:
 	if interceptor.hook_kind == Interceptor.HOOK_ON_ANY_DEATH:
 		_dispatch_any_death_interceptor(interceptor, payload)
 		return
+	if interceptor.hook_kind == Interceptor.HOOK_ON_ANY_DAMAGE_APPLIED:
+		_dispatch_any_damage_applied_interceptor(interceptor, payload)
+		return
 	if interceptor.hook_kind == Interceptor.HOOK_ON_PLAYER_TURN_BEGIN:
 		_dispatch_player_turn_begin_interceptor(interceptor, int(payload))
 		return
@@ -444,6 +447,21 @@ func _dispatch_any_death_interceptor(interceptor: Interceptor, payload) -> void:
 			if !status_ctx.proto.listens_for_any_death():
 				return
 			status_ctx.proto.on_any_death(status_ctx, removal_ctx)
+
+func _dispatch_any_damage_applied_interceptor(interceptor: Interceptor, payload) -> void:
+	if interceptor == null or !(payload is DamageContext):
+		return
+	var damage_ctx: DamageContext = payload
+	match interceptor.source_kind:
+		Interceptor.SOURCE_KIND_ARCANUM_ENTRY:
+			return
+		_:
+			var status_ctx: SimStatusContext = _get_status_context_for_interceptor(interceptor)
+			if status_ctx == null or status_ctx.proto == null:
+				return
+			if !status_ctx.proto.listens_for_any_damage_applied():
+				return
+			status_ctx.proto.on_any_damage_applied(status_ctx, damage_ctx)
 
 
 func _dispatch_player_turn_begin_interceptor(interceptor: Interceptor, player_id: int) -> void:
@@ -1082,6 +1100,9 @@ func resolve_removal(ctx) -> void:
 	var u: CombatantState = state.get_unit(int(ctx.target_id))
 	if u == null or !u.alive:
 		return
+	SimStatusSystem.on_removal_will_resolve(self, ctx)
+	if bool(ctx.prevented):
+		return
 	var removal_reason_label := _make_removal_reason_label(int(ctx.removal_type), String(ctx.reason))
 	_maybe_release_reserved_card(u, int(ctx.overload_mod), removal_reason_label, ctx)
 
@@ -1235,6 +1256,7 @@ func apply_status(ctx: StatusContext) -> void:
 	var changed := bool(mutation.changed)
 	var first_apply := int(ctx.op) == int(Status.OP.APPLY)
 	ctx.applied = changed or (ctx.op == Status.OP.APPLY)
+	var applied_token: StatusToken = u.statuses.get_status_token_by_token_id(int(ctx.after_token_id), true)
 	
 	if writer != null and (ctx.op == Status.OP.APPLY or changed):
 		writer.emit_status(
@@ -1255,6 +1277,7 @@ func apply_status(ctx: StatusContext) -> void:
 				Keys.AFTER_TOKEN_ID: int(ctx.after_token_id),
 				Keys.BEFORE_STACKS: int(ctx.before_stacks),
 				Keys.AFTER_STACKS: int(ctx.after_stacks),
+				Keys.STATUS_DATA: applied_token.data.duplicate(true) if applied_token != null else {},
 			}
 		)
 
@@ -1333,6 +1356,7 @@ func remove_status(ctx: StatusContext) -> void:
 				Keys.BEFORE_STACKS: before_stacks,
 				Keys.AFTER_STACKS: 0,
 				Keys.DELTA_STACKS: -before_stacks,
+				Keys.STATUS_DATA: old_token.data.duplicate(true) if old_token != null else {},
 			}
 		)
 	
@@ -1746,6 +1770,7 @@ func on_damage_applied(ctx: DamageContext) -> void:
 		return
 	
 	SimStatusSystem.on_damage_taken(self, ctx)
+	SimStatusSystem.on_any_damage_applied(self, ctx)
 	SimArcanaSystem.on_damage_taken(self, ctx)
 	
 	if !u.is_alive():

@@ -6,6 +6,7 @@ const HOOK_ON_PLAYER_TURN_BEGIN := &"on_player_turn_begin"
 const HOOK_ON_GROUP_TURN_BEGIN := &"on_group_turn_begin"
 const HOOK_ON_GROUP_TURN_END := &"on_group_turn_end"
 const HOOK_ON_ANY_DEATH := &"on_any_death"
+const HOOK_ON_ANY_DAMAGE_APPLIED := &"on_any_damage_applied"
 
 const SOURCE_KIND_STATUS_TOKEN := &"status_token"
 const SOURCE_KIND_PROJECTED_STATUS_EFFECTIVE := &"projected_status_effective"

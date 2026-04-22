@@ -13,7 +13,7 @@ const ROW_V_SEPARATION := 2
 # lane-key -> StatusDisplay
 var _displays_by_id: Dictionary = {}
 
-# token-key -> Dictionary state {id, pending, token_id, stacks, proto}
+# token-key -> Dictionary state {id, pending, token_id, stacks, proto, data}
 var _states_by_id: Dictionary = {}
 
 var _rows: Array[HBoxContainer] = []
@@ -79,6 +79,7 @@ func apply_status(order: StatusAppliedOrder) -> void:
 			"token_id": int(order.after_token_id),
 			"stacks": maxi(int(order.stacks), 0),
 			"proto": proto,
+			"data": order.data.duplicate(true),
 		}
 	else:
 		st["id"] = order.status_id
@@ -86,6 +87,7 @@ func apply_status(order: StatusAppliedOrder) -> void:
 		st["token_id"] = int(order.after_token_id)
 		st["stacks"] = maxi(int(order.stacks), 0)
 		st["proto"] = proto
+		st["data"] = order.data.duplicate(true)
 
 	_states_by_id[id] = st
 	_add_or_update_display_from_state(st, order.duration)
@@ -154,7 +156,7 @@ func _add_or_update_display_from_state(st: Dictionary, _duration: float) -> void
 		return
 
 	d.set_icon_size(icon_size)
-	d.set_status_state(proto, int(st.get("stacks", 0)), pending)
+	d.set_status_state(proto, int(st.get("stacks", 0)), pending, st.get("data", {}))
 
 func _remove_display(id: String, duration: float) -> void:
 	if !_displays_by_id.has(id):

@@ -24,6 +24,7 @@ const PRIMARY_ACTION_KIND := &"primary_action_kind"
 # for single instances of damage and HITS:
 const TARGET_ID := &"target_id"
 const TARGET_IS_DAMAGED := &"target_is_damaged"
+const ARMED := &"armed"
 # an attacker's STRIKE may result in multiple HITS on its targets.
 const STRIKE_COUNT := &"strike_count"
 const TOTAL_HIT_COUNT := &"total_hit_count"
@@ -166,6 +167,7 @@ const BEFORE_PENDING := &"before_pending"
 const AFTER_PENDING := &"after_pending"
 const BEFORE_TOKEN_ID := &"before_token_id"
 const AFTER_TOKEN_ID := &"after_token_id"
+const STATUS_DATA := &"status_data"
 
 # Move (formation)
 const MOVE_TYPE := &"move_type"

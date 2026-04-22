@@ -12,6 +12,7 @@ var origin_arcanum_id: StringName = &""
 var before_order_ids: PackedInt32Array = PackedInt32Array()
 var after_order_ids: PackedInt32Array = PackedInt32Array()
 var removed: bool = false
+var prevented: bool = false
 var overload_mod: int = 0
 var released_reserve_card_uid: String = ""
 

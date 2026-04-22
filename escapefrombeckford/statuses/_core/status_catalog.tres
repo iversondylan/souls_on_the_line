@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="StatusCatalog" format=3 uid="uid://dkjdclgdt20ca"]
+[gd_resource type="Resource" script_class="StatusCatalog" format=3 uid="uid://okdejvbs611"]
 
 [ext_resource type="Script" uid="uid://dgq1lfjmf2yfl" path="res://statuses/_core/status_catalog.gd" id="1_2sbnh"]
 [ext_resource type="Script" uid="uid://cueedkb1u8vxy" path="res://statuses/_core/status.gd" id="2_mko5r"]
@@ -9,6 +9,7 @@
 [ext_resource type="Resource" uid="uid://b10qjs2jvfad8" path="res://statuses/creative_flow.tres" id="6_creative_flow"]
 [ext_resource type="Resource" uid="uid://ccdod2y1rngoo" path="res://statuses/creative_potency.tres" id="6_creative_potency"]
 [ext_resource type="Resource" uid="uid://blu8qhnwmlstx" path="res://statuses/marked.tres" id="7_fjt00"]
+[ext_resource type="Resource" path="res://statuses/aye_aye_ascetic_threshold.tres" id="7_gucpl"]
 [ext_resource type="Resource" path="res://statuses/barkbound_bond.tres" id="8_byixj"]
 [ext_resource type="Resource" uid="uid://7x55fawjrwf4" path="res://statuses/might.tres" id="8_ho33y"]
 [ext_resource type="Resource" uid="uid://bh05r8var8mj3" path="res://statuses/pinpoint.tres" id="9_6ckqc"]
@@ -22,6 +23,7 @@
 [ext_resource type="Resource" path="res://statuses/living_regrets.tres" id="11_living_regrets"]
 [ext_resource type="Resource" uid="uid://c851i8op6ei1" path="res://statuses/shared_fervor.tres" id="11_mko5r"]
 [ext_resource type="Resource" uid="uid://cyf7n0vefm434" path="res://statuses/stability_status.tres" id="12_kw06w"]
+[ext_resource type="Resource" path="res://statuses/bulwark.tres" id="13_cv753"]
 [ext_resource type="Resource" uid="uid://tioo1cbmio6m" path="res://statuses/tempered.tres" id="13_djvpr"]
 [ext_resource type="Resource" uid="uid://wi2vw1fnar8g" path="res://statuses/terminal_glory.tres" id="14_gyvsg"]
 [ext_resource type="Resource" uid="uid://bi6mt7v1xat1e" path="res://statuses/suppressed.tres" id="15_suppressed"]
@@ -31,8 +33,10 @@
 [ext_resource type="Resource" uid="uid://bfofdm4v1vn4v" path="res://statuses/banishing_strikes.tres" id="19_banishing_strikes"]
 [ext_resource type="Resource" uid="uid://d41e88w2vsfr" path="res://statuses/fighters_spirit.tres" id="20_fighters_spirit"]
 [ext_resource type="Resource" uid="uid://dx5u1ohri7h0t" path="res://statuses/fleeting.tres" id="20_fleeting"]
+[ext_resource type="Resource" path="res://statuses/dominion_roster.tres" id="20_nxjyb"]
 [ext_resource type="Resource" uid="uid://dranrw6gwftwj" path="res://statuses/heavy_attack.tres" id="21_heavy_attack"]
 [ext_resource type="Resource" uid="uid://bxp0xi26b7gmg" path="res://statuses/small.tres" id="22_small"]
+[ext_resource type="Resource" path="res://statuses/entangled_votary_growth.tres" id="23_4yku2"]
 [ext_resource type="Resource" uid="uid://b3n0tmwd2wftw" path="res://statuses/double_edge.tres" id="23_double_edge"]
 [ext_resource type="Resource" uid="uid://00aqmemuit10" path="res://statuses/danger_zone.tres" id="24_danger_zone"]
 [ext_resource type="Resource" uid="uid://bcmd2im78na0a" path="res://statuses/despair.tres" id="25_despair"]
@@ -44,18 +48,21 @@
 [ext_resource type="Resource" uid="uid://qvoqpv21h118" path="res://statuses/sleep.tres" id="30_sleep"]
 [ext_resource type="Resource" path="res://statuses/righteous_fury.tres" id="31_righteous_fury"]
 [ext_resource type="Resource" uid="uid://byhtuae2g3w1c" path="res://statuses/cold_revenge.tres" id="32_cold_revenge"]
+[ext_resource type="Resource" path="res://statuses/jabber_collector.tres" id="33_5bnrp"]
 [ext_resource type="Resource" uid="uid://caf2tcilegla6" path="res://statuses/empty_fortitude.tres" id="33_empty_fortitude"]
 [ext_resource type="Resource" uid="uid://bsh4ohfj5dqo2" path="res://statuses/full_fortitude.tres" id="34_full_fortitude"]
 [ext_resource type="Resource" uid="uid://dx0afnmaroc5m" path="res://statuses/yggdrasil_guard.tres" id="35_yggdrasil_guard"]
 [ext_resource type="Resource" uid="uid://ck43fsca55rb7" path="res://statuses/grounding_accord.tres" id="37_grounding_accord"]
 [ext_resource type="Resource" uid="uid://cxbnwphft1y2j" path="res://statuses/awase.tres" id="38_awase"]
+[ext_resource type="Resource" path="res://statuses/phoenix_brooch.tres" id="38_f7thd"]
 [ext_resource type="Resource" uid="uid://dfomjdsy6a2ca" path="res://statuses/hexweb.tres" id="39_phalanx_round_guard"]
 [ext_resource type="Resource" uid="uid://cf42bm1o104h7" path="res://statuses/spirit_keeper.tres" id="40_phalanx_round_fortitude"]
+[ext_resource type="Resource" path="res://statuses/pocket_silkstitchers.tres" id="40_ui1xs"]
 [ext_resource type="Resource" path="res://statuses/shield_transmission.tres" id="41_4h3dl"]
 [ext_resource type="Resource" path="res://statuses/nourish.tres" id="41_nourish"]
 [ext_resource type="Resource" path="res://statuses/shield_transmission_guard.tres" id="42_jm1oi"]
 
 [resource]
 script = ExtResource("1_2sbnh")
-statuses = Array[ExtResource("2_mko5r")]([ExtResource("18_absorb"), ExtResource("27z_alacrity"), ExtResource("3_uxogt"), ExtResource("38_awase"), ExtResource("19_banishing_strikes"), ExtResource("8_byixj"), ExtResource("9_8ajyu"), ExtResource("6_6ckqc"), ExtResource("16_bolstered"), ExtResource("6_00ab0"), ExtResource("32_cold_revenge"), ExtResource("6_creative_flow"), ExtResource("6_creative_potency"), ExtResource("24_danger_zone"), ExtResource("25_despair"), ExtResource("23_double_edge"), ExtResource("33_empty_fortitude"), ExtResource("9_exit_strike"), ExtResource("9_cbbgy"), ExtResource("20_fighters_spirit"), ExtResource("20_fleeting"), ExtResource("34_full_fortitude"), ExtResource("37_grounding_accord"), ExtResource("5_2sbnh"), ExtResource("21_heavy_attack"), ExtResource("39_phalanx_round_guard"), ExtResource("11_living_regrets"), ExtResource("7_fjt00"), ExtResource("8_ho33y"), ExtResource("41_nourish"), ExtResource("9_6ckqc"), ExtResource("10_cbbgy"), ExtResource("9_protected_drone"), ExtResource("26_rage"), ExtResource("9_regretful_shade"), ExtResource("11_6ocio"), ExtResource("31_righteous_fury"), ExtResource("11_mko5r"), ExtResource("41_4h3dl"), ExtResource("42_jm1oi"), ExtResource("30_sleep"), ExtResource("22_small"), ExtResource("40_phalanx_round_fortitude"), ExtResource("27_spirited_return"), ExtResource("12_kw06w"), ExtResource("17_sundered"), ExtResource("15_suppressed"), ExtResource("13_djvpr"), ExtResource("14_gyvsg"), ExtResource("28_vulnerable"), ExtResource("29_weakened"), ExtResource("35_yggdrasil_guard")])
+statuses = Array[ExtResource("2_mko5r")]([ExtResource("18_absorb"), ExtResource("27z_alacrity"), ExtResource("3_uxogt"), ExtResource("38_awase"), ExtResource("7_gucpl"), ExtResource("19_banishing_strikes"), ExtResource("8_byixj"), ExtResource("9_8ajyu"), ExtResource("6_6ckqc"), ExtResource("16_bolstered"), ExtResource("13_cv753"), ExtResource("6_00ab0"), ExtResource("32_cold_revenge"), ExtResource("6_creative_flow"), ExtResource("6_creative_potency"), ExtResource("24_danger_zone"), ExtResource("25_despair"), ExtResource("20_nxjyb"), ExtResource("23_double_edge"), ExtResource("33_empty_fortitude"), ExtResource("23_4yku2"), ExtResource("9_exit_strike"), ExtResource("9_cbbgy"), ExtResource("20_fighters_spirit"), ExtResource("20_fleeting"), ExtResource("34_full_fortitude"), ExtResource("37_grounding_accord"), ExtResource("5_2sbnh"), ExtResource("21_heavy_attack"), ExtResource("39_phalanx_round_guard"), ExtResource("33_5bnrp"), ExtResource("11_living_regrets"), ExtResource("7_fjt00"), ExtResource("8_ho33y"), ExtResource("41_nourish"), ExtResource("38_f7thd"), ExtResource("9_6ckqc"), ExtResource("40_ui1xs"), ExtResource("10_cbbgy"), ExtResource("9_protected_drone"), ExtResource("26_rage"), ExtResource("9_regretful_shade"), ExtResource("11_6ocio"), ExtResource("31_righteous_fury"), ExtResource("11_mko5r"), ExtResource("41_4h3dl"), ExtResource("42_jm1oi"), ExtResource("30_sleep"), ExtResource("22_small"), ExtResource("40_phalanx_round_fortitude"), ExtResource("27_spirited_return"), ExtResource("12_kw06w"), ExtResource("17_sundered"), ExtResource("15_suppressed"), ExtResource("13_djvpr"), ExtResource("14_gyvsg"), ExtResource("28_vulnerable"), ExtResource("29_weakened"), ExtResource("35_yggdrasil_guard")])
 metadata/_custom_type_script = "uid://dgq1lfjmf2yfl"

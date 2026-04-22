@@ -80,6 +80,14 @@ static func on_damage_taken(api: SimBattleAPI, damage_ctx: DamageContext) -> voi
 			ctx.proto.on_damage_taken(ctx, damage_ctx)
 	)
 
+static func on_any_damage_applied(api: SimBattleAPI, damage_ctx: DamageContext) -> void:
+	if api == null or api.state == null or damage_ctx == null or api.state.has_terminal_outcome():
+		return
+
+	for interceptor: Interceptor in api.get_interceptors_for_hook(Interceptor.HOOK_ON_ANY_DAMAGE_APPLIED):
+		if interceptor != null:
+			interceptor.dispatch(api, damage_ctx)
+
 static func on_damage_will_be_taken(api: SimBattleAPI, damage_ctx: DamageContext) -> void:
 	if api == null or api.state == null or damage_ctx == null or api.state.has_terminal_outcome():
 		return
@@ -180,6 +188,19 @@ static func on_removal(api: SimBattleAPI, removal_ctx) -> void:
 			ctx.proto.on_removal(ctx, removal_ctx)
 
 	_for_each_effective_status_on_unit(api, removed_id, fn)
+
+static func on_removal_will_resolve(api: SimBattleAPI, removal_ctx: RemovalContext) -> void:
+	if api == null or api.state == null or removal_ctx == null or api.state.has_terminal_outcome():
+		return
+
+	var removed_id := int(removal_ctx.target_id)
+	if removed_id <= 0:
+		return
+
+	_for_each_effective_status_on_unit(api, removed_id, func(ctx: SimStatusContext) -> void:
+		if ctx.proto != null:
+			ctx.proto.on_removal_will_resolve(ctx, removal_ctx)
+	)
 
 static func on_any_death(
 	api: SimBattleAPI,

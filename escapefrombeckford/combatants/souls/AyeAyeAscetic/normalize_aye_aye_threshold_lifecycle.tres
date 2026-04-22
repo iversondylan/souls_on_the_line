@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="NormalizeStatusOnPlayerTurnLifecycleModel" format=3]
+
+[ext_resource type="Script" path="res://npc_ai/intent_lifecycle/normalize_status_on_player_turn_lifecycle_model.gd" id="1_script"]
+[ext_resource type="Resource" path="res://statuses/aye_aye_ascetic_threshold.tres" id="2_status"]
+
+[resource]
+script = ExtResource("1_script")
+status = ExtResource("2_status")
+stacks = 1
+

@@ -4,7 +4,9 @@
 [ext_resource type="Texture2D" uid="uid://1b6tx5tj6ucv" path="res://_assets/sprites/assorted/buff_attack.PNG" id="2_nbvwb"]
 [ext_resource type="Resource" uid="uid://csbbdspp44hqk" path="res://combatants/enemies/BeckfordValedictorian/resonant_attack_pkg.tres" id="2_oh4bc"]
 [ext_resource type="Script" uid="uid://dtwuyctovqk5r" path="res://npc_ai/_core/intent_lifecycle_model.gd" id="3_p7r4c"]
+[ext_resource type="Resource" uid="uid://wbtqwxj3pdou" path="res://combatants/enemies/BeckfordValedictorian/valedictorian_resonance_spike_lifecycle.tres" id="5_oh4bc"]
 [ext_resource type="Resource" uid="uid://7gggk4mmejsq" path="res://npc_ai/text/attack_intent_text_model.tres" id="6_oh4bc"]
+[ext_resource type="Resource" uid="uid://egssyhjkm2wq" path="res://combatants/enemies/BeckfordValedictorian/valedictorian_stability_lifecycle.tres" id="6_p7r4c"]
 [ext_resource type="Script" uid="uid://q408gy2b4q6a" path="res://npc_ai/_core/performable_model.gd" id="7_2f2sf"]
 [ext_resource type="Script" uid="uid://bfkcesydr8xy8" path="res://npc_ai/performable/keep_stability_performable_model.gd" id="8_fb54a"]
 [ext_resource type="Script" uid="uid://bcih413oy6v73" path="res://npc_ai/_core/npc_action.gd" id="9_l3qpv"]
@@ -18,6 +20,7 @@ metadata/_custom_type_script = "uid://bfkcesydr8xy8"
 [resource]
 script = ExtResource("9_l3qpv")
 effect_packages = Array[ExtResource("1_nbvwb")]([ExtResource("2_oh4bc")])
+intent_lifecycle_models = Array[ExtResource("3_p7r4c")]([ExtResource("5_oh4bc"), ExtResource("6_p7r4c")])
 chance_weight = 0.0
 performable_models = Array[ExtResource("7_2f2sf")]([SubResource("Resource_1t84l")])
 action_name = "Resonant Attack"

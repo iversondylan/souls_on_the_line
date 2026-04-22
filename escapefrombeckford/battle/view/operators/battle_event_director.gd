@@ -728,6 +728,7 @@ func _make_status_applied_order(e: EventPackage) -> StatusAppliedOrder:
 	o.before_token_id = int(d.get(Keys.BEFORE_TOKEN_ID, 0))
 	o.after_token_id = int(d.get(Keys.AFTER_TOKEN_ID, 0))
 	o.stacks = int(d.get(Keys.AFTER_STACKS, d.get(Keys.STACKS, 1)))
+	o.data = d.get(Keys.STATUS_DATA, {}).duplicate(true) if d.get(Keys.STATUS_DATA, {}) is Dictionary else {}
 
 	return o
 

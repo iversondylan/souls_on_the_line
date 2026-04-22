@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="JabberCollectorStatus" format=3]
+
+[ext_resource type="Texture2D" path="res://_assets/sprites/assorted/prayer.png" id="1_icon"]
+[ext_resource type="Script" path="res://statuses/jabber_collector.gd" id="2_script"]
+
+[resource]
+script = ExtResource("2_script")
+status_name = "Jabber Collector"
+numerical = false
+icon = ExtResource("1_icon")
+tooltip = "The first time each round you play your second Convocation, heal your frontmost ally 3 and give it 10% reduced damage until your next turn."
+

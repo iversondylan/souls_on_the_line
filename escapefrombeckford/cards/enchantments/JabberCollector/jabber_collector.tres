@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="CardData" format=3 uid="uid://ncii75q2ffcv"]
+
+[ext_resource type="Script" uid="uid://wtk5v77fcqvn" path="res://cards/_core/card_action.gd" id="1_action"]
+[ext_resource type="Resource" path="res://cards/enchantments/JabberCollector/jabber_collector_action.tres" id="2_action_res"]
+[ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://cards/_core/card_data.gd" id="3_card_data"]
+[ext_resource type="Texture2D" uid="uid://g3txk232bff5" path="res://_assets/sprites/assorted/prayer.png" id="4_texture"]
+
+[resource]
+script = ExtResource("3_card_data")
+id = &"jabber_collector"
+card_type = 2
+rarity = 2
+name = "Jabber Collector"
+deplete = true
+description = "Deplete. The first time each round you play your second Convocation, heal your frontmost ally 3 and give it Bulwark."
+cost = 1
+texture = ExtResource("4_texture")
+actions = Array[ExtResource("1_action")]([ExtResource("2_action_res")])
+flavor_text = "Originally intended to be a device that makes battlefield shouts inaudible to the enemy, this sound collector instead thickens the air around those using voice incantations. Its creator is not attributed."

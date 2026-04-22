@@ -510,6 +510,16 @@ func _sync_status_interceptor_records(
 		default_priority
 	)
 	_sync_interceptor_record(
+		wants_records and bool(proto != null and proto.listens_for_any_damage_applied()),
+		Interceptor.HOOK_ON_ANY_DAMAGE_APPLIED,
+		source_kind,
+		source_owner_id,
+		source_group_index,
+		source_id,
+		source_instance_id,
+		default_priority
+	)
+	_sync_interceptor_record(
 		wants_records and bool(proto != null and proto.listens_for_player_turn_begin()),
 		Interceptor.HOOK_ON_PLAYER_TURN_BEGIN,
 		source_kind,
