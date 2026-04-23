@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="StatusModel" format=3 uid="uid://dlvwteo5jtecl"]
 
 [ext_resource type="Script" uid="uid://cccygrstrra8t" path="res://npc_ai/status/status_model.gd" id="1_status_model"]
-[ext_resource type="Resource" path="res://statuses/vulnerable_aura.tres" id="2_vulnerable"]
+[ext_resource type="Resource" uid="uid://dgbcp5ks6j8id" path="res://statuses/vulnerable_aura.tres" id="2_vulnerable"]
 
 [resource]
 script = ExtResource("1_status_model")

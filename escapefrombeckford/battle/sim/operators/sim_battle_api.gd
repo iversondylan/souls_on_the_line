@@ -813,6 +813,38 @@ func _request_intent_refresh_all() -> void:
 	for k in state.units.keys():
 		_request_intent_refresh(int(k))
 
+
+func request_fresh_intent_cycle(cid: int, allow_hooks := true) -> void:
+	# SimRuntime posts intent-cycle requests here so this API remains the single
+	# seam that decides whether planning work is deferred to checkpoints or run
+	# inline immediately.
+	if checkpoint_processor != null:
+		checkpoint_processor.request_fresh_intent_cycle(int(cid))
+		return
+	if !_prepare_fresh_intent_cycle_state(int(cid)):
+		return
+	plan_intent(int(cid), allow_hooks, true)
+	ActionIntentPresenter.emit_current_intent(self, int(cid))
+
+
+func _prepare_fresh_intent_cycle_state(cid: int) -> bool:
+	if state == null or state.has_terminal_outcome() or cid <= 0:
+		return false
+
+	var u: CombatantState = state.get_unit(int(cid))
+	if u == null or !u.is_alive():
+		return false
+	if u.combatant_data == null or u.combatant_data.ai == null:
+		return false
+
+	ActionPlanner.ensure_ai_state_initialized(u)
+	u.ai_state[ActionPlanner.KEY_PLANNED_IDX] = -1
+	u.ai_state[Keys.PLANNED_SELECTION_SOURCE] = ActionPlanner.SELECTION_SOURCE_NONE
+	u.ai_state[ActionPlanner.STABILITY_BROKEN] = false
+	u.ai_state[Keys.IS_ACTING] = false
+	u.ai_state[Keys.FIRST_INTENTS_READY] = true
+	return true
+
 func _request_group_layout_changed(
 	group_index: int,
 	before_order_ids: PackedInt32Array,

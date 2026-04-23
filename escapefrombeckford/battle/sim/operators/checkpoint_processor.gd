@@ -20,6 +20,7 @@ enum Kind {
 
 var dirty_replan_ids: Dictionary = {}
 var dirty_replan_all: bool = false
+var dirty_fresh_intent_cycle_ids: Dictionary = {}
 
 var dirty_intent_refresh_ids: Dictionary = {}
 var dirty_intent_refresh_all: bool = false
@@ -47,6 +48,13 @@ func request_replan_all() -> void:
 	dirty_replan_all = true
 	if _is_flushing:
 		_needs_another_flush = true
+
+
+func request_fresh_intent_cycle(cid: int) -> void:
+	if cid > 0:
+		dirty_fresh_intent_cycle_ids[int(cid)] = true
+		if _is_flushing:
+			_needs_another_flush = true
 
 
 func request_intent_refresh(cid: int) -> void:
@@ -92,6 +100,7 @@ func request_followup_flush() -> void:
 func has_dirty_planning() -> bool:
 	return dirty_replan_all \
 		or !dirty_replan_ids.is_empty() \
+		or !dirty_fresh_intent_cycle_ids.is_empty() \
 		or dirty_intent_refresh_all \
 		or !dirty_intent_refresh_ids.is_empty() \
 		or !dirty_group_layout_events.is_empty()
@@ -116,6 +125,7 @@ func clear() -> void:
 func clear_planning() -> void:
 	dirty_replan_ids.clear()
 	dirty_replan_all = false
+	dirty_fresh_intent_cycle_ids.clear()
 	dirty_intent_refresh_ids.clear()
 	dirty_intent_refresh_all = false
 	dirty_group_layout_events.clear()
@@ -143,6 +153,7 @@ func flush_planning(kind: int, sim: Sim, allow_hooks := true) -> void:
 		# caller has already closed it.
 		var replan_all_now := bool(dirty_replan_all)
 		var replan_ids_now := dirty_replan_ids.duplicate()
+		var fresh_intent_cycle_ids_now := dirty_fresh_intent_cycle_ids.duplicate()
 		var intent_refresh_all_now := bool(dirty_intent_refresh_all)
 		var intent_refresh_ids_now := dirty_intent_refresh_ids.duplicate()
 		var group_layout_events_now := dirty_group_layout_events.duplicate()
@@ -157,18 +168,31 @@ func flush_planning(kind: int, sim: Sim, allow_hooks := true) -> void:
 			dirty_group_layout_events.clear()
 		dirty_outcome = false
 
+		# CheckpointProcessor owns deferred replan/publish timing: checkpoints that
+		# do not apply replans may still publish explicit refresh requests, but they
+		# must not publish fresh-cycle/replan work before it has actually run.
 		var cids_to_publish := _collect_cids_to_publish(
 			api,
+			should_apply_replans,
 			replan_all_now,
 			replan_ids_now,
+			fresh_intent_cycle_ids_now,
 			intent_refresh_all_now,
 			intent_refresh_ids_now
 		)
 
+		if should_apply_replans:
+			for cid in fresh_intent_cycle_ids_now.keys():
+				_prepare_fresh_intent_cycle_if_valid(api, int(cid))
+
 		if should_apply_replans and replan_all_now:
 			_replan_all(api, allow_hooks)
 		elif should_apply_replans:
+			for cid in fresh_intent_cycle_ids_now.keys():
+				_replan_if_valid(api, int(cid), allow_hooks)
 			for cid in replan_ids_now.keys():
+				if fresh_intent_cycle_ids_now.has(cid):
+					continue
 				_replan_if_valid(api, int(cid), allow_hooks)
 
 		_dispatch_group_layout_events(api, group_layout_events_now)
@@ -217,6 +241,12 @@ func _replan_if_valid(api: SimBattleAPI, cid: int, allow_hooks: bool) -> void:
 	api.plan_intent(cid, allow_hooks, true)
 
 
+func _prepare_fresh_intent_cycle_if_valid(api: SimBattleAPI, cid: int) -> void:
+	if api == null or cid <= 0:
+		return
+	api._prepare_fresh_intent_cycle_state(int(cid))
+
+
 func _refresh_all_intents(api: SimBattleAPI) -> void:
 	if api == null or api.state == null:
 		return
@@ -246,13 +276,25 @@ func _refresh_intent_if_valid(api: SimBattleAPI, cid: int) -> void:
 
 func _collect_cids_to_publish(
 	api: SimBattleAPI,
+	should_apply_replans: bool,
 	replan_all_now: bool,
 	replan_ids_now: Dictionary,
+	fresh_intent_cycle_ids_now: Dictionary,
 	intent_refresh_all_now: bool,
 	intent_refresh_ids_now: Dictionary
 ) -> Dictionary:
 	var out := {}
 	if api == null or api.state == null:
+		return out
+
+	if !should_apply_replans:
+		if intent_refresh_all_now:
+			for unit in api.state.units.values():
+				if unit is CombatantState and unit.is_alive() and unit.combatant_data != null and unit.combatant_data.ai != null:
+					out[int(unit.id)] = true
+			return out
+		for cid in intent_refresh_ids_now.keys():
+			_add_cid_if_valid(api, int(cid), out)
 		return out
 
 	if replan_all_now or intent_refresh_all_now:
@@ -262,6 +304,8 @@ func _collect_cids_to_publish(
 		return out
 
 	for cid in replan_ids_now.keys():
+		_add_cid_if_valid(api, int(cid), out)
+	for cid in fresh_intent_cycle_ids_now.keys():
 		_add_cid_if_valid(api, int(cid), out)
 	for cid in intent_refresh_ids_now.keys():
 		_add_cid_if_valid(api, int(cid), out)

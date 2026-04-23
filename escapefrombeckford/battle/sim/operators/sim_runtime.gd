@@ -621,9 +621,10 @@ func _complete_actor_turn(cid: int) -> void:
 
 	SimStatusSystem.on_actor_turn_end(api, cid)
 	SimArcanaSystem.on_actor_turn_end(api, cid)
+	# Runtime posts the actor-end refresh request, but the API/checkpoint path
+	# owns when the fresh intent cycle is actually applied and published.
+	api.request_fresh_intent_cycle(cid, true)
 	_apply_checkpoint_boundary(CheckpointProcessor.Kind.AFTER_ACTOR_TURN, true)
-
-	_replan_actor_intent_after_turn_cleanup(cid)
 
 	engine.complete_actor(cid)
 
@@ -1466,36 +1467,6 @@ func _finish_npc_turn(ctx: NPCAIContext) -> void:
 		return
 
 	ctx.state[Keys.IS_ACTING] = false
-
-
-func _replan_actor_intent_after_turn_cleanup(cid: int) -> void:
-	var api := _api()
-	if api == null or api.state == null or api.state.has_terminal_outcome():
-		return
-	if cid <= 0:
-		return
-
-	var u: CombatantState = api.state.get_unit(int(cid))
-	if u == null or !u.is_alive():
-		return
-	if u.combatant_data == null or u.combatant_data.ai == null:
-		return
-
-	ActionPlanner.ensure_ai_state_initialized(u)
-
-	var profile: NPCAIProfile = u.combatant_data.ai
-	var ctx := ActionPlanner.make_context(api, u)
-	ctx.runtime = self
-
-	# Finishing an action starts a fresh intent cycle for the actor.
-	ctx.state[ActionPlanner.KEY_PLANNED_IDX] = -1
-	ctx.state[Keys.PLANNED_SELECTION_SOURCE] = ActionPlanner.SELECTION_SOURCE_NONE
-	ctx.state[ActionPlanner.STABILITY_BROKEN] = false
-	ctx.state[Keys.IS_ACTING] = false
-	ctx.state[Keys.FIRST_INTENTS_READY] = true
-
-	ActionPlanner.plan_next_intent_sim(profile, ctx, true)
-	ActionIntentPresenter.emit_current_intent(api, int(cid))
 
 
 func _update_action_spree_state(profile: NPCAIProfile, state: Dictionary, executed_idx: int) -> void:
