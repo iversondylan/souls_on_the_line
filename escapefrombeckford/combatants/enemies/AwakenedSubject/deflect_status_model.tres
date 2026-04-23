@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="StatusModel" format=3 uid="uid://d0c6xv34d7rtx"]
+
+[ext_resource type="Script" uid="uid://cccygrstrra8t" path="res://npc_ai/status/status_model.gd" id="1_2wwam"]
+[ext_resource type="Resource" uid="uid://dvuih4io2d0hg" path="res://statuses/deflect.tres" id="2_m01if"]
+
+[resource]
+script = ExtResource("1_2wwam")
+status = ExtResource("2_m01if")

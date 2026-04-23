@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="DeflectStatus" format=3 uid="uid://dvuih4io2d0hg"]
+
+[ext_resource type="Texture2D" uid="uid://dvwkswopphv4i" path="res://_assets/sprites/arcana_placeholders/shield-reflect.png" id="1_h7cuo"]
+[ext_resource type="Script" uid="uid://cqxpfc7iaifep" path="res://statuses/deflect.gd" id="2_h7cuo"]
+
+[resource]
+script = ExtResource("2_h7cuo")
+status_name = "Deflect"
+icon = ExtResource("1_h7cuo")

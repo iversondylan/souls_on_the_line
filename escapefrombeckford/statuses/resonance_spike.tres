@@ -9,7 +9,6 @@
 script = ExtResource("4_76tw8")
 projected_statuses = Array[ExtResource("2_dy2j6")]([ExtResource("3_3wavi")])
 status_name = "Resonance Spike"
-reapply_type = 1
 auto_remove = 2
 icon = ExtResource("1_xdcdr")
 tooltip = "Allies deal more damage."

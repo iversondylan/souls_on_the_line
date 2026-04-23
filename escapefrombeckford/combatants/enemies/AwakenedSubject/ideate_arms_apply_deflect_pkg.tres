@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="NPCEffectPackage" format=3 uid="uid://c14movvtabj3g"]
+
+[ext_resource type="Resource" uid="uid://br5dox5m0ph6v" path="res://npc_ai/npc_status_sequence.tres" id="1_ubewm"]
+[ext_resource type="Script" uid="uid://b8d5j6ne4mt88" path="res://npc_ai/_core/param_model.gd" id="2_rup3p"]
+[ext_resource type="Resource" uid="uid://d0c6xv34d7rtx" path="res://combatants/enemies/AwakenedSubject/deflect_status_model.tres" id="3_xctb1"]
+[ext_resource type="Resource" uid="uid://bsvdd8jvaco0n" path="res://npc_ai/status/summoned_status_target_model.tres" id="4_xapuj"]
+[ext_resource type="Script" uid="uid://3jde7uhq2yho" path="res://npc_ai/_core/npc_effect_package.gd" id="5_tgkda"]
+[ext_resource type="Script" uid="uid://cuj4qvyx6dedj" path="res://npc_ai/_core/state_model.gd" id="6_7olql"]
+
+[resource]
+script = ExtResource("5_tgkda")
+effect = ExtResource("1_ubewm")
+param_models = Array[ExtResource("2_rup3p")]([ExtResource("3_xctb1"), ExtResource("4_xapuj")])
+compact_to_previous = true

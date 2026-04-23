@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="NPCAction" format=3 uid="uid://cknc10tu3gi21"]
 
 [ext_resource type="Script" uid="uid://bcih413oy6v73" path="res://npc_ai/_core/npc_action.gd" id="1_action_script"]
-[ext_resource type="Resource" path="res://combatants/souls/YggdrasilHart/yggdrasil_hart_attack_pkg.tres" id="2_attack_pkg"]
+[ext_resource type="Resource" uid="uid://c68uxyb8frimi" path="res://combatants/souls/YggdrasilHart/yggdrasil_hart_attack_pkg.tres" id="2_attack_pkg"]
 [ext_resource type="Texture2D" uid="uid://c54dbo8n7r3g" path="res://_assets/sprites/assorted/attack.PNG" id="3_attack_icon"]
 [ext_resource type="Script" uid="uid://cgyx5yvchgfsk" path="res://npc_ai/text/attack_intent_text_model.gd" id="4_text_model_script"]
 [ext_resource type="Resource" uid="uid://ivsvxo0vj72x" path="res://npc_ai/text/attack_intent_tooltip_text_model.tres" id="5_tooltip_model"]
