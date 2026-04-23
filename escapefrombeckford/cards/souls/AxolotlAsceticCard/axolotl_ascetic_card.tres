@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="CardData" format=3 uid="uid://biqodd5dbpmup"]
+
+[ext_resource type="Script" uid="uid://wtk5v77fcqvn" path="res://cards/_core/card_action.gd" id="1_qdd71"]
+[ext_resource type="Resource" uid="uid://cykboi5dx0rif" path="res://cards/souls/AxolotlAsceticCard/summon_axolotl_ascetic.tres" id="2_pof3e"]
+[ext_resource type="Resource" uid="uid://c830gh3482xnd" path="res://cards/souls/AxolotlAsceticCard/axolotl_threshold_on_summoned_action.tres" id="3_n5gsm"]
+[ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://cards/_core/card_data.gd" id="4_ga8yv"]
+[ext_resource type="Texture2D" uid="uid://c8856cirhro4x" path="res://_assets/sprites/assorted/axolotl.png" id="5_eqk0n"]
+
+[resource]
+script = ExtResource("4_ga8yv")
+id = &"aye_aye_ascetic"
+card_type = 1
+target_type = 1
+rarity = 2
+name = "Axolotl Ascetic"
+summon_release_overload = 1
+description = "Summon a %s/%s %s. The first time each round that damage leaves this below 50% health, gain Absorb and +2 full max health."
+cost = 2
+texture = ExtResource("5_eqk0n")
+actions = Array[ExtResource("1_qdd71")]([ExtResource("2_pof3e"), ExtResource("3_n5gsm")])

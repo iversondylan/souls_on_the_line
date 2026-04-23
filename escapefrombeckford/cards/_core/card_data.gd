@@ -145,9 +145,7 @@ func get_total_cost() -> int:
 
 
 func is_soulbound_slot_card() -> bool:
-	if int(card_type) != int(CardType.SOULBOUND) or bool(deplete):
-		return false
-	return _has_summon_with_mortality(CombatantState.Mortality.BOUND)
+	return int(card_type) == int(CardType.SOULBOUND) and !bool(deplete)
 
 
 func is_wild_soul_card() -> bool:
@@ -156,13 +154,3 @@ func is_wild_soul_card() -> bool:
 
 func should_exhaust_on_play() -> bool:
 	return bool(deplete)
-
-
-func _has_summon_with_mortality(mortality_value: int) -> bool:
-	for action in actions:
-		var summon_action := action as SummonAction
-		if summon_action == null:
-			continue
-		if int(summon_action.mortality) == int(mortality_value):
-			return true
-	return false

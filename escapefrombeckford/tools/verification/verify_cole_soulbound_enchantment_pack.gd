@@ -20,7 +20,7 @@ const StatusCatalogResource := preload("res://statuses/_core/status_catalog.tres
 const StatusTokenContext := preload("res://battle/contexts/status_token_context.gd")
 const TurnTimelineCompiler := preload("res://battle/view/operators/turn_timeline_compiler.gd")
 
-const AYE_AYE_ASCETIC := preload("res://cards/souls/AyeAyeAsceticCard/aye_aye_ascetic_card.tres")
+const AYE_AYE_ASCETIC := preload("res://cards/souls/AxolotlAsceticCard/axolotl_ascetic_card.tres")
 const ENTANGLED_VOTARY := preload("res://cards/souls/EntangledVotaryCard/entangled_votary_card.tres")
 const PHOENIX_BROOCH := preload("res://cards/enchantments/PhoenixBrooch/phoenix_brooch.tres")
 const POCKET_SILKSTITCHERS := preload("res://cards/enchantments/PocketSilkstitchers/pocket_silkstitchers.tres")
@@ -31,7 +31,7 @@ const COLE_DRAFTABLE_CARDS := preload("res://character_profiles/Cole/cole_drafta
 const STATUS_CATALOG_RESOURCE := preload("res://statuses/_core/status_catalog.tres")
 const BULWARK_PROTO := preload("res://statuses/bulwark.tres")
 
-const AYE_AYE_THRESHOLD_ID := &"aye_aye_ascetic_threshold"
+const AYE_AYE_THRESHOLD_ID := &"ascetic_threshold"
 const ENTANGLED_GROWTH_ID := &"entangled_votary_growth"
 const PHOENIX_BROOCH_ID := &"phoenix_brooch"
 const POCKET_SILKSTITCHERS_ID := &"pocket_silkstitchers"

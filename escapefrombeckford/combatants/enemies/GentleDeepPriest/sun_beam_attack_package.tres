@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="NPCEffectPackage" format=3 uid="uid://dhs4nd0j58k2i"]
+
+[ext_resource type="Resource" uid="uid://bnqqhpu1itcb3" path="res://npc_ai/npc_attack_sequence.tres" id="1_iur50"]
+[ext_resource type="Script" uid="uid://b8d5j6ne4mt88" path="res://npc_ai/_core/param_model.gd" id="2_evjy2"]
+[ext_resource type="Resource" uid="uid://birm0ki2q27d3" path="res://combatants/enemies/GentleDeepPriest/sun_beam_flat_dmg_model.tres" id="3_cd7k1"]
+[ext_resource type="Script" uid="uid://3jde7uhq2yho" path="res://npc_ai/_core/npc_effect_package.gd" id="4_djlxi"]
+[ext_resource type="Script" uid="uid://cuj4qvyx6dedj" path="res://npc_ai/_core/state_model.gd" id="5_11v82"]
+
+[resource]
+script = ExtResource("4_djlxi")
+effect = ExtResource("1_iur50")
+param_models = Array[ExtResource("2_evjy2")]([ExtResource("3_cd7k1")])
+metadata/_custom_type_script = "uid://3jde7uhq2yho"

@@ -1,10 +1,10 @@
 [gd_resource type="Resource" script_class="NPCAction" format=3 uid="uid://qqiufduvnxj5"]
 
 [ext_resource type="Script" uid="uid://3jde7uhq2yho" path="res://npc_ai/_core/npc_effect_package.gd" id="1_pkg"]
-[ext_resource type="Resource" uid="uid://bmkwu54gopqi6" path="res://combatants/enemies/Calabash/calabash_burst_attack_package.tres" id="2_attack_pkg"]
+[ext_resource type="Resource" uid="uid://dhs4nd0j58k2i" path="res://combatants/enemies/GentleDeepPriest/sun_beam_attack_package.tres" id="2_uij0n"]
 [ext_resource type="Texture2D" uid="uid://d172x32jh00p0" path="res://_assets/sprites/assorted/danger_zone_attack.PNG" id="3_icon"]
 [ext_resource type="Script" uid="uid://dtwuyctovqk5r" path="res://npc_ai/_core/intent_lifecycle_model.gd" id="4_lifecycle"]
-[ext_resource type="Resource" uid="uid://4htxsoicptds" path="res://combatants/enemies/Calabash/calabash_danger_zone_lifecycle.tres" id="5_danger_lifecycle"]
+[ext_resource type="Resource" uid="uid://fmhwc05irjoh" path="res://combatants/enemies/GentleDeepPriest/sun_beam_danger_zone_lifecycle.tres" id="5_kv4ss"]
 [ext_resource type="Script" uid="uid://bcih413oy6v73" path="res://npc_ai/_core/npc_action.gd" id="6_action"]
 [ext_resource type="Script" uid="uid://q408gy2b4q6a" path="res://npc_ai/_core/performable_model.gd" id="7_d2e6y"]
 [ext_resource type="Resource" uid="uid://7gggk4mmejsq" path="res://npc_ai/text/attack_intent_text_model.tres" id="7_text_model"]
@@ -15,8 +15,8 @@
 
 [resource]
 script = ExtResource("6_action")
-effect_packages = Array[ExtResource("1_pkg")]([ExtResource("2_attack_pkg")])
-intent_lifecycle_models = Array[ExtResource("4_lifecycle")]([ExtResource("5_danger_lifecycle")])
+effect_packages = Array[ExtResource("1_pkg")]([ExtResource("2_uij0n")])
+intent_lifecycle_models = Array[ExtResource("4_lifecycle")]([ExtResource("5_kv4ss")])
 state_models = Array[ExtResource("9_state")]([ExtResource("10_half_exp"), ExtResource("11_uij0n")])
 action_name = "Danger Zone Sun Beam"
 intent_icon = ExtResource("3_icon")

@@ -9,7 +9,7 @@
 [ext_resource type="Resource" uid="uid://b10qjs2jvfad8" path="res://statuses/creative_flow.tres" id="6_creative_flow"]
 [ext_resource type="Resource" uid="uid://ccdod2y1rngoo" path="res://statuses/creative_potency.tres" id="6_creative_potency"]
 [ext_resource type="Resource" uid="uid://blu8qhnwmlstx" path="res://statuses/marked.tres" id="7_fjt00"]
-[ext_resource type="Resource" uid="uid://bvfqtlsrlcxos" path="res://statuses/aye_aye_ascetic_threshold.tres" id="7_gucpl"]
+[ext_resource type="Resource" uid="uid://bvfqtlsrlcxos" path="res://statuses/axolotl_ascetic_threshold.tres" id="7_gucpl"]
 [ext_resource type="Resource" uid="uid://cqrg6576shqsw" path="res://statuses/barkbound_bond.tres" id="8_byixj"]
 [ext_resource type="Resource" uid="uid://7x55fawjrwf4" path="res://statuses/might.tres" id="8_ho33y"]
 [ext_resource type="Resource" uid="uid://bh05r8var8mj3" path="res://statuses/pinpoint.tres" id="9_6ckqc"]

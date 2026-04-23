@@ -57,7 +57,7 @@ func on_card_played(ctx: SimStatusContext, source_id: int, card: CardData) -> vo
 	ctx.api.apply_status(status_ctx)
 
 func get_tooltip(_stacks: int = 0) -> String:
-	return "The first time each round you play your second Convocation, heal your frontmost ally 3 and give it Bulwark 10."
+	return "Jabber Collector: The first time each round you play your second Convocation, heal your frontmost ally 3 and give it Bulwark 10."
 
 func _reset_round_state(ctx: SimStatusContext, reason: String) -> void:
 	if ctx == null:

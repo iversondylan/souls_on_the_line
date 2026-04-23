@@ -1,147 +1,152 @@
-Godot Engine v4.6.1.stable.official.14d19694e - https://godotengine.org
-OpenGL API 4.1 Metal - 90.5 - Compatibility - Using Device: Apple - Apple M5 Pro
+		[0370] SET_INTENT tick=370 t=5 g=0 a=1 kind=ACTOR_TURN data{actor_id=7, planned_idx=0, intent_text="5", is_ranged=true}
+			[0371] TURN_STATUS tick=371 t=5 g=0 a=1 kind=ACTOR_TURN data{group_index=0, turn_id=5, active_id=1, player_id=1, pending_ids=[3, 7]}
+			[0372] SCOPE_BEGIN tick=372 t=5 g=0 a=1 kind=CARD data{scope_id=77, parent_scope_id=71, kind=4, label="uid=1776925222_3852955648_3517252845 Stand Firm", actor_id=1, group_index=0, turn_id=5}
+				[0373] CARD_PLAYED tick=373 t=5 g=0 a=1 kind=CARD data{source_id=1, card_id="stand_firm", card_uid="1776925222_3852955648_3517252845", card_name="Stand Firm", insert_index=-1, proto="res://cards/convocations/StandFirm/stand_firm.tres"}
+				[0374] MANA tick=374 t=5 g=0 a=1 kind=CARD data{src=1 mana=1->0 Δmana=-1 max=3->3 reason="card_spend", card_uid="1776925222_3852955648_3517252845", card_name="Stand Firm", amount=1}
+				[0375] STATUS tick=375 t=5 g=0 a=1 kind=CARD data{src=1 tgt=1 status=jabber_collector op=CHANGE stk=1, target_ids=[1], before_stacks=1, after_stacks=1, delta_stacks=0, reason="jabber_collector_count"}
+				[0376] STATUS tick=376 t=5 g=0 a=1 kind=CARD data{src=1 tgt=1 status=jabber_collector op=CHANGE stk=1, target_ids=[1], before_stacks=1, after_stacks=1, delta_stacks=0, reason="jabber_collector_trigger"}
+				[0377] STATUS tick=377 t=5 g=0 a=1 kind=CARD data{src=1 tgt=6 status=bulwark op=APPLY stk=10, target_ids=[6], before_stacks=0, after_stacks=10, delta_stacks=10, reason="jabber_collector"}
+				[0378] STATUS tick=378 t=5 g=0 a=1 kind=CARD data{src=1 tgt=6 status=full_fortitude op=APPLY stk=2, target_ids=[6], before_stacks=0, after_stacks=2, delta_stacks=2, reason=""}
+				[0379] CHANGE_MAX_HEALTH tick=379 t=5 g=0 a=1 kind=CARD data{tgt=6 max=7->9 hp=7->9 Δ=+2 relative=true reason="full_fortitude"}
+				[0380] DRAW_CARDS tick=380 t=5 g=0 a=1 kind=CARD data{source_id=1, amount=1, reason="CardAction"}
+			[0381] SCOPE_END tick=381 t=5 g=0 a=1 kind=CARD data{scope_id=77, parent_scope_id=71, kind=4, label="uid=1776925222_3852955648_3517252845 Stand Firm", actor_id=1}
+			[0382] SET_INTENT tick=382 t=5 g=0 a=1 kind=ACTOR_TURN data{actor_id=6, planned_idx=0, intent_text="4", is_ranged=false}
+			[0383] END_TURN_PRESSED tick=383 t=5 g=0 a=1 kind=ACTOR_TURN data{actor_id=1}
+			[0384] DISCARD_CARDS tick=384 t=5 g=0 a=1 kind=ACTOR_TURN data{source_id=1, card_uid="", amount=0, reason="player_turn_end_discard"}
+			[0385] SCOPE_BEGIN tick=385 t=5 g=0 a=1 kind=ARCANA data{scope_id=78, parent_scope_id=71, kind=11, label="player_turn_end", actor_id=0, group_index=0, turn_id=5}
+				[0386] ARCANA_PROC tick=386 t=5 g=0 a=1 kind=ARCANA data{group_index=0, turn_id=5, proc=2}
+			[0387] SCOPE_END tick=387 t=5 g=0 a=1 kind=ARCANA data{scope_id=78, parent_scope_id=71, kind=11, label="player_turn_end", actor_id=0}
+			[0388] ACTOR_END tick=388 t=5 g=0 a=1 kind=ACTOR_TURN data{actor_id=1, group_index=0, turn_id=5}
+		[0389] SCOPE_END tick=389 t=5 g=0 a=1 kind=ACTOR_TURN data{scope_id=71, parent_scope_id=69, kind=3, label="actor=1", actor_id=1}
+		[0390] STATUS tick=390 t=5 g=0 a=1 kind=GROUP_TURN data{src=1 tgt=1 status=amplify op=REMOVE stk=0, target_ids=[1], before_stacks=0, after_stacks=0, delta_stacks=0, reason=""}
+		[0391] STATUS tick=391 t=5 g=0 a=1 kind=GROUP_TURN data{src=1 tgt=1 status=weakened op=REMOVE stk=0, target_ids=[1], before_stacks=0, after_stacks=0, delta_stacks=0, reason=""}
+		[0392] TURN_STATUS tick=392 t=5 g=0 a=3 kind=GROUP_TURN data{group_index=0, turn_id=5, active_id=3, player_id=1, pending_ids=[7]}
+		[0393] SCOPE_BEGIN tick=393 t=5 g=0 a=3 kind=ACTOR_TURN data{scope_id=79, parent_scope_id=69, kind=3, label="actor=3", actor_id=3, group_index=0, turn_id=5}
+			[0394] ACTOR_BEGIN tick=394 t=5 g=0 a=3 kind=ACTOR_TURN data{actor_id=3, group_index=0, turn_id=5}
+			[0395] SCOPE_BEGIN tick=395 t=5 g=0 a=3 kind=STATUS_ACTION data{scope_id=80, parent_scope_id=79, kind=17, label="id=amplify tgts=4", actor_id=3, source_id=3, target_id=6, target_ids=[6, 1, 3, 7], group_index=0, turn_id=5, status_id=amplify, stacks=1}
+				[0396] STATUS tick=396 t=5 g=0 a=3 kind=STATUS_ACTION data{src=3 tgt=6 status=amplify op=APPLY stk=1, target_ids=[6], before_stacks=0, after_stacks=1, delta_stacks=1, reason="npc_status_action"}
+				[0397] STATUS tick=397 t=5 g=0 a=3 kind=STATUS_ACTION data{src=3 tgt=1 status=amplify op=APPLY stk=1, target_ids=[1], before_stacks=0, after_stacks=1, delta_stacks=1, reason="npc_status_action"}
+				[0398] STATUS tick=398 t=5 g=0 a=3 kind=STATUS_ACTION data{src=3 tgt=3 status=amplify op=APPLY stk=1, target_ids=[3], before_stacks=0, after_stacks=1, delta_stacks=1, reason="npc_status_action"}
+				[0399] STATUS tick=399 t=5 g=0 a=3 kind=STATUS_ACTION data{src=3 tgt=7 status=amplify op=APPLY stk=1, target_ids=[7], before_stacks=0, after_stacks=1, delta_stacks=1, reason="npc_status_action"}
+			[0400] SCOPE_END tick=400 t=5 g=0 a=3 kind=STATUS_ACTION data{scope_id=80, parent_scope_id=79, kind=17, label="id=amplify tgts=4", actor_id=3}
+			[0401] SCOPE_BEGIN tick=401 t=5 g=0 a=3 kind=ATTACK data{scope_id=81, parent_scope_id=79, kind=5, label="attacker=3", actor_id=3, group_index=0, turn_id=5}
+				[0402] SCOPE_BEGIN tick=402 t=5 g=0 a=3 kind=STRIKE data{scope_id=82, parent_scope_id=81, kind=13, label="i=0", actor_id=3, group_index=0, turn_id=5}
+					[0403] STRIKE * tick=403 t=5 g=0 a=3 kind=STRIKE data{source_id=3, target_ids=[6, 1, 3, 7]}
+					[0404] SCOPE_BEGIN tick=404 t=5 g=0 a=3 kind=HIT data{scope_id=83, parent_scope_id=82, kind=15, label="t=6", actor_id=3, target_id=6, group_index=0, turn_id=5}
+						[0405] DAMAGE_APPLIED tick=405 t=5 g=0 a=3 kind=HIT data{source_id=3, target_id=6, before_health=9, after_health=8, base=1, base_banish=0, amount=1, display_amount=1, banish_amount=0, applied_banish_amount=0, health_damage=1, was_lethal=false}
+						[0406] CHANGE_MAX_HEALTH tick=406 t=5 g=0 a=3 kind=HIT data{tgt=6 max=9->10 hp=8->8 Δ=+1 reason="tempered"}
+						[0407] MODIFY_BATTLE_CARD tick=407 t=5 g=0 a=3 kind=HIT data{card_uid="1776925222_725089061_576656833", reason="tempered"}
+					[0408] SCOPE_END tick=408 t=5 g=0 a=3 kind=HIT data{scope_id=83, parent_scope_id=82, kind=15, label="t=6", actor_id=3}
+					[0409] SCOPE_BEGIN tick=409 t=5 g=0 a=3 kind=HIT data{scope_id=84, parent_scope_id=82, kind=15, label="t=1", actor_id=3, target_id=1, group_index=0, turn_id=5}
+						[0410] DAMAGE_APPLIED tick=410 t=5 g=0 a=3 kind=HIT data{source_id=3, target_id=1, before_health=30, after_health=29, base=1, base_banish=0, amount=1, display_amount=1, banish_amount=0, applied_banish_amount=0, health_damage=1, was_lethal=false}
+					[0411] SCOPE_END tick=411 t=5 g=0 a=3 kind=HIT data{scope_id=84, parent_scope_id=82, kind=15, label="t=1", actor_id=3}
+					[0412] SCOPE_BEGIN tick=412 t=5 g=0 a=3 kind=HIT data{scope_id=85, parent_scope_id=82, kind=15, label="t=3", actor_id=3, target_id=3, group_index=0, turn_id=5}
+						[0413] DAMAGE_APPLIED tick=413 t=5 g=0 a=3 kind=HIT data{source_id=3, target_id=3, before_health=3, after_health=2, base=1, base_banish=0, amount=1, display_amount=1, banish_amount=0, applied_banish_amount=0, health_damage=1, was_lethal=false}
+					[0414] SCOPE_END tick=414 t=5 g=0 a=3 kind=HIT data{scope_id=85, parent_scope_id=82, kind=15, label="t=3", actor_id=3}
+					[0415] SCOPE_BEGIN tick=415 t=5 g=0 a=3 kind=HIT data{scope_id=86, parent_scope_id=82, kind=15, label="t=7", actor_id=3, target_id=7, group_index=0, turn_id=5}
+						[0416] DAMAGE_APPLIED tick=416 t=5 g=0 a=3 kind=HIT data{source_id=3, target_id=7, before_health=5, after_health=4, base=1, base_banish=0, amount=1, display_amount=1, banish_amount=0, applied_banish_amount=0, health_damage=1, was_lethal=false}
+					[0417] SCOPE_END tick=417 t=5 g=0 a=3 kind=HIT data{scope_id=86, parent_scope_id=82, kind=15, label="t=7", actor_id=3}
+				[0418] SCOPE_END tick=418 t=5 g=0 a=3 kind=STRIKE data{scope_id=82, parent_scope_id=81, kind=13, label="i=0", actor_id=3}
+			[0419] SCOPE_END tick=419 t=5 g=0 a=3 kind=ATTACK data{scope_id=81, parent_scope_id=79, kind=5, label="attacker=3", actor_id=3}
+			[0420] SCOPE_BEGIN tick=420 t=5 g=0 a=3 kind=ATTACK data{scope_id=87, parent_scope_id=79, kind=5, label="attacker=3", actor_id=3, group_index=0, turn_id=5}
+				[0421] SCOPE_BEGIN tick=421 t=5 g=0 a=3 kind=STRIKE data{scope_id=88, parent_scope_id=87, kind=13, label="i=0", actor_id=3, group_index=0, turn_id=5}
+					[0422] STRIKE * tick=422 t=5 g=0 a=3 kind=STRIKE data{source_id=3, target_ids=[2]}
+					[0423] SCOPE_BEGIN tick=423 t=5 g=0 a=3 kind=HIT data{scope_id=89, parent_scope_id=88, kind=15, label="t=2", actor_id=3, target_id=2, group_index=0, turn_id=5}
+						[0424] DAMAGE_APPLIED tick=424 t=5 g=0 a=3 kind=HIT data{source_id=3, target_id=2, before_health=38, after_health=36, base=1, base_banish=0, amount=2, display_amount=2, banish_amount=0, applied_banish_amount=0, health_damage=2, was_lethal=false}
+					[0425] SCOPE_END tick=425 t=5 g=0 a=3 kind=HIT data{scope_id=89, parent_scope_id=88, kind=15, label="t=2", actor_id=3}
+				[0426] SCOPE_END tick=426 t=5 g=0 a=3 kind=STRIKE data{scope_id=88, parent_scope_id=87, kind=13, label="i=0", actor_id=3}
+			[0427] SCOPE_END tick=427 t=5 g=0 a=3 kind=ATTACK data{scope_id=87, parent_scope_id=79, kind=5, label="attacker=3", actor_id=3}
+			[0428] ACTOR_END tick=428 t=5 g=0 a=3 kind=ACTOR_TURN data{actor_id=3, group_index=0, turn_id=5}
+		[0429] SCOPE_END tick=429 t=5 g=0 a=3 kind=ACTOR_TURN data{scope_id=79, parent_scope_id=69, kind=3, label="actor=3", actor_id=3}
+		[0430] STATUS tick=430 t=5 g=0 a=3 kind=GROUP_TURN data{src=3 tgt=3 status=weakened op=REMOVE stk=0, target_ids=[3], before_stacks=0, after_stacks=0, delta_stacks=0, reason=""}
+		[0431] STATUS tick=431 t=5 g=0 a=3 kind=GROUP_TURN data{src=3 tgt=3 status=amplify op=REMOVE stk=0, target_ids=[3], before_stacks=0, after_stacks=0, delta_stacks=0, reason=""}
+		[0432] SET_INTENT tick=432 t=5 g=0 a=3 kind=GROUP_TURN data{actor_id=6, planned_idx=0, intent_text="6", is_ranged=false}
+		[0433] SET_INTENT tick=433 t=5 g=0 a=3 kind=GROUP_TURN data{actor_id=7, planned_idx=0, intent_text="8", is_ranged=true}
+		[0434] SET_INTENT tick=434 t=5 g=0 a=3 kind=GROUP_TURN data{actor_id=2, planned_idx=1, intent_text="2×6", is_ranged=false}
+		[0435] SET_INTENT tick=435 t=5 g=0 a=3 kind=GROUP_TURN data{actor_id=3, planned_idx=0, intent_text="1+", is_ranged=false}
+		[0436] TURN_STATUS tick=436 t=5 g=0 a=7 kind=GROUP_TURN data{group_index=0, turn_id=5, active_id=7, player_id=1, pending_ids=[]}
+		[0437] SCOPE_BEGIN tick=437 t=5 g=0 a=7 kind=ACTOR_TURN data{scope_id=90, parent_scope_id=69, kind=3, label="actor=7", actor_id=7, group_index=0, turn_id=5}
+			[0438] ACTOR_BEGIN tick=438 t=5 g=0 a=7 kind=ACTOR_TURN data{actor_id=7, group_index=0, turn_id=5}
+			[0439] SCOPE_BEGIN tick=439 t=5 g=0 a=7 kind=ATTACK data{scope_id=91, parent_scope_id=90, kind=5, label="attacker=7", actor_id=7, group_index=0, turn_id=5}
+				[0440] SCOPE_BEGIN tick=440 t=5 g=0 a=7 kind=STRIKE data{scope_id=92, parent_scope_id=91, kind=13, label="i=0", actor_id=7, group_index=0, turn_id=5}
+					[0441] STRIKE * tick=441 t=5 g=0 a=7 kind=STRIKE data{source_id=7, target_ids=[2]}
+					[0442] SCOPE_BEGIN tick=442 t=5 g=0 a=7 kind=HIT data{scope_id=93, parent_scope_id=92, kind=15, label="t=2", actor_id=7, target_id=2, group_index=0, turn_id=5}
+						[0443] DAMAGE_APPLIED tick=443 t=5 g=0 a=7 kind=HIT data{source_id=7, target_id=2, before_health=36, after_health=28, base=5, base_banish=0, amount=8, display_amount=8, banish_amount=0, applied_banish_amount=0, health_damage=8, was_lethal=false}
+					[0444] SCOPE_END tick=444 t=5 g=0 a=7 kind=HIT data{scope_id=93, parent_scope_id=92, kind=15, label="t=2", actor_id=7}
+				[0445] SCOPE_END tick=445 t=5 g=0 a=7 kind=STRIKE data{scope_id=92, parent_scope_id=91, kind=13, label="i=0", actor_id=7}
+			[0446] SCOPE_END tick=446 t=5 g=0 a=7 kind=ATTACK data{scope_id=91, parent_scope_id=90, kind=5, label="attacker=7", actor_id=7}
+			[0447] ACTOR_END tick=447 t=5 g=0 a=7 kind=ACTOR_TURN data{actor_id=7, group_index=0, turn_id=5}
+		[0448] SCOPE_END tick=448 t=5 g=0 a=7 kind=ACTOR_TURN data{scope_id=90, parent_scope_id=69, kind=3, label="actor=7", actor_id=7}
+		[0449] STATUS tick=449 t=5 g=0 a=7 kind=GROUP_TURN data{src=7 tgt=7 status=amplify op=REMOVE stk=0, target_ids=[7], before_stacks=0, after_stacks=0, delta_stacks=0, reason=""}
+		[0450] SET_INTENT tick=450 t=5 g=0 a=7 kind=GROUP_TURN data{actor_id=2, planned_idx=1, intent_text="2×6", is_ranged=false}
+		[0451] SET_INTENT tick=451 t=5 g=0 a=7 kind=GROUP_TURN data{actor_id=7, planned_idx=0, intent_text="5", is_ranged=true}
+		[0452] TURN_GROUP_END tick=452 t=5 g=0 a=7 kind=GROUP_TURN data{group_index=0, turn_id=5}
+	[0453] SCOPE_END tick=453 t=5 g=0 a=7 kind=GROUP_TURN data{scope_id=69, parent_scope_id=1, kind=2, label="group=0", actor_id=0}
+	[0454] SCOPE_BEGIN tick=454 t=6 g=1 kind=GROUP_TURN data{scope_id=94, parent_scope_id=1, kind=2, label="group=1", actor_id=0, group_index=1, turn_id=6}
+		[0455] TURN_GROUP_BEGIN tick=455 t=6 g=1 kind=GROUP_TURN data{group_index=1, turn_id=6}
+		[0456] TURN_STATUS tick=456 t=6 g=1 a=2 kind=GROUP_TURN data{group_index=1, turn_id=6, active_id=2, player_id=1, pending_ids=[2]}
+		[0457] TURN_STATUS tick=457 t=6 g=1 a=2 kind=GROUP_TURN data{group_index=1, turn_id=6, active_id=2, player_id=1, pending_ids=[]}
+		[0458] SCOPE_BEGIN tick=458 t=6 g=1 a=2 kind=ACTOR_TURN data{scope_id=95, parent_scope_id=94, kind=3, label="actor=2", actor_id=2, group_index=1, turn_id=6}
+			[0459] ACTOR_BEGIN tick=459 t=6 g=1 a=2 kind=ACTOR_TURN data{actor_id=2, group_index=1, turn_id=6}
+			[0460] SCOPE_BEGIN tick=460 t=6 g=1 a=2 kind=ATTACK data{scope_id=96, parent_scope_id=95, kind=5, label="attacker=2", actor_id=2, group_index=1, turn_id=6}
+				[0461] SCOPE_BEGIN tick=461 t=6 g=1 a=2 kind=STRIKE data{scope_id=97, parent_scope_id=96, kind=13, label="i=0", actor_id=2, group_index=1, turn_id=6}
+					[0462] STRIKE * tick=462 t=6 g=1 a=2 kind=STRIKE data{source_id=2, target_ids=[6]}
+					[0463] SCOPE_BEGIN tick=463 t=6 g=1 a=2 kind=HIT data{scope_id=98, parent_scope_id=97, kind=15, label="t=6", actor_id=2, target_id=6, group_index=1, turn_id=6}
+						[0464] DAMAGE_APPLIED tick=464 t=6 g=1 a=2 kind=HIT data{source_id=2, target_id=6, before_health=8, after_health=0, base=6, base_banish=0, amount=8, display_amount=8, banish_amount=0, applied_banish_amount=0, health_damage=8, was_lethal=true}
+						[0465] SUMMON_RESERVE_RELEASED tick=465 t=6 g=1 a=2 kind=HIT data{card_uid="1776925222_725089061_576656833", reason="removal:death:damage", summoned_id=6}
+						[0466] TURN_STATUS tick=466 t=6 g=1 a=2 kind=HIT data{group_index=1, turn_id=6, active_id=2, player_id=1, pending_ids=[]}
+						[0467] REMOVED * tick=467 t=6 g=1 a=2 kind=HIT data{source_id=2, target_id=6, group_index=0, before_order_ids=[6, 1, 3, 7], after_order_ids=[1, 3, 7], reason="damage", removal_type=0}
+					[0468] SCOPE_END tick=468 t=6 g=1 a=2 kind=HIT data{scope_id=98, parent_scope_id=97, kind=15, label="t=6", actor_id=2}
+				[0469] SCOPE_END tick=469 t=6 g=1 a=2 kind=STRIKE data{scope_id=97, parent_scope_id=96, kind=13, label="i=0", actor_id=2}
+				[0470] ARCANUM_STATE_CHANGED tick=470 t=6 g=1 a=2 kind=ATTACK data{source_id=1, arcanum_id=reapers_siphon, before_stacks=1, after_stacks=3, delta_stacks=2, reason=""}
+				[0471] DRAW_CARDS tick=471 t=6 g=1 a=2 kind=ATTACK data{source_id=1, amount=1, reason="reapers_siphon"}
+				[0472] SCOPE_BEGIN tick=472 t=6 g=1 a=2 kind=STRIKE data{scope_id=99, parent_scope_id=96, kind=13, label="i=1", actor_id=2, group_index=1, turn_id=6}
+					[0473] STRIKE * tick=473 t=6 g=1 a=2 kind=STRIKE data{source_id=2, target_ids=[1]}
+					[0474] SCOPE_BEGIN tick=474 t=6 g=1 a=2 kind=HIT data{scope_id=100, parent_scope_id=99, kind=15, label="t=1", actor_id=2, target_id=1, group_index=1, turn_id=6}
+						[0475] DAMAGE_APPLIED tick=475 t=6 g=1 a=2 kind=HIT data{source_id=2, target_id=1, before_health=29, after_health=20, base=6, base_banish=0, amount=9, display_amount=9, banish_amount=0, applied_banish_amount=0, health_damage=9, was_lethal=false}
+					[0476] SCOPE_END tick=476 t=6 g=1 a=2 kind=HIT data{scope_id=100, parent_scope_id=99, kind=15, label="t=1", actor_id=2}
+				[0477] SCOPE_END tick=477 t=6 g=1 a=2 kind=STRIKE data{scope_id=99, parent_scope_id=96, kind=13, label="i=1", actor_id=2}
+			[0478] SCOPE_END tick=478 t=6 g=1 a=2 kind=ATTACK data{scope_id=96, parent_scope_id=95, kind=5, label="attacker=2", actor_id=2}
+			[0479] SCOPE_BEGIN tick=479 t=6 g=1 a=2 kind=STATUS_ACTION data{scope_id=101, parent_scope_id=95, kind=17, label="id=weakened tgts=3", actor_id=2, source_id=2, target_id=1, target_ids=[1, 3, 7], group_index=1, turn_id=6, status_id=weakened, stacks=1}
+				[0480] STATUS tick=480 t=6 g=1 a=2 kind=STATUS_ACTION data{src=2 tgt=1 status=weakened op=APPLY stk=1, target_ids=[1], before_stacks=0, after_stacks=1, delta_stacks=1, reason="npc_status_action"}
+				[0481] STATUS tick=481 t=6 g=1 a=2 kind=STATUS_ACTION data{src=2 tgt=3 status=weakened op=APPLY stk=1, target_ids=[3], before_stacks=0, after_stacks=1, delta_stacks=1, reason="npc_status_action"}
+				[0482] STATUS tick=482 t=6 g=1 a=2 kind=STATUS_ACTION data{src=2 tgt=7 status=weakened op=APPLY stk=1, target_ids=[7], before_stacks=0, after_stacks=1, delta_stacks=1, reason="npc_status_action"}
+			[0483] SCOPE_END tick=483 t=6 g=1 a=2 kind=STATUS_ACTION data{scope_id=101, parent_scope_id=95, kind=17, label="id=weakened tgts=3", actor_id=2}
+			[0484] SCOPE_BEGIN tick=484 t=6 g=1 a=2 kind=STATUS_ACTION data{scope_id=102, parent_scope_id=95, kind=17, label="id=vulnerable_aura tgts=1", actor_id=2, source_id=2, target_id=2, target_ids=[2], group_index=1, turn_id=6, status_id=vulnerable_aura, stacks=2}
+				[0485] STATUS tick=485 t=6 g=1 a=2 kind=STATUS_ACTION data{src=2 tgt=1 status=vulnerable op=CHANGE stk=3, target_ids=[1], before_stacks=1, after_stacks=3, delta_stacks=2, reason=""}
+				[0486] STATUS tick=486 t=6 g=1 a=2 kind=STATUS_ACTION data{src=2 tgt=3 status=vulnerable op=CHANGE stk=3, target_ids=[3], before_stacks=1, after_stacks=3, delta_stacks=2, reason=""}
+				[0487] STATUS tick=487 t=6 g=1 a=2 kind=STATUS_ACTION data{src=2 tgt=7 status=vulnerable op=CHANGE stk=3, target_ids=[7], before_stacks=1, after_stacks=3, delta_stacks=2, reason=""}
+				[0488] SET_INTENT tick=488 t=6 g=1 a=2 kind=STATUS_ACTION data{actor_id=3, planned_idx=0, intent_text="1+", is_ranged=false}
+				[0489] SET_INTENT tick=489 t=6 g=1 a=2 kind=STATUS_ACTION data{actor_id=7, planned_idx=0, intent_text="3", is_ranged=true}
+				[0490] TURN_STATUS tick=490 t=6 g=1 a=2 kind=STATUS_ACTION data{group_index=1, turn_id=6, active_id=2, player_id=1, pending_ids=[]}
+			[0491] SCOPE_END tick=491 t=6 g=1 a=2 kind=STATUS_ACTION data{scope_id=102, parent_scope_id=95, kind=17, label="id=vulnerable_aura tgts=1", actor_id=2}
+			[0492] ACTOR_END tick=492 t=6 g=1 a=2 kind=ACTOR_TURN data{actor_id=2, group_index=1, turn_id=6}
+		[0493] SCOPE_END tick=493 t=6 g=1 a=2 kind=ACTOR_TURN data{scope_id=95, parent_scope_id=94, kind=3, label="actor=2", actor_id=2}
+		[0494] STATUS tick=494 t=6 g=1 a=2 kind=GROUP_TURN data{src=2 tgt=1 status=vulnerable op=CHANGE stk=2, target_ids=[1], before_stacks=3, after_stacks=2, delta_stacks=-1, reason=""}
+		[0495] STATUS tick=495 t=6 g=1 a=2 kind=GROUP_TURN data{src=2 tgt=3 status=vulnerable op=CHANGE stk=2, target_ids=[3], before_stacks=3, after_stacks=2, delta_stacks=-1, reason=""}
+		[0496] STATUS tick=496 t=6 g=1 a=2 kind=GROUP_TURN data{src=2 tgt=7 status=vulnerable op=CHANGE stk=2, target_ids=[7], before_stacks=3, after_stacks=2, delta_stacks=-1, reason=""}
+		[0497] SET_INTENT tick=497 t=6 g=1 a=2 kind=GROUP_TURN data{actor_id=3, planned_idx=0, intent_text="1+", is_ranged=false}
+		[0498] SET_INTENT tick=498 t=6 g=1 a=2 kind=GROUP_TURN data{actor_id=7, planned_idx=0, intent_text="3", is_ranged=true}
+		[0499] SET_INTENT tick=499 t=6 g=1 a=2 kind=GROUP_TURN data{actor_id=3, planned_idx=0, intent_text="1+", is_ranged=false}
+		[0500] SET_INTENT tick=500 t=6 g=1 a=2 kind=GROUP_TURN data{actor_id=7, planned_idx=0, intent_text="3", is_ranged=true}
+		[0501] STATUS tick=501 t=6 g=1 a=2 kind=GROUP_TURN data{src=2 tgt=2 status=banishing_strikes op=APPLY stk=5, target_ids=[2], before_stacks=0, after_stacks=5, delta_stacks=5, reason=""}
+		[0502] SET_INTENT tick=502 t=6 g=1 a=2 kind=GROUP_TURN data{actor_id=2, planned_idx=0, intent_text="3×6", is_ranged=false}
+		[0503] SET_INTENT tick=503 t=6 g=1 a=2 kind=GROUP_TURN data{actor_id=2, planned_idx=0, intent_text="3×6", is_ranged=false}
+		[0504] TURN_GROUP_END tick=504 t=6 g=1 a=2 kind=GROUP_TURN data{group_index=1, turn_id=6}
+	[0505] SCOPE_END tick=505 t=6 g=1 a=2 kind=GROUP_TURN data{scope_id=94, parent_scope_id=1, kind=2, label="group=1", actor_id=0}
+	[0506] SCOPE_BEGIN tick=506 t=7 g=0 kind=GROUP_TURN data{scope_id=103, parent_scope_id=1, kind=2, label="group=0", actor_id=0, group_index=0, turn_id=7}
+		[0507] TURN_GROUP_BEGIN tick=507 t=7 g=0 kind=GROUP_TURN data{group_index=0, turn_id=7}
+		[0508] MANA tick=508 t=7 g=0 kind=GROUP_TURN data{src=1 mana=0->3 Δmana=+3 max=3->3 reason="group_turn_begin_refresh"}
+		[0509] TURN_STATUS tick=509 t=7 g=0 a=1 kind=GROUP_TURN data{group_index=0, turn_id=7, active_id=1, player_id=1, pending_ids=[1, 3, 7]}
+		[0510] STATUS tick=510 t=7 g=0 a=1 kind=GROUP_TURN data{src=1 tgt=1 status=jabber_collector op=CHANGE stk=1, target_ids=[1], before_stacks=1, after_stacks=1, delta_stacks=0, reason="jabber_collector_reset"}
+		[0511] SCOPE_BEGIN tick=511 t=7 g=0 a=1 kind=ARCANA data{scope_id=104, parent_scope_id=103, kind=11, label="player_turn_begin", actor_id=0, group_index=0, turn_id=7}
+			[0512] ARCANA_PROC tick=512 t=7 g=0 a=1 kind=ARCANA data{group_index=0, turn_id=7, proc=1}
+		[0513] SCOPE_END tick=513 t=7 g=0 a=1 kind=ARCANA data{scope_id=104, parent_scope_id=103, kind=11, label="player_turn_begin", actor_id=0}
+		[0514] TURN_STATUS tick=514 t=7 g=0 a=1 kind=GROUP_TURN data{group_index=0, turn_id=7, active_id=1, player_id=1, pending_ids=[3, 7]}
+		[0515] SCOPE_BEGIN tick=515 t=7 g=0 a=1 kind=ACTOR_TURN data{scope_id=105, parent_scope_id=103, kind=3, label="actor=1", actor_id=1, group_index=0, turn_id=7}
+			[0516] ACTOR_BEGIN tick=516 t=7 g=0 a=1 kind=ACTOR_TURN data{actor_id=1, group_index=0, turn_id=7}
+			[0517] PLAYER_INPUT_REACHED tick=517 t=7 g=0 a=1 kind=ACTOR_TURN data{actor_id=1}
+			[0518] DRAW_CARDS tick=518 t=7 g=0 a=1 kind=ACTOR_TURN data{source_id=1, amount=4, reason="player_turn_refill"}
 
-[0000] SCOPE_BEGIN tick=0 kind=BATTLE data{scope_id=1, parent_scope_id=0, kind=0, label="battle_seed=1398101971 run_seed=525784061", actor_id=0, group_index=-1, turn_id=0}
-	[0001] SCOPE_BEGIN tick=1 kind=SETUP data{scope_id=2, parent_scope_id=1, kind=1, label="setup", actor_id=0, group_index=-1, turn_id=0}
-		[0002] SPAWNED tick=2 kind=SETUP data{group_index=0, insert_index=0, after_order_ids=[1], proto="res://character_profiles/Cole/cole_data.tres", spawned_id=1}
-		[0003] SPAWNED tick=3 kind=SETUP data{group_index=1, insert_index=-1, after_order_ids=[2], proto="", spawned_id=2}
-		[0004] SPAWNED tick=4 kind=SETUP data{group_index=1, insert_index=-1, after_order_ids=[2, 3], proto="", spawned_id=3}
-		[0005] FORMATION_SET tick=5 kind=SETUP data{player_id=1}
-	[0006] SCOPE_END tick=6 kind=SETUP data{scope_id=2, parent_scope_id=1, kind=1, label="setup", actor_id=0}
-	[0007] SET_INTENT tick=7 kind=BATTLE data{actor_id=1, planned_idx=-1, intent_text="", is_ranged=false}
-	[0008] SET_INTENT tick=8 kind=BATTLE data{actor_id=2, planned_idx=1, intent_text="3", is_ranged=false}
-	[0009] SET_INTENT tick=9 kind=BATTLE data{actor_id=3, planned_idx=0, intent_text="2×2", is_ranged=true}
-	[0010] SCOPE_BEGIN tick=10 t=1 g=0 kind=GROUP_TURN data{scope_id=3, parent_scope_id=1, kind=2, label="group=0", actor_id=0, group_index=0, turn_id=1}
-		[0011] TURN_GROUP_BEGIN tick=11 t=1 g=0 kind=GROUP_TURN data{group_index=0, turn_id=1}
-		[0012] TURN_STATUS tick=12 t=1 g=0 a=1 kind=GROUP_TURN data{group_index=0, turn_id=1, active_id=1, player_id=1, pending_ids=[1]}
-		[0013] STATUS tick=13 t=1 g=0 a=1 kind=GROUP_TURN data{src=2 tgt=2 status=resonance_spike op=APPLY stk=2, target_ids=[2], before_stacks=0, after_stacks=2, delta_stacks=2, reason=""}
-		[0014] SET_INTENT tick=14 t=1 g=0 a=1 kind=GROUP_TURN data{actor_id=2, planned_idx=1, intent_text="5", is_ranged=false}
-		[0015] SET_INTENT tick=15 t=1 g=0 a=1 kind=GROUP_TURN data{actor_id=3, planned_idx=0, intent_text="2×4", is_ranged=true}
-		[0016] STATUS tick=16 t=1 g=0 a=1 kind=GROUP_TURN data{src=2 tgt=2 status=stability op=APPLY stk=3, target_ids=[2], before_stacks=0, after_stacks=3, delta_stacks=3, reason=""}
-		[0017] SET_INTENT tick=17 t=1 g=0 a=1 kind=GROUP_TURN data{actor_id=2, planned_idx=1, intent_text="5", is_ranged=false}
-		[0018] SET_INTENT tick=18 t=1 g=0 a=1 kind=GROUP_TURN data{actor_id=3, planned_idx=0, intent_text="2×4", is_ranged=true}
-		[0019] TURN_STATUS tick=19 t=1 g=0 a=1 kind=GROUP_TURN data{group_index=0, turn_id=1, active_id=1, player_id=1, pending_ids=[1]}
-		[0020] SCOPE_BEGIN tick=20 t=1 g=0 a=1 kind=ARCANA data{scope_id=4, parent_scope_id=3, kind=11, label="battle_start", actor_id=0, group_index=0, turn_id=1}
-			[0021] ARCANA_PROC tick=21 t=1 g=0 a=1 kind=ARCANA data{group_index=0, turn_id=1, proc=0}
-		[0022] SCOPE_END tick=22 t=1 g=0 a=1 kind=ARCANA data{scope_id=4, parent_scope_id=3, kind=11, label="battle_start", actor_id=0}
-		[0023] SCOPE_BEGIN tick=23 t=1 g=0 a=1 kind=ARCANA data{scope_id=5, parent_scope_id=3, kind=11, label="player_turn_begin", actor_id=0, group_index=0, turn_id=1}
-			[0024] ARCANA_PROC tick=24 t=1 g=0 a=1 kind=ARCANA data{group_index=0, turn_id=1, proc=1}
-		[0025] SCOPE_END tick=25 t=1 g=0 a=1 kind=ARCANA data{scope_id=5, parent_scope_id=3, kind=11, label="player_turn_begin", actor_id=0}
-		[0026] TURN_STATUS tick=26 t=1 g=0 a=1 kind=GROUP_TURN data{group_index=0, turn_id=1, active_id=1, player_id=1, pending_ids=[]}
-		[0027] SCOPE_BEGIN tick=27 t=1 g=0 a=1 kind=ACTOR_TURN data{scope_id=6, parent_scope_id=3, kind=3, label="actor=1", actor_id=1, group_index=0, turn_id=1}
-			[0028] ACTOR_BEGIN tick=28 t=1 g=0 a=1 kind=ACTOR_TURN data{actor_id=1, group_index=0, turn_id=1}
-			[0029] PLAYER_INPUT_REACHED tick=29 t=1 g=0 a=1 kind=ACTOR_TURN data{actor_id=1}
-			[0030] DRAW_CARDS tick=30 t=1 g=0 a=1 kind=ACTOR_TURN data{source_id=1, amount=4, reason="player_turn_refill"}
-			[0031] SCOPE_BEGIN tick=31 t=1 g=0 a=1 kind=CARD data{scope_id=7, parent_scope_id=6, kind=4, label="uid=1776825368_680863956_3774922356 Spectral Clone", actor_id=1, group_index=0, turn_id=1}
-				[0032] CARD_PLAYED tick=32 t=1 g=0 a=1 kind=CARD data{source_id=1, card_id="spectral_clone", card_uid="1776825368_680863956_3774922356", card_name="Spectral Clone", insert_index=0, proto="res://cards/souls/SpectralCloneCard/spectral_clone.tres"}
-				[0033] MANA tick=33 t=1 g=0 a=1 kind=CARD data{src=1 mana=3->2 Δmana=-1 max=3->3 reason="card_spend", card_uid="1776825368_680863956_3774922356", card_name="Spectral Clone", amount=1}
-				[0034] SCOPE_BEGIN tick=34 t=1 g=0 a=1 kind=SUMMON_ACTION data{scope_id=8, parent_scope_id=7, kind=16, label="count=1 g=0 idx=0", actor_id=1, source_id=1, group_index=0, turn_id=1, insert_index=0, proto="", summon_count=1}
-					[0035] SUMMONED * tick=35 t=1 g=0 a=1 kind=SUMMON_ACTION data{source_id=1, group_index=0, card_uid="1776825368_680863956_3774922356", insert_index=0, before_order_ids=[1], after_order_ids=[4, 1], reason="card_summon", summoned_id=4}
-					[0036] TURN_STATUS tick=36 t=1 g=0 a=1 kind=SUMMON_ACTION data{group_index=0, turn_id=1, active_id=1, player_id=1, pending_ids=[]}
-				[0037] SCOPE_END tick=37 t=1 g=0 a=1 kind=SUMMON_ACTION data{scope_id=8, parent_scope_id=7, kind=16, label="count=1 g=0 idx=0", actor_id=1}
-			[0038] SCOPE_END tick=38 t=1 g=0 a=1 kind=CARD data{scope_id=7, parent_scope_id=6, kind=4, label="uid=1776825368_680863956_3774922356 Spectral Clone", actor_id=1}
-			[0039] SET_INTENT tick=39 t=1 g=0 a=1 kind=ACTOR_TURN data{actor_id=4, planned_idx=0, intent_text="3", is_ranged=false}
-			[0040] TURN_STATUS tick=40 t=1 g=0 a=1 kind=ACTOR_TURN data{group_index=0, turn_id=1, active_id=1, player_id=1, pending_ids=[]}
-			[0041] SCOPE_BEGIN tick=41 t=1 g=0 a=1 kind=CARD data{scope_id=9, parent_scope_id=6, kind=4, label="uid=1776825368_3330034532_707204541 Phoenix Brooch", actor_id=1, group_index=0, turn_id=1}
-				[0042] CARD_PLAYED tick=42 t=1 g=0 a=1 kind=CARD data{source_id=1, card_id="phoenix_brooch", card_uid="1776825368_3330034532_707204541", card_name="Phoenix Brooch", insert_index=-1, proto="res://cards/enchantments/PhoenixBrooch/phoenix_brooch.tres"}
-				[0043] MANA tick=43 t=1 g=0 a=1 kind=CARD data{src=1 mana=2->1 Δmana=-1 max=3->3 reason="card_spend", card_uid="1776825368_3330034532_707204541", card_name="Phoenix Brooch", amount=1}
-				[0044] STATUS tick=44 t=1 g=0 a=1 kind=CARD data{src=1 tgt=4 status=phoenix_brooch op=APPLY stk=1, target_ids=[4], before_stacks=0, after_stacks=1, delta_stacks=1, reason=""}
-			[0045] SCOPE_END tick=45 t=1 g=0 a=1 kind=CARD data{scope_id=9, parent_scope_id=6, kind=4, label="uid=1776825368_3330034532_707204541 Phoenix Brooch", actor_id=1}
-			[0046] SET_INTENT tick=46 t=1 g=0 a=1 kind=ACTOR_TURN data{actor_id=4, planned_idx=0, intent_text="3", is_ranged=false}
-			[0047] SCOPE_BEGIN tick=47 t=1 g=0 a=1 kind=CARD data{scope_id=10, parent_scope_id=6, kind=4, label="uid=1776825368_2130307012_4150313248 Barkbound Bond", actor_id=1, group_index=0, turn_id=1}
-				[0048] CARD_PLAYED tick=48 t=1 g=0 a=1 kind=CARD data{source_id=1, card_id="barkbound_bond", card_uid="1776825368_2130307012_4150313248", card_name="Barkbound Bond", insert_index=-1, proto="res://cards/convocations/BarkboundBond/barkbound_bond.tres"}
-				[0049] MANA tick=49 t=1 g=0 a=1 kind=CARD data{src=1 mana=1->0 Δmana=-1 max=3->3 reason="card_spend", card_uid="1776825368_2130307012_4150313248", card_name="Barkbound Bond", amount=1}
-				[0050] STATUS tick=50 t=1 g=0 a=1 kind=CARD data{src=1 tgt=4 status=barkbound_bond op=APPLY stk=2, target_ids=[4], before_stacks=0, after_stacks=2, delta_stacks=2, reason=""}
-				[0051] DRAW_CARDS tick=51 t=1 g=0 a=1 kind=CARD data{source_id=1, amount=1, reason="CardAction"}
-			[0052] SCOPE_END tick=52 t=1 g=0 a=1 kind=CARD data{scope_id=10, parent_scope_id=6, kind=4, label="uid=1776825368_2130307012_4150313248 Barkbound Bond", actor_id=1}
-			[0053] SET_INTENT tick=53 t=1 g=0 a=1 kind=ACTOR_TURN data{actor_id=4, planned_idx=0, intent_text="3", is_ranged=false}
-			[0054] END_TURN_PRESSED tick=54 t=1 g=0 a=1 kind=ACTOR_TURN data{actor_id=1}
-			[0055] DISCARD_CARDS tick=55 t=1 g=0 a=1 kind=ACTOR_TURN data{source_id=1, card_uid="", amount=0, reason="player_turn_end_discard"}
-			[0056] SCOPE_BEGIN tick=56 t=1 g=0 a=1 kind=ARCANA data{scope_id=11, parent_scope_id=6, kind=11, label="player_turn_end", actor_id=0, group_index=0, turn_id=1}
-				[0057] ARCANA_PROC tick=57 t=1 g=0 a=1 kind=ARCANA data{group_index=0, turn_id=1, proc=2}
-			[0058] SCOPE_END tick=58 t=1 g=0 a=1 kind=ARCANA data{scope_id=11, parent_scope_id=6, kind=11, label="player_turn_end", actor_id=0}
-			[0059] ACTOR_END tick=59 t=1 g=0 a=1 kind=ACTOR_TURN data{actor_id=1, group_index=0, turn_id=1}
-		[0060] SCOPE_END tick=60 t=1 g=0 a=1 kind=ACTOR_TURN data{scope_id=6, parent_scope_id=3, kind=3, label="actor=1", actor_id=1}
-		[0061] TURN_GROUP_END tick=61 t=1 g=0 a=1 kind=GROUP_TURN data{group_index=0, turn_id=1}
-	[0062] SCOPE_END tick=62 t=1 g=0 a=1 kind=GROUP_TURN data{scope_id=3, parent_scope_id=1, kind=2, label="group=0", actor_id=0}
-	[0063] SCOPE_BEGIN tick=63 t=2 g=1 kind=GROUP_TURN data{scope_id=12, parent_scope_id=1, kind=2, label="group=1", actor_id=0, group_index=1, turn_id=2}
-		[0064] TURN_GROUP_BEGIN tick=64 t=2 g=1 kind=GROUP_TURN data{group_index=1, turn_id=2}
-		[0065] TURN_STATUS tick=65 t=2 g=1 a=2 kind=GROUP_TURN data{group_index=1, turn_id=2, active_id=2, player_id=1, pending_ids=[2, 3]}
-		[0066] TURN_STATUS tick=66 t=2 g=1 a=2 kind=GROUP_TURN data{group_index=1, turn_id=2, active_id=2, player_id=1, pending_ids=[3]}
-		[0067] SCOPE_BEGIN tick=67 t=2 g=1 a=2 kind=ACTOR_TURN data{scope_id=13, parent_scope_id=12, kind=3, label="actor=2", actor_id=2, group_index=1, turn_id=2}
-			[0068] ACTOR_BEGIN tick=68 t=2 g=1 a=2 kind=ACTOR_TURN data{actor_id=2, group_index=1, turn_id=2}
-			[0069] STATUS tick=69 t=2 g=1 a=2 kind=ACTOR_TURN data{src=2 tgt=2 status=stability op=REMOVE stk=0, target_ids=[2], before_stacks=3, after_stacks=0, delta_stacks=-3, reason=""}
-			[0070] SCOPE_BEGIN tick=70 t=2 g=1 a=2 kind=ATTACK data{scope_id=14, parent_scope_id=13, kind=5, label="attacker=2", actor_id=2, group_index=1, turn_id=2}
-				[0071] SCOPE_BEGIN tick=71 t=2 g=1 a=2 kind=STRIKE data{scope_id=15, parent_scope_id=14, kind=13, label="i=0", actor_id=2, group_index=1, turn_id=2}
-					[0072] STRIKE * tick=72 t=2 g=1 a=2 kind=STRIKE data{source_id=2, target_ids=[4]}
-					[0073] SCOPE_BEGIN tick=73 t=2 g=1 a=2 kind=HIT data{scope_id=16, parent_scope_id=15, kind=15, label="t=4", actor_id=2, target_id=4, group_index=1, turn_id=2}
-						[0074] DAMAGE_APPLIED tick=74 t=2 g=1 a=2 kind=HIT data{source_id=2, target_id=4, before_health=3, after_health=0, base=3, base_banish=0, amount=5, display_amount=5, banish_amount=0, applied_banish_amount=0, health_damage=3, was_lethal=true}
-						[0075] HEAL_APPLIED tick=75 t=2 g=1 a=2 kind=HIT data{src=4 tgt=4 hp=0->3 healed=3 flat=3}
-						[0076] STATUS tick=76 t=2 g=1 a=2 kind=HIT data{src=4 tgt=4 status=phoenix_brooch op=REMOVE stk=0, target_ids=[4], before_stacks=1, after_stacks=0, delta_stacks=-1, reason=""}
-					[0077] SCOPE_END tick=77 t=2 g=1 a=2 kind=HIT data{scope_id=16, parent_scope_id=15, kind=15, label="t=4", actor_id=2}
-				[0078] SCOPE_END tick=78 t=2 g=1 a=2 kind=STRIKE data{scope_id=15, parent_scope_id=14, kind=13, label="i=0", actor_id=2}
-			[0079] SCOPE_END tick=79 t=2 g=1 a=2 kind=ATTACK data{scope_id=14, parent_scope_id=13, kind=5, label="attacker=2", actor_id=2}
-			[0080] ACTOR_END tick=80 t=2 g=1 a=2 kind=ACTOR_TURN data{actor_id=2, group_index=1, turn_id=2}
-		[0081] SCOPE_END tick=81 t=2 g=1 a=2 kind=ACTOR_TURN data{scope_id=13, parent_scope_id=12, kind=3, label="actor=2", actor_id=2}
-		[0082] SET_INTENT tick=82 t=2 g=1 a=2 kind=GROUP_TURN data{actor_id=4, planned_idx=0, intent_text="3", is_ranged=false}
-		[0083] SET_INTENT tick=83 t=2 g=1 a=2 kind=GROUP_TURN data{actor_id=2, planned_idx=1, intent_text="5", is_ranged=false}
-		[0084] TURN_STATUS tick=84 t=2 g=1 a=3 kind=GROUP_TURN data{group_index=1, turn_id=2, active_id=3, player_id=1, pending_ids=[]}
-		[0085] SCOPE_BEGIN tick=85 t=2 g=1 a=3 kind=ACTOR_TURN data{scope_id=17, parent_scope_id=12, kind=3, label="actor=3", actor_id=3, group_index=1, turn_id=2}
-			[0086] ACTOR_BEGIN tick=86 t=2 g=1 a=3 kind=ACTOR_TURN data{actor_id=3, group_index=1, turn_id=2}
-			[0087] SCOPE_BEGIN tick=87 t=2 g=1 a=3 kind=ATTACK data{scope_id=18, parent_scope_id=17, kind=5, label="attacker=3", actor_id=3, group_index=1, turn_id=2}
-				[0088] SCOPE_BEGIN tick=88 t=2 g=1 a=3 kind=STRIKE data{scope_id=19, parent_scope_id=18, kind=13, label="i=0", actor_id=3, group_index=1, turn_id=2}
-					[0089] STRIKE * tick=89 t=2 g=1 a=3 kind=STRIKE data{source_id=3, target_ids=[4]}
-					[0090] SCOPE_BEGIN tick=90 t=2 g=1 a=3 kind=HIT data{scope_id=20, parent_scope_id=19, kind=15, label="t=4", actor_id=3, target_id=4, group_index=1, turn_id=2}
-						[0091] DAMAGE_APPLIED tick=91 t=2 g=1 a=3 kind=HIT data{source_id=3, target_id=4, before_health=3, after_health=0, base=2, base_banish=0, amount=4, display_amount=4, banish_amount=0, applied_banish_amount=0, health_damage=3, was_lethal=true}
-						[0092] SUMMON_RESERVE_RELEASED tick=92 t=2 g=1 a=3 kind=HIT data{card_uid="1776825368_680863956_3774922356", reason="removal:death:damage", summoned_id=4}
-						[0093] TURN_STATUS tick=93 t=2 g=1 a=3 kind=HIT data{group_index=1, turn_id=2, active_id=3, player_id=1, pending_ids=[]}
-						[0094] REMOVED * tick=94 t=2 g=1 a=3 kind=HIT data{source_id=3, target_id=4, group_index=0, before_order_ids=[4, 1], after_order_ids=[1], reason="damage", removal_type=0}
-						[0095] ARCANUM_STATE_CHANGED tick=95 t=2 g=1 a=3 kind=HIT data{source_id=1, arcanum_id=reapers_siphon, before_stacks=3, after_stacks=2, delta_stacks=-1, reason=""}
-					[0096] SCOPE_END tick=96 t=2 g=1 a=3 kind=HIT data{scope_id=20, parent_scope_id=19, kind=15, label="t=4", actor_id=3}
-				[0097] SCOPE_END tick=97 t=2 g=1 a=3 kind=STRIKE data{scope_id=19, parent_scope_id=18, kind=13, label="i=0", actor_id=3}
-				[0098] ARCANUM_STATE_CHANGED tick=98 t=2 g=1 a=3 kind=ATTACK data{source_id=1, arcanum_id=reapers_siphon, before_stacks=2, after_stacks=1, delta_stacks=-1, reason=""}
-				[0099] SCOPE_BEGIN tick=99 t=2 g=1 a=3 kind=STRIKE data{scope_id=21, parent_scope_id=18, kind=13, label="i=1", actor_id=3, group_index=1, turn_id=2}
-					[0100] STRIKE * tick=100 t=2 g=1 a=3 kind=STRIKE data{source_id=3, target_ids=[1]}
-					[0101] SCOPE_BEGIN tick=101 t=2 g=1 a=3 kind=HIT data{scope_id=22, parent_scope_id=21, kind=15, label="t=1", actor_id=3, target_id=1, group_index=1, turn_id=2}
-						[0102] DAMAGE_APPLIED tick=102 t=2 g=1 a=3 kind=HIT data{source_id=3, target_id=1, before_health=50, after_health=46, base=2, base_banish=0, amount=4, display_amount=4, banish_amount=0, applied_banish_amount=0, health_damage=4, was_lethal=false}
-					[0103] SCOPE_END tick=103 t=2 g=1 a=3 kind=HIT data{scope_id=22, parent_scope_id=21, kind=15, label="t=1", actor_id=3}
-				[0104] SCOPE_END tick=104 t=2 g=1 a=3 kind=STRIKE data{scope_id=21, parent_scope_id=18, kind=13, label="i=1", actor_id=3}
-			[0105] SCOPE_END tick=105 t=2 g=1 a=3 kind=ATTACK data{scope_id=18, parent_scope_id=17, kind=5, label="attacker=3", actor_id=3}
-			[0106] ACTOR_END tick=106 t=2 g=1 a=3 kind=ACTOR_TURN data{actor_id=3, group_index=1, turn_id=2}
-		[0107] SCOPE_END tick=107 t=2 g=1 a=3 kind=ACTOR_TURN data{scope_id=17, parent_scope_id=12, kind=3, label="actor=3", actor_id=3}
-		[0108] TURN_STATUS tick=108 t=2 g=1 a=3 kind=GROUP_TURN data{group_index=1, turn_id=2, active_id=3, player_id=1, pending_ids=[]}
-		[0109] SET_INTENT tick=109 t=2 g=1 a=3 kind=GROUP_TURN data{actor_id=3, planned_idx=0, intent_text="2×4", is_ranged=true}
-		[0110] SET_INTENT tick=110 t=2 g=1 a=3 kind=GROUP_TURN data{actor_id=2, planned_idx=1, intent_text="3", is_ranged=false}
-		[0111] SET_INTENT tick=111 t=2 g=1 a=3 kind=GROUP_TURN data{actor_id=3, planned_idx=0, intent_text="2×2", is_ranged=true}
-		[0112] STATUS tick=112 t=2 g=1 a=3 kind=GROUP_TURN data{src=2 tgt=2 status=resonance_spike op=REMOVE stk=0, target_ids=[2], before_stacks=2, after_stacks=0, delta_stacks=-2, reason=""}
-		[0113] SET_INTENT tick=113 t=2 g=1 a=3 kind=GROUP_TURN data{actor_id=2, planned_idx=1, intent_text="3", is_ranged=false}
-		[0114] SET_INTENT tick=114 t=2 g=1 a=3 kind=GROUP_TURN data{actor_id=3, planned_idx=0, intent_text="2×2", is_ranged=true}
-		[0115] TURN_GROUP_END tick=115 t=2 g=1 a=3 kind=GROUP_TURN data{group_index=1, turn_id=2}
-	[0116] SCOPE_END tick=116 t=2 g=1 a=3 kind=GROUP_TURN data{scope_id=12, parent_scope_id=1, kind=2, label="group=1", actor_id=0}
-	[0117] SCOPE_BEGIN tick=117 t=3 g=0 kind=GROUP_TURN data{scope_id=23, parent_scope_id=1, kind=2, label="group=0", actor_id=0, group_index=0, turn_id=3}
-		[0118] TURN_GROUP_BEGIN tick=118 t=3 g=0 kind=GROUP_TURN data{group_index=0, turn_id=3}
-		[0119] MANA tick=119 t=3 g=0 kind=GROUP_TURN data{src=1 mana=0->3 Δmana=+3 max=3->3 reason="group_turn_begin_refresh"}
-		[0120] STATUS tick=120 t=3 g=0 kind=GROUP_TURN data{src=2 tgt=2 status=resonance_spike op=APPLY stk=2, target_ids=[2], before_stacks=0, after_stacks=2, delta_stacks=2, reason=""}
-		[0121] SET_INTENT tick=121 t=3 g=0 kind=GROUP_TURN data{actor_id=2, planned_idx=1, intent_text="5", is_ranged=false}
-		[0122] SET_INTENT tick=122 t=3 g=0 kind=GROUP_TURN data{actor_id=3, planned_idx=0, intent_text="2×4", is_ranged=true}
-		[0123] STATUS tick=123 t=3 g=0 kind=GROUP_TURN data{src=2 tgt=2 status=stability op=APPLY stk=3, target_ids=[2], before_stacks=0, after_stacks=3, delta_stacks=3, reason=""}
-		[0124] SET_INTENT tick=124 t=3 g=0 kind=GROUP_TURN data{actor_id=2, planned_idx=1, intent_text="5", is_ranged=false}
-		[0125] SET_INTENT tick=125 t=3 g=0 kind=GROUP_TURN data{actor_id=3, planned_idx=0, intent_text="2×4", is_ranged=true}
-		[0126] TURN_STATUS tick=126 t=3 g=0 kind=GROUP_TURN data{group_index=0, turn_id=3, active_id=0, player_id=1, pending_ids=[]}
-		[0127] TURN_GROUP_END tick=127 t=3 g=0 kind=GROUP_TURN data{group_index=0, turn_id=3}
-	[0128] SCOPE_END tick=128 t=3 g=0 kind=GROUP_TURN data{scope_id=23, parent_scope_id=1, kind=2, label="group=0", actor_id=0}
-	[0129] SCOPE_BEGIN tick=129 t=4 g=0 kind=GROUP_TURN data{scope_id=24, parent_scope_id=1, kind=2, label="group=0", actor_id=0, group_index=0, turn_id=4}
-		[0130] TURN_GROUP_BEGIN tick=130 t=4 g=0 kind=GROUP_TURN data{group_index=0, turn_id=4}
-		[0131] TURN_STATUS tick=131 t=4 g=0 a=1 kind=GROUP_TURN data{group_index=0, turn_id=4, active_id=1, player_id=1, pending_ids=[1]}
-		[0132] SCOPE_BEGIN tick=132 t=4 g=0 a=1 kind=ARCANA data{scope_id=25, parent_scope_id=24, kind=11, label="player_turn_begin", actor_id=0, group_index=0, turn_id=4}
-			[0133] ARCANA_PROC tick=133 t=4 g=0 a=1 kind=ARCANA data{group_index=0, turn_id=4, proc=1}
-		[0134] SCOPE_END tick=134 t=4 g=0 a=1 kind=ARCANA data{scope_id=25, parent_scope_id=24, kind=11, label="player_turn_begin", actor_id=0}
-		[0135] TURN_STATUS tick=135 t=4 g=0 a=1 kind=GROUP_TURN data{group_index=0, turn_id=4, active_id=1, player_id=1, pending_ids=[]}
-		[0136] SCOPE_BEGIN tick=136 t=4 g=0 a=1 kind=ACTOR_TURN data{scope_id=26, parent_scope_id=24, kind=3, label="actor=1", actor_id=1, group_index=0, turn_id=4}
-			[0137] ACTOR_BEGIN tick=137 t=4 g=0 a=1 kind=ACTOR_TURN data{actor_id=1, group_index=0, turn_id=4}
-			[0138] PLAYER_INPUT_REACHED tick=138 t=4 g=0 a=1 kind=ACTOR_TURN data{actor_id=1}
-			[0139] DRAW_CARDS tick=139 t=4 g=0 a=1 kind=ACTOR_TURN data{source_id=1, amount=4, reason="player_turn_refill"}
---- Debugging process stopped ---
 
-
-VIEW layer is not robustly handling cheat-death mechanics. Tick 72 leaves the combatant appearing to have 0 hp. Please harden the VIEW layer systems, most likely include turn_timeline_compiler.gd to handle the new feature introduced for phoenix_brooch.gd
+did something weird happen here? idk why the tempered silverback died early it seems like and the player took 10 damage

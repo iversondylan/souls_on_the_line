@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="DangerZoneIntentLifecycleModel" format=3 uid="uid://fmhwc05irjoh"]
+
+[ext_resource type="Resource" uid="uid://bgjkrgx05jfgx" path="res://npc_ai/status/frontmost_opp_status_target_model.tres" id="1_cot16"]
+[ext_resource type="Script" uid="uid://bghuik7galqjh" path="res://npc_ai/intent_lifecycle/danger_zone_intent_lifecycle_model.gd" id="2_71hjb"]
+[ext_resource type="Resource" uid="uid://00aqmemuit10" path="res://statuses/danger_zone.tres" id="3_l02yq"]
+[ext_resource type="Resource" uid="uid://kx7end2rew5k" path="res://npc_ai/status/pseudo_random_opp_ally_or_player_status_target_model.tres" id="4_g4ya7"]
+
+[resource]
+script = ExtResource("2_71hjb")
+reapply_on_layout_change_only_if_missing = true
+status = ExtResource("3_l02yq")
+status_id = &"danger_zone"
+target_model = ExtResource("4_g4ya7")
+reapply_target_model = ExtResource("1_cot16")
+targeting_flag_key = &"targeting_danger_zone"

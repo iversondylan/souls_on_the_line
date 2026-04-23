@@ -1,6 +1,6 @@
-class_name AyeAyeAsceticThresholdStatus extends Status
+class_name AsceticThresholdStatus extends Status
 
-const ID := &"aye_aye_ascetic_threshold"
+const ID := &"ascetic_threshold"
 const ABSORB := preload("res://statuses/absorb.tres")
 const FULL_FORTITUDE := preload("res://statuses/full_fortitude.tres")
 
@@ -20,20 +20,19 @@ func on_damage_taken(ctx: SimStatusContext, damage_ctx: DamageContext) -> void:
 		return
 
 	var max_health := maxi(int(ctx.owner.max_health), 1)
-	var crossed_below_half := (
-		int(damage_ctx.before_health) * 2 >= max_health
-		and int(damage_ctx.after_health) * 2 < max_health
+	var below_half := (
+		int(damage_ctx.after_health) * 2 < max_health
 	)
-	if !crossed_below_half:
+	if !below_half:
 		return
 
-	_apply_status(ctx, ABSORB, 1, "aye_aye_ascetic_absorb")
-	_apply_status(ctx, FULL_FORTITUDE, 2, "aye_aye_ascetic_fortitude")
+	_apply_status(ctx, ABSORB, 1, "ascetic_absorb")
+	_apply_status(ctx, FULL_FORTITUDE, 2, "ascetic_fortitude")
 	_update_bound_card_max_health(ctx, 2)
-	ctx.remove_self("aye_aye_ascetic_triggered")
+	ctx.remove_self("ascetic_triggered")
 
 func get_tooltip(_stacks: int = 0) -> String:
-	return "The first time each round damage leaves this below 50%% health, gain Absorb and +2 Full Fortitude."
+	return "Ascetic: The first time each round damage leaves this below 50%% health, gain Absorb and +2 Full Fortitude."
 
 func _apply_status(ctx: SimStatusContext, status: Status, stacks: int, reason: String) -> void:
 	if ctx == null or status == null:
@@ -59,5 +58,5 @@ func _update_bound_card_max_health(ctx: SimStatusContext, amount: int) -> void:
 	ctx.api.emit_modify_battle_card(
 		bound_card_uid,
 		{Keys.SUMMON_MAX_HEALTH: int(ctx.owner.max_health)},
-		"aye_aye_ascetic_threshold"
+		"ascetic_threshold"
 	)

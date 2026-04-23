@@ -4,4 +4,4 @@
 
 [resource]
 script = ExtResource("1_script")
-text_template = "[b]{action_name}[/b]: deal 1 to all friendlies, then apply 1 Amplify to all friendlies, then deal 1 to all enemies."
+text_template = "[b]{action_name}[/b]:  Apply 1 Amplify to all friendlies, deal 1 to all friendlies, then then deal 1 to all enemies."

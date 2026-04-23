@@ -7,6 +7,6 @@
 [resource]
 script = ExtResource("1_action")
 summon_data = ExtResource("3_data")
-mortality = 2
+mortality = 1
 reserves_card = true
 sound = ExtResource("2_sound")

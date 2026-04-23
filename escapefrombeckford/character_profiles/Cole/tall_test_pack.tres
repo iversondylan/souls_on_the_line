@@ -12,7 +12,7 @@
 [ext_resource type="Resource" uid="uid://ncii75q2ffcv" path="res://cards/enchantments/JabberCollector/jabber_collector.tres" id="9_e82xf"]
 [ext_resource type="Resource" uid="uid://d386slvoiju7k" path="res://cards/enchantments/PhoenixBrooch/phoenix_brooch.tres" id="10_k5onc"]
 [ext_resource type="Resource" uid="uid://cjaej0janfnmn" path="res://cards/enchantments/PocketSilkstitchers/pocket_silkstitchers.tres" id="11_fmcco"]
-[ext_resource type="Resource" uid="uid://biqodd5dbpmup" path="res://cards/souls/AyeAyeAsceticCard/aye_aye_ascetic_card.tres" id="12_rk6u7"]
+[ext_resource type="Resource" uid="uid://biqodd5dbpmup" path="res://cards/souls/AxolotlAsceticCard/axolotl_ascetic_card.tres" id="12_rk6u7"]
 [ext_resource type="Resource" uid="uid://cq1drjsevrpv5" path="res://cards/souls/EntangledVotaryCard/entangled_votary_card.tres" id="13_msjky"]
 
 [resource]

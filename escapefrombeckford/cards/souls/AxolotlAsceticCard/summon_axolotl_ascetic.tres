@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://buhtw3540mbls" path="res://cards/_generic_actions/summon_action.gd" id="1_summon_script"]
 [ext_resource type="Resource" uid="uid://c0cllss7w30rn" path="res://audio/summon_zap.tres" id="2_summon_sound"]
-[ext_resource type="Resource" uid="uid://c5s63ksqa226y" path="res://combatants/souls/AyeAyeAscetic/aye_aye_ascetic_data.tres" id="3_summon_data"]
+[ext_resource type="Resource" uid="uid://c5s63ksqa226y" path="res://combatants/souls/AxolotlAscetic/axolotl_ascetic_data.tres" id="3_summon_data"]
 
 [resource]
 script = ExtResource("1_summon_script")

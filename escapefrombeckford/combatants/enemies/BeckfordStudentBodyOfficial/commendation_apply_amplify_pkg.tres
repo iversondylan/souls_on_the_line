@@ -19,7 +19,6 @@ state_key = &"commendation_target"
 [sub_resource type="Resource" id="CommendationAmplifyStatus"]
 script = ExtResource("4_status_model_script")
 status = ExtResource("6_amplify")
-stacks = 2
 
 [resource]
 script = ExtResource("3_pkg")
