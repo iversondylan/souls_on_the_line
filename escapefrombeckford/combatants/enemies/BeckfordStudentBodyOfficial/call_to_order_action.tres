@@ -1,13 +1,12 @@
 [gd_resource type="Resource" script_class="NPCAction" format=3 uid="uid://c754rplkwk5fb"]
 
 [ext_resource type="Script" uid="uid://3jde7uhq2yho" path="res://npc_ai/_core/npc_effect_package.gd" id="1_pkg"]
+[ext_resource type="Texture2D" uid="uid://op74eesa6fxw" path="res://_assets/sprites/assorted/buff.PNG" id="3_0leri"]
 [ext_resource type="Resource" uid="uid://b6fm3khoetxr6" path="res://combatants/enemies/BeckfordStudentBodyOfficial/call_to_order_apply_alacrity_pkg.tres" id="3_status_pkg"]
-[ext_resource type="Texture2D" uid="uid://1b6tx5tj6ucv" path="res://_assets/sprites/assorted/buff_attack.PNG" id="4_icon"]
 [ext_resource type="Script" uid="uid://bcih413oy6v73" path="res://npc_ai/_core/npc_action.gd" id="5_action"]
 [ext_resource type="Script" uid="uid://dtwuyctovqk5r" path="res://npc_ai/_core/intent_lifecycle_model.gd" id="5_gefar"]
 [ext_resource type="Script" uid="uid://cuj4qvyx6dedj" path="res://npc_ai/_core/state_model.gd" id="6_state"]
 [ext_resource type="Script" uid="uid://q408gy2b4q6a" path="res://npc_ai/_core/performable_model.gd" id="7_j6r3a"]
-[ext_resource type="Resource" uid="uid://7gggk4mmejsq" path="res://npc_ai/text/attack_intent_text_model.tres" id="7_text_model"]
 [ext_resource type="Resource" uid="uid://bkymmi8qt4qo1" path="res://combatants/enemies/BeckfordStudentBodyOfficial/call_to_order_tooltip_model.tres" id="8_tooltip_model"]
 [ext_resource type="Resource" uid="uid://btgtvs6ab0nsg" path="res://npc_ai/chance/half_exponential_spree_chance_state_model.tres" id="9_half_exp"]
 
@@ -16,7 +15,6 @@ script = ExtResource("5_action")
 effect_packages = Array[ExtResource("1_pkg")]([ExtResource("3_status_pkg")])
 state_models = Array[ExtResource("6_state")]([ExtResource("9_half_exp")])
 action_name = "Call to Order"
-intent_icon = ExtResource("4_icon")
+intent_icon = ExtResource("3_0leri")
 intent_icon_uid = "uid://1b6tx5tj6ucv"
-intent_text_model = ExtResource("7_text_model")
 tooltip_model = ExtResource("8_tooltip_model")

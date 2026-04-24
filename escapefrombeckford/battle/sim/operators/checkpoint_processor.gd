@@ -39,7 +39,7 @@ var _needs_another_flush: bool = false
 
 func request_replan(cid: int) -> void:
 	if cid > 0:
-		dirty_replan_ids[int(cid)] = true
+		dirty_replan_ids[cid] = true
 		if _is_flushing:
 			_needs_another_flush = true
 
@@ -52,14 +52,14 @@ func request_replan_all() -> void:
 
 func request_fresh_intent_cycle(cid: int) -> void:
 	if cid > 0:
-		dirty_fresh_intent_cycle_ids[int(cid)] = true
+		dirty_fresh_intent_cycle_ids[cid] = true
 		if _is_flushing:
 			_needs_another_flush = true
 
 
 func request_intent_refresh(cid: int) -> void:
 	if cid > 0:
-		dirty_intent_refresh_ids[int(cid)] = true
+		dirty_intent_refresh_ids[cid] = true
 		if _is_flushing:
 			_needs_another_flush = true
 

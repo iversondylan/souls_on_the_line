@@ -4,4 +4,4 @@
 
 [resource]
 script = ExtResource("1_tooltip_script")
-text_template = "[b]{action_name}[/b]: deal {damage} damage, then other allies get +1 strike for 1 turn."
+text_template = "[b]{action_name}[/b]: other allies get +1 strike for 1 turn."

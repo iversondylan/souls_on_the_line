@@ -10,4 +10,5 @@ character_art_uid = "uid://bfbo1sxun3kcw"
 portrait_art_uid = "uid://bfbo1sxun3kcw"
 height = 120
 max_health = 3
+ap = 0
 max_mana = 0
