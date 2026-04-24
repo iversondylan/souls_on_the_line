@@ -1,6 +1,9 @@
-[gd_resource type="Resource" format=3]
+[gd_resource type="Resource" format=3 uid="uid://0h5jiktknkmf"]
 
-[ext_resource type="Script" path="res://cards/_generic_actions/attack_now_action.gd" id="1_script"]
+[ext_resource type="Script" uid="uid://b8d5j6ne4mt88" path="res://npc_ai/_core/param_model.gd" id="1_i7k8e"]
+[ext_resource type="Script" uid="uid://7g1t05kmo4hm" path="res://cards/_generic_actions/attack_now_action.gd" id="1_script"]
+[ext_resource type="Resource" uid="uid://b6vgjaovptslx" path="res://combatants/souls/SpectralClone/ap_plus_0_damage.tres" id="2_etthd"]
 
 [resource]
 script = ExtResource("1_script")
+param_models = Array[ExtResource("1_i7k8e")]([ExtResource("2_etthd"), null])

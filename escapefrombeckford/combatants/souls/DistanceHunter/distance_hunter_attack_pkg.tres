@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="NPCEffectPackage" format=3 uid="uid://tm4jmjqsx4kc"]
+
+[ext_resource type="Resource" uid="uid://bnqqhpu1itcb3" path="res://npc_ai/npc_attack_sequence.tres" id="1_attack"]
+[ext_resource type="Script" uid="uid://b8d5j6ne4mt88" path="res://npc_ai/_core/param_model.gd" id="2_param"]
+[ext_resource type="Script" uid="uid://3jde7uhq2yho" path="res://npc_ai/_core/npc_effect_package.gd" id="3_pkg"]
+[ext_resource type="Resource" uid="uid://b6vgjaovptslx" path="res://combatants/souls/SpectralClone/ap_plus_0_damage.tres" id="4_damage_model"]
+[ext_resource type="Script" uid="uid://c2r27w5ki2tiw" path="res://npc_ai/attack_mode/ranged_model.gd" id="5_ranged_script"]
+[ext_resource type="Script" uid="uid://c0ihk6f0wbrv3" path="res://npc_ai/strikes/constant_strikes_model.gd" id="6_strikes_script"]
+[ext_resource type="Script" uid="uid://cuj4qvyx6dedj" path="res://npc_ai/_core/state_model.gd" id="7_state"]
+
+[sub_resource type="Resource" id="Resource_distance_hunter_ranged"]
+script = ExtResource("5_ranged_script")
+metadata/_custom_type_script = "uid://c2r27w5ki2tiw"
+
+[sub_resource type="Resource" id="Resource_distance_hunter_strikes"]
+script = ExtResource("6_strikes_script")
+strikes = 1
+metadata/_custom_type_script = "uid://c0ihk6f0wbrv3"
+
+[resource]
+script = ExtResource("3_pkg")
+effect = ExtResource("1_attack")
+param_models = Array[ExtResource("2_param")]([ExtResource("4_damage_model"), SubResource("Resource_distance_hunter_ranged"), SubResource("Resource_distance_hunter_strikes")])

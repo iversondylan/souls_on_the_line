@@ -2,6 +2,8 @@
 
 class_name StatusTokenContext extends RefCounted
 
+var api: SimBattleAPI = null
+
 var id: StringName = &""
 var pending: bool = false
 

@@ -208,6 +208,7 @@ func consume_on_card_play(_ctx: SimStatusContext, _card: CardData) -> bool:
 
 func make_token_ctx_state(state_like, _owner_id: int) -> StatusTokenContext:
 	var ctx := StatusTokenContext.new()
+	ctx.api = null
 	if state_like is Dictionary:
 		ctx.id = StringName(state_like.get("id", ""))
 		ctx.stacks = int(state_like.get("stacks", 0))

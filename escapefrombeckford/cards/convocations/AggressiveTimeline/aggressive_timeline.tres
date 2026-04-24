@@ -1,9 +1,9 @@
-[gd_resource type="Resource" script_class="CardData" format=3]
+[gd_resource type="Resource" script_class="CardData" format=3 uid="uid://ja1ircka6mrs"]
 
-[ext_resource type="Script" path="res://cards/_core/card_action.gd" id="1_action"]
-[ext_resource type="Resource" path="res://cards/convocations/AggressiveTimeline/aggressive_timeline_attack_action.tres" id="2_attack"]
-[ext_resource type="Script" path="res://cards/_core/card_data.gd" id="3_card"]
-[ext_resource type="Texture2D" path="res://_assets/sprites/assorted/fire-dash.png" id="4_texture"]
+[ext_resource type="Script" uid="uid://wtk5v77fcqvn" path="res://cards/_core/card_action.gd" id="1_action"]
+[ext_resource type="Resource" uid="uid://bfi3wwg2o0gl0" path="res://cards/_generic_actions/attack_now_action.tres" id="2_0uw3r"]
+[ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://cards/_core/card_data.gd" id="3_card"]
+[ext_resource type="Texture2D" uid="uid://nonuc5xlht7w" path="res://_assets/sprites/assorted/sonic-boom.png" id="5_0uw3r"]
 [ext_resource type="Resource" path="res://cards/convocations/AggressiveTimeline/aggressive_timeline_move_action.tres" id="5_move"]
 
 [resource]
@@ -14,6 +14,6 @@ rarity = 1
 name = "Aggressive Timeline"
 description = "Choose an ally and then its move destination. It attacks immediately and then moves."
 cost = 1
-texture = ExtResource("4_texture")
-actions = Array[ExtResource("1_action")]([ExtResource("2_attack"), ExtResource("5_move")])
+texture = ExtResource("5_0uw3r")
+actions = Array[ExtResource("1_action")]([ExtResource("2_0uw3r"), ExtResource("5_move")])
 metadata/_custom_type_script = "uid://d2f0qepe047dc"

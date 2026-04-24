@@ -52,6 +52,7 @@ func is_alive() -> bool:
 
 func make_token_ctx() -> StatusTokenContext:
 	var ctx := StatusTokenContext.new()
+	ctx.api = api
 	ctx.id = get_status_id()
 	ctx.pending = is_pending()
 	ctx.stacks = get_stacks()
