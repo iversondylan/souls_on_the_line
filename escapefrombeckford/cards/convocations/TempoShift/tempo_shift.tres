@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="CardData" format=3]
+
+[ext_resource type="Script" path="res://cards/_core/card_action.gd" id="1_action"]
+[ext_resource type="Script" path="res://cards/_core/card_data.gd" id="2_card"]
+[ext_resource type="Resource" path="res://cards/convocations/TempoShift/tempo_shift_move_action.tres" id="3_move"]
+[ext_resource type="Resource" path="res://cards/convocations/TempoShift/tempo_shift_pressure_barrier_action.tres" id="4_barrier"]
+[ext_resource type="Texture2D" path="res://_assets/sprites/assorted/warp_weasel.png" id="5_texture"]
+
+[resource]
+script = ExtResource("2_card")
+id = &"tempo_shift"
+target_type = 3
+rarity = 1
+name = "Tempo Shift"
+description = "Choose an ally and then its move destination. It moves and then gets 4 Pressure Barrier."
+cost = 1
+texture = ExtResource("5_texture")
+actions = Array[ExtResource("1_action")]([ExtResource("3_move"), ExtResource("4_barrier")])
+metadata/_custom_type_script = "uid://d2f0qepe047dc"

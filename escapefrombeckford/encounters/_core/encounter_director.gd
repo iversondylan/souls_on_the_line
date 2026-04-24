@@ -179,14 +179,8 @@ func _evaluate_gate(req: EncounterGateRequest, emit_feedback: bool) -> GateResul
 			denied = !capabilities.allows_card_id(req.card_id) \
 				or !capabilities.allows_insert_index(req.insert_index) \
 				or !capabilities.allows_target_ids(req.target_ids)
-		EncounterGateRequest.Kind.OPEN_SWAP, EncounterGateRequest.Kind.CONFIRM_SWAP:
-			denied = !capabilities.can_swap or !capabilities.allows_target_ids(req.target_ids)
-		EncounterGateRequest.Kind.OPEN_DISCARD, EncounterGateRequest.Kind.CONFIRM_DISCARD:
-			denied = !capabilities.can_select_discard
-		EncounterGateRequest.Kind.OPEN_SUMMON_REPLACE, EncounterGateRequest.Kind.CONFIRM_SUMMON_REPLACE:
-			denied = !capabilities.can_play_cards \
-				or !capabilities.allows_insert_index(req.insert_index) \
-				or !capabilities.allows_target_ids(req.target_ids)
+		EncounterGateRequest.Kind.OPEN_CARD_INTERACTION, EncounterGateRequest.Kind.CONFIRM_CARD_INTERACTION:
+			denied = _is_card_interaction_denied(capabilities, req)
 
 	if !denied:
 		return _make_gate_result(GateResult.Verdict.ALLOW)
@@ -231,13 +225,40 @@ func _default_gate_message(req: EncounterGateRequest) -> String:
 			return "Finish the current tutorial instruction first."
 		EncounterGateRequest.Kind.PLAY_CARD:
 			return "That card action is not available yet."
-		EncounterGateRequest.Kind.OPEN_SWAP, EncounterGateRequest.Kind.CONFIRM_SWAP:
-			return "Swapping is not available right now."
-		EncounterGateRequest.Kind.OPEN_DISCARD, EncounterGateRequest.Kind.CONFIRM_DISCARD:
-			return "Discarding is not available right now."
-		EncounterGateRequest.Kind.OPEN_SUMMON_REPLACE, EncounterGateRequest.Kind.CONFIRM_SUMMON_REPLACE:
-			return "Choose a tutorial-approved position first."
+		EncounterGateRequest.Kind.OPEN_CARD_INTERACTION, EncounterGateRequest.Kind.CONFIRM_CARD_INTERACTION:
+			return _default_card_interaction_gate_message(req)
 	return "That action is not available right now."
+
+func _is_card_interaction_denied(capabilities: EncounterCapabilitySet, req: EncounterGateRequest) -> bool:
+	var interaction_kind := _get_card_interaction_kind(req)
+	match String(interaction_kind):
+		"swap":
+			return !capabilities.can_swap or !capabilities.allows_target_ids(req.target_ids)
+		"discard":
+			return !capabilities.can_select_discard
+		"summon_replace", "insert_target":
+			return !capabilities.can_play_cards \
+				or !capabilities.allows_insert_index(req.insert_index) \
+				or !capabilities.allows_target_ids(req.target_ids)
+		_:
+			return !capabilities.can_play_cards \
+				or !capabilities.allows_insert_index(req.insert_index) \
+				or !capabilities.allows_target_ids(req.target_ids)
+
+func _get_card_interaction_kind(req: EncounterGateRequest) -> StringName:
+	if req == null or req.payload == null:
+		return &""
+	return StringName(String(req.payload.get(Keys.INTERACTION_KIND, "")))
+
+func _default_card_interaction_gate_message(req: EncounterGateRequest) -> String:
+	match String(_get_card_interaction_kind(req)):
+		"swap":
+			return "Swapping is not available right now."
+		"discard":
+			return "Discarding is not available right now."
+		"summon_replace", "insert_target":
+			return "Choose a tutorial-approved position first."
+	return "That card interaction is not available right now."
 
 func _emit_gate_feedback(result: GateResult) -> void:
 	if result == null:

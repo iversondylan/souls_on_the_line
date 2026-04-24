@@ -2,9 +2,6 @@
 class_name BattleInteractionHandler
 extends Node
 
-enum Mode { NORMAL, SUMMON_REPLACE, SWAP_PARTNER, DISCARD }
-
-var mode: int = Mode.NORMAL
 var active: InteractionContext = null
 
 var battle: Battle
@@ -13,9 +10,7 @@ var battle_ui: BattleUI
 var prompt: SelectionPrompt
 
 func _ready() -> void:
-	Events.request_summon_replace.connect(on_request_summon_replace)
-	Events.request_swap_partner.connect(on_request_swap_partner)
-	Events.request_discard_cards.connect(on_request_discard_cards)
+	Events.request_interaction.connect(on_request_interaction)
 
 	Events.combatant_view_clicked.connect(on_combatant_view_clicked)
 	Events.combatant_view_hovered.connect(on_combatant_view_hovered)
@@ -28,12 +23,11 @@ func setup(_battle: Battle) -> void:
 	battle_ui = battle.battle_ui
 	prompt = battle.selection_prompt
 
-func begin(ctx: InteractionContext, new_mode: int) -> void:
+func begin(ctx: InteractionContext) -> void:
 	if ctx == null:
 		return
 	if active != null:
 		end_active_context()
-	mode = new_mode
 	active = ctx
 	active.handler = self
 	active.enter()
@@ -43,7 +37,6 @@ func end_active_context() -> void:
 		return
 	active.exit()
 	active = null
-	mode = Mode.NORMAL
 	prompt_hide()
 
 func lock_for_modal() -> void:
@@ -59,14 +52,14 @@ func unlock_from_modal() -> void:
 	if battle != null:
 		battle.refresh_player_input_visual_state()
 
-func _gate_interaction(req, card_ctx: CardContext = null, action_index: int = -1) -> bool:
+func evaluate_interaction_gate(req, card_ctx: CardContext = null, action_index: int = -1) -> bool:
 	if battle == null:
 		return true
 	var result = battle.evaluate_encounter_gate(req)
 	if result == null or int(result.verdict) == int(GateResult.Verdict.ALLOW):
 		return true
 	if card_ctx != null and card_ctx.runtime != null and action_index >= 0:
-		card_ctx.runtime.cancel_waiting_action(card_ctx, action_index)
+		card_ctx.runtime.cancel_preflight_interaction(card_ctx, action_index)
 	return false
 
 func prompt_show(text: String, button_text: String) -> void:
@@ -102,62 +95,15 @@ func make_summon_ghost(preview: SummonPreview) -> Node2D:
 	ghost.z_index = 5
 	return ghost
 
-func on_request_discard_cards(ctx: DiscardContext) -> void:
-	if mode != Mode.NORMAL:
+func on_request_interaction(ctx: InteractionContext) -> void:
+	if active != null:
 		return
 	if ctx == null:
 		return
-	var gate_request = EncounterGateRequest.new()
-	gate_request.kind = EncounterGateRequest.Kind.OPEN_DISCARD
-	if !_gate_interaction(gate_request):
+	ctx.handler = self
+	if !ctx.request_open():
 		return
-
-	var c := DiscardInteractionContext.new()
-	c.discard_ctx = ctx
-	begin(c, Mode.DISCARD)
-
-func on_request_summon_replace(ctx: CardContext, action_index: int, preview: SummonPreview) -> void:
-	if mode != Mode.NORMAL:
-		return
-	if ctx == null:
-		return
-	var gate_request = EncounterGateRequest.new()
-	gate_request.kind = EncounterGateRequest.Kind.OPEN_SUMMON_REPLACE
-	gate_request.action_index = int(action_index)
-	gate_request.insert_index = int(preview.insert_index) if preview != null else -1
-	if ctx.card_data != null:
-		ctx.card_data.ensure_uid()
-		gate_request.card_uid = StringName(String(ctx.card_data.uid))
-	if !_gate_interaction(gate_request, ctx, action_index):
-		return
-
-	var c := SummonReplaceInteractionContext.new()
-	c.card_ctx = ctx
-	c.action_index = action_index
-	c.preview = preview
-	begin(c, Mode.SUMMON_REPLACE)
-
-func on_request_swap_partner(ctx: CardContext, action_index: int) -> void:
-	if mode != Mode.NORMAL:
-		return
-	if ctx == null:
-		return
-	if battle == null or battle.battle_view == null:
-		return
-	var gate_request = EncounterGateRequest.new()
-	gate_request.kind = EncounterGateRequest.Kind.OPEN_SWAP
-	gate_request.action_index = int(action_index)
-	gate_request.target_ids = ctx.target_ids.duplicate()
-	if ctx.card_data != null:
-		ctx.card_data.ensure_uid()
-		gate_request.card_uid = StringName(String(ctx.card_data.uid))
-	if !_gate_interaction(gate_request, ctx, action_index):
-		return
-
-	var c := SwapPartnerInteractionContext.new()
-	c.card_ctx = ctx
-	c.action_index = action_index
-	begin(c, Mode.SWAP_PARTNER)
+	begin(ctx)
 
 func on_combatant_view_hovered(v: CombatantView) -> void:
 	if active == null:

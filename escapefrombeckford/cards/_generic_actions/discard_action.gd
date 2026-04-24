@@ -11,7 +11,6 @@ func activate_sim(ctx: CardContext) -> bool:
 	if n == 0:
 		return true
 
-	# Require uid so VIEW can associate this request with the card play if desired.
 	if ctx.card_data != null:
 		ctx.card_data.ensure_uid()
 

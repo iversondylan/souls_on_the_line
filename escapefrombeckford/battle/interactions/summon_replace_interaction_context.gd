@@ -2,14 +2,23 @@
 
 class_name SummonReplaceInteractionContext extends EscrowCardInteractionContext
 
-
-
-var action_index: int = -1
 var preview: SummonPreview
 
 var ghost: Node2D
 var candidates: Array[CombatantView] = []
 var resolving := false
+
+func get_interaction_kind() -> StringName:
+	return &"summon_replace"
+
+func request_open() -> bool:
+	if card_ctx == null:
+		return false
+	return _evaluate_interaction_gate(
+		EncounterGateRequest.Kind.OPEN_CARD_INTERACTION,
+		PackedInt32Array(),
+		int(preview.insert_index) if preview != null else -1
+	)
 
 func enter() -> void:
 	resolving = false
@@ -38,7 +47,6 @@ func enter() -> void:
 	for v in candidates:
 		_set_candidate_mark(v, true)
 
-
 func exit() -> void:
 	var bv := handler.battle.battle_view
 	if bv != null:
@@ -57,26 +65,20 @@ func exit() -> void:
 	resolving = false
 	handler.unlock_from_modal()
 
-
 func on_primary() -> void:
 	if resolving:
 		return
-
 	if card_ctx != null and card_ctx.runtime != null:
-		card_ctx.runtime.cancel_waiting_action(card_ctx, action_index)
-
+		card_ctx.runtime.cancel_preflight_interaction(card_ctx, action_index)
 	handler.end_active_context()
-
 
 func on_hover(v: CombatantView) -> void:
 	if _can_target(v):
 		v.show_targeted_arrow(true)
 
-
 func on_unhover(v: CombatantView) -> void:
 	if _can_target(v):
 		v.show_targeted_arrow(false)
-
 
 func on_click(v: CombatantView) -> void:
 	if resolving:
@@ -85,47 +87,37 @@ func on_click(v: CombatantView) -> void:
 		return
 	_confirm(v)
 
-
 func _can_target(v: CombatantView) -> bool:
 	return v != null and is_instance_valid(v) and candidates.has(v)
-
 
 func _set_candidate_mark(v: CombatantView, on: bool) -> void:
 	if v == null or !is_instance_valid(v):
 		return
 	v.set_fade_mark(on)
 
-
 func _confirm(chosen: CombatantView) -> void:
 	if resolving:
 		return
 	if chosen == null or !is_instance_valid(chosen):
 		return
-	if handler != null and handler.battle != null:
-		var gate_request = EncounterGateRequest.new()
-		gate_request.kind = EncounterGateRequest.Kind.CONFIRM_SUMMON_REPLACE
-		gate_request.target_ids = PackedInt32Array([int(chosen.cid)])
-		gate_request.insert_index = int(preview.insert_index) if preview != null else -1
-		if card_ctx != null and card_ctx.card_data != null:
-			card_ctx.card_data.ensure_uid()
-			gate_request.card_uid = StringName(String(card_ctx.card_data.uid))
-		var gate_result = handler.battle.evaluate_encounter_gate(gate_request)
-		if gate_result != null and int(gate_result.verdict) != int(GateResult.Verdict.ALLOW):
-			return
+	if !_evaluate_interaction_gate(
+		EncounterGateRequest.Kind.CONFIRM_CARD_INTERACTION,
+		PackedInt32Array([int(chosen.cid)]),
+		int(preview.insert_index) if preview != null else -1
+	):
+		return
 
 	resolving = true
-
 	for v in candidates:
 		_set_candidate_mark(v, false)
 
 	var replaced_index := chosen.get_index()
-
 	var payload := {
 		Keys.REPLACED_ID: int(chosen.cid),
 		Keys.REPLACED_INSERT_INDEX: replaced_index,
 	}
 
 	if card_ctx != null and card_ctx.runtime != null:
-		card_ctx.runtime.cover_waiting_action_and_continue(card_ctx, action_index, payload)
+		card_ctx.runtime.complete_preflight_interaction_and_continue(card_ctx, action_index, payload)
 
 	handler.end_active_context()

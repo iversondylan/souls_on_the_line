@@ -6,6 +6,17 @@ extends CardAction
 @export var set_damage_to_attacker_max_health: bool = false
 @export var bonus_damage_context_key: StringName = &""
 
+func starts_compiled_turn_span(_ctx: CardContext) -> bool:
+	return true
+
+func get_compiled_turn_span_kind(_ctx: CardContext) -> StringName:
+	return &"attack_now"
+
+func get_compiled_turn_span_actor_id(ctx: CardContext) -> int:
+	if ctx == null or ctx.target_ids.is_empty():
+		return 0
+	return int(ctx.target_ids[0])
+
 func description_arity() -> int:
 	return 0
 
@@ -73,22 +84,8 @@ func activate_sim(ctx: CardContext) -> bool:
 	if writer == null:
 		return false
 
-	var scope_label := "card_attack_now"
-	if ctx.card_data != null:
-		scope_label = "card_attack_now uid=%s" % String(ctx.card_data.uid)
-
-	var attack_now_scope := writer.scope_begin(
-		Scope.Kind.CARD_ATTACK_NOW_TURN,
-		scope_label,
-		attacker_id,
-		{}
-	)
-	if attack_now_scope == null:
-		return false
-
 	var any := false
 	any = ctx.runtime.run_attack(attack_ctx)
-	writer.scope_end(attack_now_scope)
 
 	for tid in attack_ctx.affected_target_ids:
 		var target_id := int(tid)

@@ -38,11 +38,9 @@ signal card_selection_toggled(card: UsableCard, is_selected: bool)
 signal player_battle_health_changed(current_health: int, max_health: int)
 
 ## summon replace events
-signal request_swap_partner(ctx: CardContext, action_index: int)
-signal request_discard_cards(ctx: DiscardContext)
+signal request_interaction(ctx: InteractionContext)
 signal discard_selection_started(ctx: DiscardContext)
 signal discard_finished(ctx: DiscardContext)
-signal request_summon_replace(ctx: CardContext, action_index: int, preview: SummonPreview)
 signal selection_prompt_button_pressed()
 
 ## info/menu events

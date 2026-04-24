@@ -176,6 +176,7 @@ const STATUS_DATA := &"status_data"
 # Move (formation)
 const MOVE_TYPE := &"move_type"
 const MOVE_UNIT_ID := &"move_unit_id"
+const INTERACTION_KIND := &"interaction_kind"
 const BEFORE_ORDER_IDS := &"before_order_ids"
 const AFTER_ORDER_IDS := &"after_order_ids"
 const MOVER_REENTERS_QUEUE := &"mover_reenters_queue"

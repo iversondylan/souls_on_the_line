@@ -1,0 +1,7 @@
+[gd_resource type="Resource" script_class="InsertTargetAction" format=3]
+
+[ext_resource type="Script" path="res://cards/_generic_actions/insert_target_action.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+metadata/_custom_type_script = "uid://wtk5v77fcqvn"

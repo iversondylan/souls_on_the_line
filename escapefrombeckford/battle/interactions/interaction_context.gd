@@ -4,6 +4,9 @@ extends RefCounted
 
 var handler: BattleInteractionHandler
 
+func request_open() -> bool:
+	return true
+
 func enter() -> void: pass
 func exit() -> void: pass
 

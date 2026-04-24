@@ -4,9 +4,8 @@ class_name CardActionExecutionState extends RefCounted
 
 enum State {
 	PENDING,
-	WAITING_INTERACTION,
+	WAITING_PREFLIGHT,
 	WAITING_ASYNC_RESOLUTION,
-	COVERED,
 	EXECUTED,
 	SKIPPED,
 	CANCELED
@@ -14,5 +13,6 @@ enum State {
 
 var action_index: int = -1
 var action: CardAction
-var interaction_mode: int = CardAction.InteractionMode.NONE
+var preflight_interaction_mode: int = CardAction.InteractionMode.NONE
+var preflight_complete: bool = true
 var state: int = State.PENDING

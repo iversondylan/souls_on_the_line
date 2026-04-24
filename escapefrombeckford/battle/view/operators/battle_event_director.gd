@@ -1200,7 +1200,9 @@ func _on_discard_requested(e: EventPackage) -> void:
 			Keys.CHOSEN_UIDS: chosen_uids,
 		})
 
-	Events.request_discard_cards.emit(ctx)
+	var interaction := DiscardInteractionContext.new()
+	interaction.discard_ctx = ctx
+	Events.request_interaction.emit(interaction)
 
 
 func _on_draw_cards(e: EventPackage) -> void:

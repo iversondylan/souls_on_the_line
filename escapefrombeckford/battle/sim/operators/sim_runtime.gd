@@ -1599,11 +1599,12 @@ func begin_card_execution(ctx: CardContext) -> bool:
 		var st := CardActionExecutionState.new()
 		st.action_index = i
 		st.action = action
-		st.interaction_mode = action.get_interaction_mode(ctx)
+		st.preflight_interaction_mode = action.get_preflight_interaction_mode(ctx)
+		st.preflight_complete = int(st.preflight_interaction_mode) == int(CardAction.InteractionMode.NONE)
 		st.state = CardActionExecutionState.State.PENDING
 		ctx.action_states.append(st)
 
-	return continue_card_execution(ctx)
+	return _continue_card_preflight(ctx)
 
 func _validate_card_targets(ctx: CardContext) -> bool:
 	if ctx == null or ctx.card_data == null or ctx.api == null:
@@ -1645,12 +1646,48 @@ func _validate_card_targets(ctx: CardContext) -> bool:
 	#initialize_card_context(ctx)
 	#return continue_card_execution(ctx)
 
+func _continue_card_preflight(ctx: CardContext) -> bool:
+	if ctx == null or ctx.finished:
+		return false
+	if ctx.canceled:
+		_finalize_card_execution(ctx, false)
+		return false
+
+	for st in ctx.action_states:
+		if st == null or st.action == null:
+			continue
+		if int(st.preflight_interaction_mode) != int(CardAction.InteractionMode.PREFLIGHT):
+			continue
+		if bool(st.preflight_complete):
+			continue
+
+		ctx.current_action_index = st.action_index
+		if int(st.state) == int(CardActionExecutionState.State.WAITING_PREFLIGHT):
+			return true
+
+		st.state = CardActionExecutionState.State.WAITING_PREFLIGHT
+		if !st.action.begin_preflight_interaction(ctx):
+			st.state = CardActionExecutionState.State.CANCELED
+			ctx.canceled = true
+			ctx.finished = true
+			_finalize_card_execution(ctx, false)
+			return false
+		if ctx.canceled or ctx.finished:
+			return false
+		return true
+
+	ctx.current_action_index = -1
+	ctx.next_action_index = 0
+	return continue_card_execution(ctx)
+
 func continue_card_execution(ctx: CardContext) -> bool:
 	if ctx == null or ctx.finished:
 		return false
 	if ctx.canceled:
-		_finalize_card_execution(ctx)
+		_finalize_card_execution(ctx, false)
 		return false
+	if !_all_card_preflight_complete(ctx):
+		return _continue_card_preflight(ctx)
 
 	while ctx.next_action_index < ctx.action_states.size():
 		var st: CardActionExecutionState = ctx.action_states[ctx.next_action_index]
@@ -1666,31 +1703,27 @@ func continue_card_execution(ctx: CardContext) -> bool:
 				ctx.next_action_index += 1
 				continue
 
-			CardActionExecutionState.State.WAITING_INTERACTION, \
+			CardActionExecutionState.State.WAITING_PREFLIGHT, \
 			CardActionExecutionState.State.WAITING_ASYNC_RESOLUTION:
 				return true
 
-			CardActionExecutionState.State.COVERED, \
 			CardActionExecutionState.State.PENDING:
-				if int(st.state) == int(CardActionExecutionState.State.PENDING) \
-				and int(st.interaction_mode) != int(CardAction.InteractionMode.NONE):
-					st.state = CardActionExecutionState.State.WAITING_INTERACTION
-					if !st.action.activate_interaction(ctx):
-						st.state = CardActionExecutionState.State.CANCELED
-						ctx.canceled = true
-						_finalize_card_execution(ctx)
-						return false
-					return true
-
 				if !_commit_card_play_if_needed(ctx):
 					ctx.canceled = true
-					_finalize_card_execution(ctx)
+					_finalize_card_execution(ctx, false)
 					return false
+
+				if _action_starts_compiled_turn_span(ctx, st):
+					if !_execute_compiled_turn_span(ctx, st.action_index):
+						ctx.canceled = true
+						_finalize_card_execution(ctx, false)
+						return false
+					continue
 
 				if !execute_card_action(ctx, st.action_index):
 					st.state = CardActionExecutionState.State.CANCELED
 					ctx.canceled = true
-					_finalize_card_execution(ctx)
+					_finalize_card_execution(ctx, false)
 					return false
 
 				if st.action.waits_for_async_resolution_after_activate_sim(ctx):
@@ -1704,7 +1737,7 @@ func continue_card_execution(ctx: CardContext) -> bool:
 
 			CardActionExecutionState.State.CANCELED:
 				ctx.canceled = true
-				_finalize_card_execution(ctx)
+				_finalize_card_execution(ctx, false)
 				return false
 
 	ctx.finished = true
@@ -1724,7 +1757,90 @@ func execute_card_action(ctx: CardContext, action_index: int) -> bool:
 	ctx.current_action_index = action_index
 	return st.action.activate_sim(ctx)
 
-func cover_waiting_action_and_continue(
+func _action_starts_compiled_turn_span(ctx: CardContext, st: CardActionExecutionState) -> bool:
+	if ctx == null or st == null or st.action == null:
+		return false
+	if int(st.state) != int(CardActionExecutionState.State.PENDING):
+		return false
+	return bool(st.action.starts_compiled_turn_span(ctx))
+
+func _execute_compiled_turn_span(ctx: CardContext, anchor_index: int) -> bool:
+	if ctx == null or ctx.api == null:
+		return false
+	if anchor_index < 0 or anchor_index >= ctx.action_states.size():
+		return false
+
+	var anchor_state: CardActionExecutionState = ctx.action_states[anchor_index]
+	if anchor_state == null or anchor_state.action == null:
+		return false
+
+	var span_kind := StringName(anchor_state.action.get_compiled_turn_span_kind(ctx))
+	if span_kind == &"":
+		return false
+
+	var actor_id := int(anchor_state.action.get_compiled_turn_span_actor_id(ctx))
+	if actor_id <= 0:
+		return false
+
+	var scope_handle := _begin_card_attack_now_turn_scope(ctx, actor_id)
+	if scope_handle == null:
+		return false
+
+	var index := anchor_index
+	var ok := true
+	var waiting_async := false
+
+	while index < ctx.action_states.size():
+		var st: CardActionExecutionState = ctx.action_states[index]
+		if st == null or st.action == null:
+			break
+		if int(st.state) != int(CardActionExecutionState.State.PENDING):
+			break
+		if index != anchor_index and !st.action.joins_compiled_turn_span(ctx, span_kind, anchor_index, index - anchor_index):
+			break
+
+		if !execute_card_action(ctx, st.action_index):
+			st.state = CardActionExecutionState.State.CANCELED
+			ok = false
+			break
+
+		if st.action.waits_for_async_resolution_after_activate_sim(ctx):
+			ctx.waiting_async_action_index = st.action_index
+			st.state = CardActionExecutionState.State.WAITING_ASYNC_RESOLUTION
+			waiting_async = true
+			break
+
+		st.state = CardActionExecutionState.State.EXECUTED
+		ctx.next_action_index = st.action_index + 1
+		index = ctx.next_action_index
+
+	_end_scope(scope_handle)
+
+	if !ok:
+		return false
+	if waiting_async:
+		push_warning("Compiled card turn spans do not support async actions; finishing current span early.")
+		return true
+
+	return true
+
+func _begin_card_attack_now_turn_scope(ctx: CardContext, actor_id: int) -> ScopeHandle:
+	if ctx == null or ctx.api == null:
+		return null
+
+	var label := "card_attack_now"
+	if ctx.card_data != null:
+		ctx.card_data.ensure_uid()
+		label = "card_attack_now uid=%s" % String(ctx.card_data.uid)
+
+	return ctx.api.writer.scope_begin(
+		Scope.Kind.CARD_ATTACK_NOW_TURN,
+		label,
+		actor_id,
+		{}
+	)
+
+func complete_preflight_interaction_and_continue(
 	ctx: CardContext,
 	action_index: int,
 	payload: Dictionary = {}
@@ -1737,32 +1853,16 @@ func cover_waiting_action_and_continue(
 	var st: CardActionExecutionState = ctx.action_states[action_index]
 	if st == null or st.action == null:
 		return false
-	if int(st.state) != int(CardActionExecutionState.State.WAITING_INTERACTION):
+	if int(st.state) != int(CardActionExecutionState.State.WAITING_PREFLIGHT):
 		return false
 
 	if !payload.is_empty():
 		ctx.interaction_payloads[action_index] = payload.duplicate(true)
 
-	st.state = CardActionExecutionState.State.COVERED
+	st.preflight_complete = true
+	st.state = CardActionExecutionState.State.PENDING
 	ctx.current_action_index = action_index
-
-	# Execute the just-covered action now.
-	if !_commit_card_play_if_needed(ctx):
-		st.state = CardActionExecutionState.State.CANCELED
-		ctx.canceled = true
-		_finalize_card_execution(ctx)
-		return false
-
-	if !execute_card_action(ctx, action_index):
-		st.state = CardActionExecutionState.State.CANCELED
-		ctx.canceled = true
-		_finalize_card_execution(ctx)
-		return false
-
-	st.state = CardActionExecutionState.State.EXECUTED
-	ctx.next_action_index = action_index + 1
-
-	return continue_card_execution(ctx)
+	return _continue_card_preflight(ctx)
 
 func resume_async_action(ctx: CardContext, action_index: int, payload: Dictionary = {}) -> bool:
 	if ctx == null:
@@ -1795,7 +1895,7 @@ func resume_async_action(ctx: CardContext, action_index: int, payload: Dictionar
 	ctx.next_action_index = action_index + 1
 	return continue_card_execution(ctx)
 
-func cancel_waiting_action(ctx: CardContext, action_index: int) -> bool:
+func cancel_preflight_interaction(ctx: CardContext, action_index: int) -> bool:
 	if ctx == null:
 		return false
 	if action_index < 0 or action_index >= ctx.action_states.size():
@@ -1810,6 +1910,16 @@ func cancel_waiting_action(ctx: CardContext, action_index: int) -> bool:
 	ctx.finished = true
 	_finalize_card_execution(ctx, false)
 	return false
+
+func _all_card_preflight_complete(ctx: CardContext) -> bool:
+	if ctx == null:
+		return false
+	for st in ctx.action_states:
+		if st == null or st.action == null:
+			continue
+		if int(st.preflight_interaction_mode) == int(CardAction.InteractionMode.PREFLIGHT) and !bool(st.preflight_complete):
+			return false
+	return true
 
 
 func mark_action_skipped(ctx: CardContext, action_index: int) -> void:

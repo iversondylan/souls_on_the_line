@@ -6,9 +6,8 @@ class_name SummonAction extends CardAction
 @export var reserves_card: bool = false
 @export var sound: Sound = load("uid://c0cllss7w30rn")
 
-func get_interaction_mode(ctx: CardContext) -> int:
+func get_preflight_interaction_mode(ctx: CardContext) -> int:
 	if ctx == null or ctx.api == null:
-		#print("summon_action.gd get_interaction_mode() returning NONE")
 		return InteractionMode.NONE
 
 	var summon_mortality := _resolve_summon_mortality(ctx.card_data)
@@ -17,33 +16,32 @@ func get_interaction_mode(ctx: CardContext) -> int:
 	
 	var player_id := int(ctx.api.get_player_id())
 	if player_id <= 0:
-		#print("summon_action.gd get_interaction_mode() returning NONE")
 		return InteractionMode.NONE
 	
 	var bound_ids: Array[int] = ctx.api.get_bound_ids_for_owner(player_id)
 	if bound_ids.size() >= CombatantState.get_mortality_cap(CombatantState.Mortality.BOUND):
-		#print("summon_action.gd get_interaction_mode() returning ESCROW")
-		return InteractionMode.ESCROW
+		return InteractionMode.PREFLIGHT
 	
-	#print("summon_action.gd get_interaction_mode() returning NONE")
 	return InteractionMode.NONE
 
-
-func activate_interaction(ctx: CardContext) -> bool:
-	#print("summon_action.gd activate_interaction()")
+func begin_preflight_interaction(ctx: CardContext) -> bool:
 	if ctx == null or ctx.runtime == null or ctx.source_card == null:
 		return false
 
 	var action_index := int(ctx.current_action_index)
 	if action_index < 0:
-		action_index = int(ctx.escrow_action_index)
+		return false
 
 	var preview := SummonPreview.new()
 	preview.summon_data = get_preview_summon_data()
 	preview.insert_index = int(ctx.insert_index)
 
-	if Events != null and Events.has_signal("request_summon_replace"):
-		Events.request_summon_replace.emit(ctx, action_index, preview)
+	if Events != null and Events.has_signal("request_interaction"):
+		var interaction := SummonReplaceInteractionContext.new()
+		interaction.card_ctx = ctx
+		interaction.action_index = action_index
+		interaction.preview = preview
+		Events.request_interaction.emit(interaction)
 		return true
 
 	return false

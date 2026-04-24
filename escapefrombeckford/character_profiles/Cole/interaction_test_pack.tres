@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="CardPile" format=3 uid="uid://dyhb2jby8mpwa"]
+
+[ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://cards/_core/card_data.gd" id="1_p7vha"]
+[ext_resource type="Resource" uid="uid://iv5lrhm4b60n" path="res://cards/convocations/SpacetimeWarp/spacetime_warp_data.tres" id="2_23q5r"]
+[ext_resource type="Script" uid="uid://dnybrgm0o6gjj" path="res://cards/_core/card_pile.gd" id="2_g511s"]
+[ext_resource type="Resource" uid="uid://bbmoxyo3717yg" path="res://cards/effusions/DecisiveChoice/decisive_choice_data.tres" id="3_nopbs"]
+[ext_resource type="Resource" path="res://cards/convocations/AggressiveTimeline/aggressive_timeline.tres" id="4_aggressive_timeline"]
+[ext_resource type="Resource" path="res://cards/convocations/TempoShift/tempo_shift.tres" id="5_tempo_shift"]
+
+[resource]
+script = ExtResource("2_g511s")
+cards = Array[ExtResource("1_p7vha")]([ExtResource("2_23q5r"), ExtResource("3_nopbs"), ExtResource("4_aggressive_timeline"), ExtResource("5_tempo_shift")])
+metadata/_custom_type_script = "uid://dnybrgm0o6gjj"

@@ -5,7 +5,7 @@
 [ext_resource type="Resource" uid="uid://bb2svevqwn2v7" path="res://character_profiles/Cole/cole_draftable_cards.tres" id="2_guhpy"]
 [ext_resource type="Resource" uid="uid://vnoxk6md128x" path="res://character_profiles/Cole/cole_possible_arcana.tres" id="3_mgnya"]
 [ext_resource type="Resource" uid="uid://dscocnwv6h1v5" path="res://arcana/reapers_siphon.tres" id="4_reapers_siphon"]
-[ext_resource type="Resource" uid="uid://b2gq58swp7age" path="res://character_profiles/Cole/cole_starter_deck.tres" id="6_plufk"]
+[ext_resource type="Resource" uid="uid://dyhb2jby8mpwa" path="res://character_profiles/Cole/interaction_test_pack.tres" id="7_lr2ux"]
 [ext_resource type="Resource" uid="uid://b7txf6d8vmjkk" path="res://cards/souls/SpectralCloneCard/spectral_clone.tres" id="7_starter_soul"]
 
 [resource]
@@ -14,7 +14,7 @@ profile_id = "cole"
 starting_arcanum = ExtResource("4_reapers_siphon")
 possible_arcana = ExtResource("3_mgnya")
 starter_soul = ExtResource("7_starter_soul")
-starting_deck = ExtResource("6_plufk")
+starting_deck = ExtResource("7_lr2ux")
 draftable_cards = ExtResource("2_guhpy")
 bonus_starting_gold = 700
 arcana_reward_pool = ExtResource("1_fcpfp")
