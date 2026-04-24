@@ -4,14 +4,17 @@
 [ext_resource type="Resource" uid="uid://iv5lrhm4b60n" path="res://cards/convocations/SpacetimeWarp/spacetime_warp_data.tres" id="2_23q5r"]
 [ext_resource type="Script" uid="uid://dnybrgm0o6gjj" path="res://cards/_core/card_pile.gd" id="2_g511s"]
 [ext_resource type="Resource" uid="uid://bbmoxyo3717yg" path="res://cards/effusions/DecisiveChoice/decisive_choice_data.tres" id="3_nopbs"]
-[ext_resource type="Resource" path="res://cards/convocations/AggressiveTimeline/aggressive_timeline.tres" id="4_aggressive_timeline"]
-[ext_resource type="Resource" path="res://cards/convocations/TempoShift/tempo_shift.tres" id="5_tempo_shift"]
+[ext_resource type="Resource" uid="uid://ja1ircka6mrs" path="res://cards/convocations/AggressiveTimeline/aggressive_timeline.tres" id="4_aggressive_timeline"]
+[ext_resource type="Resource" uid="uid://bmg41hy74x3cx" path="res://cards/convocations/TempoShift/tempo_shift.tres" id="5_tempo_shift"]
 [ext_resource type="Resource" path="res://cards/convocations/TidalForce/tidal_force.tres" id="6_tidal_force"]
-[ext_resource type="Resource" path="res://cards/convocations/LockstepFormation/lockstep_formation.tres" id="7_lockstep_formation"]
+[ext_resource type="Resource" uid="uid://coopijswyhb50" path="res://cards/convocations/LockstepFormation/lockstep_formation.tres" id="7_lockstep_formation"]
 [ext_resource type="Resource" path="res://cards/souls/ScorchingBullCard/scorching_bull.tres" id="8_scorching_bull"]
 [ext_resource type="Resource" path="res://cards/souls/DistanceHunterCard/distance_hunter.tres" id="9_distance_hunter"]
+[ext_resource type="Resource" path="res://cards/convocations/Quickpulse/quickpulse.tres" id="10_quickpulse"]
+[ext_resource type="Resource" path="res://cards/convocations/Crunch/crunch.tres" id="11_crunch"]
+[ext_resource type="Resource" path="res://cards/convocations/FarGaze/far_gaze.tres" id="12_far_gaze"]
 
 [resource]
 script = ExtResource("2_g511s")
-cards = Array[ExtResource("1_p7vha")]([ExtResource("2_23q5r"), ExtResource("3_nopbs"), ExtResource("4_aggressive_timeline"), ExtResource("5_tempo_shift"), ExtResource("6_tidal_force"), ExtResource("7_lockstep_formation"), ExtResource("8_scorching_bull"), ExtResource("9_distance_hunter")])
+cards = Array[ExtResource("1_p7vha")]([ExtResource("2_23q5r"), ExtResource("3_nopbs"), ExtResource("4_aggressive_timeline"), ExtResource("5_tempo_shift"), ExtResource("6_tidal_force"), ExtResource("7_lockstep_formation"), ExtResource("8_scorching_bull"), ExtResource("9_distance_hunter"), ExtResource("10_quickpulse"), ExtResource("11_crunch"), ExtResource("12_far_gaze")])
 metadata/_custom_type_script = "uid://dnybrgm0o6gjj"

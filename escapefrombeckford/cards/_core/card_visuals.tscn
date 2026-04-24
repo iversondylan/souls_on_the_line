@@ -10,8 +10,12 @@
 [ext_resource type="Texture2D" uid="uid://bkxkseqjc0dl0" path="res://_assets/sprites/assorted/soul_bound.png" id="6_ctgn5"]
 [ext_resource type="Texture2D" uid="uid://c2cpjnsgjdd1x" path="res://_assets/sprites/assorted/card_back_1.PNG" id="6_spa0x"]
 [ext_resource type="Texture2D" uid="uid://cdap6hv4e5qcw" path="res://_assets/sprites/assorted/tri_white.png" id="7_fq4np"]
+[ext_resource type="Texture2D" uid="uid://yeehst3gaoju" path="res://_assets/sprites/card_elements/soul_stats_panels.png" id="7_o0loh"]
 [ext_resource type="Texture2D" uid="uid://bmcmfx1vvvaeg" path="res://_assets/sprites/card_elements/brass_instrument_cost_panel.png" id="8_kvkof"]
+[ext_resource type="Texture2D" uid="uid://cusmpmbnnywtl" path="res://_assets/sprites/card_elements/crossed-swords.png" id="8_xh8mi"]
 [ext_resource type="Texture2D" uid="uid://cjb0lvcy0m405" path="res://_assets/sprites/card_elements/cost_circle_T_gray.png" id="9_da2py"]
+[ext_resource type="Texture2D" uid="uid://2j6m2j8po33l" path="res://_assets/sprites/card_elements/hearts(1).png" id="9_hx05k"]
+[ext_resource type="Texture2D" uid="uid://bk6g3h052p2d" path="res://_assets/sprites/card_elements/pentacle.png" id="9_xh8mi"]
 [ext_resource type="Texture2D" uid="uid://bfra4egurcd6k" path="res://_assets/sprites/card_elements/brass_instrument_cost_outline.png" id="9_ytu8h"]
 [ext_resource type="Texture2D" uid="uid://b7smcstu031ke" path="res://_assets/sprites/card_elements/cost_circle_T_blue1.png" id="10_ytu8h"]
 [ext_resource type="Texture2D" uid="uid://bvwjmd1ch5b4o" path="res://_assets/sprites/card_elements/cost_circle_L_gray.png" id="11_ss3dn"]
@@ -135,6 +139,88 @@ offset_right = 455.0
 offset_bottom = 265.0
 scale = Vector2(0.08, 0.08)
 texture = ExtResource("6_ctgn5")
+
+[node name="SoulStats" type="Node2D" parent="CardStrictlyVisuals/CornerMan" unique_id=2082314859]
+unique_name_in_owner = true
+
+[node name="SoulStatsPanels" type="TextureRect" parent="CardStrictlyVisuals/CornerMan/SoulStats" unique_id=1690685845]
+offset_top = 132.0
+offset_right = 226.761
+offset_bottom = 186.0
+texture = ExtResource("7_o0loh")
+expand_mode = 2
+stretch_mode = 4
+
+[node name="AttackIcon" type="TextureRect" parent="CardStrictlyVisuals/CornerMan/SoulStats" unique_id=1985020279]
+unique_name_in_owner = true
+visible = false
+offset_top = 143.0
+offset_right = 40.0
+offset_bottom = 183.0
+scale = Vector2(0.75, 0.75)
+texture = ExtResource("8_xh8mi")
+expand_mode = 2
+stretch_mode = 4
+
+[node name="SummonIcon" type="TextureRect" parent="CardStrictlyVisuals/CornerMan/SoulStats" unique_id=329943431]
+unique_name_in_owner = true
+visible = false
+offset_top = 143.0
+offset_right = 40.0
+offset_bottom = 183.0
+scale = Vector2(0.75, 0.75)
+texture = ExtResource("9_xh8mi")
+expand_mode = 2
+stretch_mode = 4
+
+[node name="HealthPanelIcon" type="TextureRect" parent="CardStrictlyVisuals/CornerMan/SoulStats" unique_id=864540395]
+unique_name_in_owner = true
+offset_left = 197.0
+offset_top = 147.0
+offset_right = 247.0
+offset_bottom = 197.0
+scale = Vector2(0.5, 0.5)
+texture = ExtResource("9_hx05k")
+expand_mode = 2
+stretch_mode = 4
+
+[node name="ActionPanelLabel" type="Label" parent="CardStrictlyVisuals/CornerMan/SoulStats" unique_id=1613217328]
+unique_name_in_owner = true
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -5.0
+offset_top = 127.0
+offset_right = 35.0
+offset_bottom = 186.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("15_5754s")
+theme_override_font_sizes/font_size = 22
+text = "-"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="HealthPanelLabel" type="Label" parent="CardStrictlyVisuals/CornerMan/SoulStats" unique_id=985746590]
+unique_name_in_owner = true
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = 189.0
+offset_top = 128.0
+offset_right = 229.0
+offset_bottom = 187.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("15_5754s")
+theme_override_font_sizes/font_size = 22
+text = "1"
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="CardDescription" type="Node2D" parent="CardStrictlyVisuals/CornerMan" unique_id=816015738]
 position = Vector2(20, 121)

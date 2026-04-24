@@ -82,13 +82,7 @@ static func emit_current_intent(api: SimBattleAPI, cid: int) -> void:
 		ctx.params = {}
 	else:
 		ctx.params.clear()
-
-	for pkg in action.effect_packages:
-		if pkg == null:
-			continue
-		for pm: ParamModel in pkg.param_models:
-			if pm != null:
-				pm.change_params_sim(ctx)
+	_change_params_only(action, ctx)
 
 	var is_ranged := int(ctx.params.get(Keys.ATTACK_MODE, Attack.Mode.MELEE)) == Attack.Mode.RANGED
 	var uid := String(action.intent_icon_uid)
@@ -132,6 +126,8 @@ static func _change_params_only(action: NPCAction, ctx: NPCAIContext) -> void:
 			if model == null:
 				continue
 			model.change_params_sim(ctx)
+		if ctx.api != null:
+			SimStatusSystem.on_action_params_ready(ctx.api, ctx.get_actor_id(), ctx)
 
 static func _resolve_intent_text_color(action: NPCAction, ctx: NPCAIContext, actor_id: int) -> Color:
 	if _find_heal_preview_package_index(action) >= 0:

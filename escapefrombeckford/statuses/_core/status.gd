@@ -81,6 +81,9 @@ func on_damage_will_be_taken(_ctx: SimStatusContext, _damage_ctx: DamageContext)
 func on_attack_will_run(_ctx: SimStatusContext, _attack_ctx: AttackContext) -> void:
 	pass
 
+func on_action_params_ready(_ctx: SimStatusContext, _npc_ctx: NPCAIContext) -> void:
+	pass
+
 func on_strike_resolved(
 	_ctx: SimStatusContext,
 	_attack_ctx: AttackContext,

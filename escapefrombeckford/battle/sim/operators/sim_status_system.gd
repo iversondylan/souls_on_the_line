@@ -118,6 +118,21 @@ static func on_attack_will_run(
 
 	_for_each_effective_status_on_unit(api, attacker_id, fn)
 
+static func on_action_params_ready(
+	api: SimBattleAPI,
+	actor_id: int,
+	npc_ctx: NPCAIContext
+) -> void:
+	if api == null or api.state == null or npc_ctx == null or api.state.has_terminal_outcome():
+		return
+	if int(actor_id) <= 0:
+		return
+
+	_for_each_effective_status_on_unit(api, actor_id, func(ctx: SimStatusContext) -> void:
+		if ctx.proto != null:
+			ctx.proto.on_action_params_ready(ctx, npc_ctx)
+	)
+
 static func on_strike_resolved(
 	api: SimBattleAPI,
 	attacker_id: int,

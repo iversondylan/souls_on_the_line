@@ -17,6 +17,13 @@ class_name CardVisuals extends Control
 @onready var cost_label: Label = $CardStrictlyVisuals/CornerMan/CostDisplay/CostLabel
 @onready var cost_display: Node2D = %CostDisplay
 
+@onready var soul_stats: Node2D = %SoulStats
+@onready var attack_icon: TextureRect = %AttackIcon
+@onready var summon_icon: TextureRect = %SummonIcon
+@onready var health_panel_icon: TextureRect = %HealthPanelIcon
+@onready var action_panel_label: Label = %ActionPanelLabel
+@onready var health_panel_label: Label = %HealthPanelLabel
+
 @export var card_angle_limit_flt: float = 180
 @export var max_card_spread_angle_flt: float = 38
 
@@ -96,6 +103,7 @@ func _set_card_data(value: CardData) -> void:
 func refresh_from_card_data() -> void:
 	if !is_node_ready():
 		await ready
+	_reset_soul_stats()
 	if _card_data_internal == null:
 		set_overload(0)
 		cost_label.text = "0"
@@ -114,6 +122,7 @@ func refresh_from_card_data() -> void:
 		RARITY_TEXTURES.get(_card_data_internal.rarity),
 		RARITY_TINTS.get(_card_data_internal.rarity, Color.WHITE)
 	)
+	_refresh_soul_stats()
 
 func set_description(new_description: String) -> void:
 	description.set_text(new_description)
@@ -290,6 +299,108 @@ func _apply_name_label_font_size(font_size: int) -> void:
 func _clear_name_label_fit_overrides() -> void:
 	name_label.remove_theme_font_size_override("font_size")
 	name_label.clip_text = false
+
+func _reset_soul_stats() -> void:
+	soul_stats.hide()
+	attack_icon.hide()
+	summon_icon.hide()
+	action_panel_label.text = "-"
+	health_panel_label.text = "-"
+
+func _refresh_soul_stats() -> void:
+	if !_is_soul_stats_card(_card_data_internal):
+		return
+
+	soul_stats.show()
+
+	var summon_data := _find_preview_summon_data(_card_data_internal)
+	if summon_data == null:
+		return
+
+	health_panel_label.text = str(int(summon_data.max_health))
+
+	var action_match: Dictionary = _find_first_soul_action_package(summon_data)
+	if action_match.is_empty():
+		return
+
+	var ctx := _build_soul_preview_context(summon_data)
+	var pkg := action_match.get("package") as NPCEffectPackage
+	if pkg == null:
+		return
+	for model in pkg.param_models:
+		if model == null:
+			continue
+		model.change_params_sim(ctx)
+
+	var effect: Variant = action_match.get("effect", null)
+	if effect is NPCAttackSequence:
+		action_panel_label.text = _format_attack_soul_stats(ctx)
+		attack_icon.show()
+		return
+
+	if effect is NPCSummonSequence:
+		action_panel_label.text = _format_summon_soul_stats(ctx, summon_data)
+		summon_icon.show()
+
+func _is_soul_stats_card(card_data: CardData) -> bool:
+	if card_data == null:
+		return false
+	return int(card_data.card_type) == int(CardData.CardType.SOULBOUND) \
+		or int(card_data.card_type) == int(CardData.CardType.SOULWILD)
+
+func _find_preview_summon_data(card_data: CardData) -> CombatantData:
+	if card_data == null:
+		return null
+	for action in card_data.actions:
+		if action is SummonAction:
+			return (action as SummonAction).get_preview_summon_data()
+	return null
+
+func _find_first_soul_action_package(summon_data: CombatantData) -> Dictionary:
+	if summon_data == null or summon_data.ai == null:
+		return {}
+	for action in summon_data.ai.actions:
+		if action == null:
+			continue
+		for pkg in action.effect_packages:
+			if pkg == null or pkg.effect == null:
+				continue
+			if pkg.effect is NPCAttackSequence or pkg.effect is NPCSummonSequence:
+				return {
+					"package": pkg,
+					"effect": pkg.effect,
+				}
+	return {}
+
+func _build_soul_preview_context(summon_data: CombatantData) -> NPCAIContext:
+	var ctx := NPCAIContext.new()
+	ctx.combatant_data = summon_data
+	ctx.params = {}
+	ctx.state = {}
+	ctx.forecast = true
+	return ctx
+
+func _format_attack_soul_stats(ctx: NPCAIContext) -> String:
+	if ctx == null:
+		return "-"
+
+	var damage := maxi(int(ctx.params.get(Keys.DAMAGE, 0)), 0)
+	var strikes := maxi(int(ctx.params.get(Keys.STRIKES, 1)), 1)
+	if strikes <= 1:
+		return str(damage)
+	return "%s×%s" % [strikes, damage]
+
+func _format_summon_soul_stats(ctx: NPCAIContext, fallback_data: CombatantData) -> String:
+	var summon_data := fallback_data
+	if ctx != null:
+		var ctx_summon_data: Variant = ctx.params.get(Keys.SUMMON_DATA, null)
+		if ctx_summon_data is CombatantData:
+			summon_data = ctx_summon_data
+
+	if summon_data == null:
+		return "-"
+
+	return "%s|%s" % [int(summon_data.ap), int(summon_data.max_health)]
 
 ## card_visuals.gd
 #

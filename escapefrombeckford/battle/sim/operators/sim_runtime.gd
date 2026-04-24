@@ -741,6 +741,8 @@ func run_npc_turn(cid: int) -> void:
 			if pm != null:
 				pm.change_params_sim(ctx)
 
+		SimStatusSystem.on_action_params_ready(api, ctx.get_actor_id(), ctx)
+
 		_set_active_effect_package_metadata(i, pkg)
 		if pkg.effect != null:
 			pkg.effect.execute(ctx)

@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="CardData" format=3]
+
+[ext_resource type="Script" path="res://cards/_core/card_action.gd" id="1_card_action"]
+[ext_resource type="Resource" path="res://cards/convocations/Quickpulse/quickpulse_action.tres" id="2_status_action"]
+[ext_resource type="Resource" uid="uid://cwsantdi8vmes" path="res://cards/_generic_actions/draw_1_action.tres" id="3_draw"]
+[ext_resource type="Script" path="res://cards/_core/card_data.gd" id="4_card_data"]
+[ext_resource type="Texture2D" path="res://_assets/sprites/assorted/heart-beats.png" id="5_texture"]
+
+[resource]
+script = ExtResource("4_card_data")
+id = &"quickpulse"
+target_type = 3
+rarity = 1
+name = "Quickpulse"
+description = "Target ally gets 2 Energy Surge. Draw 1."
+cost = 0
+texture = ExtResource("5_texture")
+actions = Array[ExtResource("1_card_action")]([ExtResource("2_status_action"), ExtResource("3_draw")])
