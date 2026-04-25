@@ -29,12 +29,7 @@ extends CardAction
 # -------------------------------------------------
 # DESCRIPTION CONTRACT
 # -------------------------------------------------
-# Number of %s placeholders this action consumes
-func description_arity() -> int:
-	return 1
-
-
-# Values to inject into the description
-# Must return EXACTLY description_arity() values
-#func get_description_values(ctx: CardActionContext) -> Array:
-	#return [base_value]
+# Return the one value this action injects into a card description.
+# If the card template runs out of `%s`, the base overflow marker is appended.
+func get_description_value(_ctx: CardActionContext) -> String:
+	return str(base_value)

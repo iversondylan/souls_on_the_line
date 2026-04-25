@@ -48,7 +48,3 @@ func activate_sim(ctx: CardContext) -> bool:
 			ctx.affected_ids.append(target_id)
 
 	return applied_any
-
-
-func description_arity() -> int:
-	return 0

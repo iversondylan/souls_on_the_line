@@ -70,8 +70,5 @@ func activate_sim(ctx: CardContext) -> bool:
 
 	return true
 
-func description_arity() -> int:
-	return 1
-
-func get_description_values(_ctx: CardActionContext) -> Array:
-	return [bonus_damage]
+func get_description_value(_ctx: CardActionContext) -> String:
+	return str(int(bonus_damage))

@@ -17,11 +17,8 @@ func activate_sim(ctx: CardContext) -> bool:
 	ctx.runtime.run_draw_action(draw_ctx)
 	return true
 
-func description_arity() -> int:
-	return 1
-
-#func get_description_values(_ctx: CardActionContext) -> Array:
-	#return [base_draw]
+func get_description_value(_ctx: CardActionContext) -> String:
+	return str(int(base_draw))
 
 #func get_modular_description(_ctx: CardActionContext) -> String:
 	#var base_text: String = "Draw %s."

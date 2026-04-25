@@ -6,7 +6,6 @@
 [resource]
 script = ExtResource("1_data_script")
 name = "Phalanx"
-description = "2/8 ally. The first time each round this takes strike damage, gain 50% reduced damage for the rest of that round. At end of round, increase max health by 2 and heal that amount (Fortitude 2)."
 character_art_uid = "uid://kjdfnhse162"
 portrait_art_uid = "uid://kjdfnhse162"
 height = 140

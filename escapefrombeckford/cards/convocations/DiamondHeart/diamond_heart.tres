@@ -12,6 +12,6 @@ id = &"diamond_heart"
 target_type = 3
 rarity = 1
 name = "Diamond Heart"
-description = "Draw 1. Target ally gains 25% reduced damage until your next turn whenever you play a Convocation."
+description = "%s: whenever you play a Convocation, target ally takes 25% less damage until your next turn. Draw %s."
 texture = ExtResource("5_xscyj")
 actions = Array[ExtResource("1_base_action")]([ExtResource("2_status_action"), ExtResource("3_draw_action")])

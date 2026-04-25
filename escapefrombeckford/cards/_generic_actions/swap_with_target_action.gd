@@ -72,14 +72,6 @@ func get_preflight_interaction_mode(_ctx: CardContext) -> int:
 	return InteractionMode.PREFLIGHT
 
 
-func description_arity() -> int:
-	return 0
-
-
-func get_description_values(_ctx: CardActionContext) -> Array:
-	return []
-
-
 func _compute_player_turn_queue_adjustments(api: SimBattleAPI, actor_id: int, move_unit_id: int, target_id: int) -> Dictionary:
 	if api == null:
 		return {}

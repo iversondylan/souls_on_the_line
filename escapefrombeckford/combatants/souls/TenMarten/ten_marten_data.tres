@@ -6,7 +6,7 @@
 [resource]
 script = ExtResource("1_data_script")
 name = "Ten-Marten"
-description = "3/3 ally. On attack, move to the other side of the player."
+description = "When this attacks, move it to the other side of the player."
 character_art_uid = "uid://cqjh2y77fsbri"
 portrait_art_uid = "uid://cqjh2y77fsbri"
 height = 300

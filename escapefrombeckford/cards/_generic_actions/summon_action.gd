@@ -134,24 +134,14 @@ func _build_clone_data_sim() -> CombatantData:
 	var data := summon_data.duplicate()
 	return data
 
-
-func description_arity() -> int:
-	return 3
-
-
 func get_preview_summon_data() -> CombatantData:
 	return summon_data
 
+func get_description_value(_ctx: CardActionContext) -> String:
+	if summon_data == null:
+		return ""
 
-#func _build_clone_data(ctx: CardActionContext) -> CombatantData:
-	#var data := summon_data.duplicate()
-	#data.init()
-	##
-	#return data
-
-#func get_description_values(ctx: CardActionContext) -> Array:
-	#var data := summon_data.duplicate()
-	#data.init()
-	#var params := CombatForecast.preview_action_params(summon_data)
-	#var dmg := int(params.get(Keys.DAMAGE, 0))
-	#return [dmg, summon_data.max_health, summon_data.name]
+	var text := summon_data.get_description().strip_edges()
+	if text.is_empty():
+		return ""
+	return text + " "

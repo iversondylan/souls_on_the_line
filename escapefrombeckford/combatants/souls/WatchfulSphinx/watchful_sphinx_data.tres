@@ -6,7 +6,6 @@
 [resource]
 script = ExtResource("1_data_script")
 name = "Watchful Sphinx"
-description = "3/4 ally. Whenever another SoulBound ally dies, gain 1 Might."
 character_art_uid = "uid://qq0urvtv85ub"
 portrait_art_uid = "uid://qq0urvtv85ub"
 height = 250

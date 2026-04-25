@@ -6,6 +6,7 @@
 [resource]
 script = ExtResource("1_3jphm")
 name = "Fragile Mantis"
+description = "Double Strike. "
 character_art_uid = "uid://d2uckm4nb7x0w"
 portrait_art_uid = "uid://d2uckm4nb7x0w"
 height = 280

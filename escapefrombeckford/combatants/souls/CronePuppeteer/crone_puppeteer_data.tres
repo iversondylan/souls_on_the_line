@@ -6,7 +6,7 @@
 [resource]
 script = ExtResource("1_data_script")
 name = "Crone Puppeteer"
-description = "0/3 ally. Does not attack; summons a Small, Fleeting 3/3 Patchwork Puppet at the front."
+description = "Does not attack. Summons a Patchwork Puppet at the front."
 character_art_uid = "uid://cyelnhng0nl3q"
 portrait_art_uid = "uid://cyelnhng0nl3q"
 height = 180

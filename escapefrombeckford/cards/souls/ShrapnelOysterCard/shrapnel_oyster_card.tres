@@ -53,6 +53,6 @@ rarity = 1
 name = "Shrapnel Oyster"
 deplete = true
 summon_release_overload = 1
-description = "Summon a %s/%s %s with On Death: deal %s damage to all enemies. Draw %s."
+description = "%sOn Death, deal %s damage to all enemies and draw %s."
 texture = ExtResource("3_n6e4y")
 actions = Array[ExtResource("1_7jvep")]([SubResource("Resource_f1l55"), SubResource("Resource_lkl38"), SubResource("Resource_galnm")])

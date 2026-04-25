@@ -12,7 +12,7 @@ id = &"supercharge"
 target_type = 3
 rarity = 1
 name = "Supercharge"
-description = "An ally deals %s%% more damage for [color=\"008000\"]%s[/color] turns, then attacks."
+description = "An ally deals 50%% more damage for [color=\"008000\"]%s[/color] turns. Draw %s."
 cost = 1
 texture = ExtResource("4_tainj")
 actions = Array[ExtResource("1_ua1rg")]([ExtResource("2_tainj"), ExtResource("3_nfj5x")])

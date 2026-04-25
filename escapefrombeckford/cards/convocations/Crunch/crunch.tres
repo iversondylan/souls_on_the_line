@@ -12,6 +12,6 @@ id = &"crunch"
 target_type = 3
 rarity = 1
 name = "Crunch"
-description = "Target ally gets 2 Pressure Barrier. Draw 1."
+description = "Target ally takes %s less damage on each hit, decreasing each time. Draw %s."
 texture = ExtResource("5_texture")
 actions = Array[ExtResource("1_card_action")]([ExtResource("2_status_action"), ExtResource("3_draw")])

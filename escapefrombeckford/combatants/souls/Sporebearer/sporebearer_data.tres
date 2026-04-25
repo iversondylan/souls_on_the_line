@@ -6,7 +6,6 @@
 [resource]
 script = ExtResource("1_data_script")
 name = "Sporebearer"
-description = "3/4 ally with Explosive Departure 3."
 character_art_uid = "res://_assets/sprites/assorted/shambling-mound.png"
 portrait_art_uid = "res://_assets/sprites/assorted/shambling-mound.png"
 height = 140

@@ -47,6 +47,6 @@ target_type = 1
 name = "Glass Peccary"
 deplete = true
 summon_release_overload = 1
-description = "Summon a %s/%s %s with On Death, Draw %s. Deal %s damage."
+description = "%sOn Death, draw %s and deal %s damage."
 texture = ExtResource("10_x1gdt")
 actions = Array[ExtResource("1_w66no")]([SubResource("Resource_fbrl2"), SubResource("Resource_wgn5w"), ExtResource("9_gs3h0")])

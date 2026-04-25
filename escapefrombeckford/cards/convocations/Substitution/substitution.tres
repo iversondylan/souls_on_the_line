@@ -13,7 +13,7 @@ id = &"substitution"
 target_type = 3
 rarity = 1
 name = "Substitution"
-description = "Sacrifice an ally. Your next Soul this turn enters with [color=\"008000\"]+%s/+%s[/color] and costs 1 less."
+description = "%s%s: your next Soul this turn costs 1 less and enters with [color=\"008000\"]+%s[/color] to attack and max health."
 cost = 1
 texture = ExtResource("6_0wye3")
 actions = Array[ExtResource("1_action")]([ExtResource("3_sacrifice"), ExtResource("4_creative_potency_action"), ExtResource("4_0wye3")])

@@ -2,8 +2,6 @@ extends CardAction
 
 class_name StatusApplyAction
 
-const CREATIVE_POTENCY_STATUS_ID := &"creative_potency"
-
 @export var status: Status
 @export var stacks: int = 0
 @export var pending: bool = false
@@ -45,37 +43,11 @@ func _play_success_sound(ctx: CardContext, applied_any: bool) -> void:
 	ctx.api.play_sfx(sound)
 
 
-func description_arity() -> int:
-	return get_description_values(CardActionContext.new()).size()
-
-
-func get_description_values(_ctx: CardActionContext) -> Array:
+func get_description_value(_ctx: CardActionContext) -> String:
 	if status == null:
-		return []
-
-	if _has_property(status, "max_health_per_strike"):
-		return [int(status.get("max_health_per_strike"))]
-
-	var status_id := status.get_id()
-	if status_id == AmplifyStatus.ID:
-		return [floori(float(AmplifyStatus.MULT_VALUE) * 100.0), int(stacks)]
-	if status_id == PinpointStatus.ID:
-		return [floori(float(PinpointStatus.MULT_VALUE) * 100.0), int(stacks)]
-	if status_id == MarkedStatus.ID:
-		return [int(stacks)]
-	if status_id == CREATIVE_POTENCY_STATUS_ID:
-		return [int(stacks), int(stacks)]
+		return ""
 
 	if status.numerical and int(stacks) > 0:
-		return [int(stacks)]
+		return str(int(stacks))
 
-	return []
-
-
-func _has_property(obj: Object, property_name: String) -> bool:
-	if obj == null:
-		return false
-	for prop in obj.get_property_list():
-		if String(prop.get("name", "")) == property_name:
-			return true
-	return false
+	return String(status.status_name)

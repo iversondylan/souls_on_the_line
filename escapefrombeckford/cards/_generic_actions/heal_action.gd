@@ -46,3 +46,12 @@ func activate_sim(ctx: CardContext) -> bool:
 			ctx.runtime.append_affected_id(ctx, tid)
 
 	return any_applied or any_target_processed
+
+func get_description_value(_ctx: CardActionContext) -> String:
+	if int(flat_amount) != 0:
+		return str(int(flat_amount))
+	if !is_zero_approx(float(of_total)):
+		return str(floori(float(of_total) * 100.0))
+	if !is_zero_approx(float(of_missing)):
+		return str(floori(float(of_missing) * 100.0))
+	return ""

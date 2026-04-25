@@ -2,6 +2,8 @@
 
 class_name CardAction extends Resource
 
+const EXTRA_CARD_ACTION_TEXT := " -EXTRA CARD ACTION-"
+
 enum InteractionMode {
 	NONE,
 	PREFLIGHT,
@@ -13,10 +15,8 @@ func activate_sim(ctx: CardContext) -> bool:
 	return false
 
 # --- DESCRIPTION CONTRACT ---
-# Each CardAction:
-# 1. Declares how many placeholders it consumes
-# 2. Supplies exactly that many concrete values
-# 3. Leaves remaining placeholders intact ("%s") for later actions
+# Each CardAction contributes exactly one description slot.
+# If no `%s` remains in the template, its overflow text is appended instead.
 # --------------------------------
 
 func begin_preflight_interaction(ctx: CardContext) -> bool:
@@ -47,13 +47,8 @@ func joins_compiled_turn_span(
 
 
 
-func description_arity() -> int:
-	# Number of %s this action consumes
-	return 0
+func get_description_value(_ctx: CardActionContext) -> String:
+	return ""
 
-func get_description_values(_ctx: CardActionContext) -> Array:
-	# Return exactly description_arity() values
-	return []
-#
-#func get_modular_description(_ctx: CardActionContext) -> String:
-	#return ""
+func get_extra_description(_ctx: CardActionContext) -> String:
+	return EXTRA_CARD_ACTION_TEXT

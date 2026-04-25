@@ -2,8 +2,8 @@
 
 [ext_resource type="Script" uid="uid://wtk5v77fcqvn" path="res://cards/_core/card_action.gd" id="1_card_action"]
 [ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://cards/_core/card_data.gd" id="2_card_data"]
-[ext_resource type="Resource" path="res://cards/souls/RagingMinionCard/summon_raging_minion.tres" id="3_summon"]
-[ext_resource type="Resource" path="res://cards/souls/RagingMinionCard/righteous_fury_on_summoned_action.tres" id="4_on_summoned"]
+[ext_resource type="Resource" uid="uid://cehnd458rmg56" path="res://cards/souls/RagingMinionCard/summon_raging_minion.tres" id="3_summon"]
+[ext_resource type="Resource" uid="uid://gp1hkihlf10r" path="res://cards/souls/RagingMinionCard/righteous_fury_on_summoned_action.tres" id="4_on_summoned"]
 [ext_resource type="Texture2D" uid="uid://dtlnu57wly63k" path="res://_assets/sprites/assorted/evil-minion.png" id="5_1y4sr"]
 
 [resource]
@@ -13,7 +13,7 @@ card_type = 1
 target_type = 1
 name = "Raging Minion"
 summon_release_overload = 1
-description = "Summon a 3/3 Raging Minion with that deals +1 damage on its next turn for each friendly death."
+description = "%s%s: whenever another ally dies, gain 1 Rage."
 cost = 1
 texture = ExtResource("5_1y4sr")
 actions = Array[ExtResource("1_card_action")]([ExtResource("3_summon"), ExtResource("4_on_summoned")])

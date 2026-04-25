@@ -6,7 +6,7 @@
 [resource]
 script = ExtResource("1_data_script")
 name = "Smoldering Mascot"
-description = "Deals 1 damage to all targets, applying 1 Amplify to allies."
+description = "Action: Burn It All! Allies deal 50% more damage, then everything takes 1 damage."
 character_art_uid = "uid://bpbtfrmiqeqqy"
 portrait_art_uid = "uid://bpbtfrmiqeqqy"
 height = 160

@@ -6,7 +6,7 @@
 [resource]
 script = ExtResource("1_ago3s")
 name = "Spectral Clone"
-description = "4/5 ally."
+description = "[font=res://ui/elements/cormorant_infant_italic_font_variation.tres][font_size=12]\"His choice made manifest. Indecision once split his identity between worlds, so he pulled those selves into this one.\"[/font_size][/font]"
 character_art_uid = "uid://boidn5bneb5f0"
 height = 270
 max_health = 3

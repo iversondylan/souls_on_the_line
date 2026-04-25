@@ -10,9 +10,8 @@ static func has_placeholders(text: String) -> bool:
 static func percent_to_symbol(text: String) -> String:
 	return text.replace("percent", "%")
 
-static func end_with_period(text: String) -> String:
-	if !text.ends_with("."):
-		text += "."
+static func finalize_description_text(text: String) -> String:
+	text = text.strip_edges()
 	return text
 
 static func build_card_description(card_data: CardData) -> String:
@@ -33,95 +32,29 @@ static func _build_card_description_internal(card_data: CardData, api: SimBattle
 		if action == null:
 			continue
 
-		var total_slots := count_placeholders(text)
-		if total_slots <= 0:
-			break
-
-		var values := _description_values_for_action(action, card_data, api)
-		if values.is_empty():
-			continue
-
-		var args: Array = []
-		var apply_n := mini(values.size(), total_slots)
-		for i in range(apply_n):
-			args.append(values[i])
-
-		for _i in range(total_slots - apply_n):
-			args.append("%s")
-
-		text = _escape_bare_percents(text) % args
-
+		var value := _description_value_for_action(action, card_data, api)
+		if has_placeholders(text):
+			text = _replace_next_placeholder(text, value)
+		else:
+			text += action.get_extra_description(CardActionContext.new())
 
 	text = text.replace("{percent}", "%")
 	text = percent_to_symbol(text)
-	return end_with_period(text)
+	return finalize_description_text(text)
 
-static func _description_values_for_action(
+static func _description_value_for_action(
 	action: CardAction,
 	card_data: CardData = null,
 	api: SimBattleAPI = null
-) -> Array:
+) -> String:
 	if action == null:
-		return []
+		return ""
 
-	var explicit_values := action.get_description_values(CardActionContext.new())
-	if !explicit_values.is_empty():
-		return explicit_values
+	return action.get_description_value(CardActionContext.new())
 
-	if action is SummonAction:
-		var summon_data := (action as SummonAction).get_preview_summon_data()
-		if summon_data != null:
-			var summon_ap := int(summon_data.ap)
-			var summon_max_health := int(summon_data.max_health)
-			if api != null and card_data != null:
-				var card_uid := String(card_data.uid)
-				if !card_uid.is_empty():
-					summon_ap += int(api.get_summon_card_ap_bonus(card_uid))
-					summon_max_health += int(api.get_summon_card_max_health_bonus(card_uid))
-			return [summon_ap, summon_max_health, String(summon_data.name)]
+static func _replace_next_placeholder(text: String, replacement: String) -> String:
+	var slot_index := text.find("%s")
+	if slot_index == -1:
+		return text
 
-	if action is HealAction:
-		var heal_action := action as HealAction
-		if int(heal_action.flat_amount) != 0:
-			return [int(heal_action.flat_amount)]
-		if !is_zero_approx(float(heal_action.of_total)):
-			return [floori(float(heal_action.of_total) * 100.0)]
-		if !is_zero_approx(float(heal_action.of_missing)):
-			return [floori(float(heal_action.of_missing) * 100.0)]
-
-	if action is DrawAction:
-		return [int((action as DrawAction).base_draw)]
-
-	if _has_property(action, "duration"):
-		return [int(action.get("duration"))]
-	if _has_property(action, "base_damage"):
-		return [int(action.get("base_damage"))]
-	if _has_property(action, "base_draw"):
-		return [int(action.get("base_draw"))]
-
-	return []
-
-static func _escape_bare_percents(text: String) -> String:
-	var result := ""
-	var i := 0
-	while i < text.length():
-		var c := text[i]
-		if c == "%":
-			var next := text[i + 1] if i + 1 < text.length() else ""
-			if next == "s" or next == "%":
-				result += c
-			else:
-				result += "%%"
-		else:
-			result += c
-		i += 1
-	return result
-
-
-static func _has_property(obj: Object, prop_name: String) -> bool:
-	if obj == null:
-		return false
-	for prop in obj.get_property_list():
-		if String(prop.get("name", "")) == prop_name:
-			return true
-	return false
+	return text.substr(0, slot_index) + replacement + text.substr(slot_index + 2)

@@ -12,7 +12,7 @@ id = &"berserkers_fury"
 target_type = 3
 rarity = 1
 name = "Berserker's Fury"
-description = "An ally deals their attack damage [color=\"ff0000\"]+%s[/color] to all enemies, then dies."
+description = "An ally deals their attack damage [color=\"ff0000\"]+%s[/color] to all enemies, then dies.%s"
 cost = 1
 texture = ExtResource("3_65r7g")
 actions = Array[ExtResource("1_65r7g")]([ExtResource("2_lqu2x"), ExtResource("3_sacrifice")])

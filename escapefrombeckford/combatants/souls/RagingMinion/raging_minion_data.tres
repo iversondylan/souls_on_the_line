@@ -6,7 +6,6 @@
 [resource]
 script = ExtResource("1_data_script")
 name = "Raging Minion"
-description = "3/3 ally. Whenever another ally dies, gain 1 Rage until end of turn."
 character_art_uid = "uid://dtlnu57wly63k"
 portrait_art_uid = "uid://dtlnu57wly63k"
 height = 220

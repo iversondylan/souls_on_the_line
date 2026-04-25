@@ -17,9 +17,6 @@ func get_compiled_turn_span_actor_id(ctx: CardContext) -> int:
 		return 0
 	return int(ctx.target_ids[0])
 
-func description_arity() -> int:
-	return 0
-
 func activate_sim(ctx: CardContext) -> bool:
 	if ctx == null or ctx.api == null or ctx.runtime == null or ctx.target_ids == null:
 		return false

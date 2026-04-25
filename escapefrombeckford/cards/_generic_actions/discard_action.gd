@@ -36,8 +36,5 @@ func activate_sim(ctx: CardContext) -> bool:
 func waits_for_async_resolution_after_activate_sim(_ctx: CardContext) -> bool:
 	return maxi(int(base_discard), 0) > 0
 
-func description_arity() -> int:
-	return 1
-
-func get_description_values(_ctx: CardActionContext) -> Array:
-	return [int(base_discard)]
+func get_description_value(_ctx: CardActionContext) -> String:
+	return str(int(base_discard))

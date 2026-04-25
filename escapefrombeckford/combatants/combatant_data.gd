@@ -17,6 +17,9 @@ class_name CombatantData extends Resource
 @export var max_mana: int = 3
 @export var ai: NPCAIProfile
 
+func get_description() -> String:
+	return description
+
 func load_character_art() -> Texture2D:
 	if character_art_uid.is_empty():
 		return null

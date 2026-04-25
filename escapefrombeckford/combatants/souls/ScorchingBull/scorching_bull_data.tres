@@ -6,7 +6,7 @@
 [resource]
 script = ExtResource("1_data")
 name = "Scorching Bull"
-description = "5/2 ally. On attack, move to the front."
+description = "When this attacks, move it to the front."
 character_art_uid = "res://_assets/sprites/assorted/charging-bull.png"
 portrait_art_uid = "res://_assets/sprites/assorted/charging-bull.png"
 height = 300

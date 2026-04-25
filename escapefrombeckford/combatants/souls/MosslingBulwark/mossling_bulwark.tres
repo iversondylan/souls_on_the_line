@@ -5,7 +5,7 @@
 [resource]
 script = ExtResource("1_h1smx")
 name = "Mossling Bulwark"
-description = "0/3 ally. On summon, your frontmost ally increases max health by 2 and heals that amount (Fortitude 2). On death, heal your most damaged ally 4."
+description = "Passive. "
 character_art_uid = "uid://bfbo1sxun3kcw"
 portrait_art_uid = "uid://bfbo1sxun3kcw"
 height = 120
