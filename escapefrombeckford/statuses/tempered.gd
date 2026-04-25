@@ -20,10 +20,6 @@ func on_damage_taken(ctx: SimStatusContext, damage_ctx: DamageContext) -> void:
 	# Only care about actual health damage from a survived strike.
 	if int(damage_ctx.health_damage) <= 0:
 		return
-	if bool(damage_ctx.was_lethal):
-		return
-	if !ctx.owner.is_alive():
-		return
 	ctx.token.stacks += max_health_per_strike
 	ctx.api.change_max_health(ctx.owner_id, max_health_per_strike, false, "tempered")
 	var bound_card_uid := String(ctx.owner.bound_card_uid) if ctx.owner != null else ""

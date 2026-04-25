@@ -1,21 +1,21 @@
 [gd_resource type="Resource" script_class="NPCAction" format=3 uid="uid://cqhgun8gxm7x5"]
 
-[ext_resource type="Script" uid="uid://bcih413oy6v73" path="res://npc_ai/_core/npc_action.gd" id="1_action_script"]
-[ext_resource type="Resource" uid="uid://cu4tep6tur0dy" path="res://combatants/souls/AxolotlAscetic/axolotl_ascetic_attack_pkg.tres" id="2_attack_pkg"]
-[ext_resource type="Texture2D" uid="uid://c54dbo8n7r3g" path="res://_assets/sprites/assorted/attack.PNG" id="3_attack_icon"]
-[ext_resource type="Resource" uid="uid://7gggk4mmejsq" path="res://npc_ai/text/attack_intent_text_model.tres" id="4_text_model"]
-[ext_resource type="Resource" uid="uid://ivsvxo0vj72x" path="res://npc_ai/text/attack_intent_tooltip_text_model.tres" id="5_tooltip_model"]
-[ext_resource type="Resource" uid="uid://bqp0smla1tr3l" path="res://combatants/souls/AxolotlAscetic/normalize_axolotl_threshold_lifecycle.tres" id="6_lifecycle"]
-[ext_resource type="Script" uid="uid://dtwuyctovqk5r" path="res://npc_ai/_core/intent_lifecycle_model.gd" id="7_lifecycle_script"]
-[ext_resource type="Script" uid="uid://q408gy2b4q6a" path="res://npc_ai/_core/performable_model.gd" id="7_wvdfa"]
-[ext_resource type="Script" uid="uid://3jde7uhq2yho" path="res://npc_ai/_core/npc_effect_package.gd" id="8_effect_package_script"]
-[ext_resource type="Script" uid="uid://cuj4qvyx6dedj" path="res://npc_ai/_core/state_model.gd" id="9_ll2o6"]
+[ext_resource type="Script" uid="uid://3jde7uhq2yho" path="res://npc_ai/_core/npc_effect_package.gd" id="1_asy7r"]
+[ext_resource type="Resource" uid="uid://cu4tep6tur0dy" path="res://combatants/souls/AxolotlAscetic/axolotl_ascetic_attack_pkg.tres" id="2_g7fm0"]
+[ext_resource type="Texture2D" uid="uid://c54dbo8n7r3g" path="res://_assets/sprites/assorted/attack.PNG" id="3_7m556"]
+[ext_resource type="Script" uid="uid://dtwuyctovqk5r" path="res://npc_ai/_core/intent_lifecycle_model.gd" id="4_s6puf"]
+[ext_resource type="Resource" uid="uid://bqp0smla1tr3l" path="res://combatants/souls/AxolotlAscetic/normalize_axolotl_threshold_lifecycle.tres" id="5_mdaep"]
+[ext_resource type="Resource" uid="uid://7gggk4mmejsq" path="res://npc_ai/text/attack_intent_text_model.tres" id="6_ab045"]
+[ext_resource type="Script" uid="uid://q408gy2b4q6a" path="res://npc_ai/_core/performable_model.gd" id="7_4cj6k"]
+[ext_resource type="Script" uid="uid://bcih413oy6v73" path="res://npc_ai/_core/npc_action.gd" id="8_bnukx"]
+[ext_resource type="Script" uid="uid://cuj4qvyx6dedj" path="res://npc_ai/_core/state_model.gd" id="9_y6m71"]
+[ext_resource type="Resource" uid="uid://ivsvxo0vj72x" path="res://npc_ai/text/attack_intent_tooltip_text_model.tres" id="10_qv01a"]
 
 [resource]
-script = ExtResource("1_action_script")
-effect_packages = Array[ExtResource("8_effect_package_script")]([ExtResource("2_attack_pkg")])
-intent_lifecycle_models = Array[ExtResource("7_lifecycle_script")]([ExtResource("6_lifecycle")])
+script = ExtResource("8_bnukx")
+effect_packages = Array[ExtResource("1_asy7r")]([ExtResource("2_g7fm0")])
+intent_lifecycle_models = Array[ExtResource("4_s6puf")]([ExtResource("5_mdaep")])
 action_name = "Ascetic Strike"
-intent_icon = ExtResource("3_attack_icon")
-intent_text_model = ExtResource("4_text_model")
-tooltip_model = ExtResource("5_tooltip_model")
+intent_icon = ExtResource("3_7m556")
+intent_text_model = ExtResource("6_ab045")
+tooltip_model = ExtResource("10_qv01a")

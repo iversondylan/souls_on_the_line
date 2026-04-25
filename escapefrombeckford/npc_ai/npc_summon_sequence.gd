@@ -24,6 +24,10 @@ func execute(ctx: NPCAIContext) -> void:
 	var group_index := clampi(int(params.get(Keys.GROUP_INDEX, ctx.api.get_group(source_id))), 0, 1)
 	var insert_index := int(params.get(Keys.INSERT_INDEX, 0))
 	var count := int(params.get(Keys.SUMMON_COUNT, 1))
+	var mortality := _resolve_summon_mortality(params.get(
+		Keys.SUMMON_MORTALITY,
+		CombatantState.Mortality.HOLLOW
+	))
 	if count <= 0:
 		return
 
@@ -49,6 +53,7 @@ func execute(ctx: NPCAIContext) -> void:
 		summon_ctx.group_index = group_index
 		summon_ctx.insert_index = idx
 		summon_ctx.summon_data = summon_data_orig.duplicate(true) as CombatantData
+		summon_ctx.mortality = mortality
 		summon_ctx.reason = "npc_summon_action"
 		runtime.run_summon_action(summon_ctx)
 		_append_unit_id(ctx.summoned_ids, int(summon_ctx.summoned_id))
@@ -66,6 +71,12 @@ func _resolve_summon_data(value) -> CombatantData:
 		var res := load(path)
 		return res if res is CombatantData else null
 	return null
+
+func _resolve_summon_mortality(value) -> CombatantState.Mortality:
+	var mortality := int(value)
+	if mortality < 0 or mortality >= CombatantState.Mortality.keys().size():
+		return CombatantState.Mortality.HOLLOW
+	return mortality as CombatantState.Mortality
 
 func _append_unit_id(arr: PackedInt32Array, unit_id: int) -> void:
 	if unit_id <= 0:

@@ -6,7 +6,7 @@
 [resource]
 script = ExtResource("2_v35pn")
 name = "Axolotl Ascetic"
-description = "1/7 ally. The first time each round damage leaves this below 50% health, gain Absorb and +2 full max health."
+description = "1/7 ally. The first time each round damage leaves this below 50% health, gain Absorb and increase max health by 2 and heal that amount (Fortitude 2)."
 character_art_uid = "uid://c8856cirhro4x"
 portrait_art_uid = "uid://c8856cirhro4x"
 height = 140

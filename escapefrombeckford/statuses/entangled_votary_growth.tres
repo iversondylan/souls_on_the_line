@@ -8,4 +8,4 @@ script = ExtResource("2_script")
 status_name = "Entangled Votary"
 numerical = false
 icon = ExtResource("1_f7gi3")
-tooltip = "At the end of each round, gain +2 empty max health."
+tooltip = "At the end of each round, increase max health by 2 and heal that amount (Fortitude 2)."

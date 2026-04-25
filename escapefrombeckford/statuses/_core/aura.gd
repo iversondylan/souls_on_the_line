@@ -6,6 +6,7 @@ enum AuraType {ALLIES, ENEMIES}
 @export var projected_statuses: Array[Status] = []
 @export var display_source: bool = true
 @export var display_projection: bool = false
+@export var applies_to_later_targets: bool = true
 
 func affects_others() -> bool:
 	return true

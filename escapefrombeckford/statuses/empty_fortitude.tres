@@ -1,9 +1,0 @@
-[gd_resource type="Resource" script_class="EmptyFortitudeStatus" format=3 uid="uid://caf2tcilegla6"]
-
-[ext_resource type="Texture2D" uid="uid://bjf0gqx37o1go" path="res://_assets/sprites/assorted/beet.png" id="1_wnvvd"]
-[ext_resource type="Script" uid="uid://dgsdeh4oiorvs" path="res://statuses/empty_fortitude.gd" id="2_script"]
-
-[resource]
-script = ExtResource("2_script")
-status_name = "Empty Fortitude"
-icon = ExtResource("1_wnvvd")

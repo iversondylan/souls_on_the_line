@@ -44,7 +44,7 @@ func _verify_pulse_wave() -> void:
 	var ally := int(ally_state.id)
 	var draw_before := _draw_amount(sim)
 	_play_card(sim, PULSE_WAVE, ally)
-	assert(int(ally_state.max_health) == 10, "Pulse Wave should grant +2 full max health at half HP or below.")
+	assert(int(ally_state.max_health) == 10, "Pulse Wave should grant Fortitude 2 at half HP or below.")
 	assert(int(ally_state.health) == 10, "Pulse Wave should fully heal and fill added health.")
 	assert(_draw_amount(sim) - draw_before == 1, "Pulse Wave should draw when it buffs.")
 
@@ -113,7 +113,7 @@ func _verify_stand_firm() -> void:
 	var ally := int(ally_state.id)
 	var draw_before := _draw_amount(sim)
 	_play_card(sim, STAND_FIRM, ally)
-	assert(int(ally_state.max_health) == 10 and int(ally_state.health) == 7, "Stand Firm should grant +2 full max health.")
+	assert(int(ally_state.max_health) == 10 and int(ally_state.health) == 7, "Stand Firm should grant Fortitude 2.")
 	assert(_status_stacks(sim, ally, ABSORB_ID) == 1, "Stand Firm should grant Absorb when the target is still damaged.")
 	assert(_draw_amount(sim) - draw_before == 0, "Stand Firm should not draw when it grants Absorb.")
 
@@ -140,18 +140,18 @@ func _verify_barkbound_bond() -> void:
 
 	_apply_direct_damage(sim, int(enemy_state.id), ally, 1)
 	assert(_status_stacks(sim, ally, MIGHT_ID) == 1, "Barkbound Bond should grant +1 Might on first trigger.")
-	assert(int(ally_state.max_health) == 10, "Barkbound Bond should grant +2 full max health on first trigger.")
+	assert(int(ally_state.max_health) == 10, "Barkbound Bond should grant Fortitude 2 on first trigger.")
 
 	_apply_direct_damage(sim, int(enemy_state.id), ally, 1)
 	assert(_status_stacks(sim, ally, MIGHT_ID) == 2, "Barkbound Bond should grant +1 Might on second trigger.")
-	assert(int(ally_state.max_health) == 12, "Barkbound Bond should grant +2 full max health on second trigger.")
+	assert(int(ally_state.max_health) == 12, "Barkbound Bond should grant Fortitude 2 on second trigger.")
 	assert(_status_stacks(sim, ally, BARKBOUND_BOND_STATUS_ID) == -1, "Barkbound Bond should consume itself after 2 triggers.")
 
 	var health_before := int(ally_state.health)
 	_apply_direct_damage(sim, int(enemy_state.id), ally, 1)
 	assert(_status_stacks(sim, ally, MIGHT_ID) == 2, "Barkbound Bond should stop triggering after it is spent.")
 	assert(int(ally_state.max_health) == 12, "Barkbound Bond should not add more max health after 2 triggers.")
-	assert(int(ally_state.health) == health_before - 1, "Post-bond damage should no longer be offset by Full Fortitude.")
+	assert(int(ally_state.health) == health_before - 1, "Post-bond damage should no longer be offset by Fortitude.")
 
 func _verify_draft_pool() -> void:
 	var expected_ids := {

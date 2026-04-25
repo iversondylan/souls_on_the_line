@@ -332,6 +332,28 @@ func _get_status_projection_impact_info(state: BattleState, source_ref: Transfor
 	if aura_proto == null:
 		return ProjectionImpactInfo.new(false, target_ids)
 
+	var source_token: StatusToken = null
+	if source_unit.statuses != null:
+		source_token = source_unit.statuses.get_status_token_by_token_id(int(source_ref.source_instance_id), true)
+	if source_token == null:
+		return ProjectionImpactInfo.new(false, target_ids)
+
+	if !bool(aura_proto.applies_to_later_targets):
+		var snapshot_ids := SimStatusSystem.aura_snapshot_target_ids_for_token(source_token)
+		var snapshot_seen := {}
+		for raw_target_id in snapshot_ids:
+			var target_id := int(raw_target_id)
+			if target_id <= 0 or snapshot_seen.has(target_id):
+				continue
+			var target := state.get_unit(target_id)
+			if target == null or !target.is_alive():
+				continue
+			if !aura_proto.affects_target(state, source_owner_id, target_id):
+				continue
+			snapshot_seen[target_id] = true
+			target_ids.append(target_id)
+		return ProjectionImpactInfo.new(true, target_ids)
+
 	var seen := {}
 	for unit_value in state.units.values():
 		var unit: CombatantState = unit_value as CombatantState

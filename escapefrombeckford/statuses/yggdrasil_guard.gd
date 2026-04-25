@@ -1,7 +1,7 @@
 class_name YggdrasilGuardStatus extends Status
 
 const ID := &"yggdrasil_guard"
-const EMPTY_FORTITUDE := preload("res://statuses/empty_fortitude.tres")
+const FORTITUDE := preload("res://statuses/full_fortitude.tres")
 const CONSUMED_EVENT_KEY := &"yggdrasil_guard_consumed"
 
 func get_id() -> StringName:
@@ -37,7 +37,7 @@ func on_damage_taken(ctx: SimStatusContext, damage_ctx: DamageContext) -> void:
 	ctx.remove_self("yggdrasil_guard_spent")
 
 func on_remove(ctx: SimStatusContext, _remove_ctx: StatusContext) -> void:
-	if ctx == null or !ctx.is_valid() or ctx.api == null or EMPTY_FORTITUDE == null:
+	if ctx == null or !ctx.is_valid() or ctx.api == null or FORTITUDE == null:
 		return
 	if ctx.owner == null or !ctx.owner.is_alive():
 		return
@@ -45,13 +45,13 @@ func on_remove(ctx: SimStatusContext, _remove_ctx: StatusContext) -> void:
 	var status_ctx := StatusContext.new()
 	status_ctx.source_id = int(ctx.owner_id)
 	status_ctx.target_id = int(ctx.owner_id)
-	status_ctx.status_id = EMPTY_FORTITUDE.get_id()
+	status_ctx.status_id = FORTITUDE.get_id()
 	status_ctx.stacks = 2
 	status_ctx.reason = "yggdrasil_guard"
 	ctx.api.apply_status(status_ctx)
 
 func get_tooltip(stacks: int = 0) -> String:
-	return "Yggdrasil Guard: the first strike each round against this unit is reduced by %s. If it survives, gain +2 empty max health." % stacks
+	return "Yggdrasil Guard: the first strike each round against this unit is reduced by %s. If it survives, increase max health by 2 and heal that amount (Fortitude 2)." % stacks
 
 func _is_eligible_strike_damage(damage_ctx: DamageContext) -> bool:
 	if damage_ctx == null:

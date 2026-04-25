@@ -1,7 +1,7 @@
-[gd_resource type="Resource" script_class="EnergySurgeStatus" format=3]
+[gd_resource type="Resource" script_class="EnergySurgeStatus" format=3 uid="uid://dihrsnxw2i2nu"]
 
-[ext_resource type="Texture2D" path="res://_assets/sprites/assorted/thor-fist.png" id="1_icon"]
-[ext_resource type="Script" path="res://statuses/energy_surge.gd" id="2_script"]
+[ext_resource type="Texture2D" uid="uid://54t0gbucojai" path="res://_assets/sprites/assorted/thor-fist.png" id="1_icon"]
+[ext_resource type="Script" uid="uid://btb2vr6v4vp4j" path="res://statuses/energy_surge.gd" id="2_script"]
 
 [resource]
 script = ExtResource("2_script")

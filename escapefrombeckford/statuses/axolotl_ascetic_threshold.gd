@@ -32,7 +32,7 @@ func on_damage_taken(ctx: SimStatusContext, damage_ctx: DamageContext) -> void:
 	ctx.remove_self("ascetic_triggered")
 
 func get_tooltip(_stacks: int = 0) -> String:
-	return "Ascetic: The first time each round damage leaves this below 50%% health, gain Absorb and +2 Full Fortitude."
+	return "Ascetic: The first time each round damage leaves this below 50% health, gain Absorb and increase max health by 2 and heal that amount (Fortitude 2)."
 
 func _apply_status(ctx: SimStatusContext, status: Status, stacks: int, reason: String) -> void:
 	if ctx == null or status == null:

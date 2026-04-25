@@ -13,6 +13,7 @@ enum ShuffleMode {
 }
 
 var mana: int = 0
+# max_mana is the friendly-turn reset target, not a hard cap on current mana.
 var max_mana: int = 0
 var player_turn_draw_amount: int = 3
 var player_turn_use_soulbound_guarantee: bool = true

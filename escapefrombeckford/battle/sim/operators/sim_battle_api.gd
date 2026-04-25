@@ -1269,6 +1269,8 @@ func apply_status(ctx: StatusContext) -> void:
 	var first_apply := int(ctx.op) == int(Status.OP.APPLY)
 	ctx.applied = changed or (ctx.op == Status.OP.APPLY)
 	var applied_token: StatusToken = u.statuses.get_status_token_by_token_id(int(ctx.after_token_id), true)
+	if first_apply:
+		_capture_aura_projection_target_snapshot(ctx, proto, applied_token)
 	
 	if writer != null and (ctx.op == Status.OP.APPLY or changed):
 		_emit_status_event(
@@ -1406,7 +1408,6 @@ func spawn_from_data(
 	var u := _make_unit_from_combatant_data(combatant_data, id, g, is_player, int(current_health_override))
 	state.add_unit(u, g, int(insert_index))
 	_sync_all_status_source_transformers(id)
-	_refresh_projected_status_cache_for(id, [], true)
 	_request_turn_order_rebuild()
 	var after_order_ids := PackedInt32Array(state.groups[g].order)
 	_request_group_layout_changed(int(g), before_order_ids, after_order_ids, "spawn")
@@ -1415,6 +1416,7 @@ func spawn_from_data(
 		var proto := String(u.data_proto_path)
 		var spec := _make_spawn_spec_from_data(combatant_data, u)
 		writer.emit_spawned(id, g, int(insert_index), after_order_ids, proto, spec, bool(is_player))
+	_refresh_projected_status_cache_for(id, [], true)
 	
 	return id
 
@@ -1450,7 +1452,6 @@ func summon(ctx: SummonContext) -> void:
 	
 	state.add_unit(u, g, int(ctx.insert_index))
 	_sync_all_status_source_transformers(id)
-	_refresh_projected_status_cache_for(id, [], true)
 	_request_turn_order_rebuild()
 	
 	if writer != null:
@@ -1469,6 +1470,7 @@ func summon(ctx: SummonContext) -> void:
 			ctx.reason,
 			ctx.bound_card_uid
 		)
+	_refresh_projected_status_cache_for(id, [], true)
 	
 	ctx.summoned_id = id
 	if ctx.after_order_ids.is_empty():
@@ -1554,7 +1556,7 @@ func set_mana(ctx: ManaContext, extra: Dictionary = {}) -> void:
 	ctx.before_mana = int(state.resource.mana)
 	ctx.before_max_mana = int(state.resource.max_mana)
 	
-	state.resource.mana = clampi(int(ctx.new_mana), 0, int(state.resource.max_mana))
+	state.resource.mana = maxi(int(ctx.new_mana), 0)
 	
 	ctx.after_mana = int(state.resource.mana)
 	ctx.after_max_mana = int(state.resource.max_mana)
@@ -1585,8 +1587,6 @@ func set_max_mana(ctx: ManaContext) -> void:
 	state.resource.max_mana = maxi(int(ctx.new_max_mana), 0)
 	if ctx.refill:
 		state.resource.mana = int(state.resource.max_mana)
-	else:
-		state.resource.mana = mini(int(state.resource.mana), int(state.resource.max_mana))
 	
 	ctx.after_mana = int(state.resource.mana)
 	ctx.after_max_mana = int(state.resource.max_mana)
@@ -1846,6 +1846,38 @@ func _make_spawn_spec_from_data(combatant_data: CombatantData, u: CombatantState
 		Keys.MORTALITY: int(u.mortality),
 		Keys.HAS_SUMMON_RESERVE_CARD: String(u.bound_card_uid) != "",
 	}
+
+
+func _capture_aura_projection_target_snapshot(
+	ctx: StatusContext,
+	proto: Status,
+	token: StatusToken
+) -> void:
+	if ctx == null or state == null or token == null:
+		return
+	var aura_proto := proto as Aura
+	if aura_proto == null or bool(aura_proto.applies_to_later_targets):
+		return
+	if token.data == null:
+		token.data = {}
+	if token.data.has(Keys.PROJECTION_TARGET_IDS):
+		return
+
+	var source_id := int(ctx.target_id)
+	var target_ids := PackedInt32Array()
+	var seen := {}
+	for unit_value in state.units.values():
+		var unit := unit_value as CombatantState
+		if unit == null or !unit.is_alive():
+			continue
+		var target_id := int(unit.id)
+		if target_id <= 0 or seen.has(target_id):
+			continue
+		if !aura_proto.affects_target(state, source_id, target_id):
+			continue
+		seen[target_id] = true
+		target_ids.append(target_id)
+	token.data[Keys.PROJECTION_TARGET_IDS] = target_ids
 
 
 func _maybe_release_reserved_card(

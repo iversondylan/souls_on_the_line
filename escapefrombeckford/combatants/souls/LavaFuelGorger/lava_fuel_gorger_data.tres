@@ -6,7 +6,6 @@
 [resource]
 script = ExtResource("1_data_script")
 name = "Lava Fuel-Gorger"
-description = "3/3 ally. Starts with Fighter's Spirit."
 character_art_uid = "uid://d3bjsmssrm65"
 portrait_art_uid = "uid://d3bjsmssrm65"
 height = 140

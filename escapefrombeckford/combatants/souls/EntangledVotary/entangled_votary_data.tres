@@ -6,10 +6,11 @@
 [resource]
 script = ExtResource("1_data_script")
 name = "Entangled Votary"
-description = "2/10 ally. Gain +2 empty max health at the end of each round."
+description = "2/10 ally. At the end of each round, increase max health by 2 and heal that amount (Fortitude 2)."
 character_art_uid = "uid://dxe3m32v2p84b"
 portrait_art_uid = "uid://dxe3m32v2p84b"
 height = 140
+max_health = 8
 ap = 2
 max_mana = 0
 ai = ExtResource("2_ai")

@@ -22,6 +22,7 @@ const TurnTimelineCompiler := preload("res://battle/view/operators/turn_timeline
 
 const AYE_AYE_ASCETIC := preload("res://cards/souls/AxolotlAsceticCard/axolotl_ascetic_card.tres")
 const ENTANGLED_VOTARY := preload("res://cards/souls/EntangledVotaryCard/entangled_votary_card.tres")
+const YGGDRASIL_HART := preload("res://cards/souls/YggdrasilHartCard/yggdrasil_hart_card.tres")
 const PHOENIX_BROOCH := preload("res://cards/enchantments/PhoenixBrooch/phoenix_brooch.tres")
 const POCKET_SILKSTITCHERS := preload("res://cards/enchantments/PocketSilkstitchers/pocket_silkstitchers.tres")
 const DOMINION_ROSTER := preload("res://cards/enchantments/DominionRoster/dominion_roster.tres")
@@ -33,6 +34,7 @@ const BULWARK_PROTO := preload("res://statuses/bulwark.tres")
 
 const AYE_AYE_THRESHOLD_ID := &"ascetic_threshold"
 const ENTANGLED_GROWTH_ID := &"entangled_votary_growth"
+const YGGDRASIL_GUARD_ID := &"yggdrasil_guard"
 const PHOENIX_BROOCH_ID := &"phoenix_brooch"
 const POCKET_SILKSTITCHERS_ID := &"pocket_silkstitchers"
 const DOMINION_ROSTER_ID := &"dominion_roster"
@@ -40,10 +42,13 @@ const JABBER_COLLECTOR_ID := &"jabber_collector"
 const BULWARK_ID := &"bulwark"
 const MIGHT_ID := &"might"
 const ABSORB_ID := &"absorb"
+const FLEETING_ID := &"fleeting"
+const FORTITUDE_ID := &"full_fortitude"
 
 func _init() -> void:
 	_verify_aye_aye_ascetic()
 	_verify_entangled_votary()
+	_verify_yggdrasil_hart()
 	_verify_phoenix_brooch()
 	_verify_phoenix_brooch_timeline_sync()
 	_verify_battle_event_log_debug_printer()
@@ -51,6 +56,7 @@ func _init() -> void:
 	_verify_dominion_roster()
 	_verify_jabber_collector()
 	_verify_bulwark()
+	_verify_fleeting_kills_mortal_allies()
 	_verify_draft_pool()
 	_verify_status_catalog()
 	print("verify_cole_soulbound_enchantment_pack: ok")
@@ -68,7 +74,7 @@ func _verify_aye_aye_ascetic() -> void:
 
 	_apply_direct_damage(sim, int(setup.get("enemy_1_id", 0)), summoned_id, 4, true)
 	assert(_status_stacks(sim, summoned_id, ABSORB_ID) == 1, "Aye-Aye Ascetic should gain Absorb on its first threshold trigger.")
-	assert(int(summoned.max_health) == 9 and int(summoned.health) == 5, "Aye-Aye Ascetic should gain +2 full max health after the trigger.")
+	assert(int(summoned.max_health) == 9 and int(summoned.health) == 5, "Aye-Aye Ascetic should gain Fortitude 2 after the trigger.")
 	assert(_status_stacks(sim, summoned_id, AYE_AYE_THRESHOLD_ID) == -1, "Aye-Aye Ascetic threshold status should consume itself for the round.")
 	assert(
 		sim.api.get_summon_card_max_health_bonus(String(ctx.card_data.uid)) == 2,
@@ -96,9 +102,24 @@ func _verify_entangled_votary() -> void:
 	assert(_status_stacks(sim, summoned_id, ENTANGLED_GROWTH_ID) == 1, "Entangled Votary should apply its growth status on summon.")
 
 	SimStatusSystem.on_player_turn_begin(sim.api, sim.api.get_player_id())
-	assert(int(summoned.max_health) == 12 and int(summoned.health) == 10, "Entangled Votary should gain +2 empty max health at round end.")
+	assert(int(summoned.max_health) == 12 and int(summoned.health) == 12, "Entangled Votary should gain Fortitude 2 at round end.")
 	SimStatusSystem.on_player_turn_begin(sim.api, sim.api.get_player_id())
-	assert(int(summoned.max_health) == 14 and int(summoned.health) == 10, "Entangled Votary should grow again on the next round.")
+	assert(int(summoned.max_health) == 14 and int(summoned.health) == 14, "Entangled Votary should grow again on the next round.")
+
+func _verify_yggdrasil_hart() -> void:
+	var setup := _make_sim(30)
+	var sim := setup.get("sim") as Sim
+	var ctx := _play_card(sim, YGGDRASIL_HART)
+	assert(!ctx.summoned_ids.is_empty(), "Yggdrasil Hart should summon a bound ally.")
+	var summoned_id := int(ctx.summoned_ids[0])
+	var summoned := sim.api.state.get_unit(summoned_id)
+	assert(summoned != null, "Summoned Yggdrasil Hart should exist.")
+	assert(_status_stacks(sim, summoned_id, YGGDRASIL_GUARD_ID) == 2, "Yggdrasil Hart should start with Yggdrasil Guard.")
+
+	_apply_direct_damage(sim, int(setup.get("enemy_1_id", 0)), summoned_id, 3, true)
+	assert(_status_stacks(sim, summoned_id, YGGDRASIL_GUARD_ID) == -1, "Yggdrasil Guard should consume itself after protecting the Hart.")
+	assert(_status_stacks(sim, summoned_id, FORTITUDE_ID) == 2, "Yggdrasil Guard should grant Fortitude 2 after it is consumed.")
+	assert(int(summoned.max_health) == 10 and int(summoned.health) == 9, "Yggdrasil Hart should gain Fortitude 2 after surviving its guarded strike.")
 
 func _verify_phoenix_brooch() -> void:
 	var setup := _make_sim(12)
@@ -176,7 +197,7 @@ func _verify_pocket_silkstitchers() -> void:
 
 	_apply_direct_damage(sim, int(setup.get("enemy_1_id", 0)), ally_id, 1, true)
 	assert(_status_stacks(sim, ally_id, MIGHT_ID) == 1, "Pocket Silkstitchers should grant Might on the first survived strike.")
-	assert(int(sim.api.state.get_unit(ally_id).max_health) == 10, "Pocket Silkstitchers should grant +2 Full Fortitude on the first survived strike.")
+	assert(int(sim.api.state.get_unit(ally_id).max_health) == 10, "Pocket Silkstitchers should grant Fortitude 2 on the first survived strike.")
 	assert(!_status_data_bool(sim, int(sim.api.get_player_id()), POCKET_SILKSTITCHERS_ID, Keys.ARMED), "Pocket Silkstitchers should disarm after triggering.")
 
 	_apply_direct_damage(sim, int(setup.get("enemy_1_id", 0)), ally_id, 1, true)
@@ -267,6 +288,28 @@ func _verify_bulwark() -> void:
 	SimStatusSystem.on_player_turn_begin(sim.api, sim.api.get_player_id())
 	assert(_status_stacks(sim, ally_id, BULWARK_ID) == -1, "Bulwark should clear at player turn start.")
 
+func _verify_fleeting_kills_mortal_allies() -> void:
+	var setup := _make_sim(12)
+	var sim := setup.get("sim") as Sim
+	var ally_id := int(setup.get("ally_1_id", 0))
+	var ally := sim.api.state.get_unit(ally_id)
+	assert(ally != null, "Verification ally should exist.")
+	assert(
+		int(ally.mortality) == int(CombatantState.Mortality.MORTAL),
+		"Verification ally should be mortal before applying Fleeting."
+	)
+
+	var status_ctx := StatusContext.new()
+	status_ctx.source_id = ally_id
+	status_ctx.target_id = ally_id
+	status_ctx.status_id = FLEETING_ID
+	status_ctx.stacks = 1
+	status_ctx.reason = "verify_fleeting_kills_mortal_allies"
+	sim.api.apply_status(status_ctx)
+
+	SimStatusSystem.on_player_turn_begin(sim.api, sim.api.get_player_id())
+	assert(!sim.api.is_alive(ally_id), "Fleeting should kill mortal allies at player turn start.")
+
 func _verify_draft_pool() -> void:
 	var expected_ids := {
 		&"aye_aye_ascetic": true,
@@ -288,13 +331,16 @@ func _verify_status_catalog() -> void:
 	for status_id in [
 		AYE_AYE_THRESHOLD_ID,
 		ENTANGLED_GROWTH_ID,
+		YGGDRASIL_GUARD_ID,
 		PHOENIX_BROOCH_ID,
 		POCKET_SILKSTITCHERS_ID,
 		DOMINION_ROSTER_ID,
 		JABBER_COLLECTOR_ID,
 		BULWARK_ID,
+		FORTITUDE_ID,
 	]:
 		assert(status_catalog.get_proto(status_id) != null, "Status catalog should include %s." % String(status_id))
+	assert(status_catalog.get_proto(&"empty_fortitude") == null, "Status catalog should no longer include empty_fortitude.")
 
 func _make_sim(enemy_health: int) -> Dictionary:
 	var status_catalog := STATUS_CATALOG_RESOURCE.duplicate(true) as StatusCatalog

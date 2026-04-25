@@ -52,7 +52,7 @@ func on_any_damage_applied(ctx: SimStatusContext, damage_ctx: DamageContext) -> 
 	ctx.set_token_data_value(Keys.ARMED, false, "pocket_silkstitchers_spent")
 
 func get_tooltip(_stacks: int = 0) -> String:
-	return "Once each round, the first time an ally survives attack damage, it gains +1 Might and +2 Full Fortitude."
+	return "Once each round, the first time an ally survives attack damage, it gains +1 Might and increases max health by 2 and heals that amount (Fortitude 2)."
 
 func _apply_status_to_target(ctx: SimStatusContext, target_id: int, status: Status, stacks: int, reason: String) -> void:
 	if ctx == null or status == null or target_id <= 0:

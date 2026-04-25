@@ -6,11 +6,11 @@
 [resource]
 script = ExtResource("1_data_script")
 name = "Yggdrasil Hart"
-description = "2/8 ally. The first strike each round against this unit is reduced by 2. If it survives, it gains +2 empty max health."
+description = "2/7 ally. The first strike each round against this unit is reduced by 2. If it survives, increase max health by 2 and heal that amount (Fortitude 2)."
 character_art_uid = "uid://kmt6rm2vc8tx"
 portrait_art_uid = "uid://kmt6rm2vc8tx"
 height = 140
-max_health = 8
+max_health = 7
 ap = 2
 max_mana = 0
 ai = ExtResource("2_ai")

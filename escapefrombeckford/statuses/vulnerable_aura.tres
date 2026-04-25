@@ -11,6 +11,7 @@ aura_type = 1
 projected_statuses = Array[ExtResource("3_status")]([ExtResource("4_vulnerable")])
 display_source = false
 display_projection = true
+applies_to_later_targets = false
 status_name = "Vulnerable Aura"
 auto_tick_down = 1
 icon = ExtResource("2_icon")

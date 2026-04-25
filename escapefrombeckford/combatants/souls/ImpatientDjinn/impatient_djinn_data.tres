@@ -6,11 +6,10 @@
 [resource]
 script = ExtResource("1_af4ov")
 name = "Impatient Djinn"
-description = "9/9 ally that dies at the start of your next turn."
 character_art_uid = "uid://blrkcosxpriad"
 portrait_art_uid = "uid://blrkcosxpriad"
 height = 300
-max_health = 9
-ap = 9
+max_health = 6
+ap = 6
 ai = ExtResource("2_djinn_ai")
 metadata/_custom_type_script = "uid://cfatj0ryn8uv3"

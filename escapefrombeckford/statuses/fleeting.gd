@@ -25,7 +25,5 @@ func on_player_turn_begin(ctx: SimStatusContext, player_id: int) -> void:
 		return
 	if int(ctx.owner_id) == int(player_id):
 		return
-	if int(ctx.owner.mortality) == int(CombatantState.Mortality.MORTAL):
-		return
 
 	ctx.request_removal(Removal.Type.DEATH, "fleeting_player_turn_start")

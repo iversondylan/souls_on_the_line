@@ -12,6 +12,7 @@ const SimStatusSystem := preload("res://battle/sim/operators/sim_status_system.g
 const StatusCatalog := preload("res://statuses/_core/status_catalog.gd")
 const StatusCatalogResource := preload("res://statuses/_core/status_catalog.tres")
 const StatusContext := preload("res://battle/contexts/status_context.gd")
+const SummonMortalityParamModel := preload("res://npc_ai/summon_mortality/summon_mortality_param_model.gd")
 
 const AWAKENED_SUBJECT := preload("res://combatants/enemies/AwakenedSubject/awakened_subject_data.tres")
 const SHIELD_IDEATION := preload("res://combatants/critters/ShieldIdeation/shield_ideation_data.tres")
@@ -34,8 +35,10 @@ const WEAKENED_ID := &"weakened"
 func _init() -> void:
 	_verify_action_weights()
 	_verify_ideate_arms_execution()
+	_verify_summon_mortality_param_model()
 	_verify_critter_data()
 	_verify_expose_weakness_projection()
+	_verify_projected_status_spawn_event_order()
 	_verify_scrapmen_migration()
 	_verify_encounter_pool()
 	_verify_status_catalog()
@@ -111,6 +114,22 @@ func _verify_ideate_arms_execution() -> void:
 	assert(_status_stacks(sim, rear_id, SMALL_ID) == -1, "Dagger Ideation should not receive Small.")
 	assert(int(front.ap) == 1 and int(front.max_health) == 3, "Shield Ideation should have exact 1/3 stats.")
 	assert(int(rear.ap) == 6 and int(rear.max_health) == 3, "Dagger Ideation should have exact 6/3 stats.")
+	assert(
+		int(front.mortality) == int(CombatantState.Mortality.HOLLOW)
+			and int(rear.mortality) == int(CombatantState.Mortality.HOLLOW),
+		"NPC summon sequences should default summoned units to Hollow mortality."
+	)
+
+func _verify_summon_mortality_param_model() -> void:
+	var ctx := NPCAIContext.new()
+	ctx.params = {}
+	var model := SummonMortalityParamModel.new()
+	model.mortality = CombatantState.Mortality.WILD
+	model.change_params_sim(ctx)
+	assert(
+		int(ctx.params.get(Keys.SUMMON_MORTALITY, -1)) == int(CombatantState.Mortality.WILD),
+		"SummonMortalityParamModel should write CombatantState.Mortality values into summon params."
+	)
 
 func _verify_critter_data() -> void:
 	assert(int(SHIELD_IDEATION.ap) == 1 and int(SHIELD_IDEATION.max_health) == 3, "Shield Ideation data should be 1/3.")
@@ -150,6 +169,13 @@ func _verify_expose_weakness_projection() -> void:
 		"Projected Vulnerable events should carry their source aura metadata."
 	)
 
+	var later_ally_id := sim.api.spawn_from_data(SHIELD_IDEATION, BattleState.FRIENDLY)
+	assert(later_ally_id > 0, "Verification should spawn a later allied target.")
+	assert(
+		!_has_projected_status(sim, later_ally_id, VULNERABLE_ID),
+		"Vulnerable Aura should not project Vulnerable to targets that enter after the aura appears."
+	)
+
 	var event_count_after_first_aura := sim.state.events.size()
 	var second_subject_id := _add_enemy_from_data(sim, AWAKENED_SUBJECT, "Awakened Subject 2")
 	_apply_status(sim, second_subject_id, second_subject_id, VULNERABLE_AURA_ID, 2, "verify_second_vulnerable_aura")
@@ -169,6 +195,41 @@ func _verify_expose_weakness_projection() -> void:
 	SimStatusSystem.on_actor_turn_end(sim.api, second_subject_id)
 	SimStatusSystem.on_actor_turn_end(sim.api, second_subject_id)
 	assert(!_has_projected_status(sim, player_id, VULNERABLE_ID), "Projected Vulnerable should clear once all source auras expire.")
+
+func _verify_projected_status_spawn_event_order() -> void:
+	var setup := _make_sim_with_subject()
+	var sim := setup.get("sim") as Sim
+	var subject_id := int(setup.get("subject_id", 0))
+	var status_catalog := sim.status_catalog as StatusCatalog
+	var vulnerable_aura = status_catalog.get_proto(VULNERABLE_AURA_ID)
+	assert(vulnerable_aura != null, "Verification should load Vulnerable Aura.")
+	vulnerable_aura.applies_to_later_targets = true
+
+	_apply_status(sim, subject_id, subject_id, VULNERABLE_AURA_ID, 2, "verify_live_projection_event_order")
+	var event_count_before_spawn := sim.state.events.size()
+	var later_ally_id := sim.api.spawn_from_data(SHIELD_IDEATION, BattleState.FRIENDLY)
+	assert(later_ally_id > 0, "Verification should spawn a later allied target for event ordering.")
+	assert(
+		_has_projected_status(sim, later_ally_id, VULNERABLE_ID),
+		"Live Vulnerable Aura projection should apply to later targets in the event-ordering fixture."
+	)
+
+	var spawn_index := _find_event_index_for_target(
+		sim,
+		BattleEvent.Type.SPAWNED,
+		Keys.SPAWNED_ID,
+		later_ally_id,
+		event_count_before_spawn
+	)
+	var status_index := _find_projected_status_event_index(
+		sim,
+		VULNERABLE_ID,
+		later_ally_id,
+		event_count_before_spawn
+	)
+	assert(spawn_index >= 0, "Later target spawn should emit a spawned event.")
+	assert(status_index >= 0, "Later target live projection should emit a projected status event.")
+	assert(status_index > spawn_index, "Projected status display event should follow the spawned event.")
 
 func _verify_scrapmen_migration() -> void:
 	var setup := _make_sim_with_enemy(SCRAPMEN_TRUNCHEONER, "Scrapmen Truncheoner")
@@ -209,7 +270,12 @@ func _verify_encounter_pool() -> void:
 func _verify_status_catalog() -> void:
 	var status_catalog := StatusCatalogResource.duplicate(true) as StatusCatalog
 	status_catalog.build_index()
-	assert(status_catalog.get_proto(VULNERABLE_AURA_ID) != null, "Status catalog should include Vulnerable Aura.")
+	var vulnerable_aura = status_catalog.get_proto(VULNERABLE_AURA_ID)
+	assert(vulnerable_aura != null, "Status catalog should include Vulnerable Aura.")
+	assert(
+		vulnerable_aura != null and !bool(vulnerable_aura.applies_to_later_targets),
+		"Vulnerable Aura should opt out of applying to later targets."
+	)
 	assert(status_catalog.get_proto(VULNERABLE_ID) != null, "Status catalog should include Vulnerable.")
 
 func _make_sim_with_subject() -> Dictionary:
@@ -412,6 +478,41 @@ func _latest_projected_status_event(sim: Sim, status_id: StringName, target_id: 
 		if status_data is Dictionary and bool(status_data.get(Keys.IS_PROJECTED, false)):
 			return status_data
 	return {}
+
+func _find_event_index_for_target(
+	sim: Sim,
+	event_type: int,
+	target_key: StringName,
+	target_id: int,
+	start_index: int = 0
+) -> int:
+	for i in range(start_index, sim.state.events.size()):
+		var event := sim.state.events.get_event(i)
+		if event == null or int(event.type) != int(event_type):
+			continue
+		if int(event.data.get(target_key, 0)) != int(target_id):
+			continue
+		return i
+	return -1
+
+func _find_projected_status_event_index(
+	sim: Sim,
+	status_id: StringName,
+	target_id: int,
+	start_index: int = 0
+) -> int:
+	for i in range(start_index, sim.state.events.size()):
+		var event := sim.state.events.get_event(i)
+		if event == null or int(event.type) != int(BattleEvent.Type.STATUS):
+			continue
+		if StringName(event.data.get(Keys.STATUS_ID, &"")) != status_id:
+			continue
+		if int(event.data.get(Keys.TARGET_ID, 0)) != int(target_id):
+			continue
+		var raw_status_data = event.data.get(Keys.STATUS_DATA, {})
+		if raw_status_data is Dictionary and bool(raw_status_data.get(Keys.IS_PROJECTED, false)):
+			return i
+	return -1
 
 func _combatant_is_melee_only(data) -> bool:
 	if data == null or data.ai == null or data.ai.actions.is_empty():

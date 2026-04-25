@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="CombatantData" format=3]
+[gd_resource type="Resource" script_class="CombatantData" format=3 uid="uid://bjfkrhbqagl0x"]
 
 [ext_resource type="Script" uid="uid://cfatj0ryn8uv3" path="res://combatants/combatant_data.gd" id="1_data"]
 [ext_resource type="Resource" path="res://combatants/souls/ScorchingBull/scorching_bull_ai_profile.tres" id="2_ai"]
@@ -10,7 +10,7 @@ description = "5/2 ally. On attack, move to the front."
 character_art_uid = "res://_assets/sprites/assorted/charging-bull.png"
 portrait_art_uid = "res://_assets/sprites/assorted/charging-bull.png"
 height = 300
-max_health = 2
+max_health = 3
 ap = 5
 ai = ExtResource("2_ai")
 metadata/_custom_type_script = "uid://cfatj0ryn8uv3"

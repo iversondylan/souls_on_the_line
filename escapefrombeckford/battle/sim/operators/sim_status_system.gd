@@ -769,6 +769,8 @@ static func _append_status_aura_projected_tokens(
 	var aura_token := source.statuses.get_status_token_by_token_id(int(record.source_instance_id), true)
 	if aura_token == null or StringName(aura_token.id) != aura_status_id:
 		return
+	if !bool(aura_proto.applies_to_later_targets) and !_aura_snapshot_includes_target(aura_token, target_id):
+		return
 	var aura_stacks := maxi(int(aura_token.stacks), 0)
 
 	if aura_stacks <= 0 and bool(aura_proto.numerical):
@@ -853,6 +855,30 @@ static func _record_displays_projection(api: SimBattleAPI, record: TransformerRe
 		return false
 	var proto := get_proto(api, StringName(record.source_id)) as Aura
 	return proto != null and bool(proto.display_projection)
+
+static func aura_snapshot_target_ids_for_token(token: StatusToken) -> PackedInt32Array:
+	if token == null or token.data == null:
+		return PackedInt32Array()
+	var raw = token.data.get(Keys.PROJECTION_TARGET_IDS, PackedInt32Array())
+	if raw is PackedInt32Array:
+		return raw
+	if raw is Array:
+		var out := PackedInt32Array()
+		for value in raw:
+			var target_id := int(value)
+			if target_id > 0:
+				out.append(target_id)
+		return out
+	return PackedInt32Array()
+
+static func _aura_snapshot_includes_target(token: StatusToken, target_id: int) -> bool:
+	if token == null or target_id <= 0:
+		return false
+	var target_ids := aura_snapshot_target_ids_for_token(token)
+	for raw_id in target_ids:
+		if int(raw_id) == int(target_id):
+			return true
+	return false
 
 static func _assign_projected_token_identity(target: CombatantState, target_id: int) -> void:
 	if target == null or target.statuses == null or target_id <= 0:
