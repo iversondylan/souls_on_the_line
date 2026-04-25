@@ -16,5 +16,5 @@ effect_packages = Array[ExtResource("1_pkg")]([ExtResource("3_status_pkg")])
 state_models = Array[ExtResource("6_state")]([ExtResource("9_half_exp")])
 action_name = "Call to Order"
 intent_icon = ExtResource("3_0leri")
-intent_icon_uid = "uid://1b6tx5tj6ucv"
+intent_icon_uid = "uid://op74eesa6fxw"
 tooltip_model = ExtResource("8_tooltip_model")

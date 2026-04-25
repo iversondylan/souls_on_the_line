@@ -1,8 +1,9 @@
 [gd_resource type="Resource" script_class="NPCAction" format=3 uid="uid://cbwphe8x8cjtg"]
 
 [ext_resource type="Script" uid="uid://bcih413oy6v73" path="res://npc_ai/_core/npc_action.gd" id="1_action_script"]
-[ext_resource type="Resource" path="res://combatants/souls/EntangledVotary/entangled_votary_attack_pkg.tres" id="2_attack_pkg"]
+[ext_resource type="Resource" uid="uid://dsjyp3p3ojn82" path="res://combatants/souls/EntangledVotary/entangled_votary_attack_pkg.tres" id="2_attack_pkg"]
 [ext_resource type="Texture2D" uid="uid://c54dbo8n7r3g" path="res://_assets/sprites/assorted/attack.PNG" id="3_attack_icon"]
+[ext_resource type="Texture2D" uid="uid://dp3uhdoaut1lx" path="res://_assets/sprites/assorted/fireball.png" id="4_kqmke"]
 [ext_resource type="Resource" uid="uid://7gggk4mmejsq" path="res://npc_ai/text/attack_intent_text_model.tres" id="4_text_model"]
 [ext_resource type="Script" uid="uid://dtwuyctovqk5r" path="res://npc_ai/_core/intent_lifecycle_model.gd" id="4_wlvnr"]
 [ext_resource type="Resource" uid="uid://ivsvxo0vj72x" path="res://npc_ai/text/attack_intent_tooltip_text_model.tres" id="5_tooltip_model"]
@@ -15,5 +16,8 @@ script = ExtResource("1_action_script")
 effect_packages = Array[ExtResource("6_effect_package_script")]([ExtResource("2_attack_pkg")])
 action_name = "Votive Lash"
 intent_icon = ExtResource("3_attack_icon")
+intent_icon_uid = "uid://c54dbo8n7r3g"
+intent_icon_ranged = ExtResource("4_kqmke")
+intent_icon_ranged_uid = "uid://dp3uhdoaut1lx"
 intent_text_model = ExtResource("4_text_model")
 tooltip_model = ExtResource("5_tooltip_model")
