@@ -6,6 +6,7 @@
 [resource]
 script = ExtResource("1_lontd")
 status_name = "Stability"
+numerical = true
 reapply_type = 1
 auto_remove = 2
 icon = ExtResource("1_x1brp")

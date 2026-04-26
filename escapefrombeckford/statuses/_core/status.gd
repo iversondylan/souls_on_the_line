@@ -25,7 +25,7 @@ enum OP { APPLY, REMOVE, CHANGE }
 
 @export_group("Status Data")
 @export var status_name: String = ""
-@export var numerical: bool = true
+@export var numerical: bool = false
 @export var reapply_type: ReapplyType
 @export var auto_remove: AutoRemove = AutoRemove.NEVER
 @export var auto_tick_down: AutoTickDown = AutoTickDown.NEVER

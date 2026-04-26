@@ -13,5 +13,6 @@ display_source = false
 display_projection = true
 applies_to_later_targets = false
 status_name = "Vulnerable Aura"
+numerical = true
 auto_tick_down = 1
 icon = ExtResource("2_icon")

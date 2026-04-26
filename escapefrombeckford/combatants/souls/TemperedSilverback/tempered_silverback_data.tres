@@ -6,7 +6,6 @@
 [resource]
 script = ExtResource("1_h8tpf")
 name = "Tempered Silverback"
-description = ""
 character_art_uid = "uid://dfqya1jagaknn"
 portrait_art_uid = "uid://dfqya1jagaknn"
 max_health = 6

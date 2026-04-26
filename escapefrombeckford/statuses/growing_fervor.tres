@@ -6,6 +6,7 @@
 [resource]
 script = ExtResource("2_pyaau")
 status_name = "Growing Fervor"
+numerical = true
 icon = ExtResource("1_cwbun")
 tooltip = "Allies deal more damage."
 metadata/_custom_type_script = "uid://cueedkb1u8vxy"

@@ -6,5 +6,6 @@
 [resource]
 script = ExtResource("1_status_script")
 status_name = "Alacrity"
+numerical = true
 auto_tick_down = 1
 icon = ExtResource("1_8wf5q")

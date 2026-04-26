@@ -1,7 +1,6 @@
 [gd_resource type="Resource" script_class="CardData" format=3 uid="uid://dbs6t748gp5ig"]
 
 [ext_resource type="Script" uid="uid://wtk5v77fcqvn" path="res://cards/_core/card_action.gd" id="1_action"]
-[ext_resource type="Resource" uid="uid://c71a7e78wqfvy" path="res://cards/convocations/PressureBarrier/pressure_barrier_action.tres" id="2_pressure_barrier"]
 [ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://cards/_core/card_data.gd" id="3_card_data"]
 [ext_resource type="Resource" uid="uid://bjm6mg0igi1pq" path="res://cards/convocations/CrystalBarrier/crystal_barrier_absorb_action.tres" id="4_absorb"]
 [ext_resource type="Texture2D" uid="uid://dnnha15u8uufk" path="res://_assets/sprites/assorted/crystal-bars.png" id="5_j0c3a"]
@@ -12,8 +11,8 @@ id = &"crystal_barrier"
 target_type = 3
 rarity = 1
 name = "Crystal Barrier"
-description = "Hits on an ally deal %s less damage, decreasing each time. %s: negate the next hit."
+description = "Negate the next %s hits on target ally."
 cost = 1
 texture = ExtResource("5_j0c3a")
-actions = Array[ExtResource("1_action")]([ExtResource("2_pressure_barrier"), ExtResource("4_absorb")])
+actions = Array[ExtResource("1_action")]([ExtResource("4_absorb")])
 metadata/_custom_type_script = "uid://d2f0qepe047dc"

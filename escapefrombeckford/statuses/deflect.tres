@@ -6,4 +6,5 @@
 [resource]
 script = ExtResource("2_h7cuo")
 status_name = "Deflect"
+numerical = true
 icon = ExtResource("1_h7cuo")

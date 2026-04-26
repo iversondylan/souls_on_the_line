@@ -6,6 +6,7 @@
 [resource]
 script = ExtResource("2_script")
 status_name = "Bulwark"
+numerical = true
 auto_remove = 3
 icon = ExtResource("1_187hj")
 tooltip = "Take reduced damage until your next turn."

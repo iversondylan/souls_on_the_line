@@ -6,6 +6,7 @@
 [resource]
 script = ExtResource("1_7p861")
 status_name = "Marked"
+numerical = true
 auto_tick_down = 1
 icon = ExtResource("1_o5s2w")
 tooltip = "Ranged attacks prioritize this target."

@@ -6,4 +6,5 @@
 [resource]
 script = ExtResource("2_script")
 status_name = "Spirited Return"
+numerical = true
 icon = ExtResource("1_qihy6")

@@ -6,5 +6,6 @@
 [resource]
 script = ExtResource("2_nj4t5")
 status_name = "Might"
+numerical = true
 icon = ExtResource("1_u532r")
 metadata/_custom_type_script = "uid://cueedkb1u8vxy"

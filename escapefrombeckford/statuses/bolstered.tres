@@ -6,5 +6,6 @@
 [resource]
 script = ExtResource("1_bolstered_script")
 status_name = "Bolstered"
+numerical = true
 auto_remove = 1
 icon = ExtResource("2_bolstered_icon")

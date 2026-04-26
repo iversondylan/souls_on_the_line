@@ -6,4 +6,5 @@
 [resource]
 script = ExtResource("1_script")
 status_name = "Barkbound Bond"
+numerical = true
 icon = ExtResource("1_5grxb")

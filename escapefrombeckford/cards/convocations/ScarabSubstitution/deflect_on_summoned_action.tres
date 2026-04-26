@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="ApplyStatusToSummonedAction" format=3 uid="uid://hdts6td116ac"]
+
+[ext_resource type="Script" uid="uid://jie78uegvh3j" path="res://cards/_generic_actions/apply_status_to_summoned_action.gd" id="1_g42tc"]
+[ext_resource type="Resource" uid="uid://dvuih4io2d0hg" path="res://statuses/deflect.tres" id="2_ikoiq"]
+
+[resource]
+script = ExtResource("1_g42tc")
+status = ExtResource("2_ikoiq")
+stacks = 1
+metadata/_custom_type_script = "uid://wtk5v77fcqvn"

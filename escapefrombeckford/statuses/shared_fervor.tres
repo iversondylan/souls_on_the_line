@@ -9,5 +9,6 @@
 script = ExtResource("2_shared_fervor")
 projected_statuses = Array[ExtResource("2_30682")]([ExtResource("3_might")])
 status_name = "Shared Fervor"
+numerical = true
 icon = ExtResource("1_icqsi")
 metadata/_custom_type_script = "uid://0oai3oy81n86"

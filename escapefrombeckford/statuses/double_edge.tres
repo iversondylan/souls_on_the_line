@@ -6,5 +6,6 @@
 [resource]
 script = ExtResource("1_double_edge_script")
 status_name = "Double Edge"
+numerical = true
 icon = ExtResource("1_wcttt")
 tooltip = "Whenever this unit deals strike damage, it takes recoil damage."

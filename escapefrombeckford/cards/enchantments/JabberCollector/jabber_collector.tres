@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="CardData" format=3 uid="uid://ncii75q2ffcv"]
 
 [ext_resource type="Script" uid="uid://wtk5v77fcqvn" path="res://cards/_core/card_action.gd" id="1_action"]
-[ext_resource type="Resource" path="res://cards/enchantments/JabberCollector/jabber_collector_action.tres" id="2_action_res"]
+[ext_resource type="Resource" uid="uid://cdi2s68byedoo" path="res://cards/enchantments/JabberCollector/jabber_collector_action.tres" id="2_action_res"]
 [ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://cards/_core/card_data.gd" id="3_card_data"]
 [ext_resource type="Texture2D" uid="uid://cdnefsnbynwx0" path="res://_assets/sprites/assorted/acoustic-megaphone.png" id="4_t8xff"]
 
@@ -12,7 +12,7 @@ card_type = 2
 rarity = 2
 name = "Jabber Collector"
 deplete = true
-description = "Deplete. %s: the first time each round you play your second Convocation, heal your frontmost ally 3 and it takes less damage until your next turn."
+description = "Gain %s: the first time each round you play your second Convocation, heal your frontmost ally 3 and it takes less damage until your next turn. Deplete."
 cost = 1
 texture = ExtResource("4_t8xff")
 actions = Array[ExtResource("1_action")]([ExtResource("2_action_res")])

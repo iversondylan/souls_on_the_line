@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="CardData" format=3 uid="uid://5fhc64taqmv5"]
 
 [ext_resource type="Script" uid="uid://wtk5v77fcqvn" path="res://cards/_core/card_action.gd" id="1_base_action"]
-[ext_resource type="Resource" path="res://cards/convocations/BarkboundBond/barkbound_bond_status_action.tres" id="2_status_action"]
+[ext_resource type="Resource" uid="uid://dj8sdp3gahkgp" path="res://cards/convocations/BarkboundBond/barkbound_bond_status_action.tres" id="2_status_action"]
 [ext_resource type="Resource" uid="uid://cwsantdi8vmes" path="res://cards/_generic_actions/draw_1_action.tres" id="3_draw_action"]
 [ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://cards/_core/card_data.gd" id="4_card_data"]
 [ext_resource type="Texture2D" uid="uid://dng4vlijjabi4" path="res://_assets/sprites/assorted/tree-roots.png" id="5_ofsd7"]
@@ -12,7 +12,7 @@ id = &"barkbound_bond"
 target_type = 3
 rarity = 1
 name = "Barkbound Bond"
-description = "%s: the next 2 times target ally survives damage, it gains +1/+2. Draw %s."
+description = "The next %s times target ally survives damage, it gains +1/+2. Draw %s."
 cost = 1
 texture = ExtResource("5_ofsd7")
 actions = Array[ExtResource("1_base_action")]([ExtResource("2_status_action"), ExtResource("3_draw_action")])

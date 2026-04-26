@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="CardData" format=3 uid="uid://e8gcdely1taj"]
 
 [ext_resource type="Script" uid="uid://wtk5v77fcqvn" path="res://cards/_core/card_action.gd" id="1_action"]
-[ext_resource type="Resource" path="res://cards/enchantments/LivingRegrets/living_regrets_action.tres" id="2_action_res"]
+[ext_resource type="Resource" uid="uid://jslr5lna8ldm" path="res://cards/enchantments/LivingRegrets/living_regrets_action.tres" id="2_action_res"]
 [ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://cards/_core/card_data.gd" id="3_card_data"]
 [ext_resource type="Texture2D" uid="uid://dk2t15odi0xcs" path="res://_assets/sprites/card_elements/wrathful_intent/reaper1.png" id="4_living_regrets_texture"]
 
@@ -12,7 +12,7 @@ card_type = 2
 rarity = 2
 name = "Living Regrets"
 deplete = true
-description = "%s: allies gain On Death, summon a Small, Fleeting Regretful Shade."
+description = "Gain %s: On Death, allies summon a Small, Fleeting Regretful Shade. Deplete."
 cost = 2
 texture = ExtResource("4_living_regrets_texture")
 actions = Array[ExtResource("1_action")]([ExtResource("2_action_res")])

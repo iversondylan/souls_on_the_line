@@ -96,7 +96,7 @@ func _verify_crone_uses_only_its_own_combatant_description() -> void:
 func _verify_scarab_substitution_renders_non_soul_summon_cleanly() -> void:
 	var rendered := TextUtils.build_card_description(SCARAB_SUBSTITUTION)
 	assert(
-		rendered == "Sacrifice an ally. Summon a defensive Shield Mite at the front. Hits on it deal 1 less damage, decreasing each time, until your next turn. Absorb: negate the next hit.",
+		rendered == "Sacrifice an ally. Summon a Shield Mite at the front. Hits on it deal 1 less damage, decreasing each time, until your next turn. Absorb: negate the next hit.",
 		"Scarab Substitution should use behavior-only summon text and render all four actions cleanly."
 	)
 

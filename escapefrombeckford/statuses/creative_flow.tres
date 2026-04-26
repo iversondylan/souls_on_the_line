@@ -6,6 +6,7 @@
 [resource]
 script = ExtResource("1_creative_flow_script")
 status_name = "Creative Flow"
+numerical = true
 auto_remove = 2
 icon = ExtResource("1_mkneh")
 tooltip = "The next Soul card you play costs less."

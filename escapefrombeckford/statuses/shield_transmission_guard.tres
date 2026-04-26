@@ -6,5 +6,6 @@
 [resource]
 script = ExtResource("1_script")
 status_name = "Shield Transmission Guard"
+numerical = true
 auto_remove = 3
 icon = ExtResource("2_icon")

@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="CardData" format=3 uid="uid://bnbj5r3yycdc7"]
 
 [ext_resource type="Script" uid="uid://wtk5v77fcqvn" path="res://cards/_core/card_action.gd" id="1_base_action"]
-[ext_resource type="Resource" path="res://cards/convocations/DiamondHeart/diamond_heart_status_action.tres" id="2_status_action"]
+[ext_resource type="Resource" uid="uid://c6jcuxtka0rw" path="res://cards/convocations/DiamondHeart/diamond_heart_status_action.tres" id="2_status_action"]
 [ext_resource type="Resource" uid="uid://cwsantdi8vmes" path="res://cards/_generic_actions/draw_1_action.tres" id="3_draw_action"]
 [ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://cards/_core/card_data.gd" id="4_card_data"]
 [ext_resource type="Texture2D" uid="uid://dcij6eljnaj6s" path="res://_assets/sprites/assorted/cut-diamond.png" id="5_xscyj"]
@@ -12,6 +12,6 @@ id = &"diamond_heart"
 target_type = 3
 rarity = 1
 name = "Diamond Heart"
-description = "%s: whenever you play a Convocation, target ally takes 25% less damage until your next turn. Draw %s."
+description = "Target ally gains %s: whenever you play a Convocation, takes 25% less damage until your next turn (up to 75% reduction). Draw %s."
 texture = ExtResource("5_xscyj")
 actions = Array[ExtResource("1_base_action")]([ExtResource("2_status_action"), ExtResource("3_draw_action")])

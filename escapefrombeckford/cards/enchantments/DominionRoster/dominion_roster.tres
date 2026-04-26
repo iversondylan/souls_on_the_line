@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="CardData" format=3 uid="uid://ch33i2gd7goji"]
 
 [ext_resource type="Script" uid="uid://wtk5v77fcqvn" path="res://cards/_core/card_action.gd" id="1_action"]
-[ext_resource type="Resource" path="res://cards/enchantments/DominionRoster/dominion_roster_action.tres" id="2_action_res"]
+[ext_resource type="Resource" uid="uid://bp02mhodo147s" path="res://cards/enchantments/DominionRoster/dominion_roster_action.tres" id="2_action_res"]
 [ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://cards/_core/card_data.gd" id="3_card_data"]
 [ext_resource type="Texture2D" uid="uid://u4xtefb8ni11" path="res://_assets/sprites/assorted/book-aura.png" id="4_hmjdi"]
 
@@ -12,7 +12,7 @@ card_type = 2
 rarity = 1
 name = "Dominion Roster"
 deplete = true
-description = "Deplete. %s: at the end of your turn, if you played no Soulbound or Soulwild cards this turn, your Soulbound and Soulwild allies gain +2 damage."
+description = "Gain %s: at the end of your turn, if you played no Soul cards this turn, your Soulbound and Soulwild allies gain +2 damage. Deplete."
 cost = 1
 texture = ExtResource("4_hmjdi")
 actions = Array[ExtResource("1_action")]([ExtResource("2_action_res")])

@@ -2,10 +2,8 @@
 
 [ext_resource type="Script" uid="uid://wtk5v77fcqvn" path="res://cards/_core/card_action.gd" id="1_action"]
 [ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://cards/_core/card_data.gd" id="2_card"]
-[ext_resource type="Resource" uid="uid://4a3dreaffu56" path="res://cards/_generic_actions/sacrifice_action.tres" id="3_sacrifice"]
-[ext_resource type="Resource" uid="uid://dcsacn6ycr1yp" path="res://cards/convocations/Interception/pressure_barrier_on_frontmost_ally_action.tres" id="4_5xl5h"]
-[ext_resource type="Resource" uid="uid://ds1puc6yesfie" path="res://cards/convocations/Interception/absorb_on_frontmost_ally_action.tres" id="4_absorb_frontmost"]
-[ext_resource type="Resource" uid="uid://ewarv7heh4i4" path="res://cards/convocations/Interception/move_frontmost_npc_ally_to_front.tres" id="4_move_frontmost"]
+[ext_resource type="Resource" path="res://cards/_generic_actions/move_target_to_front_action.tres" id="3_move"]
+[ext_resource type="Resource" uid="uid://d3s7l0avpmhs3" path="res://cards/convocations/Interception/absorb_on_target_action.tres" id="4_absorb"]
 [ext_resource type="Texture2D" uid="uid://b88j1411cpg8f" path="res://_assets/sprites/assorted/shield-bash.png" id="7_64lio"]
 
 [resource]
@@ -14,8 +12,8 @@ id = &"interception"
 target_type = 3
 rarity = 1
 name = "Interception"
-description = "Sacrifice an ally.%s Move the frontmost remaining ally to the front. Hits on them deal %s less damage, decreasing each time, until your next turn. %s: negate the next hit.%s"
+description = "%sMove target ally to the front. Negate the next %s hit on it."
 cost = 1
 texture = ExtResource("7_64lio")
-actions = Array[ExtResource("1_action")]([ExtResource("3_sacrifice"), ExtResource("4_move_frontmost"), ExtResource("4_absorb_frontmost"), ExtResource("4_5xl5h")])
+actions = Array[ExtResource("1_action")]([ExtResource("3_move"), ExtResource("4_absorb")])
 metadata/_custom_type_script = "uid://d2f0qepe047dc"

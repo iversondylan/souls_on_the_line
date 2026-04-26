@@ -6,6 +6,5 @@
 [resource]
 script = ExtResource("2_script")
 status_name = "Jabber Collector"
-numerical = false
 icon = ExtResource("1_rdcok")
 tooltip = "The first time each round you play your second Convocation, heal your frontmost ally 3 and give it 10% reduced damage until your next turn."

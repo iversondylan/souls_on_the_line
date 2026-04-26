@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="CardData" format=3 uid="uid://dcewoxnet4eh0"]
 
 [ext_resource type="Script" uid="uid://wtk5v77fcqvn" path="res://cards/_core/card_action.gd" id="1_base_action"]
-[ext_resource type="Resource" path="res://cards/convocations/RendingRepair/rending_repair_heal_action.tres" id="2_heal_action"]
+[ext_resource type="Resource" uid="uid://dv20cc2go0nig" path="res://cards/convocations/RendingRepair/rending_repair_heal_action.tres" id="2_heal_action"]
 [ext_resource type="Resource" uid="uid://bxyj3jvq0mgxh" path="res://cards/convocations/RendingRepair/rending_repair_attack_action.tres" id="3_attack_action"]
 [ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://cards/_core/card_data.gd" id="4_card_data"]
 [ext_resource type="Texture2D" uid="uid://boa1irv8a5bk1" path="res://_assets/sprites/assorted/attack_and_defend.png" id="5_texture"]

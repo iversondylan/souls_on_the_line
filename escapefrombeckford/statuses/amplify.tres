@@ -6,6 +6,7 @@
 [resource]
 script = ExtResource("1_7ubsa")
 status_name = "Amplify"
+numerical = true
 auto_tick_down = 1
 icon = ExtResource("1_pto7b")
 tooltip = "Deal 50% more damage. Ticks down at end of turn."

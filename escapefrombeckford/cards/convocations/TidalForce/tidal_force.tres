@@ -1,9 +1,9 @@
-[gd_resource type="Resource" script_class="CardData" format=3]
+[gd_resource type="Resource" script_class="CardData" format=3 uid="uid://0gjtc5c0kxiq"]
 
-[ext_resource type="Script" path="res://cards/_core/card_action.gd" id="1_action"]
-[ext_resource type="Script" path="res://cards/_core/card_data.gd" id="2_card"]
+[ext_resource type="Script" uid="uid://wtk5v77fcqvn" path="res://cards/_core/card_action.gd" id="1_action"]
+[ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://cards/_core/card_data.gd" id="2_card"]
 [ext_resource type="Resource" path="res://cards/convocations/TidalForce/tidal_force_action.tres" id="3_tidal_force_action"]
-[ext_resource type="Texture2D" path="res://_assets/sprites/assorted/push.png" id="4_texture"]
+[ext_resource type="Texture2D" uid="uid://cidr6kn67fuwq" path="res://_assets/sprites/assorted/push.png" id="4_texture"]
 
 [resource]
 script = ExtResource("2_card")
@@ -11,7 +11,7 @@ id = &"tidal_force"
 target_type = 3
 rarity = 1
 name = "Tidal Force"
-description = "Target ally attacks immediately. If it was not in front, move it to the front first. If it moved forward this way, the frontmost enemy moves back 1 if it has a teammate behind it.%s"
+description = "Target ally moves to the front and attacks immediately. If it moved, push the frontmost enemy back 1.%s"
 cost = 1
 texture = ExtResource("4_texture")
 actions = Array[ExtResource("1_action")]([ExtResource("3_tidal_force_action")])

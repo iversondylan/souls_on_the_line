@@ -1,11 +1,12 @@
-[gd_resource type="Resource" script_class="PrecisionStrikeStatus" format=3]
+[gd_resource type="Resource" script_class="PrecisionStrikeStatus" format=3 uid="uid://sra3y1nn0c7q"]
 
-[ext_resource type="Texture2D" path="res://_assets/sprites/assorted/archer.png" id="1_icon"]
-[ext_resource type="Script" path="res://statuses/precision_strike.gd" id="2_script"]
+[ext_resource type="Texture2D" uid="uid://bbqsb8n5l283j" path="res://_assets/sprites/assorted/archer.png" id="1_icon"]
+[ext_resource type="Script" uid="uid://7rlnkfbbp204" path="res://statuses/precision_strike.gd" id="2_script"]
 
 [resource]
 script = ExtResource("2_script")
 status_name = "Precision Strike"
+numerical = true
 icon = ExtResource("1_icon")
 tooltip = "Deal bonus damage based on how far behind the front this unit is."
 metadata/_custom_type_script = "uid://cueedkb1u8vxy"
