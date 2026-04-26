@@ -8,4 +8,4 @@ script = ExtResource("2_script")
 status_name = "Pocket Silkstitchers"
 numerical = false
 icon = ExtResource("1_5nrxy")
-tooltip = "Once each round, the first time an ally survives attack damage, it gains +1/+2."
+tooltip = "Once each round, the first time an ally survives attack damage, it gains +1|+2."

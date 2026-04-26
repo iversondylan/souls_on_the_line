@@ -164,7 +164,6 @@ stretch_mode = 4
 
 [node name="SummonIcon" type="TextureRect" parent="CardStrictlyVisuals/CornerMan/SoulStats" unique_id=329943431]
 unique_name_in_owner = true
-visible = false
 offset_top = 143.0
 offset_right = 40.0
 offset_bottom = 183.0

@@ -27,7 +27,7 @@ func on_damage_taken(ctx: SimStatusContext, damage_ctx: DamageContext) -> void:
 	ctx.api.apply_status(status_ctx)
 
 func get_tooltip(_stacks: int = 0) -> String:
-	return "Hexweb: the first time each round this takes strike damage, gain 50%% reduced damage for the rest of that round."
+	return "Hexweb: the first time each round this takes strike damage, gain 50% reduced damage for the rest of that round."
 
 func _is_eligible_strike_damage(damage_ctx: DamageContext) -> bool:
 	if damage_ctx == null:
