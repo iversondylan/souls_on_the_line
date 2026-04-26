@@ -14,4 +14,4 @@ func affects_target(state: BattleState, source_id: int, target_id: int) -> bool:
 
 
 func get_tooltip(_stacks: int = 0) -> String:
-	return "Living Regrets: other allies gain On Death: summon a Small, Fleeting 1/1 Regretful Shade."
+	return "Living Regrets: other allies gain on death: summon a Small, Fleeting 1/1 Regretful Shade."

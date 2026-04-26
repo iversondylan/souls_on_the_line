@@ -2,28 +2,11 @@
 
 [ext_resource type="Script" uid="uid://buhtw3540mbls" path="res://cards/_generic_actions/summon_action.gd" id="1_wj6j1"]
 [ext_resource type="Resource" uid="uid://c0cllss7w30rn" path="res://audio/summon_zap.tres" id="2_sjxdo"]
-[ext_resource type="Script" uid="uid://bcih413oy6v73" path="res://npc_ai/_core/npc_action.gd" id="3_ak3i2"]
-[ext_resource type="Script" uid="uid://bdsvca1cpka5s" path="res://npc_ai/_core/npc_ai_profile.gd" id="4_j056b"]
-[ext_resource type="Script" uid="uid://cfatj0ryn8uv3" path="res://combatants/combatant_data.gd" id="5_rh6m2"]
-
-[sub_resource type="Resource" id="Resource_0wlod"]
-script = ExtResource("4_j056b")
-
-[sub_resource type="Resource" id="Resource_hwrsf"]
-script = ExtResource("5_rh6m2")
-name = "Shrapnel Oyster"
-description = "A brittle soul that bursts apart."
-character_art_uid = "res://_assets/sprites/assorted/oyster-pearl.png"
-portrait_art_uid = "res://_assets/sprites/assorted/oyster-pearl.png"
-height = 120
-max_health = 3
-ap = 0
-max_mana = 0
-ai = SubResource("Resource_0wlod")
+[ext_resource type="Resource" uid="uid://cq26dme3yapq" path="res://combatants/souls/ShrapnelOyster/shrapnel_oyster_data.tres" id="3_v0jso"]
 
 [resource]
 script = ExtResource("1_wj6j1")
-summon_data = SubResource("Resource_hwrsf")
+summon_data = ExtResource("3_v0jso")
 mortality = 2
 reserves_card = true
 sound = ExtResource("2_sjxdo")

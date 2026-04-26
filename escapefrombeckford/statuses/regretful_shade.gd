@@ -12,7 +12,7 @@ func get_id() -> StringName:
 
 
 func get_tooltip(_stacks: int = 0) -> String:
-	return "Regretful Shade: On Death, summon a Small, Fleeting 1/1 Regretful Shade here."
+	return "Regretful Shade: On death, summon a Small, Fleeting 1/1 Regretful Shade here."
 
 
 func on_removal(ctx: SimStatusContext, removal_ctx) -> void:

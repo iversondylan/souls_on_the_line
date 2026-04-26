@@ -9,7 +9,7 @@ func get_id() -> StringName:
 
 
 func get_tooltip(stacks: int = 0) -> String:
-	return "Boiling Blood: On Death, deal %s damage to all enemies. Expires at the start of the player's turn." % stacks
+	return "Boiling Blood: On death, deal %s damage to all enemies. Expires at the start of the player's turn." % stacks
 
 
 func on_removal(ctx: SimStatusContext, removal_ctx) -> void:

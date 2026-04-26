@@ -9,7 +9,7 @@ func get_id() -> StringName:
 
 
 func get_tooltip(stacks: int = 0) -> String:
-	return "Bequeath: On Death, Draw %s." % stacks
+	return "Bequeath: On death, Draw %s." % stacks
 
 
 func on_removal(ctx: SimStatusContext, removal_ctx) -> void:

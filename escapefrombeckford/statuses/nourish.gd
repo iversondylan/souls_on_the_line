@@ -27,4 +27,4 @@ func on_removal(ctx: SimStatusContext, removal_ctx) -> void:
 	ctx.api.heal(heal_ctx)
 
 func get_tooltip(stacks: int = 0) -> String:
-	return "Nourish: On Death, heal your most damaged ally for %s." % stacks
+	return "Nourish: On death, heal your most damaged ally for %s." % stacks

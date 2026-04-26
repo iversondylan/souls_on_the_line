@@ -35,7 +35,7 @@ func on_removal(ctx: SimStatusContext, removal_ctx) -> void:
 
 
 func get_tooltip(stacks: int = 0) -> String:
-	return "Spirited Return: On Death, if this unit has a summon reserve card, that card gains +%s AP and +%s max health." % [
+	return "Spirited Return: On death, if this unit has a summon reserve card, that card gains +%s AP and +%s max health." % [
 		stacks,
 		stacks,
 	]

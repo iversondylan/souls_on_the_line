@@ -6,7 +6,6 @@
 [resource]
 script = ExtResource("1_protected_drone_script")
 status_name = "Protected Drone"
-numerical = false
 reapply_type = 2
 icon = ExtResource("2_protected_drone_icon")
-tooltip = "On Death, summon a Fire Ant with that deals damage to all enemies on death."
+tooltip = "On death, summon a Fire Ant with that deals damage to all enemies on death."

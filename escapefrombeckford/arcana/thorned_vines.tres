@@ -9,6 +9,6 @@
 script = ExtResource("2_ajmdd")
 arcanum_name = "Thorned Vines"
 icon = ExtResource("1_uu4in")
-tooltip_description = "Thorned Vines: Friendly allies have On Death, deal 2 damage."
+tooltip_description = "Thorned Vines: Friendly allies have on death, deal 2 damage."
 projected_statuses = Array[ExtResource("1_status")]([ExtResource("3_exit")])
 metadata/_custom_type_script = "uid://cnmucv1qsei4i"

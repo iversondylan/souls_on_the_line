@@ -9,7 +9,7 @@ func get_id() -> StringName:
 
 
 func get_tooltip(stacks: int = 0) -> String:
-	return "Explosive Departure: On Death, deal %s damage to all enemies." % stacks
+	return "Explosive Departure: On death, deal %s damage to all enemies." % stacks
 
 
 func on_removal(ctx: SimStatusContext, removal_ctx) -> void:

@@ -56,7 +56,7 @@ func _verify_extra_actions_append_suffix() -> void:
 func _verify_glass_peccary_renders_new_style() -> void:
 	var rendered := TextUtils.build_card_description(GLASS_PECCARY)
 	assert(
-		rendered == "A fragile soul that leaves a parting gift. On Death, draw 1 and deal 3 damage.",
+		rendered == "A fragile soul that leaves a parting gift. On death, draw 1 and deal 3 damage.",
 		"Glass Peccary should render its summon flavor plus its two numeric death riders."
 	)
 
@@ -64,7 +64,7 @@ func _verify_glass_peccary_renders_new_style() -> void:
 func _verify_formic_drone_renders_status_label_with_plain_english() -> void:
 	var rendered := TextUtils.build_card_description(FORMIC_DRONE)
 	assert(
-		rendered == "Protected Drone: On Death, summon a Small, Wild Fire Ant that damages enemies on death.",
+		rendered == "Protected Drone: On death, summon a Small, Wild Fire Ant that damages enemies on death.",
 		"Formic Drone should keep the non-numerical status label and explain its effect in plain English."
 	)
 

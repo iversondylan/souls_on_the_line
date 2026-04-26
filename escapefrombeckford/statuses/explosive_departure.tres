@@ -8,4 +8,4 @@ script = ExtResource("2_om1ye")
 status_name = "Explosive Departure"
 numerical = true
 icon = ExtResource("1_c3dv3")
-tooltip = "On Death, deal damage to all enemies."
+tooltip = "On death, deal damage to all enemies."

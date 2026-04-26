@@ -11,4 +11,4 @@ func affects_target(state: BattleState, source_id: int, target_id: int) -> bool:
 	return super.affects_target(state, source_id, target_id)
 
 func get_tooltip(stacks: int = 0) -> String:
-	return "Burning Ambition: other allies gain On Death: deal %s damage to all enemies." % stacks
+	return "Burning Ambition: other allies gain on death: deal %s damage to all enemies." % stacks

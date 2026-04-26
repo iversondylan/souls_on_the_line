@@ -6,7 +6,6 @@
 [resource]
 script = ExtResource("2_m7xb2")
 status_name = "Spirit Keeper"
-numerical = false
+numerical = true
 reapply_type = 2
 icon = ExtResource("1_bo4gd")
-tooltip = "At the end of each round, increase max health by 2 and heal that amount (Fortitude 2)."

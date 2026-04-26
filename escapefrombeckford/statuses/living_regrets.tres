@@ -11,5 +11,5 @@ projected_statuses = Array[ExtResource("3_status")]([ExtResource("4_regretful_sh
 status_name = "Living Regrets"
 reapply_type = 2
 icon = ExtResource("1_living_regrets_icon")
-tooltip = "Gain %s: On Death, allies summon a Small, Fleeting 1/1 Regretful Shade. Deplete."
+tooltip = "Gain %s: On death, allies summon a Small, Fleeting 1/1 Regretful Shade. Deplete."
 metadata/_custom_type_script = "uid://cueedkb1u8vxy"
