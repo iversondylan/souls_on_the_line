@@ -1,8 +1,8 @@
-[gd_resource type="Resource" script_class="CardData" format=3]
+[gd_resource type="Resource" script_class="CardData" format=3 uid="uid://4rk2v715s04y"]
 
 [ext_resource type="Script" uid="uid://wtk5v77fcqvn" path="res://cards/_core/card_action.gd" id="1_action"]
 [ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://cards/_core/card_data.gd" id="2_card_data"]
-[ext_resource type="Resource" path="res://cards/souls/WoodstoveKeeperCard/summon_woodstove_keeper.tres" id="3_summon"]
+[ext_resource type="Resource" uid="uid://bru7tk7s43xjo" path="res://cards/souls/WoodstoveKeeperCard/summon_woodstove_keeper.tres" id="3_summon"]
 [ext_resource type="Texture2D" uid="uid://rbnnhvhr0fvp" path="res://_assets/sprites/assorted/gas-stove.png" id="4_texture"]
 
 [resource]
@@ -10,7 +10,6 @@ script = ExtResource("2_card_data")
 id = &"woodstove_keeper"
 card_type = 1
 target_type = 1
-rarity = 0
 name = "Woodstove Keeper"
 summon_release_overload = 1
 description = "%s"

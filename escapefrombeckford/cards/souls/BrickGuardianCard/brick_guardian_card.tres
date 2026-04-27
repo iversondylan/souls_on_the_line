@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="CardData" format=3]
+[gd_resource type="Resource" script_class="CardData" format=3 uid="uid://cmbq322qcncb6"]
 
 [ext_resource type="Script" uid="uid://wtk5v77fcqvn" path="res://cards/_core/card_action.gd" id="1_action"]
 [ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://cards/_core/card_data.gd" id="2_card_data"]
@@ -10,7 +10,6 @@ script = ExtResource("2_card_data")
 id = &"brick_guardian"
 card_type = 1
 target_type = 1
-rarity = 0
 name = "Brick Guardian"
 summon_release_overload = 1
 description = "%s"

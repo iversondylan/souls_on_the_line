@@ -1,6 +1,5 @@
 class_name RemovalContext extends RefCounted
 
-const Removal = preload("res://core/keys_values/removal_values.gd")
 
 var target_id: int = 0
 var removal_type: int = Removal.Type.DEATH

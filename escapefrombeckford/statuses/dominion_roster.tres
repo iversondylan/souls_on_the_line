@@ -6,6 +6,5 @@
 [resource]
 script = ExtResource("2_script")
 status_name = "Dominion Roster"
-numerical = false
 icon = ExtResource("1_ko4t0")
 tooltip = "At end of your turn, if you played no Soulbound or Soulwild cards this turn, your Soulbound and Soulwild allies gain +2 Might."

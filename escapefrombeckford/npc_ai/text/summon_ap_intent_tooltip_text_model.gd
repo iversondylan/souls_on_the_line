@@ -7,7 +7,7 @@
 class_name SummonApIntentTooltipTextModel
 extends TextModel
 
-const DEFAULT_TEXT_TEMPLATE := "[b]{action_name}[/b]: summon {count} {ap}/{hp} {summon_name}."
+const DEFAULT_TEXT_TEMPLATE := "[b]{action_name}[/b]: summon {count} {ap}|{hp} {summon_name}."
 
 @export_multiline var text_template: String = DEFAULT_TEXT_TEMPLATE
 
@@ -30,7 +30,7 @@ func _apply_legacy_stat_formatting(template: String, ap: int, hp: int) -> String
 	if placeholder_count >= 2:
 		return template % [ap, hp]
 	if placeholder_count == 1:
-		return template % ("%s/%s" % [ap, hp])
+		return template % ("%s/|%s" % [ap, hp])
 	return template
 
 

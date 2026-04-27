@@ -1,6 +1,6 @@
-[gd_resource type="Resource" script_class="ApplyStatusToTargetsAction" format=3]
+[gd_resource type="Resource" script_class="ApplyStatusToTargetsAction" format=3 uid="uid://ba2cn06dfeqnj"]
 
-[ext_resource type="Script" path="res://cards/_generic_actions/apply_status_to_targets_action.gd" id="1_script"]
+[ext_resource type="Script" uid="uid://bw3gskunin2ql" path="res://cards/_generic_actions/apply_status_to_targets_action.gd" id="1_script"]
 [ext_resource type="Resource" uid="uid://dsl60qwx3ugb" path="res://statuses/pressure_barrier.tres" id="2_status"]
 
 [resource]

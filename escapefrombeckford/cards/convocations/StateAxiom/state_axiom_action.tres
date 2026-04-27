@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="ApplyStatusToTargetsAction" format=3]
+[gd_resource type="Resource" script_class="ApplyStatusToTargetsAction" format=3 uid="uid://cjk4vjb1dqbum"]
 
 [ext_resource type="Script" uid="uid://bw3gskunin2ql" path="res://cards/_generic_actions/apply_status_to_targets_action.gd" id="1_script"]
 [ext_resource type="Resource" path="res://statuses/axiomatic.tres" id="2_status"]

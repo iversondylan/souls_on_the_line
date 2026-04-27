@@ -38,6 +38,8 @@ func show_current_view(new_title: String, randomized: bool = false) -> void:
 		card.queue_free()
 	
 	card_tooltip_popup.hide_tooltip()
+	card_tooltip_popup.api = api if show_battle_modifications else null
+	card_tooltip_popup.show_battle_modifications = show_battle_modifications
 	title.text = new_title
 	_update_view.call_deferred(randomized)
 
@@ -71,4 +73,4 @@ func _on_modify_battle_card(card_uid: String, _modified_fields: Dictionary, _rea
 			continue
 		if String(card.card_data.uid) != String(card_uid):
 			continue
-		card.refresh_description()
+		card.refresh_battle_visuals()

@@ -103,6 +103,7 @@ func _set_card_data(_card_data: CardData) -> void:
 		await ready
 	card_data = _card_data
 	card_visuals.card_data = card_data
+	_apply_battle_summon_stat_bonuses()
 	_refresh_cost_display_from_state()
 	_update_graphics()
 	update_description()
@@ -114,6 +115,7 @@ func refresh_from_card_data() -> void:
 	if card_data == null:
 		return
 	_refresh_cost_display_from_state()
+	_apply_battle_summon_stat_bonuses()
 	card_visuals.refresh_from_card_data()
 	playable = is_playable()
 
@@ -129,6 +131,24 @@ func set_selected_visual(on: bool) -> void:
 
 func update_description() -> void:
 	card_visuals.description.set_text(get_description())
+
+func _apply_battle_summon_stat_bonuses() -> void:
+	if card_visuals == null:
+		return
+	if api == null or !_should_query_summon_stat_bonuses():
+		card_visuals.set_summon_card_stat_bonuses(0, 0)
+		return
+	card_data.ensure_uid()
+	card_visuals.set_summon_card_stat_bonuses(
+		api.get_summon_card_ap_bonus(String(card_data.uid)),
+		api.get_summon_card_max_health_bonus(String(card_data.uid))
+	)
+
+func _should_query_summon_stat_bonuses() -> bool:
+	if card_data == null:
+		return false
+	return int(card_data.card_type) == int(CardData.CardType.SOULBOUND) \
+		or int(card_data.card_type) == int(CardData.CardType.SOULWILD)
 
 func get_description() -> String:
 	if api != null:
@@ -252,6 +272,8 @@ func _on_modify_battle_card(card_uid: String, _modified_fields: Dictionary, _rea
 		return
 	if String(card_data.uid) != String(card_uid):
 		return
+	_apply_battle_summon_stat_bonuses()
+	card_visuals.refresh_from_card_data()
 	update_description()
 
 

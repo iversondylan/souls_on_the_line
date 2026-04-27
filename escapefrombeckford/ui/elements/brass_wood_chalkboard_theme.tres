@@ -1,7 +1,7 @@
 [gd_resource type="Theme" format=3 uid="uid://c5t2luytfgc6b"]
 
 [ext_resource type="FontVariation" uid="uid://ct7jxc6iygcyi" path="res://ui/elements/cormorant_infant_regular_font_variation.tres" id="1_cormorant_regular"]
-[ext_resource type="FontVariation" path="res://ui/elements/cormorant_infant_italic_font_variation.tres" id="2_cormorant_italic"]
+[ext_resource type="FontVariation" uid="uid://blqan8pi4kim1" path="res://ui/elements/cormorant_infant_italic_font_variation.tres" id="2_cormorant_italic"]
 [ext_resource type="FontVariation" uid="uid://c6t3pmgfo61wa" path="res://ui/elements/ysabeau_infant_regular_font_variation.tres" id="3_ysabeau_regular"]
 [ext_resource type="StyleBox" uid="uid://cklspnmsu1cim" path="res://ui/elements/wood_style_box_flat.tres" id="5_focus"]
 [ext_resource type="StyleBox" uid="uid://dpvsrnnfnccjk" path="res://ui/elements/gem_style_box_flat_disabled.tres" id="6_disabled"]

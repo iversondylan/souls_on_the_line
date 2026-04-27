@@ -203,7 +203,7 @@ func _rebuild_rows() -> void:
 
 	for i in ids.size():
 		var id := String(ids[i])
-		var row_index := int(i / MAX_PER_ROW)
+		@warning_ignore("integer_division") var row_index := int(i / MAX_PER_ROW)
 		var child_index := int(i % MAX_PER_ROW)
 		var row := _rows[row_index]
 		var d: StatusDisplay = _displays_by_id.get(id, null)

@@ -1,6 +1,6 @@
-[gd_resource type="Resource" script_class="GoodPosterityAction" format=3]
+[gd_resource type="Resource" script_class="GoodPosterityAction" format=3 uid="uid://27pafeydhf7o"]
 
-[ext_resource type="Script" path="res://cards/convocations/GoodPosterity/good_posterity_action.gd" id="1_script"]
+[ext_resource type="Script" uid="uid://d022lkx3aicp6" path="res://cards/convocations/GoodPosterity/good_posterity_action.gd" id="1_script"]
 
 [resource]
 script = ExtResource("1_script")

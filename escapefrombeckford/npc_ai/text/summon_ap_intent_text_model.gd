@@ -33,6 +33,6 @@ func get_text(ctx: NPCAIContext) -> String:
 	if count <= 0:
 		return "error"
 	if count == 1:
-		return "%s/%s" % [ap, hp]
+		return "%s|%s" % [ap, hp]
 
-	return "%s×%s/%s" % [count, ap, hp]
+	return "%s×%s|%s" % [count, ap, hp]

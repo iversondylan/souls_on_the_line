@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="CombatantData" format=3 uid="uid://bjfkrhbqagl0x"]
 
 [ext_resource type="Script" uid="uid://cfatj0ryn8uv3" path="res://combatants/combatant_data.gd" id="1_data"]
-[ext_resource type="Resource" path="res://combatants/souls/ScorchingBull/scorching_bull_ai_profile.tres" id="2_ai"]
+[ext_resource type="Resource" uid="uid://o6ahxan0qpo8" path="res://combatants/souls/ScorchingBull/scorching_bull_ai_profile.tres" id="2_ai"]
 
 [resource]
 script = ExtResource("1_data")

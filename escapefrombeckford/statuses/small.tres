@@ -6,7 +6,6 @@
 [resource]
 script = ExtResource("1_small_script")
 status_name = "Small"
-numerical = false
 reapply_type = 2
 icon = ExtResource("1_1tv8i")
 tooltip = "Excess damage dealt here spills into the next combatant."

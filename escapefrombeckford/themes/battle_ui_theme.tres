@@ -2,7 +2,7 @@
 
 [ext_resource type="FontVariation" uid="uid://c6t3pmgfo61wa" path="res://ui/elements/ysabeau_infant_regular_font_variation.tres" id="1_regular"]
 [ext_resource type="StyleBox" uid="uid://i3g7qnyu7m6b" path="res://ui/elements/battle_style_box_flat.tres" id="2_ij1ir"]
-[ext_resource type="FontVariation" path="res://ui/elements/ysabeau_infant_italic_font_variation.tres" id="2_italic"]
+[ext_resource type="FontVariation" uid="uid://bi58em85g844a" path="res://ui/elements/ysabeau_infant_italic_font_variation.tres" id="2_italic"]
 
 [resource]
 Button/font_sizes/font_size = 26

@@ -10,6 +10,8 @@ const MENU_CARD_SCENE := preload("uid://d4g7iin5x7648")
 @onready var card_description: RichTextLabel = %CardDescription
 
 var player_data: PlayerData
+var api: SimBattleAPI
+var show_battle_modifications := false
 
 func _ready() -> void:
 	for card: MenuCard in tooltip_card_container.get_children():
@@ -18,6 +20,8 @@ func _ready() -> void:
 
 func show_tooltip(card: CardData) -> void:
 	var new_card := MENU_CARD_SCENE.instantiate() as MenuCard
+	new_card.api = api
+	new_card.show_battle_modifications = show_battle_modifications
 	tooltip_card_container.add_child(new_card)
 	new_card.card_data = card
 	new_card.set_card_data(card)

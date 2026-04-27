@@ -64,8 +64,8 @@
 [ext_resource type="Resource" uid="uid://dvuih4io2d0hg" path="res://statuses/deflect.tres" id="63_nxjyb"]
 [ext_resource type="Resource" uid="uid://sra3y1nn0c7q" path="res://statuses/precision_strike.tres" id="64_precision_strike"]
 [ext_resource type="Resource" uid="uid://dihrsnxw2i2nu" path="res://statuses/energy_surge.tres" id="65_energy_surge"]
-[ext_resource type="Resource" path="res://statuses/sniper.tres" id="66_sniper"]
-[ext_resource type="Resource" path="res://statuses/axiomatic.tres" id="67_axiomatic"]
+[ext_resource type="Resource" uid="uid://lc01ifdkqm0" path="res://statuses/sniper.tres" id="66_sniper"]
+[ext_resource type="Resource" uid="uid://biikqrfhxd110" path="res://statuses/axiomatic.tres" id="67_axiomatic"]
 
 [resource]
 script = ExtResource("1_2sbnh")

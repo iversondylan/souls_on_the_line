@@ -38,29 +38,29 @@ func clone():
 
 
 static func for_status_token(
-	source_owner_id: int,
-	source_group_index: int,
+	_source_owner_id: int,
+	_source_group_index: int,
 	status_id: StringName,
 	token_id: int
 ) -> TransformerSourceRef:
 	return TransformerSourceRef.new(
 		TransformerRecord.SOURCE_KIND_STATUS_TOKEN,
-		source_owner_id,
-		source_group_index,
+		_source_owner_id,
+		_source_group_index,
 		status_id,
 		token_id
 	)
 
 
 static func for_arcanum_entry(
-	source_owner_id: int,
-	source_group_index: int,
+	_source_owner_id: int,
+	_source_group_index: int,
 	arcanum_id: StringName
 ) -> TransformerSourceRef:
 	return TransformerSourceRef.new(
 		TransformerRecord.SOURCE_KIND_ARCANUM_ENTRY,
-		source_owner_id,
-		source_group_index,
+		_source_owner_id,
+		_source_group_index,
 		arcanum_id,
 		0
 	)

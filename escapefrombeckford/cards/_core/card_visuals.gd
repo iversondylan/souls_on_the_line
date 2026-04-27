@@ -37,6 +37,8 @@ const OVERLOAD_1_COLOR := Color(1.0, 0.88, 0.22, 1.0)
 const OVERLOAD_2_COLOR := Color(1.0, 0.56, 0.12, 1.0)
 const OVERLOAD_3_COLOR := Color(0.9, 0.18, 0.18, 1.0)
 const OVERLOAD_4_PLUS_COLOR := Color(0.45, 0.06, 0.06, 1.0)
+const POSITIVE_STAT_MOD_COLOR := Color(0.35, 1.0, 0.45, 1.0)
+const NEGATIVE_STAT_MOD_COLOR := Color(1.0, 0.25, 0.25, 1.0)
 const CARD_TYPE_TEXTURES := {
 	CardData.CardType.CONVOCATION: preload("res://_assets/sprites/assorted/convocation_white.png"),
 	CardData.CardType.SOULBOUND: preload("res://_assets/sprites/assorted/soul_bound_white.png"),
@@ -64,11 +66,17 @@ var _card_data_internal: CardData
 var _display_total_cost_override: int = -1
 var mana_panel_radius: float
 var _default_cost_label_modulate: Color = Color.WHITE
+var _default_action_panel_label_modulate: Color = Color.WHITE
+var _default_health_panel_label_modulate: Color = Color.WHITE
 var _default_name_label_font_size: int = 16
+var _summon_card_ap_bonus: int = 0
+var _summon_card_max_health_bonus: int = 0
 
 func _ready() -> void:
 	mana_panel_radius = cost_container.texture.get_size().y * cost_container.scale.y * 0.5 - 0.75
 	_default_cost_label_modulate = cost_label.modulate
+	_default_action_panel_label_modulate = action_panel_label.modulate
+	_default_health_panel_label_modulate = health_panel_label.modulate
 	_default_name_label_font_size = name_label.get_theme_font_size("font_size")
 	_connect_overload_pip_signals()
 
@@ -126,6 +134,12 @@ func refresh_from_card_data() -> void:
 
 func set_description(new_description: String) -> void:
 	description.set_text(new_description)
+
+func set_summon_card_stat_bonuses(ap_bonus: int, max_health_bonus: int) -> void:
+	_summon_card_ap_bonus = int(ap_bonus)
+	_summon_card_max_health_bonus = int(max_health_bonus)
+	if is_node_ready():
+		refresh_from_card_data()
 
 func set_display_total_cost_override(new_value: int) -> void:
 	_display_total_cost_override = int(new_value)
@@ -306,6 +320,8 @@ func _reset_soul_stats() -> void:
 	summon_icon.hide()
 	action_panel_label.text = "-"
 	health_panel_label.text = "-"
+	action_panel_label.modulate = _default_action_panel_label_modulate
+	health_panel_label.modulate = _default_health_panel_label_modulate
 
 func _refresh_soul_stats() -> void:
 	if !_is_soul_stats_card(_card_data_internal):
@@ -317,7 +333,8 @@ func _refresh_soul_stats() -> void:
 	if summon_data == null:
 		return
 
-	health_panel_label.text = str(int(summon_data.max_health))
+	health_panel_label.text = str(maxi(int(summon_data.max_health) + int(_summon_card_max_health_bonus), 0))
+	health_panel_label.modulate = _stat_modulate_for_delta(_summon_card_max_health_bonus, _default_health_panel_label_modulate)
 
 	var action_match: Dictionary = _find_first_soul_action_package(summon_data)
 	if action_match.is_empty():
@@ -334,24 +351,26 @@ func _refresh_soul_stats() -> void:
 
 	var effect: Variant = action_match.get("effect", null)
 	if effect is NPCAttackSequence:
-		action_panel_label.text = _format_attack_soul_stats(ctx)
+		action_panel_label.text = _format_attack_soul_stats(ctx, _summon_card_ap_bonus)
+		action_panel_label.modulate = _stat_modulate_for_delta(_summon_card_ap_bonus, _default_action_panel_label_modulate)
 		attack_icon.show()
 		return
 
 	if effect is NPCSummonSequence:
-		action_panel_label.text = _format_summon_soul_stats(ctx, summon_data)
+		action_panel_label.text = _format_summon_soul_stats(ctx, summon_data, _summon_card_ap_bonus, _summon_card_max_health_bonus)
+		action_panel_label.modulate = _stat_modulate_for_delta(_summon_card_ap_bonus, _default_action_panel_label_modulate)
 		summon_icon.show()
 
-func _is_soul_stats_card(card_data: CardData) -> bool:
-	if card_data == null:
+func _is_soul_stats_card(_card_data: CardData) -> bool:
+	if _card_data == null:
 		return false
-	return int(card_data.card_type) == int(CardData.CardType.SOULBOUND) \
-		or int(card_data.card_type) == int(CardData.CardType.SOULWILD)
+	return int(_card_data.card_type) == int(CardData.CardType.SOULBOUND) \
+		or int(_card_data.card_type) == int(CardData.CardType.SOULWILD)
 
-func _find_preview_summon_data(card_data: CardData) -> CombatantData:
-	if card_data == null:
+func _find_preview_summon_data(_card_data: CardData) -> CombatantData:
+	if _card_data == null:
 		return null
-	for action in card_data.actions:
+	for action in _card_data.actions:
 		if action is SummonAction:
 			return (action as SummonAction).get_preview_summon_data()
 	return null
@@ -380,17 +399,22 @@ func _build_soul_preview_context(summon_data: CombatantData) -> NPCAIContext:
 	ctx.forecast = true
 	return ctx
 
-func _format_attack_soul_stats(ctx: NPCAIContext) -> String:
+func _format_attack_soul_stats(ctx: NPCAIContext, ap_bonus: int = 0) -> String:
 	if ctx == null:
 		return "-"
 
-	var damage := maxi(int(ctx.params.get(Keys.DAMAGE, 0)), 0)
+	var damage := maxi(int(ctx.params.get(Keys.DAMAGE, 0)) + int(ap_bonus), 0)
 	var strikes := maxi(int(ctx.params.get(Keys.STRIKES, 1)), 1)
 	if strikes <= 1:
 		return str(damage)
 	return "%s×%s" % [strikes, damage]
 
-func _format_summon_soul_stats(ctx: NPCAIContext, fallback_data: CombatantData) -> String:
+func _format_summon_soul_stats(
+	ctx: NPCAIContext,
+	fallback_data: CombatantData,
+	ap_bonus: int = 0,
+	max_health_bonus: int = 0
+) -> String:
 	var summon_data := fallback_data
 	if ctx != null:
 		var ctx_summon_data: Variant = ctx.params.get(Keys.SUMMON_DATA, null)
@@ -400,7 +424,17 @@ func _format_summon_soul_stats(ctx: NPCAIContext, fallback_data: CombatantData) 
 	if summon_data == null:
 		return "-"
 
-	return "%s|%s" % [int(summon_data.ap), int(summon_data.max_health)]
+	return "%s|%s" % [
+		maxi(int(summon_data.ap) + int(ap_bonus), 0),
+		maxi(int(summon_data.max_health) + int(max_health_bonus), 0),
+	]
+
+func _stat_modulate_for_delta(delta: int, fallback: Color) -> Color:
+	if int(delta) > 0:
+		return POSITIVE_STAT_MOD_COLOR
+	if int(delta) < 0:
+		return NEGATIVE_STAT_MOD_COLOR
+	return fallback
 
 ## card_visuals.gd
 #

@@ -4,7 +4,7 @@
 [ext_resource type="Theme" uid="uid://c5t2luytfgc6b" path="res://ui/elements/brass_wood_chalkboard_theme.tres" id="2_5yci7"]
 [ext_resource type="Texture2D" uid="uid://cs0yoc5t1u07u" path="res://_assets/sprites/assorted/asterisk.png" id="2_civeq"]
 [ext_resource type="PackedScene" uid="uid://copx8afgv8hm3" path="res://run/campfire/slot_overlay.tscn" id="3_slot_overlay"]
-[ext_resource type="FontVariation" path="res://ui/elements/cormorant_infant_italic_font_variation.tres" id="5_auago"]
+[ext_resource type="FontVariation" uid="uid://blqan8pi4kim1" path="res://ui/elements/cormorant_infant_italic_font_variation.tres" id="5_auago"]
 
 [sub_resource type="Gradient" id="Gradient_8pjve"]
 colors = PackedColorArray(0, 0, 0, 1, 0.145099, 0.0492933, 0.00292548, 1)

@@ -2,8 +2,8 @@
 
 [ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://cards/_core/card_data.gd" id="1_lqk7y"]
 [ext_resource type="Script" uid="uid://dnybrgm0o6gjj" path="res://cards/_core/card_pile.gd" id="2_435f1"]
-[ext_resource type="Resource" path="res://cards/souls/BrickGuardianCard/brick_guardian_card.tres" id="2_xrdn6"]
-[ext_resource type="Resource" path="res://cards/souls/WoodstoveKeeperCard/woodstove_keeper_card.tres" id="3_pbb77"]
+[ext_resource type="Resource" uid="uid://cmbq322qcncb6" path="res://cards/souls/BrickGuardianCard/brick_guardian_card.tres" id="2_xrdn6"]
+[ext_resource type="Resource" uid="uid://4rk2v715s04y" path="res://cards/souls/WoodstoveKeeperCard/woodstove_keeper_card.tres" id="3_pbb77"]
 [ext_resource type="Resource" uid="uid://dwa8731q1wpg0" path="res://cards/convocations/Invigorate/invigorate.tres" id="4_7ppce"]
 [ext_resource type="Resource" uid="uid://xdof6j4dv4m3" path="res://cards/convocations/StateAxiom/state_axiom.tres" id="5_j6j5i"]
 [ext_resource type="Resource" uid="uid://3oey7rtx0b80" path="res://cards/convocations/HearteningHeal/heartening_heal.tres" id="6_s5q3i"]

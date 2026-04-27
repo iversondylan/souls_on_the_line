@@ -1,6 +1,6 @@
-[gd_resource type="Resource" script_class="ToggleStatusAction" format=3]
+[gd_resource type="Resource" script_class="ToggleStatusAction" format=3 uid="uid://kid7hlbhy1kb"]
 
-[ext_resource type="Script" path="res://cards/_generic_actions/toggle_status_action.gd" id="1_script"]
+[ext_resource type="Script" uid="uid://jyqig7tiph8f" path="res://cards/_generic_actions/toggle_status_action.gd" id="1_script"]
 [ext_resource type="Resource" path="res://statuses/sniper.tres" id="2_status"]
 
 [resource]

@@ -2,8 +2,6 @@
 
 class_name SimArcanumContext extends RefCounted
 
-const ArcanumEntry := preload("res://battle/sim/containers/arcanum_entry.gd")
-
 var api: SimBattleAPI
 var owner_id: int = 0
 var owner_group_index: int = SimBattleAPI.FRIENDLY

@@ -1,6 +1,6 @@
-[gd_resource type="Resource" script_class="TidalForceAction" format=3]
+[gd_resource type="Resource" script_class="TidalForceAction" format=3 uid="uid://c3hd14lq1ymw3"]
 
-[ext_resource type="Script" path="res://cards/convocations/TidalForce/tidal_force_action.gd" id="1_script"]
+[ext_resource type="Script" uid="uid://boc1v6nixp2yp" path="res://cards/convocations/TidalForce/tidal_force_action.gd" id="1_script"]
 
 [resource]
 script = ExtResource("1_script")

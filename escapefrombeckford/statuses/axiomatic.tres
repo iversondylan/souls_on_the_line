@@ -1,12 +1,11 @@
-[gd_resource type="Resource" script_class="AxiomaticStatus" format=3]
+[gd_resource type="Resource" script_class="AxiomaticStatus" format=3 uid="uid://biikqrfhxd110"]
 
-[ext_resource type="Script" path="res://statuses/axiomatic.gd" id="1_script"]
+[ext_resource type="Script" uid="uid://dqx54pwcefva2" path="res://statuses/axiomatic.gd" id="1_script"]
 [ext_resource type="Texture2D" uid="uid://2a0wiq3gbb5a" path="res://_assets/sprites/assorted/gyroscope.png" id="2_icon"]
 
 [resource]
 script = ExtResource("1_script")
 status_name = "Axiomatic"
-numerical = false
 reapply_type = 2
 auto_remove = 3
 icon = ExtResource("2_icon")

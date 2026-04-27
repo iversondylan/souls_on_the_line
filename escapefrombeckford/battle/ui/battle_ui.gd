@@ -38,8 +38,8 @@ func set_end_turn_enabled(enabled: bool) -> void:
 func _refresh_end_turn_enabled() -> void:
 	end_turn.disabled = !_requested_enabled or _discard_modal_active or _cleanup_active
 
-func show_summon_replace_prompt(show: bool) -> void:
-	if show:
+func show_summon_replace_prompt(_show: bool) -> void:
+	if _show:
 		summon_replace_prompt.show_prompt("Choose an ally to [b]fade[/b].")
 	else:
 		summon_replace_prompt.hide_prompt()

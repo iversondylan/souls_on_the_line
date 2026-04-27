@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="SummonAction" format=3 uid="uid://dowr08g1cwh3i"]
 
 [ext_resource type="Script" uid="uid://buhtw3540mbls" path="res://cards/_generic_actions/summon_action.gd" id="1_summon_action"]
-[ext_resource type="Resource" path="res://combatants/souls/Sporebearer/sporebearer_data.tres" id="2_sporebearer_data"]
+[ext_resource type="Resource" uid="uid://bo1hmxfr0pp13" path="res://combatants/souls/Sporebearer/sporebearer_data.tres" id="2_sporebearer_data"]
 
 [resource]
 script = ExtResource("1_summon_action")

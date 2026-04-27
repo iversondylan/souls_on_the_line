@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://wtk5v77fcqvn" path="res://cards/_core/card_action.gd" id="1_action"]
 [ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://cards/_core/card_data.gd" id="2_card"]
-[ext_resource type="Resource" path="res://cards/_generic_actions/move_target_to_front_action.tres" id="3_move"]
+[ext_resource type="Resource" uid="uid://b1ihpmbaebb6w" path="res://cards/_generic_actions/move_target_to_front_action.tres" id="3_move"]
 [ext_resource type="Resource" uid="uid://d3s7l0avpmhs3" path="res://cards/convocations/Interception/absorb_on_target_action.tres" id="4_absorb"]
 [ext_resource type="Texture2D" uid="uid://b88j1411cpg8f" path="res://_assets/sprites/assorted/shield-bash.png" id="7_64lio"]
 

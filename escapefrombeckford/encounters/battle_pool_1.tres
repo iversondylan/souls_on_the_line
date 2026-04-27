@@ -16,7 +16,7 @@
 [ext_resource type="Resource" uid="uid://dqfr6a6r3153l" path="res://encounters/beckford_domain/tier_0_groundskeeper.tres" id="13_ps7vb"]
 [ext_resource type="Resource" uid="uid://cloe37pet1i23" path="res://encounters/beckford_domain/tier_0_valedictorian.tres" id="14_mut5w"]
 [ext_resource type="Resource" uid="uid://b2depn4mdc7fm" path="res://encounters/beckford_domain/tier_0_weber_swordman.tres" id="15_x4vl4"]
-[ext_resource type="Resource" path="res://encounters/beckford_domain/tier_1_awakened_subject.tres" id="16_awakened_subject"]
+[ext_resource type="Resource" uid="uid://p8wywkxs0e5k" path="res://encounters/beckford_domain/tier_1_awakened_subject.tres" id="16_awakened_subject"]
 
 [resource]
 script = ExtResource("2_coyo0")

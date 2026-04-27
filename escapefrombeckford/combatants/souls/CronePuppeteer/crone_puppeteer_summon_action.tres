@@ -7,7 +7,7 @@
 [ext_resource type="Texture2D" uid="uid://dnor2pbb0nhu" path="res://_assets/sprites/assorted/egg-eye.png" id="5_icon"]
 [ext_resource type="Script" uid="uid://dtwuyctovqk5r" path="res://npc_ai/_core/intent_lifecycle_model.gd" id="6_8hywi"]
 [ext_resource type="Resource" uid="uid://ctwocrhb1x5bv" path="res://npc_ai/text/summon_ap_intent_text_model.tres" id="6_text_model"]
-[ext_resource type="Resource" path="res://combatants/souls/CronePuppeteer/patchwork_puppet_intent_tooltip_model.tres" id="7_tooltip_model"]
+[ext_resource type="Resource" uid="uid://ch8yy4nys0h3b" path="res://combatants/souls/CronePuppeteer/patchwork_puppet_intent_tooltip_model.tres" id="7_tooltip_model"]
 [ext_resource type="Script" uid="uid://3jde7uhq2yho" path="res://npc_ai/_core/npc_effect_package.gd" id="8_effect_package_script"]
 [ext_resource type="Script" uid="uid://q408gy2b4q6a" path="res://npc_ai/_core/performable_model.gd" id="8_hglfg"]
 [ext_resource type="Script" uid="uid://cuj4qvyx6dedj" path="res://npc_ai/_core/state_model.gd" id="10_dofix"]
