@@ -540,11 +540,20 @@ func emit_removed(
 		data[k] = extra[k]
 	return _append(BattleEvent.Type.REMOVED, data)
 
-func emit_summon_reserve_released(summoned_id: int, card_uid: String, overload_mod: int, reason: String = "") -> int:
+func emit_summon_reserve_released(
+	summoned_id: int,
+	card_uid: String,
+	overload_mod: int,
+	reason: String = "",
+	destination: int = CardMoveContext.BinKind.DISCARD_PILE,
+	overload_override: int = -1
+) -> int:
 	return _append(BattleEvent.Type.SUMMON_RESERVE_RELEASED, {
 		Keys.SUMMONED_ID: int(summoned_id),
 		Keys.CARD_UID: String(card_uid),
 		Keys.OVERLOAD_MOD: int(overload_mod),
+		Keys.RESERVE_RELEASE_DESTINATION: int(destination),
+		Keys.OVERLOAD_OVERRIDE: int(overload_override),
 		Keys.REASON: String(reason),
 	})
 

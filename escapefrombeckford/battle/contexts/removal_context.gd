@@ -14,6 +14,8 @@ var after_order_ids: PackedInt32Array = PackedInt32Array()
 var removed: bool = false
 var prevented: bool = false
 var overload_mod: int = 0
+var reserve_release_destination: int = CardMoveContext.BinKind.DISCARD_PILE
+var reserve_release_overload_override: int = -1
 var released_reserve_card_uid: String = ""
 
 var killer_id: int = 0

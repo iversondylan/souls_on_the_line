@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="CombatantData" format=3 uid="uid://tct16ymf3vyl"]
+
+[ext_resource type="Resource" path="res://combatants/souls/WoodstoveKeeper/woodstove_keeper_ai.tres" id="1_ai"]
+[ext_resource type="Script" uid="uid://cfatj0ryn8uv3" path="res://combatants/combatant_data.gd" id="2_data"]
+
+[resource]
+script = ExtResource("2_data")
+name = "Woodstove Keeper"
+description = "[font=res://ui/elements/cormorant_infant_italic_font_variation.tres][font_size=12]\"Countless families gathered 'round, for warmth and a hearty supper.\"[/font_size][/font]"
+character_art_uid = "uid://rbnnhvhr0fvp"
+portrait_art_uid = "uid://rbnnhvhr0fvp"
+height = 160
+max_health = 4
+ap = 5
+ai = ExtResource("1_ai")

@@ -5,9 +5,8 @@
 [ext_resource type="Resource" uid="uid://bhqq2dr8db5pn" path="res://cards/convocations/ResonanceSpikeCard/resonance_spike_card.tres" id="3_2g061"]
 [ext_resource type="Resource" uid="uid://btlvkb0pdixka" path="res://cards/convocations/PressureBarrier/pressure_barrier_data.tres" id="4_k21vg"]
 [ext_resource type="Resource" uid="uid://dhlr0v7pv8gdf" path="res://cards/convocations/Substitution/substitution.tres" id="4_oc100"]
-[ext_resource type="Resource" uid="uid://bayn0pa8nkx10" path="res://cards/souls/GlassPeccaryCard/glass_peccary_card.tres" id="5_oc100"]
 
 [resource]
 script = ExtResource("2_uoadt")
-cards = Array[ExtResource("1_1tix1")]([ExtResource("3_2g061"), ExtResource("3_2g061"), ExtResource("4_oc100"), ExtResource("4_oc100"), ExtResource("4_k21vg"), ExtResource("4_k21vg"), ExtResource("5_oc100")])
+cards = Array[ExtResource("1_1tix1")]([ExtResource("3_2g061"), ExtResource("3_2g061"), ExtResource("4_oc100"), ExtResource("4_oc100"), ExtResource("4_k21vg"), ExtResource("4_k21vg")])
 metadata/_custom_type_script = "uid://dnybrgm0o6gjj"

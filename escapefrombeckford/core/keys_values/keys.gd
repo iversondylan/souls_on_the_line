@@ -45,6 +45,8 @@ const BEFORE_MAX_MANA := &"before_max_mana"
 const AFTER_MAX_MANA := &"after_max_mana"
 const OVERLOAD := &"overload"
 const OVERLOAD_MOD := &"overload_mod"
+const OVERLOAD_OVERRIDE := &"overload_override"
+const RESERVE_RELEASE_DESTINATION := &"reserve_release_destination"
 
 # -------------------------
 # Scope frame keys

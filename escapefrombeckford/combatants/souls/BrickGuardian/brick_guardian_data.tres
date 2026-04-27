@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="CombatantData" format=3 uid="uid://b3y2stnpptiik"]
+
+[ext_resource type="Resource" path="res://combatants/souls/BrickGuardian/brick_guardian_ai.tres" id="1_ai"]
+[ext_resource type="Script" uid="uid://cfatj0ryn8uv3" path="res://combatants/combatant_data.gd" id="2_data"]
+
+[resource]
+script = ExtResource("2_data")
+name = "Brick Guardian"
+description = "[font=res://ui/elements/cormorant_infant_italic_font_variation.tres][font_size=12]\"The sturdy structures of long lost eras left their imprint upon the landscape.\"[/font_size][/font]"
+character_art_uid = "uid://vnb6jixwtxrs"
+portrait_art_uid = "uid://vnb6jixwtxrs"
+height = 150
+max_health = 5
+ap = 4
+ai = ExtResource("1_ai")

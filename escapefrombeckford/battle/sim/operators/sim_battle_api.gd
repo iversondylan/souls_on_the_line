@@ -1896,7 +1896,19 @@ func _maybe_release_reserved_card(
 		removal_ctx.released_reserve_card_uid = uid
 	
 	if writer != null:
-		writer.emit_summon_reserve_released(int(u.id), uid, overload_mod, String(reason))
+		var destination := int(CardMoveContext.BinKind.DISCARD_PILE)
+		var overload_override := -1
+		if removal_ctx != null:
+			destination = int(removal_ctx.reserve_release_destination)
+			overload_override = int(removal_ctx.reserve_release_overload_override)
+		writer.emit_summon_reserve_released(
+			int(u.id),
+			uid,
+			overload_mod,
+			String(reason),
+			destination,
+			overload_override
+		)
 	
 	u.bound_card_uid = ""
 

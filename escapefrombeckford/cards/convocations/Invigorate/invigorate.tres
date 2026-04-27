@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="CardData" format=3 uid="uid://dwa8731q1wpg0"]
+
+[ext_resource type="Script" uid="uid://wtk5v77fcqvn" path="res://cards/_core/card_action.gd" id="1_action"]
+[ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://cards/_core/card_data.gd" id="2_card_data"]
+[ext_resource type="Resource" path="res://cards/convocations/Invigorate/invigorate_action.tres" id="3_action"]
+[ext_resource type="Texture2D" uid="uid://jhtmfugmv5nd" path="res://_assets/sprites/assorted/heart-bottle.png" id="4_texture"]
+
+[resource]
+script = ExtResource("2_card_data")
+id = &"invigorate"
+target_type = 3
+rarity = 1
+name = "Invigorate"
+description = "Heal target ally to full. For every 3 health restored this way, it gains 1 Might.%s"
+cost = 2
+texture = ExtResource("4_texture")
+actions = Array[ExtResource("1_action")]([ExtResource("3_action")])
+metadata/_custom_type_script = "uid://d2f0qepe047dc"

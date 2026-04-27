@@ -613,12 +613,20 @@ func _on_summon_reserve_card_acquired(_summoned_id: int, card_uid: String) -> vo
 		card_bins.reserve_card_from_discard(card_uid)
 
 
-func _on_summon_reserve_card_released(summoned_id: int, card_uid: String, overload_mod: int) -> void:
+func _on_summon_reserve_card_released(
+	summoned_id: int,
+	card_uid: String,
+	overload_mod: int,
+	destination: int,
+	overload_override: int
+) -> void:
 	if card_bins != null:
-		card_bins.discard_reserved_summon_card(card_uid, overload_mod)
+		card_bins.release_reserved_summon_card(card_uid, overload_mod, destination, overload_override)
 
 	var combatant_view := battle_view.get_combatant(summoned_id) if battle_view != null else null
 	if combatant_view == null or discard_pile_button == null:
+		return
+	if int(destination) == int(CardMoveContext.BinKind.HAND):
 		return
 
 	var perspective_card: PerspectiveCard = perspective_card_scn.instantiate()

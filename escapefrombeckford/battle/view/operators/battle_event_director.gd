@@ -1285,12 +1285,20 @@ func _on_summon_reserve_released(e: EventPackage) -> void:
 	var summoned_id := int(d.get(Keys.SUMMONED_ID, 0))
 	var card_uid := String(d.get(Keys.CARD_UID, ""))
 	var overload_mod := int(d.get(Keys.OVERLOAD_MOD, 0))
+	var destination := int(d.get(Keys.RESERVE_RELEASE_DESTINATION, CardMoveContext.BinKind.DISCARD_PILE))
+	var overload_override := int(d.get(Keys.OVERLOAD_OVERRIDE, -1))
 	if summoned_id <= 0 or card_uid == "":
 		return
 	var v := battle_view.get_combatant(summoned_id)
 	if v != null:
 		v.set_has_summon_reserve_card(false)
-	Events.summon_reserve_card_released.emit(summoned_id, card_uid, overload_mod)
+	Events.summon_reserve_card_released.emit(
+		summoned_id,
+		card_uid,
+		overload_mod,
+		destination,
+		overload_override
+	)
 
 func _on_victory(e: EventPackage) -> void:
 	var d := _data(e)
