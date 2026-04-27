@@ -21,18 +21,11 @@ var run: Run
 @onready var rewards: VBoxContainer = %Rewards
 var reward_context: RewardContext
 
-var card_reward_total_weight : float = 0.0
 var _current_card_reward_button: RewardButton
 var _card_reward_overlay: CardSelectionOverlay
 var _confirm_dialog
 var _pending_reward_card: CardData
 var _pending_reward_slot_index: int = -1
-
-var card_rarity_weights := {
-	CardData.Rarity.COMMON: 0.0,
-	CardData.Rarity.UNCOMMON: 0.0,
-	CardData.Rarity.RARE: 0.0
-}
 
 func _ready() -> void:
 	_clear_rewards()
@@ -110,18 +103,6 @@ func _show_card_reward(card_choices: Array[CardData]) -> void:
 		"Take",
 		"Cancel"
 	)
-
-func _calculate_card_chances() -> void:
-	card_reward_total_weight = run_state.common_weight + run_state.uncommon_weight + run_state.rare_weight
-	card_rarity_weights[CardData.Rarity.COMMON] = run_state.common_weight
-	card_rarity_weights[CardData.Rarity.UNCOMMON] = run_state.common_weight + run_state.uncommon_weight
-	card_rarity_weights[CardData.Rarity.RARE] = card_reward_total_weight
-
-func _modify_weights(rarity_rolled: CardData.Rarity) -> void:
-	if rarity_rolled == CardData.Rarity.RARE:
-		run_state.rare_weight = RunState.BASE_RARE_WEIGHT
-	else:
-		run_state.rare_weight = clampf(run_state.rare_weight + 0.3, RunState.BASE_RARE_WEIGHT, 5.0)
 
 func _on_gold_reward_taken(n_gold: int, reward_index: int, reward_button: RewardButton) -> void:
 	if !run_state:

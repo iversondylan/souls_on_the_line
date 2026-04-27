@@ -520,7 +520,7 @@ func _get_battle_tier_for_room(room: Room) -> int:
 	if room == null:
 		return 0
 	if int(room.type) == int(Room.RoomType.BOSS):
-		return 2
+		return 3
 	return 1 if int(room.column) > 2 else 0
 
 
@@ -655,11 +655,21 @@ func _build_pending_shop_checkpoint(room: Room) -> void:
 		for card_data in source_pile.cards:
 			available_cards.append(card_data)
 	for _i in range(mini(3, available_cards.size())):
-		var card_index := rng.debug_range_i(0, available_cards.size() - 1, "shop_card_offer")
-		var card := available_cards[card_index]
-		available_cards.remove_at(card_index)
+		var target_rarity := CardRarityManager.roll_rarity(
+			rng,
+			CardRarityManager.Source.SHOP,
+			float(run_state.rare_pity_offset_percent),
+			"shop_card_rarity_roll"
+		)
+		var card := CardRarityManager.select_card_for_rarity(
+			rng,
+			available_cards,
+			target_rarity,
+			"shop_card_offer"
+		)
 		if card == null:
 			continue
+		available_cards.erase(card)
 		ctx.card_offers.append(card)
 		ctx.card_offer_costs.append(rng.debug_range_i(100, 300, "shop_card_cost"))
 
@@ -743,7 +753,7 @@ func _resolve_pending_treasure_arcanum() -> Arcanum:
 	return _resolve_arcanum_id(run_state.pending_treasure_arcanum_id)
 
 
-func _build_reward_card_choices(seed: int) -> PackedStringArray:
+func _build_reward_card_choices(seed: int, rarity_source: int) -> PackedStringArray:
 	var chosen_paths := PackedStringArray()
 	if run_state == null:
 		return chosen_paths
@@ -758,31 +768,26 @@ func _build_reward_card_choices(seed: int) -> PackedStringArray:
 	for _i in range(run_state.card_reward_choices):
 		if possible_cards.is_empty():
 			break
-		var total_weight := run_state.common_weight + run_state.uncommon_weight + run_state.rare_weight
-		var roll := rng.debug_range_f(0.0, total_weight, "reward_card_roll")
-		var target_rarity := CardData.Rarity.RARE
-		if roll <= run_state.common_weight:
-			target_rarity = CardData.Rarity.COMMON
-		elif roll <= run_state.common_weight + run_state.uncommon_weight:
-			target_rarity = CardData.Rarity.UNCOMMON
-		if target_rarity == CardData.Rarity.RARE:
-			run_state.rare_weight = RunState.BASE_RARE_WEIGHT
-		else:
-			run_state.rare_weight = clampf(run_state.rare_weight + 0.3, RunState.BASE_RARE_WEIGHT, 5.0)
+		var target_rarity := CardRarityManager.roll_rarity(
+			rng,
+			int(rarity_source),
+			float(run_state.rare_pity_offset_percent),
+			"reward_card_rarity_roll"
+		)
+		run_state.rare_pity_offset_percent = CardRarityManager.next_pity_offset(
+			float(run_state.rare_pity_offset_percent),
+			target_rarity
+		)
 
-		var matching_indices: Array[int] = []
-		for idx in range(possible_cards.size()):
-			var candidate: CardData = possible_cards[idx]
-			if candidate != null and candidate.rarity == target_rarity:
-				matching_indices.append(idx)
-		if matching_indices.is_empty():
-			for idx in range(possible_cards.size()):
-				matching_indices.append(idx)
-		var selected_slot := matching_indices[rng.debug_range_i(0, matching_indices.size() - 1, "reward_card_pick")]
-		var selected_card := possible_cards[selected_slot]
-		possible_cards.remove_at(selected_slot)
+		var selected_card := CardRarityManager.select_card_for_rarity(
+			rng,
+			possible_cards,
+			target_rarity,
+			"reward_card_pick"
+		)
 		if selected_card == null:
 			continue
+		possible_cards.erase(selected_card)
 		chosen_paths.append(_card_proto_path(selected_card))
 	return chosen_paths
 
@@ -810,7 +815,8 @@ func _prepare_pending_reward_checkpoint(source_kind: int, room: Room) -> void:
 		var gold_rng := RNG.new(int(run_state.pending_reward_seed))
 		reward_ctx.gold_rewards.append(int(reward_ctx.battle_data.roll_gold_reward_with_rng(gold_rng)))
 		reward_ctx.include_card_reward = true
-		reward_ctx.card_choices = _resolve_card_paths(_build_reward_card_choices(int(run_state.pending_reward_seed)))
+		var rarity_source := CardRarityManager.source_for_battle_tier(int(reward_ctx.battle_data.battle_tier))
+		reward_ctx.card_choices = _resolve_card_paths(_build_reward_card_choices(int(run_state.pending_reward_seed), rarity_source))
 	elif int(source_kind) == int(RewardContext.SourceKind.TREASURE):
 		var treasure_arcanum := _resolve_pending_treasure_arcanum()
 		if treasure_arcanum != null:

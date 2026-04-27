@@ -12,6 +12,7 @@ card_type = 2
 rarity = 2
 name = "Growing Fervor"
 deplete = true
+summon_release_overload = 3
 description = "At the start of each of your turns, allies gain +%s damage."
 cost = 2
 texture = ExtResource("4_y70cm")

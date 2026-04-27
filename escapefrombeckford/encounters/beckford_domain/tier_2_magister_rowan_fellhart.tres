@@ -7,7 +7,7 @@
 [resource]
 script = ExtResource("3_battle_data")
 encounter_name = "Magister Rowan Fellhart"
-battle_tier = 2
+battle_tier = 3
 gold_reward_min = 95
 gold_reward_max = 115
 enemies = Array[ExtResource("1_combatant_data")]([ExtResource("2_rowan")])

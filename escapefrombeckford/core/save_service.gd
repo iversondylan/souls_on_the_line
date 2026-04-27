@@ -553,9 +553,7 @@ func _decode_run_state(envelope: Dictionary) -> RunState:
 	run_state.resource_name = str(data.get("save_name", ""))
 	run_state.gold = int(data.get("gold", RunState.BASE_STARTING_GOLD))
 	run_state.card_reward_choices = int(data.get("card_reward_choices", RunState.BASE_CARD_REWARD_CHOICES))
-	run_state.common_weight = float(data.get("common_weight", RunState.BASE_COMMON_WEIGHT))
-	run_state.uncommon_weight = float(data.get("uncommon_weight", RunState.BASE_UNCOMMON_WEIGHT))
-	run_state.rare_weight = float(data.get("rare_weight", RunState.BASE_RARE_WEIGHT))
+	run_state.rare_pity_offset_percent = _decode_rare_pity_offset(data)
 	run_state.run_seed = int(data.get("run_seed", 0))
 	run_state.map_seed = int(data.get("map_seed", 0))
 	run_state.run_rng_snapshot = _decode_run_rng_snapshot(data.get("run_rng_snapshot", {}))
@@ -597,9 +595,7 @@ func _encode_run_state(run_state: RunState, save_name: String = "") -> Dictionar
 			"save_name": save_name,
 			"gold": int(run_state.gold),
 			"card_reward_choices": int(run_state.card_reward_choices),
-			"common_weight": float(run_state.common_weight),
-			"uncommon_weight": float(run_state.uncommon_weight),
-			"rare_weight": float(run_state.rare_weight),
+			"rare_pity_offset_percent": float(run_state.rare_pity_offset_percent),
 			"run_seed": int(run_state.run_seed),
 			"map_seed": int(run_state.map_seed),
 			"run_rng_snapshot": _encode_run_rng_snapshot(run_state.run_rng_snapshot),
@@ -631,6 +627,29 @@ func _encode_run_state(run_state: RunState, save_name: String = "") -> Dictionar
 			"run_deck": _encode_run_deck(run_state.run_deck),
 		},
 	}
+
+
+func _decode_rare_pity_offset(data: Dictionary) -> float:
+	if data.has("rare_pity_offset_percent"):
+		return clampf(
+			float(data.get("rare_pity_offset_percent", RunState.BASE_RARE_PITY_OFFSET_PERCENT)),
+			RunState.BASE_RARE_PITY_OFFSET_PERCENT,
+			RunState.MAX_RARE_PITY_OFFSET_PERCENT
+		)
+	if data.has("rare_weight"):
+		var old_common_weight := float(data.get("common_weight", 6.0))
+		var old_uncommon_weight := float(data.get("uncommon_weight", 3.7))
+		var old_rare_weight := float(data.get("rare_weight", 0.3))
+		var old_total_weight := old_common_weight + old_uncommon_weight + old_rare_weight
+		var old_rare_percent := 3.0
+		if old_total_weight > 0.0:
+			old_rare_percent = old_rare_weight / old_total_weight * 100.0
+		return clampf(
+			old_rare_percent - 3.0,
+			RunState.BASE_RARE_PITY_OFFSET_PERCENT,
+			RunState.MAX_RARE_PITY_OFFSET_PERCENT
+		)
+	return RunState.BASE_RARE_PITY_OFFSET_PERCENT
 
 
 func _extract_envelope_data(envelope: Dictionary, expected_type: String) -> Dictionary:
@@ -1361,6 +1380,11 @@ func _normalize_active_run(run_state: RunState) -> void:
 		run_state.owned_arcanum_ids = PackedStringArray()
 	if run_state.consumed_battle_paths == null:
 		run_state.consumed_battle_paths = PackedStringArray()
+	run_state.rare_pity_offset_percent = clampf(
+		float(run_state.rare_pity_offset_percent),
+		RunState.BASE_RARE_PITY_OFFSET_PERCENT,
+		RunState.MAX_RARE_PITY_OFFSET_PERCENT
+	)
 	_remove_pending_room_from_cleared(run_state)
 
 
