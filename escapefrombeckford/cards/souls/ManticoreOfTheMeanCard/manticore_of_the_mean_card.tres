@@ -5,7 +5,7 @@
 [ext_resource type="Resource" uid="uid://dqg2emtjndkfb" path="res://cards/souls/ManticoreOfTheMeanCard/summon_manticore_of_the_mean.tres" id="3_summon"]
 [ext_resource type="Resource" uid="uid://debhqvkl6jpa2" path="res://cards/souls/ManticoreOfTheMeanCard/grounding_accord_on_summoned_action.tres" id="4_grounding"]
 [ext_resource type="Resource" uid="uid://bvxucphhvj16q" path="res://cards/souls/ManticoreOfTheMeanCard/awase_on_summoned_action.tres" id="5_awase"]
-[ext_resource type="Texture2D" uid="uid://qpfuxl30kvbu" path="res://_assets/sprites/assorted/hydra.png" id="6_ciuvu"]
+[ext_resource type="Texture2D" uid="uid://c5mdgim43c8cg" path="res://_assets/sprites/assorted/dove.png" id="6_ciuvu"]
 
 [resource]
 script = ExtResource("2_card_data")
@@ -13,7 +13,7 @@ id = &"manticore_of_the_mean"
 card_type = 1
 target_type = 1
 rarity = 2
-name = "Manticore of the Mean"
+name = "Gathering Flock"
 description = "%s%s: when you play your second Convocation each turn, Gain Absorb. When Absorb prevents damage, increase max health by %s."
 cost = 1
 texture = ExtResource("6_ciuvu")

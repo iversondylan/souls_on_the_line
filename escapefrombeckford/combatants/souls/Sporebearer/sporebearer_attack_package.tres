@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="NPCEffectPackage" format=3 uid="uid://xeis132ngvy7"]
+
+[ext_resource type="Resource" uid="uid://bnqqhpu1itcb3" path="res://npc_ai/npc_attack_sequence.tres" id="1_21rgi"]
+[ext_resource type="Script" uid="uid://b8d5j6ne4mt88" path="res://npc_ai/_core/param_model.gd" id="1_sxq1k"]
+[ext_resource type="Script" uid="uid://3jde7uhq2yho" path="res://npc_ai/_core/npc_effect_package.gd" id="2_3ebfy"]
+[ext_resource type="Resource" uid="uid://b6vgjaovptslx" path="res://combatants/souls/SpectralClone/ap_plus_0_damage.tres" id="3_7a5pv"]
+[ext_resource type="Script" uid="uid://cuj4qvyx6dedj" path="res://npc_ai/_core/state_model.gd" id="3_dp3jr"]
+[ext_resource type="Resource" uid="uid://bseakllxo2hqs" path="res://npc_ai/attack_mode/ranged_behind_player_model.tres" id="4_vu3gs"]
+
+[resource]
+script = ExtResource("2_3ebfy")
+effect = ExtResource("1_21rgi")
+param_models = Array[ExtResource("1_sxq1k")]([ExtResource("3_7a5pv"), ExtResource("4_vu3gs")])
+metadata/_custom_type_script = "uid://3jde7uhq2yho"

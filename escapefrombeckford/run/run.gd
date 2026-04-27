@@ -628,9 +628,11 @@ func _clear_pending_generated_state() -> void:
 	run_state.pending_shop_claimed_arcanum_offer_indices = []
 	run_state.pending_reward_gold_rewards = []
 	run_state.pending_reward_card_choice_paths = PackedStringArray()
+	run_state.pending_reward_soulbound_card_choice_paths = PackedStringArray()
 	run_state.pending_reward_arcanum_ids = PackedStringArray()
 	run_state.pending_reward_claimed_gold_indices = []
 	run_state.pending_reward_card_claimed = false
+	run_state.pending_reward_soulbound_card_claimed = false
 	run_state.pending_reward_claimed_arcanum_indices = []
 
 
@@ -753,17 +755,18 @@ func _resolve_pending_treasure_arcanum() -> Arcanum:
 	return _resolve_arcanum_id(run_state.pending_treasure_arcanum_id)
 
 
-func _build_reward_card_choices(seed: int, rarity_source: int) -> PackedStringArray:
+func _build_reward_card_choices(rng: RNG, rarity_source: int, soulbound_only: bool) -> PackedStringArray:
 	var chosen_paths := PackedStringArray()
-	if run_state == null:
+	if run_state == null or rng == null:
 		return chosen_paths
 	var source_pile := run_state.draftable_cards if run_state.draftable_cards != null else (player_data.draftable_cards if player_data != null else null)
 	if source_pile == null:
 		return chosen_paths
 
-	var rng := RNG.new(seed)
 	var possible_cards: Array[CardData] = []
 	for card_data in source_pile.cards:
+		if !_card_matches_reward_pool(card_data, soulbound_only):
+			continue
 		possible_cards.append(card_data)
 	for _i in range(run_state.card_reward_choices):
 		if possible_cards.is_empty():
@@ -792,6 +795,28 @@ func _build_reward_card_choices(seed: int, rarity_source: int) -> PackedStringAr
 	return chosen_paths
 
 
+func _card_matches_reward_pool(card_data: CardData, soulbound_only: bool) -> bool:
+	if card_data == null:
+		return false
+	if soulbound_only:
+		return card_data.is_soulbound_slot_card()
+	return int(card_data.card_type) != int(CardData.CardType.SOULBOUND)
+
+
+func _should_generate_soulbound_reward(rng: RNG, rarity_source: int) -> bool:
+	if int(rarity_source) == int(CardRarityManager.Source.ELITE_COMBAT):
+		return true
+	if int(rarity_source) == int(CardRarityManager.Source.BOSS_REWARD):
+		return true
+	var chance := clampf(
+		float(run_state.soulbound_pity_offset_percent),
+		RunState.SOULBOUND_PITY_MIN_OFFSET,
+		RunState.SOULBOUND_PITY_MAX_OFFSET
+	)
+	var roll := rng.debug_range_f(0.0, 100.0, "soulbound_reward_roll")
+	return chance >= 100.0 or roll < chance
+
+
 func _prepare_pending_reward_checkpoint(source_kind: int, room: Room) -> void:
 	if run_state == null or room == null:
 		return
@@ -799,9 +824,11 @@ func _prepare_pending_reward_checkpoint(source_kind: int, room: Room) -> void:
 	run_state.pending_reward_seed = _derive_reward_seed(room, reward_kind)
 	run_state.pending_reward_gold_rewards = []
 	run_state.pending_reward_card_choice_paths = PackedStringArray()
+	run_state.pending_reward_soulbound_card_choice_paths = PackedStringArray()
 	run_state.pending_reward_arcanum_ids = PackedStringArray()
 	run_state.pending_reward_claimed_gold_indices = []
 	run_state.pending_reward_card_claimed = false
+	run_state.pending_reward_soulbound_card_claimed = false
 	run_state.pending_reward_claimed_arcanum_indices = []
 
 	var reward_ctx := RewardContext.new()
@@ -816,7 +843,18 @@ func _prepare_pending_reward_checkpoint(source_kind: int, room: Room) -> void:
 		reward_ctx.gold_rewards.append(int(reward_ctx.battle_data.roll_gold_reward_with_rng(gold_rng)))
 		reward_ctx.include_card_reward = true
 		var rarity_source := CardRarityManager.source_for_battle_tier(int(reward_ctx.battle_data.battle_tier))
-		reward_ctx.card_choices = _resolve_card_paths(_build_reward_card_choices(int(run_state.pending_reward_seed), rarity_source))
+		var card_rng := RNG.new(int(run_state.pending_reward_seed))
+		reward_ctx.card_choices = _resolve_card_paths(_build_reward_card_choices(card_rng, rarity_source, false))
+		if _should_generate_soulbound_reward(card_rng, rarity_source):
+			reward_ctx.soulbound_card_choices = _resolve_card_paths(_build_reward_card_choices(card_rng, rarity_source, true))
+			reward_ctx.include_soulbound_card_reward = !reward_ctx.soulbound_card_choices.is_empty()
+			if int(rarity_source) == int(CardRarityManager.Source.NORMAL_COMBAT):
+				if reward_ctx.include_soulbound_card_reward:
+					run_state.reset_soulbound_pity()
+				else:
+					run_state.increase_soulbound_pity_after_miss()
+		elif int(rarity_source) == int(CardRarityManager.Source.NORMAL_COMBAT):
+			run_state.increase_soulbound_pity_after_miss()
 	elif int(source_kind) == int(RewardContext.SourceKind.TREASURE):
 		var treasure_arcanum := _resolve_pending_treasure_arcanum()
 		if treasure_arcanum != null:
@@ -829,6 +867,9 @@ func _prepare_pending_reward_checkpoint(source_kind: int, room: Room) -> void:
 	run_state.pending_reward_card_choice_paths = PackedStringArray()
 	for card in reward_ctx.card_choices:
 		run_state.pending_reward_card_choice_paths.append(_card_proto_path(card))
+	run_state.pending_reward_soulbound_card_choice_paths = PackedStringArray()
+	for card in reward_ctx.soulbound_card_choices:
+		run_state.pending_reward_soulbound_card_choice_paths.append(_card_proto_path(card))
 	run_state.pending_reward_arcanum_ids = PackedStringArray()
 	for arcanum in reward_ctx.arcanum_rewards:
 		run_state.pending_reward_arcanum_ids.append(String(arcanum.get_id()))
@@ -846,9 +887,12 @@ func _build_pending_reward_context() -> RewardContext:
 	reward_ctx.gold_rewards = run_state.pending_reward_gold_rewards.duplicate()
 	reward_ctx.card_choices = _resolve_card_paths(run_state.pending_reward_card_choice_paths)
 	reward_ctx.include_card_reward = !run_state.pending_reward_card_choice_paths.is_empty()
+	reward_ctx.soulbound_card_choices = _resolve_card_paths(run_state.pending_reward_soulbound_card_choice_paths)
+	reward_ctx.include_soulbound_card_reward = !run_state.pending_reward_soulbound_card_choice_paths.is_empty()
 	reward_ctx.arcanum_rewards = _resolve_arcanum_ids(run_state.pending_reward_arcanum_ids)
 	reward_ctx.claimed_gold_indices = run_state.pending_reward_claimed_gold_indices.duplicate()
 	reward_ctx.card_reward_claimed = run_state.pending_reward_card_claimed
+	reward_ctx.soulbound_card_reward_claimed = run_state.pending_reward_soulbound_card_claimed
 	reward_ctx.claimed_arcanum_indices = run_state.pending_reward_claimed_arcanum_indices.duplicate()
 	return reward_ctx
 

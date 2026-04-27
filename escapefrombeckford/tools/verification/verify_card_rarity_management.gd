@@ -116,7 +116,7 @@ func _verify_static_wiring() -> void:
 			"CardRarityManager.Source.SHOP",
 			"CardRarityManager.source_for_battle_tier",
 			"CardRarityManager.next_pity_offset",
-			"_build_reward_card_choices(int(run_state.pending_reward_seed), rarity_source)",
+			"_build_reward_card_choices(card_rng, rarity_source, false)",
 			"return 3",
 		]
 	)

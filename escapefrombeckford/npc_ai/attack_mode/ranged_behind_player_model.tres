@@ -1,0 +1,7 @@
+[gd_resource type="Resource" script_class="RangedBehindPlayerModel" format=3 uid="uid://bseakllxo2hqs"]
+
+[ext_resource type="Script" uid="uid://ciectlejwqbj" path="res://npc_ai/attack_mode/ranged_behind_player_model.gd" id="1_oqb5k"]
+
+[resource]
+script = ExtResource("1_oqb5k")
+metadata/_custom_type_script = "uid://ciectlejwqbj"

@@ -1,7 +1,6 @@
 [gd_resource type="Resource" script_class="NPCAction" format=3 uid="uid://badawvne56hsa"]
 
 [ext_resource type="Script" uid="uid://3jde7uhq2yho" path="res://npc_ai/_core/npc_effect_package.gd" id="1_pkg"]
-[ext_resource type="Resource" uid="uid://7xa47h86sj2q" path="res://combatants/enemies/ScrapmenTruncheoner/blinding_assault_apply_vulnerable_pkg.tres" id="2_vulnerable_pkg"]
 [ext_resource type="Resource" uid="uid://cjq8hwkl25fbq" path="res://combatants/enemies/ScrapmenTruncheoner/blinding_assault_apply_weakened_pkg.tres" id="3_weakened_pkg"]
 [ext_resource type="Resource" uid="uid://cx1shm0rwn3xs" path="res://combatants/enemies/ScrapmenTruncheoner/blinding_assault_attack_pkg.tres" id="5_attack_pkg"]
 [ext_resource type="Texture2D" uid="uid://b5se3y5bpw3yo" path="res://_assets/sprites/assorted/lightning_skull_attack.PNG" id="5_hcrgo"]
@@ -15,7 +14,7 @@
 
 [resource]
 script = ExtResource("7_action")
-effect_packages = Array[ExtResource("1_pkg")]([ExtResource("5_attack_pkg"), ExtResource("3_weakened_pkg"), ExtResource("2_vulnerable_pkg")])
+effect_packages = Array[ExtResource("1_pkg")]([ExtResource("5_attack_pkg"), ExtResource("3_weakened_pkg")])
 state_models = Array[ExtResource("10_jkdrk")]([ExtResource("11_xau02")])
 action_name = "Blinding Assault"
 intent_icon = ExtResource("5_hcrgo")

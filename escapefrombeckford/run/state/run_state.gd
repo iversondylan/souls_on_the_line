@@ -18,10 +18,14 @@ const BASE_STARTING_GOLD: int = 50
 const BASE_CARD_REWARD_CHOICES := 3
 const BASE_RARE_PITY_OFFSET_PERCENT := CardRarityManager.PITY_MIN_OFFSET
 const MAX_RARE_PITY_OFFSET_PERCENT := CardRarityManager.PITY_MAX_OFFSET
+const SOULBOUND_PITY_MIN_OFFSET := 40.0
+const SOULBOUND_PITY_MAX_OFFSET := 100.0
+const SOULBOUND_PITY_MISS_STEP := 30.0
 
 @export var gold: int = BASE_STARTING_GOLD : set = _set_gold
 @export var card_reward_choices: int = BASE_CARD_REWARD_CHOICES
 @export_range(-5.0, 40.0) var rare_pity_offset_percent: float = BASE_RARE_PITY_OFFSET_PERCENT
+@export_range(40.0, 100.0) var soulbound_pity_offset_percent: float = SOULBOUND_PITY_MIN_OFFSET
 
 @export var run_seed: int = 0
 @export var map_seed: int = 0
@@ -43,9 +47,11 @@ const MAX_RARE_PITY_OFFSET_PERCENT := CardRarityManager.PITY_MAX_OFFSET
 @export var pending_shop_claimed_arcanum_offer_indices: Array[int] = []
 @export var pending_reward_gold_rewards: Array[int] = []
 @export var pending_reward_card_choice_paths: PackedStringArray = []
+@export var pending_reward_soulbound_card_choice_paths: PackedStringArray = []
 @export var pending_reward_arcanum_ids: PackedStringArray = []
 @export var pending_reward_claimed_gold_indices: Array[int] = []
 @export var pending_reward_card_claimed: bool = false
+@export var pending_reward_soulbound_card_claimed: bool = false
 @export var pending_reward_claimed_arcanum_indices: Array[int] = []
 @export var battle_assignments_by_room_key: Dictionary = {}
 @export var consumed_battle_paths: PackedStringArray = []
@@ -59,3 +65,15 @@ func _set_gold(n_gold: int) -> void:
 
 func reset_rarity_pity() -> void:
 	rare_pity_offset_percent = BASE_RARE_PITY_OFFSET_PERCENT
+
+
+func reset_soulbound_pity() -> void:
+	soulbound_pity_offset_percent = SOULBOUND_PITY_MIN_OFFSET
+
+
+func increase_soulbound_pity_after_miss() -> void:
+	soulbound_pity_offset_percent = clampf(
+		float(soulbound_pity_offset_percent) + SOULBOUND_PITY_MISS_STEP,
+		SOULBOUND_PITY_MIN_OFFSET,
+		SOULBOUND_PITY_MAX_OFFSET
+	)

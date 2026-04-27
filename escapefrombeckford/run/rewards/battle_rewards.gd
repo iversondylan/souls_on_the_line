@@ -11,6 +11,13 @@ const GOLD_TEXTURE := preload("uid://cbbohhy0ybxvy")
 const GOLD_TEXT := "%s gold"
 const CARD_TEXTURE := preload("uid://cptf1w3wpa2ah")
 const CARD_TEXT := "Add New Card"
+const SOULBOUND_CARD_TEXT := "Add Soulbound Card"
+const SOULBOUND_REWARD_ICON_MODULATE := Color(0.65, 0.35, 1.0, 1.0)
+
+enum CardRewardKind {
+	NORMAL,
+	SOULBOUND,
+}
 
 @export var run_state: RunState
 @export var player_data: PlayerData
@@ -22,10 +29,12 @@ var run: Run
 var reward_context: RewardContext
 
 var _current_card_reward_button: RewardButton
+var _current_soulbound_card_reward_button: RewardButton
 var _card_reward_overlay: CardSelectionOverlay
 var _confirm_dialog
 var _pending_reward_card: CardData
 var _pending_reward_slot_index: int = -1
+var _active_card_reward_kind: int = CardRewardKind.NORMAL
 
 func _ready() -> void:
 	_clear_rewards()
@@ -43,7 +52,10 @@ func populate_from_context(ctx: RewardContext) -> void:
 		add_gold_reward(int(ctx.gold_rewards[i]), i)
 
 	if bool(ctx.include_card_reward) and !ctx.card_reward_claimed:
-		add_card_reward(ctx.card_choices)
+		add_card_reward(ctx.card_choices, CardRewardKind.NORMAL)
+
+	if bool(ctx.include_soulbound_card_reward) and !ctx.soulbound_card_reward_claimed:
+		add_card_reward(ctx.soulbound_card_choices, CardRewardKind.SOULBOUND)
 
 	for i in range(ctx.arcanum_rewards.size()):
 		if ctx.claimed_arcanum_indices.has(i):
@@ -59,12 +71,18 @@ func add_gold_reward(n_gold: int, reward_index: int) -> void:
 	gold_reward.pressed.connect(_on_gold_reward_taken.bind(n_gold, reward_index, gold_reward))
 	rewards.add_child.call_deferred(gold_reward)
 
-func add_card_reward(card_choices: Array[CardData]) -> void:
+func add_card_reward(card_choices: Array[CardData], reward_kind: int) -> void:
 	var card_reward_button := REWARD_BUTTON.instantiate() as RewardButton
 	card_reward_button.reward_texture = CARD_TEXTURE
-	card_reward_button.reward_text = CARD_TEXT
-	card_reward_button.pressed.connect(_show_card_reward.bind(card_choices))
-	_current_card_reward_button = card_reward_button
+	if int(reward_kind) == int(CardRewardKind.SOULBOUND):
+		card_reward_button.reward_text = SOULBOUND_CARD_TEXT
+		card_reward_button.reward_icon_modulate = SOULBOUND_REWARD_ICON_MODULATE
+		card_reward_button.pressed.connect(_show_card_reward.bind(card_choices, reward_kind))
+		_current_soulbound_card_reward_button = card_reward_button
+	else:
+		card_reward_button.reward_text = CARD_TEXT
+		card_reward_button.pressed.connect(_show_card_reward.bind(card_choices, reward_kind))
+		_current_card_reward_button = card_reward_button
 	rewards.add_child.call_deferred(card_reward_button)
 
 func add_arcanum_reward(arcanum: Arcanum, reward_index: int) -> void:
@@ -86,12 +104,13 @@ func _on_arcanum_reward_taken(arcanum: Arcanum, reward_index: int, reward_button
 	if run != null:
 		run._persist_active_run()
 
-func _show_card_reward(card_choices: Array[CardData]) -> void:
+func _show_card_reward(card_choices: Array[CardData], reward_kind: int = CardRewardKind.NORMAL) -> void:
 	if !run_state or card_choices.is_empty():
 		return
 	if is_instance_valid(_card_reward_overlay):
 		_card_reward_overlay.queue_free()
 
+	_active_card_reward_kind = int(reward_kind)
 	_card_reward_overlay = CARD_SELECTION_OVERLAY.instantiate() as CardSelectionOverlay
 	add_child(_card_reward_overlay)
 	_card_reward_overlay.selection_confirmed.connect(_on_card_reward_taken)
@@ -99,7 +118,7 @@ func _show_card_reward(card_choices: Array[CardData]) -> void:
 	_card_reward_overlay.tree_exited.connect(_on_card_reward_overlay_exited)
 	_card_reward_overlay.configure(
 		card_choices,
-		"Choose a Card",
+		"Choose a Soulbound Card" if int(reward_kind) == int(CardRewardKind.SOULBOUND) else "Choose a Card",
 		"Take",
 		"Cancel"
 	)
@@ -124,10 +143,7 @@ func _on_card_reward_taken(card: CardData) -> void:
 		return
 	if run_state.run_deck:
 		run_state.run_deck.add_normal_card(card)
-	run_state.pending_reward_card_claimed = true
-	if is_instance_valid(_current_card_reward_button):
-		_current_card_reward_button.queue_free()
-	_current_card_reward_button = null
+	_mark_active_card_reward_claimed()
 	_card_reward_overlay = null
 	if run != null:
 		run._persist_active_run()
@@ -137,7 +153,7 @@ func _on_card_reward_selection_canceled() -> void:
 	if _pending_reward_card != null and reward_context != null:
 		_pending_reward_card = null
 		_pending_reward_slot_index = -1
-		_show_card_reward(reward_context.card_choices)
+		_show_card_reward(_active_reward_choices(), _active_card_reward_kind)
 		return
 	_card_reward_overlay = null
 
@@ -159,6 +175,7 @@ func _clear_rewards() -> void:
 		_card_reward_overlay.queue_free()
 	_card_reward_overlay = null
 	_current_card_reward_button = null
+	_current_soulbound_card_reward_button = null
 
 
 func _build_confirm_dialog() -> void:
@@ -206,10 +223,7 @@ func _confirm_reward_soulbound_replacement() -> void:
 		return
 	if !run_state.run_deck.replace_soulbound_slot(_pending_reward_slot_index, _pending_reward_card):
 		return
-	run_state.pending_reward_card_claimed = true
-	if is_instance_valid(_current_card_reward_button):
-		_current_card_reward_button.queue_free()
-	_current_card_reward_button = null
+	_mark_active_card_reward_claimed()
 	_clear_pending_reward_replacement()
 	if run != null:
 		run._persist_active_run()
@@ -218,6 +232,30 @@ func _confirm_reward_soulbound_replacement() -> void:
 func _clear_pending_reward_replacement() -> void:
 	_pending_reward_card = null
 	_pending_reward_slot_index = -1
+
+
+func _active_reward_choices() -> Array[CardData]:
+	if reward_context == null:
+		var empty: Array[CardData] = []
+		return empty
+	if int(_active_card_reward_kind) == int(CardRewardKind.SOULBOUND):
+		return reward_context.soulbound_card_choices
+	return reward_context.card_choices
+
+
+func _mark_active_card_reward_claimed() -> void:
+	if run_state == null:
+		return
+	if int(_active_card_reward_kind) == int(CardRewardKind.SOULBOUND):
+		run_state.pending_reward_soulbound_card_claimed = true
+		if is_instance_valid(_current_soulbound_card_reward_button):
+			_current_soulbound_card_reward_button.queue_free()
+		_current_soulbound_card_reward_button = null
+		return
+	run_state.pending_reward_card_claimed = true
+	if is_instance_valid(_current_card_reward_button):
+		_current_card_reward_button.queue_free()
+	_current_card_reward_button = null
 
 
 func _find_soulbound_slot_index(slot_card: CardData) -> int:

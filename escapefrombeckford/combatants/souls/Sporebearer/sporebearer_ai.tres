@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="NPCAIProfile" format=3 uid="uid://cap367pu3w4q4"]
+
+[ext_resource type="Script" uid="uid://bcih413oy6v73" path="res://npc_ai/_core/npc_action.gd" id="1_hseru"]
+[ext_resource type="Script" uid="uid://bdsvca1cpka5s" path="res://npc_ai/_core/npc_ai_profile.gd" id="2_llypb"]
+[ext_resource type="Resource" uid="uid://dvja40hpeu633" path="res://combatants/souls/Sporebearer/sporebearer_attack_action.tres" id="2_n5cnn"]
+
+[resource]
+script = ExtResource("2_llypb")
+actions = Array[ExtResource("1_hseru")]([ExtResource("2_n5cnn")])
+metadata/_custom_type_script = "uid://bdsvca1cpka5s"

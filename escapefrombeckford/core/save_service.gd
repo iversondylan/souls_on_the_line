@@ -574,10 +574,13 @@ func _decode_run_state(envelope: Dictionary) -> RunState:
 	run_state.pending_shop_claimed_arcanum_offer_indices = _decode_int_array(data.get("pending_shop_claimed_arcanum_offer_indices", []))
 	run_state.pending_reward_gold_rewards = _decode_int_array(data.get("pending_reward_gold_rewards", []))
 	run_state.pending_reward_card_choice_paths = _decode_packed_string_array(data.get("pending_reward_card_choice_paths", []))
+	run_state.pending_reward_soulbound_card_choice_paths = _decode_packed_string_array(data.get("pending_reward_soulbound_card_choice_paths", []))
 	run_state.pending_reward_arcanum_ids = _decode_packed_string_array(data.get("pending_reward_arcanum_ids", []))
 	run_state.pending_reward_claimed_gold_indices = _decode_int_array(data.get("pending_reward_claimed_gold_indices", []))
 	run_state.pending_reward_card_claimed = bool(data.get("pending_reward_card_claimed", false))
+	run_state.pending_reward_soulbound_card_claimed = bool(data.get("pending_reward_soulbound_card_claimed", false))
 	run_state.pending_reward_claimed_arcanum_indices = _decode_int_array(data.get("pending_reward_claimed_arcanum_indices", []))
+	run_state.soulbound_pity_offset_percent = float(data.get("soulbound_pity_offset_percent", RunState.SOULBOUND_PITY_MIN_OFFSET))
 	run_state.battle_assignments_by_room_key = _decode_string_dictionary(data.get("battle_assignments_by_room_key", {}))
 	run_state.consumed_battle_paths = _decode_packed_string_array(data.get("consumed_battle_paths", []))
 	run_state.owned_arcanum_ids = _decode_packed_string_array(data.get("owned_arcanum_ids", []))
@@ -596,6 +599,7 @@ func _encode_run_state(run_state: RunState, save_name: String = "") -> Dictionar
 			"gold": int(run_state.gold),
 			"card_reward_choices": int(run_state.card_reward_choices),
 			"rare_pity_offset_percent": float(run_state.rare_pity_offset_percent),
+			"soulbound_pity_offset_percent": float(run_state.soulbound_pity_offset_percent),
 			"run_seed": int(run_state.run_seed),
 			"map_seed": int(run_state.map_seed),
 			"run_rng_snapshot": _encode_run_rng_snapshot(run_state.run_rng_snapshot),
@@ -616,9 +620,11 @@ func _encode_run_state(run_state: RunState, save_name: String = "") -> Dictionar
 			"pending_shop_claimed_arcanum_offer_indices": _encode_int_array(run_state.pending_shop_claimed_arcanum_offer_indices),
 			"pending_reward_gold_rewards": _encode_int_array(run_state.pending_reward_gold_rewards),
 			"pending_reward_card_choice_paths": _encode_packed_string_array(run_state.pending_reward_card_choice_paths),
+			"pending_reward_soulbound_card_choice_paths": _encode_packed_string_array(run_state.pending_reward_soulbound_card_choice_paths),
 			"pending_reward_arcanum_ids": _encode_packed_string_array(run_state.pending_reward_arcanum_ids),
 			"pending_reward_claimed_gold_indices": _encode_int_array(run_state.pending_reward_claimed_gold_indices),
 			"pending_reward_card_claimed": bool(run_state.pending_reward_card_claimed),
+			"pending_reward_soulbound_card_claimed": bool(run_state.pending_reward_soulbound_card_claimed),
 			"pending_reward_claimed_arcanum_indices": _encode_int_array(run_state.pending_reward_claimed_arcanum_indices),
 			"battle_assignments_by_room_key": _encode_string_dictionary(run_state.battle_assignments_by_room_key),
 			"consumed_battle_paths": _encode_packed_string_array(run_state.consumed_battle_paths),
@@ -1366,6 +1372,8 @@ func _normalize_active_run(run_state: RunState) -> void:
 		run_state.pending_shop_claimed_arcanum_offer_indices = []
 	if run_state.pending_reward_gold_rewards == null:
 		run_state.pending_reward_gold_rewards = []
+	if run_state.pending_reward_soulbound_card_choice_paths == null:
+		run_state.pending_reward_soulbound_card_choice_paths = PackedStringArray()
 	if run_state.pending_reward_claimed_gold_indices == null:
 		run_state.pending_reward_claimed_gold_indices = []
 	if run_state.pending_reward_claimed_arcanum_indices == null:
@@ -1384,6 +1392,11 @@ func _normalize_active_run(run_state: RunState) -> void:
 		float(run_state.rare_pity_offset_percent),
 		RunState.BASE_RARE_PITY_OFFSET_PERCENT,
 		RunState.MAX_RARE_PITY_OFFSET_PERCENT
+	)
+	run_state.soulbound_pity_offset_percent = clampf(
+		float(run_state.soulbound_pity_offset_percent),
+		RunState.SOULBOUND_PITY_MIN_OFFSET,
+		RunState.SOULBOUND_PITY_MAX_OFFSET
 	)
 	_remove_pending_room_from_cleared(run_state)
 
