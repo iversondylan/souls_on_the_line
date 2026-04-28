@@ -51,7 +51,7 @@ func on_remove(ctx: SimStatusContext, _remove_ctx: StatusContext) -> void:
 	ctx.api.apply_status(status_ctx)
 
 func get_tooltip(stacks: int = 0) -> String:
-	return "Yggdrasil Guard: the first strike each round against this unit is reduced by %s. If it survives, increase max health by 2 and heal that amount (Fortitude 2)." % stacks
+	return "Yggdrasil Guard: the first strike each round against this unit is reduced by %s. If it survives, increase max health by 2 (Fortitude 2)." % stacks
 
 func _is_eligible_strike_damage(damage_ctx: DamageContext) -> bool:
 	if damage_ctx == null:

@@ -2,7 +2,6 @@
 
 class_name Battle extends Node
 
-const ArcanumEntry := preload("res://battle/sim/containers/arcanum_entry.gd")
 
 # -------------------------
 # Inspector
@@ -563,7 +562,7 @@ func _release_pending_player_turn_draw_if_ready() -> void:
 	_pending_player_turn_draw_amount_override = -1
 	runtime.confirm_player_input_ready(draw_amount_override)
 
-func _tutorial_trace(message: String) -> void:
+func _tutorial_trace(_message: String) -> void:
 	if battle_data == null or String(battle_data.encounter_name) != "Tutorial Drill":
 		return
 
@@ -710,12 +709,12 @@ func _on_validate_scope_nesting_pressed() -> void:
 		push_warning("Battle._on_validate_scope_nesting_pressed(): missing sim_host")
 		return
 
-	var log := sim_host.get_event_log()
-	if log == null:
+	var _log := sim_host.get_event_log()
+	if _log == null:
 		push_warning("Battle._on_validate_scope_nesting_pressed(): missing event log")
 		return
 
-	var report := log.validate_scope_nesting()
+	var report := _log.validate_scope_nesting()
 	if report == null:
 		push_warning("Battle._on_validate_scope_nesting_pressed(): validator returned null report")
 		return

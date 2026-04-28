@@ -19,8 +19,6 @@
 class_name CombatantView
 extends Node2D
 
-const Removal = preload("res://core/keys_values/removal_values.gd")
-const BattleFloatingNumber := preload("res://battle/ui/battle_floating_number.gd")
 
 # ------------------------------------------------------------------------------
 # Scene refs
@@ -131,7 +129,7 @@ func _set_cid(new_cid: int) -> void:
 
 
 func _set_type(new_type: int) -> void:
-	type = new_type
+	type = new_type as Type
 
 	if type == Type.PLAYER:
 		if !Events.player_targeted_arrow_visible.is_connected(show_targeted_arrow):
@@ -188,7 +186,7 @@ func _apply_visuals_from_spec() -> void:
 
 
 func _apply_stats_from_spec() -> void:
-	mortality = int(_spec.get(Keys.MORTALITY, CombatantState.Mortality.MORTAL))
+	mortality = int(_spec.get(Keys.MORTALITY, CombatantState.Mortality.MORTAL)) as CombatantState.Mortality
 	has_summon_reserve_card = bool(_spec.get(Keys.HAS_SUMMON_RESERVE_CARD, false))
 	max_health = int(_spec.get(Keys.MAX_HEALTH, 0))
 	health = int(_spec.get(Keys.HEALTH, 0))
@@ -464,7 +462,7 @@ func _play_melee_windup_from_order(order: MeleeWindupPresentationOrder) -> void:
 
 	_cache_base_art_transform_if_needed()
 	var base_scale := _get_base_art_scale()
-	var base_pos := _get_base_art_pos()
+	#var base_pos := _get_base_art_pos()
 
 	#var drift := float(order.drift_x)
 	#var g := get_parent()
@@ -1072,7 +1070,7 @@ func get_projectile_origin_global() -> Vector2:
 # Receiving hits / death
 # ------------------------------------------------------------------------------
 
-func _apply_received_hit(h: HitPresentationInfo, phase_duration: float) -> void:
+func _apply_received_hit(h: HitPresentationInfo, _phase_duration: float) -> void:
 	play_hit()
 	set_health(h.after_health, h.was_lethal)
 	pop_damage_number(h.amount)

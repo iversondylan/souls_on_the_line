@@ -1,6 +1,5 @@
 class_name RemovalDelayedReaction extends DelayedReaction
 
-const Interceptor := preload("res://battle/sim/interceptors/interceptor.gd")
 
 var removal_ctx = null
 var any_death_interceptors: Array[Interceptor] = []

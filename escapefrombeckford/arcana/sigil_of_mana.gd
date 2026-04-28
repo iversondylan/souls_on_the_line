@@ -28,7 +28,7 @@ func on_battle_start(ctx: SimArcanumContext) -> void:
 	mana_ctx.reason = "arcanum_battle_start"
 	api.gain_mana(mana_ctx)
 
-func _add_mana(arcanum_display: ArcanumDisplay) -> void:
+func _add_mana(_arcanum_display: ArcanumDisplay) -> void:
 	#arcanum_display.flash()
 	#var player := arcanum_display.get_tree().get_first_node_in_group("player") as Player
 	#if player:

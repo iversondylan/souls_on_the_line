@@ -38,15 +38,15 @@ static func request_arcana(proc: int) -> TurnFlowDirective:
 	return d
 
 
-static func request_actor(actor_id: int) -> TurnFlowDirective:
+static func request_actor(_actor_id: int) -> TurnFlowDirective:
 	var d := TurnFlowDirective.new()
 	d.kind = Kind.REQUEST_ACTOR
-	d.actor_id = int(actor_id)
+	d.actor_id = int(_actor_id)
 	return d
 
 
-static func group_turn_ended(group_index: int) -> TurnFlowDirective:
+static func group_turn_ended(_group_index: int) -> TurnFlowDirective:
 	var d := TurnFlowDirective.new()
 	d.kind = Kind.GROUP_TURN_ENDED
-	d.group_index = int(group_index)
+	d.group_index = int(_group_index)
 	return d

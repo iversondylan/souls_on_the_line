@@ -7,4 +7,4 @@
 script = ExtResource("2_script")
 status_name = "Ascetic Threshold"
 icon = ExtResource("1_icon")
-tooltip = "The first time each round damage leaves this below 50% health, gain Absorb and increase max health by 2 and heal that amount (Fortitude 2)."
+tooltip = "The first time each round damage leaves this below 50% health, gain Absorb and increase max health by 2 (Fortitude 2)."

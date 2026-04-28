@@ -15,7 +15,7 @@ var has_soulbound_roster: bool = true
 var player_profile_id: String = ""
 var selected_starting_soul_uid: String = ""
 var selected_signature_soul_serialized: Dictionary = {}
-var seed: int = 0
+var seed_int: int = 0
 var debug_slot_name: String = ""
 
 

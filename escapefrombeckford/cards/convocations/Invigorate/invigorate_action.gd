@@ -25,7 +25,7 @@ func activate_sim(ctx: CardContext) -> bool:
 	if healed > 0 and ctx.runtime != null:
 		ctx.runtime.append_affected_id(ctx, target_id)
 
-	var might_stacks := int(healed / 3)
+	@warning_ignore("integer_division") var might_stacks := int(healed / 3)
 	if might_stacks > 0:
 		var status_ctx := StatusContext.new()
 		status_ctx.source_id = int(ctx.source_id)

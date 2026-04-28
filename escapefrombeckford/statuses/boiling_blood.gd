@@ -1,7 +1,6 @@
 class_name BoilingBloodStatus extends Status
 
 const ID := &"boiling_blood"
-const Removal = preload("res://core/keys_values/removal_values.gd")
 
 
 func get_id() -> StringName:

@@ -4,7 +4,7 @@
 [ext_resource type="Script" uid="uid://bql7t8sctwe10" path="res://character_profiles/player_data.gd" id="1_i82qw"]
 [ext_resource type="Resource" uid="uid://bb2svevqwn2v7" path="res://character_profiles/Cole/cole_draftable_cards.tres" id="2_guhpy"]
 [ext_resource type="Resource" uid="uid://vnoxk6md128x" path="res://character_profiles/Cole/cole_possible_arcana.tres" id="3_mgnya"]
-[ext_resource type="Resource" uid="uid://b2gq58swp7age" path="res://character_profiles/Cole/cole_starter_deck.tres" id="6_plufk"]
+[ext_resource type="Resource" uid="uid://d0xfd7e0es74i" path="res://character_profiles/Cole/one_of_each_card.tres" id="6_plufk"]
 [ext_resource type="Resource" uid="uid://b7txf6d8vmjkk" path="res://cards/souls/SpectralCloneCard/spectral_clone.tres" id="7_starter_soul"]
 
 [resource]

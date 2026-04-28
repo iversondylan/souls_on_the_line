@@ -4,7 +4,6 @@ const ID := &"protected_drone"
 const FIRE_ANT_DATA := preload("res://combatants/critters/FireAnt/fire_ant_data.tres")
 const EXPLOSIVE_DEPARTURE := preload("res://statuses/explosive_departure.tres")
 const SMALL := preload("res://statuses/small.tres")
-const Removal = preload("res://core/keys_values/removal_values.gd")
 
 
 func get_id() -> StringName:

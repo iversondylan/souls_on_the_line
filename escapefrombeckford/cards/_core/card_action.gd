@@ -19,13 +19,13 @@ func activate_sim(ctx: CardContext) -> bool:
 # If no `%s` remains in the template, its overflow text is appended instead.
 # --------------------------------
 
-func begin_preflight_interaction(ctx: CardContext) -> bool:
+func begin_preflight_interaction(_ctx: CardContext) -> bool:
 	return false
 
-func get_preflight_interaction_mode(ctx: CardContext) -> int:
+func get_preflight_interaction_mode(_ctx: CardContext) -> int:
 	return InteractionMode.NONE
 
-func waits_for_async_resolution_after_activate_sim(ctx: CardContext) -> bool:
+func waits_for_async_resolution_after_activate_sim(_ctx: CardContext) -> bool:
 	return false
 
 func starts_compiled_turn_span(_ctx: CardContext) -> bool:

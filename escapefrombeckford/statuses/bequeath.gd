@@ -1,7 +1,6 @@
 class_name BequeathStatus extends Status
 
 const ID := &"bequeath"
-const Removal = preload("res://core/keys_values/removal_values.gd")
 
 
 func get_id() -> StringName:

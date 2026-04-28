@@ -154,7 +154,7 @@ func _begin_run(start_mode: RunProfile.StartMode) -> void:
 	var profile := RunProfile.new()
 	profile.start_mode = start_mode
 	profile.has_soulbound_roster = start_mode != RunProfile.StartMode.TUTORIAL
-	profile.seed = 0
+	profile.seed_int = 0
 	profile.selected_starting_soul_uid = selected_starting_soul_uid
 	profile.player_profile_id = current_profile_id
 	profile.set_selected_signature_soul(_get_selected_signature_soul_card())

@@ -231,7 +231,7 @@ func _build_scope_driven_package_turn(turn_events: Array[BattleEvent]) -> Dictio
 func _parse_top_level_package_segments(
 	events: Array[BattleEvent],
 	scope_ranges: Dictionary,
-	compiled_turn_scope_id: int,
+	_compiled_turn_scope_id: int,
 	child_scope_ids: Array[int]
 ) -> Array[TopLevelTurnSegment]:
 	var out: Array[TopLevelTurnSegment] = []
@@ -489,7 +489,7 @@ func _collect_eventual_focus_targets_from_top_level_segments(segments: Array[Top
 # can sit inside a larger packaged turn.
 func _build_scope_driven_attack_package_beats(
 	parsed: ParsedNpcAttackTurn,
-	turn_events: Array[BattleEvent],
+	_turn_events: Array[BattleEvent],
 	windup_q: float
 ) -> Dictionary:
 	var beats: Array[TurnBeat] = []
@@ -925,7 +925,7 @@ func _strike_introduces_new_targets(previous_targets: Array[int], next_targets: 
 func _window_span_beats(strike_count: int) -> int:
 	if strike_count <= 0:
 		return 1
-	return maxi(1, (strike_count + 1) / 2)
+	@warning_ignore("integer_division") return maxi(1, (strike_count + 1) / 2)
 
 
 func _next_on_grid_beat_after(q: float) -> float:
@@ -1358,9 +1358,9 @@ func _build_scope_ranges(events: Array[BattleEvent]) -> Dictionary:
 			}
 		elif int(event.type) == int(BattleEvent.Type.SCOPE_END):
 			if ranges.has(int(event.scope_id)):
-				var range: Dictionary = ranges[int(event.scope_id)]
-				range["end"] = i
-				ranges[int(event.scope_id)] = range
+				var _range: Dictionary = ranges[int(event.scope_id)]
+				_range["end"] = i
+				ranges[int(event.scope_id)] = _range
 	return ranges
 
 
@@ -2487,7 +2487,7 @@ func _ensure_lossless_beats(action_kind: StringName, turn_events: Array[BattleEv
 	return _sort_beats(out)
 
 
-func _debug_log_reaction(message: String) -> void:
+func _debug_log_reaction(_message: String) -> void:
 	pass
 	#print("[VIEW REACTION] %s" % message)
 

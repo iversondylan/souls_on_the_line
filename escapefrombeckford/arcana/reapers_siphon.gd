@@ -4,7 +4,6 @@ class_name ReapersSiphonArcanum extends Arcanum
 
 const ID := &"reapers_siphon"
 const STARTING_STACKS := 3
-const Removal = preload("res://core/keys_values/removal_values.gd")
 
 
 func get_id() -> StringName:
@@ -49,4 +48,3 @@ func on_any_death(ctx: SimArcanumContext, removal_ctx: RemovalContext) -> void:
 	draw_ctx.amount = 1
 	draw_ctx.reason = "reapers_siphon"
 	ctx.api.runtime.run_draw_action(draw_ctx)
-

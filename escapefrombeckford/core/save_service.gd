@@ -447,8 +447,8 @@ func _sort_debug_run_info_newest_first(a: DebugRunSaveInfo, b: DebugRunSaveInfo)
 	return a.modified_unix_time > b.modified_unix_time
 
 
-func _sanitize_key_from_name(name: String, empty_default: String) -> String:
-	var trimmed := name.strip_edges().to_lower()
+func _sanitize_key_from_name(_name: String, empty_default: String) -> String:
+	var trimmed := _name.strip_edges().to_lower()
 	var key := ""
 	var prev_underscore := false
 	for i in range(trimmed.length()):

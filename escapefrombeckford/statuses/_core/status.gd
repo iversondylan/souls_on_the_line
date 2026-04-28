@@ -160,7 +160,7 @@ func get_attack_self_damage_on_strike(_ctx: SimStatusContext, _attack_ctx: Attac
 # Modifier hooks
 # -------------------------------------------------------------------
 
-func get_modifier_tokens(ctx: StatusTokenContext) -> Array[ModifierToken]:
+func get_modifier_tokens(_ctx: StatusTokenContext) -> Array[ModifierToken]:
 	return []
 
 func contributes_modifier() -> bool:

@@ -83,7 +83,7 @@ func _build_editor_default_run_profile() -> RunProfile:
 	profile.start_mode = RunProfile.StartMode.NEW_RUN
 	profile.player_profile_id = String(default_profile.profile_id)
 	profile.selected_starting_soul_uid = ""
-	profile.seed = 0
+	profile.seed_int = 0
 	return profile
 
 

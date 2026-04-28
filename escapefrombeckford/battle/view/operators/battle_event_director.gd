@@ -1011,7 +1011,7 @@ func _on_change_max_health(e: EventPackage) -> void:
 	var after_health := int(d.get(Keys.AFTER_HEALTH, v.health))
 	var after_max_health := int(d.get(Keys.AFTER_MAX_HEALTH, v.max_health))
 	var before_health := int(d.get(Keys.BEFORE_HEALTH, v.health))
-	var before_max_health := int(d.get(Keys.BEFORE_MAX_HEALTH, v.max_health))
+	#var before_max_health := int(d.get(Keys.BEFORE_MAX_HEALTH, v.max_health))
 	#print("director before max: %s, after max: %s" % [before_max_health, after_max_health])
 	v.max_health = after_max_health
 	v.health = clampi(after_health, 0, after_max_health)
@@ -1294,6 +1294,10 @@ func _on_summoned(e: EventPackage) -> void:
 		var c := v.character_art.modulate
 		c.a = 1.0
 		v.character_art.modulate = c
+
+	var summon_sound := _resolve_summon_sound(String(d.get(Keys.SUMMON_SOUND, "")))
+	if summon_sound != null:
+		SFXPlayer.play(summon_sound)
 
 	var summoned_id := int(d.get(Keys.SUMMONED_ID, 0))
 	var card_uid := String(d.get(Keys.CARD_UID, ""))

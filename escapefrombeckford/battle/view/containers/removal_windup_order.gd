@@ -2,7 +2,6 @@
 
 class_name RemovalWindupOrder extends RefCounted
 
-const Removal = preload("res://core/keys_values/removal_values.gd")
 
 var duration: float = 0.20
 var target_id: int = 0

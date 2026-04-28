@@ -17,7 +17,7 @@ var delta_stacks: int = 0
 func apply_to_status_context(ctx: StatusContext) -> void:
 	if ctx == null:
 		return
-	ctx.op = int(op)
+	ctx.op = int(op) as Status.OP
 	ctx.before_pending = bool(before_pending)
 	ctx.after_pending = bool(after_pending)
 	ctx.before_token_id = int(before_token_id)

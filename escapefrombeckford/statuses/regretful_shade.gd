@@ -4,7 +4,6 @@ const ID := &"regretful_shade"
 const REGRETFUL_SHADE_DATA := preload("res://combatants/critters/RegretfulShade/regretful_shade_data.tres")
 const FLEETING := preload("res://statuses/fleeting.tres")
 const SMALL := preload("res://statuses/small.tres")
-const Removal = preload("res://core/keys_values/removal_values.gd")
 
 
 func get_id() -> StringName:

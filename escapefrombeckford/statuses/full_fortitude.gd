@@ -26,4 +26,4 @@ func on_remove(ctx: SimStatusContext, _remove_ctx: StatusContext) -> void:
 	ctx.api.change_max_health(int(ctx.owner_id), -amount, true, "full_fortitude")
 
 func get_tooltip(stacks: int = 0) -> String:
-	return "Fortitude: increase max health by %s and heal that amount (Fortitude %s)." % [stacks, stacks]
+	return "Fortitude: increase max health by %s (Fortitude %s)." % [stacks, stacks]

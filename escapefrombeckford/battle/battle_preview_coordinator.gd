@@ -41,7 +41,7 @@ func enable_for_player_turn() -> void:
 		turn_phase_title.enable_button(true)
 
 
-func mark_dirty(reason: String = "") -> void:
+func mark_dirty(_reason: String = "") -> void:
 	#print("battle_preview_coordinator.gd mark_dirty()")
 	if _state != State.DIRTY:
 		_state = State.DIRTY
@@ -59,7 +59,7 @@ func disable_and_clear() -> void:
 	_clear_all_previews()
 
 
-func display_preview_now(reason: String = "") -> void:
+func display_preview_now(_reason: String = "") -> void:
 	#print("battle_preview_coordinator.gd display_preview_now()")
 	if !_can_preview():
 		return
@@ -174,7 +174,8 @@ func _wait_for_preview_display_delay(request_id: int, delay_sec: float) -> void:
 		push_warning("BattlePreviewCoordinator: missing battle clock; skipping preview display delay")
 		_on_preview_display_delay_elapsed(request_id)
 		return
-	await clock.wait_seconds(delay_sec)
+	clock.wait_seconds(delay_sec)
+	#await clock.wait_seconds(delay_sec)
 	_on_preview_display_delay_elapsed(request_id)
 
 

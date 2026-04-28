@@ -40,12 +40,15 @@ static func _build_card_description_internal(card_data: CardData, api: SimBattle
 
 	text = text.replace("{percent}", "%")
 	text = percent_to_symbol(text)
-	return finalize_description_text(text)
+	text = finalize_description_text(text)
+	if card_data.deplete:
+		text += " Deplete."
+	return text
 
 static func _description_value_for_action(
 	action: CardAction,
-	card_data: CardData = null,
-	api: SimBattleAPI = null
+	_card_data: CardData = null,
+	_api: SimBattleAPI = null
 ) -> String:
 	if action == null:
 		return ""

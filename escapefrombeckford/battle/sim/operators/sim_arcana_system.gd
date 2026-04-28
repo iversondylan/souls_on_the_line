@@ -2,7 +2,6 @@
 
 class_name SimArcanaSystem extends RefCounted
 
-const ArcanumEntry := preload("res://battle/sim/containers/arcanum_entry.gd")
 
 static func get_contexts(api: SimBattleAPI) -> Array:
 	var out: Array = []

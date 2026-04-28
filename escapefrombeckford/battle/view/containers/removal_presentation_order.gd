@@ -2,7 +2,6 @@
 
 class_name RemovalPresentationOrder extends PresentationOrder
 
-const Removal = preload("res://core/keys_values/removal_values.gd")
 
 var target_id: int = 0
 var group_index: int = -1

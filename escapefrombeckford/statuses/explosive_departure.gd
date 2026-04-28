@@ -1,7 +1,6 @@
 class_name ExplosiveDepartureStatus extends Status
 
 const ID := &"explosive_departure"
-const Removal = preload("res://core/keys_values/removal_values.gd")
 
 
 func get_id() -> StringName:

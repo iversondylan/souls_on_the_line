@@ -381,14 +381,14 @@ func add_combatant_from_data(
 	data: CombatantData,
 	group_index: int,
 	insert_index: int = -1,
-	is_player := false,
+	_is_player := false,
 	current_health_override := -1
 ) -> int:
 	var api := _api()
 	if api == null:
 		return 0
 
-	return api.spawn_from_data(data, group_index, insert_index, is_player, current_health_override)
+	return api.spawn_from_data(data, group_index, insert_index, _is_player, current_health_override)
 
 
 func request_projection_cleanup_flush() -> void:
@@ -1070,7 +1070,7 @@ func run_status_action(ctx: StatusContext) -> void:
 		target_ctx.status_id = ctx.status_id
 		target_ctx.stacks = int(ctx.stacks)
 		target_ctx.pending = bool(ctx.pending)
-		target_ctx.op = int(ctx.op)
+		target_ctx.op = int(ctx.op) as Status.OP
 		target_ctx.delta_stacks = int(ctx.delta_stacks)
 		target_ctx.before_stacks = int(ctx.before_stacks)
 		target_ctx.after_stacks = int(ctx.after_stacks)

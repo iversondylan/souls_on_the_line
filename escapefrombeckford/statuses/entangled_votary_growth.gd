@@ -26,4 +26,4 @@ func on_player_turn_begin(ctx: SimStatusContext, player_id: int) -> void:
 	ctx.api.apply_status(status_ctx)
 
 func get_tooltip(_stacks: int = 0) -> String:
-	return "At the end of each round, increase max health by 2 and heal that amount (Fortitude 2)."
+	return "At the end of each round, increase max health by 2 (Fortitude 2)."

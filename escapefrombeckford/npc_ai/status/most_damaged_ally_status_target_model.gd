@@ -9,16 +9,16 @@ func change_params(ctx: NPCAIContext) -> NPCAIContext:
 func change_params_sim(ctx: NPCAIContext) -> NPCAIContext:
 	return _write_target_ids(ctx)
 
-static func find_target_id(ctx: NPCAIContext, include_self := true, exclude_player := true) -> int:
+static func find_target_id(ctx: NPCAIContext, _include_self := true, _exclude_player := true) -> int:
 	if ctx == null:
 		return 0
-	return find_target_id_for_actor(ctx.api, ctx.get_actor_id(), include_self, exclude_player)
+	return find_target_id_for_actor(ctx.api, ctx.get_actor_id(), _include_self, _exclude_player)
 
 static func find_target_id_for_actor(
 	api: SimBattleAPI,
 	actor_id: int,
-	include_self := true,
-	exclude_player := true
+	_include_self := true,
+	_exclude_player := true
 ) -> int:
 	if api == null or api.state == null:
 		return 0
@@ -39,9 +39,9 @@ static func find_target_id_for_actor(
 		var cid := int(ally_ids[i])
 		if cid <= 0:
 			continue
-		if !include_self and cid == int(actor_id):
+		if !_include_self and cid == int(actor_id):
 			continue
-		if exclude_player and cid == player_id:
+		if _exclude_player and cid == player_id:
 			continue
 
 		var ally: CombatantState = api.state.get_unit(cid)

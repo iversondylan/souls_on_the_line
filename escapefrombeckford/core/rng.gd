@@ -29,7 +29,7 @@ func clone() -> RNG:
 	return RNG.new(rng_seed, rolls)
 
 func snapshot() -> Dictionary:
-	return {"seed": seed, "rolls": rolls}
+	return {"seed": rng_seed, "rolls": rolls}
 
 static func from_snapshot(d: Dictionary) -> RNG:
 	return RNG.new(int(d.get("seed", 1)), int(d.get("rolls", 0))) 

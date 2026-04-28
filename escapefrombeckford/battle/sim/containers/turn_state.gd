@@ -2,7 +2,7 @@
 class_name TurnState extends RefCounted
 
 var active_group: int = 0  # 0 friendly, 1 enemy
-var round: int = 1
+var round_number: int = 1
 
 # Queue for the current group turn, in execution order.
 # Usually rebuilt at group-turn start, then popped/advanced.
@@ -46,7 +46,7 @@ func can_act(id: int, max_actions: int = 1) -> bool:
 func clone() -> TurnState:
 	var t := TurnState.new()
 	t.active_group = active_group
-	t.round = round
+	t.round_number = round_number
 	t.queue = queue.duplicate()
 	t.active_id = active_id
 	t.actions_this_group_turn = actions_this_group_turn.duplicate(true)

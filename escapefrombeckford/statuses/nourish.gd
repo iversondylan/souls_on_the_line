@@ -2,7 +2,6 @@ class_name NourishStatus extends Status
 
 const ID := &"nourish"
 const MOST_DAMAGED_ALLY_TARGET_MODEL := preload("res://npc_ai/status/most_damaged_ally_status_target_model.gd")
-const Removal = preload("res://core/keys_values/removal_values.gd")
 
 func get_id() -> StringName:
 	return ID

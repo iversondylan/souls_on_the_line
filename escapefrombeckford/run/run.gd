@@ -340,7 +340,7 @@ func _on_map_exited(room: Room) -> void:
 
 
 func _start_new_run_from_profile(profile: RunProfile) -> void:
-	run_seed = profile.seed
+	run_seed = profile.seed_int
 	if run_seed == 0:
 		var rng := RandomNumberGenerator.new()
 		rng.randomize()

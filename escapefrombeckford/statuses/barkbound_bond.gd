@@ -28,7 +28,7 @@ func on_damage_taken(ctx: SimStatusContext, damage_ctx: DamageContext) -> void:
 		ctx.change_stacks(-1, "barkbound_bond_trigger")
 
 func get_tooltip(stacks: int = 0) -> String:
-	return "Barkbound Bond: the next %s time%s this survives damage, it gains +1 Might and increases max health by 2 and heals that amount (Fortitude 2)." % [
+	return "Barkbound Bond: the next %s time%s this survives damage, it gains +1 Might and increases max health by 2 (Fortitude 2)." % [
 		stacks,
 		"" if stacks == 1 else "s",
 	]

@@ -2,7 +2,6 @@
 
 class_name Arcanum extends Resource
 
-const ArcanumEntry := preload("res://battle/sim/containers/arcanum_entry.gd")
 
 enum Beats {NONE, IN, OUT, IN_OUT}
 enum TimedProc {

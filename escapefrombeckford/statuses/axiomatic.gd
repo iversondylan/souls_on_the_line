@@ -2,7 +2,6 @@ class_name AxiomaticStatus extends Status
 
 const ID := &"axiomatic"
 const AXIOM_DATA := preload("res://combatants/critters/Axiom/axiom_data.tres")
-const Removal = preload("res://core/keys_values/removal_values.gd")
 
 
 func get_id() -> StringName:

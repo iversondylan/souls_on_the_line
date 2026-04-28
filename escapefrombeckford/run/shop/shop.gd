@@ -139,10 +139,10 @@ func _build_shop_arcanum_offers() -> Array[Arcanum]:
 	eligible_arcana.shuffle()
 	return eligible_arcana.slice(0, 3)
 
-func _populate_shop_arcana(shop_arcana: Array[Arcanum], costs: Array[int] = [], claimed_indices: Array[int] = []) -> void:
+func _populate_shop_arcana(_shop_arcana: Array[Arcanum], costs: Array[int] = [], claimed_indices: Array[int] = []) -> void:
 	arcanum_container.columns = SHOP_GRID_COLUMNS
-	for i in range(shop_arcana.size()):
-		var arcanum: Arcanum = shop_arcana[i]
+	for i in range(_shop_arcana.size()):
+		var arcanum: Arcanum = _shop_arcana[i]
 		var shop_arcanum := SHOP_ARCANUM_SCN.instantiate() as ShopArcanum
 		arcanum_container.add_child(shop_arcanum)
 		shop_arcanum.arcanum = arcanum

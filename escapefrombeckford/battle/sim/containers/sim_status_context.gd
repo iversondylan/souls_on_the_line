@@ -2,7 +2,6 @@
 
 class_name SimStatusContext extends RefCounted
 
-const StatusToken := preload("res://battle/sim/containers/status_token.gd")
 
 # Runtime wrapper for a specific status token on a specific owner.
 # This keeps proto Status scripts from reaching all over raw state.

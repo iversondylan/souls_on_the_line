@@ -1,6 +1,5 @@
 class_name TransformerRecordLookup extends RefCounted
 
-const TransformerRecord := preload("res://battle/sim/containers/transformer_record.gd")
 
 var _records_by_source_key: Dictionary = {}
 
@@ -39,4 +38,3 @@ func get_source_keys() -> Array[String]:
 	for source_key_variant in _records_by_source_key.keys():
 		out.append(String(source_key_variant))
 	return out
-

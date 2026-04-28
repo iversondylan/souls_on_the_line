@@ -67,7 +67,7 @@ func commit(rng: RNG) -> void:
 	var st: Dictionary = streams.get(label, {})
 	if st.is_empty():
 		return
-	var before := int(st.get("rolls", 0))
+	#var before := int(st.get("rolls", 0))
 	st["rolls"] = rng.rolls
 	streams[label] = st
 	#print("[RunRNG] COMMIT '%s' rolls %d -> %d" % [label, before, int(rng.rolls)])

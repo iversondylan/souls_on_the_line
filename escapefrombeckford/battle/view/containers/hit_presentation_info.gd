@@ -1,7 +1,6 @@
 # hit_presentation_info
 class_name HitPresentationInfo extends RefCounted
 
-const Removal = preload("res://core/keys_values/removal_values.gd")
 
 var target_id: int = 0
 

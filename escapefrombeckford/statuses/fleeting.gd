@@ -3,7 +3,6 @@
 class_name FleetingStatus extends Status
 
 const ID := &"fleeting"
-const Removal = preload("res://core/keys_values/removal_values.gd")
 
 
 func get_id() -> StringName:

@@ -1,8 +1,6 @@
 # arcana_state.gd
 class_name ArcanaState extends RefCounted
 
-const ArcanumEntry := preload("res://battle/sim/containers/arcanum_entry.gd")
-
 # Ordered list = deterministic activation order
 var list: Array[ArcanumEntry] = []
 

@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://wtk5v77fcqvn" path="res://cards/_core/card_action.gd" id="1_action"]
 [ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://cards/_core/card_data.gd" id="2_card"]
-[ext_resource type="Resource" path="res://cards/convocations/LockstepFormation/lockstep_formation_action.tres" id="3_lockstep_action"]
+[ext_resource type="Resource" uid="uid://qp8c0gpfpmkt" path="res://cards/convocations/LockstepFormation/lockstep_formation_action.tres" id="3_lockstep_action"]
 [ext_resource type="Texture2D" uid="uid://nnj4f1g7s4vj" path="res://_assets/sprites/assorted/three-friends.png" id="4_texture"]
 
 [resource]
@@ -11,7 +11,7 @@ id = &"lockstep_formation"
 target_type = 3
 rarity = 1
 name = "Lockstep Formation"
-description = "Choose an ally and its destination. If it moved to the front, increase its max health by 2 and heal that amount. If it moved to the back, it deals +2 damage.%s"
+description = "Choose an ally and its destination. If it moved to the front, increase its max health by 2. If it moved to the back, it deals +2 damage.%s"
 cost = 1
 texture = ExtResource("4_texture")
 actions = Array[ExtResource("1_action")]([ExtResource("3_lockstep_action")])

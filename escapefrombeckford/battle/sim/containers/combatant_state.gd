@@ -4,8 +4,8 @@ class_name CombatantState extends RefCounted
 
 enum Mortality { MORTAL, BOUND, WILD, HOLLOW }
 
-static func get_mortality_cap(mortality: int) -> int:
-	match int(mortality):
+static func get_mortality_cap(_mortality: int) -> int:
+	match int(_mortality):
 		int(Mortality.BOUND):
 			return 3
 		int(Mortality.WILD):

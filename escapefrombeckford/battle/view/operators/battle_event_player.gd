@@ -5,8 +5,8 @@ var _log: BattleEventLog
 var _cursor: BattleEventCursor = BattleEventCursor.new()
 
 
-func bind_log(log: BattleEventLog) -> void:
-	_log = log
+func bind_log(battle_log: BattleEventLog) -> void:
+	_log = battle_log
 	_cursor.reset()
 
 func get_log() -> BattleEventLog:
