@@ -4,7 +4,7 @@
 [ext_resource type="Resource" uid="uid://bfi3wwg2o0gl0" path="res://cards/_generic_actions/attack_now_action.tres" id="2_0uw3r"]
 [ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://cards/_core/card_data.gd" id="3_card"]
 [ext_resource type="Texture2D" uid="uid://nonuc5xlht7w" path="res://_assets/sprites/assorted/sonic-boom.png" id="5_0uw3r"]
-[ext_resource type="Resource" path="res://cards/convocations/AggressiveTimeline/aggressive_timeline_move_action.tres" id="5_move"]
+[ext_resource type="Resource" uid="uid://cv46b02pnkuca" path="res://cards/convocations/AggressiveTimeline/aggressive_timeline_move_action.tres" id="5_move"]
 
 [resource]
 script = ExtResource("3_card")

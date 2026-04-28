@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="CardData" format=3 uid="uid://suwwqt2pkiaa"]
+
+[ext_resource type="Script" uid="uid://wtk5v77fcqvn" path="res://cards/_core/card_action.gd" id="1_or"]
+[ext_resource type="Resource" uid="uid://coasisrcard01" path="res://cards/souls/OasisRhinoCard/summon_oasis_rhino_action.tres" id="2_or"]
+[ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://cards/_core/card_data.gd" id="3_or"]
+[ext_resource type="Resource" uid="uid://doasisrcard01" path="res://cards/souls/OasisRhinoCard/freshwater_on_summoned_action.tres" id="3_qk8y2"]
+[ext_resource type="Texture2D" uid="uid://b0gcqcs45dshn" path="res://_assets/sprites/assorted/rhinoceros-horn.png" id="4_or"]
+
+[resource]
+script = ExtResource("3_or")
+id = &"oasis_rhino"
+card_type = 1
+target_type = 1
+name = "Oasis Rhino"
+summon_release_overload = 1
+description = "%sOn death, give your next summon +%s attack and max health."
+cost = 1
+texture = ExtResource("4_or")
+actions = Array[ExtResource("1_or")]([ExtResource("2_or"), ExtResource("3_qk8y2")])

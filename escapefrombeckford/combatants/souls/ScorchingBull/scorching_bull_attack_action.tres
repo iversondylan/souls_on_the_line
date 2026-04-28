@@ -1,8 +1,8 @@
 [gd_resource type="Resource" script_class="NPCAction" format=3 uid="uid://b8w7mj2fvl0av"]
 
 [ext_resource type="Script" uid="uid://3jde7uhq2yho" path="res://npc_ai/_core/npc_effect_package.gd" id="1_pkg"]
-[ext_resource type="Resource" path="res://combatants/souls/ScorchingBull/scorching_bull_attack_pkg.tres" id="2_attack_pkg"]
-[ext_resource type="Resource" path="res://combatants/souls/ScorchingBull/scorching_bull_move_pkg.tres" id="3_move_pkg"]
+[ext_resource type="Resource" uid="uid://culhc6tbfltn8" path="res://combatants/souls/ScorchingBull/scorching_bull_attack_pkg.tres" id="2_attack_pkg"]
+[ext_resource type="Resource" uid="uid://btkgldk6djj14" path="res://combatants/souls/ScorchingBull/scorching_bull_move_pkg.tres" id="3_move_pkg"]
 [ext_resource type="Texture2D" uid="uid://c54dbo8n7r3g" path="res://_assets/sprites/assorted/attack.PNG" id="4_icon"]
 [ext_resource type="Script" uid="uid://dtwuyctovqk5r" path="res://npc_ai/_core/intent_lifecycle_model.gd" id="5_oqm8y"]
 [ext_resource type="Resource" uid="uid://7gggk4mmejsq" path="res://npc_ai/text/attack_intent_text_model.tres" id="5_text_model"]

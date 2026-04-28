@@ -2,7 +2,7 @@
 
 [ext_resource type="Texture2D" uid="uid://bx0nucatkcfyp" path="res://_assets/sprites/assorted/skull-signet.png" id="1_icon"]
 [ext_resource type="Script" uid="uid://cueedkb1u8vxy" path="res://statuses/_core/status.gd" id="2_rg2ec"]
-[ext_resource type="Script" path="res://arcana/reapers_siphon.gd" id="2_script"]
+[ext_resource type="Script" uid="uid://cbm78exj76xm8" path="res://arcana/reapers_siphon.gd" id="2_script"]
 
 [resource]
 script = ExtResource("2_script")

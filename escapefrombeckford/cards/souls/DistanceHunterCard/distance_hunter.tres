@@ -2,8 +2,8 @@
 
 [ext_resource type="Script" uid="uid://wtk5v77fcqvn" path="res://cards/_core/card_action.gd" id="1_action"]
 [ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://cards/_core/card_data.gd" id="2_card"]
-[ext_resource type="Resource" path="res://cards/souls/DistanceHunterCard/summon_distance_hunter.tres" id="3_summon"]
-[ext_resource type="Resource" path="res://cards/souls/DistanceHunterCard/precision_strike_on_summoned_action.tres" id="4_on_summoned"]
+[ext_resource type="Resource" uid="uid://bbfx65eis4rps" path="res://cards/souls/DistanceHunterCard/summon_distance_hunter.tres" id="3_summon"]
+[ext_resource type="Resource" uid="uid://b0g30qs8jj5ey" path="res://cards/souls/DistanceHunterCard/precision_strike_on_summoned_action.tres" id="4_on_summoned"]
 [ext_resource type="Texture2D" uid="uid://bbqsb8n5l283j" path="res://_assets/sprites/assorted/archer.png" id="5_texture"]
 
 [resource]

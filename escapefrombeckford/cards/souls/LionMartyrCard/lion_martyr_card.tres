@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="CardData" format=3 uid="uid://bp3s2ke0655aa"]
+
+[ext_resource type="Script" uid="uid://wtk5v77fcqvn" path="res://cards/_core/card_action.gd" id="1_lm"]
+[ext_resource type="Resource" uid="uid://clionmcard001" path="res://cards/souls/LionMartyrCard/summon_lion_martyr_action.tres" id="2_lm"]
+[ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://cards/_core/card_data.gd" id="3_lm"]
+[ext_resource type="Texture2D" uid="uid://w7stmcan2iwy" path="res://_assets/sprites/assorted/lion.png" id="4_lm"]
+[ext_resource type="Resource" uid="uid://dlionmcard001" path="res://cards/souls/LionMartyrCard/bequeath_on_summoned_action.tres" id="5_lm"]
+[ext_resource type="Resource" uid="uid://p3s2ke0655aa" path="res://cards/souls/LionMartyrCard/clear_will_on_summoned_action.tres" id="6_lm"]
+
+[resource]
+script = ExtResource("3_lm")
+id = &"lion_martyr"
+card_type = 4
+target_type = 1
+name = "Lion Martyr"
+description = "%sOn death, draw %s and your next Soul costs %s less."
+cost = 1
+texture = ExtResource("4_lm")
+actions = Array[ExtResource("1_lm")]([ExtResource("2_lm"), ExtResource("5_lm"), ExtResource("6_lm")])

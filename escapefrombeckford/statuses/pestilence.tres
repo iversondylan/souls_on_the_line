@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="PestilenceStatus" format=3 uid="uid://ofnuad3vxrc7"]
+
+[ext_resource type="Script" uid="uid://dq5o4s03ecra3" path="res://statuses/pestilence.gd" id="1_pest01"]
+[ext_resource type="Texture2D" uid="uid://cpq6v48epb2lo" path="res://_assets/sprites/assorted/biohazard.png" id="1_vs3lq"]
+
+[resource]
+script = ExtResource("1_pest01")
+status_name = "Pestilence"
+numerical = true
+icon = ExtResource("1_vs3lq")

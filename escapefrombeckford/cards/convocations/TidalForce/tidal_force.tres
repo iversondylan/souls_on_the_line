@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://wtk5v77fcqvn" path="res://cards/_core/card_action.gd" id="1_action"]
 [ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://cards/_core/card_data.gd" id="2_card"]
-[ext_resource type="Resource" path="res://cards/convocations/TidalForce/tidal_force_action.tres" id="3_tidal_force_action"]
+[ext_resource type="Resource" uid="uid://c3hd14lq1ymw3" path="res://cards/convocations/TidalForce/tidal_force_action.tres" id="3_tidal_force_action"]
 [ext_resource type="Texture2D" uid="uid://cidr6kn67fuwq" path="res://_assets/sprites/assorted/push.png" id="4_texture"]
 
 [resource]

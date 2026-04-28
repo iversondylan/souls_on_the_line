@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="FreshwaterSpringStatus" format=3 uid="uid://378fk0bjkf3y"]
+
+[ext_resource type="Texture2D" uid="uid://yn5erdjycby5" path="res://_assets/sprites/assorted/oasis.png" id="1_5fs81"]
+[ext_resource type="Script" path="res://statuses/freshwater_spring.gd" id="1_orbless"]
+
+[resource]
+script = ExtResource("1_orbless")
+status_name = "Freshwater Spring"
+numerical = true
+icon = ExtResource("1_5fs81")
+tooltip = "On death, your next summon enters with bonus attack and max health."

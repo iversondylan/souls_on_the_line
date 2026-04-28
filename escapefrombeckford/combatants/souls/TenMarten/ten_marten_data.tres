@@ -11,5 +11,6 @@ character_art_uid = "uid://cqjh2y77fsbri"
 portrait_art_uid = "uid://cqjh2y77fsbri"
 height = 300
 max_health = 3
+ap = 4
 max_mana = 0
 ai = ExtResource("2_ai")

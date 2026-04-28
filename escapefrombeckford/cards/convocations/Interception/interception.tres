@@ -10,7 +10,6 @@
 script = ExtResource("2_card")
 id = &"interception"
 target_type = 3
-rarity = 1
 name = "Interception"
 description = "%sMove target ally to the front. Negate the next %s hit on it."
 cost = 1

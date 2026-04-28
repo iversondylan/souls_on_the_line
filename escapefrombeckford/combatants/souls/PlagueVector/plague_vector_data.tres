@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="CombatantData" format=3 uid="uid://brplguevect01"]
+
+[ext_resource type="Script" uid="uid://cfatj0ryn8uv3" path="res://combatants/combatant_data.gd" id="1_data"]
+[ext_resource type="Resource" uid="uid://bplguevect02" path="res://combatants/souls/PlagueVector/plague_vector_ai.tres" id="2_ai"]
+
+[resource]
+script = ExtResource("1_data")
+name = "Plague Vector"
+description = "Passive. "
+character_art_uid = "res://_assets/sprites/assorted/rat.png"
+portrait_art_uid = "res://_assets/sprites/assorted/rat.png"
+height = 120
+max_health = 5
+ai = ExtResource("2_ai")

@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="ApplyStatusToSummonedAction" format=3 uid="uid://doasisrcard01"]
+
+[ext_resource type="Script" uid="uid://jie78uegvh3j" path="res://cards/_generic_actions/apply_status_to_summoned_action.gd" id="1_6c51h"]
+[ext_resource type="Resource" uid="uid://378fk0bjkf3y" path="res://statuses/freshwater_spring.tres" id="2_va4qi"]
+
+[resource]
+script = ExtResource("1_6c51h")
+status = ExtResource("2_va4qi")
+stacks = 3

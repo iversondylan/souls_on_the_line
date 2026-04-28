@@ -3,8 +3,8 @@
 [ext_resource type="Script" uid="uid://wtk5v77fcqvn" path="res://cards/_core/card_action.gd" id="1_action"]
 [ext_resource type="Resource" uid="uid://bfi3wwg2o0gl0" path="res://cards/_generic_actions/attack_now_action.tres" id="2_1asiw"]
 [ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://cards/_core/card_data.gd" id="2_card"]
-[ext_resource type="Resource" path="res://cards/convocations/TempoShift/tempo_shift_move_action.tres" id="3_move"]
-[ext_resource type="Resource" path="res://cards/convocations/TempoShift/tempo_shift_pressure_barrier_action.tres" id="4_barrier"]
+[ext_resource type="Resource" uid="uid://itxu1ad6x2hm" path="res://cards/convocations/TempoShift/tempo_shift_move_action.tres" id="3_move"]
+[ext_resource type="Resource" uid="uid://1jgod6nege77" path="res://cards/convocations/TempoShift/tempo_shift_pressure_barrier_action.tres" id="4_barrier"]
 [ext_resource type="Texture2D" uid="uid://dibm3kphg54mb" path="res://_assets/sprites/assorted/portal.png" id="5_1asiw"]
 
 [resource]

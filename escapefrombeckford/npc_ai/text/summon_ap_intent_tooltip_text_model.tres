@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="SummonApIntentTooltipTextModel" format=3 uid="uid://bv4vmq637qs77"]
 
-[ext_resource type="Script" path="res://npc_ai/text/summon_ap_intent_tooltip_text_model.gd" id="1_ro3cu"]
+[ext_resource type="Script" uid="uid://dg05abl3ms1xi" path="res://npc_ai/text/summon_ap_intent_tooltip_text_model.gd" id="1_ro3cu"]
 
 [resource]
 script = ExtResource("1_ro3cu")

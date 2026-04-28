@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="SummonAction" format=3 uid="uid://coasisrcard01"]
+
+[ext_resource type="Script" uid="uid://buhtw3540mbls" path="res://cards/_generic_actions/summon_action.gd" id="1_or"]
+[ext_resource type="Resource" uid="uid://c0cllss7w30rn" path="res://audio/summon_zap.tres" id="2_or"]
+[ext_resource type="Resource" uid="uid://boasisrdata01" path="res://combatants/souls/OasisRhino/oasis_rhino_data.tres" id="3_or"]
+
+[resource]
+script = ExtResource("1_or")
+summon_data = ExtResource("3_or")
+reserves_card = true
+sound = ExtResource("2_or")

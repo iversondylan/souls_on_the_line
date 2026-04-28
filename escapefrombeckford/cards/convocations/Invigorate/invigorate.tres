@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://wtk5v77fcqvn" path="res://cards/_core/card_action.gd" id="1_action"]
 [ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://cards/_core/card_data.gd" id="2_card_data"]
-[ext_resource type="Resource" path="res://cards/convocations/Invigorate/invigorate_action.tres" id="3_action"]
+[ext_resource type="Resource" uid="uid://du32i7nm8b5ds" path="res://cards/convocations/Invigorate/invigorate_action.tres" id="3_action"]
 [ext_resource type="Texture2D" uid="uid://jhtmfugmv5nd" path="res://_assets/sprites/assorted/heart-bottle.png" id="4_texture"]
 
 [resource]

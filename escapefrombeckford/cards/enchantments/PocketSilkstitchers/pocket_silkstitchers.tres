@@ -9,6 +9,7 @@
 script = ExtResource("3_card_data")
 id = &"pocket_silkstitchers"
 card_type = 2
+rarity = 1
 name = "Pocket Silkstitchers"
 deplete = true
 description = "Gain %s: once each round, the first time an ally survives a hit, it gains +1|+2."

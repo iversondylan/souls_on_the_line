@@ -9,7 +9,6 @@
 script = ExtResource("3_card_data")
 id = &"crystal_barrier"
 target_type = 3
-rarity = 1
 name = "Crystal Barrier"
 description = "Negate the next %s hit(s) on target ally."
 cost = 1

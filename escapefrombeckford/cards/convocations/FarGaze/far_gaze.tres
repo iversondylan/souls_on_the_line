@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="CardData" format=3 uid="uid://mnk6wgn5l3ga"]
 
 [ext_resource type="Script" uid="uid://wtk5v77fcqvn" path="res://cards/_core/card_action.gd" id="1_card_action"]
-[ext_resource type="Resource" path="res://cards/convocations/FarGaze/far_gaze_toggle_action.tres" id="2_toggle_action"]
+[ext_resource type="Resource" uid="uid://kid7hlbhy1kb" path="res://cards/convocations/FarGaze/far_gaze_toggle_action.tres" id="2_toggle_action"]
 [ext_resource type="Resource" uid="uid://cwsantdi8vmes" path="res://cards/_generic_actions/draw_1_action.tres" id="3_draw"]
 [ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://cards/_core/card_data.gd" id="4_card_data"]
 [ext_resource type="Texture2D" uid="uid://bqpmwb1ren8vt" path="res://_assets/sprites/assorted/eye-target.png" id="5_texture"]

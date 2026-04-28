@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="CardData" format=3 uid="uid://wbpushms4yaa"]
+
+[ext_resource type="Script" uid="uid://wtk5v77fcqvn" path="res://cards/_core/card_action.gd" id="1_plgv"]
+[ext_resource type="Resource" uid="uid://crplguevect01" path="res://cards/souls/PlagueVectorCard/summon_plague_vector_action.tres" id="2_plgv"]
+[ext_resource type="Resource" uid="uid://dl6g0d5q3cjpd" path="res://cards/souls/PlagueVectorCard/explosive_departure_on_summoned_action.tres" id="3_3ctvm"]
+[ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://cards/_core/card_data.gd" id="3_plgv"]
+[ext_resource type="Texture2D" uid="uid://o3qnmqlcsxcu" path="res://_assets/sprites/assorted/rat.png" id="4_plgv"]
+[ext_resource type="Resource" uid="uid://drplguevect01" path="res://cards/souls/PlagueVectorCard/pestilence_on_summoned_action.tres" id="5_plgv"]
+
+[resource]
+script = ExtResource("3_plgv")
+id = &"plague_vector"
+card_type = 4
+target_type = 1
+rarity = 1
+name = "Plague Vector"
+description = "%sOn death, deal %s damage to enemies and give allies: on death, deal %s damage to enemies."
+cost = 1
+texture = ExtResource("4_plgv")
+actions = Array[ExtResource("1_plgv")]([ExtResource("2_plgv"), ExtResource("3_3ctvm"), ExtResource("5_plgv")])

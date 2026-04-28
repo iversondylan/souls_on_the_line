@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="ClearWillStatus" format=3 uid="uid://clionmroar001"]
+
+[ext_resource type="Texture2D" uid="uid://lqu3iaxq0e6y" path="res://_assets/sprites/assorted/scroll-unfurled.png" id="1_2j3i1"]
+[ext_resource type="Script" path="res://statuses/clear_will.gd" id="1_lmroar"]
+
+[resource]
+script = ExtResource("1_lmroar")
+status_name = "Clear Will"
+numerical = true
+icon = ExtResource("1_2j3i1")
+tooltip = "On death, your next Soul costs less to play."

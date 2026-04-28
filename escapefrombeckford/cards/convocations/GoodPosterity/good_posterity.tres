@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://wtk5v77fcqvn" path="res://cards/_core/card_action.gd" id="1_action"]
 [ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://cards/_core/card_data.gd" id="2_card_data"]
 [ext_resource type="Resource" uid="uid://4a3dreaffu56" path="res://cards/_generic_actions/sacrifice_action.tres" id="3_sacrifice"]
-[ext_resource type="Resource" path="res://cards/convocations/GoodPosterity/good_posterity_action.tres" id="4_action"]
+[ext_resource type="Resource" uid="uid://27pafeydhf7o" path="res://cards/convocations/GoodPosterity/good_posterity_action.tres" id="4_action"]
 [ext_resource type="Texture2D" uid="uid://tgn6br8rtpuq" path="res://_assets/sprites/assorted/book-storm.png" id="5_texture"]
 [ext_resource type="Resource" uid="uid://cwsantdi8vmes" path="res://cards/_generic_actions/draw_1_action.tres" id="6_draw"]
 

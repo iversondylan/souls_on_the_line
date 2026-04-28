@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="ToggleStatusAction" format=3 uid="uid://kid7hlbhy1kb"]
 
 [ext_resource type="Script" uid="uid://jyqig7tiph8f" path="res://cards/_generic_actions/toggle_status_action.gd" id="1_script"]
-[ext_resource type="Resource" path="res://statuses/sniper.tres" id="2_status"]
+[ext_resource type="Resource" uid="uid://lc01ifdkqm0" path="res://statuses/sniper.tres" id="2_status"]
 
 [resource]
 script = ExtResource("1_script")
