@@ -1458,7 +1458,7 @@ func summon(ctx: SummonContext) -> void:
 		var spec := _make_spawn_spec_from_data(ctx.summon_data, u)
 		var after_order_ids := PackedInt32Array(state.groups[g].order)
 		var extra := {}
-		var summon_sound_ref := _sound_resource_ref_string(ctx.sfx)
+		var summon_sound_ref := _summon_sound_resource_ref(ctx.sfx)
 		if !summon_sound_ref.is_empty():
 			extra[Keys.SUMMON_SOUND] = summon_sound_ref
 		ctx.after_order_ids = after_order_ids
@@ -1498,13 +1498,13 @@ func summon(ctx: SummonContext) -> void:
 		checkpoint_processor.request_followup_flush()
 
 
-func _sound_resource_ref_string(sound: Sound) -> String:
+func _summon_sound_resource_ref(sound: Sound) -> String:
 	if sound == null:
 		return ""
 
 	var path := String(sound.resource_path)
 	if path.is_empty():
-		push_warning("SimBattleAPI._sound_resource_ref_string(): summon sound has no stable resource path; omitting event payload")
+		push_warning("SimBattleAPI._summon_sound_resource_ref(): summon sound has no stable resource path; omitting event payload")
 		return ""
 	if path.begins_with("uid://"):
 		return path

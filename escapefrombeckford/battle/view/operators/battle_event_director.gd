@@ -282,18 +282,18 @@ func _start_summon_pop_order(order: SummonPopPresentationOrder) -> void:
 		caster.clear_strike_pose(order.visual_sec if order.visual_sec > 0.0 else 0.20)
 
 
-func _resolve_summon_sound(sound_ref: String) -> Sound:
-	if sound_ref.is_empty():
+func _resolve_summon_sound(summon_sound_ref: String) -> Sound:
+	if summon_sound_ref.is_empty():
 		return null
-	if _summon_sound_cache.has(sound_ref):
-		return _summon_sound_cache[sound_ref] as Sound
+	if _summon_sound_cache.has(summon_sound_ref):
+		return _summon_sound_cache[summon_sound_ref] as Sound
 
-	var sound := load(sound_ref) as Sound
+	var sound := load(summon_sound_ref) as Sound
 	if sound == null:
-		push_warning("BattleEventDirector._resolve_summon_sound(): failed to load summon sound %s" % sound_ref)
+		push_warning("BattleEventDirector._resolve_summon_sound(): failed to load summon sound %s" % summon_sound_ref)
 		return null
 
-	_summon_sound_cache[sound_ref] = sound
+	_summon_sound_cache[summon_sound_ref] = sound
 	return sound
 
 func _start_removal_order(order) -> void:
