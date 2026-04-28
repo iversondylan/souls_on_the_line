@@ -2067,6 +2067,7 @@ func _make_summon_pop_beat(
 		o.insert_index = int(e.data.get(Keys.INSERT_INDEX, -1))
 		o.after_order_ids = e.data.get(Keys.AFTER_ORDER_IDS, PackedInt32Array())
 		o.summon_spec = e.data.get(Keys.SUMMON_SPEC, {}).duplicate(true)
+		o.summon_sound_uid = String(e.data.get(Keys.SUMMON_SOUND, ""))
 
 		beat.orders.append(o)
 		beat.events.append(e)

@@ -4,6 +4,7 @@ class_name BattleEventDirector extends RefCounted
 
 var battle_view: BattleView
 var click: Sound
+var _summon_sound_cache := {}
 
 @export var spawn_pause_sec: float = 0.04
 @export var summon_pause_sec: float = 0.06
@@ -17,6 +18,7 @@ var click: Sound
 func bind(new_battle_view: BattleView) -> void:
 	battle_view = new_battle_view
 	click = battle_view.click_sound
+	_summon_sound_cache.clear()
 
 
 func on_director_action(a: DirectorAction, gen: int) -> void:
@@ -270,10 +272,29 @@ func _start_summon_pop_order(order: SummonPopPresentationOrder) -> void:
 		c.a = 1.0
 		v.character_art.modulate = c
 
+	var summon_sound := _resolve_summon_sound(String(order.summon_sound_uid))
+	if summon_sound != null:
+		SFXPlayer.play(summon_sound)
+
 	_apply_group_order(g, _coerce_int_array(order.after_order_ids), true)
 
 	if caster != null:
 		caster.clear_strike_pose(order.visual_sec if order.visual_sec > 0.0 else 0.20)
+
+
+func _resolve_summon_sound(summon_sound_ref: String) -> Sound:
+	if summon_sound_ref.is_empty():
+		return null
+	if _summon_sound_cache.has(summon_sound_ref):
+		return _summon_sound_cache[summon_sound_ref] as Sound
+
+	var sound := load(summon_sound_ref) as Sound
+	if sound == null:
+		push_warning("BattleEventDirector._resolve_summon_sound(): failed to load summon sound %s" % summon_sound_ref)
+		return null
+
+	_summon_sound_cache[summon_sound_ref] = sound
+	return sound
 
 func _start_removal_order(order) -> void:
 	if order == null:

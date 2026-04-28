@@ -81,6 +81,7 @@ func activate_sim(ctx: CardContext) -> bool:
 	sctx.summon_data = _build_clone_data_sim()
 	sctx.mortality = _resolve_summon_mortality(ctx.card_data)
 	sctx.reason = "card_summon"
+	sctx.sfx = sound
 
 	if ctx.card_data != null:
 		ctx.card_data.ensure_uid()
