@@ -7,31 +7,31 @@ var index: int = 0
 func reset() -> void:
 	index = 0
 
-func has_next(log: BattleEventLog) -> bool:
-	if log == null:
+func has_next(_log: BattleEventLog) -> bool:
+	if _log == null:
 		return false
-	return index < log.size()
+	return index < _log.size()
 
-func peek(log: BattleEventLog) -> BattleEvent:
-	if log == null or index < 0 or index >= log.size():
+func peek(_log: BattleEventLog) -> BattleEvent:
+	if _log == null or index < 0 or index >= _log.size():
 		return null
-	return log.get_event(index)
+	return _log.get_event(index)
 
-func next(log: BattleEventLog) -> BattleEvent:
-	if log == null or index < 0 or index >= log.size():
+func next(_log: BattleEventLog) -> BattleEvent:
+	if _log == null or index < 0 or index >= _log.size():
 		return null
-	var e := log.get_event(index)
+	var e := _log.get_event(index)
 	index += 1
 	return e
 
-func drain(log: BattleEventLog, max_n: int = 999999) -> Array[BattleEvent]:
-	if log == null:
+func drain(_log: BattleEventLog, max_n: int = 999999) -> Array[BattleEvent]:
+	if _log == null:
 		return []
 	max_n = maxi(max_n, 0)
 	var out: Array[BattleEvent] = []
 	var n := 0
-	while n < max_n and index < log.size():
-		out.append(log.get_event(index))
+	while n < max_n and index < _log.size():
+		out.append(_log.get_event(index))
 		index += 1
 		n += 1
 	return out

@@ -1326,14 +1326,14 @@ func _on_summon_reserve_released(e: EventPackage) -> void:
 	)
 
 func _on_victory(e: EventPackage) -> void:
-	var d := _data(e)
+	var _d := _data(e)
 	#var reason := String(d.get(Keys.REASON, ""))
 	# Optional: stop playback visuals immediately if you want.
 	# if battle_view != null: battle_view.stop_playback()
 	Events.request_victory.emit()
 
 func _on_defeat(e: EventPackage) -> void:
-	var d := _data(e)
+	var _d := _data(e)
 	#var reason := String(d.get(Keys.REASON, ""))
 	# Optional: stop playback visuals immediately if you want.
 	# if battle_view != null: battle_view.stop_playback()
@@ -1361,7 +1361,7 @@ func _on_scope_end(e: EventPackage) -> void:
 	Events.card_scope_view_finished.emit(scope_id, actor_id)
 
 func _on_mana(e: EventPackage) -> void:
-	var d := _data(e)
+	var _d := _data(e)
 	var o := _make_mana_view_order(e)
 
 	# View->UI bridge: Battle.gd owns the UI node, so we broadcast.
