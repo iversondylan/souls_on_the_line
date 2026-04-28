@@ -1457,6 +1457,10 @@ func summon(ctx: SummonContext) -> void:
 	if writer != null:
 		var spec := _make_spawn_spec_from_data(ctx.summon_data, u)
 		var after_order_ids := PackedInt32Array(state.groups[g].order)
+		var extra := {}
+		var summon_sound_ref := _sound_resource_ref_string(ctx.sfx)
+		if !summon_sound_ref.is_empty():
+			extra[Keys.SUMMON_SOUND] = summon_sound_ref
 		ctx.after_order_ids = after_order_ids
 		writer.emit_summoned(
 			int(source_id),
@@ -1468,7 +1472,8 @@ func summon(ctx: SummonContext) -> void:
 			u.data_proto_path,
 			spec,
 			ctx.reason,
-			ctx.bound_card_uid
+			ctx.bound_card_uid,
+			extra
 		)
 	_refresh_projected_status_cache_for(id, [], true)
 	
@@ -1491,6 +1496,23 @@ func summon(ctx: SummonContext) -> void:
 	
 	if checkpoint_processor != null:
 		checkpoint_processor.request_followup_flush()
+
+
+func _sound_resource_ref_string(sound: Sound) -> String:
+	if sound == null:
+		return ""
+
+	var path := String(sound.resource_path)
+	if path.is_empty():
+		push_warning("SimBattleAPI._sound_resource_ref_string(): summon sound has no stable resource path; omitting event payload")
+		return ""
+	if path.begins_with("uid://"):
+		return path
+
+	var uid := ResourceLoader.get_resource_uid(path)
+	if uid > 0:
+		return ResourceUID.id_to_text(uid)
+	return path
 
 
 func count_summons_in_group(group_index: int) -> int:
