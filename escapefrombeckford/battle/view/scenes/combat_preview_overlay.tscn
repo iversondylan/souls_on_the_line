@@ -2,7 +2,9 @@
 
 [ext_resource type="Texture2D" uid="uid://c73rgxbvcwveo" path="res://_assets/sprites/assorted/death-skull.png" id="1_b60qy"]
 [ext_resource type="Script" uid="uid://bhv8ixnp8xqgv" path="res://battle/view/scenes/combat_preview_overlay.gd" id="1_glr07"]
-[ext_resource type="Theme" uid="uid://b585x04q3pfqf" path="res://themes/battle_ui_theme.tres" id="2_glr07"]
+[ext_resource type="Theme" uid="uid://culke34tga8th" path="res://themes/battle_ui_theme_outline.tres" id="3_7v4ah"]
+[ext_resource type="Texture2D" uid="uid://bxdw2yasdus6s" path="res://_assets/sprites/assorted/crosshair.png" id="3_f02my"]
+[ext_resource type="Texture2D" uid="uid://cdai4b5lt3vjf" path="res://_assets/sprites/assorted/danger_triangle.png" id="5_nycpq"]
 
 [node name="CombatPreviewOverlay" type="Node2D" unique_id=326907784]
 script = ExtResource("1_glr07")
@@ -16,6 +18,15 @@ texture = ExtResource("1_b60qy")
 
 [node name="TextParent" type="Node2D" parent="." unique_id=1089211324]
 
+[node name="TargetedIcon" type="Sprite2D" parent="TextParent" unique_id=106729434]
+scale = Vector2(0.35, 0.35)
+texture = ExtResource("3_f02my")
+
+[node name="DangerZoneIcon" type="Sprite2D" parent="TextParent" unique_id=2076284652]
+position = Vector2(-38, 36)
+scale = Vector2(0.055, 0.055)
+texture = ExtResource("5_nycpq")
+
 [node name="Label" type="Label" parent="TextParent" unique_id=1859124892]
 anchors_preset = 8
 anchor_left = 0.5
@@ -28,7 +39,7 @@ offset_right = 100.0
 offset_bottom = 38.5
 grow_horizontal = 2
 grow_vertical = 2
-theme = ExtResource("2_glr07")
+theme = ExtResource("3_7v4ah")
 theme_override_font_sizes/font_size = 50
 text = "-8"
 horizontal_alignment = 1

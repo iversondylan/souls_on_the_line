@@ -177,6 +177,7 @@ func _apply_visuals_from_spec() -> void:
 	character_art.position = Vector2(0, -height / 2.0)
 	camera_focus.position = Vector2(0, -height / 1.5)
 	intent_container.position = Vector2(0, -height + 20)
+	combat_preview_overlay.position = Vector2(0, -height / 2.0 + 10)
 	targeted_arrow.position = Vector2(0, -height)
 
 	var faces_right := bool(_spec.get(Keys.ART_FACES_RIGHT, true))
@@ -257,6 +258,21 @@ func show_targeted_arrow(show_it: bool) -> void:
 func clear_combat_preview() -> void:
 	if combat_preview_overlay != null:
 		combat_preview_overlay.clear_preview()
+
+
+func set_status_depiction_marker(marker_key: String, marker_kind: StringName, show_it: bool) -> void:
+	if combat_preview_overlay != null:
+		combat_preview_overlay.set_status_depiction_marker(marker_key, marker_kind, show_it)
+
+
+func clear_status_depiction_marker_key(marker_key: String) -> void:
+	if combat_preview_overlay != null:
+		combat_preview_overlay.clear_status_depiction_marker_key(marker_key)
+
+
+func clear_status_depiction_marker_prefix(marker_prefix: String) -> void:
+	if combat_preview_overlay != null:
+		combat_preview_overlay.clear_status_depiction_marker_prefix(marker_prefix)
 
 
 func show_combat_preview_death() -> void:

@@ -175,6 +175,7 @@ const AFTER_PENDING := &"after_pending"
 const BEFORE_TOKEN_ID := &"before_token_id"
 const AFTER_TOKEN_ID := &"after_token_id"
 const STATUS_DATA := &"status_data"
+const DANGER_ZONE_ADJACENT_TARGET_IDS := &"danger_zone_adjacent_target_ids"
 
 # Move (formation)
 const MOVE_TYPE := &"move_type"

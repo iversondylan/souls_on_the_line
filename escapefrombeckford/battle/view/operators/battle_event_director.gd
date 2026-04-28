@@ -1068,14 +1068,68 @@ func _on_status_changed(e: EventPackage) -> void:
 		Events.battle_status_changed.emit(target_id)
 	var op := int(d.get(Keys.OP, 0))
 	var target := battle_view.get_combatant(target_id)
-	if target == null or target.status_view_grid == null:
+	if target != null and target.status_view_grid != null:
+		if op == int(Status.OP.REMOVE):
+			target.status_view_grid.remove_status(_make_status_removed_order(e))
+		else:
+			target.status_view_grid.apply_status(_make_status_applied_order(e))
+
+	_refresh_status_depiction(e)
+
+
+func _refresh_status_depiction(e: EventPackage) -> void:
+	if e == null or e.event == null or battle_view == null:
+		return
+	if battle_view.status_catalog == null:
 		return
 
-	if op == int(Status.OP.REMOVE):
-		target.status_view_grid.remove_status(_make_status_removed_order(e))
+	var d := _data(e)
+	var status_id: StringName = d.get(Keys.STATUS_ID, &"")
+	if status_id == &"":
 		return
 
-	target.status_view_grid.apply_status(_make_status_applied_order(e))
+	var proto := battle_view.status_catalog.get_proto(status_id)
+	if proto == null or proto.status_depiction == null:
+		return
+
+	var depiction := proto.status_depiction
+	var depiction_prefix := depiction.get_key_prefix(d)
+	var depiction_key := depiction.get_key(d)
+	if depiction_key.is_empty():
+		return
+
+	if int(d.get(Keys.OP, 0)) == int(Status.OP.REMOVE):
+		_clear_status_depiction_prefix_from_views(depiction.get_source_key_prefix(d))
+		return
+
+	_clear_status_depiction_prefix_from_views(depiction_prefix)
+
+	for marker in depiction.build_markers(d):
+		if marker == null or marker.is_empty():
+			continue
+		var target_id := int(marker.get(Keys.TARGET_ID, 0))
+		var marker_kind: StringName = marker.get(StatusDepiction.MARKER_KIND, &"")
+		if target_id <= 0 or marker_kind == &"":
+			continue
+		var view := battle_view.get_combatant(target_id)
+		if view != null:
+			view.set_status_depiction_marker(depiction_key, marker_kind, true)
+
+
+func _clear_status_depiction_key_from_views(depiction_key: String) -> void:
+	if battle_view == null or depiction_key.is_empty():
+		return
+	for view in battle_view.get_all_combatant_views():
+		if view != null and is_instance_valid(view):
+			view.clear_status_depiction_marker_key(depiction_key)
+
+
+func _clear_status_depiction_prefix_from_views(depiction_prefix: String) -> void:
+	if battle_view == null or depiction_prefix.is_empty():
+		return
+	for view in battle_view.get_all_combatant_views():
+		if view != null and is_instance_valid(view):
+			view.clear_status_depiction_marker_prefix(depiction_prefix)
 
 
 func _on_set_intent(e: EventPackage) -> void:

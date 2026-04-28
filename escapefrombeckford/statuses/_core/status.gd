@@ -34,6 +34,7 @@ enum OP { APPLY, REMOVE, CHANGE }
 @export_group("Status Visuals")
 @export var icon: Texture
 @export_multiline var tooltip: String
+@export var status_depiction: StatusDepiction
 
 var status_parent: CombatantView
 

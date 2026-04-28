@@ -33,6 +33,7 @@ var reason: String = ""
 var presentation_hint: StringName = &"standalone"
 var origin_card_uid: String = ""
 var origin_arcanum_id: StringName = &""
+var status_data: Dictionary = {}
 
 # results (filled by API)
 var applied: bool = false

@@ -3,7 +3,7 @@
 [ext_resource type="Texture2D" uid="uid://delb6dvd52afu" path="res://_assets/sprites/assorted/afflict.PNG" id="1_71ask"]
 [ext_resource type="Script" uid="uid://dgjgtflakvpbf" path="res://battle/view/scenes/status_display.gd" id="1_movl6"]
 [ext_resource type="Resource" uid="uid://bh05r8var8mj3" path="res://statuses/pinpoint.tres" id="2_c5udy"]
-[ext_resource type="Theme" uid="uid://b585x04q3pfqf" path="res://themes/battle_ui_theme.tres" id="2_movl6"]
+[ext_resource type="Theme" uid="uid://culke34tga8th" path="res://themes/battle_ui_theme_outline.tres" id="4_mcldn"]
 
 [node name="StatusDisplay" type="Control" unique_id=1282689648]
 custom_minimum_size = Vector2(50, 50)
@@ -27,7 +27,7 @@ offset_left = 18.0
 offset_top = 10.0
 offset_right = 50.0
 offset_bottom = 50.0
-theme = ExtResource("2_movl6")
+theme = ExtResource("4_mcldn")
 text = "99"
 vertical_alignment = 1
 

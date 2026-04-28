@@ -247,6 +247,7 @@ func add_or_reapply_ctx(
 	else:
 		before_stacks = int(token.stacks)
 		before_token_id = int(token.token_id)
+	var before_data := token.data.duplicate(true) if token.data != null else {}
 
 	ctx.before_pending = lane_pending
 	ctx.after_pending = lane_pending
@@ -260,6 +261,7 @@ func add_or_reapply_ctx(
 
 		token.stacks = new_stacks
 		token.pending = lane_pending
+		_merge_token_data(token, ctx.status_data)
 		bucket.set_status_token(token, lane_pending)
 		by_id[id] = bucket
 
@@ -296,6 +298,8 @@ func add_or_reapply_ctx(
 	token.stacks = new_total
 
 	var ds := int(token.stacks) - before_stacks
+	_merge_token_data(token, ctx.status_data)
+	var data_changed := before_data != (token.data.duplicate(true) if token.data != null else {})
 
 	ctx.op = Status.OP.CHANGE
 	ctx.after_token_id = int(token.token_id)
@@ -303,7 +307,7 @@ func add_or_reapply_ctx(
 	ctx.after_stacks = int(token.stacks)
 	ctx.stacks = ds
 
-	result.changed = ds != 0
+	result.changed = ds != 0 or data_changed
 	result.status_id = id
 	result.op = int(ctx.op)
 	result.before_pending = lane_pending
@@ -313,7 +317,7 @@ func add_or_reapply_ctx(
 	result.before_stacks = before_stacks
 	result.after_stacks = int(token.stacks)
 	result.delta_stacks = ds
-	if ds != 0:
+	if ds != 0 or data_changed:
 		_bump_effective_context_version()
 
 	return result
@@ -403,6 +407,14 @@ func _get_bucket(id: StringName, create: bool) -> StatusTokenBucket:
 	var bucket: StatusTokenBucket = StatusTokenBucket.new()
 	by_id[id] = bucket
 	return bucket
+
+func _merge_token_data(token: StatusToken, status_data: Dictionary) -> void:
+	if token == null or status_data == null or status_data.is_empty():
+		return
+	if token.data == null:
+		token.data = {}
+	for key in status_data.keys():
+		token.data[key] = status_data[key]
 
 func _clamp_stacks_total(value: int, max_stacks: int) -> int:
 	var out := maxi(int(value), 0)

@@ -1,0 +1,15 @@
+[gd_scene format=3 uid="uid://cd18dcm5mughe"]
+
+[ext_resource type="Theme" uid="uid://b585x04q3pfqf" path="res://themes/battle_ui_theme.tres" id="1_ao0w1"]
+
+[node name="ColorRect" type="ColorRect" unique_id=780751465]
+offset_right = 303.0
+offset_bottom = 139.0
+color = Color(0.26866624, 0.41389558, 0.38126743, 1)
+
+[node name="Label" type="Label" parent="." unique_id=431875829]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 25.0
+theme = ExtResource("1_ao0w1")
+text = "Label Text 123"
