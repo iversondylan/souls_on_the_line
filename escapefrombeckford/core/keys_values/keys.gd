@@ -175,6 +175,7 @@ const AFTER_PENDING := &"after_pending"
 const BEFORE_TOKEN_ID := &"before_token_id"
 const AFTER_TOKEN_ID := &"after_token_id"
 const STATUS_DATA := &"status_data"
+const STATUS_DISPLAY_VISIBLE := &"status_display_visible"
 const DANGER_ZONE_ADJACENT_TARGET_IDS := &"danger_zone_adjacent_target_ids"
 
 # Move (formation)
@@ -228,6 +229,19 @@ const SUMMON_COUNT := &"summon_count"
 const SUMMON_DATA := &"summon_data"
 const SUMMON_MORTALITY := &"summon_mortality"
 const SUMMON_SOUND := &"summon_sound"
+
+# View presentation payloads carried by state events.
+const VFX_PAYLOADS := &"vfx_payloads"
+const VFX_ID := &"vfx_id"
+const VFX_SOUND := &"vfx_sound"
+const VFX_ANCHOR := &"vfx_anchor"
+const VFX_ANCHOR_TARGET := &"target"
+const VFX_ANCHOR_SOURCE := &"source"
+const VFX_ANCHOR_EVENT_POSITION := &"event_position"
+const VFX_OFFSET := &"vfx_offset"
+const VFX_SCALE := &"vfx_scale"
+const VFX_SIZE := &"vfx_size"
+const VFX_POSITION := &"vfx_position"
 
 
 # AI state

@@ -1,5 +1,5 @@
 class_name BattleFxManager
-extends Node
+extends Node2D
 
 const DEFAULT_FADE_IN := 0.04
 const DEFAULT_HOLD := 0.0
@@ -43,7 +43,8 @@ func ensure_on_combatant(
 	combatant: CombatantView,
 	fx_id: StringName,
 	fade_in := 0.06,
-	scale := DEFAULT_SCALE
+	scale := DEFAULT_SCALE,
+	center_y_ratio := 0.5
 ) -> Node:
 	if key.is_empty() or combatant == null or !is_instance_valid(combatant):
 		return null
@@ -70,7 +71,7 @@ func ensure_on_combatant(
 	if node == null:
 		return null
 
-	_attach_to_combatant(node, combatant, scale)
+	_attach_to_combatant(node, combatant, scale, center_y_ratio)
 	_set_alpha(node, 0.0)
 	var tween := _fade_to(node, 1.0, fade_in)
 	_persistent[key] = {
@@ -120,6 +121,33 @@ func clear_for_combatant(combatant: CombatantView, fade_out := 0.0) -> void:
 			_clear_key_immediate(key)
 
 
+func play_at_global_position(
+	fx_id: StringName,
+	global_pos: Vector2,
+	size := Vector2(180, 180)
+) -> Node:
+	var node := _instance_fx(fx_id)
+	if node == null:
+		return null
+
+	add_child(node)
+	if node is CanvasItem:
+		(node as CanvasItem).z_index = 80
+
+	if node is Control:
+		var control := node as Control
+		control.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		control.size = size
+		control.pivot_offset = size * 0.5
+		control.position = to_local(global_pos) - size * 0.5
+	elif node is Node2D:
+		if node.has_method("configure_fx"):
+			node.call("configure_fx", size)
+		(node as Node2D).global_position = global_pos
+
+	return node
+
+
 func _instance_fx(fx_id: StringName) -> Node:
 	var scene: PackedScene = FxLibrary.get_named_scene(fx_id)
 	if scene == null:
@@ -130,14 +158,14 @@ func _instance_fx(fx_id: StringName) -> Node:
 	return node
 
 
-func _attach_to_combatant(node: Node, combatant: CombatantView, scale: float) -> void:
+func _attach_to_combatant(node: Node, combatant: CombatantView, scale: float, center_y_ratio := 0.5) -> void:
 	combatant.add_child(node)
 
 	if node is CanvasItem:
 		(node as CanvasItem).z_index = 50
 
 	var height := float(combatant.get_visual_height_px())
-	var center := Vector2(0, -height * 0.5)
+	var center := Vector2(0, -height * clampf(center_y_ratio, 0.0, 1.0))
 	if node is Control:
 		var control := node as Control
 		control.mouse_filter = Control.MOUSE_FILTER_IGNORE

@@ -2,6 +2,8 @@ extends CardAction
 
 class_name SacrificeAction
 
+@export var vfx_payloads: Array[Dictionary] = []
+
 func activate_sim(ctx: CardContext) -> bool:
 	if ctx == null or ctx.api == null:
 		return false
@@ -23,6 +25,9 @@ func activate_sim(ctx: CardContext) -> bool:
 	if ctx.card_data != null:
 		ctx.card_data.ensure_uid()
 		removal_ctx.origin_card_uid = String(ctx.card_data.uid)
+	for payload in vfx_payloads:
+		if payload is Dictionary:
+			removal_ctx.vfx_payloads.append((payload as Dictionary).duplicate(true))
 
 	ctx.api.resolve_removal(removal_ctx)
 	if !removal_ctx.removed:

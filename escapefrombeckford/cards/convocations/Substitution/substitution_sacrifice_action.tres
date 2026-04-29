@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="SacrificeAction" format=3 uid="uid://borno81ipd1x1"]
+
+[ext_resource type="Script" uid="uid://dj8qfrwbxcor7" path="res://cards/_generic_actions/sacrifice_action.gd" id="1_sacrifice"]
+
+[resource]
+script = ExtResource("1_sacrifice")
+vfx_payloads = Array[Dictionary]([{
+"vfx_anchor": &"target",
+"vfx_id": &"smoke_poof",
+"vfx_scale": 0.75,
+"vfx_sound": "res://audio/boom_reverb.tres"
+}])
+metadata/_custom_type_script = "uid://dj8qfrwbxcor7"

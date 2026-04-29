@@ -19,3 +19,4 @@ var released_reserve_card_uid: String = ""
 
 var killer_id: int = 0
 var event_extra := {}
+var vfx_payloads: Array[Dictionary] = []

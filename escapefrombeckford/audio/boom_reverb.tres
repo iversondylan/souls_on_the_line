@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="Sound" format=3 uid="uid://bnmeqpasx40xp"]
+
+[ext_resource type="Script" uid="uid://bjedhaqsbwou7" path="res://audio/sound.gd" id="1_t1rgh"]
+[ext_resource type="AudioStream" uid="uid://qq10ysgu6fyg" path="res://_assets/sfx/boom_reverb.mp3" id="2_h02wa"]
+
+[resource]
+script = ExtResource("1_t1rgh")
+stream = ExtResource("2_h02wa")
+metadata/_custom_type_script = "uid://bjedhaqsbwou7"

@@ -5,6 +5,7 @@ class_name BattleEventDirector extends RefCounted
 var battle_view: BattleView
 var click: Sound
 var _summon_sound_cache := {}
+var _vfx_payload_sound_cache := {}
 
 @export var spawn_pause_sec: float = 0.04
 @export var summon_pause_sec: float = 0.06
@@ -19,6 +20,7 @@ func bind(new_battle_view: BattleView) -> void:
 	battle_view = new_battle_view
 	click = battle_view.click_sound
 	_summon_sound_cache.clear()
+	_vfx_payload_sound_cache.clear()
 
 
 func on_director_action(a: DirectorAction, gen: int) -> void:
@@ -1070,7 +1072,7 @@ func _on_status_changed(e: EventPackage) -> void:
 		Events.battle_status_changed.emit(target_id)
 	var op := int(d.get(Keys.OP, 0))
 	var target := battle_view.get_combatant(target_id)
-	if target != null and target.status_view_grid != null:
+	if target != null and target.status_view_grid != null and bool(d.get(Keys.STATUS_DISPLAY_VISIBLE, true)):
 		if op == int(Status.OP.REMOVE):
 			target.status_view_grid.remove_status(_make_status_removed_order(e))
 		else:
@@ -1086,6 +1088,24 @@ func _refresh_status_depiction(e: EventPackage) -> void:
 		return
 
 	var d := _data(e)
+	_refresh_status_depiction_for_data(d)
+
+	if !bool(d.get(Keys.IS_PROJECTED, false)):
+		return
+	var status_data = d.get(Keys.STATUS_DATA, {})
+	if !(status_data is Dictionary):
+		return
+	var projection_source_status_id: StringName = status_data.get(Keys.PROJECTION_SOURCE_STATUS_ID, &"")
+	var status_id: StringName = d.get(Keys.STATUS_ID, &"")
+	if projection_source_status_id == &"" or projection_source_status_id == status_id:
+		return
+
+	var source_depiction_data := d.duplicate(true)
+	source_depiction_data[Keys.STATUS_ID] = projection_source_status_id
+	_refresh_status_depiction_for_data(source_depiction_data)
+
+
+func _refresh_status_depiction_for_data(d: Dictionary) -> void:
 	var status_id: StringName = d.get(Keys.STATUS_ID, &"")
 	if status_id == &"":
 		return
@@ -1102,7 +1122,7 @@ func _refresh_status_depiction(e: EventPackage) -> void:
 
 	var is_remove := int(d.get(Keys.OP, 0)) == int(Status.OP.REMOVE)
 	if is_remove:
-		_clear_status_depiction_prefix_from_views(depiction.get_source_key_prefix(d))
+		_clear_status_depiction_key_from_views(depiction_key)
 	else:
 		_clear_status_depiction_prefix_from_views(depiction_prefix)
 
@@ -1137,7 +1157,8 @@ func _apply_status_depiction_fx_command(command: Dictionary) -> void:
 				target,
 				command.get(StatusDepiction.FX_ID, &""),
 				float(command.get(StatusDepiction.FX_FADE_IN, 0.06)),
-				float(command.get(StatusDepiction.FX_SCALE, 1.05))
+				float(command.get(StatusDepiction.FX_SCALE, 1.05)),
+				float(command.get(StatusDepiction.FX_CENTER_Y_RATIO, 0.5))
 			)
 		StatusDepiction.FX_OP_CLEAR_PERSISTENT:
 			battle_view.fx_manager.clear_key(
@@ -1186,6 +1207,8 @@ func _on_removed(e: EventPackage) -> void:
 	if dead_id <= 0:
 		return
 
+	_play_vfx_payloads_from_event(e)
+
 	var g := _group_index(e)
 	var after_order := _after_order(e)
 	var group: GroupView = battle_view.friendly_group if g == 0 else battle_view.enemy_group
@@ -1227,6 +1250,8 @@ func _on_removal_windup(e: EventPackage) -> void:
 
 
 func _on_removal_followthrough(e: EventPackage) -> void:
+	_play_vfx_payloads_from_event(e)
+
 	var removal_type := _removal_type(e)
 	var dur := maxf(e.duration, 0.01)
 	if int(removal_type) == int(Removal.Type.FADE):
@@ -1274,6 +1299,100 @@ func _on_removal_followthrough(e: EventPackage) -> void:
 		dead_view.queue_free()
 
 	battle_view.combatants_by_cid.erase(dead_id)
+
+
+func _play_vfx_payloads_from_event(e: EventPackage) -> void:
+	if e == null or e.event == null or battle_view == null:
+		return
+
+	var d := _data(e)
+	var payloads = d.get(Keys.VFX_PAYLOADS, [])
+	if !(payloads is Array):
+		return
+
+	for raw_payload in payloads:
+		if !(raw_payload is Dictionary):
+			continue
+		var payload := raw_payload as Dictionary
+		_play_vfx_payload_sound(payload)
+
+		var fx_id: StringName = payload.get(Keys.VFX_ID, &"")
+		if fx_id == &"" or battle_view.fx_manager == null:
+			continue
+
+		var anchor_view := _resolve_vfx_anchor_view(payload, d)
+		var global_pos := _resolve_vfx_global_position(payload, d, anchor_view)
+		var scale := float(payload.get(Keys.VFX_SCALE, 1.0))
+		var size := _resolve_vfx_size(payload, anchor_view, scale)
+		battle_view.fx_manager.play_at_global_position(fx_id, global_pos, size)
+
+
+func _play_vfx_payload_sound(payload: Dictionary) -> void:
+	var sound := _resolve_vfx_payload_sound(String(payload.get(Keys.VFX_SOUND, "")))
+	if sound != null:
+		SFXPlayer.play(sound)
+
+
+func _resolve_vfx_payload_sound(sound_ref: String) -> Sound:
+	if sound_ref.is_empty():
+		return null
+	if _vfx_payload_sound_cache.has(sound_ref):
+		return _vfx_payload_sound_cache[sound_ref] as Sound
+
+	var sound := load(sound_ref) as Sound
+	if sound == null:
+		push_warning("BattleEventDirector._resolve_vfx_payload_sound(): failed to load VFX payload sound %s" % sound_ref)
+		return null
+
+	_vfx_payload_sound_cache[sound_ref] = sound
+	return sound
+
+
+func _resolve_vfx_anchor_view(payload: Dictionary, event_data: Dictionary) -> CombatantView:
+	var anchor: StringName = payload.get(Keys.VFX_ANCHOR, Keys.VFX_ANCHOR_TARGET)
+	var id := 0
+	match anchor:
+		Keys.VFX_ANCHOR_SOURCE:
+			id = int(event_data.get(Keys.SOURCE_ID, 0))
+		_:
+			id = int(event_data.get(Keys.TARGET_ID, 0))
+	return battle_view.get_combatant(id) if id > 0 else null
+
+
+func _resolve_vfx_global_position(payload: Dictionary, _event_data: Dictionary, anchor_view: CombatantView) -> Vector2:
+	var anchor: StringName = payload.get(Keys.VFX_ANCHOR, Keys.VFX_ANCHOR_TARGET)
+	if anchor == Keys.VFX_ANCHOR_EVENT_POSITION:
+		return _coerce_vector2(payload.get(Keys.VFX_POSITION, Vector2.ZERO))
+
+	var offset := _coerce_vector2(payload.get(Keys.VFX_OFFSET, Vector2.ZERO))
+	if anchor_view == null:
+		return offset
+
+	var height := float(anchor_view.get_visual_height_px())
+	return anchor_view.global_position + Vector2(0, -height * 0.5) + offset
+
+
+func _resolve_vfx_size(payload: Dictionary, anchor_view: CombatantView, scale: float) -> Vector2:
+	var explicit_size := _coerce_vector2(payload.get(Keys.VFX_SIZE, Vector2.ZERO))
+	if explicit_size.x > 0.0 and explicit_size.y > 0.0:
+		return explicit_size * maxf(scale, 0.01)
+
+	var height := 180.0
+	if anchor_view != null:
+		height = float(anchor_view.get_visual_height_px())
+	var side := maxf(height * maxf(scale, 0.01), 1.0)
+	return Vector2(side, side)
+
+
+func _coerce_vector2(value: Variant) -> Vector2:
+	if value is Vector2:
+		return value
+	if value is Vector2i:
+		var v := value as Vector2i
+		return Vector2(v.x, v.y)
+	if value is Array and value.size() >= 2:
+		return Vector2(float(value[0]), float(value[1]))
+	return Vector2.ZERO
 
 
 func _on_discard_requested(e: EventPackage) -> void:
@@ -1402,7 +1521,7 @@ func _play_default_summon_pop_fx(v: CombatantView) -> void:
 		return
 	v.play_summon_pop_scale(0.20)
 	if battle_view != null and battle_view.fx_manager != null:
-		#                                                                    fade_in, hold, fade_out, scale.
+		#                                                                   fade_in, hold, fade_out, scale.
 		battle_view.fx_manager.play_on_combatant(v, FxLibrary.FX_LIGHT_RADIAL, 0.1, 0.25, 0.5, 2)
 		battle_view.fx_manager.play_on_combatant(v, FxLibrary.FX_RIPPLE, 0.1, 0.01, 0.12, 1.5)
 

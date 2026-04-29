@@ -7,6 +7,8 @@ const FX_LIGHT_RADIAL := &"light_radial"
 const FX_AIR_BUBBLE := &"air_bubble"
 const FX_LIQUID_GLASS := &"liquid_glass"
 const FX_LIQUID_GLASS_SQUIRM := &"liquid_glass_squirm"
+const FX_SMOKE_POOF := &"smoke_poof"
+const FX_RESONANCE_SPIKE_RIPPLES := &"resonance_spike_ripples"
 
 const NAMED_SCENE_PATHS := {
 	FX_RIPPLE: "res://VFX/shader_rects/ripple.tscn",
@@ -14,6 +16,8 @@ const NAMED_SCENE_PATHS := {
 	FX_AIR_BUBBLE: "res://VFX/shader_rects/air_bubble.tscn",
 	FX_LIQUID_GLASS: "res://VFX/shader_rects/liquid_glass.tscn",
 	FX_LIQUID_GLASS_SQUIRM: "res://VFX/shader_rects/liquid_glass_squirm.tscn",
+	FX_SMOKE_POOF: "res://VFX/shader_rects/smoke_poof.tscn",
+	FX_RESONANCE_SPIKE_RIPPLES: "res://VFX/shader_rects/resonance_spike_ripples.tscn",
 }
 
 var _scenes: Dictionary = {} # String -> PackedScene
@@ -27,6 +31,8 @@ var _scenes: Dictionary = {} # String -> PackedScene
 	"res://VFX/shader_rects/air_bubble.tscn",
 	"res://VFX/shader_rects/liquid_glass.tscn",
 	"res://VFX/shader_rects/liquid_glass_squirm.tscn",
+	"res://VFX/shader_rects/smoke_poof.tscn",
+	"res://VFX/shader_rects/resonance_spike_ripples.tscn",
 ]
 
 func _ready() -> void:

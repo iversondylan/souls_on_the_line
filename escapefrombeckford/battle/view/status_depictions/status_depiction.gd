@@ -12,6 +12,7 @@ const FX_ID := &"fx_id"
 const FX_FADE_IN := &"fx_fade_in"
 const FX_FADE_OUT := &"fx_fade_out"
 const FX_SCALE := &"fx_scale"
+const FX_CENTER_Y_RATIO := &"fx_center_y_ratio"
 
 
 func get_key(event_data: Dictionary) -> String:
@@ -64,7 +65,8 @@ static func ensure_persistent_fx(
 	key: String,
 	fx_id: StringName,
 	fade_in := 0.06,
-	scale := 1.05
+	scale := 1.05,
+	center_y_ratio := 0.5
 ) -> Dictionary:
 	return {
 		FX_OP: FX_OP_ENSURE_PERSISTENT,
@@ -73,6 +75,7 @@ static func ensure_persistent_fx(
 		FX_ID: fx_id,
 		FX_FADE_IN: fade_in,
 		FX_SCALE: scale,
+		FX_CENTER_Y_RATIO: center_y_ratio,
 	}
 
 

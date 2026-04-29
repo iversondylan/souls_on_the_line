@@ -1,0 +1,18 @@
+[gd_scene format=3]
+
+[ext_resource type="Shader" uid="uid://dixboa5bcaywi" path="res://shaders/transparent_ripples.gdshader" id="1_shader"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_resonance_spike_ripples"]
+shader = ExtResource("1_shader")
+shader_parameter/frequency = 4.0
+shader_parameter/amplitude = 2.0
+shader_parameter/ripple_rate = 19.0
+shader_parameter/wave_amplitude = 0.05
+shader_parameter/wave_frequency = 4.0
+
+[node name="ResonanceSpikeRipples" type="ColorRect"]
+modulate = Color(1, 1, 1, 0)
+material = SubResource("ShaderMaterial_resonance_spike_ripples")
+offset_right = 180.0
+offset_bottom = 96.0
+mouse_filter = 2

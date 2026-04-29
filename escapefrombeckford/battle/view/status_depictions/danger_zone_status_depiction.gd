@@ -3,7 +3,13 @@ extends StatusDepiction
 
 
 func get_key(event_data: Dictionary) -> String:
-	return get_source_key_prefix(event_data)
+	var source_prefix := get_source_key_prefix(event_data)
+	var token_id := int(event_data.get(Keys.AFTER_TOKEN_ID, 0))
+	if token_id <= 0:
+		token_id = int(event_data.get(Keys.BEFORE_TOKEN_ID, 0))
+	if source_prefix.is_empty() or token_id <= 0:
+		return get_target_key_prefix(event_data)
+	return "%s:token:%d" % [source_prefix, token_id]
 
 
 func get_key_prefix(event_data: Dictionary) -> String:

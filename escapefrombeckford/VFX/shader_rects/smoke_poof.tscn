@@ -1,8 +1,88 @@
 [gd_scene format=3 uid="uid://baachs8ih03au"]
 
 [ext_resource type="Material" uid="uid://dyl7t7ex5mwnu" path="res://shaders/smoke_poof_shader_material.tres" id="1_ohd32"]
+[ext_resource type="Script" uid="uid://b1de68e7vev2w" path="res://VFX/shader_rects/smoke_poof.gd" id="2_script"]
+[ext_resource type="Texture2D" uid="uid://doaeruavg0v65" path="res://_assets/sprites/effects/particles/fluffy-cloud.png" id="3_cloud"]
 
-[node name="SmokePoof" type="ColorRect" unique_id=782486781]
+[sub_resource type="Gradient" id="Gradient_dtlf6"]
+colors = PackedColorArray(1, 1, 1, 0.8980392, 1, 1, 1, 0.2)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_hsdqq"]
+gradient = SubResource("Gradient_dtlf6")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_clouds"]
+particle_flag_disable_z = true
+angle_min = -179.99998
+angle_max = 180.00002
+direction = Vector3(0, -1, 0)
+spread = 180.0
+initial_velocity_min = 150.0
+initial_velocity_max = 400.0
+angular_velocity_min = -210.0
+angular_velocity_max = 210.0
+gravity = Vector3(0, -8, 0)
+scale_min = 0.19999999
+scale_max = 0.35
+color = Color(1, 1, 1, 0.78)
+color_ramp = SubResource("GradientTexture1D_hsdqq")
+
+[sub_resource type="Animation" id="Animation_poof"]
+resource_name = "poof"
+length = 2.0
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:scale")
+tracks/0/interp = 2
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.12, 2),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector2(0.35, 0.35), Vector2(1.1, 1.1), Vector2(1.18, 1.18)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:self_modulate")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.08, 1.62, 2),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
+"update": 0,
+"values": [Color(1, 1, 1, 0), Color(1, 1, 1, 1), Color(1, 1, 1, 1), Color(1, 1, 1, 0)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_smoke"]
+_data = {
+&"poof": SubResource("Animation_poof")
+}
+
+[node name="SmokePoof" type="Node2D" unique_id=2047053721]
+script = ExtResource("2_script")
+duration = 0.4
+particle_linger = 0.4
+
+[node name="CloudParticles" type="GPUParticles2D" parent="." unique_id=401254659]
+emitting = false
+amount = 30
+texture = ExtResource("3_cloud")
+lifetime = 0.4
+one_shot = true
+explosiveness = 0.72
+randomness = 0.8
+process_material = SubResource("ParticleProcessMaterial_clouds")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=1049693215]
+root_node = NodePath("../SmokePoofRect")
+libraries/ = SubResource("AnimationLibrary_smoke")
+
+[node name="SmokePoofRect" type="ColorRect" parent="." unique_id=782486781]
+self_modulate = Color(1, 1, 1, 0)
 material = ExtResource("1_ohd32")
-offset_right = 137.0
-offset_bottom = 133.0
+offset_left = -128.0
+offset_top = -128.0
+offset_right = 128.0
+offset_bottom = 128.0
+mouse_filter = 2

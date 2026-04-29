@@ -4,13 +4,16 @@
 [ext_resource type="Script" uid="uid://cueedkb1u8vxy" path="res://statuses/_core/status.gd" id="2_dy2j6"]
 [ext_resource type="Resource" uid="uid://7x55fawjrwf4" path="res://statuses/might.tres" id="3_3wavi"]
 [ext_resource type="Script" uid="uid://byl8kucecx6c0" path="res://statuses/resonance_spike.gd" id="4_76tw8"]
+[ext_resource type="Resource" path="res://battle/view/status_depictions/resonance_spike_status_depiction.tres" id="5_depiction"]
 
 [resource]
 script = ExtResource("4_76tw8")
 projected_statuses = Array[ExtResource("2_dy2j6")]([ExtResource("3_3wavi")])
+display_projection = true
 status_name = "Resonance Spike"
 numerical = true
 auto_remove = 2
 icon = ExtResource("1_xdcdr")
 tooltip = "Allies deal more damage."
+status_depiction = ExtResource("5_depiction")
 metadata/_custom_type_script = "uid://byl8kucecx6c0"

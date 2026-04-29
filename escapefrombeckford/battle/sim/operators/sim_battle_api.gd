@@ -1156,6 +1156,17 @@ func resolve_removal(ctx) -> void:
 	
 	unit_removed.emit(int(ctx.target_id), int(g), int(ctx.removal_type), String(ctx.reason))
 
+	if !ctx.vfx_payloads.is_empty():
+		var event_vfx: Array[Dictionary] = []
+		if ctx.event_extra != null and ctx.event_extra.get(Keys.VFX_PAYLOADS, null) is Array:
+			for payload in ctx.event_extra.get(Keys.VFX_PAYLOADS, []):
+				if payload is Dictionary:
+					event_vfx.append((payload as Dictionary).duplicate(true))
+		for payload in ctx.vfx_payloads:
+			if payload is Dictionary:
+				event_vfx.append((payload as Dictionary).duplicate(true))
+		ctx.event_extra[Keys.VFX_PAYLOADS] = event_vfx
+
 	if writer != null:
 		writer.emit_removed(
 			int(ctx.killer_id),
@@ -2116,6 +2127,7 @@ func _emit_projected_status_display_diffs(target_id: int, before_visible: Dictio
 					Keys.DELTA_STACKS: int(after_token.stacks),
 					Keys.STATUS_DATA: status_data,
 					Keys.IS_PROJECTED: true,
+					Keys.STATUS_DISPLAY_VISIBLE: false,
 				}
 			)
 			continue
@@ -2138,6 +2150,7 @@ func _emit_projected_status_display_diffs(target_id: int, before_visible: Dictio
 					Keys.DELTA_STACKS: -int(before_token.stacks),
 					Keys.STATUS_DATA: status_data,
 					Keys.IS_PROJECTED: true,
+					Keys.STATUS_DISPLAY_VISIBLE: false,
 				}
 			)
 			continue
@@ -2163,6 +2176,7 @@ func _emit_projected_status_display_diffs(target_id: int, before_visible: Dictio
 				Keys.DELTA_STACKS: int(after_token.stacks) - int(before_token.stacks),
 				Keys.STATUS_DATA: status_data,
 				Keys.IS_PROJECTED: true,
+				Keys.STATUS_DISPLAY_VISIBLE: false,
 			}
 		)
 
