@@ -1,7 +1,9 @@
 class_name StatusDepictionFxCommand
 extends RefCounted
 
-var op: StringName = &""
+enum Op { ENSURE_PERSISTENT, CLEAR_PERSISTENT }
+
+var op: Op = Op.ENSURE_PERSISTENT
 var key: String = ""
 var fx_id: StringName = &""
 var target_id: int = 0

@@ -1146,7 +1146,7 @@ func _apply_status_depiction_fx_command(command: StatusDepictionFxCommand) -> vo
 		return
 
 	match command.op:
-		StatusDepiction.FX_OP_ENSURE_PERSISTENT:
+		StatusDepictionFxCommand.Op.ENSURE_PERSISTENT:
 			var target := battle_view.get_combatant(command.target_id)
 			if target == null:
 				return
@@ -1158,7 +1158,7 @@ func _apply_status_depiction_fx_command(command: StatusDepictionFxCommand) -> vo
 				command.scale,
 				command.center_y_ratio
 			)
-		StatusDepiction.FX_OP_CLEAR_PERSISTENT:
+		StatusDepictionFxCommand.Op.CLEAR_PERSISTENT:
 			battle_view.fx_manager.clear_key(
 				command.key,
 				command.fade_out

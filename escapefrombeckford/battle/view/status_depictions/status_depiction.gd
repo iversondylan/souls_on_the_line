@@ -6,8 +6,6 @@ const StatusDepictionFxCommand := preload("res://battle/view/status_depictions/s
 
 const MARKER_TARGETED := &"targeted"
 const MARKER_DANGER_ZONE := &"danger_zone"
-const FX_OP_ENSURE_PERSISTENT := &"ensure_persistent_fx"
-const FX_OP_CLEAR_PERSISTENT := &"clear_persistent_fx"
 
 
 func get_key(event_data: Dictionary) -> String:
@@ -83,7 +81,7 @@ static func ensure_persistent_fx(
 	center_y_ratio := 0.5
 ) -> StatusDepictionFxCommand:
 	var command := StatusDepictionFxCommand.new()
-	command.op = FX_OP_ENSURE_PERSISTENT
+	command.op = StatusDepictionFxCommand.Op.ENSURE_PERSISTENT
 	command.target_id = int(target_id)
 	command.key = String(key)
 	command.fx_id = fx_id
@@ -95,7 +93,7 @@ static func ensure_persistent_fx(
 
 static func clear_persistent_fx(key: String, fade_out := 0.06) -> StatusDepictionFxCommand:
 	var command := StatusDepictionFxCommand.new()
-	command.op = FX_OP_CLEAR_PERSISTENT
+	command.op = StatusDepictionFxCommand.Op.CLEAR_PERSISTENT
 	command.key = String(key)
 	command.fade_out = float(fade_out)
 	return command

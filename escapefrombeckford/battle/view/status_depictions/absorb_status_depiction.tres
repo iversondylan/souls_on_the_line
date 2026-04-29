@@ -1,6 +1,10 @@
-[gd_resource type="Resource" script_class="AbsorbStatusDepiction" format=3]
+[gd_resource type="Resource" script_class="SimpleTokenFxStatusDepiction" format=3]
 
-[ext_resource type="Script" path="res://battle/view/status_depictions/absorb_status_depiction.gd" id="1_depiction"]
+[ext_resource type="Script" path="res://battle/view/status_depictions/simple_token_fx_status_depiction.gd" id="1_depiction"]
 
 [resource]
 script = ExtResource("1_depiction")
+fx_id = &"liquid_glass_squirm"
+fade_in = 0.15
+fade_out = 0.06
+scale = 1.08
