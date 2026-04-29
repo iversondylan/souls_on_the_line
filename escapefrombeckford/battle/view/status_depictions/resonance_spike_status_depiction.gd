@@ -14,7 +14,7 @@ func get_key(event_data: Dictionary) -> String:
 		if token_id <= 0:
 			token_id = int(event_data.get(Keys.BEFORE_TOKEN_ID, 0))
 		if target_id > 0 and token_id > 0:
-			return "%s:projection:%d:%d" % [String(STATUS_ID), target_id, token_id]
+			return StatusDepiction.make_projection_key(STATUS_ID, target_id, token_id)
 	return get_token_key(event_data)
 
 
@@ -22,7 +22,7 @@ func get_key_prefix(event_data: Dictionary) -> String:
 	return get_key(event_data)
 
 
-func build_fx_commands(event_data: Dictionary) -> Array[Dictionary]:
+func build_fx_commands(event_data: Dictionary) -> Array[StatusDepictionFxCommand]:
 	var key := get_key(event_data)
 	if key.is_empty():
 		return []

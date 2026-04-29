@@ -2,6 +2,8 @@
 
 class_name BattleEventDirector extends RefCounted
 
+const StatusDepictionFxCommand := preload("res://battle/view/status_depictions/status_depiction_fx_command.gd")
+
 var battle_view: BattleView
 var click: Sound
 var _summon_sound_cache := {}
@@ -1127,43 +1129,39 @@ func _refresh_status_depiction_for_data(d: Dictionary) -> void:
 		_clear_status_depiction_prefix_from_views(depiction_prefix)
 
 		for marker in depiction.build_markers(d):
-			if marker == null or marker.is_empty():
+			if marker == null:
 				continue
-			var target_id := int(marker.get(Keys.TARGET_ID, 0))
-			var marker_kind: StringName = marker.get(StatusDepiction.MARKER_KIND, &"")
-			if target_id <= 0 or marker_kind == &"":
+			if marker.target_id <= 0 or marker.kind == &"":
 				continue
-			var view := battle_view.get_combatant(target_id)
+			var view := battle_view.get_combatant(marker.target_id)
 			if view != null:
-				view.set_status_depiction_marker(depiction_key, marker_kind, true)
+				view.set_status_depiction_marker(depiction_key, marker.kind, true)
 
 	for command in depiction.build_fx_commands(d):
 		_apply_status_depiction_fx_command(command)
 
 
-func _apply_status_depiction_fx_command(command: Dictionary) -> void:
-	if command == null or command.is_empty() or battle_view == null or battle_view.fx_manager == null:
+func _apply_status_depiction_fx_command(command: StatusDepictionFxCommand) -> void:
+	if command == null or battle_view == null or battle_view.fx_manager == null:
 		return
 
-	var op: StringName = command.get(StatusDepiction.FX_OP, &"")
-	match op:
+	match command.op:
 		StatusDepiction.FX_OP_ENSURE_PERSISTENT:
-			var target_id := int(command.get(Keys.TARGET_ID, 0))
-			var target := battle_view.get_combatant(target_id)
+			var target := battle_view.get_combatant(command.target_id)
 			if target == null:
 				return
 			battle_view.fx_manager.ensure_on_combatant(
-				String(command.get(StatusDepiction.FX_KEY, "")),
+				command.key,
 				target,
-				command.get(StatusDepiction.FX_ID, &""),
-				float(command.get(StatusDepiction.FX_FADE_IN, 0.06)),
-				float(command.get(StatusDepiction.FX_SCALE, 1.05)),
-				float(command.get(StatusDepiction.FX_CENTER_Y_RATIO, 0.5))
+				command.fx_id,
+				command.fade_in,
+				command.scale,
+				command.center_y_ratio
 			)
 		StatusDepiction.FX_OP_CLEAR_PERSISTENT:
 			battle_view.fx_manager.clear_key(
-				String(command.get(StatusDepiction.FX_KEY, "")),
-				float(command.get(StatusDepiction.FX_FADE_OUT, 0.06))
+				command.key,
+				command.fade_out
 			)
 
 
@@ -1305,6 +1303,8 @@ func _play_vfx_payloads_from_event(e: EventPackage) -> void:
 	if e == null or e.event == null or battle_view == null:
 		return
 
+	# Card/action VFX payloads are serialized on gameplay events, so they remain
+	# dictionary-shaped; live status depictions use typed commands instead.
 	var d := _data(e)
 	var payloads = d.get(Keys.VFX_PAYLOADS, [])
 	if !(payloads is Array):

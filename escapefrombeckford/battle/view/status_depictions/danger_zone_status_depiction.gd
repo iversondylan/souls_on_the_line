@@ -3,21 +3,22 @@ extends StatusDepiction
 
 
 func get_key(event_data: Dictionary) -> String:
-	var source_prefix := get_source_key_prefix(event_data)
+	var status_id: StringName = event_data.get(Keys.STATUS_ID, &"")
+	var source_id := int(event_data.get(Keys.SOURCE_ID, 0))
 	var token_id := int(event_data.get(Keys.AFTER_TOKEN_ID, 0))
 	if token_id <= 0:
 		token_id = int(event_data.get(Keys.BEFORE_TOKEN_ID, 0))
-	if source_prefix.is_empty() or token_id <= 0:
+	if status_id == &"" or source_id <= 0 or token_id <= 0:
 		return get_target_key_prefix(event_data)
-	return "%s:token:%d" % [source_prefix, token_id]
+	return StatusDepiction.make_token_key(status_id, token_id, source_id)
 
 
 func get_key_prefix(event_data: Dictionary) -> String:
 	return get_source_key_prefix(event_data)
 
 
-func build_markers(event_data: Dictionary) -> Array[Dictionary]:
-	var markers: Array[Dictionary] = []
+func build_markers(event_data: Dictionary) -> Array[StatusDepictionMarkerCommand]:
+	var markers: Array[StatusDepictionMarkerCommand] = []
 	var target_id := int(event_data.get(Keys.TARGET_ID, 0))
 	if target_id <= 0:
 		return markers

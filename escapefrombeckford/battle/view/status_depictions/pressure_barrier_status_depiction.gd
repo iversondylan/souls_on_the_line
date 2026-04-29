@@ -10,7 +10,7 @@ func get_key_prefix(event_data: Dictionary) -> String:
 	return get_key(event_data)
 
 
-func build_fx_commands(event_data: Dictionary) -> Array[Dictionary]:
+func build_fx_commands(event_data: Dictionary) -> Array[StatusDepictionFxCommand]:
 	var key := get_key(event_data)
 	if key.is_empty():
 		return []
