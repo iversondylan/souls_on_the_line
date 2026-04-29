@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" uid="uid://dkovw35pjlejh" path="res://statuses/absorb.gd" id="1_absorb_script"]
 [ext_resource type="Texture2D" uid="uid://c2l2ccbal0fiq" path="res://_assets/sprites/assorted/bolt-shield.png" id="2_absorb_icon"]
+[ext_resource type="Resource" path="res://battle/view/status_depictions/absorb_status_depiction.tres" id="3_depiction"]
 
 [resource]
 script = ExtResource("1_absorb_script")
@@ -9,3 +10,4 @@ status_name = "Absorb"
 numerical = true
 auto_remove = 3
 icon = ExtResource("2_absorb_icon")
+status_depiction = ExtResource("3_depiction")

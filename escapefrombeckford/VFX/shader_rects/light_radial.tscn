@@ -1,0 +1,23 @@
+[gd_scene format=3]
+
+[ext_resource type="Shader" uid="uid://2unx6f7u1h1k" path="res://shaders/light_flare_streaks.gdshader" id="1_shader"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_light_radial"]
+shader = ExtResource("1_shader")
+shader_parameter/primary_color = Color(1, 1, 1, 1)
+shader_parameter/secondary_color = Color(1, 0.8, 0.4, 1)
+shader_parameter/emission = 2.0
+shader_parameter/emission_mult = 1.0
+shader_parameter/streaks1_count = 5.0
+shader_parameter/streaks2_count = 11.0
+shader_parameter/streaks_fade = 0.4
+shader_parameter/streaks_thickness = 0.5
+shader_parameter/center_radius = 0.1
+shader_parameter/fade_radius = 0.4
+
+[node name="LightRadial" type="ColorRect"]
+modulate = Color(1, 1, 1, 0)
+material = SubResource("ShaderMaterial_light_radial")
+offset_right = 177.0
+offset_bottom = 212.0
+mouse_filter = 2

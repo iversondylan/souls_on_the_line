@@ -1,0 +1,20 @@
+[gd_resource type="ShaderMaterial" format=3 uid="uid://dyl7t7ex5mwnu"]
+
+[ext_resource type="Shader" uid="uid://dy2ga84bni84s" path="res://shaders/smoke_poof.gdshader" id="1_2fe0d"]
+
+[resource]
+shader = ExtResource("1_2fe0d")
+shader_parameter/progress = 0.1890000089775
+shader_parameter/smoke_color = Color(0.82, 0.82, 0.82, 1)
+shader_parameter/shadow_color = Color(0.55, 0.55, 0.55, 1)
+shader_parameter/highlight_color = Color(0.96, 0.96, 0.96, 1)
+shader_parameter/base_radius_ratio = 0.0800000038
+shader_parameter/end_radius_ratio = 0.78
+shader_parameter/softness_ratio = 0.1
+shader_parameter/lobe_strength = 0.25600001216
+shader_parameter/noise_strength = 0.1870000088825
+shader_parameter/hollow_amount = 0.0
+shader_parameter/swirl_strength = 0.23200001102
+shader_parameter/wobble_speed = 2.5
+shader_parameter/opacity = 1.0
+shader_parameter/use_texture_alpha = false

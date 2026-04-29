@@ -1,0 +1,16 @@
+[gd_scene format=3]
+
+[ext_resource type="Shader" uid="uid://r5ab4wfxtmqh" path="res://shaders/liquid_glass.gdshader" id="1_shader"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_liquid_glass"]
+shader = ExtResource("1_shader")
+shader_parameter/u_roundness = 1.0
+shader_parameter/u_distortion_intensity = 1.0
+shader_parameter/u_blur_intensity = 1.2
+
+[node name="LiquidGlass" type="ColorRect"]
+modulate = Color(1, 1, 1, 0)
+material = SubResource("ShaderMaterial_liquid_glass")
+offset_right = 166.0
+offset_bottom = 238.0
+mouse_filter = 2

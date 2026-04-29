@@ -150,6 +150,11 @@ func apply_spawn_spec(spec: Dictionary) -> void:
 func is_root_motion_locked() -> bool:
 	return _root_motion_locked
 
+
+func get_visual_height_px() -> int:
+	return _height_px
+
+
 func _apply_visuals_from_spec() -> void:
 	var nm := String(_spec.get(Keys.COMBATANT_NAME, ""))
 	if nm != "":
@@ -804,6 +809,18 @@ func play_summon_windup(duration: float) -> void:
 	tween_strike.parallel().tween_property(art_parent, "position", windup_pos, snap_t)
 	if dur > snap_t:
 		tween_strike.tween_interval(dur - snap_t)
+
+
+func play_summon_pop_scale(duration := 0.10) -> void:
+	if character_art == null:
+		return
+
+	var final_scale := character_art.scale
+	character_art.scale = Vector2.ZERO
+
+	var tween := create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tween.tween_property(character_art, "scale", final_scale, maxf(duration, 0.01))
+
 
 func play_strike_windup(order: StrikeWindupOrder, battle_view: BattleView) -> void:
 	if order == null or battle_view == null:

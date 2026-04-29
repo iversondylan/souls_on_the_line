@@ -12,7 +12,6 @@
 [ext_resource type="Script" uid="uid://ckq1sgjqlphh3" path="res://battle/ui/battle_ui.gd" id="9_jujjx"]
 [ext_resource type="Script" uid="uid://b0ws73jyx6b4c" path="res://battle/view/scenes/battlefield_target_arrow.gd" id="9_p0caf"]
 [ext_resource type="Script" uid="uid://8uvr4kljlbkb" path="res://battle/view/scenes/battle_camera_rig.gd" id="10_dd63g"]
-[ext_resource type="Shader" uid="uid://dixboa5bcaywi" path="res://shaders/transparent_ripples.gdshader" id="14_562sy"]
 [ext_resource type="PackedScene" uid="uid://cy1kfsc2qfglo" path="res://battle/card_mgmt/hand.tscn" id="15_wvgjd"]
 [ext_resource type="PackedScene" uid="uid://chyl400nmwlxo" path="res://battle/ui/selection_prompt.tscn" id="16_61i1y"]
 [ext_resource type="Theme" uid="uid://c5t2luytfgc6b" path="res://ui/elements/brass_wood_chalkboard_theme.tres" id="16_562sy"]
@@ -32,14 +31,6 @@
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_eb6dy"]
 size = Vector2(1200, 200)
-
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_kc5qh"]
-shader = ExtResource("14_562sy")
-shader_parameter/frequency = 4.0
-shader_parameter/amplitude = 2.0
-shader_parameter/ripple_rate = 5.0
-shader_parameter/wave_amplitude = 0.05
-shader_parameter/wave_frequency = 4.0
 
 [node name="Battle" type="Node" unique_id=1485552347]
 script = ExtResource("1_dd63g")
@@ -104,13 +95,6 @@ offset_right = 960.0
 offset_bottom = 1080.0
 discard_anchor_path = NodePath("../../Battle_UI/DiscardPileButton")
 draw_anchor_path = NodePath("../../Battle_UI/DrawPileButton")
-
-[node name="Ripple" type="ColorRect" parent="BattleView" unique_id=1848387768]
-material = SubResource("ShaderMaterial_kc5qh")
-offset_left = 297.0
-offset_top = 360.0
-offset_right = 449.0
-offset_bottom = 532.0
 
 [node name="Debug_UI" type="CanvasLayer" parent="." unique_id=1870619922]
 

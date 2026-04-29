@@ -23,7 +23,7 @@ scale = Vector2(0.35, 0.35)
 texture = ExtResource("3_f02my")
 
 [node name="DangerZoneIcon" type="Sprite2D" parent="TextParent" unique_id=2076284652]
-position = Vector2(-38, 36)
+position = Vector2(-41, 18)
 scale = Vector2(0.055, 0.055)
 texture = ExtResource("5_nycpq")
 

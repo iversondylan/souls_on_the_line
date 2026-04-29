@@ -1,0 +1,8 @@
+[gd_scene format=3 uid="uid://baachs8ih03au"]
+
+[ext_resource type="Material" uid="uid://dyl7t7ex5mwnu" path="res://shaders/smoke_poof_shader_material.tres" id="1_ohd32"]
+
+[node name="SmokePoof" type="ColorRect" unique_id=782486781]
+material = ExtResource("1_ohd32")
+offset_right = 137.0
+offset_bottom = 133.0

@@ -2,6 +2,8 @@
 
 class_name BattleView extends Node2D
 
+const BattleFxManagerScript := preload("res://battle/view/operators/battle_fx_manager.gd")
+
 @onready var combatant_view_scene: PackedScene = preload("uid://bxhcb3bs75de6")
 
 @onready var friendly_group: GroupView = $Group0
@@ -14,6 +16,7 @@ var encounter_director: EncounterDirector = null
 
 var event_player: BattleEventPlayer
 var event_director: BattleEventDirector
+var fx_manager
 var transport_session: BattleTransportSession
 var scheduler: BeatScheduler
 var clock: BattleClock
@@ -41,6 +44,8 @@ func _ready() -> void:
 	cue_scheduler = CueScheduler.new()
 	scheduler = BeatScheduler.new()
 	event_player = BattleEventPlayer.new()
+	fx_manager = BattleFxManagerScript.new()
+	add_child(fx_manager)
 	event_director = BattleEventDirector.new()
 	event_director.bind(self)
 

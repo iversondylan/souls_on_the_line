@@ -6,7 +6,7 @@
 [ext_resource type="Shader" uid="uid://348wno7lhkg1" path="res://shaders/bubble_field.gdshader" id="4_n57hn"]
 [ext_resource type="Shader" uid="uid://r5ab4wfxtmqh" path="res://shaders/liquid_glass.gdshader" id="5_ypmjw"]
 [ext_resource type="Shader" uid="uid://b2r0eqg2t1svj" path="res://shaders/liquid_glass_squirm.gdshader" id="6_c2a0q"]
-[ext_resource type="Shader" uid="uid://b5dfeaio5xw7c" path="res://shaders/fire_distortion.gdshader" id="7_n57hn"]
+[ext_resource type="Material" uid="uid://dyl7t7ex5mwnu" path="res://shaders/smoke_poof_shader_material.tres" id="7_n57hn"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_h3h0p"]
 shader = ExtResource("2_ypmjw")
@@ -62,9 +62,6 @@ shader_parameter/u_blob_speed = 1.0
 shader_parameter/u_blob_blur_boost = 0.6
 shader_parameter/u_blob_wobble = 0.03
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_1dikc"]
-shader = ExtResource("7_n57hn")
-
 [node name="Node2D" type="Node2D" unique_id=1044631019]
 
 [node name="Sprite2D" type="TextureRect" parent="." unique_id=14070118]
@@ -98,16 +95,16 @@ offset_top = 262.0
 offset_right = 1040.0
 offset_bottom = 500.0
 
-[node name="LiquidSquirm" type="ColorRect" parent="." unique_id=460811421]
+[node name="LiquidGlassSquirm" type="ColorRect" parent="." unique_id=460811421]
 material = SubResource("ShaderMaterial_n57hn")
 offset_left = 470.0
 offset_top = 183.0
 offset_right = 636.0
 offset_bottom = 421.0
 
-[node name="Fire" type="ColorRect" parent="." unique_id=594025780]
-material = SubResource("ShaderMaterial_1dikc")
-offset_left = 1185.0
-offset_top = 343.0
-offset_right = 1656.0
-offset_bottom = 818.0
+[node name="SmokePoof" type="ColorRect" parent="." unique_id=505985737]
+material = ExtResource("7_n57hn")
+offset_left = 1081.0
+offset_top = 209.0
+offset_right = 1859.0
+offset_bottom = 1020.0

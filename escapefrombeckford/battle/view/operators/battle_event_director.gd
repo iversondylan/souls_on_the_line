@@ -278,6 +278,8 @@ func _start_summon_pop_order(order: SummonPopPresentationOrder) -> void:
 
 	_apply_group_order(g, _coerce_int_array(order.after_order_ids), true)
 
+	_play_default_summon_pop_fx(v)
+
 	if caster != null:
 		caster.clear_strike_pose(order.visual_sec if order.visual_sec > 0.0 else 0.20)
 
@@ -1098,22 +1100,50 @@ func _refresh_status_depiction(e: EventPackage) -> void:
 	if depiction_key.is_empty():
 		return
 
-	if int(d.get(Keys.OP, 0)) == int(Status.OP.REMOVE):
+	var is_remove := int(d.get(Keys.OP, 0)) == int(Status.OP.REMOVE)
+	if is_remove:
 		_clear_status_depiction_prefix_from_views(depiction.get_source_key_prefix(d))
+	else:
+		_clear_status_depiction_prefix_from_views(depiction_prefix)
+
+		for marker in depiction.build_markers(d):
+			if marker == null or marker.is_empty():
+				continue
+			var target_id := int(marker.get(Keys.TARGET_ID, 0))
+			var marker_kind: StringName = marker.get(StatusDepiction.MARKER_KIND, &"")
+			if target_id <= 0 or marker_kind == &"":
+				continue
+			var view := battle_view.get_combatant(target_id)
+			if view != null:
+				view.set_status_depiction_marker(depiction_key, marker_kind, true)
+
+	for command in depiction.build_fx_commands(d):
+		_apply_status_depiction_fx_command(command)
+
+
+func _apply_status_depiction_fx_command(command: Dictionary) -> void:
+	if command == null or command.is_empty() or battle_view == null or battle_view.fx_manager == null:
 		return
 
-	_clear_status_depiction_prefix_from_views(depiction_prefix)
-
-	for marker in depiction.build_markers(d):
-		if marker == null or marker.is_empty():
-			continue
-		var target_id := int(marker.get(Keys.TARGET_ID, 0))
-		var marker_kind: StringName = marker.get(StatusDepiction.MARKER_KIND, &"")
-		if target_id <= 0 or marker_kind == &"":
-			continue
-		var view := battle_view.get_combatant(target_id)
-		if view != null:
-			view.set_status_depiction_marker(depiction_key, marker_kind, true)
+	var op: StringName = command.get(StatusDepiction.FX_OP, &"")
+	match op:
+		StatusDepiction.FX_OP_ENSURE_PERSISTENT:
+			var target_id := int(command.get(Keys.TARGET_ID, 0))
+			var target := battle_view.get_combatant(target_id)
+			if target == null:
+				return
+			battle_view.fx_manager.ensure_on_combatant(
+				String(command.get(StatusDepiction.FX_KEY, "")),
+				target,
+				command.get(StatusDepiction.FX_ID, &""),
+				float(command.get(StatusDepiction.FX_FADE_IN, 0.06)),
+				float(command.get(StatusDepiction.FX_SCALE, 1.05))
+			)
+		StatusDepiction.FX_OP_CLEAR_PERSISTENT:
+			battle_view.fx_manager.clear_key(
+				String(command.get(StatusDepiction.FX_KEY, "")),
+				float(command.get(StatusDepiction.FX_FADE_OUT, 0.06))
+			)
 
 
 func _clear_status_depiction_key_from_views(depiction_key: String) -> void:
@@ -1165,6 +1195,8 @@ func _on_removed(e: EventPackage) -> void:
 	var v := battle_view.get_combatant(dead_id)
 	if v != null:
 		v.is_alive = false
+		if battle_view.fx_manager != null:
+			battle_view.fx_manager.clear_for_combatant(v)
 		v.queue_free()
 
 	battle_view.combatants_by_cid.erase(dead_id)
@@ -1208,6 +1240,8 @@ func _on_removal_followthrough(e: EventPackage) -> void:
 		if faded_view != null:
 			faded_view.play_removal_followthrough(removal_type, dur)
 			faded_view.is_alive = false
+			if battle_view.fx_manager != null:
+				battle_view.fx_manager.clear_for_combatant(faded_view, dur)
 			if battle_view.clock != null:
 				await battle_view.clock.wait_seconds(dur)
 			if is_instance_valid(faded_view):
@@ -1228,6 +1262,8 @@ func _on_removal_followthrough(e: EventPackage) -> void:
 
 	dead_view.play_removal_followthrough(removal_type, dur)
 	dead_view.is_alive = false
+	if battle_view.fx_manager != null:
+		battle_view.fx_manager.clear_for_combatant(dead_view, dur)
 
 	if battle_view.clock != null:
 		await battle_view.clock.wait_seconds(dur)
@@ -1353,10 +1389,22 @@ func _on_summoned(e: EventPackage) -> void:
 	if summon_sound != null:
 		SFXPlayer.play(summon_sound)
 
+	_play_default_summon_pop_fx(v)
+
 	var summoned_id := int(d.get(Keys.SUMMONED_ID, 0))
 	var card_uid := String(d.get(Keys.CARD_UID, ""))
 	if summoned_id > 0 and !card_uid.is_empty():
 		Events.summon_reserve_card_acquired.emit(summoned_id, card_uid)
+
+
+func _play_default_summon_pop_fx(v: CombatantView) -> void:
+	if v == null or !is_instance_valid(v):
+		return
+	v.play_summon_pop_scale(0.20)
+	if battle_view != null and battle_view.fx_manager != null:
+		#                                                                    fade_in, hold, fade_out, scale.
+		battle_view.fx_manager.play_on_combatant(v, FxLibrary.FX_LIGHT_RADIAL, 0.1, 0.25, 0.5, 2)
+		battle_view.fx_manager.play_on_combatant(v, FxLibrary.FX_RIPPLE, 0.1, 0.01, 0.12, 1.5)
 
 
 func _on_summon_reserve_released(e: EventPackage) -> void:

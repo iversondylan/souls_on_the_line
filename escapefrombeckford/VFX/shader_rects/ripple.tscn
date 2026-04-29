@@ -1,0 +1,18 @@
+[gd_scene format=3]
+
+[ext_resource type="Shader" uid="uid://dixboa5bcaywi" path="res://shaders/transparent_ripples.gdshader" id="1_shader"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_ripple"]
+shader = ExtResource("1_shader")
+shader_parameter/frequency = 4.0
+shader_parameter/amplitude = 2.0
+shader_parameter/ripple_rate = 19.0
+shader_parameter/wave_amplitude = 0.05
+shader_parameter/wave_frequency = 4.0
+
+[node name="Ripple" type="ColorRect"]
+modulate = Color(1, 1, 1, 0)
+material = SubResource("ShaderMaterial_ripple")
+offset_right = 152.0
+offset_bottom = 172.0
+mouse_filter = 2
