@@ -10,6 +10,7 @@
 script = ExtResource("3_1aoj2")
 id = &"healing_surge"
 target_type = 3
+rarity = 1
 name = "Healing Surge"
 deplete = true
 description = "Heal %s{percent} of an ally's missing health. Draw %s."

@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="RabbleRouseStatus" format=3 uid="uid://c60nf2oijf2vu"]
+
+[ext_resource type="Script" uid="uid://cueedkb1u8vxy" path="res://statuses/_core/status.gd" id="1_lhrms"]
+[ext_resource type="Texture2D" uid="uid://ca5vjuej5mhks" path="res://_assets/sprites/assorted/dark-squad.png" id="1_u4iet"]
+[ext_resource type="Script" uid="uid://cugvgfj7bxmtg" path="res://statuses/rabble_rouse.gd" id="2_qpeb0"]
+[ext_resource type="Resource" uid="uid://be6cqdi7drqt2" path="res://statuses/explosive_departure.tres" id="3_2d7nb"]
+
+[resource]
+script = ExtResource("2_qpeb0")
+projected_statuses = Array[ExtResource("1_lhrms")]([ExtResource("3_2d7nb")])
+auto_remove = 3
+icon = ExtResource("1_u4iet")
+metadata/_custom_type_script = "uid://cugvgfj7bxmtg"

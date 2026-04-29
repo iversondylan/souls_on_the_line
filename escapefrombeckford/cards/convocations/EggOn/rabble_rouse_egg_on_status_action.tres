@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="ApplyStatusToSelfAction" format=3 uid="uid://c882yl8qkpq1d"]
+
+[ext_resource type="Script" uid="uid://bnww04vabnac4" path="res://cards/_generic_actions/apply_status_to_self_action.gd" id="1_sfcwo"]
+[ext_resource type="Resource" uid="uid://c60nf2oijf2vu" path="res://statuses/rabble_rouse.tres" id="2_o7e3c"]
+
+[resource]
+script = ExtResource("1_sfcwo")
+status = ExtResource("2_o7e3c")
+stacks = 4
+metadata/_custom_type_script = "uid://bnww04vabnac4"

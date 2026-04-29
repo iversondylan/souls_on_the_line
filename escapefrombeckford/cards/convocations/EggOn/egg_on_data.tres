@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="CardData" format=3 uid="uid://lnmqu41v7t27"]
+
+[ext_resource type="Script" uid="uid://wtk5v77fcqvn" path="res://cards/_core/card_action.gd" id="1_yypkj"]
+[ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://cards/_core/card_data.gd" id="2_4gcy0"]
+[ext_resource type="Resource" uid="uid://c882yl8qkpq1d" path="res://cards/convocations/EggOn/rabble_rouse_egg_on_status_action.tres" id="2_jpju3"]
+[ext_resource type="Resource" uid="uid://cwsantdi8vmes" path="res://cards/_generic_actions/draw_1_action.tres" id="3_wr4xp"]
+[ext_resource type="Texture2D" uid="uid://ca5vjuej5mhks" path="res://_assets/sprites/assorted/dark-squad.png" id="5_lje2c"]
+
+[resource]
+script = ExtResource("2_4gcy0")
+name = "Egg On"
+description = "Until your next turn, on death, allies deal %s damage to all enemies. Draw %s."
+cost = 1
+texture = ExtResource("5_lje2c")
+actions = Array[ExtResource("1_yypkj")]([ExtResource("2_jpju3"), ExtResource("3_wr4xp")])
+metadata/_custom_type_script = "uid://d2f0qepe047dc"
