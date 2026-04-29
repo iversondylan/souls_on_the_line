@@ -66,6 +66,7 @@ var _debug_mode: bool = true
 
 @onready var thank_you_box: Node2D = $Battle_UI/ThankYouBox
 @onready var encounter_dialogue_layer: EncounterDialogueLayer = $Visual_Overlays/EncounterDialogueLayer
+@onready var encounter_arrow_layer: Control = $Visual_Overlays/EncounterArrowLayer
 
 
 # -------------------------
@@ -459,10 +460,26 @@ func _setup_encounter_director() -> void:
 	encounter_director.setup(self, battle_data)
 	encounter_director.capabilities_changed.connect(_on_encounter_capabilities_changed)
 	encounter_director.blocking_state_changed.connect(_on_encounter_blocking_state_changed)
+	encounter_director.step_changed.connect(_on_encounter_step_changed)
 	battle_view.encounter_director = encounter_director
 	if encounter_dialogue_layer != null:
 		encounter_dialogue_layer.bind_director(encounter_director)
 	refresh_player_input_visual_state()
+
+func clear_encounter_arrows() -> void:
+	if encounter_arrow_layer == null:
+		return
+	encounter_arrow_layer.clear_arrows()
+
+func point_encounter_arrow_to_node(anchor: Node, offset: Vector2 = Vector2(0, -90), clear_existing := true) -> void:
+	if encounter_arrow_layer == null:
+		return
+	encounter_arrow_layer.point_to_node(anchor, offset, clear_existing)
+
+func point_encounter_arrows_to_overloaded_hand_cards(offset: Vector2 = Vector2(0, -90), clear_existing := true) -> void:
+	if encounter_arrow_layer == null or card_bins == null:
+		return
+	encounter_arrow_layer.point_to_nodes(card_bins.get_overloaded_hand_cards(), offset, clear_existing)
 
 func _apply_resource_rules_from_encounter() -> void:
 	var api := sim_host.get_main_api() if sim_host != null else null
@@ -532,6 +549,9 @@ func _on_card_bins_draw_completed(ctx: DrawContext) -> void:
 
 func _on_encounter_capabilities_changed(_capabilities) -> void:
 	refresh_player_input_visual_state()
+
+func _on_encounter_step_changed(_step_id: StringName) -> void:
+	clear_encounter_arrows()
 
 func _on_encounter_blocking_state_changed(is_blocking: bool) -> void:
 	#print("[TRACE battle] encounter_blocking_state_changed: %s" % str(is_blocking))

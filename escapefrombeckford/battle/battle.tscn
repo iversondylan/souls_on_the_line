@@ -28,6 +28,7 @@
 [ext_resource type="Script" uid="uid://bmlyytso4qsj6" path="res://battle/interactions/battle_interaction_handler.gd" id="25_jt4d8"]
 [ext_resource type="Script" uid="uid://d1qgiqjurb6nw" path="res://battle/battle_preview_coordinator.gd" id="27_1m01a"]
 [ext_resource type="PackedScene" uid="uid://jxu5qilw3jl7" path="res://battle/ui/encounter/encounter_dialogue_layer.tscn" id="28_encounter_layer"]
+[ext_resource type="Script" path="res://battle/ui/encounter/encounter_arrow_layer.gd" id="29_arrow_layer"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_eb6dy"]
 size = Vector2(1200, 200)
@@ -247,6 +248,16 @@ position = Vector2(576, 324)
 
 [node name="BattleOverPanel" parent="Visual_Overlays" unique_id=1894133634 instance=ExtResource("21_p2d7x")]
 visible = false
+
+[node name="EncounterArrowLayer" type="Control" parent="Visual_Overlays" unique_id=2077331002]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("29_arrow_layer")
 
 [node name="EncounterDialogueLayer" parent="Visual_Overlays" unique_id=2077331001 instance=ExtResource("28_encounter_layer")]
 

@@ -377,6 +377,18 @@ func build_bin_snapshot() -> CardBinSnapshot:
 	snapshot.exhausted_count = snapshot.exhausted_uids.size()
 	return snapshot
 
+func get_overloaded_hand_cards() -> Array[UsableCard]:
+	var out: Array[UsableCard] = []
+	if hand == null:
+		return out
+	for card in hand.get_hand_cards():
+		if card == null or !is_instance_valid(card) or card.card_data == null:
+			continue
+		if int(card.card_data.overload) <= 0:
+			continue
+		out.append(card)
+	return out
+
 
 func prepare_draw(ctx: DrawContext) -> void:
 	if rule_host != null:

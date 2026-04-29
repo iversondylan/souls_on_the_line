@@ -443,6 +443,8 @@ func _encounter_event_name(event_type: int) -> StringName:
 			return &"end_turn_pressed"
 		BattleEvent.Type.DRAW_CARDS:
 			return &"draw_cards"
+		BattleEvent.Type.MANA:
+			return &"mana"
 		BattleEvent.Type.VICTORY:
 			return &"victory"
 		BattleEvent.Type.DEFEAT:
