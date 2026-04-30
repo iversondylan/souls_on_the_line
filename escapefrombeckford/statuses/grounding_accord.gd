@@ -59,7 +59,7 @@ func _sync_round_state(ctx: SimStatusContext) -> void:
 	if ctx == null or !ctx.is_valid() or ctx.api == null or ctx.api.state == null:
 		return
 	ctx.ensure_ai_state()
-	var current_round := int(ctx.api.state.turn.round)
+	var current_round := int(ctx.api.state.turn.round_number)
 	var stored_round := int(ctx.owner.ai_state.get(STATE_ROUND, -1))
 	if stored_round == current_round:
 		return
@@ -71,6 +71,6 @@ func _reset_round_state(ctx: SimStatusContext) -> void:
 	if ctx == null or !ctx.is_valid() or ctx.api == null or ctx.api.state == null:
 		return
 	ctx.ensure_ai_state()
-	ctx.owner.ai_state[STATE_ROUND] = int(ctx.api.state.turn.round)
+	ctx.owner.ai_state[STATE_ROUND] = int(ctx.api.state.turn.round_number)
 	ctx.owner.ai_state[STATE_CONVOCATIONS_THIS_ROUND] = 0
 	ctx.owner.ai_state[STATE_TRIGGERED_THIS_ROUND] = false

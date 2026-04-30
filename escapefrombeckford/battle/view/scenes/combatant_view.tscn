@@ -72,12 +72,11 @@ position = Vector2(-600, -135)
 shape = SubResource("RectangleShape2D_uacnx")
 
 [node name="HealthBar" parent="." unique_id=86196866 instance=ExtResource("9_lwd22")]
-font_size = 45
 
 [node name="StatusViewGrid" type="VBoxContainer" parent="." unique_id=2029744781]
-offset_top = 36.0
+offset_top = 52.0
 offset_right = 428.0
-offset_bottom = 104.0
+offset_bottom = 120.0
 size_flags_horizontal = 3
 size_flags_vertical = 3
 mouse_filter = 0

@@ -59,11 +59,11 @@ mouse_filter = 2
 texture = ExtResource("4_yhk5m")
 
 [node name="Group0" type="Node2D" parent="BattleView" unique_id=479709658]
-position = Vector2(480, 687)
+position = Vector2(480, 681)
 script = ExtResource("5_eivww")
 
 [node name="Group1" type="Node2D" parent="BattleView" unique_id=1978793079]
-position = Vector2(1440, 687)
+position = Vector2(1440, 681)
 script = ExtResource("5_eivww")
 faces_right = false
 
@@ -81,7 +81,7 @@ script = ExtResource("10_dd63g")
 [node name="Camera2D" type="Camera2D" parent="BattleView/CameraRig" unique_id=1968275134]
 
 [node name="BattleSceneAreaLeft" type="Area2D" parent="BattleView" unique_id=366013195]
-position = Vector2(969, 637)
+position = Vector2(969, 631)
 collision_layer = 8
 script = ExtResource("7_rgwlw")
 
@@ -135,9 +135,9 @@ anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = -192.0
-offset_top = -102.0
+offset_top = -86.0
 offset_right = -12.0
-offset_bottom = -27.0
+offset_bottom = -11.0
 grow_horizontal = 0
 grow_vertical = 0
 theme = ExtResource("16_562sy")
@@ -150,11 +150,12 @@ custom_minimum_size = Vector2(128, 129)
 anchors_preset = 2
 anchor_top = 1.0
 anchor_bottom = 1.0
-offset_left = 149.0
-offset_top = -145.0
-offset_right = 277.0
-offset_bottom = -16.0
+offset_left = 168.0
+offset_top = -109.0
+offset_right = 296.0
+offset_bottom = 20.0
 grow_vertical = 0
+scale = Vector2(0.8, 0.8)
 counter = NodePath("Counter")
 
 [node name="Counter" type="Label" parent="Battle_UI/DrawPileButton" unique_id=1277727095]
@@ -184,12 +185,13 @@ anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -314.0
-offset_top = -144.0
-offset_right = -186.0
-offset_bottom = -16.0
+offset_left = -292.0
+offset_top = -108.0
+offset_right = -164.0
+offset_bottom = 20.0
 grow_horizontal = 0
 grow_vertical = 0
+scale = Vector2(0.8, 0.8)
 counter = NodePath("Counter")
 
 [node name="Counter" type="Label" parent="Battle_UI/DiscardPileButton" unique_id=610420263]
@@ -216,9 +218,9 @@ anchors_preset = 2
 anchor_top = 1.0
 anchor_bottom = 1.0
 offset_left = 80.0
-offset_top = -104.0
+offset_top = -101.0
 offset_right = 80.0
-offset_bottom = -104.0
+offset_bottom = -101.0
 grow_vertical = 0
 scale = Vector2(1, 1)
 
@@ -254,11 +256,12 @@ offset_bottom = 113.0
 anchors_preset = 2
 anchor_top = 1.0
 anchor_bottom = 1.0
-offset_left = 10.0
-offset_top = -314.0
-offset_right = 10.0
-offset_bottom = -314.0
+offset_left = 159.0
+offset_top = -183.0
+offset_right = 159.0
+offset_bottom = -183.0
 grow_vertical = 0
+scale = Vector2(0.8, 0.8)
 
 [node name="Visual_Overlays" type="CanvasLayer" parent="." unique_id=1155891591]
 
@@ -288,6 +291,7 @@ mouse_filter = 2
 script = ExtResource("29_arrow_layer")
 
 [node name="EncounterDialogueLayer" parent="Visual_Overlays" unique_id=2077331001 instance=ExtResource("28_encounter_layer")]
+visible = false
 
 [node name="CardPileViews" type="CanvasLayer" parent="." unique_id=1250335853]
 layer = 4

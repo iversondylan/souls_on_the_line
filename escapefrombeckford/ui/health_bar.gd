@@ -9,9 +9,11 @@ class_name HealthBar extends PanelContainer
 @onready var card_reserved_icon: TextureRect = $HBoxContainer/CardReservedIcon
 
 @export var inside_control: bool = false
-@export var font_size: int = 30 : set = _set_font_size
+@export var font_size: int = 30 : set = _set_font_size, get = _get_font_size
+@export var fit_width_to_contents: bool = false
+@export var fixed_height: float = 0.0
 
-var static_height: int
+var _font_size: int = 30
 
 var health : int = 0 : set = _set_health
 var max_health: int : set = _set_max_health
@@ -20,6 +22,7 @@ var damage_health: int : set = _set_damage_health
 func _ready() -> void:
 	_apply_font_size()
 	update_status_icons(CombatantState.Mortality.MORTAL, false)
+	_refresh_layout_deferred()
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_RESIZED:
@@ -32,6 +35,7 @@ func update_health(combatant_data: CombatantData) -> void:
 func update_health_view(_max_health: int, _health: int) -> void:
 	max_health = _max_health
 	health = _health
+	_refresh_layout_deferred()
 
 func update_status_icons(mortality: CombatantState.Mortality, has_summon_reserve_card: bool) -> void:
 	var is_bound := int(mortality) == int(CombatantState.Mortality.BOUND)
@@ -43,13 +47,12 @@ func update_status_icons(mortality: CombatantState.Mortality, has_summon_reserve
 		wild_icon.visible = is_wild
 	if card_reserved_icon != null:
 		card_reserved_icon.visible = has_summon_reserve_card
-	_update_visuals()
+	_refresh_layout_deferred()
 
 func _set_max_health(new_health: int) -> void:
 	max_health = new_health
 	health_bar.max_value = max_health
 	damage_bar.max_value = max_health
-	_update_visuals()
 
 func _set_health(new_health) -> void:
 	#var old_health := health
@@ -58,7 +61,6 @@ func _set_health(new_health) -> void:
 	damage_health = health
 	health_number.text = "%s" % health
 	max_health_number.text = "/%s" % max_health
-	_update_visuals()
 
 func _set_damage_health(new_health: int) -> void:
 	damage_health = new_health
@@ -66,21 +68,29 @@ func _set_damage_health(new_health: int) -> void:
 	tween.tween_property(damage_bar, "value", damage_health, 0.5)
 
 func _set_font_size(new_size: int) -> void:
-	font_size = new_size
+	_font_size = maxi(int(new_size), 1)
 	if is_node_ready():
 		_apply_font_size()
+		_refresh_layout_deferred()
+
+func _get_font_size() -> int:
+	return _font_size
 
 func _apply_font_size() -> void:
-	health_number.add_theme_font_size_override("font_size", font_size)
-	max_health_number.add_theme_font_size_override("font_size", font_size)
-	reset_size()
-	static_height = ceili(size.y + 3)
-	_update_visuals()
+	var resolved_font_size := _get_font_size()
+	health_number.add_theme_font_size_override("font_size", resolved_font_size)
+	max_health_number.add_theme_font_size_override("font_size", resolved_font_size)
 
-func _update_visuals() -> void:
-	reset_size()
-	size.y = static_height
-	#health_bar.reset_size()
+func _refresh_layout_deferred() -> void:
+	if is_node_ready():
+		call_deferred("_refresh_layout")
+
+func _refresh_layout() -> void:
+	if fit_width_to_contents:
+		size.x = get_combined_minimum_size().x
+	if fixed_height > 0.0:
+		size.y = fixed_height
+	_recenter_if_needed()
 
 func _recenter_if_needed() -> void:
 	if inside_control:
