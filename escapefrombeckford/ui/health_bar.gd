@@ -9,7 +9,7 @@ class_name HealthBar extends PanelContainer
 @onready var card_reserved_icon: TextureRect = $HBoxContainer/CardReservedIcon
 
 @export var inside_control: bool = false
-@export var font_size: int = 16 : set = _set_font_size
+@export var font_size: int = 30 : set = _set_font_size
 
 var static_height: int
 
@@ -18,6 +18,7 @@ var max_health: int : set = _set_max_health
 var damage_health: int : set = _set_damage_health
 
 func _ready() -> void:
+	_apply_font_size()
 	update_status_icons(CombatantState.Mortality.MORTAL, false)
 
 func _notification(what: int) -> void:
@@ -65,9 +66,11 @@ func _set_damage_health(new_health: int) -> void:
 	tween.tween_property(damage_bar, "value", damage_health, 0.5)
 
 func _set_font_size(new_size: int) -> void:
-	if !is_node_ready():
-		await ready
 	font_size = new_size
+	if is_node_ready():
+		_apply_font_size()
+
+func _apply_font_size() -> void:
 	health_number.add_theme_font_size_override("font_size", font_size)
 	max_health_number.add_theme_font_size_override("font_size", font_size)
 	reset_size()
