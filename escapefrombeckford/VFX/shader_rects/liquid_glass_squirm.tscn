@@ -1,23 +1,11 @@
 [gd_scene format=3 uid="uid://c3udohgypoh3w"]
 
-[ext_resource type="Shader" uid="uid://b2r0eqg2t1svj" path="res://shaders/liquid_glass_squirm.gdshader" id="1_shader"]
-
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_liquid_glass_squirm"]
-shader = ExtResource("1_shader")
-shader_parameter/u_roundness = 0.834000039615
-shader_parameter/u_distortion_intensity = 0.4
-shader_parameter/u_blur_intensity = 1.2
-shader_parameter/u_blob_intensity = 17.2250008181875
-shader_parameter/u_blob_radius = 0.16
-shader_parameter/u_blob_speed = 1.0
-shader_parameter/u_blob_blur_boost = 0.6
-shader_parameter/u_blob_wobble = 0.03
-shader_parameter/u_overlay_alpha = 0.38
+[ext_resource type="Material" uid="uid://cjrxqlubwuw6n" path="res://shaders/liquid_glass_squirm.tres" id="1_fpp76"]
 
 [node name="LiquidGlassSquirm" type="ColorRect" unique_id=1563811847]
 modulate = Color(1, 1, 1, 0)
 z_index = 1
-material = SubResource("ShaderMaterial_liquid_glass_squirm")
+material = ExtResource("1_fpp76")
 offset_right = 140.0
 offset_bottom = 238.0
 mouse_filter = 2

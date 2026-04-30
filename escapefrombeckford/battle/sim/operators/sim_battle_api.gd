@@ -862,6 +862,7 @@ func _request_group_layout_changed(
 		after_order_ids,
 		String(reason)
 	)
+	_request_intent_refresh_all()
 
 func _request_immediate_planning_flush_if_needed(target_id: int, proto: Status) -> void:
 	if proto == null:

@@ -5,7 +5,7 @@
 [ext_resource type="Shader" uid="uid://2unx6f7u1h1k" path="res://shaders/light_flare_streaks.gdshader" id="3_c2a0q"]
 [ext_resource type="Shader" uid="uid://348wno7lhkg1" path="res://shaders/bubble_field.gdshader" id="4_n57hn"]
 [ext_resource type="Shader" uid="uid://r5ab4wfxtmqh" path="res://shaders/liquid_glass.gdshader" id="5_ypmjw"]
-[ext_resource type="Shader" uid="uid://b2r0eqg2t1svj" path="res://shaders/liquid_glass_squirm.gdshader" id="6_c2a0q"]
+[ext_resource type="Material" uid="uid://cjrxqlubwuw6n" path="res://shaders/liquid_glass_squirm.tres" id="6_n57hn"]
 [ext_resource type="Material" uid="uid://dyl7t7ex5mwnu" path="res://shaders/smoke_poof_shader_material.tres" id="7_n57hn"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_h3h0p"]
@@ -51,17 +51,6 @@ shader_parameter/u_roundness = 1.0
 shader_parameter/u_distortion_intensity = 1.0
 shader_parameter/u_blur_intensity = 1.2
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_n57hn"]
-shader = ExtResource("6_c2a0q")
-shader_parameter/u_roundness = 0.834000039615
-shader_parameter/u_distortion_intensity = 1.0
-shader_parameter/u_blur_intensity = 1.2
-shader_parameter/u_blob_intensity = 17.2250008181875
-shader_parameter/u_blob_radius = 0.16
-shader_parameter/u_blob_speed = 1.0
-shader_parameter/u_blob_blur_boost = 0.6
-shader_parameter/u_blob_wobble = 0.03
-
 [node name="Node2D" type="Node2D" unique_id=1044631019]
 
 [node name="Sprite2D" type="TextureRect" parent="." unique_id=14070118]
@@ -96,7 +85,7 @@ offset_right = 1040.0
 offset_bottom = 500.0
 
 [node name="LiquidGlassSquirm" type="ColorRect" parent="." unique_id=460811421]
-material = SubResource("ShaderMaterial_n57hn")
+material = ExtResource("6_n57hn")
 offset_left = 470.0
 offset_top = 183.0
 offset_right = 636.0

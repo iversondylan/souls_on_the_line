@@ -10,6 +10,7 @@ const ARC_POINTS := 8
 
 var current_card: UsableCard
 var targeting := false
+var _arrow_views: Array[CombatantView] = []
 
 func _ready() -> void:
 	area_2d.card_target_selector = self
@@ -27,6 +28,7 @@ func _process(_delta: float) -> void:
 
 	area_2d.global_position = get_global_mouse_position()
 	card_arc.points = _get_points()
+	_sync_overlapping_targets()
 
 func _get_points() -> Array[Vector2]:
 	var points: Array[Vector2] = []
@@ -63,6 +65,7 @@ func _on_card_aim_started(card: UsableCard) -> void:
 	area_2d.monitoring = true
 	area_2d.monitorable = true
 	current_card = card
+	_sync_overlapping_targets.call_deferred()
 	#card
 
 func _on_card_aim_ended(_card: UsableCard) -> void:
@@ -77,6 +80,7 @@ func _on_battlefield_aim_started(card: UsableCard) -> void:
 	area_2d.monitoring = true
 	area_2d.monitorable = true
 	current_card = card
+	_sync_overlapping_targets.call_deferred()
 
 func _on_battlefield_aim_ended(_card: UsableCard) -> void:
 	_end_targeting()
@@ -85,23 +89,13 @@ func _on_area_2d_area_entered(area: Area2D) -> void:
 	#print("card_target_selector.gd _on_area_2d_area_entered()")
 	if !current_card or !targeting:
 		return
-	if !can_target_area(area):
-		return
-	
-	if not current_card.targets.has(area):
-		
-		current_card.targets.append(area)
-		current_card.update_description()
-		_update_battlefield_arrow()
+	_sync_overlapping_targets()
 
 func _on_area_2d_area_exited(area: Area2D) -> void:
 	#print("card_target_selector.gd _on_area_2d_area_exited()")
 	if !current_card or !targeting:
 		return
-	
-	current_card.targets.erase(area)
-	current_card.update_description()
-	_update_battlefield_arrow()
+	_sync_overlapping_targets()
 
 func _end_targeting():
 	targeting = false
@@ -109,11 +103,59 @@ func _end_targeting():
 	area_2d.position = Vector2.ZERO
 	area_2d.monitoring = false
 	area_2d.monitorable = false
+	_clear_targeted_arrows()
 
 	if current_card and current_card.battle_view != null and current_card.battle_view.target_arrow != null:
 		current_card.battle_view.target_arrow.hide_arrow()
 
 	current_card = null
+
+func _sync_overlapping_targets() -> void:
+	if !current_card or !targeting:
+		return
+
+	var next_targets: Array[Node] = []
+	for area in area_2d.get_overlapping_areas():
+		if can_target_area(area):
+			next_targets.append(area)
+
+	if !_same_targets(current_card.targets, next_targets):
+		current_card.targets.assign(next_targets)
+		current_card.update_description()
+		_update_battlefield_arrow()
+
+	_sync_targeted_arrows(next_targets)
+
+func _same_targets(a: Array[Node], b: Array[Node]) -> bool:
+	if a.size() != b.size():
+		return false
+	for i in range(a.size()):
+		if a[i] != b[i]:
+			return false
+	return true
+
+func _sync_targeted_arrows(targets: Array[Node]) -> void:
+	var next_views: Array[CombatantView] = []
+	for target in targets:
+		if target is CombatantTargetArea:
+			var target_area := target as CombatantTargetArea
+			if target_area.combatant_view != null and !next_views.has(target_area.combatant_view):
+				next_views.append(target_area.combatant_view)
+
+	for view in _arrow_views:
+		if is_instance_valid(view) and !next_views.has(view):
+			view.show_targeted_arrow(false)
+	for view in next_views:
+		if is_instance_valid(view):
+			view.show_targeted_arrow(true)
+
+	_arrow_views = next_views
+
+func _clear_targeted_arrows() -> void:
+	for view in _arrow_views:
+		if is_instance_valid(view):
+			view.show_targeted_arrow(false)
+	_arrow_views.clear()
 
 func _update_battlefield_arrow():
 	if !current_card or !targeting:
