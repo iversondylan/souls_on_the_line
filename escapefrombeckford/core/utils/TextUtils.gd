@@ -47,13 +47,16 @@ static func _build_card_description_internal(card_data: CardData, api: SimBattle
 
 static func _description_value_for_action(
 	action: CardAction,
-	_card_data: CardData = null,
-	_api: SimBattleAPI = null
+	card_data: CardData = null,
+	api: SimBattleAPI = null
 ) -> String:
 	if action == null:
 		return ""
 
-	return action.get_description_value(CardActionContext.new())
+	var ctx := CardActionContext.new()
+	ctx.api = api
+	ctx.card_data = card_data
+	return action.get_description_value(ctx)
 
 static func _replace_next_placeholder(text: String, replacement: String) -> String:
 	var slot_index := text.find("%s")

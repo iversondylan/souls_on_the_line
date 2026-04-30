@@ -1,6 +1,6 @@
-[gd_resource type="Resource" script_class="ResonanceSpikeStatusDepiction" format=3]
+[gd_resource type="Resource" script_class="ResonanceSpikeStatusDepiction" format=3 uid="uid://0y0a0j6n4vq4"]
 
-[ext_resource type="Script" path="res://battle/view/status_depictions/resonance_spike_status_depiction.gd" id="1_depiction"]
+[ext_resource type="Script" uid="uid://mvsvfvkhg8ea" path="res://battle/view/status_depictions/resonance_spike_status_depiction.gd" id="1_depiction"]
 
 [resource]
 script = ExtResource("1_depiction")

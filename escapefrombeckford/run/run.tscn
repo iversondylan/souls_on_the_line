@@ -7,7 +7,7 @@
 [ext_resource type="Resource" uid="uid://hkw3l5xa63gq" path="res://encounters/battle_pool_1.tres" id="4_nnxm5"]
 [ext_resource type="PackedScene" uid="uid://bxtf6la07t0t5" path="res://ui/card_pile_opener.tscn" id="5_0tt4g"]
 [ext_resource type="Resource" uid="uid://trlxaybf7coq" path="res://encounters/tutorial/tutorial_encounter.tres" id="5_5phry"]
-[ext_resource type="PackedScene" path="res://ui/top_bar_health_bar.tscn" id="5_ux63y"]
+[ext_resource type="PackedScene" uid="uid://2niqh3w66tgp" path="res://ui/top_bar_health_bar.tscn" id="5_ux63y"]
 [ext_resource type="PackedScene" uid="uid://yab08gtx7087" path="res://ui/gold_display.tscn" id="5_wo0nw"]
 [ext_resource type="Theme" uid="uid://c5t2luytfgc6b" path="res://ui/elements/brass_wood_chalkboard_theme.tres" id="6_wo0nw"]
 [ext_resource type="PackedScene" uid="uid://c634qgskmd0a" path="res://ui/card_pile_view.tscn" id="7_0tt4g"]

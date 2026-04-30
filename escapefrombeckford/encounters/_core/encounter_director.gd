@@ -309,17 +309,18 @@ func _start_step_auto_advance(step: EncounterStep) -> void:
 	if tree == null:
 		return
 	var generation := _step_timer_generation
-	_wait_for_step_auto_advance(StringName(step.id), StringName(step.next_step_id), float(step.auto_advance_after_sec), generation)
-
-func _wait_for_step_auto_advance(from_step_id: StringName, to_step_id: StringName, delay_sec: float, generation: int) -> void:
+	var delay_sec := float(step.auto_advance_after_sec)
 	if delay_sec <= 0.0:
-		if generation == _step_timer_generation and state.current_step_id == from_step_id:
-			goto_step(to_step_id)
+		_on_step_auto_advance_timeout(StringName(step.id), StringName(step.next_step_id), generation)
 		return
-	var tree: SceneTree = battle.get_tree() if battle != null else get_tree()
-	if tree == null:
-		return
-	await tree.create_timer(delay_sec, false).timeout
+	var timer := tree.create_timer(delay_sec, false)
+	timer.timeout.connect(
+		_on_step_auto_advance_timeout.bind(StringName(step.id), StringName(step.next_step_id), generation),
+		CONNECT_ONE_SHOT
+	)
+
+
+func _on_step_auto_advance_timeout(from_step_id: StringName, to_step_id: StringName, generation: int) -> void:
 	if generation != _step_timer_generation:
 		return
 	if !is_active() or state.current_step_id != from_step_id:

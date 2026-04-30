@@ -1,0 +1,6 @@
+[gd_resource type="Resource" script_class="SeanceAction" format=3 uid="uid://ca3djhaydawre"]
+
+[ext_resource type="Script" uid="uid://bcb8uqc3k4y6s" path="res://cards/convocations/Seance/seance_action.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")

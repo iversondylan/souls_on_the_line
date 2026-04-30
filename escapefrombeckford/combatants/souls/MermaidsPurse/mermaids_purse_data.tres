@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="CombatantData" format=3 uid="uid://dncf8sixbvj5q"]
+
+[ext_resource type="Script" uid="uid://cfatj0ryn8uv3" path="res://combatants/combatant_data.gd" id="1_iyamm"]
+
+[resource]
+script = ExtResource("1_iyamm")
+name = "Mermaid's Purse"
+description = "Passive. "
+character_art_uid = "uid://dxv8uhbxftv7"
+portrait_art_uid = "uid://dxv8uhbxftv7"
+height = 120
+max_health = 2
+ap = 0
+metadata/_custom_type_script = "uid://cfatj0ryn8uv3"

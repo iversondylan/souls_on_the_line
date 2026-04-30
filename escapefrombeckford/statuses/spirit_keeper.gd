@@ -26,4 +26,4 @@ func on_player_turn_begin(ctx: SimStatusContext, player_id: int) -> void:
 	ctx.api.apply_status(status_ctx)
 
 func get_tooltip(stacks: int = 0) -> String:
-	return "Spirit Keeper: at the end of each round, gain %s Full Fortitude." % stacks
+	return "Spirit Keeper: at the end of each round, gain %s max health." % stacks

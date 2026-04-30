@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="CombatantData" format=3 uid="uid://i1w6d0a7mrg8"]
+
+[ext_resource type="Script" uid="uid://cfatj0ryn8uv3" path="res://combatants/combatant_data.gd" id="1_go7yw"]
+[ext_resource type="Resource" uid="uid://cifkgm2kwpwqf" path="res://combatants/souls/WyvernAspirant/wyvern_aspirant_ai.tres" id="1_lqigi"]
+
+[resource]
+script = ExtResource("1_go7yw")
+name = "Wyvern Aspirant"
+character_art_uid = "uid://da0k2rcxpbir7"
+portrait_art_uid = "uid://da0k2rcxpbir7"
+height = 200
+max_health = 4
+ai = ExtResource("1_lqigi")
+metadata/_custom_type_script = "uid://cfatj0ryn8uv3"

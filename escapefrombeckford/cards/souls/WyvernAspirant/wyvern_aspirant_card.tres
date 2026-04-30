@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="CardData" format=3 uid="uid://dpynhenb1tgqb"]
+
+[ext_resource type="Script" uid="uid://wtk5v77fcqvn" path="res://cards/_core/card_action.gd" id="1_mvcnu"]
+[ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://cards/_core/card_data.gd" id="2_ca1y3"]
+[ext_resource type="Resource" uid="uid://b7yl7cehxcuhd" path="res://cards/souls/WyvernAspirant/summon_wyvern_aspirant.tres" id="3_summon"]
+[ext_resource type="Resource" uid="uid://cf1ijqm268tsm" path="res://cards/souls/WyvernAspirant/mastery_on_summoned_action.tres" id="4_mastery"]
+[ext_resource type="Texture2D" uid="uid://da0k2rcxpbir7" path="res://_assets/sprites/assorted/wyvern.png" id="5_texture"]
+
+[resource]
+script = ExtResource("2_ca1y3")
+id = &"wyvern_aspirant"
+card_type = 1
+target_type = 1
+rarity = 1
+name = "Wyvern Aspirant"
+summon_release_overload = 1
+description = "%sGains %s Mastery."
+cost = 1
+texture = ExtResource("5_texture")
+actions = Array[ExtResource("1_mvcnu")]([ExtResource("3_summon"), ExtResource("4_mastery")])
+metadata/_custom_type_script = "uid://d2f0qepe047dc"

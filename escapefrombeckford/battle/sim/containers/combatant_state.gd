@@ -32,6 +32,8 @@ var mana: int = 0
 var ap: int = 0
 
 var bound_card_uid: String = ""
+var completed_group_turns_lived: int = 0
+var completed_rounds_lived: int = 0
 
 # Authoring refs
 var data_proto_path: String = "" # optional for reconstruction
@@ -85,6 +87,8 @@ func clone() -> CombatantState:
 	c.mana = mana
 	c.ap = ap
 	c.bound_card_uid = bound_card_uid
+	c.completed_group_turns_lived = completed_group_turns_lived
+	c.completed_rounds_lived = completed_rounds_lived
 
 	c.data_proto_path = data_proto_path
 

@@ -2,6 +2,10 @@
 
 class_name SimRuntime extends RefCounted
 
+enum PhaseIntentRefresh {
+	ROUND_AGE_ADVANCED,
+}
+
 
 
 # Runtime orchestration for a single Sim.
@@ -314,6 +318,7 @@ func begin_group_turn_flow(group_index: int, start_at_player := false) -> void:
 		engine.reset_for_new_battle()
 
 	engine.begin_group_turn_state(group_index, start_at_player)
+	_sync_turn_counters_from_engine(engine)
 	handle_group_turn_started(group_index)
 	_publish_turn_status()
 	_drive_turn_flow_until_blocked()
@@ -468,6 +473,15 @@ func handle_group_turn_ended(group_index: int) -> void:
 
 	ActionLifecycleSystem.on_group_turn_end(api, group_index)
 	_apply_checkpoint_boundary(CheckpointProcessor.Kind.AFTER_GROUP_TURN_END, true)
+	_increment_survivor_group_turn_age(api)
+	if int(group_index) == int(SimBattleAPI.ENEMY):
+		var round_aged_ids := _increment_survivor_round_age(api)
+		_request_phase_intent_refresh(
+			api,
+			PhaseIntentRefresh.ROUND_AGE_ADVANCED,
+			round_aged_ids,
+			CheckpointProcessor.Kind.AFTER_GROUP_TURN_END
+		)
 
 	var writer := api.writer
 	if writer != null:
@@ -477,6 +491,57 @@ func handle_group_turn_ended(group_index: int) -> void:
 			_group_turn_scope_handle = null
 
 	_schedule_next_group_turn(group_index)
+
+func _sync_turn_counters_from_engine(engine: TurnEngineCore) -> void:
+	var api := _api()
+	if api == null or api.state == null or api.state.turn == null or engine == null:
+		return
+	api.state.turn.active_group = int(engine.active_group_index)
+	api.state.turn.group_turn_number = int(engine.turn_token)
+	api.state.turn.round_number = maxi(1, int((int(engine.turn_token) + 1) / 2))
+
+func _increment_survivor_group_turn_age(api: SimBattleAPI) -> void:
+	if api == null or api.state == null:
+		return
+	for unit_value in api.state.units.values():
+		var unit := unit_value as CombatantState
+		if unit == null or !unit.is_alive():
+			continue
+		unit.completed_group_turns_lived += 1
+
+
+func _increment_survivor_round_age(api: SimBattleAPI) -> Array[int]:
+	var aged_ids: Array[int] = []
+	if api == null or api.state == null:
+		return aged_ids
+	for unit_value in api.state.units.values():
+		var unit := unit_value as CombatantState
+		if unit == null or !unit.is_alive():
+			continue
+		unit.completed_rounds_lived += 1
+		aged_ids.append(int(unit.id))
+	return aged_ids
+
+
+func _request_phase_intent_refresh(
+	api: SimBattleAPI,
+	_phase: int,
+	candidate_ids: Array[int],
+	checkpoint_kind: int
+) -> void:
+	if api == null or api.state == null or candidate_ids.is_empty():
+		return
+	var requested_any := false
+	for cid in candidate_ids:
+		var unit := api.state.get_unit(int(cid))
+		if unit == null or !unit.is_alive():
+			continue
+		if unit.combatant_data == null or unit.combatant_data.ai == null:
+			continue
+		api._request_intent_refresh(int(cid))
+		requested_any = true
+	if requested_any:
+		_apply_checkpoint_boundary(int(checkpoint_kind), true)
 
 
 func _publish_turn_status() -> void:

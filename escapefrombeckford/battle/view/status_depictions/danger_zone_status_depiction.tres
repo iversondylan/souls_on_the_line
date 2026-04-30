@@ -1,6 +1,6 @@
-[gd_resource type="Resource" script_class="DangerZoneStatusDepiction" format=3]
+[gd_resource type="Resource" script_class="DangerZoneStatusDepiction" format=3 uid="uid://defyc4ji8wsyd"]
 
-[ext_resource type="Script" path="res://battle/view/status_depictions/danger_zone_status_depiction.gd" id="1_depiction"]
+[ext_resource type="Script" uid="uid://b0dlqe0f0c3vb" path="res://battle/view/status_depictions/danger_zone_status_depiction.gd" id="1_depiction"]
 
 [resource]
 script = ExtResource("1_depiction")

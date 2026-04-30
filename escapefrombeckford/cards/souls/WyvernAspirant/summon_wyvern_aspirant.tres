@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="SummonAction" format=3 uid="uid://b7yl7cehxcuhd"]
+
+[ext_resource type="Script" uid="uid://buhtw3540mbls" path="res://cards/_generic_actions/summon_action.gd" id="1_p61nh"]
+[ext_resource type="Resource" uid="uid://i1w6d0a7mrg8" path="res://combatants/souls/WyvernAspirant/wyvern_aspirant.tres" id="2_2dftm"]
+[ext_resource type="Resource" uid="uid://c0cllss7w30rn" path="res://audio/summon_zap.tres" id="3_sound"]
+
+[resource]
+script = ExtResource("1_p61nh")
+summon_data = ExtResource("2_2dftm")
+reserves_card = true
+sound = ExtResource("3_sound")
+metadata/_custom_type_script = "uid://buhtw3540mbls"

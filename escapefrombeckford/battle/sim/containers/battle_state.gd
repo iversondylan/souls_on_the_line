@@ -18,6 +18,7 @@ var arcana_catalog: ArcanaCatalog
 var transformer_registry: TransformerRegistry = TransformerRegistry.new()
 
 var events: BattleEventLog = BattleEventLog.new()
+var removal_log: BattleRemovalLog = BattleRemovalLog.new()
 
 var battle_seed: int = 0
 var run_seed: int = 0
@@ -49,6 +50,7 @@ func init(_battle_seed: int, _run_seed: int) -> void:
 	run_seed = _run_seed
 	rng = RNG.new(battle_seed)
 	events = BattleEventLog.new()
+	removal_log = BattleRemovalLog.new()
 	summon_card_ap_bonus.clear()
 	summon_card_max_health_bonus.clear()
 
@@ -158,6 +160,7 @@ func clone() -> BattleState:
 	b.arcana_catalog = arcana_catalog
 	b.summon_card_ap_bonus = summon_card_ap_bonus.duplicate(true)
 	b.summon_card_max_health_bonus = summon_card_max_health_bonus.duplicate(true)
+	b.removal_log = removal_log.clone() if removal_log != null else BattleRemovalLog.new()
 
 	b.rng = RNG.new()
 	b.rng.rng_seed = rng.rng_seed
@@ -192,7 +195,7 @@ func debug_dump_state(label: String = "") -> void:
 		_debug_outcome_name(outcome),
 	])
 	print("  turn: round=%d active_group=%s active_id=%d queue=%s actions=%s" % [
-		int(turn.round),
+		int(turn.round_number),
 		_debug_group_name(int(turn.active_group)),
 		int(turn.active_id),
 		Array(turn.queue),

@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="CardData" format=3 uid="uid://bb8vi85ow2u82"]
+
+[ext_resource type="Script" uid="uid://wtk5v77fcqvn" path="res://cards/_core/card_action.gd" id="1_action"]
+[ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://cards/_core/card_data.gd" id="2_card_data"]
+[ext_resource type="Resource" uid="uid://ca3djhaydawre" path="res://cards/convocations/Seance/seance_action.tres" id="3_action"]
+[ext_resource type="Texture2D" uid="uid://lt1komf5vek3" path="res://_assets/sprites/assorted/haunting.png" id="4_texture"]
+
+[resource]
+script = ExtResource("2_card_data")
+id = &"seance"
+target_type = 3
+name = "Seance"
+description = "Target ally gets bonus damage until your next turn equal to twice the number of deaths that occurred last round. +%s bonus damage. Draw 1."
+cost = 1
+texture = ExtResource("4_texture")
+actions = Array[ExtResource("1_action")]([ExtResource("3_action")])
+metadata/_custom_type_script = "uid://d2f0qepe047dc"

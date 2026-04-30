@@ -4,7 +4,7 @@
 [ext_resource type="Script" uid="uid://cueedkb1u8vxy" path="res://statuses/_core/status.gd" id="2_dy2j6"]
 [ext_resource type="Resource" uid="uid://7x55fawjrwf4" path="res://statuses/might.tres" id="3_3wavi"]
 [ext_resource type="Script" uid="uid://byl8kucecx6c0" path="res://statuses/resonance_spike.gd" id="4_76tw8"]
-[ext_resource type="Resource" path="res://battle/view/status_depictions/resonance_spike_status_depiction.tres" id="5_depiction"]
+[ext_resource type="Resource" uid="uid://0y0a0j6n4vq4" path="res://battle/view/status_depictions/resonance_spike_status_depiction.tres" id="5_depiction"]
 
 [resource]
 script = ExtResource("4_76tw8")

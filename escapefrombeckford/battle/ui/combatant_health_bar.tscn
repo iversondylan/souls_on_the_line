@@ -44,14 +44,13 @@ corner_radius_bottom_right = 2
 corner_radius_bottom_left = 2
 
 [node name="HealthPanel" type="PanelContainer" unique_id=1478809628]
+clip_contents = true
 offset_right = 132.0
 offset_bottom = 24.0
 size_flags_horizontal = 0
-clip_contents = true
 theme = ExtResource("2_theme")
 theme_override_styles/panel = SubResource("StyleBoxFlat_compact_panel")
 script = ExtResource("1_script")
-font_size = 30
 fit_width_to_contents = true
 fixed_height = 24.0
 

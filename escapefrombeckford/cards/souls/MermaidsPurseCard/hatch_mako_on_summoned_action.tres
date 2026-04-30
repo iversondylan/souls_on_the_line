@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="ApplyStatusToSummonedAction" format=3 uid="uid://dq51mqa7q1hbf"]
+
+[ext_resource type="Script" uid="uid://jie78uegvh3j" path="res://cards/_generic_actions/apply_status_to_summoned_action.gd" id="1_uwi5v"]
+[ext_resource type="Resource" uid="uid://dx84tv2tixl8a" path="res://statuses/hatch_mako.tres" id="2_a3gj5"]
+
+[resource]
+script = ExtResource("1_uwi5v")
+status = ExtResource("2_a3gj5")
+metadata/_custom_type_script = "uid://jie78uegvh3j"

@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="HatchMakoStatus" format=3 uid="uid://dx84tv2tixl8a"]
+
+[ext_resource type="Script" uid="uid://djea2k8h3lncq" path="res://statuses/hatch_mako.gd" id="1_5553e"]
+[ext_resource type="Texture2D" uid="uid://dm1fhdjxadyn1" path="res://_assets/sprites/assorted/shark-jaws.png" id="1_s3uei"]
+
+[resource]
+script = ExtResource("1_5553e")
+status_name = "Hatch Mako"
+reapply_type = 2
+icon = ExtResource("1_s3uei")
+metadata/_custom_type_script = "uid://djea2k8h3lncq"

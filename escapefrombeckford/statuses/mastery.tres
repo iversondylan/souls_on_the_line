@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="MasteryStatus" format=3 uid="uid://bpxus6k5x2e2m"]
+
+[ext_resource type="Script" uid="uid://d0nkqyk6cu3gv" path="res://statuses/mastery.gd" id="1_fis0a"]
+[ext_resource type="Texture2D" uid="uid://rb67xvt4p1v4" path="res://_assets/sprites/assorted/sergeant.png" id="1_nrsbs"]
+
+[resource]
+script = ExtResource("1_fis0a")
+status_name = "Mastery"
+numerical = true
+icon = ExtResource("1_nrsbs")
+tooltip = "For each round survived, gain %s damage."
+metadata/_custom_type_script = "uid://d0nkqyk6cu3gv"

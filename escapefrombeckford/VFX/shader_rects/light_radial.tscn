@@ -1,4 +1,4 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://dw24rbvd20hnk"]
 
 [ext_resource type="Shader" uid="uid://2unx6f7u1h1k" path="res://shaders/light_flare_streaks.gdshader" id="1_shader"]
 
@@ -15,7 +15,7 @@ shader_parameter/streaks_thickness = 0.5
 shader_parameter/center_radius = 0.1
 shader_parameter/fade_radius = 0.4
 
-[node name="LightRadial" type="ColorRect"]
+[node name="LightRadial" type="ColorRect" unique_id=1908890795]
 modulate = Color(1, 1, 1, 0)
 material = SubResource("ShaderMaterial_light_radial")
 offset_right = 177.0

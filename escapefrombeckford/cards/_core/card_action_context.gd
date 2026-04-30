@@ -9,6 +9,8 @@ class_name CardActionContext extends RefCounted
 #var player_data: PlayerData
 #var battle_scene: BattleScene
 #var resolved_target: CardResolvedTarget
+var api: SimBattleAPI
+var card_data: CardData
 #
 ## Pipeline outputs (mutable)
 #var summoned_fighters: Array[Fighter] = []

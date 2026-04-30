@@ -84,6 +84,21 @@ func get_n_combatants_in_group(group_index: int, allow_dead := false) -> int:
 	return get_combatants_in_group(group_index, allow_dead).size()
 
 
+func count_removals_in_round(removal_type: int, round_number: int, group_index: int = -1) -> int:
+	if state == null or state.removal_log == null:
+		return 0
+	return state.removal_log.count_by_round(int(removal_type), int(round_number), int(group_index))
+
+
+func count_previous_round_deaths(group_index: int = -1) -> int:
+	if state == null or state.turn == null:
+		return 0
+	var previous_round := int(state.turn.round_number) - 1
+	if previous_round <= 0:
+		return 0
+	return count_removals_in_round(Removal.Type.DEATH, previous_round, int(group_index))
+
+
 func get_front_combatant_id(group_index: int) -> int:
 	var ids := get_combatants_in_group(group_index, false)
 	return int(ids[0]) if ids.size() > 0 else 0
@@ -1139,6 +1154,7 @@ func resolve_removal(ctx) -> void:
 	ctx.group_index = g
 	ctx.before_order_ids = PackedInt32Array(state.groups[g].order) if g != -1 else PackedInt32Array()
 	ctx.insert_index = ctx.before_order_ids.find(int(ctx.target_id))
+	_log_removal(ctx, u)
 
 	u.alive = false
 	if g != -1:
@@ -1508,6 +1524,24 @@ func summon(ctx: SummonContext) -> void:
 	
 	if checkpoint_processor != null:
 		checkpoint_processor.request_followup_flush()
+
+func _log_removal(ctx: RemovalContext, u: CombatantState) -> void:
+	if state == null or ctx == null or u == null:
+		return
+	if state.removal_log == null:
+		state.removal_log = BattleRemovalLog.new()
+	var record := RemovalRecord.new()
+	record.target_id = int(ctx.target_id)
+	record.killer_id = int(ctx.killer_id)
+	record.group_index = int(ctx.group_index)
+	record.removal_type = int(ctx.removal_type)
+	record.reason = String(ctx.reason)
+	record.round_number = int(state.turn.round_number) if state.turn != null else 1
+	record.group_turn_number = int(state.turn.group_turn_number) if state.turn != null else 0
+	record.origin_card_uid = String(ctx.origin_card_uid)
+	record.origin_arcanum_id = ctx.origin_arcanum_id
+	record.completed_group_turns_lived = int(u.completed_group_turns_lived)
+	state.removal_log.append(record)
 
 
 func _summon_sound_resource_ref(sound: Sound) -> String:

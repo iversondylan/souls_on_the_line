@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="CardData" format=3 uid="uid://bkoqwwytxiyrv"]
+
+[ext_resource type="Script" uid="uid://wtk5v77fcqvn" path="res://cards/_core/card_action.gd" id="1_ahtwn"]
+[ext_resource type="Script" uid="uid://d2f0qepe047dc" path="res://cards/_core/card_data.gd" id="2_1pxnn"]
+[ext_resource type="Resource" uid="uid://dd6noj5p5edma" path="res://cards/souls/MermaidsPurseCard/summon_mermaids_purse_action.tres" id="2_dm4dd"]
+[ext_resource type="Texture2D" uid="uid://dm1fhdjxadyn1" path="res://_assets/sprites/assorted/shark-jaws.png" id="3_1pxnn"]
+[ext_resource type="Resource" uid="uid://dq51mqa7q1hbf" path="res://cards/souls/MermaidsPurseCard/hatch_mako_on_summoned_action.tres" id="3_cgnv6"]
+
+[resource]
+script = ExtResource("2_1pxnn")
+card_type = 1
+target_type = 1
+name = "Mermaid's Purse"
+summon_release_overload = 1
+description = "%sOn death, summon a Wild Mako. %sOn death, it spawns a Wild 4 health Mako."
+cost = 1
+texture = ExtResource("3_1pxnn")
+actions = Array[ExtResource("1_ahtwn")]([ExtResource("2_dm4dd"), ExtResource("3_cgnv6")])
+metadata/_custom_type_script = "uid://d2f0qepe047dc"
