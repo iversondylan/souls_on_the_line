@@ -6,6 +6,7 @@
 
 [resource]
 script = ExtResource("2_an6gd")
+damage = 1
 arcanum_name = "Unruly Pyric Wraps"
 icon = ExtResource("1_oaq64")
 tooltip_description = "At the start of your turn, deal 1 damage to all enemies."

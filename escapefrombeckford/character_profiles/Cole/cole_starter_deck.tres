@@ -5,7 +5,7 @@
 [ext_resource type="Resource" uid="uid://bhqq2dr8db5pn" path="res://cards/convocations/ResonanceSpikeCard/resonance_spike_card.tres" id="3_2g061"]
 [ext_resource type="Resource" uid="uid://btlvkb0pdixka" path="res://cards/convocations/PressureBarrier/pressure_barrier_data.tres" id="4_k21vg"]
 [ext_resource type="Resource" uid="uid://dhlr0v7pv8gdf" path="res://cards/convocations/Substitution/substitution.tres" id="4_oc100"]
-[ext_resource type="Resource" uid="uid://lnmqu41v7t27" path="res://cards/convocations/EggOn/egg_on_data.tres" id="5_oc100"]
+[ext_resource type="Resource" uid="uid://dbs6t748gp5ig" path="res://cards/convocations/CrystalBarrier/crystal_barrier.tres" id="5_oc100"]
 
 [resource]
 script = ExtResource("2_uoadt")

@@ -8,9 +8,9 @@ enum Source {
 	SHOP,
 }
 
-const PITY_MIN_OFFSET := -5.0
+const PITY_MIN_OFFSET := 0.0
 const PITY_MAX_OFFSET := 40.0
-const PITY_COMMON_STEP := 1.0
+const PITY_COMMON_STEP := 2.0
 
 const _TABLES := {
 	Source.NORMAL_COMBAT: {

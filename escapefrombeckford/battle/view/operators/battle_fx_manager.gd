@@ -30,14 +30,9 @@ func play_on_combatant(
 	if hold > 0.0:
 		tween.tween_interval(hold)
 	tween.tween_property(node, "modulate:a", 0.0, maxf(fade_out, 0.0))
-	tween.finished.connect(func() -> void:
-		if is_instance_valid(node):
-			node.queue_free()
-	, CONNECT_ONE_SHOT)
+	_queue_free_when_finished(tween, node)
 
 	return node
-	
-
 
 
 func ensure_on_combatant(
@@ -102,10 +97,7 @@ func clear_key(key: String, fade_out := 0.06) -> void:
 		old_tween.kill()
 
 	var tween := _fade_to(node, 0.0, fade_out)
-	tween.finished.connect(func() -> void:
-		if is_instance_valid(node):
-			node.queue_free()
-	, CONNECT_ONE_SHOT)
+	_queue_free_when_finished(tween, node)
 
 
 func clear_for_combatant(combatant: CombatantView, fade_out := 0.0) -> void:
@@ -132,20 +124,22 @@ func play_at_global_position(
 	if node == null:
 		return null
 
-	add_child(node)
-	if node is CanvasItem:
-		(node as CanvasItem).z_index = 80
-
 	if node is Control:
 		var control := node as Control
 		control.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		control.size = size
 		control.pivot_offset = size * 0.5
 		control.position = to_local(global_pos) - size * 0.5
+		add_child(node)
 	elif node is Node2D:
+		# Configure size and position BEFORE add_child so _ready() fires with correct state.
+		# One-shot particle effects emit immediately in _ready, so position must be set first.
 		if node.has_method("configure_fx"):
 			node.call("configure_fx", size)
-		(node as Node2D).global_position = global_pos
+		(node as Node2D).position = to_local(global_pos)
+		add_child(node)
+	else:
+		add_child(node)
 
 	return node
 
@@ -161,10 +155,7 @@ func _instance_fx(fx_id: StringName) -> Node:
 
 
 func _attach_to_combatant(node: Node, combatant: CombatantView, scale: float, center_y_ratio := 0.5) -> void:
-	combatant.add_child(node)
-
-	if node is CanvasItem:
-		(node as CanvasItem).z_index = 50
+	_add_combatant_fx_child_below_art(combatant, node)
 
 	var height := float(combatant.get_visual_height_px())
 	var center := Vector2(0, -height * clampf(center_y_ratio, 0.0, 1.0))
@@ -184,11 +175,31 @@ func _attach_to_combatant(node: Node, combatant: CombatantView, scale: float, ce
 		(node as Node2D).position = center
 
 
+func _add_combatant_fx_child_below_art(combatant: CombatantView, node: Node) -> void:
+	combatant.add_child(node)
+	var art_parent := combatant.get_node_or_null("ArtParent")
+	if art_parent != null:
+		combatant.move_child(node, art_parent.get_index())
+	else:
+		combatant.move_child(node, 0)
+
+
 func _fade_to(node: Node, alpha: float, duration: float) -> Tween:
 	var tween := create_tween()
 	tween.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 	tween.tween_property(node, "modulate:a", alpha, maxf(duration, 0.0))
 	return tween
+
+
+func _queue_free_when_finished(tween: Tween, node: Node) -> void:
+	if tween == null or node == null:
+		return
+	var node_ref: WeakRef = weakref(node)
+	tween.finished.connect(func() -> void:
+		var live_node := node_ref.get_ref() as Node
+		if live_node != null and is_instance_valid(live_node):
+			live_node.queue_free()
+	, CONNECT_ONE_SHOT)
 
 
 func _set_alpha(node: Node, alpha: float) -> void:

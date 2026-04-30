@@ -12,6 +12,7 @@ script = ExtResource("1_glr07")
 [node name="IconParent" type="Node2D" parent="." unique_id=1147900409]
 
 [node name="Icon" type="Sprite2D" parent="IconParent" unique_id=1612890124]
+z_index = 1
 position = Vector2(0, -2)
 scale = Vector2(0.18, 0.18)
 texture = ExtResource("1_b60qy")
@@ -19,15 +20,18 @@ texture = ExtResource("1_b60qy")
 [node name="TextParent" type="Node2D" parent="." unique_id=1089211324]
 
 [node name="TargetedIcon" type="Sprite2D" parent="TextParent" unique_id=106729434]
+z_index = 1
 scale = Vector2(0.35, 0.35)
 texture = ExtResource("3_f02my")
 
 [node name="DangerZoneIcon" type="Sprite2D" parent="TextParent" unique_id=2076284652]
+z_index = 1
 position = Vector2(-41, 18)
 scale = Vector2(0.055, 0.055)
 texture = ExtResource("5_nycpq")
 
 [node name="Label" type="Label" parent="TextParent" unique_id=1859124892]
+z_index = 1
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5

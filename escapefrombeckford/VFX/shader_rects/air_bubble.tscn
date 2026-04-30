@@ -1,4 +1,4 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://u0tnbu3n1fo"]
 
 [ext_resource type="Shader" uid="uid://348wno7lhkg1" path="res://shaders/bubble_field.gdshader" id="1_shader"]
 
@@ -18,8 +18,9 @@ shader_parameter/interior_distortion_amount = 0.010000000475
 shader_parameter/distortion_speed = 0.499999988824
 shader_parameter/colour_pan_speed = 0.48999998904752
 
-[node name="AirBubble" type="ColorRect"]
+[node name="AirBubble" type="ColorRect" unique_id=80689770]
 modulate = Color(1, 1, 1, 0)
+z_index = 1
 material = SubResource("ShaderMaterial_air_bubble")
 offset_right = 216.0
 offset_bottom = 342.0

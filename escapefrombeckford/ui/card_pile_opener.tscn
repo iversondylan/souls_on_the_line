@@ -11,4 +11,5 @@ texture_normal = ExtResource("1_121hh")
 texture_pressed = ExtResource("2_rnmm3")
 texture_hover = ExtResource("3_x46li")
 ignore_texture_size = true
+stretch_mode = 0
 script = ExtResource("4_rnmm3")

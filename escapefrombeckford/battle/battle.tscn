@@ -25,10 +25,11 @@
 [ext_resource type="PackedScene" uid="uid://b1rro3h5dxilx" path="res://battle/ui/battle_over_panel.tscn" id="21_p2d7x"]
 [ext_resource type="PackedScene" uid="uid://c477qukem6kmd" path="res://battle/interactions/card_target_selector.tscn" id="22_j5lq4"]
 [ext_resource type="PackedScene" uid="uid://c634qgskmd0a" path="res://ui/card_pile_view.tscn" id="22_wyn7e"]
+[ext_resource type="PackedScene" uid="uid://tk66t1nkyo8w" path="res://battle/ui/soul_capacity_panel.tscn" id="23_kc5qh"]
 [ext_resource type="Script" uid="uid://bmlyytso4qsj6" path="res://battle/interactions/battle_interaction_handler.gd" id="25_jt4d8"]
 [ext_resource type="Script" uid="uid://d1qgiqjurb6nw" path="res://battle/battle_preview_coordinator.gd" id="27_1m01a"]
 [ext_resource type="PackedScene" uid="uid://jxu5qilw3jl7" path="res://battle/ui/encounter/encounter_dialogue_layer.tscn" id="28_encounter_layer"]
-[ext_resource type="Script" path="res://battle/ui/encounter/encounter_arrow_layer.gd" id="29_arrow_layer"]
+[ext_resource type="Script" uid="uid://big5ey1mi8og2" path="res://battle/ui/encounter/encounter_arrow_layer.gd" id="29_arrow_layer"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_eb6dy"]
 size = Vector2(1200, 200)
@@ -48,6 +49,7 @@ metronome_sound = ExtResource("4_kl6ie")
 click_sound = ExtResource("5_f0g0v")
 
 [node name="Background" type="TextureRect" parent="BattleView" unique_id=1487696658 groups=["background"]]
+z_index = -10
 offset_left = -159.0
 offset_top = -214.0
 offset_right = 1761.0
@@ -132,64 +134,80 @@ anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -258.0
-offset_top = -121.0
-offset_right = -26.0
-offset_bottom = -46.0
+offset_left = -192.0
+offset_top = -102.0
+offset_right = -12.0
+offset_bottom = -27.0
 grow_horizontal = 0
 grow_vertical = 0
 theme = ExtResource("16_562sy")
-theme_override_font_sizes/font_size = 40
+theme_override_font_sizes/font_size = 42
 text = "End Turn"
 
 [node name="DrawPileButton" parent="Battle_UI" unique_id=175258487 node_paths=PackedStringArray("counter") instance=ExtResource("17_ariee")]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(128, 129)
 anchors_preset = 2
 anchor_top = 1.0
 anchor_bottom = 1.0
-offset_left = 22.0
-offset_top = -110.0
-offset_right = 86.0
-offset_bottom = -46.0
+offset_left = 149.0
+offset_top = -145.0
+offset_right = 277.0
+offset_bottom = -16.0
 grow_vertical = 0
 counter = NodePath("Counter")
 
 [node name="Counter" type="Label" parent="Battle_UI/DrawPileButton" unique_id=1277727095]
-layout_mode = 0
-offset_left = 12.0
-offset_top = 22.0
-offset_right = 52.0
-offset_bottom = 68.0
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -26.5
+offset_top = -16.5
+offset_right = 26.5
+offset_bottom = 51.5
+grow_horizontal = 2
+grow_vertical = 2
 theme = ExtResource("18_s5alk")
 theme_override_colors/font_color = Color(0.45098, 0.160784, 0.27451, 1)
-theme_override_font_sizes/font_size = 26
+theme_override_font_sizes/font_size = 50
 text = "99"
 horizontal_alignment = 1
 
 [node name="DiscardPileButton" parent="Battle_UI" unique_id=836578458 node_paths=PackedStringArray("counter") instance=ExtResource("17_ariee")]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(128, 128)
 anchors_preset = 3
 anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -338.0
-offset_top = -110.0
-offset_right = -274.0
-offset_bottom = -46.0
+offset_left = -314.0
+offset_top = -144.0
+offset_right = -186.0
+offset_bottom = -16.0
 grow_horizontal = 0
 grow_vertical = 0
 counter = NodePath("Counter")
 
 [node name="Counter" type="Label" parent="Battle_UI/DiscardPileButton" unique_id=610420263]
-layout_mode = 0
-offset_left = 13.0
-offset_top = 22.0
-offset_right = 53.0
-offset_bottom = 68.0
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -26.5
+offset_top = -16.0
+offset_right = 26.5
+offset_bottom = 52.0
+grow_horizontal = 2
+grow_vertical = 2
 theme = ExtResource("18_s5alk")
 theme_override_colors/font_color = Color(0.45098, 0.160784, 0.27451, 1)
-theme_override_font_sizes/font_size = 26
+theme_override_font_sizes/font_size = 50
 text = "99"
 horizontal_alignment = 1
 
@@ -197,9 +215,9 @@ horizontal_alignment = 1
 anchors_preset = 2
 anchor_top = 1.0
 anchor_bottom = 1.0
-offset_left = 173.0
+offset_left = 80.0
 offset_top = -104.0
-offset_right = 173.0
+offset_right = 80.0
 offset_bottom = -104.0
 grow_vertical = 0
 scale = Vector2(1, 1)
@@ -231,6 +249,16 @@ anchor_right = 0.5
 offset_top = 113.0
 offset_right = 0.0
 offset_bottom = 113.0
+
+[node name="SoulCapacityPanel" parent="Battle_UI" unique_id=4425088 instance=ExtResource("23_kc5qh")]
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 10.0
+offset_top = -314.0
+offset_right = 10.0
+offset_bottom = -314.0
+grow_vertical = 0
 
 [node name="Visual_Overlays" type="CanvasLayer" parent="." unique_id=1155891591]
 

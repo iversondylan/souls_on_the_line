@@ -119,5 +119,6 @@ void fragment() {
 	vec3 glass_color = vec3(r, g, b);
 	glass_color *= 0.9;
 
-	COLOR = vec4(glass_color, 1.0);
+	float edge_fade = smoothstep(0.0, 0.025, inversed_sdf);
+	COLOR = vec4(glass_color, edge_fade);
 }

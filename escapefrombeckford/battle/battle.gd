@@ -49,6 +49,7 @@ var _debug_mode: bool = true
 @onready var collection_view_overlay: CardsViewWindow = $Visual_Overlays/CollectionViewWindow
 
 @onready var mana_panel: ManaPanel = $Battle_UI/ManaPanel
+@onready var soul_capacity_panel: SoulCapacityPanel = $Battle_UI/SoulCapacityPanel
 @onready var selection_prompt: SelectionPrompt = $Battle_UI/SelectionPrompt
 @onready var battle_interaction_handler: BattleInteractionHandler = $BattleInteractionHandler
 @onready var battle_preview_coordinator: BattlePreviewCoordinator = $BattlePreviewCoordinator
@@ -217,6 +218,7 @@ func start_battle() -> void:
 		resolved_run_seed = int(run.run_seed)
 
 	sim_host.init_from_seeds(resolved_battle_seed, resolved_run_seed)
+	_connect_soul_capacity_api_signals()
 
 	hand.api = sim_host.get_main_api()
 	draw_pile_view.api = sim_host.get_main_api()
@@ -249,6 +251,7 @@ func start_battle() -> void:
 	initialize_card_pile_ui()
 
 	sim_host.end_setup()
+	_refresh_soul_capacity_panel()
 	if encounter_director != null:
 		encounter_director.start()
 
@@ -605,6 +608,40 @@ func _on_mana_view_update(o: ManaViewOrder) -> void:
 	# For now just set current mana.
 	# Later you can add a max label and use o.after_max_mana too.
 	mana_panel.set_mana(o.after_mana)
+
+func _connect_soul_capacity_api_signals() -> void:
+	var api := sim_host.get_main_api() if sim_host != null else null
+	if api == null:
+		return
+
+	var refresh_callable := Callable(self, "_on_soul_capacity_units_changed")
+	if !api.summoned.is_connected(refresh_callable):
+		api.summoned.connect(refresh_callable)
+	if !api.unit_removed.is_connected(refresh_callable):
+		api.unit_removed.connect(refresh_callable)
+
+func _refresh_soul_capacity_panel() -> void:
+	if soul_capacity_panel == null:
+		return
+
+	var api := sim_host.get_main_api() if sim_host != null else null
+	var bound_cap := CombatantState.get_mortality_cap(CombatantState.Mortality.BOUND)
+	var wild_cap := CombatantState.get_mortality_cap(CombatantState.Mortality.WILD)
+	if api == null:
+		soul_capacity_panel.set_counts(0, bound_cap, 0, wild_cap)
+		return
+
+	var bound_count := api.count_mortality_in_group(SimBattleAPI.FRIENDLY, CombatantState.Mortality.BOUND)
+	var wild_count := api.count_mortality_in_group(SimBattleAPI.FRIENDLY, CombatantState.Mortality.WILD)
+	soul_capacity_panel.set_counts(bound_count, bound_cap, wild_count, wild_cap)
+
+func _on_soul_capacity_units_changed(
+	_arg1: Variant = null,
+	_arg2: Variant = null,
+	_arg3: Variant = null,
+	_arg4: Variant = null
+) -> void:
+	_refresh_soul_capacity_panel()
 
 func _on_turn_status_view_changed(group_index: int, active_id: int, _pending_ids: PackedInt32Array, player_id: int) -> void:
 	if turn_phase_title == null:

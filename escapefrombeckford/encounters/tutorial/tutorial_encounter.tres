@@ -13,10 +13,10 @@
 [ext_resource type="Resource" uid="uid://ca8pmrs5s8td1" path="res://combatants/enemies/TrainingDummy/training_dummy_data.tres" id="8_yv6di"]
 [ext_resource type="Script" uid="uid://duv8xyedkq7d4" path="res://encounters/_core/encounter_insert_index_condition.gd" id="9_insert_condition"]
 [ext_resource type="Script" uid="uid://dubjkvxkbteb4" path="res://encounters/_core/encounter_card_condition.gd" id="10_card_condition"]
-[ext_resource type="Script" path="res://encounters/_core/encounter_mana_condition.gd" id="11_mana_condition"]
-[ext_resource type="Script" path="res://encounters/_core/point_to_node_encounter_action.gd" id="12_point_node_action"]
-[ext_resource type="Script" path="res://encounters/_core/point_to_cards_encounter_action.gd" id="13_point_cards_action"]
-[ext_resource type="Script" path="res://encounters/_core/clear_encounter_arrows_action.gd" id="14_clear_arrows_action"]
+[ext_resource type="Script" uid="uid://obsqvjqgyd88" path="res://encounters/_core/encounter_mana_condition.gd" id="11_mana_condition"]
+[ext_resource type="Script" uid="uid://b3wbg1sfktrvf" path="res://encounters/_core/point_to_node_encounter_action.gd" id="12_point_node_action"]
+[ext_resource type="Script" uid="uid://q1fhwgg2xttq" path="res://encounters/_core/point_to_cards_encounter_action.gd" id="13_point_cards_action"]
+[ext_resource type="Script" uid="uid://dhl286p0jne6" path="res://encounters/_core/clear_encounter_arrows_action.gd" id="14_clear_arrows_action"]
 
 [sub_resource type="Resource" id="EncounterCapabilitySet_default"]
 script = ExtResource("6_capabilities")
@@ -27,23 +27,6 @@ allowed_insert_indices = null
 [sub_resource type="Resource" id="EncounterEventCondition_dialogue_ack"]
 script = ExtResource("5_event_condition")
 event_name = &"dialogue_acknowledged"
-
-[sub_resource type="Resource" id="PointToEndTurnAction"]
-script = ExtResource("12_point_node_action")
-anchor_path = NodePath("Battle_UI/EndTurn")
-offset = Vector2(0, -90)
-
-[sub_resource type="Resource" id="PointToManaPanelAction"]
-script = ExtResource("12_point_node_action")
-anchor_path = NodePath("Battle_UI/ManaPanel")
-offset = Vector2(0, -90)
-
-[sub_resource type="Resource" id="PointToOverloadedCardsAction"]
-script = ExtResource("13_point_cards_action")
-offset = Vector2(0, -260)
-
-[sub_resource type="Resource" id="ClearEncounterArrowsAction"]
-script = ExtResource("14_clear_arrows_action")
 
 [sub_resource type="Resource" id="EncounterDialogueAction_intro"]
 script = ExtResource("4_dialogue_action")
@@ -114,16 +97,6 @@ allowed_insert_indices = PackedInt32Array(0)
 script = ExtResource("5_event_condition")
 event_name = &"card_played"
 
-[sub_resource type="Resource" id="EncounterEventCondition_end_turn_pressed"]
-script = ExtResource("5_event_condition")
-event_name = &"end_turn_pressed"
-
-[sub_resource type="Resource" id="EncounterTrigger_clear_arrows_on_end_turn"]
-script = ExtResource("7_trigger")
-id = &"clear_arrows_on_end_turn"
-conditions = Array[ExtResource("4_odov8")]([SubResource("EncounterEventCondition_end_turn_pressed")])
-actions = Array[ExtResource("6_st4e1")]([SubResource("ClearEncounterArrowsAction")])
-
 [sub_resource type="Resource" id="EncounterInsertIndexCondition_front"]
 script = ExtResource("9_insert_condition")
 accepted_indices = PackedInt32Array(0)
@@ -148,6 +121,10 @@ script = ExtResource("4_dialogue_action")
 dialogue_id = &"oswin_front_end_turn"
 speaker_name = "Magister Oswin Carrel"
 text_bbcode = "\"Excellent. You have no cards left, so that's all you can do this turn. Press [b]End Turn[/b].\""
+
+[sub_resource type="Resource" id="PointToEndTurnAction"]
+script = ExtResource("12_point_node_action")
+anchor_path = NodePath("Battle_UI/EndTurn")
 
 [sub_resource type="Resource" id="EncounterStep_front_end_turn_dialogue"]
 script = ExtResource("8_step")
@@ -178,13 +155,26 @@ id = &"clone_fell_on_input"
 conditions = Array[ExtResource("4_odov8")]([SubResource("EncounterEventCondition_player_input")])
 actions = Array[ExtResource("6_st4e1")]([SubResource("EncounterDialogueAction_clone_fell")])
 
+[sub_resource type="Resource" id="ClearEncounterArrowsAction"]
+script = ExtResource("14_clear_arrows_action")
+
+[sub_resource type="Resource" id="EncounterEventCondition_end_turn_pressed"]
+script = ExtResource("5_event_condition")
+event_name = &"end_turn_pressed"
+
+[sub_resource type="Resource" id="EncounterTrigger_clear_arrows_on_end_turn"]
+script = ExtResource("7_trigger")
+id = &"clear_arrows_on_end_turn"
+conditions = Array[ExtResource("4_odov8")]([SubResource("EncounterEventCondition_end_turn_pressed")])
+actions = Array[ExtResource("6_st4e1")]([SubResource("ClearEncounterArrowsAction")])
+
 [sub_resource type="Resource" id="EncounterStep_front_end_turn_only"]
 script = ExtResource("8_step")
 id = &"front_end_turn_only"
 next_step_id = &"post_clone_loss_lock"
 player_turn_draw_amount_override = 1
-completion_conditions = Array[ExtResource("4_odov8")]([SubResource("EncounterEventCondition_dialogue_ack")])
 entry_actions = Array[ExtResource("6_st4e1")]([SubResource("PointToEndTurnAction")])
+completion_conditions = Array[ExtResource("4_odov8")]([SubResource("EncounterEventCondition_dialogue_ack")])
 triggers = Array[ExtResource("7_trigger")]([SubResource("EncounterTrigger_clone_fell_on_input"), SubResource("EncounterTrigger_clear_arrows_on_end_turn")])
 capability_overrides = SubResource("EncounterCapabilitySet_end_turn_only")
 
@@ -248,8 +238,8 @@ script = ExtResource("8_step")
 id = &"back_end_turn_only"
 next_step_id = &"post_open_lock"
 player_turn_draw_amount_override = 1
-completion_conditions = Array[ExtResource("4_odov8")]([SubResource("EncounterEventCondition_dialogue_ack")])
 entry_actions = Array[ExtResource("6_st4e1")]([SubResource("PointToEndTurnAction")])
+completion_conditions = Array[ExtResource("4_odov8")]([SubResource("EncounterEventCondition_dialogue_ack")])
 triggers = Array[ExtResource("7_trigger")]([SubResource("EncounterTrigger_back_result_on_input"), SubResource("EncounterTrigger_clear_arrows_on_end_turn")])
 capability_overrides = SubResource("EncounterCapabilitySet_end_turn_only")
 
@@ -300,8 +290,8 @@ script = ExtResource("8_step")
 id = &"final_end_turn_unlock"
 next_step_id = &"teach_spike_action"
 player_turn_draw_amount_override = 5
-completion_conditions = Array[ExtResource("4_odov8")]([SubResource("EncounterEventCondition_dialogue_ack")])
 entry_actions = Array[ExtResource("6_st4e1")]([SubResource("PointToEndTurnAction")])
+completion_conditions = Array[ExtResource("4_odov8")]([SubResource("EncounterEventCondition_dialogue_ack")])
 triggers = Array[ExtResource("7_trigger")]([SubResource("EncounterTrigger_research_intro_on_input"), SubResource("EncounterTrigger_clear_arrows_on_end_turn")])
 capability_overrides = SubResource("EncounterCapabilitySet_end_turn_only")
 
@@ -378,6 +368,10 @@ dialogue_id = &"oswin_mana_pool"
 speaker_name = "Magister Oswin Carrel"
 text_bbcode = "\"In the bottom left is your Mana Pool. In the upper left of each card is the card's Mana Cost. You can only play cards if you can pay the cost from your Mana Pool.\""
 
+[sub_resource type="Resource" id="PointToManaPanelAction"]
+script = ExtResource("12_point_node_action")
+anchor_path = NodePath("Battle_UI/ManaPanel")
+
 [sub_resource type="Resource" id="EncounterStep_mana_pool_dialogue"]
 script = ExtResource("8_step")
 id = &"mana_pool_dialogue"
@@ -405,6 +399,10 @@ script = ExtResource("4_dialogue_action")
 dialogue_id = &"oswin_overload"
 speaker_name = "Magister Oswin Carrel"
 text_bbcode = "\"These Soul cards are Overloaded: they have temporarily increased mana cost because the Spectral Clones that you made with them fell in combat. Overload goes away on its own.\""
+
+[sub_resource type="Resource" id="PointToOverloadedCardsAction"]
+script = ExtResource("13_point_cards_action")
+offset = Vector2(0, -260)
 
 [sub_resource type="Resource" id="EncounterStep_overload_dialogue"]
 script = ExtResource("8_step")
@@ -454,8 +452,8 @@ denied_message_bbcode = "Play cards to spend all your mana to proceed."
 script = ExtResource("8_step")
 id = &"mana_empty_end_turn_only"
 next_step_id = &"finish_golem_dialogue"
-completion_conditions = Array[ExtResource("4_odov8")]([SubResource("EncounterEventCondition_draw_cards")])
 entry_actions = Array[ExtResource("6_st4e1")]([SubResource("PointToEndTurnAction")])
+completion_conditions = Array[ExtResource("4_odov8")]([SubResource("EncounterEventCondition_draw_cards")])
 triggers = Array[ExtResource("7_trigger")]([SubResource("EncounterTrigger_clear_arrows_on_end_turn")])
 capability_overrides = SubResource("EncounterCapabilitySet_end_turn_only")
 

@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://4a0kral1mie" path="res://battle/ui/mana_panel.gd" id="1_jg8c6"]
 [ext_resource type="Texture2D" uid="uid://dfm0pl5uj0mhs" path="res://_assets/sprites/mana_meter/brass_instrument_card_front_vectors_meter.png" id="2_h7u3w"]
-[ext_resource type="Theme" uid="uid://b585x04q3pfqf" path="res://themes/battle_ui_theme.tres" id="13_ibaeo"]
+[ext_resource type="Theme" uid="uid://culke34tga8th" path="res://themes/battle_ui_theme_outline.tres" id="3_mrwk6"]
 
 [node name="ManaPanel" type="Control" unique_id=315946111]
 layout_mode = 3
@@ -27,7 +27,7 @@ offset_right = 21.0
 offset_bottom = 30.0
 grow_horizontal = 2
 grow_vertical = 2
-theme = ExtResource("13_ibaeo")
+theme = ExtResource("3_mrwk6")
 theme_override_font_sizes/font_size = 70
 text = "1"
 horizontal_alignment = 1
