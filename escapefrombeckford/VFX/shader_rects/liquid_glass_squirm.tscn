@@ -5,13 +5,14 @@
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_liquid_glass_squirm"]
 shader = ExtResource("1_shader")
 shader_parameter/u_roundness = 0.834000039615
-shader_parameter/u_distortion_intensity = 0.15
+shader_parameter/u_distortion_intensity = 0.4
 shader_parameter/u_blur_intensity = 1.2
 shader_parameter/u_blob_intensity = 17.2250008181875
 shader_parameter/u_blob_radius = 0.16
 shader_parameter/u_blob_speed = 1.0
 shader_parameter/u_blob_blur_boost = 0.6
 shader_parameter/u_blob_wobble = 0.03
+shader_parameter/u_overlay_alpha = 0.38
 
 [node name="LiquidGlassSquirm" type="ColorRect" unique_id=1563811847]
 modulate = Color(1, 1, 1, 0)

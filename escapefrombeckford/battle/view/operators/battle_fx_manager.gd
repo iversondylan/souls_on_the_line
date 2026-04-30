@@ -155,7 +155,7 @@ func _instance_fx(fx_id: StringName) -> Node:
 
 
 func _attach_to_combatant(node: Node, combatant: CombatantView, scale: float, center_y_ratio := 0.5) -> void:
-	_add_combatant_fx_child_below_art(combatant, node)
+	combatant.add_child(node)
 
 	var height := float(combatant.get_visual_height_px())
 	var center := Vector2(0, -height * clampf(center_y_ratio, 0.0, 1.0))
@@ -173,15 +173,6 @@ func _attach_to_combatant(node: Node, combatant: CombatantView, scale: float, ce
 		control.position = center - final_size * 0.5
 	elif node is Node2D:
 		(node as Node2D).position = center
-
-
-func _add_combatant_fx_child_below_art(combatant: CombatantView, node: Node) -> void:
-	combatant.add_child(node)
-	var art_parent := combatant.get_node_or_null("ArtParent")
-	if art_parent != null:
-		combatant.move_child(node, art_parent.get_index())
-	else:
-		combatant.move_child(node, 0)
 
 
 func _fade_to(node: Node, alpha: float, duration: float) -> Tween:

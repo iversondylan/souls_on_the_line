@@ -14,6 +14,7 @@ uniform float u_blob_radius : hint_range(0.02, 0.5) = 0.16;
 uniform float u_blob_speed : hint_range(0.0, 5.0) = 1.0;
 uniform float u_blob_blur_boost : hint_range(0.0, 5.0) = 0.6;
 uniform float u_blob_wobble : hint_range(0.0, 0.2) = 0.03;
+uniform float u_overlay_alpha : hint_range(0.0, 1.0) = 0.38;
 
 float sdf_box(vec2 p, vec2 b, float r) {
 	vec2 d = abs(p) - b + vec2(r);
@@ -120,5 +121,5 @@ void fragment() {
 	glass_color *= 0.9;
 
 	float edge_fade = smoothstep(0.0, 0.025, inversed_sdf);
-	COLOR = vec4(glass_color, edge_fade);
+	COLOR = vec4(glass_color, edge_fade * u_overlay_alpha);
 }

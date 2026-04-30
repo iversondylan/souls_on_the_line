@@ -4,9 +4,9 @@ class_name HealthBar extends PanelContainer
 @onready var damage_bar: ProgressBar = %DamageBar
 @onready var health_number: Label = %HealthNumber
 @onready var max_health_number: Label = %MaxHealthNumber
-@onready var bound_icon: TextureRect = $HBoxContainer/BoundIcon
-@onready var wild_icon: TextureRect = $HBoxContainer/WildIcon
-@onready var card_reserved_icon: TextureRect = $HBoxContainer/CardReservedIcon
+@onready var bound_icon: TextureRect = get_node_or_null("HBoxContainer/BoundIcon") as TextureRect
+@onready var wild_icon: TextureRect = get_node_or_null("HBoxContainer/WildIcon") as TextureRect
+@onready var card_reserved_icon: TextureRect = get_node_or_null("HBoxContainer/CardReservedIcon") as TextureRect
 
 @export var inside_control: bool = false
 @export var font_size: int = 30 : set = _set_font_size, get = _get_font_size
