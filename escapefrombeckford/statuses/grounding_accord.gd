@@ -53,7 +53,7 @@ func on_card_played(ctx: SimStatusContext, source_id: int, card: CardData) -> vo
 	ctx.api.apply_status(status_ctx)
 
 func get_tooltip(_stacks: int = 0) -> String:
-	return "Grounding Accord: the first time each round you play your second Convocation, this gains Absorb."
+	return "Grounding Accord: when you play your second Convocation each round, gain Absorb."
 
 func _sync_round_state(ctx: SimStatusContext) -> void:
 	if ctx == null or !ctx.is_valid() or ctx.api == null or ctx.api.state == null:

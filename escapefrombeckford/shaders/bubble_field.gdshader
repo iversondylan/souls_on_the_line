@@ -29,6 +29,10 @@ uniform float distortion_speed : hint_range(0.0, 5.0, 0.01) = 0.8;
 group_uniforms colour_motion;
 uniform float colour_pan_speed : hint_range(0.0, 5.0, 0.01) = 0.25;
 
+vec3 screen_blend(vec3 base, vec3 blend) {
+	return 1.0 - (1.0 - base) * (1.0 - blend);
+}
+
 void fragment() {
 	vec2 uv = UV;
 	vec2 centered = uv - vec2(0.5);
@@ -75,16 +79,19 @@ void fragment() {
 	vec2 screen_offset = noise_dir * edge_distortion_amount * distortion_ring;
 	screen_offset += noise_dir * interior_distortion_amount * bubble_mask;
 
+	vec3 base_screen = texture(screen_texture, SCREEN_UV).rgb;
 	vec3 distorted_screen = texture(screen_texture, SCREEN_UV + screen_offset).rgb;
+	distorted_screen = max(distorted_screen, base_screen);
 
 	float tex_alpha = 1.0;
 	if (use_texture_alpha) {
 		tex_alpha = texture(TEXTURE, UV).a;
 	}
 
-	vec3 rgb = distorted_screen;
-	rgb += field_colour * bubble_mask * 0.35;
-	rgb += edge_colour.rgb * edge_mask;
+	vec3 lift = field_colour * bubble_mask * 0.35;
+	lift += edge_colour.rgb * edge_mask;
+	vec3 rgb = screen_blend(distorted_screen, clamp(lift, vec3(0.0), vec3(1.0)));
+	rgb = max(rgb, base_screen);
 
 	float alpha = alpha_strength * bubble_mask;
 	alpha += edge_mask * 0.45;

@@ -9,6 +9,7 @@ enum ChoiceType { CONDITIONAL, CHANCE }
 @export_group("Selection")
 #@export var choice_type: ChoiceType = ChoiceType.CHANCE
 @export var chance_weight: float = 1.0
+@export var playable_models: Array[PlayableModel] = []
 @export var performable_models: Array[PerformableModel] = []
 @export var state_models: Array[StateModel] = []
 

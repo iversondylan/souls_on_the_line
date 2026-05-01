@@ -6,7 +6,6 @@
 [resource]
 script = ExtResource("1_nxtje")
 name = "Magister Rowan Fellhart"
-description = "Boss. A heavy attacker whose tramples punish weak front lines."
 character_art_uid = "uid://eg204ufmsub7"
 portrait_art_uid = "uid://eg204ufmsub7"
 facing_right = false

@@ -1,0 +1,6 @@
+[gd_resource type="Resource" script_class="MultiplyChanceIfPartySizeAtOrAboveChanceStateModel" format=3 uid="uid://dawk65acsa5ff"]
+
+[ext_resource type="Script" uid="uid://1vroml7ft1jr" path="res://npc_ai/chance/multiply_chance_if_party_size_at_or_above_chance_state_model.gd" id="1_65m01"]
+
+[resource]
+script = ExtResource("1_65m01")

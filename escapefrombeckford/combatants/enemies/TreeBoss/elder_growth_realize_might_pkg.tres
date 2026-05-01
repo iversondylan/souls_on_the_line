@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="NPCEffectPackage" format=3 uid="uid://cm7yuhodqg87y"]
+
+[ext_resource type="Resource" uid="uid://chy21ffn3i5xl" path="res://npc_ai/realize_pending_statuses_effect_sequence.tres" id="1_realize"]
+[ext_resource type="Script" uid="uid://b8d5j6ne4mt88" path="res://npc_ai/_core/param_model.gd" id="2_param"]
+[ext_resource type="Script" uid="uid://3jde7uhq2yho" path="res://npc_ai/_core/npc_effect_package.gd" id="3_pkg"]
+[ext_resource type="Script" uid="uid://bxv83nkt4ltse" path="res://npc_ai/status/target_ids_stored_in_state_param_model.gd" id="4_stored_targets"]
+[ext_resource type="Script" uid="uid://cuj4qvyx6dedj" path="res://npc_ai/_core/state_model.gd" id="5_2wi5y"]
+
+[sub_resource type="Resource" id="ElderGrowthMightTargets"]
+script = ExtResource("4_stored_targets")
+state_key = &"elder_growth_might_targets"
+
+[resource]
+script = ExtResource("3_pkg")
+effect = ExtResource("1_realize")
+param_models = Array[ExtResource("2_param")]([SubResource("ElderGrowthMightTargets")])

@@ -7,6 +7,7 @@ shader = ExtResource("1_shader")
 shader_parameter/u_roundness = 1.0
 shader_parameter/u_distortion_intensity = 1.0
 shader_parameter/u_blur_intensity = 1.2
+shader_parameter/u_overlay_alpha = 0.55
 
 [node name="LiquidGlass" type="ColorRect" unique_id=1212707822]
 modulate = Color(1, 1, 1, 0)

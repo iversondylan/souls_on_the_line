@@ -322,16 +322,26 @@ static func _get_action_chance_weight_sim(action: NPCAction, action_idx: int, ct
 
 
 static func _is_action_override_hit_sim(action: NPCAction, ctx: NPCAIContext) -> bool:
-	if action == null or action.performable_models == null or action.performable_models.is_empty():
+	if action == null:
 		return false
+
+	var has_playable := false
+	for m: PlayableModel in action.playable_models:
+		if m == null:
+			continue
+		has_playable = true
+		if !m.is_playable_sim(ctx):
+			return false
+
 	var has_performable := false
-	for m in action.performable_models:
+	for m: PerformableModel in action.performable_models:
 		if m == null:
 			continue
 		has_performable = true
 		if !m.is_performable_sim(ctx):
 			return false
-	return has_performable
+
+	return has_playable or has_performable
 
 
 static func _on_planned_intent_changed_sim(profile: NPCAIProfile, prev_idx: int, _new_idx: int, ctx: NPCAIContext) -> void:

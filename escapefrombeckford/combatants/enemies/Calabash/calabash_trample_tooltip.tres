@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="IntentTooltipTextModel" format=3 uid="uid://o0j3htepdj2k"]
+
+[ext_resource type="Script" uid="uid://cxh1c3vqgquc5" path="res://npc_ai/text/intent_tooltip_text_model.gd" id="1_c3te0"]
+
+[resource]
+script = ExtResource("1_c3te0")
+text_template = "[b]{action_name}[/b]: {strikes}{damage} damage. Excess damage continues to the next target."
+metadata/_custom_type_script = "uid://cxh1c3vqgquc5"

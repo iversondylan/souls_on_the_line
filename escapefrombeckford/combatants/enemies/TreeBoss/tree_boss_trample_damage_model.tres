@@ -4,4 +4,4 @@
 
 [resource]
 script = ExtResource("1_damage_model")
-base_damage = 8
+base_damage = 6

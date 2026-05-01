@@ -6,6 +6,7 @@ uniform float u_roundness : hint_range(0.0, 1.0) = 1.0;
 
 uniform float u_distortion_intensity = 1.0;
 uniform float u_blur_intensity = 1.2;
+uniform float u_overlay_alpha : hint_range(0.0, 1.0) = 0.55;
 
 float sdf_box(vec2 p, vec2 b, float r) {
     vec2 d = abs(p) - b + vec2(r);
@@ -64,8 +65,10 @@ void fragment() {
     float g = get_blurred_color(screen_texture, target_uv, SCREEN_PIXEL_SIZE, current_blur_radius).g;
     float b = get_blurred_color(screen_texture, target_uv + chromatic_shift, SCREEN_PIXEL_SIZE, current_blur_radius).b;
 
-    vec3 glass_color = vec3(r, g, b);
-    glass_color *= 0.9;
+    vec3 base_screen = texture(screen_texture, SCREEN_UV).rgb;
+    vec3 glass_color = max(vec3(r, g, b), base_screen);
+    glass_color += vec3(edge_factor * 0.08);
+    glass_color = min(glass_color, vec3(1.0));
 
-    COLOR = vec4(glass_color, 1.0);
+    COLOR = vec4(glass_color, u_overlay_alpha);
 }

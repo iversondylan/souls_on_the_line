@@ -193,14 +193,12 @@ func _resize_panel(request: TooltipRequest) -> void:
 	var target_panel_width := clampf(_estimate_panel_width(request.text_bbcode), MIN_PANEL_WIDTH, max_panel_width)
 	var panel_chrome := _get_panel_chrome_size()
 	var target_text_width := maxf(target_panel_width - panel_chrome.x, 0.0)
-	var max_chars_per_line := maxi(12, int(floor(target_text_width / TEXT_WIDTH_PER_CHARACTER)))
-	var wrapped_text := _wrap_bbcode_text(request.text_bbcode, max_chars_per_line)
 
 	tooltip_icon.custom_minimum_size = Vector2(64, 64) if tooltip_icon.visible else Vector2.ZERO
 	tooltip_description.clear()
-	tooltip_description.append_text(wrapped_text)
 	tooltip_description.custom_minimum_size = Vector2(target_text_width, 0.0)
 	tooltip_description.size = Vector2(target_text_width, 0.0)
+	tooltip_description.append_text(request.text_bbcode)
 	tooltip_description.reset_size()
 	panel_container.custom_minimum_size = Vector2.ZERO
 	panel_container.reset_size()
@@ -223,30 +221,6 @@ func _strip_bbcode(text_bbcode: String) -> String:
 	var regex := RegEx.new()
 	regex.compile("\\[[^\\]]+\\]")
 	return regex.sub(text_bbcode, "", true)
-
-func _wrap_bbcode_text(text_bbcode: String, max_chars_per_line: int) -> String:
-	var wrapped_lines: Array[String] = []
-	for raw_line in text_bbcode.split("\n"):
-		var current_line := ""
-		var current_visible_length := 0
-		for word in raw_line.split(" ", false):
-			var visible_word_length := _strip_bbcode(word).length()
-			var separator_length := 0 if current_line.is_empty() else 1
-			if !current_line.is_empty() and current_visible_length + separator_length + visible_word_length > max_chars_per_line:
-				wrapped_lines.append(current_line)
-				current_line = word
-				current_visible_length = visible_word_length
-				continue
-
-			if !current_line.is_empty():
-				current_line += " "
-				current_visible_length += 1
-			current_line += word
-			current_visible_length += visible_word_length
-
-		wrapped_lines.append(current_line)
-
-	return "\n".join(wrapped_lines)
 
 func _get_panel_chrome_size() -> Vector2:
 	var chrome := Vector2(CONTENT_MARGIN_TOTAL, CONTENT_MARGIN_TOTAL)

@@ -14,4 +14,4 @@ func grants_attack_cleave(_ctx: SimStatusContext) -> bool:
 
 
 func get_tooltip(_stacks: int = 0) -> String:
-	return "Heavy Attack: excess damage chains through the next combatants."
+	return "Heavy Attack: excess damage continues to the next target(s)."

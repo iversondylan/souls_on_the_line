@@ -7,6 +7,7 @@
 [ext_resource type="Shader" uid="uid://r5ab4wfxtmqh" path="res://shaders/liquid_glass.gdshader" id="5_ypmjw"]
 [ext_resource type="Material" uid="uid://cjrxqlubwuw6n" path="res://shaders/liquid_glass_squirm.tres" id="6_n57hn"]
 [ext_resource type="Material" uid="uid://dyl7t7ex5mwnu" path="res://shaders/smoke_poof_shader_material.tres" id="7_n57hn"]
+[ext_resource type="PackedScene" uid="uid://c3udohgypoh3w" path="res://VFX/shader_rects/liquid_glass_squirm.tscn" id="8_h3h0p"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_h3h0p"]
 shader = ExtResource("2_ypmjw")
@@ -15,6 +16,8 @@ shader_parameter/amplitude = 2.0
 shader_parameter/ripple_rate = 19.0
 shader_parameter/wave_amplitude = 0.05
 shader_parameter/wave_frequency = 4.0
+shader_parameter/ripple_colour = Color(0.72, 0.9, 1, 1)
+shader_parameter/opacity = 0.5
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_hvj5x"]
 shader = ExtResource("3_c2a0q")
@@ -50,6 +53,7 @@ shader = ExtResource("5_ypmjw")
 shader_parameter/u_roundness = 1.0
 shader_parameter/u_distortion_intensity = 1.0
 shader_parameter/u_blur_intensity = 1.2
+shader_parameter/u_overlay_alpha = 0.55
 
 [node name="Node2D" type="Node2D" unique_id=1044631019]
 
@@ -97,3 +101,9 @@ offset_left = 1081.0
 offset_top = 209.0
 offset_right = 1859.0
 offset_bottom = 1020.0
+
+[node name="LiquidGlassSquirm2" parent="." unique_id=1563811847 instance=ExtResource("8_h3h0p")]
+offset_left = 926.0
+offset_top = 644.0
+offset_right = 1066.0
+offset_bottom = 882.0

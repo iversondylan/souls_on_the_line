@@ -35,5 +35,5 @@ func get_modifier_tokens(ctx: StatusTokenContext) -> Array[ModifierToken]:
 
 func get_tooltip(stacks: int = 0) -> String:
 	if stacks == 1:
-		return "Weakened: deal %s%% less damage for 1 turn. Ticks down at end of turn." % floori(MULT_VALUE * 100)
-	return "Weakened: deal %s%% less damage for %s turns. Ticks down at end of turn." % [floori(MULT_VALUE * 100), stacks]
+		return "Weakened: deal %s%% less damage for 1 turn." % floori(MULT_VALUE * 100)
+	return "Weakened: deal %s%% less damage for %s turns." % [floori(MULT_VALUE * 100), stacks]

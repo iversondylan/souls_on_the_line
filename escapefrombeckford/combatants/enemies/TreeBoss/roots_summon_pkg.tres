@@ -1,9 +1,17 @@
 [gd_resource type="Resource" script_class="NPCEffectPackage" format=3 uid="uid://dip0ivtt3xaj4"]
 
 [ext_resource type="Script" uid="uid://b8d5j6ne4mt88" path="res://npc_ai/_core/param_model.gd" id="1_h3xve"]
+[ext_resource type="Resource" uid="uid://du8wdjobmyvle" path="res://npc_ai/npc_summon_sequence.tres" id="1_summon"]
 [ext_resource type="Script" uid="uid://3jde7uhq2yho" path="res://npc_ai/_core/npc_effect_package.gd" id="2_4uroy"]
 [ext_resource type="Script" uid="uid://cuj4qvyx6dedj" path="res://npc_ai/_core/state_model.gd" id="3_0snv3"]
+[ext_resource type="Script" uid="uid://d33ubednd8prd" path="res://npc_ai/insert_index/before_me_insert_index_model.gd" id="3_before"]
+[ext_resource type="Resource" path="res://combatants/enemies/TreeBoss/root_tip_summon_model.tres" id="4_root_tip"]
+
+[sub_resource type="Resource" id="RootsBeforeMe"]
+script = ExtResource("3_before")
 
 [resource]
 script = ExtResource("2_4uroy")
+effect = ExtResource("1_summon")
+param_models = Array[ExtResource("1_h3xve")]([SubResource("RootsBeforeMe"), ExtResource("4_root_tip")])
 metadata/_custom_type_script = "uid://3jde7uhq2yho"

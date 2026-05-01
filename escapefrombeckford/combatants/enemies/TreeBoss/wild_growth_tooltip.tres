@@ -1,0 +1,7 @@
+[gd_resource type="Resource" script_class="IntentTooltipTextModel" format=3 uid="uid://b8twrt8015px3"]
+
+[ext_resource type="Script" uid="uid://cxh1c3vqgquc5" path="res://npc_ai/text/intent_tooltip_text_model.gd" id="1_text"]
+
+[resource]
+script = ExtResource("1_text")
+text_template = "[b]{action_name}[/b]: all opponents gain 1 Weakened. All allies gain 3 Might and 2 Alacrity."

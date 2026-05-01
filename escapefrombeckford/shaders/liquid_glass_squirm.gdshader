@@ -15,6 +15,16 @@ uniform float u_blob_speed : hint_range(0.0, 5.0) = 1.0;
 uniform float u_blob_blur_boost : hint_range(0.0, 5.0) = 0.6;
 uniform float u_blob_wobble : hint_range(0.0, 0.2) = 0.03;
 uniform float u_overlay_alpha : hint_range(0.0, 1.0) = 0.38;
+uniform vec4 u_glass_tint : source_color = vec4(0.58, 0.88, 1.0, 1.0);
+uniform vec4 u_shine_colour : source_color = vec4(0.92, 1.0, 1.0, 1.0);
+uniform float u_tint_strength : hint_range(0.0, 1.0) = 0.12;
+uniform float u_shine_strength : hint_range(0.0, 1.0) = 0.38;
+uniform float u_shine_alpha_boost : hint_range(0.0, 1.0) = 0.18;
+uniform float u_distortion_colour_strength : hint_range(0.0, 1.0) = 0.16;
+
+vec3 screen_blend(vec3 base, vec3 blend) {
+	return 1.0 - (1.0 - base) * (1.0 - blend);
+}
 
 float sdf_box(vec2 p, vec2 b, float r) {
 	vec2 d = abs(p) - b + vec2(r);
@@ -117,9 +127,22 @@ void fragment() {
 	float g = get_blurred_color(screen_texture, target_uv, SCREEN_PIXEL_SIZE, current_blur_radius).g;
 	float b = get_blurred_color(screen_texture, target_uv + chromatic_shift, SCREEN_PIXEL_SIZE, current_blur_radius).b;
 
-	vec3 glass_color = vec3(r, g, b);
-	glass_color *= 0.9;
+	vec3 base_screen = texture(screen_texture, SCREEN_UV).rgb;
+	vec3 refracted_screen = max(vec3(r, g, b), base_screen);
+
+	float rim = 1.0 - smoothstep(0.0, 0.085, inversed_sdf);
+	float diagonal = 1.0 - smoothstep(0.0, 0.055, abs((UV.x - UV.y * 0.55) - 0.22));
+	float top_glint = 1.0 - smoothstep(0.0, 0.16, length((UV - vec2(0.32, 0.24)) * vec2(1.0, 1.8)));
+	float shine = clamp(rim * 0.75 + diagonal * 0.35 + top_glint * 0.55 + blob_field * 0.18, 0.0, 1.0);
+
+	vec3 refracted_lift = max(refracted_screen - base_screen, vec3(0.0)) * u_distortion_colour_strength;
+	vec3 surface_lift = u_glass_tint.rgb * u_tint_strength;
+	surface_lift += u_shine_colour.rgb * shine * u_shine_strength;
+	surface_lift += refracted_lift;
+
+	vec3 glass_color = screen_blend(base_screen, clamp(surface_lift, vec3(0.0), vec3(1.0)));
 
 	float edge_fade = smoothstep(0.0, 0.025, inversed_sdf);
-	COLOR = vec4(glass_color, edge_fade * u_overlay_alpha);
+	float alpha = u_overlay_alpha + shine * u_shine_alpha_boost;
+	COLOR = vec4(glass_color, edge_fade * clamp(alpha, 0.0, 1.0));
 }

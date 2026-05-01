@@ -1,0 +1,7 @@
+[gd_resource type="Resource" script_class="TurnNumberPlayableModel" format=3]
+
+[ext_resource type="Script" path="res://npc_ai/playable/turn_number_playable_model.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+turn_numbers = PackedInt32Array(3, 7, 11)

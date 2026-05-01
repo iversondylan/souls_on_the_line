@@ -1,13 +1,27 @@
 [gd_resource type="Resource" script_class="NPCAction" format=3 uid="uid://c515vt2yo6bbb"]
 
 [ext_resource type="Script" uid="uid://3jde7uhq2yho" path="res://npc_ai/_core/npc_effect_package.gd" id="1_pf6la"]
-[ext_resource type="Resource" uid="uid://dip0ivtt3xaj4" path="res://combatants/enemies/TreeBoss/roots_summon_pkg.tres" id="2_4mtly"]
 [ext_resource type="Script" uid="uid://dtwuyctovqk5r" path="res://npc_ai/_core/intent_lifecycle_model.gd" id="2_852ki"]
+[ext_resource type="Resource" uid="uid://1jwgsyk0o1ej" path="res://combatants/enemies/TreeBoss/roots_attack_pkg.tres" id="2_attack"]
 [ext_resource type="Script" uid="uid://q408gy2b4q6a" path="res://npc_ai/_core/performable_model.gd" id="3_4mtly"]
+[ext_resource type="Resource" uid="uid://dip0ivtt3xaj4" path="res://combatants/enemies/TreeBoss/roots_summon_pkg.tres" id="3_front_summon"]
+[ext_resource type="Resource" uid="uid://pqqmcih42b7n" path="res://combatants/enemies/TreeBoss/roots_summon_behind_pkg.tres" id="4_behind_summon"]
 [ext_resource type="Script" uid="uid://bcih413oy6v73" path="res://npc_ai/_core/npc_action.gd" id="4_ex106"]
 [ext_resource type="Script" uid="uid://cuj4qvyx6dedj" path="res://npc_ai/_core/state_model.gd" id="5_1hpak"]
+[ext_resource type="Texture2D" uid="uid://dng4vlijjabi4" path="res://_assets/sprites/assorted/tree-roots.png" id="6_icon"]
+[ext_resource type="Resource" uid="uid://7gggk4mmejsq" path="res://npc_ai/text/attack_intent_text_model.tres" id="7_text"]
+[ext_resource type="Resource" uid="uid://xyvjdlil6nsb" path="res://npc_ai/chance/quarter_exponential_spree_chance_state_model.tres" id="9_quarter"]
+[ext_resource type="Script" uid="uid://bre6g3dfxnfgr" path="res://npc_ai/_core/playable_model.gd" id="9_s35o8"]
+[ext_resource type="Resource" uid="uid://dawk65acsa5ff" path="res://combatants/enemies/TreeBoss/roots_party_size_gate_model.tres" id="13_jupm0"]
+[ext_resource type="Resource" uid="uid://b1slpjjc6cugm" path="res://combatants/enemies/TreeBoss/roots_tooltip_model.tres" id="13_s35o8"]
 
 [resource]
 script = ExtResource("4_ex106")
-effect_packages = Array[ExtResource("1_pf6la")]([ExtResource("2_4mtly")])
+effect_packages = Array[ExtResource("1_pf6la")]([ExtResource("2_attack"), ExtResource("3_front_summon"), ExtResource("4_behind_summon")])
+state_models = Array[ExtResource("5_1hpak")]([ExtResource("9_quarter"), ExtResource("13_jupm0")])
+action_name = "Roots"
+intent_icon = ExtResource("6_icon")
+intent_icon_uid = "uid://dng4vlijjabi4"
+intent_text_model = ExtResource("7_text")
+tooltip_model = ExtResource("13_s35o8")
 metadata/_custom_type_script = "uid://bcih413oy6v73"

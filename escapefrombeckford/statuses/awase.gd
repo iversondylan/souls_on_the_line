@@ -30,4 +30,4 @@ func on_damage_taken(ctx: SimStatusContext, damage_ctx: DamageContext) -> void:
 	ctx.api.apply_status(status_ctx)
 
 func get_tooltip(stacks: int = 0) -> String:
-	return "Awase: whenever Absorb prevents damage, gain %s Full Fortitude." % stacks
+	return "Awase: whenever Absorb prevents damage, gain %s max health." % stacks

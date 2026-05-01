@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="TargetedStatusFromOppTurnModel" format=3 uid="uid://b5c6ewr6vhsq6"]
+
+[ext_resource type="Script" uid="uid://cje2t71jfv8ny" path="res://npc_ai/intent_lifecycle/targeted_status_from_opp_turn_model.gd" id="1_lifecycle"]
+[ext_resource type="Resource" uid="uid://7x55fawjrwf4" path="res://statuses/might.tres" id="2_might"]
+[ext_resource type="Resource" uid="uid://dwt11teq6jyu2" path="res://npc_ai/status/all_npc_allies_status_target_model.tres" id="3_targets"]
+
+[resource]
+script = ExtResource("1_lifecycle")
+status = ExtResource("2_might")
+stacks = 2
+pending = true
+target_model = ExtResource("3_targets")
+state_key = &"elder_growth_might_targets"
