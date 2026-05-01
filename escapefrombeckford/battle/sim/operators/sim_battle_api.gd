@@ -975,13 +975,6 @@ func resolve_damage_immediate(ctx: DamageContext) -> int:
 			ctx.deal_modifier_type,
 			int(ctx.source_id)
 		)
-	if apply_take_modifiers and int(ctx.take_modifier_type) != int(Modifier.Type.NO_MODIFIER):
-		normal_amount = SimModifierResolver.get_modified_value(
-			self,
-			int(normal_amount),
-			ctx.take_modifier_type,
-			int(ctx.target_id)
-		)
 
 	var banish_amount := int(ctx.base_banish_amount)
 	if apply_deal_modifiers:
@@ -1011,12 +1004,25 @@ func resolve_damage_immediate(ctx: DamageContext) -> int:
 		ctx.applied_banish_amount = banish_amount
 		ctx.amount += banish_amount
 
+	if apply_take_modifiers and int(ctx.take_modifier_type) != int(Modifier.Type.NO_MODIFIER):
+		ctx.amount = SimModifierResolver.get_modified_value(
+			self,
+			int(ctx.amount),
+			ctx.take_modifier_type,
+			int(ctx.target_id)
+		)
+	ctx.amount = maxi(int(ctx.amount), 0)
+	ctx.display_amount = int(ctx.amount)
+	var post_take_normal := mini(int(normal_amount), int(ctx.amount))
+	var post_take_banish := maxi(int(ctx.amount) - int(post_take_normal), 0)
+	ctx.applied_banish_amount = mini(int(ctx.applied_banish_amount), int(post_take_banish))
+
 	ctx.phase = DamageContext.Phase.PRE_APPLICATION
 	SimStatusSystem.on_damage_will_be_taken(self, ctx)
 	SimArcanaSystem.on_damage_will_be_taken(self, ctx)
 	ctx.amount = maxi(int(ctx.amount), 0)
 	var original_applied_banish := maxi(int(ctx.applied_banish_amount), 0)
-	var post_hook_banish := mini(original_applied_banish, maxi(int(ctx.amount) - normal_amount, 0))
+	var post_hook_banish := mini(original_applied_banish, maxi(int(ctx.amount) - post_take_normal, 0))
 	var post_hook_normal := maxi(int(ctx.amount) - post_hook_banish, 0)
 	ctx.applied_banish_amount = post_hook_banish
 

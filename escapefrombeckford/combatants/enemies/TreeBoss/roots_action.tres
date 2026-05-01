@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="NPCAction" format=3 uid="uid://c515vt2yo6bbb"]
+
+[ext_resource type="Script" uid="uid://3jde7uhq2yho" path="res://npc_ai/_core/npc_effect_package.gd" id="1_pf6la"]
+[ext_resource type="Resource" uid="uid://dip0ivtt3xaj4" path="res://combatants/enemies/TreeBoss/roots_summon_pkg.tres" id="2_4mtly"]
+[ext_resource type="Script" uid="uid://dtwuyctovqk5r" path="res://npc_ai/_core/intent_lifecycle_model.gd" id="2_852ki"]
+[ext_resource type="Script" uid="uid://q408gy2b4q6a" path="res://npc_ai/_core/performable_model.gd" id="3_4mtly"]
+[ext_resource type="Script" uid="uid://bcih413oy6v73" path="res://npc_ai/_core/npc_action.gd" id="4_ex106"]
+[ext_resource type="Script" uid="uid://cuj4qvyx6dedj" path="res://npc_ai/_core/state_model.gd" id="5_1hpak"]
+
+[resource]
+script = ExtResource("4_ex106")
+effect_packages = Array[ExtResource("1_pf6la")]([ExtResource("2_4mtly")])
+metadata/_custom_type_script = "uid://bcih413oy6v73"

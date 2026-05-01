@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="NPCAIProfile" format=3 uid="uid://btije2nlv1trf"]
+
+[ext_resource type="Script" uid="uid://bcih413oy6v73" path="res://npc_ai/_core/npc_action.gd" id="1_1px0c"]
+[ext_resource type="Resource" uid="uid://b4spfyeytksdk" path="res://combatants/critters/RootTip/root_tip_attack.tres" id="2_0r0qy"]
+[ext_resource type="Script" uid="uid://bdsvca1cpka5s" path="res://npc_ai/_core/npc_ai_profile.gd" id="2_6l2xs"]
+
+[resource]
+script = ExtResource("2_6l2xs")
+actions = Array[ExtResource("1_1px0c")]([ExtResource("2_0r0qy")])
+metadata/_custom_type_script = "uid://bdsvca1cpka5s"

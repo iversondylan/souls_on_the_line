@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="NPCAction" format=3 uid="uid://b4spfyeytksdk"]
+
+[ext_resource type="Script" uid="uid://3jde7uhq2yho" path="res://npc_ai/_core/npc_effect_package.gd" id="1_di8g5"]
+[ext_resource type="Script" uid="uid://dtwuyctovqk5r" path="res://npc_ai/_core/intent_lifecycle_model.gd" id="2_pv1g5"]
+[ext_resource type="Resource" uid="uid://22rjheybm5g5" path="res://combatants/critters/RootTip/root_tip_attack_pkg.tres" id="2_xevl8"]
+[ext_resource type="Script" uid="uid://q408gy2b4q6a" path="res://npc_ai/_core/performable_model.gd" id="3_xevl8"]
+[ext_resource type="Script" uid="uid://bcih413oy6v73" path="res://npc_ai/_core/npc_action.gd" id="4_636yr"]
+[ext_resource type="Script" uid="uid://cuj4qvyx6dedj" path="res://npc_ai/_core/state_model.gd" id="5_pui0s"]
+
+[resource]
+script = ExtResource("4_636yr")
+effect_packages = Array[ExtResource("1_di8g5")]([ExtResource("2_xevl8")])
+metadata/_custom_type_script = "uid://bcih413oy6v73"

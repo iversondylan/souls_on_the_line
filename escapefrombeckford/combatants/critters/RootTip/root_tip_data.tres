@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="CombatantData" format=3 uid="uid://bpv1gmmump5km"]
+
+[ext_resource type="Resource" uid="uid://btije2nlv1trf" path="res://combatants/critters/RootTip/root_tip_ai.tres" id="1_fqpoq"]
+[ext_resource type="Script" uid="uid://cfatj0ryn8uv3" path="res://combatants/combatant_data.gd" id="1_gdyoa"]
+
+[resource]
+script = ExtResource("1_gdyoa")
+name = "Root Tip"
+character_art_uid = "uid://boq0u6pgqo7p8"
+portrait_art_uid = "uid://boq0u6pgqo7p8"
+height = 100
+max_health = 4
+ap = 4
+ai = ExtResource("1_fqpoq")
+metadata/_custom_type_script = "uid://cfatj0ryn8uv3"
