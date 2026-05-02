@@ -40,6 +40,7 @@ var _deferred_player_input_ready_draw_amount_override: int = -1
 var _active_effect_package_index: int = -1
 var _active_effect_sequence_kind: StringName = &""
 var _active_effect_compact_to_previous: bool = false
+var _active_effect_action_fx_profile_path: String = ""
 
 
 # ============================================================================
@@ -898,7 +899,8 @@ func run_attack(ctx: AttackContext) -> bool:
 				targeting,
 				s,
 				strikes,
-				String(ctx.projectile_scene if !ctx.projectile_scene.is_empty() else params.get(Keys.PROJECTILE_SCENE, ""))
+				String(ctx.projectile_scene if !ctx.projectile_scene.is_empty() else params.get(Keys.PROJECTILE_SCENE, "")),
+				_with_active_effect_package_scope_metadata()
 			)
 
 		var dmg := _resolve_attack_damage(ctx)
@@ -1010,7 +1012,7 @@ func run_attack(ctx: AttackContext) -> bool:
 						s,
 						strikes,
 						String(ctx.projectile_scene if !ctx.projectile_scene.is_empty() else params.get(Keys.PROJECTILE_SCENE, "")),
-						cleave_extra
+						_with_active_effect_package_scope_metadata(cleave_extra)
 					)
 
 				var cleave_hit_scope_extra := {
@@ -1493,12 +1495,14 @@ func _set_active_effect_package_metadata(package_index: int, pkg: NPCEffectPacka
 	_active_effect_package_index = int(package_index)
 	_active_effect_sequence_kind = _effect_sequence_kind_for_package(pkg)
 	_active_effect_compact_to_previous = bool(pkg != null and pkg.compact_to_previous)
+	_active_effect_action_fx_profile_path = String(pkg.action_fx_profile.resource_path) if pkg != null and pkg.action_fx_profile != null else ""
 
 
 func _clear_active_effect_package_metadata() -> void:
 	_active_effect_package_index = -1
 	_active_effect_sequence_kind = &""
 	_active_effect_compact_to_previous = false
+	_active_effect_action_fx_profile_path = ""
 
 
 func _with_active_effect_package_scope_metadata(extra: Dictionary = {}) -> Dictionary:
@@ -1508,6 +1512,8 @@ func _with_active_effect_package_scope_metadata(extra: Dictionary = {}) -> Dicti
 	out[Keys.EFFECT_PACKAGE_INDEX] = int(_active_effect_package_index)
 	out[Keys.EFFECT_SEQUENCE_KIND] = _active_effect_sequence_kind
 	out[Keys.COMPACT_TO_PREVIOUS] = bool(_active_effect_compact_to_previous)
+	if !_active_effect_action_fx_profile_path.is_empty():
+		out[Keys.ACTION_FX_PROFILE] = _active_effect_action_fx_profile_path
 	return out
 
 

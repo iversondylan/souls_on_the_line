@@ -7,6 +7,7 @@
 [ext_resource type="Script" uid="uid://dtwuyctovqk5r" path="res://npc_ai/_core/intent_lifecycle_model.gd" id="4_nw5jf"]
 [ext_resource type="Script" uid="uid://q408gy2b4q6a" path="res://npc_ai/_core/performable_model.gd" id="5_kr3g8"]
 [ext_resource type="Script" uid="uid://bcih413oy6v73" path="res://npc_ai/_core/npc_action.gd" id="7_n6odd"]
+[ext_resource type="Script" path="res://npc_ai/_core/playable_model.gd" id="7_w0yqj"]
 [ext_resource type="Script" uid="uid://cuj4qvyx6dedj" path="res://npc_ai/_core/state_model.gd" id="8_sf6x8"]
 
 [sub_resource type="Resource" id="Resource_cq6h8"]

@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="ActionFxCue" format=3 uid="uid://cb4q5we2iwfrj"]
+
+[ext_resource type="Script" uid="uid://cga7c36h342e5" path="res://VFX/action_fx_cue.gd" id="1_d5v41"]
+
+[resource]
+script = ExtResource("1_d5v41")
+fx_ids = Array[StringName]([&"blue_slash_v1_1", &"blue_slash_v1_2"])
+selection_mode = 1
+offset = Vector2(-60, 0)

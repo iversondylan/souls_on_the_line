@@ -6,6 +6,7 @@
 [ext_resource type="Script" uid="uid://dtwuyctovqk5r" path="res://npc_ai/_core/intent_lifecycle_model.gd" id="4_lifecycle"]
 [ext_resource type="Resource" uid="uid://3n3py70oaeys" path="res://combatants/enemies/ScrapmenAcquisitionsSpecialist/repair_intent_text_model.tres" id="5_text_model"]
 [ext_resource type="Script" uid="uid://q408gy2b4q6a" path="res://npc_ai/_core/performable_model.gd" id="6_kq31s"]
+[ext_resource type="Script" path="res://npc_ai/_core/playable_model.gd" id="7_yfihd"]
 [ext_resource type="Script" uid="uid://bcih413oy6v73" path="res://npc_ai/_core/npc_action.gd" id="8_action"]
 [ext_resource type="Script" uid="uid://cuj4qvyx6dedj" path="res://npc_ai/_core/state_model.gd" id="9_state"]
 [ext_resource type="Resource" uid="uid://cd7usba570qq4" path="res://combatants/enemies/ScrapmenAcquisitionsSpecialist/repair_tooltip_model.tres" id="10_tooltip_model"]

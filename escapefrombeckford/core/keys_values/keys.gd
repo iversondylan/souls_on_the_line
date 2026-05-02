@@ -242,6 +242,7 @@ const VFX_OFFSET := &"vfx_offset"
 const VFX_SCALE := &"vfx_scale"
 const VFX_SIZE := &"vfx_size"
 const VFX_POSITION := &"vfx_position"
+const ACTION_FX_PROFILE := &"action_fx_profile"
 
 
 # AI state

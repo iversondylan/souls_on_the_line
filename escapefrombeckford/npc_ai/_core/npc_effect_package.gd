@@ -3,6 +3,7 @@
 class_name NPCEffectPackage extends Resource
 
 @export var effect: NPCEffectSequence
+@export var action_fx_profile: Resource
 # Models in param_models are to modify the the params dictionary of fresh
 # contexts made for this NPCEffectPackage 
 @export var param_models: Array[ParamModel] = []

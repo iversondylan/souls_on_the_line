@@ -3,11 +3,15 @@
 class_name BattleEventDirector extends RefCounted
 
 const StatusDepictionFxCommand := preload("res://battle/view/status_depictions/status_depiction_fx_command.gd")
+const ActionFxCueScript := preload("res://VFX/action_fx_cue.gd")
+const StatusFxCueScript := preload("res://VFX/status_fx_cue.gd")
+const DEFAULT_ACTION_FX_PROFILE_PATH := "res://VFX/action_fx_profiles/default_action_fx_profile.tres"
 
 var battle_view: BattleView
 var click: Sound
 var _summon_sound_cache := {}
 var _vfx_payload_sound_cache := {}
+var _action_fx_profile_cache := {}
 
 @export var spawn_pause_sec: float = 0.04
 @export var summon_pause_sec: float = 0.06
@@ -23,6 +27,7 @@ func bind(new_battle_view: BattleView) -> void:
 	click = battle_view.click_sound
 	_summon_sound_cache.clear()
 	_vfx_payload_sound_cache.clear()
+	_action_fx_profile_cache.clear()
 
 
 func on_director_action(a: DirectorAction, gen: int) -> void:
@@ -179,6 +184,7 @@ func _start_clear_focus_order(order: ClearFocusPresentationOrder) -> void:
 func _start_melee_windup_order(order: MeleeWindupPresentationOrder) -> void:
 	if order == null:
 		return
+	_play_action_fx_for_order(order, ActionFxCueScript.Type.ATTACK_WINDUP_START)
 	var attacker := battle_view.get_combatant(int(order.actor_id))
 	if attacker != null:
 		attacker.play_presentation_order(order, battle_view)
@@ -186,6 +192,9 @@ func _start_melee_windup_order(order: MeleeWindupPresentationOrder) -> void:
 func _start_melee_strike_order(order: MeleeStrikePresentationOrder) -> void:
 	if order == null:
 		return
+	var played_fx := _play_action_fx_for_order(order, ActionFxCueScript.Type.MELEE_STRIKE_FOLLOWTHROUGH)
+	if played_fx <= 0:
+		_play_default_melee_strike_fx(order)
 	var attacker := battle_view.get_combatant(int(order.actor_id))
 	if attacker != null:
 		attacker.play_presentation_order(order, battle_view)
@@ -193,6 +202,7 @@ func _start_melee_strike_order(order: MeleeStrikePresentationOrder) -> void:
 func _start_ranged_windup_order(order: RangedWindupPresentationOrder) -> void:
 	if order == null:
 		return
+	_play_action_fx_for_order(order, ActionFxCueScript.Type.ATTACK_WINDUP_START)
 	var attacker := battle_view.get_combatant(int(order.actor_id))
 	if attacker != null:
 		attacker.play_presentation_order(order, battle_view)
@@ -201,6 +211,7 @@ func _start_ranged_fire_order(order: RangedFirePresentationOrder) -> void:
 	if order == null:
 		return
 	#print("VIEW ranged fire projectile uid/path: ", order.projectile_scene_path)
+	_play_action_fx_for_order(order, ActionFxCueScript.Type.RANGED_STRIKE_FIRE)
 	var attacker := battle_view.get_combatant(int(order.actor_id))
 	if attacker != null:
 		attacker.play_presentation_order(order, battle_view)
@@ -208,6 +219,7 @@ func _start_ranged_fire_order(order: RangedFirePresentationOrder) -> void:
 func _start_ranged_cleave_order(order: RangedFirePresentationOrder) -> void:
 	if order == null:
 		return
+	_play_action_fx_for_order(order, ActionFxCueScript.Type.RANGED_STRIKE_FIRE)
 	var attacker := battle_view.get_combatant(int(order.actor_id))
 	if attacker != null:
 		attacker.play_presentation_order(order, battle_view)
@@ -215,6 +227,7 @@ func _start_ranged_cleave_order(order: RangedFirePresentationOrder) -> void:
 func _start_impact_order(order: ImpactPresentationOrder) -> void:
 	if order == null:
 		return
+	_play_action_fx_for_order(order, ActionFxCueScript.Type.ATTACK_IMPACT)
 	var target := battle_view.get_combatant(int(order.target_id))
 	if target != null:
 		target.play_presentation_order(order, battle_view)
@@ -223,6 +236,7 @@ func _start_impact_order(order: ImpactPresentationOrder) -> void:
 func _start_status_windup_order(order: StatusWindupPresentationOrder) -> void:
 	if order == null:
 		return
+	_play_action_fx_for_order(order, ActionFxCueScript.Type.STATUS_WINDUP_START)
 
 	var caster := battle_view.get_combatant(int(order.actor_id))
 	if caster != null:
@@ -236,6 +250,7 @@ func _start_status_windup_order(order: StatusWindupPresentationOrder) -> void:
 func _start_status_pop_order(order: StatusPopPresentationOrder) -> void:
 	if order == null:
 		return
+	_play_action_fx_for_order(order, ActionFxCueScript.Type.STATUS_POP)
 
 	var source := battle_view.get_combatant(int(order.source_id))
 	if source != null:
@@ -248,6 +263,7 @@ func _start_status_pop_order(order: StatusPopPresentationOrder) -> void:
 func _start_summon_windup_order(order: SummonWindupPresentationOrder) -> void:
 	if order == null:
 		return
+	_play_action_fx_for_order(order, ActionFxCueScript.Type.SUMMON_WINDUP_START)
 
 	var caster := battle_view.get_combatant(int(order.actor_id))
 	if caster != null:
@@ -256,6 +272,7 @@ func _start_summon_windup_order(order: SummonWindupPresentationOrder) -> void:
 func _start_summon_pop_order(order: SummonPopPresentationOrder) -> void:
 	if order == null:
 		return
+	_play_action_fx_for_order(order, ActionFxCueScript.Type.SUMMON_POP)
 
 	var caster := battle_view.get_combatant(int(order.actor_id))
 	var cid := int(order.summoned_id)
@@ -1083,6 +1100,8 @@ func _on_status_changed(e: EventPackage) -> void:
 			target.status_view_grid.apply_status(_make_status_applied_order(e))
 
 	_refresh_status_depiction(e)
+	if !e.is_planned:
+		_refresh_status_fx(e)
 
 
 func _refresh_status_depiction(e: EventPackage) -> void:
@@ -1165,6 +1184,123 @@ func _apply_status_depiction_fx_command(command: StatusDepictionFxCommand) -> vo
 				command.key,
 				command.fade_out
 			)
+
+
+func _refresh_status_fx(e: EventPackage) -> void:
+	if e == null or e.event == null or battle_view == null or battle_view.fx_manager == null:
+		return
+	if battle_view.status_catalog == null:
+		return
+
+	var d := _data(e)
+	var status_id: StringName = d.get(Keys.STATUS_ID, &"")
+	if status_id == &"":
+		return
+	var proto := battle_view.status_catalog.get_proto(status_id)
+	if proto == null or proto.status_fx_profile == null:
+		return
+
+	var target_id := int(d.get(Keys.TARGET_ID, 0))
+	var target := battle_view.get_combatant(target_id)
+	if target == null:
+		return
+
+	var token_key := _status_fx_token_key(status_id, d)
+	if token_key.is_empty():
+		return
+
+	var op := int(d.get(Keys.OP, 0))
+	if op == int(Status.OP.REMOVE):
+		_clear_status_fx_profile(proto.status_fx_profile, token_key)
+		_play_status_fx_profile_phase(proto.status_fx_profile, StatusFxCueScript.Phase.OUTRO, target)
+		return
+
+	var created_sustain := _ensure_status_fx_profile_sustain(proto.status_fx_profile, token_key, target)
+	if created_sustain:
+		_play_status_fx_profile_phase(proto.status_fx_profile, StatusFxCueScript.Phase.INTRO, target)
+
+
+func _ensure_status_fx_profile_sustain(profile: Resource, token_key: String, target: CombatantView) -> bool:
+	var created_any := false
+	var cue_index := 0
+	for cue: Resource in profile.get("cues"):
+		if cue == null:
+			cue_index += 1
+			continue
+		if !bool(cue.call("matches", StatusFxCueScript.Phase.SUSTAIN)):
+			cue_index += 1
+			continue
+		var fx_id: StringName = cue.get("fx_id")
+		if fx_id == &"":
+			cue_index += 1
+			continue
+		var created: bool = battle_view.fx_manager.ensure_status_sustain_on_combatant(
+			_status_fx_sustain_key(token_key, cue_index),
+			target,
+			fx_id,
+			float(cue.get("height_percent")),
+			cue.get("offset"),
+			float(cue.get("scale")),
+			float(cue.get("delay_begin")),
+			float(cue.get("ramp_duration_begin")),
+			bool(cue.get("ramp_alpha_begin")),
+			bool(cue.get("ramp_scale_begin"))
+		)
+		created_any = created_any or created
+		cue_index += 1
+	return created_any
+
+
+func _clear_status_fx_profile(profile: Resource, token_key: String) -> void:
+	var cue_index := 0
+	for cue: Resource in profile.get("cues"):
+		if cue == null:
+			cue_index += 1
+			continue
+		if !bool(cue.call("matches", StatusFxCueScript.Phase.SUSTAIN)):
+			cue_index += 1
+			continue
+		battle_view.fx_manager.clear_status_sustain_key(
+			_status_fx_sustain_key(token_key, cue_index),
+			float(cue.get("delay_end")),
+			float(cue.get("ramp_duration_end")),
+			bool(cue.get("ramp_alpha_end")),
+			bool(cue.get("ramp_scale_end"))
+		)
+		cue_index += 1
+
+
+func _play_status_fx_profile_phase(profile: Resource, phase: int, target: CombatantView) -> void:
+	for cue: Resource in profile.call("get_cues_for_phase", phase):
+		if cue == null:
+			continue
+		var fx_id: StringName = cue.get("fx_id")
+		if fx_id == &"":
+			continue
+		battle_view.fx_manager.play_status_one_shot_on_combatant(
+			target,
+			fx_id,
+			float(cue.get("height_percent")),
+			cue.get("offset"),
+			float(cue.get("scale"))
+		)
+
+
+func _status_fx_token_key(status_id: StringName, d: Dictionary) -> String:
+	var token_id := int(d.get(Keys.AFTER_TOKEN_ID, 0))
+	if token_id <= 0:
+		token_id = int(d.get(Keys.BEFORE_TOKEN_ID, 0))
+	if token_id > 0:
+		return "status_fx:%s:token:%d" % [String(status_id), token_id]
+	var target_id := int(d.get(Keys.TARGET_ID, 0))
+	var source_id := int(d.get(Keys.SOURCE_ID, 0))
+	if target_id <= 0:
+		return ""
+	return "status_fx:%s:%d:%d" % [String(status_id), source_id, target_id]
+
+
+func _status_fx_sustain_key(token_key: String, cue_index: int) -> String:
+	return "%s:sustain:%d" % [token_key, int(cue_index)]
 
 
 func _clear_status_depiction_key_from_views(depiction_key: String) -> void:
@@ -1526,6 +1662,116 @@ func _play_default_summon_pop_fx(v: CombatantView) -> void:
 		#                                                                   fade_in, hold, fade_out, scale.
 		battle_view.fx_manager.play_on_combatant(v, FxLibrary.FX_LIGHT_RADIAL, 0.1, 0.25, 0.5, 2)
 		battle_view.fx_manager.play_on_combatant(v, FxLibrary.FX_RIPPLE, 0.1, 0.01, 0.12, 1.5)
+
+
+func _play_action_fx_for_order(order: PresentationOrder, type: int) -> int:
+	if order == null or battle_view == null or battle_view.fx_manager == null:
+		return 0
+	var profile: Resource = _resolve_action_fx_profile(String(order.meta.get(Keys.ACTION_FX_PROFILE, "")))
+	if profile == null:
+		return 0
+
+	var played := 0
+	var strike_index := _strike_index_from_order(order)
+	for cue: Resource in profile.call("get_cues_for_type", type):
+		played += _play_action_fx_cue(order, cue, strike_index)
+	return played
+
+
+func _play_default_melee_strike_fx(order: MeleeStrikePresentationOrder) -> int:
+	if order == null or battle_view == null or battle_view.fx_manager == null:
+		return 0
+	var fx_id := FxLibrary.FX_BLUE_SLASH_V1_1 if int(order.strike_index) % 2 == 0 else FxLibrary.FX_BLUE_SLASH_V1_2
+	var played := 0
+	var actor := battle_view.get_combatant(int(order.actor_id))
+	for tid in order.target_ids:
+		var target := battle_view.get_combatant(int(tid))
+		if target == null:
+			continue
+		battle_view.fx_manager.play_one_shot_on_combatant(target, fx_id, Vector2.ZERO, 1.0, 0.5, true, true, actor)
+		played += 1
+	return played
+
+
+func _play_action_fx_cue(order: PresentationOrder, cue: Resource, strike_index: int) -> int:
+	if cue == null:
+		return 0
+	var fx_id: StringName = cue.call("resolve_fx_id", strike_index)
+	if fx_id == &"":
+		return 0
+
+	var played := 0
+	var actor := battle_view.get_combatant(int(order.actor_id))
+	match int(cue.get("anchor")):
+		ActionFxCueScript.Anchor.ACTOR:
+			if actor != null:
+				battle_view.fx_manager.play_one_shot_on_combatant(
+					actor,
+					fx_id,
+					cue.get("offset"),
+					float(cue.get("scale")),
+					float(cue.get("center_y_ratio")),
+					bool(cue.get("mirror_offset_x_by_group_facing")),
+					bool(cue.get("mirror_fx_x_by_group_facing")),
+					actor,
+					bool(cue.get("random_rotation"))
+				)
+				played += 1
+		ActionFxCueScript.Anchor.TARGET:
+			for tid in _target_ids_for_action_fx_order(order):
+				var target := battle_view.get_combatant(int(tid))
+				if target == null:
+					continue
+				battle_view.fx_manager.play_one_shot_on_combatant(
+					target,
+					fx_id,
+					cue.get("offset"),
+					float(cue.get("scale")),
+					float(cue.get("center_y_ratio")),
+					bool(cue.get("mirror_offset_x_by_group_facing")),
+					bool(cue.get("mirror_fx_x_by_group_facing")),
+					actor,
+					bool(cue.get("random_rotation"))
+				)
+				played += 1
+	return played
+
+
+func _resolve_action_fx_profile(profile_path: String) -> Resource:
+	if profile_path.is_empty():
+		profile_path = DEFAULT_ACTION_FX_PROFILE_PATH
+	if _action_fx_profile_cache.has(profile_path):
+		return _action_fx_profile_cache[profile_path] as Resource
+	var profile := load(profile_path) as Resource
+	if profile == null:
+		push_warning("BattleEventDirector: failed to load ActionFxProfile at %s" % profile_path)
+		return null
+	_action_fx_profile_cache[profile_path] = profile
+	return profile
+
+
+func _strike_index_from_order(order: PresentationOrder) -> int:
+	if order == null:
+		return 0
+	if "strike_index" in order:
+		return int(order.strike_index)
+	return 0
+
+
+func _target_ids_for_action_fx_order(order: PresentationOrder) -> Array[int]:
+	var out: Array[int] = []
+	if order == null:
+		return out
+	if order is ImpactPresentationOrder:
+		var impact := order as ImpactPresentationOrder
+		if int(impact.target_id) > 0:
+			out.append(int(impact.target_id))
+			return out
+	for tid in order.target_ids:
+		var cid := int(tid)
+		if cid > 0:
+			out.append(cid)
+	return out
 
 
 func _on_summon_reserve_released(e: EventPackage) -> void:

@@ -9,6 +9,7 @@
 [ext_resource type="Script" uid="uid://cuj4qvyx6dedj" path="res://npc_ai/_core/state_model.gd" id="4_8ks22"]
 [ext_resource type="Script" uid="uid://cgyx5yvchgfsk" path="res://npc_ai/text/attack_intent_text_model.gd" id="4_vwlju"]
 [ext_resource type="Script" uid="uid://dn2f2q20b4rcx" path="res://npc_ai/performable/not_in_front_performable_model.gd" id="6_1y0nc"]
+[ext_resource type="Script" path="res://npc_ai/_core/playable_model.gd" id="8_ox6vo"]
 [ext_resource type="Resource" uid="uid://ivsvxo0vj72x" path="res://npc_ai/text/attack_intent_tooltip_text_model.tres" id="10_0ngfj"]
 
 [sub_resource type="Resource" id="Resource_hc80h"]

@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://cmlewd8t3t7rc" path="res://statuses/pressure_barrier.gd" id="1_vs2ft"]
 [ext_resource type="Texture2D" uid="uid://jblyb3q37s5g" path="res://_assets/sprites/assorted/bell-shield.png" id="1_vv6tp"]
-[ext_resource type="Resource" uid="uid://byf3v7bv6olnn" path="res://battle/view/status_depictions/pressure_barrier_status_depiction.tres" id="3_depiction"]
+[ext_resource type="Resource" path="res://VFX/status_fx_profiles/pressure_barrier_status_fx_profile.tres" id="3_fx_profile"]
 
 [resource]
 script = ExtResource("1_vs2ft")
@@ -10,5 +10,5 @@ status_name = "Pressure Barrier"
 numerical = true
 auto_remove = 1
 icon = ExtResource("1_vv6tp")
-status_depiction = ExtResource("3_depiction")
+status_fx_profile = ExtResource("3_fx_profile")
 metadata/_custom_type_script = "uid://cmlewd8t3t7rc"

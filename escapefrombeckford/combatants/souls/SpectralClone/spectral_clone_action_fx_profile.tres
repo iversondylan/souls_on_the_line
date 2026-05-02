@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="ActionFxProfile" format=3 uid="uid://bf5ny5hmvqdj"]
+
+[ext_resource type="Script" uid="uid://b3bl82smbriaa" path="res://VFX/action_fx_profile.gd" id="1_profile"]
+[ext_resource type="Resource" uid="uid://cb4q5we2iwfrj" path="res://VFX/action_fx_profiles/attack_action_fx_cues/blue_slash_v1_parity.tres" id="1_vutlq"]
+
+[resource]
+script = ExtResource("1_profile")
+cues = Array[Resource]([ExtResource("1_vutlq")])

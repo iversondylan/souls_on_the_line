@@ -1,5 +1,6 @@
 [gd_resource type="Resource" script_class="NPCEffectPackage" format=3 uid="uid://cc04i46wsvhqo"]
 
+[ext_resource type="Resource" uid="uid://bs6gyyotaiwtp" path="res://VFX/action_fx_profiles/default_action_fx_profile.tres" id="1_f46h0"]
 [ext_resource type="Resource" uid="uid://bnqqhpu1itcb3" path="res://npc_ai/npc_attack_sequence.tres" id="1_m1haq"]
 [ext_resource type="Script" uid="uid://b8d5j6ne4mt88" path="res://npc_ai/_core/param_model.gd" id="1_waeop"]
 [ext_resource type="Script" uid="uid://3jde7uhq2yho" path="res://npc_ai/_core/npc_effect_package.gd" id="2_rd7he"]
@@ -14,5 +15,6 @@ metadata/_custom_type_script = "uid://ciectlejwqbj"
 [resource]
 script = ExtResource("2_rd7he")
 effect = ExtResource("1_m1haq")
+action_fx_profile = ExtResource("1_f46h0")
 param_models = Array[ExtResource("1_waeop")]([ExtResource("3_y5jhk"), SubResource("Resource_373j8")])
 metadata/_custom_type_script = "uid://3jde7uhq2yho"

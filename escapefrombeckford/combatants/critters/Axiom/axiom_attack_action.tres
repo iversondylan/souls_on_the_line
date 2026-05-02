@@ -9,6 +9,7 @@
 [ext_resource type="Script" uid="uid://cgyx5yvchgfsk" path="res://npc_ai/text/attack_intent_text_model.gd" id="6_text_model"]
 [ext_resource type="Script" uid="uid://q408gy2b4q6a" path="res://npc_ai/_core/performable_model.gd" id="7_hbaue"]
 [ext_resource type="Resource" uid="uid://ivsvxo0vj72x" path="res://npc_ai/text/attack_intent_tooltip_text_model.tres" id="7_tooltip_model"]
+[ext_resource type="Script" path="res://npc_ai/_core/playable_model.gd" id="8_hbaue"]
 [ext_resource type="Script" uid="uid://cuj4qvyx6dedj" path="res://npc_ai/_core/state_model.gd" id="9_nncd4"]
 
 [sub_resource type="Resource" id="AxiomText"]

@@ -8,6 +8,7 @@
 [ext_resource type="Material" uid="uid://cjrxqlubwuw6n" path="res://shaders/liquid_glass_squirm.tres" id="6_n57hn"]
 [ext_resource type="Material" uid="uid://dyl7t7ex5mwnu" path="res://shaders/smoke_poof_shader_material.tres" id="7_n57hn"]
 [ext_resource type="PackedScene" uid="uid://c3udohgypoh3w" path="res://VFX/shader_rects/liquid_glass_squirm.tscn" id="8_h3h0p"]
+[ext_resource type="PackedScene" uid="uid://cu62xyjvnmju8" path="res://VFX/melee/blue_slash_v1_1.tscn" id="9_hvj5x"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_h3h0p"]
 shader = ExtResource("2_ypmjw")
@@ -107,3 +108,6 @@ offset_left = 926.0
 offset_top = 644.0
 offset_right = 1066.0
 offset_bottom = 882.0
+
+[node name="AnimatedSprite2D" parent="." unique_id=1386446054 instance=ExtResource("9_hvj5x")]
+position = Vector2(869.6759, 635.98566)

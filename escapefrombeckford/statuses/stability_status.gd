@@ -16,7 +16,7 @@ func affects_intent_legality() -> bool:
 
 
 func get_tooltip(stacks: int = 0) -> String:
-	return "Stability: %s remaining. Break it to interrupt this unit's action." % stacks
+	return "Stability: %s remaining. Deal %s damage to interrupt this unit's action." % [stacks, stacks]
 
 
 func get_tooltip_sim(ctx: SimStatusContext) -> String:

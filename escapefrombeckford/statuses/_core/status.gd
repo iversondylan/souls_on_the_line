@@ -35,6 +35,7 @@ enum OP { APPLY, REMOVE, CHANGE }
 @export var icon: Texture
 @export_multiline var tooltip: String
 @export var status_depiction: StatusDepiction
+@export var status_fx_profile: StatusFxProfile
 
 var status_parent: CombatantView
 

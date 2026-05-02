@@ -56,6 +56,7 @@ class ParsedNpcAttackTurn extends RefCounted:
 	var group_index: int = -1
 	var attack_mode: int = Attack.Mode.MELEE
 	var projectile_scene_path: String = "uid://bxmhi3urqmpfh"
+	var action_fx_profile_path: String = ""
 	var focus_target_ids: Array[int] = []
 	var direct_strikes: Array[ParsedDirectStrike] = []
 	var target_windows: Array[TargetWindow] = []
@@ -73,6 +74,7 @@ class TopLevelTurnSegment extends RefCounted:
 	var scope_kind: int = -1
 	var actor_id: int = 0
 	var effect_package_index: int = -1
+	var action_fx_profile_path: String = ""
 	var compact_to_previous: bool = false
 	var events: Array[BattleEvent] = []
 	var status_events: Array[BattleEvent] = []
@@ -199,6 +201,8 @@ func _build_scope_driven_package_turn(turn_events: Array[BattleEvent]) -> Dictio
 			&"summon":
 				var summon_windup := _make_summon_windup_beat(current_q, actor_id, segment.summon_events)
 				var summon_pop := _make_summon_pop_beat(current_q + 1.0, actor_id, segment.summon_events)
+				_stamp_beat_action_fx_profile(summon_windup, segment.action_fx_profile_path)
+				_stamp_beat_action_fx_profile(summon_pop, segment.action_fx_profile_path)
 				_tag_beat(summon_windup, [&"windup"])
 				_tag_beat(summon_pop, [&"followthrough"])
 				beats.append(summon_windup)
@@ -277,6 +281,7 @@ func _build_top_level_package_segment(
 	segment.scope_kind = scope_kind
 	segment.actor_id = int(scope_range.get("actor_id", 0))
 	segment.effect_package_index = int(scope_data.get(Keys.EFFECT_PACKAGE_INDEX, -1))
+	segment.action_fx_profile_path = String(scope_data.get(Keys.ACTION_FX_PROFILE, ""))
 	segment.compact_to_previous = bool(scope_data.get(Keys.COMPACT_TO_PREVIOUS, false))
 	segment.sequence_kind = _top_level_segment_sequence_kind(scope_kind, scope_data)
 	segment.kind = segment.sequence_kind
@@ -285,6 +290,12 @@ func _build_top_level_package_segment(
 		segment.kind = &"attack"
 		segment.parsed_attack = _parse_scope_driven_attack_scope(events, scope_ranges, scope_id, group_index)
 		if segment.parsed_attack != null:
+			segment.parsed_attack.action_fx_profile_path = segment.action_fx_profile_path
+			if segment.parsed_attack.analysis != null:
+				segment.parsed_attack.analysis.action_fx_profile_path = segment.action_fx_profile_path
+				for strike in segment.parsed_attack.analysis.strikes:
+					if strike != null:
+						strike.action_fx_profile_path = segment.action_fx_profile_path
 			segment.target_ids.assign(segment.parsed_attack.focus_target_ids)
 
 	for idx in range(begin_idx + 1, end_idx):
@@ -361,6 +372,8 @@ func _merge_top_level_package_segments(target: TopLevelTurnSegment, source: TopL
 
 	if target.parsed_attack == null and source.parsed_attack != null:
 		target.parsed_attack = source.parsed_attack
+	if target.action_fx_profile_path.is_empty():
+		target.action_fx_profile_path = source.action_fx_profile_path
 	if target.kind == &"":
 		target.kind = source.kind
 	if target.sequence_kind == &"":
@@ -592,6 +605,8 @@ func _build_effect_sequence_package_beats(beat_q: float, segment: TopLevelTurnSe
 		segment.events,
 		segment.status_events
 	)
+	_stamp_beat_action_fx_profile(windup, segment.action_fx_profile_path)
+	_stamp_beat_action_fx_profile(followthrough, segment.action_fx_profile_path)
 	beats.append(windup)
 	beats.append(followthrough)
 	return {
@@ -668,6 +683,7 @@ func _merge_compacted_segment_into_beat(target_beat: TurnBeat, segment: TopLevel
 	var source_beat: TurnBeat = null
 	if segment.kind == &"summon":
 		source_beat = _make_summon_pop_beat(target_beat.beat_q, segment.actor_id, segment.summon_events)
+		_stamp_beat_action_fx_profile(source_beat, segment.action_fx_profile_path)
 	else:
 		source_beat = _make_effect_sequence_followthrough_beat(
 			target_beat.beat_q,
@@ -678,6 +694,7 @@ func _merge_compacted_segment_into_beat(target_beat: TurnBeat, segment: TopLevel
 			&"compact_followup",
 			0.12
 		)
+		_stamp_beat_action_fx_profile(source_beat, segment.action_fx_profile_path)
 		var compact_windup := _make_effect_sequence_windup_beat(
 			target_beat.beat_q,
 			segment.actor_id,
@@ -685,6 +702,7 @@ func _merge_compacted_segment_into_beat(target_beat: TurnBeat, segment: TopLevel
 			&"compact_followup",
 			0.10
 		)
+		_stamp_beat_action_fx_profile(compact_windup, segment.action_fx_profile_path)
 		_merge_beat_contents(target_beat, compact_windup)
 
 	_merge_beat_contents(target_beat, source_beat)
@@ -705,6 +723,14 @@ func _merge_beat_contents(target_beat: TurnBeat, source_beat: TurnBeat) -> void:
 	for event in source_beat.events:
 		if !target_beat.events.has(event):
 			target_beat.events.append(event)
+
+
+func _stamp_beat_action_fx_profile(beat: TurnBeat, action_fx_profile_path: String) -> void:
+	if beat == null or action_fx_profile_path.is_empty():
+		return
+	for order in beat.orders:
+		if order != null:
+			order.meta[Keys.ACTION_FX_PROFILE] = action_fx_profile_path
 
 
 # ============================================================================
@@ -735,6 +761,7 @@ func _parse_scope_driven_attack_scope(
 	parsed.group_index = group_index
 	parsed.attack_mode = analysis.attack_mode
 	parsed.projectile_scene_path = analysis.projectile_scene_path
+	parsed.action_fx_profile_path = analysis.action_fx_profile_path
 	parsed.analysis = analysis
 
 	var direct_infos: Array[StrikePresentationInfo] = []
@@ -1146,6 +1173,7 @@ func _parse_attack_scope(
 			analysis.attacker_id = int(marker.data.get(Keys.SOURCE_ID, 0))
 			analysis.attack_mode = int(marker.data.get(Keys.ATTACK_MODE, Attack.Mode.MELEE))
 			analysis.projectile_scene_path = String(marker.data.get(Keys.PROJECTILE_SCENE, "uid://bxmhi3urqmpfh"))
+			analysis.action_fx_profile_path = String(marker.data.get(Keys.ACTION_FX_PROFILE, ""))
 
 		if strike_info.is_cleave and display_index >= 0 and display_index < analysis.strikes.size():
 			analysis.strikes[display_index].has_cleave = true
@@ -1684,6 +1712,8 @@ func _make_melee_windup_beat(beat_q: float, analysis: AttackAnalysis) -> TurnBea
 	o.visual_sec = 0.20
 	o.strike_count = analysis.strike_count
 	o.total_hit_count = _count_total_hits(analysis)
+	if !analysis.action_fx_profile_path.is_empty():
+		o.meta[Keys.ACTION_FX_PROFILE] = analysis.action_fx_profile_path
 
 	beat.orders.append(o)
 	return beat
@@ -1713,6 +1743,8 @@ func _make_melee_strike_order_from_info(
 	o.chained_from_previous = strike.chained_from_previous
 	o.origin_strike_index = int(strike.origin_strike_index if strike.origin_strike_index >= 0 else strike_index)
 	o.chain_source_target_id = int(strike.chain_source_target_id)
+	if !analysis.action_fx_profile_path.is_empty():
+		o.meta[Keys.ACTION_FX_PROFILE] = analysis.action_fx_profile_path
 	return o
 
 
@@ -1729,6 +1761,8 @@ func _make_ranged_windup_beat(beat_q: float, analysis: AttackAnalysis) -> TurnBe
 	o.visual_sec = 0.15
 	o.strike_count = analysis.strike_count
 	o.total_hit_count = _count_total_hits(analysis)
+	if !analysis.action_fx_profile_path.is_empty():
+		o.meta[Keys.ACTION_FX_PROFILE] = analysis.action_fx_profile_path
 
 	beat.orders.append(o)
 	return beat
@@ -1756,6 +1790,8 @@ func _make_ranged_fire_order_from_info(
 	o.origin_strike_index = int(strike.origin_strike_index if strike.origin_strike_index >= 0 else strike_index)
 	o.chain_source_target_id = int(strike.chain_source_target_id)
 	o.has_chain_continuation = _strike_has_chain_continuation(analysis, strike_index)
+	if !analysis.action_fx_profile_path.is_empty():
+		o.meta[Keys.ACTION_FX_PROFILE] = analysis.action_fx_profile_path
 
 	return o
 
@@ -1820,6 +1856,8 @@ func _make_single_impact_order(
 	o.after_health = int(h.after_health)
 	o.chained_from_previous = strike.chained_from_previous and !is_recoil
 	o.is_self_recoil = is_recoil
+	if !analysis.action_fx_profile_path.is_empty():
+		o.meta[Keys.ACTION_FX_PROFILE] = analysis.action_fx_profile_path
 	if is_recoil:
 		o.meta[Keys.SELF_RECOIL] = true
 	return o

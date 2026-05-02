@@ -11,6 +11,7 @@
 [ext_resource type="Script" uid="uid://bfkcesydr8xy8" path="res://npc_ai/performable/keep_stability_performable_model.gd" id="8_fb54a"]
 [ext_resource type="Script" uid="uid://bcih413oy6v73" path="res://npc_ai/_core/npc_action.gd" id="9_l3qpv"]
 [ext_resource type="Script" uid="uid://cuj4qvyx6dedj" path="res://npc_ai/_core/state_model.gd" id="10_6pbj7"]
+[ext_resource type="Script" path="res://npc_ai/_core/playable_model.gd" id="10_p7r4c"]
 [ext_resource type="Resource" uid="uid://ivsvxo0vj72x" path="res://npc_ai/text/attack_intent_tooltip_text_model.tres" id="11_p7r4c"]
 
 [sub_resource type="Resource" id="Resource_1t84l"]

@@ -2,6 +2,7 @@
 class_name StrikePresentationInfo extends RefCounted
 
 var strike_index: int = 0
+var action_fx_profile_path: String = ""
 
 # normalized timing within the enclosing phase
 var t0_ratio: float = 0.0

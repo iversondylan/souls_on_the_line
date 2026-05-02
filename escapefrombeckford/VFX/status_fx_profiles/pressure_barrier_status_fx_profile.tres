@@ -1,0 +1,29 @@
+[gd_resource type="Resource" script_class="StatusFxProfile" format=3 uid="uid://cfydn8b07sgsw"]
+
+[ext_resource type="Script" uid="uid://451yori6c4y8" path="res://VFX/status_fx_profile.gd" id="1_profile"]
+[ext_resource type="Script" uid="uid://dd3vkibicov21" path="res://VFX/status_fx_cue.gd" id="2_cue"]
+
+[sub_resource type="Resource" id="Resource_intro"]
+script = ExtResource("2_cue")
+phase = 0
+fx_id = &"impact_shine_v1_reverse"
+
+[sub_resource type="Resource" id="Resource_sustain"]
+script = ExtResource("2_cue")
+fx_id = &"air_bubble"
+scale = 1.12
+delay_begin = 0.2
+ramp_duration_begin = 0.2
+ramp_alpha_begin = true
+ramp_scale_begin = true
+ramp_duration_end = 0.2
+ramp_alpha_end = true
+
+[sub_resource type="Resource" id="Resource_outro"]
+script = ExtResource("2_cue")
+phase = 2
+fx_id = &"impact_shockwave_v2"
+
+[resource]
+script = ExtResource("1_profile")
+cues = Array[Resource]([SubResource("Resource_intro"), SubResource("Resource_sustain"), SubResource("Resource_outro")])

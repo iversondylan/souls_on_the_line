@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="BattlePool" format=3 uid="uid://dq3n87o7cuyxg"]
 
 [ext_resource type="Script" uid="uid://be1v8qevmc2xw" path="res://encounters/battle_data.gd" id="1_ahuw7"]
-[ext_resource type="Resource" uid="uid://dqr7hmqjabyk" path="res://encounters/beckford_domain/tier_2_magister_rowan_fellhart.tres" id="2_a8pkc"]
+[ext_resource type="Resource" uid="uid://cdev0ybyn2i3o" path="res://encounters/beckford_domain/tier_1_levied_servitors.tres" id="2_a8pkc"]
 [ext_resource type="Script" uid="uid://b203gsihy5ttn" path="res://encounters/battle_pool.gd" id="2_fleer"]
 
 [resource]

@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="ActionFxCue" format=3 uid="uid://cl7houvmk0s2o"]
+
+[ext_resource type="Script" uid="uid://cga7c36h342e5" path="res://VFX/action_fx_cue.gd" id="1_4hfg3"]
+
+[resource]
+script = ExtResource("1_4hfg3")
+fx_ids = Array[StringName]([&"particles_basic_v1_a"])
+random_rotation = true
+metadata/_custom_type_script = "uid://cga7c36h342e5"
