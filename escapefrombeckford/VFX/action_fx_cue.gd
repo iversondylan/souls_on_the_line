@@ -29,7 +29,13 @@ enum SelectionMode {
 	ALTERNATE_BY_STRIKE_INDEX,
 }
 
+enum PlaybackMode {
+	ONE_SHOT,
+	PROJECTILE,
+}
+
 @export var type: Type = Type.MELEE_STRIKE_FOLLOWTHROUGH
+@export var playback_mode: PlaybackMode = PlaybackMode.ONE_SHOT
 @export var anchor: Anchor = Anchor.TARGET
 @export var fx_ids: Array[StringName] = []
 @export var selection_mode: SelectionMode = SelectionMode.FIRST

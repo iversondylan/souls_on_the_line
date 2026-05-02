@@ -1702,6 +1702,14 @@ func _play_action_fx_cue(order: PresentationOrder, cue: Resource, strike_index: 
 
 	var played := 0
 	var actor := battle_view.get_combatant(int(order.actor_id))
+	if int(cue.get("playback_mode")) == int(ActionFxCueScript.PlaybackMode.PROJECTILE):
+		if order is RangedFirePresentationOrder and actor != null:
+			var ranged_order := order as RangedFirePresentationOrder
+			if battle_view.fx_manager.play_projectile(ranged_order, battle_view, actor, fx_id):
+				ranged_order.suppress_projectile_spawn = true
+				return 1
+		return 0
+
 	match int(cue.get("anchor")):
 		ActionFxCueScript.Anchor.ACTOR:
 			if actor != null:

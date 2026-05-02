@@ -11,3 +11,4 @@ var chained_from_previous: bool = false
 var origin_strike_index: int = -1
 var chain_source_target_id: int = 0
 var has_chain_continuation: bool = false
+var suppress_projectile_spawn: bool = false

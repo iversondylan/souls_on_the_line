@@ -3,7 +3,8 @@
 [ext_resource type="Resource" uid="uid://cb4q5we2iwfrj" path="res://VFX/action_fx_profiles/attack_action_fx_cues/blue_slash_v1_parity.tres" id="1_jw2jt"]
 [ext_resource type="Script" uid="uid://b3bl82smbriaa" path="res://VFX/action_fx_profile.gd" id="2_rff67"]
 [ext_resource type="Resource" uid="uid://wgwp4rexvppv" path="res://VFX/action_fx_profiles/attack_action_fx_cues/impact_hit_lv1_randrot.tres" id="2_w7uj0"]
+[ext_resource type="Resource" uid="uid://bmfy0rkou2lni" path="res://VFX/action_fx_profiles/attack_action_fx_cues/explosion_bomb_v6_proj_impact.tres" id="3_3x343"]
 
 [resource]
 script = ExtResource("2_rff67")
-cues = Array[Resource]([ExtResource("1_jw2jt"), ExtResource("2_w7uj0")])
+cues = Array[Resource]([ExtResource("1_jw2jt"), ExtResource("2_w7uj0"), ExtResource("3_3x343")])

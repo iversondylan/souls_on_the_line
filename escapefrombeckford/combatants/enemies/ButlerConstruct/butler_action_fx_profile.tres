@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="ActionFxProfile" format=3]
+
+[ext_resource type="Resource" path="res://VFX/action_fx_profiles/attack_action_fx_cues/cutlery_projectile_fire.tres" id="1_projectile"]
+[ext_resource type="Script" path="res://VFX/action_fx_profile.gd" id="2_profile"]
+
+[resource]
+script = ExtResource("2_profile")
+cues = Array[Resource]([ExtResource("1_projectile")])

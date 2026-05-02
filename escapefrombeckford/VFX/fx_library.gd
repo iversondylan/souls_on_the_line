@@ -46,6 +46,8 @@ const FX_IMPACT_HOT_V8 := &"impact_hot_v8"
 const FX_IMPACT_HOT_V8_NO_SHARDS := &"impact_hot_v8_no_shards"
 const FX_IMPACT_HOT_V9 := &"impact_hot_v9"
 const FX_IMPACT_SHOCKWAVE_V2 := &"impact_shockwave_v2"
+const FX_PROJECTILE_FIREBALL := &"projectile_fireball"
+const FX_PROJECTILE_CUTLERY := &"projectile_cutlery"
 
 const NAMED_SCENE_PATHS := {
 	FX_RIPPLE: "res://VFX/shader_rects/ripple.tscn",
@@ -92,6 +94,8 @@ const NAMED_SCENE_PATHS := {
 	FX_IMPACT_HOT_V8_NO_SHARDS: "res://VFX/impacts/impact_hot_v8_no_shards.tscn",
 	FX_IMPACT_HOT_V9: "res://VFX/impacts/impact_hot_v9.tscn",
 	FX_IMPACT_SHOCKWAVE_V2: "res://VFX/impacts/impact_shockwave_v2.tscn",
+	FX_PROJECTILE_FIREBALL: "res://VFX/projectiles/fireball/fireball.tscn",
+	FX_PROJECTILE_CUTLERY: "res://VFX/projectiles/cutlery/cutlery.tscn",
 }
 
 var _scenes: Dictionary = {} # String -> PackedScene
@@ -144,6 +148,8 @@ var _scenes: Dictionary = {} # String -> PackedScene
 	"res://VFX/impacts/impact_hot_v8_no_shards.tscn",
 	"res://VFX/impacts/impact_hot_v9.tscn",
 	"res://VFX/impacts/impact_shockwave_v2.tscn",
+	"res://VFX/projectiles/fireball/fireball.tscn",
+	"res://VFX/projectiles/cutlery/cutlery.tscn",
 ]
 
 func _ready() -> void:
@@ -165,8 +171,12 @@ func get_scene(path: String) -> PackedScene:
 
 
 func get_named_scene(fx_id: StringName) -> PackedScene:
-	var path := String(NAMED_SCENE_PATHS.get(fx_id, ""))
+	var path := get_named_scene_path(fx_id)
 	if path.is_empty():
 		push_warning("FxLibrary: unknown fx id %s" % String(fx_id))
 		return null
 	return get_scene(path)
+
+
+func get_named_scene_path(fx_id: StringName) -> String:
+	return String(NAMED_SCENE_PATHS.get(fx_id, ""))

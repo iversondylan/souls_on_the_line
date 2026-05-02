@@ -328,6 +328,25 @@ func play_one_shot_at_global_position(
 	return node
 
 
+func play_projectile(
+	order: RangedFirePresentationOrder,
+	battle_view: BattleView,
+	attacker: CombatantView,
+	fx_id: StringName
+) -> bool:
+	if order == null or battle_view == null or attacker == null or !is_instance_valid(attacker):
+		return false
+
+	var projectile_scene_path := FxLibrary.get_named_scene_path(fx_id)
+	if projectile_scene_path.is_empty():
+		projectile_scene_path = String(fx_id)
+	if projectile_scene_path.is_empty():
+		return false
+
+	attacker.play_projectile_from_ranged_order(order, battle_view, projectile_scene_path)
+	return true
+
+
 func _instance_fx(fx_id: StringName) -> Node:
 	var scene: PackedScene = FxLibrary.get_named_scene(fx_id)
 	if scene == null:
