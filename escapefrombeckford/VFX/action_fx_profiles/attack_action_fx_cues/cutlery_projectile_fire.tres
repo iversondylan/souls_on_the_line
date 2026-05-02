@@ -1,10 +1,10 @@
-[gd_resource type="Resource" script_class="ActionFxCue" format=3]
+[gd_resource type="Resource" script_class="ActionFxCue" format=3 uid="uid://x2gcux1mrypx"]
 
-[ext_resource type="Script" path="res://VFX/action_fx_cue.gd" id="1_cue"]
+[ext_resource type="Script" uid="uid://cga7c36h342e5" path="res://VFX/action_fx_cue.gd" id="1_cue"]
 
 [resource]
 script = ExtResource("1_cue")
-type = 2
+type = 4
 playback_mode = 1
 fx_ids = Array[StringName]([&"projectile_cutlery"])
 metadata/_custom_type_script = "uid://cga7c36h342e5"

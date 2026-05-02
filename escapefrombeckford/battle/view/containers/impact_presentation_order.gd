@@ -3,6 +3,7 @@
 class_name ImpactPresentationOrder extends PresentationOrder
 
 var target_id: int = 0
+var attack_mode: int = Attack.Mode.MELEE
 var strike_index: int = 0
 var was_lethal: bool = false
 var amount: int = 0

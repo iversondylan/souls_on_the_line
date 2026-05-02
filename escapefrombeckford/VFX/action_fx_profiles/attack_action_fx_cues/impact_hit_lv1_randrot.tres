@@ -4,6 +4,7 @@
 
 [resource]
 script = ExtResource("1_1mlni")
+type = 2
 fx_ids = Array[StringName]([&"impact_hit_lv1"])
 random_rotation = true
 metadata/_custom_type_script = "uid://cga7c36h342e5"

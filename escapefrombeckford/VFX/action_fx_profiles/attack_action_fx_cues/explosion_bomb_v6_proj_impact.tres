@@ -4,7 +4,7 @@
 
 [resource]
 script = ExtResource("1_frekb")
-type = 3
-fx_ids = Array[StringName]([&"explosion_bomb_v5"])
+type = 5
+fx_ids = Array[StringName]([&"explosion_bomb_v6"])
 random_rotation = true
 metadata/_custom_type_script = "uid://cga7c36h342e5"

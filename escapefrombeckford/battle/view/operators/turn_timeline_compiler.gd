@@ -1847,6 +1847,7 @@ func _make_single_impact_order(
 	var o := ImpactPresentationOrder.new()
 	o.kind = PresentationOrder.Kind.IMPACT
 	o.actor_id = analysis.attacker_id
+	o.attack_mode = int(analysis.attack_mode)
 	o.target_id = int(h.target_id)
 	o.target_ids = [int(h.target_id)]
 	o.visual_sec = 0.18

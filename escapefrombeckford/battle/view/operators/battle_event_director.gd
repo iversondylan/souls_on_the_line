@@ -184,7 +184,7 @@ func _start_clear_focus_order(order: ClearFocusPresentationOrder) -> void:
 func _start_melee_windup_order(order: MeleeWindupPresentationOrder) -> void:
 	if order == null:
 		return
-	_play_action_fx_for_order(order, ActionFxCueScript.Type.ATTACK_WINDUP_START)
+	_play_action_fx_for_order(order, ActionFxCueScript.Type.MELEE_WINDUP)
 	var attacker := battle_view.get_combatant(int(order.actor_id))
 	if attacker != null:
 		attacker.play_presentation_order(order, battle_view)
@@ -202,7 +202,7 @@ func _start_melee_strike_order(order: MeleeStrikePresentationOrder) -> void:
 func _start_ranged_windup_order(order: RangedWindupPresentationOrder) -> void:
 	if order == null:
 		return
-	_play_action_fx_for_order(order, ActionFxCueScript.Type.ATTACK_WINDUP_START)
+	_play_action_fx_for_order(order, ActionFxCueScript.Type.RANGED_STRIKE_WINDUP)
 	var attacker := battle_view.get_combatant(int(order.actor_id))
 	if attacker != null:
 		attacker.play_presentation_order(order, battle_view)
@@ -227,7 +227,8 @@ func _start_ranged_cleave_order(order: RangedFirePresentationOrder) -> void:
 func _start_impact_order(order: ImpactPresentationOrder) -> void:
 	if order == null:
 		return
-	_play_action_fx_for_order(order, ActionFxCueScript.Type.ATTACK_IMPACT)
+	var impact_type := ActionFxCueScript.Type.RANGED_IMPACT if int(order.attack_mode) == int(Attack.Mode.RANGED) else ActionFxCueScript.Type.MELEE_IMPACT
+	_play_action_fx_for_order(order, impact_type)
 	var target := battle_view.get_combatant(int(order.target_id))
 	if target != null:
 		target.play_presentation_order(order, battle_view)
@@ -263,7 +264,7 @@ func _start_status_pop_order(order: StatusPopPresentationOrder) -> void:
 func _start_summon_windup_order(order: SummonWindupPresentationOrder) -> void:
 	if order == null:
 		return
-	_play_action_fx_for_order(order, ActionFxCueScript.Type.SUMMON_WINDUP_START)
+	_play_action_fx_for_order(order, ActionFxCueScript.Type.SUMMON_WINDUP)
 
 	var caster := battle_view.get_combatant(int(order.actor_id))
 	if caster != null:
@@ -1774,6 +1775,11 @@ func _target_ids_for_action_fx_order(order: PresentationOrder) -> Array[int]:
 		var impact := order as ImpactPresentationOrder
 		if int(impact.target_id) > 0:
 			out.append(int(impact.target_id))
+			return out
+	if order is SummonPopPresentationOrder:
+		var summon_pop := order as SummonPopPresentationOrder
+		if int(summon_pop.summoned_id) > 0:
+			out.append(int(summon_pop.summoned_id))
 			return out
 	for tid in order.target_ids:
 		var cid := int(tid)
